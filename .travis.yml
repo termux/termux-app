@@ -1,0 +1,26 @@
+language: android
+sudo: false
+
+env:
+  global:
+    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+    # via the "travis encrypt" command using the project repo's public key
+    - secure: "ACnFJxw0VusS2lnGXL+epP/CNJmftWS39YcPdgN2EurWw5ZfXSo7vi+zpMB+11IBS3LQyLFFUambi2N9L4lbReZkHVkoVcZFGZlwbXNTAeqT8CABPTcuOyEOZU4bJwqeYU87ztYipENMLNECaZrgWx5odbWLKnSJQw7Zkb4ArCstfXfYk9u8q49ThRxQyGwHW2xKp1an5aa+3Y6IY+ywsSHw6AvXbyFH078Kolxy86caagczcfmKcMi15QYzwAvFggUphvsO3M5PHJMQXuaNlQxDcQRGUEXsK8aZE0dPH5PB97SFjDALZqI7NEpjZAk5htWjX48ssW064LDbjcBg/ZLgDd8R8uhA159NVZgvcnP2czCn6pmggx1sW5MBmcj7i+bJS2ejaMO+KoovWlVvsch742H5QR6rQaNkjDZRsGVLYvJaR1gBLs898UoT1hcHWoqLVR22r2VFo7OWWCRfNRvZuZDR2HIrYRdFvn8P3nWVMkvXwgsOlxWG5sN+yQqW+6lZS7hivsFhtYs4CkRdoZIan3Qvi/CkY8Lg+ESkZ3IJ0NnId8qOWH+8Xl1sqZ7xlsWTd1sYYHlpvkdvqw1HNLP22EpwwKW5Kb5zBEd/qs3o1OO0Tqa0MR6JpgGdHHRk1iZ25+qTfRVP06vO2RXsgAx4SZfO7DyB0QZn8tGNMMI="
+
+android:
+  components:
+    - platform-tools
+    - tools
+    - build-tools-23.0.1
+    - android-23
+    - sys-img-x86-android-23
+
+addons:
+  coverity_scan:
+    project:
+      name: "termux/termux-app"
+      description: "Terminal emulator and Linux environment for Android"
+    notification_email: fredrik@fornwall.net
+    build_command_prepend: "./gradlew clean"
+    build_command: "./gradlew assemble"
+    branch_pattern: coverity_scan
