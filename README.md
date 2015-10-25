@@ -1,5 +1,8 @@
 Termux app
 ==========
+[![Travis build status](https://travis-ci.org/termux/termux-app.svg?branch=master)](https://travis-ci.org/termux/termux-app)
+
+
 Termux is an Android terminal app and Linux environment.
 
 * [Termux on Google Play](http://play.google.com/store/apps/details?id=com.termux)
