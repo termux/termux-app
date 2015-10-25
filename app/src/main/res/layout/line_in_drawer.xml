@@ -1,0 +1,9 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/row_line"
+    android:layout_width="fill_parent"
+    android:layout_height="?android:attr/listPreferredItemHeight"
+    android:background="@drawable/selected_session_background"
+    android:ellipsize="marquee"
+    android:gravity="start|center_vertical"
+    android:padding="6dip"
+    android:textSize="14sp" />

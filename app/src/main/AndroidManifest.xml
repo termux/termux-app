@@ -1,0 +1,49 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.termux"
+    android:installLocation="internalOnly"
+    android:sharedUserId="com.termux"
+    android:sharedUserLabel="@string/shared_user_label"
+    android:versionCode="16"
+    android:versionName="0.16" >
+
+	<uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+	<uses-feature android:name="android.software.leanback" android:required="false" />
+
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="22" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:banner="@drawable/banner"
+        android:label="@string/application_name"
+        android:theme="@style/Theme.Termux"
+        android:supportsRtl="false" >
+        <activity
+            android:name="com.termux.app.TermuxActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateAlwaysVisible" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+		    <intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+		    </intent-filter>
+        </activity>
+        <activity
+            android:name="com.termux.app.TermuxHelpActivity"
+            android:exported="false"
+            android:label="@string/application_help" />
+        <service
+            android:name="com.termux.app.TermuxService"
+            android:exported="false" />
+    </application>
+
+</manifest>

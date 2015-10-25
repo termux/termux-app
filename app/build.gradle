@@ -1,0 +1,41 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    sourceSets {
+	    main {
+		    jni.srcDirs = []
+	    }
+    }
+
+    defaultConfig {
+        applicationId "com.termux"
+        minSdkVersion 21
+        targetSdkVersion 22
+        versionCode 16
+        versionName "0.16"
+    }
+
+    signingConfigs {
+	    release {
+		    storeFile new File(TERMUX_KEYSTORE_FILE)
+		    storePassword TERMUX_KEYSTORE_PASSWORD
+		    keyAlias TERMUX_KEYSTORE_ALIAS
+		    keyPassword TERMUX_KEYSTORE_PASSWORD
+	    }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+	    signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}
