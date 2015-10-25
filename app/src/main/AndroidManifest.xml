@@ -2,9 +2,7 @@
     package="com.termux"
     android:installLocation="internalOnly"
     android:sharedUserId="com.termux"
-    android:sharedUserLabel="@string/shared_user_label"
-    android:versionCode="16"
-    android:versionName="0.16" >
+    android:sharedUserLabel="@string/shared_user_label" >
 
 	<uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 	<uses-feature android:name="android.software.leanback" android:required="false" />
