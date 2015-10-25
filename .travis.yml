@@ -15,6 +15,9 @@ android:
     - android-23
     - sys-img-x86-android-23
 
+script:
+  - ./gradlew testDebugUnitTest
+
 addons:
   coverity_scan:
     project:
