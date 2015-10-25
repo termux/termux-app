@@ -1738,7 +1738,7 @@ public final class TerminalEmulator {
 		default:
 			// The ESC character was not followed by a \, so insert the ESC and
 			// the current character in arg buffer.
-			collectOSCArgs((byte) 033);
+			collectOSCArgs(27);
 			collectOSCArgs(b);
 			continueSequence(ESC_OSC);
 			break;

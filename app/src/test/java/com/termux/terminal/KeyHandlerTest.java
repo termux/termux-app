@@ -12,7 +12,8 @@ public class KeyHandlerTest extends TestCase {
 			if (buffer.length() > 0) {
 				buffer.append(" ");
 			}
-			buffer.append("0x" + Integer.toHexString(s.charAt(i)));
+			buffer.append("0x");
+			buffer.append(Integer.toHexString(s.charAt(i)));
 		}
 		return buffer.toString();
 	}

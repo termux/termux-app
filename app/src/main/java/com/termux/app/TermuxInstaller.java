@@ -110,6 +110,7 @@ final class TermuxInstaller {
 											outStream.write(buffer, 0, readBytes);
 									}
 									if (zipEntryName.startsWith("bin/") || zipEntryName.startsWith("libexec") || zipEntryName.startsWith("lib/apt/methods")) {
+										//noinspection OctalInteger
 										Os.chmod(targetFile.getAbsolutePath(), 0700);
 									}
 								}

@@ -1,6 +1,7 @@
 package com.termux.terminal;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -99,9 +100,10 @@ public class TerminalRowTest extends TestCase {
 
 		char[] rawLine = new char[80];
 		Arrays.fill(rawLine, ' ');
+		Random random = new Random();
 		for (int i = 0; i < 1000; i++) {
-			int lineIndex = (int) Math.random() * rawLine.length;
-			int charIndex = (int) Math.random() * someChars.length;
+			int lineIndex = random.nextInt(rawLine.length);
+			int charIndex = random.nextInt(someChars.length);
 			rawLine[lineIndex] = someChars[charIndex];
 			row.setChar(lineIndex, someChars[charIndex], 0);
 		}
