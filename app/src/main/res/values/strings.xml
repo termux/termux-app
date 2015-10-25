@@ -11,7 +11,6 @@
    <string name="reset_terminal">Reset</string>
    <string name="style_terminal">Style</string>
    <string name="toggle_fullscreen">Fullscreen</string>
-   <string name="share_transcript">Share</string>
    <string name="share_transcript_title">Terminal transcript</string>
    <string name="help">Help</string>
 
@@ -24,7 +23,6 @@
    <string name="bootstrap_error_body">Termux was unable to install the bootstrap packages.\n\nCheck your network connection and try again.</string>
    <string name="bootstrap_error_abort">Abort</string>
    <string name="bootstrap_error_try_again">Try again</string>
-   <string name="bootstrap_error_not_primary_user_title">Unable to install</string>
    <string name="bootstrap_error_not_primary_user_message">Termux can only be installed on the primary user account.</string>
 
    <string name="max_terminals_reached_title">Max terminals reached</string>
