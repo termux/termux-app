@@ -19,6 +19,7 @@
         android:label="@string/application_name"
         android:theme="@style/Theme.Termux"
         android:supportsRtl="false" >
+
         <activity
             android:name="com.termux.app.TermuxActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
@@ -33,13 +34,41 @@
 				<category android:name="android.intent.category.LEANBACK_LAUNCHER" />
 		    </intent-filter>
         </activity>
+
         <activity
             android:name="com.termux.app.TermuxHelpActivity"
             android:exported="false"
             android:label="@string/application_help" />
+
+        <activity
+            android:name="com.termux.filepicker.TermuxFilePickerActivity"
+            android:label="@string/application_name"
+            android:theme="@android:style/Theme.Material"
+            android:noHistory="true">
+            <intent-filter>
+                <!--
+                  http://stackoverflow.com/questions/6486716/using-intent-action-pick-for-specific-path
+                  "That said, you should consider ACTION_PICK deprecated. The modern action is ACTION_GET_CONTENT
+                  which is much better supported; you will find support of ACTION_PICK spotty and inconsistent.
+                  Unfortunately ACTION_GET_CONTENT also does not let you specify a directory."
+                -->
+                <action android:name="android.intent.action.GET_CONTENT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.OPENABLE" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
+        <provider android:authorities="com.termux.filepicker.provider"
+            android:readPermission="com.termux.filepickder.READ"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:name="com.termux.filepicker.TermuxFilePickerProvider" />
+
         <service
             android:name="com.termux.app.TermuxService"
             android:exported="false" />
+
     </application>
 
 </manifest>
