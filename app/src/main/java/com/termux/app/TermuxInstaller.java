@@ -21,6 +21,7 @@ import android.content.DialogInterface.OnDismissListener;
 import android.system.Os;
 import android.util.Log;
 import android.util.Pair;
+import android.view.WindowManager;
 
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
@@ -138,27 +139,35 @@ final class TermuxInstaller {
 					activity.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
-									.setNegativeButton(R.string.bootstrap_error_abort, new OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.dismiss();
-									activity.finish();
-								}
-							}).setPositiveButton(R.string.bootstrap_error_try_again, new OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.dismiss();
-									TermuxInstaller.setupIfNeeded(activity, whenDone);
-								}
-							}).show();
+							try {
+								new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
+										.setNegativeButton(R.string.bootstrap_error_abort, new OnClickListener() {
+											@Override
+											public void onClick(DialogInterface dialog, int which) {
+												dialog.dismiss();
+												activity.finish();
+											}
+										}).setPositiveButton(R.string.bootstrap_error_try_again, new OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										dialog.dismiss();
+										TermuxInstaller.setupIfNeeded(activity, whenDone);
+									}
+								}).show();
+							} catch (WindowManager.BadTokenException e) {
+								// Activity already dismissed - ignore.
+							}
 						}
 					});
 				} finally {
 					activity.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							progress.dismiss();
+							try {
+								progress.dismiss();
+							} catch (RuntimeException e) {
+								// Activity already dismissed - ignore.
+							}
 						}
 					});
 				}

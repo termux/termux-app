@@ -52,6 +52,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -414,18 +415,22 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 				TermuxInstaller.setupIfNeeded(TermuxActivity.this, new Runnable() {
 					@Override
 					public void run() {
-						if (TermuxPreferences.isShowWelcomeDialog(TermuxActivity.this)) {
-							new AlertDialog.Builder(TermuxActivity.this).setTitle(R.string.welcome_dialog_title).setMessage(R.string.welcome_dialog_body)
-									.setCancelable(false).setPositiveButton(android.R.string.ok, null)
-									.setNegativeButton(R.string.welcome_dialog_dont_show_again_button, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									TermuxPreferences.disableWelcomeDialog(TermuxActivity.this);
-									dialog.dismiss();
-								}
-							}).show();
+						try {
+							if (TermuxPreferences.isShowWelcomeDialog(TermuxActivity.this)) {
+								new AlertDialog.Builder(TermuxActivity.this).setTitle(R.string.welcome_dialog_title).setMessage(R.string.welcome_dialog_body)
+										.setCancelable(false).setPositiveButton(android.R.string.ok, null)
+										.setNegativeButton(R.string.welcome_dialog_dont_show_again_button, new DialogInterface.OnClickListener() {
+											@Override
+											public void onClick(DialogInterface dialog, int which) {
+												TermuxPreferences.disableWelcomeDialog(TermuxActivity.this);
+												dialog.dismiss();
+											}
+										}).show();
+							}
+							addNewSession(false, null);
+						} catch (WindowManager.BadTokenException e) {
+							// Activity finished - ignore.
 						}
-						addNewSession(false, null);
 					}
 				});
 			} else {
