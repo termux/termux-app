@@ -80,6 +80,7 @@ final class TerminalRenderer {
 
 			TerminalRow lineObject = screen.allocateFullLineIfNecessary(screen.externalToInternalRow(row));
 			final char[] line = lineObject.mText;
+			final int charsUsedInLine = lineObject.getSpaceUsed();
 
 			int lastRunStyle = 0;
 			boolean lastRunInsideCursor = false;
@@ -125,7 +126,7 @@ final class TerminalRenderer {
 				measuredWidthForRun += measuredCodePointWidth;
 				column += codePointWcWidth;
 				currentCharIndex += charsForCodePoint;
-				while (WcWidth.width(line, currentCharIndex) <= 0) {
+				while (currentCharIndex < charsUsedInLine && WcWidth.width(line, currentCharIndex) <= 0) {
 					// Eat combining chars so that they are treated as part of the last non-combining code point,
 					// instead of e.g. being considered inside the cursor in the next run.
 					currentCharIndex += Character.isHighSurrogate(line[currentCharIndex]) ? 2 : 1;
