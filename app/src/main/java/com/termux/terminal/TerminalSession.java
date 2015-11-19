@@ -119,7 +119,7 @@ public final class TerminalSession extends TerminalOutput {
 					// Negated signal.
 					exitDescription += " with signal " + (-exitCode);
 				}
-				exitDescription += "]";
+				exitDescription += " - press Enter to close]";
 
 				byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
 				mEmulator.append(bytesToWrite, bytesToWrite.length);
