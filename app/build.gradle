@@ -18,27 +18,10 @@ android {
         versionName "0.20"
     }
 
-    signingConfigs {
-	release {
-	    if (System.getenv("TRAVIS")) {
-		    storeFile rootProject.file('travis.keystore')
-		    storePassword 'abcdef'
-		    keyAlias 'travis'
-		    keyPassword 'abcdef'
-	    } else {
-		    storeFile new File(TERMUX_KEYSTORE_FILE)
-		    storePassword TERMUX_KEYSTORE_PASSWORD
-		    keyAlias TERMUX_KEYSTORE_ALIAS
-		    keyPassword TERMUX_KEYSTORE_PASSWORD
-	    }
-	}
-    }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-	    signingConfig signingConfigs.release
         }
     }
 }
