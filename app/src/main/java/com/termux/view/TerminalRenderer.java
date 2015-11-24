@@ -205,7 +205,10 @@ final class TerminalRenderer {
 			final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
 			final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
 
-			int foreColorARGB = palette[foreColor];
+			// Let bold have bright colors if applicable (one of the first 8):
+			final int actualForeColor = foreColor + (bold && foreColor < 8 ? 8 : 0);
+
+			int foreColorARGB = palette[actualForeColor];
 			if (dim) {
 				int red = (0xFF & (foreColorARGB >> 16));
 				int green = (0xFF & (foreColorARGB >> 8));
