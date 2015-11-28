@@ -57,7 +57,7 @@ public abstract class TerminalTestCase extends TestCase {
 	public TerminalEmulator mTerminal;
 	public MockTerminalOutput mOutput;
 
-	public static class ChangedTitle {
+	public static final class ChangedTitle {
 		final String oldTitle;
 		final String newTitle;
 
@@ -68,6 +68,7 @@ public abstract class TerminalTestCase extends TestCase {
 
 		@Override
 		public boolean equals(Object o) {
+			if (!(o instanceof ChangedTitle)) return false;
 			ChangedTitle other = (ChangedTitle) o;
 			return Objects.equals(oldTitle, other.oldTitle) && Objects.equals(newTitle, other.newTitle);
 		}
@@ -115,7 +116,7 @@ public abstract class TerminalTestCase extends TestCase {
 		}
 	}
 
-	private static class LineWrapper {
+	private static final class LineWrapper {
 		TerminalRow mLine;
 
 		public LineWrapper(TerminalRow line) {
@@ -129,6 +130,7 @@ public abstract class TerminalTestCase extends TestCase {
 
 		@Override
 		public boolean equals(Object o) {
+			if (!(o instanceof LineWrapper)) return false;
 			return ((LineWrapper) o).mLine == mLine;
 		}
 	}
