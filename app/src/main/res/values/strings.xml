@@ -56,6 +56,6 @@
   <string name="notification_action_wakelock">Wake</string>
   <string name="notification_action_wifilock">Wifi</string>
 
-  <string name="home_is_empty">$HOME is empty!</string>
+  <string name="empty_folder">Empty folder.</string>
 
 </resources>

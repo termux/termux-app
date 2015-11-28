@@ -9,12 +9,13 @@
 
     <ListView android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:drawSelectorOnTop="false"/>
 
     <TextView android:id="@android:id/empty"
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/home_is_empty"/>
+        android:text="@string/empty_folder"/>
 </LinearLayout>
