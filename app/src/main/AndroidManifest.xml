@@ -14,6 +14,7 @@
 
     <application
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backupscheme"
         android:icon="@drawable/ic_launcher"
         android:banner="@drawable/banner"
         android:label="@string/application_name"
