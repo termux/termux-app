@@ -130,9 +130,8 @@ public abstract class TerminalTestCase extends TestCase {
 
 		@Override
 		public boolean equals(Object o) {
-			if (!(o instanceof LineWrapper)) return false;
-			return ((LineWrapper) o).mLine == mLine;
-		}
+            return o instanceof LineWrapper && ((LineWrapper) o).mLine == mLine;
+        }
 	}
 
 	protected TerminalTestCase assertInvariants() {

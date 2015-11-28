@@ -934,10 +934,7 @@ public class DrawerLayout extends ViewGroup {
 
 	private static boolean hasOpaqueBackground(View v) {
 		final Drawable bg = v.getBackground();
-		if (bg != null) {
-			return bg.getOpacity() == PixelFormat.OPAQUE;
-		}
-		return false;
+		return bg != null && bg.getOpacity() == PixelFormat.OPAQUE;
 	}
 
 	/**
@@ -1317,10 +1314,7 @@ public class DrawerLayout extends ViewGroup {
 	 */
 	public boolean isDrawerOpen(int drawerGravity) {
 		final View drawerView = findDrawerWithGravity(drawerGravity);
-		if (drawerView != null) {
-			return isDrawerOpen(drawerView);
-		}
-		return false;
+		return drawerView != null && isDrawerOpen(drawerView);
 	}
 
 	/**
@@ -1350,10 +1344,7 @@ public class DrawerLayout extends ViewGroup {
 	 */
 	public boolean isDrawerVisible(int drawerGravity) {
 		final View drawerView = findDrawerWithGravity(drawerGravity);
-		if (drawerView != null) {
-			return isDrawerVisible(drawerView);
-		}
-		return false;
+		return drawerView != null && isDrawerVisible(drawerView);
 	}
 
 	private boolean hasPeekingDrawer() {
@@ -1776,10 +1767,7 @@ public class DrawerLayout extends ViewGroup {
 
 		@Override
 		public boolean onRequestSendAccessibilityEvent(ViewGroup host, View child, AccessibilityEvent event) {
-			if (CAN_HIDE_DESCENDANTS || includeChildForAccessibility(child)) {
-				return super.onRequestSendAccessibilityEvent(host, child, event);
-			}
-			return false;
+			return (CAN_HIDE_DESCENDANTS || includeChildForAccessibility(child)) && super.onRequestSendAccessibilityEvent(host, child, event);
 		}
 	}
 
