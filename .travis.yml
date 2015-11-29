@@ -13,7 +13,7 @@ android:
     - tools
     - build-tools-23.0.2
     - android-23
-    - sys-img-x86-android-23
+    - extra-android-m2repository
 
 script:
   - ./gradlew testDebugUnitTest
