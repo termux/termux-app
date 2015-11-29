@@ -34,7 +34,7 @@ public class TextStyleTest extends TestCase {
 	public void testEncodingStrikeThrough() {
 		int encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,
 				TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH);
-		assertTrue((TextStyle.decodeEffect(encoded) | TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0);
+		assertTrue((TextStyle.decodeEffect(encoded) & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0);
 	}
 
 	public void testEncodingProtected() {
