@@ -580,12 +580,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 		return false;
 	}
 
-	void showUrlSelection() {
-		String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptText();
+	static LinkedHashSet<CharSequence> extractUrls(String text) {
 		// Pattern for recognizing a URL, based off RFC 3986
 		// http://stackoverflow.com/questions/5713558/detect-and-extract-url-from-a-string
 		final Pattern urlPattern = Pattern.compile(
-				"(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)" + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*" + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+				"(?:^|[\\W])((ht|f)tp(s?)://|www\\.)" + "(([\\w\\-]+\\.)+?([\\w\\-.~]+/?)*" + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
 				Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
 		LinkedHashSet<CharSequence> urlSet = new LinkedHashSet<>();
 		Matcher matcher = urlPattern.matcher(text);
@@ -595,7 +594,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			String url = text.substring(matchStart, matchEnd);
 			urlSet.add(url);
 		}
+		return urlSet;
+	}
 
+	void showUrlSelection() {
+		String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptText();
+		LinkedHashSet<CharSequence> urlSet = extractUrls(text);
 		if (urlSet.isEmpty()) {
 			new AlertDialog.Builder(this).setMessage(R.string.select_url_no_found).show();
 			return;
