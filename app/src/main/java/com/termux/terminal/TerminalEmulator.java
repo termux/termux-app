@@ -2156,15 +2156,22 @@ public final class TerminalEmulator {
 
 		final boolean autoWrap = isDecsetInternalBitSet(DECSET_BIT_AUTOWRAP);
 		final int displayWidth = WcWidth.width(codePoint);
+		final boolean cursorInLastColumn = mCursorCol == mRightMargin - 1;
 
-		if (autoWrap && (mCursorCol == mRightMargin - 1 && ((mAboutToAutoWrap && displayWidth == 1) || displayWidth == 2))) {
-			mScreen.setLineWrap(mCursorRow);
-			mCursorCol = mLeftMargin;
-			if (mCursorRow + 1 < mBottomMargin) {
-				mCursorRow++;
-			} else {
-				scrollDownOneLine();
+		if (autoWrap) {
+			if (cursorInLastColumn && ((mAboutToAutoWrap && displayWidth == 1) || displayWidth == 2)) {
+				mScreen.setLineWrap(mCursorRow);
+				mCursorCol = mLeftMargin;
+				if (mCursorRow + 1 < mBottomMargin) {
+					mCursorRow++;
+				} else {
+					scrollDownOneLine();
+				}
 			}
+		} else if (cursorInLastColumn && displayWidth == 2) {
+			// The behaviour when a wide character is output with cursor in the last column when
+			// autowrap is disabled is not obvious - it's ignored here.
+			return;
 		}
 
 		if (mInsertMode && displayWidth > 0) {

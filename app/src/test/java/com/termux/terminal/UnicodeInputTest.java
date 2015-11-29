@@ -84,4 +84,12 @@ public class UnicodeInputTest extends TerminalTestCase {
 		assertLineIs(0, "\uFFFDY   ");
 	}
 
+	public void testWideCharacterWithoutWrapping() throws Exception {
+		// With wraparound disabled. The behaviour when a wide character is output with cursor in
+		// the last column when autowrap is disabled is not obvious, but we expect the wide
+		// character to be ignored here.
+		withTerminalSized(3, 3).enterString("\033[?7l").enterString("枝枝枝").assertLinesAre("枝 ", "   ", "   ");
+		enterString("a枝").assertLinesAre("枝a", "   ", "   ");
+	}
+
 }
