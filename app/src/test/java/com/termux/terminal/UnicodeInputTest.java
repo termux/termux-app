@@ -10,14 +10,14 @@ public class UnicodeInputTest extends TerminalTestCase {
 		// continue with valid successor bytes (see Table 3-7), it must not consume the successor bytes as part of the ill-formed
 		// subsequence whenever those successor bytes themselves constitute part of a well-formed UTF-8 code unit subsequence."
 		withTerminalSized(5, 5);
-		mTerminal.append(new byte[] { (byte) 0b11101111, (byte) 'a' }, 2);
+		mTerminal.append(new byte[]{(byte) 0b11101111, (byte) 'a'}, 2);
 		assertLineIs(0, ((char) TerminalEmulator.UNICODE_REPLACEMENT_CHAR) + "a   ");
 	}
 
 	public void testUnassignedCodePoint() throws UnsupportedEncodingException {
 		withTerminalSized(3, 3);
 		// UTF-8 for U+C2541, an unassigned code point:
-		byte[] b = new byte[] { (byte) 0xf3, (byte) 0x82, (byte) 0x95, (byte) 0x81 };
+		byte[] b = new byte[]{(byte) 0xf3, (byte) 0x82, (byte) 0x95, (byte) 0x81};
 		mTerminal.append(b, b.length);
 		enterString("Y");
 		assertEquals(1, Character.charCount(TerminalEmulator.UNICODE_REPLACEMENT_CHAR));
@@ -26,10 +26,10 @@ public class UnicodeInputTest extends TerminalTestCase {
 
 	public void testStuff() {
 		withTerminalSized(80, 24);
-		byte[] b = new byte[] { (byte) 0xf3, (byte) 0x82, (byte) 0x95, (byte) 0x81, (byte) 0x61, (byte) 0x38, (byte) 0xe7, (byte) 0x8f,
+		byte[] b = new byte[]{(byte) 0xf3, (byte) 0x82, (byte) 0x95, (byte) 0x81, (byte) 0x61, (byte) 0x38, (byte) 0xe7, (byte) 0x8f,
 				(byte) 0xae, (byte) 0xc2, (byte) 0x9f, (byte) 0xe8, (byte) 0xa0, (byte) 0x9f, (byte) 0xe8, (byte) 0x8c, (byte) 0xa4,
 				(byte) 0xed, (byte) 0x93, (byte) 0x89, (byte) 0xef, (byte) 0xbf, (byte) 0xbd, (byte) 0x42, (byte) 0xc2, (byte) 0x9b,
-				(byte) 0xe6, (byte) 0x87, (byte) 0x89, (byte) 0x5a };
+				(byte) 0xe6, (byte) 0x87, (byte) 0x89, (byte) 0x5a};
 		mTerminal.append(b, b.length);
 	}
 
@@ -80,7 +80,7 @@ public class UnicodeInputTest extends TerminalTestCase {
 	public void testOverlongUtf8Encoding() throws Exception {
 		// U+0020 should be encoded as 0x20, 0xc0 0xa0 is an overlong encoding
 		// so should be replaced with the replacement char U+FFFD.
-		withTerminalSized(5, 5).mTerminal.append(new byte[] { (byte) 0xc0, (byte) 0xa0, 'Y' }, 3);
+		withTerminalSized(5, 5).mTerminal.append(new byte[]{(byte) 0xc0, (byte) 0xa0, 'Y'}, 3);
 		assertLineIs(0, "\uFFFDY   ");
 	}
 

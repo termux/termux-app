@@ -1,10 +1,10 @@
 package com.termux.terminal;
 
+import android.util.Base64;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import android.util.Base64;
 
 /** "ESC ]" is the Operating System Command. */
 public class OperatingSystemControlTest extends TerminalTestCase {

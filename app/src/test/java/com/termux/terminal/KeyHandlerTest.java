@@ -1,6 +1,7 @@
 package com.termux.terminal;
 
 import android.view.KeyEvent;
+
 import junit.framework.TestCase;
 
 public class KeyHandlerTest extends TestCase {

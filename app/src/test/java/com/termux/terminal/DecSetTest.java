@@ -4,13 +4,13 @@ package com.termux.terminal;
  * <pre>
  * "CSI ? Pm h", DEC Private Mode Set (DECSET)
  * </pre>
- * 
+ * <p/>
  * and
- * 
+ * <p/>
  * <pre>
  * "CSI ? Pm l", DEC Private Mode Reset (DECRST)
  * </pre>
- * 
+ * <p/>
  * controls various aspects of the terminal
  */
 public class DecSetTest extends TerminalTestCase {

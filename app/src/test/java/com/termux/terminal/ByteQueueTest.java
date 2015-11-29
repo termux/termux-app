@@ -17,21 +17,21 @@ public class ByteQueueTest extends TestCase {
 
 	public void testCompleteWrites() throws Exception {
 		ByteQueue q = new ByteQueue(10);
-		assertEquals(true, q.write(new byte[] { 1, 2, 3 }, 0, 3));
+		assertEquals(true, q.write(new byte[]{1, 2, 3}, 0, 3));
 
 		byte[] arr = new byte[10];
 		assertEquals(3, q.read(arr, true));
-		assertArrayEquals(new byte[] { 1, 2, 3 }, new byte[] { arr[0], arr[1], arr[2] });
+		assertArrayEquals(new byte[]{1, 2, 3}, new byte[]{arr[0], arr[1], arr[2]});
 
-		assertEquals(true, q.write(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, 0, 10));
+		assertEquals(true, q.write(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, 0, 10));
 		assertEquals(10, q.read(arr, true));
-		assertArrayEquals(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, arr);
+		assertArrayEquals(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, arr);
 	}
 
 	public void testQueueWraparound() throws Exception {
 		ByteQueue q = new ByteQueue(10);
 
-		byte[] origArray = new byte[] { 1, 2, 3, 4, 5, 6 };
+		byte[] origArray = new byte[]{1, 2, 3, 4, 5, 6};
 		byte[] readArray = new byte[origArray.length];
 		for (int i = 0; i < 20; i++) {
 			q.write(origArray, 0, origArray.length);
@@ -43,7 +43,7 @@ public class ByteQueueTest extends TestCase {
 	public void testWriteNotesClosing() throws Exception {
 		ByteQueue q = new ByteQueue(10);
 		q.close();
-		assertEquals(false, q.write(new byte[] { 1, 2, 3 }, 0, 3));
+		assertEquals(false, q.write(new byte[]{1, 2, 3}, 0, 3));
 	}
 
 	public void testReadNonBlocking() throws Exception {

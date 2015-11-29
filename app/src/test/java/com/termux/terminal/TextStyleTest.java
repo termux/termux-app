@@ -4,10 +4,10 @@ import junit.framework.TestCase;
 
 public class TextStyleTest extends TestCase {
 
-	private static final int[] ALL_EFFECTS = new int[] { 0, TextStyle.CHARACTER_ATTRIBUTE_BOLD, TextStyle.CHARACTER_ATTRIBUTE_ITALIC,
+	private static final int[] ALL_EFFECTS = new int[]{0, TextStyle.CHARACTER_ATTRIBUTE_BOLD, TextStyle.CHARACTER_ATTRIBUTE_ITALIC,
 			TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE, TextStyle.CHARACTER_ATTRIBUTE_BLINK, TextStyle.CHARACTER_ATTRIBUTE_INVERSE,
 			TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE, TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH, TextStyle.CHARACTER_ATTRIBUTE_PROTECTED,
-			TextStyle.CHARACTER_ATTRIBUTE_DIM };
+			TextStyle.CHARACTER_ATTRIBUTE_DIM};
 
 	public void testEncodingSingle() {
 		for (int fx : ALL_EFFECTS) {

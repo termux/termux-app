@@ -1,5 +1,8 @@
 package com.termux.terminal;
 
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
+
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -8,12 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
-
-import com.termux.terminal.TerminalEmulator;
-import com.termux.terminal.TerminalOutput;
 
 public abstract class TerminalTestCase extends TestCase {
 
@@ -130,8 +127,8 @@ public abstract class TerminalTestCase extends TestCase {
 
 		@Override
 		public boolean equals(Object o) {
-            return o instanceof LineWrapper && ((LineWrapper) o).mLine == mLine;
-        }
+			return o instanceof LineWrapper && ((LineWrapper) o).mLine == mLine;
+		}
 	}
 
 	protected TerminalTestCase assertInvariants() {
