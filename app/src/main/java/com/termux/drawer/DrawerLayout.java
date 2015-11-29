@@ -1105,7 +1105,6 @@ public class DrawerLayout extends ViewGroup {
 		mRightDragger.processTouchEvent(ev);
 
 		final int action = ev.getAction();
-		boolean wantTouchEvents = true;
 
 		switch (action & MotionEvent.ACTION_MASK) {
 		case MotionEvent.ACTION_DOWN: {
@@ -1145,7 +1144,7 @@ public class DrawerLayout extends ViewGroup {
 		}
 		}
 
-		return wantTouchEvents;
+		return true;
 	}
 
 	@Override
