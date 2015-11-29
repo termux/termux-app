@@ -59,4 +59,15 @@ public class DecSetTest extends TerminalTestCase {
 		assertEquals("Terminal reset() should disable bracketed paste mode", "a", mOutput.getOutputAndClear());
 	}
 
+	/** DECSET 7, DECAWM, controls wraparound mode. */
+	public void testWrapAroundMode() {
+		// Default with wraparound:
+		withTerminalSized(3, 3).enterString("abcd").assertLinesAre("abc", "d  ", "   ");
+		// With wraparound disabled:
+		withTerminalSized(3, 3).enterString("\033[?7labcd").assertLinesAre("abd", "   ", "   ");
+		enterString("efg").assertLinesAre("abg", "   ", "   ");
+		// Re-enabling wraparound:
+		enterString("\033[?7hhij").assertLinesAre("abh", "ij ", "   ");
+	}
+
 }
