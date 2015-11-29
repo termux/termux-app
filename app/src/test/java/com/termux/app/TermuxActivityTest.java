@@ -2,13 +2,14 @@ package com.termux.app;
 
 import junit.framework.TestCase;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 
 public class TermuxActivityTest extends TestCase {
 
     private void assertUrlsAre(String text, String... urls) {
         LinkedHashSet<String> expected = new LinkedHashSet<>();
-        for (String url : urls) expected.add(url);
+        Collections.addAll(expected, urls);
         assertEquals(expected, TermuxActivity.extractUrls(text));
     }
 

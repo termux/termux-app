@@ -18,7 +18,7 @@ import com.termux.terminal.TerminalOutput;
 public abstract class TerminalTestCase extends TestCase {
 
 	public static class MockTerminalOutput extends TerminalOutput {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		public final List<ChangedTitle> titleChanges = new ArrayList<>();
 		public final List<String> clipboardPuts = new ArrayList<>();
 		public int bellsRung = 0;
@@ -117,7 +117,7 @@ public abstract class TerminalTestCase extends TestCase {
 	}
 
 	private static final class LineWrapper {
-		TerminalRow mLine;
+		final TerminalRow mLine;
 
 		public LineWrapper(TerminalRow line) {
 			mLine = line;
