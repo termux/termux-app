@@ -768,16 +768,10 @@ public class DrawerLayout extends ViewGroup {
 				// or pick a magic number from thin air otherwise.
 				// TODO Better communication with tools of this bogus state.
 				// It will crash on a real device.
-				if (widthMode == MeasureSpec.AT_MOST) {
-					widthMode = MeasureSpec.EXACTLY;
-				} else if (widthMode == MeasureSpec.UNSPECIFIED) {
-					widthMode = MeasureSpec.EXACTLY;
+				if (widthMode == MeasureSpec.UNSPECIFIED) {
 					widthSize = 300;
 				}
-				if (heightMode == MeasureSpec.AT_MOST) {
-					heightMode = MeasureSpec.EXACTLY;
-				} else if (heightMode == MeasureSpec.UNSPECIFIED) {
-					heightMode = MeasureSpec.EXACTLY;
+				if (heightMode == MeasureSpec.UNSPECIFIED) {
 					heightSize = 300;
 				}
 			} else {
