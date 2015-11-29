@@ -36,7 +36,7 @@ public class TermuxFilePickerActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.file_picker);
 
-        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mFileNames);
+        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mFileNames);
 
         enterDirectory(new File(TERMUX_HOME));
         setListAdapter(mAdapter);

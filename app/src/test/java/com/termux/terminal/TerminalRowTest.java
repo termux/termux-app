@@ -377,9 +377,9 @@ public class TerminalRowTest extends TestCase {
 		// int[] expected = new int[] { TerminalEmulator.UNICODE_REPLACEMENT_CHAR, 'a', '8', 0x73EE, 0x009F, 0x881F, 0x8324, 0xD4C9, 0xFFFD,
 		// 'B', 0x009B, 0x61C9, 'Z' };
 		int currentColumn = 0;
-		for (int i = 0; i < points.length; i++) {
-			row.setChar(currentColumn, points[i], 0);
-			currentColumn += WcWidth.width(points[i]);
+		for (int point : points) {
+			row.setChar(currentColumn, point, 0);
+			currentColumn += WcWidth.width(point);
 		}
 		// assertLineStartsWith(points);
 		// assertEquals(Character.highSurrogate(0xC2541), line.mText[0]);
