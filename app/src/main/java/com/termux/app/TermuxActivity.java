@@ -35,6 +35,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -87,7 +89,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 	private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
 
 	/** The main view of the activity showing the terminal. */
-	TerminalView mTerminalView;
+	@NonNull TerminalView mTerminalView;
 
 	final FullScreenHelper mFullScreenHelper = new FullScreenHelper(this);
 
@@ -143,6 +145,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 				if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
 
 				final TerminalSession currentSession = getCurrentTermSession();
+				if (currentSession == null) return false;
 
 				if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
 					// Return pressed with finished session - remove it.
@@ -461,7 +464,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 		}
 	}
 
-	TerminalSession getCurrentTermSession() {
+	@Nullable TerminalSession getCurrentTermSession() {
 		return mTerminalView.getCurrentSession();
 	}
 
