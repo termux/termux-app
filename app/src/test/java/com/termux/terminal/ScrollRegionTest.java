@@ -94,4 +94,8 @@ public class ScrollRegionTest extends TerminalTestCase {
 		withTerminalSized(3, 3).enterString("\033[?69h\033[0;2sABCD\0339").assertLinesAre("B  ", "D  ", "   ");
 	}
 
+	public void testScrollDownWithScrollRegion() {
+		withTerminalSized(2, 5).enterString("1\r\n2\r\n3\r\n4\r\n5").assertLinesAre("1 ", "2 ", "3 ", "4 ", "5 ");
+		enterString("\033[3r").enterString("\033[2T").assertLinesAre("1 ", "2 ", "  ", "  ", "3 ");
+	}
 }
