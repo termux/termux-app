@@ -293,6 +293,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 		mTerminalView.checkForTypeface();
 		mTerminalView.checkForColors();
+
+		TermuxInstaller.setupStorageSymlink(this);
 	}
 
 	/**

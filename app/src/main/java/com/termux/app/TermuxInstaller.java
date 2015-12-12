@@ -1,16 +1,5 @@
 package com.termux.app;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -25,6 +14,17 @@ import android.view.WindowManager;
 
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Install the Termux bootstrap packages if necessary by following the below steps:
@@ -198,6 +198,38 @@ final class TermuxInstaller {
 		if (!fileOrDirectory.delete()) {
 			throw new RuntimeException("Unable to delete " + (fileOrDirectory.isDirectory() ? "directory " : "file ") + fileOrDirectory.getAbsolutePath());
 		}
+	}
+
+	public static void setupStorageSymlink(final Context context) {
+		final File[] dirs = context.getExternalFilesDirs(null);
+		if (dirs == null || dirs.length < 2) return;
+		new Thread() {
+			public void run() {
+				try {
+					final File externalDir = dirs[1];
+					File homeDir = new File(TermuxService.HOME_PATH);
+					homeDir.mkdirs();
+					File externalLink = new File(homeDir, "storage");
+
+					if (externalLink.exists()) {
+						if (externalLink.getCanonicalPath().equals(externalDir.getPath())) {
+							// Keeping existing link.
+							return;
+						} else {
+							// Removing old link to give place to new.
+							if (!externalLink.delete()) {
+								Log.e("termux", "Unable to remove old $HOME/storage to give place for new");
+								return;
+							}
+						}
+					}
+
+					Os.symlink(externalDir.getAbsolutePath(), externalLink.getAbsolutePath());
+				} catch (Exception e) {
+					Log.e("termux", "Error setting up link", e);
+				}
+			}
+		}.start();
 	}
 
 }
