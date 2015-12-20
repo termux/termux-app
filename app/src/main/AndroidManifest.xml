@@ -44,7 +44,7 @@
         <activity
             android:name="com.termux.filepicker.TermuxFilePickerActivity"
             android:label="@string/application_name"
-            android:theme="@android:style/Theme.Material"
+            android:theme="@android:style/Theme.Material.Light.DarkActionBar"
             android:noHistory="true">
             <intent-filter>
                 <!--
