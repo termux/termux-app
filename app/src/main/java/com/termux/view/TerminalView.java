@@ -717,10 +717,10 @@ public final class TerminalView extends View {
 			@Override
 			public void run() {
 				try {
-					File fontFile = new File(getContext().getFilesDir().getPath() + "/home/.termux/font.ttf");
+					File fontFile = new File("/data/data/com.termux/files/home/.termux/font.ttf");
 					final Typeface newTypeface = fontFile.exists() ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
 					if (newTypeface != mRenderer.mTypeface) {
-						((Activity) getContext()).runOnUiThread(new Runnable() {
+						post(new Runnable() {
 							@Override
 							public void run() {
 								try {
@@ -745,14 +745,14 @@ public final class TerminalView extends View {
 			@Override
 			public void run() {
 				try {
-					File colorsFile = new File(getContext().getFilesDir().getPath() + "/home/.termux/colors.properties");
+					File colorsFile = new File("/data/data/com.termux/files/home/.termux/colors.properties");
 					final Properties props = colorsFile.isFile() ? new Properties() : null;
 					if (props != null) {
 						try (InputStream in = new FileInputStream(colorsFile)) {
 							props.load(in);
 						}
 					}
-					((Activity) getContext()).runOnUiThread(new Runnable() {
+					post(new Runnable() {
 						@Override
 						public void run() {
 							try {
