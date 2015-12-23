@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
+import android.os.Environment;
 import android.system.Os;
 import android.util.Log;
 import android.util.Pair;
@@ -200,31 +201,50 @@ final class TermuxInstaller {
 		}
 	}
 
-	public static void setupStorageSymlink(final Context context) {
-		final File[] dirs = context.getExternalFilesDirs(null);
-		if (dirs == null || dirs.length < 2) return;
+	public static void setupStorageSymlinks(final Context context) {
 		new Thread() {
 			public void run() {
 				try {
-					final File externalDir = dirs[1];
 					File homeDir = new File(TermuxService.HOME_PATH);
 					homeDir.mkdirs();
-					File externalLink = new File(homeDir, "storage");
+					File storageDir = new File(homeDir, "storage");
 
-					if (externalLink.exists()) {
-						if (externalLink.getCanonicalPath().equals(externalDir.getPath())) {
-							// Keeping existing link.
+					if (storageDir.exists()) {
+						if (storageDir.isDirectory()) {
 							return;
 						} else {
-							// Removing old link to give place to new.
-							if (!externalLink.delete()) {
-								Log.e("termux", "Unable to remove old $HOME/storage to give place for new");
-								return;
-							}
+							storageDir.delete();
 						}
 					}
 
-					Os.symlink(externalDir.getAbsolutePath(), externalLink.getAbsolutePath());
+					storageDir.mkdirs();
+
+					File sharedDir = Environment.getExternalStorageDirectory();
+					Os.symlink(sharedDir.getAbsolutePath(), new File(storageDir, "shared").getAbsolutePath());
+
+					File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+					Os.symlink(downloadsDir.getAbsolutePath(), new File(storageDir, "downloads").getAbsolutePath());
+
+					File dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+					Os.symlink(dcimDir.getAbsolutePath(), new File(storageDir, "dcim").getAbsolutePath());
+
+					File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+					Os.symlink(documentsDir.getAbsolutePath(), new File(storageDir, "documents").getAbsolutePath());
+
+					File picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+					Os.symlink(picturesDir.getAbsolutePath(), new File(storageDir, "pictures").getAbsolutePath());
+
+					File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+					Os.symlink(musicDir.getAbsolutePath(), new File(storageDir, "music").getAbsolutePath());
+
+					File moviesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+					Os.symlink(moviesDir.getAbsolutePath(), new File(storageDir, "movies").getAbsolutePath());
+
+					final File[] dirs = context.getExternalFilesDirs(null);
+					if (dirs == null || dirs.length >= 2) {
+						final File externalDir = dirs[1];
+						Os.symlink(externalDir.getAbsolutePath(), new File(storageDir, "external").getAbsolutePath());
+					}
 				} catch (Exception e) {
 					Log.e("termux", "Error setting up link", e);
 				}

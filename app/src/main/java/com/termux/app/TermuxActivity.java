@@ -1,19 +1,8 @@
 package com.termux.app;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.termux.R;
-import com.termux.drawer.DrawerLayout;
-import com.termux.terminal.TerminalSession;
-import com.termux.terminal.TerminalSession.SessionChangedCallback;
-import com.termux.view.TerminalKeyListener;
-import com.termux.view.TerminalView;
-
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -27,11 +16,15 @@ import android.content.DialogInterface.OnShowListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.media.AudioAttributes;
+import android.media.SoundPool;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
@@ -63,6 +56,19 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.termux.R;
+import com.termux.drawer.DrawerLayout;
+import com.termux.terminal.TerminalSession;
+import com.termux.terminal.TerminalSession.SessionChangedCallback;
+import com.termux.view.TerminalKeyListener;
+import com.termux.view.TerminalView;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A terminal emulator activity.
@@ -114,6 +120,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 	 */
 	boolean mIsVisible;
 
+	private SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
+			new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+			                             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
+	private int mBellSoundId;
+
 	private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -124,6 +135,16 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			}
 		}
 	};
+
+	/** For processes to access shared internal storage (/sdcard) we need this permission. */
+	@TargetApi(Build.VERSION_CODES.M)
+	public void ensureStoragePermissionGranted() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1234);
+			}
+		}
+	}
 
 	@Override
 	public void onCreate(Bundle bundle) {
@@ -229,11 +250,22 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 			@Override
 			public void onSingleTapUp(MotionEvent e) {
-				// Toggle keyboard visibility if tapping with a finger:
-				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+				switch (mSettings.mTapBehaviour) {
+					case TermuxPreferences.TAP_TOGGLE_KEYBOARD:
+						// Toggle keyboard visibility if tapping with a finger:
+						InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+						imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+						break;
+					case TermuxPreferences.TAP_SHOW_MENU:
+						mTerminalView.showContextMenu();
+						break;
+				}
 			}
 
+			@Override
+			public boolean shouldBackButtonBeMappedToEscape() {
+				return mSettings.mBackIsEscape;
+			}
 		});
 
 		findViewById(R.id.new_session_button).setOnClickListener(new OnClickListener() {
@@ -294,7 +326,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 		mTerminalView.checkForTypeface();
 		mTerminalView.checkForColors();
 
-		TermuxInstaller.setupStorageSymlink(this);
+		ensureStoragePermissionGranted();
+
+		TermuxInstaller.setupStorageSymlinks(this);
+
+		mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
 	}
 
 	/**
@@ -351,7 +387,17 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 			@Override
 			public void onBell(TerminalSession session) {
-				if (mIsVisible) ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(50);
+				if (mIsVisible) {
+					switch (mSettings.mBellBehaviour) {
+						case TermuxPreferences.BELL_BEEP:
+							mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
+							break;
+						case TermuxPreferences.BELL_VIBRATE:
+							((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(50);
+							break;
+					}
+
+				}
 			}
 		};
 

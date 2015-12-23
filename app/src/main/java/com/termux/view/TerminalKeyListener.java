@@ -6,6 +6,8 @@ import android.view.ScaleGestureDetector;
 /**
  * Input and scale listener which may be set on a {@link TerminalView} through
  * {@link TerminalView#setOnKeyListener(TerminalKeyListener)}.
+ *
+ * TODO: Rename to TerminalViewClient.
  */
 public interface TerminalKeyListener {
 
@@ -16,5 +18,7 @@ public interface TerminalKeyListener {
 
 	/** On a single tap on the terminal if terminal mouse reporting not enabled. */
 	void onSingleTapUp(MotionEvent e);
+
+	boolean shouldBackButtonBeMappedToEscape();
 
 }

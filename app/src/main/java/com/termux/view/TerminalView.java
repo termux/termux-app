@@ -12,7 +12,6 @@ import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
@@ -492,7 +491,7 @@ public final class TerminalView extends View {
 	@Override
 	public boolean onKeyPreIme(int keyCode, KeyEvent event) {
 		if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
-		if (keyCode == KeyEvent.KEYCODE_ESCAPE || keyCode == KeyEvent.KEYCODE_BACK) {
+		if (keyCode == KeyEvent.KEYCODE_ESCAPE || (keyCode == KeyEvent.KEYCODE_BACK && mOnKeyListener.shouldBackButtonBeMappedToEscape())) {
 			// Handle the escape key ourselves to avoid the system from treating it as back key
 			// and e.g. close keyboard.
 			switch (event.getAction()) {
@@ -518,7 +517,7 @@ public final class TerminalView extends View {
 		if (handleVirtualKeys(keyCode, event, true)) {
 			invalidate();
 			return true;
-		} else if (event.isSystem() && keyCode != KeyEvent.KEYCODE_BACK) {
+		} else if (event.isSystem() && (!mOnKeyListener.shouldBackButtonBeMappedToEscape() || keyCode != KeyEvent.KEYCODE_BACK)) {
 			return super.onKeyDown(keyCode, event);
 		}
 
