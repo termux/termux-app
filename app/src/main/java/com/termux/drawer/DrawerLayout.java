@@ -138,11 +138,11 @@ public class DrawerLayout extends ViewGroup {
 
 	private final ChildAccessibilityDelegate mChildAccessibilityDelegate = new ChildAccessibilityDelegate();
 
-	private int mMinDrawerMargin;
+	private final int mMinDrawerMargin;
 
 	private int mScrimColor = DEFAULT_SCRIM_COLOR;
 	private float mScrimOpacity;
-	private Paint mScrimPaint = new Paint();
+	private final Paint mScrimPaint = new Paint();
 
 	private final ViewDragHelper mLeftDragger;
 	private final ViewDragHelper mRightDragger;
