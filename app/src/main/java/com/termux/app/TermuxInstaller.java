@@ -205,9 +205,7 @@ final class TermuxInstaller {
 		new Thread() {
 			public void run() {
 				try {
-					File homeDir = new File(TermuxService.HOME_PATH);
-					homeDir.mkdirs();
-					File storageDir = new File(homeDir, "storage");
+					File storageDir = new File(TermuxService.FILES_PATH, "storage");
 
 					if (storageDir.exists()) {
 						if (storageDir.isDirectory()) {
@@ -241,7 +239,7 @@ final class TermuxInstaller {
 					Os.symlink(moviesDir.getAbsolutePath(), new File(storageDir, "movies").getAbsolutePath());
 
 					final File[] dirs = context.getExternalFilesDirs(null);
-					if (dirs == null || dirs.length >= 2) {
+					if (dirs != null && dirs.length >= 2) {
 						final File externalDir = dirs[1];
 						Os.symlink(externalDir.getAbsolutePath(), new File(storageDir, "external").getAbsolutePath());
 					}
