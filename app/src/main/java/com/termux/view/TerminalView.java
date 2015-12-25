@@ -491,9 +491,8 @@ public final class TerminalView extends View {
 	@Override
 	public boolean onKeyPreIme(int keyCode, KeyEvent event) {
 		if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
-		if (keyCode == KeyEvent.KEYCODE_ESCAPE || (keyCode == KeyEvent.KEYCODE_BACK && mOnKeyListener.shouldBackButtonBeMappedToEscape())) {
-			// Handle the escape key ourselves to avoid the system from treating it as back key
-			// and e.g. close keyboard.
+		if (keyCode == KeyEvent.KEYCODE_BACK && mOnKeyListener.shouldBackButtonBeMappedToEscape()) {
+			// Intercept back button to treat it as escape:
 			switch (event.getAction()) {
 			case KeyEvent.ACTION_DOWN:
 				return onKeyDown(keyCode, event);
