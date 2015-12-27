@@ -185,7 +185,7 @@ final class TermuxInstaller {
 		} else if (arch.equals("x86_64")) {
 			arch = "i686";
 		}
-		return new URL("http://apt.termux.com/bootstrap/bootstrap-" + arch + ".zip");
+		return new URL("https://termux.net/bootstrap/bootstrap-" + arch + ".zip");
 	}
 
 	/** Delete a folder and all its content or throw. */
