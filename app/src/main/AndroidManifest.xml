@@ -39,7 +39,9 @@
         <activity
             android:name="com.termux.app.TermuxHelpActivity"
             android:exported="false"
-            android:label="@string/application_help" />
+            android:theme="@android:style/Theme.Material.Light.DarkActionBar"
+            android:parentActivityName=".app.TermuxActivity"
+            android:label="@string/application_name" />
 
         <activity
             android:name="com.termux.filepicker.TermuxFilePickerActivity"

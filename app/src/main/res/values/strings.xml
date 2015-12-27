@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
    <string name="application_name">Termux</string>
-   <string name="application_help">Termux help</string>
    <string name="shared_user_label">Termux user</string>
    <string name="new_session">New session</string>
    <string name="new_session_normal_unnamed">Normal - unnamed</string>
