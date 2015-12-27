@@ -132,6 +132,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 				String whatToReload = intent.getStringExtra(RELOAD_STYLE_ACTION);
 				if (whatToReload == null || "colors".equals(whatToReload)) mTerminalView.checkForColors();
 				if (whatToReload == null || "font".equals(whatToReload)) mTerminalView.checkForTypeface();
+				if (whatToReload == null || "settings".equals(whatToReload)) mSettings.reloadFromProperties(TermuxActivity.this);
 			}
 		}
 	};
