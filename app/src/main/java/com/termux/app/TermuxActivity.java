@@ -94,8 +94,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 	private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
 
-	/** The main view of the activity showing the terminal. */
-	@NonNull TerminalView mTerminalView;
+	/** The main view of the activity showing the terminal. Initialized in onCreate(). */
+	@SuppressWarnings("NullableProblems") @NonNull TerminalView mTerminalView;
 
 	final FullScreenHelper mFullScreenHelper = new FullScreenHelper(this);
 
@@ -325,8 +325,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 		mTerminalView.checkForTypeface();
 		mTerminalView.checkForColors();
-
-		ensureStoragePermissionGranted();
 
 		TermuxInstaller.setupStorageSymlinks(this);
 
