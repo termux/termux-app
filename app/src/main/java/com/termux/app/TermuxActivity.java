@@ -136,9 +136,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 					if (ensureStoragePermissionGranted()) TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
 					return;
 				}
-				if (whatToReload == null || "colors".equals(whatToReload)) mTerminalView.checkForColors();
-				if (whatToReload == null || "font".equals(whatToReload)) mTerminalView.checkForTypeface();
-				if (whatToReload == null || "settings".equals(whatToReload)) mSettings.reloadFromProperties(TermuxActivity.this);
+				mTerminalView.checkForFontAndColors();
+				mSettings.reloadFromProperties(TermuxActivity.this);
 			}
 		}
 	};
@@ -281,14 +280,16 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			}
 		});
 
-		findViewById(R.id.new_session_button).setOnClickListener(new OnClickListener() {
+		View newSessionButton = findViewById(R.id.new_session_button);
+
+		newSessionButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				addNewSession(false, null);
 			}
 		});
 
-		findViewById(R.id.new_session_button).setOnLongClickListener(new OnLongClickListener() {
+		newSessionButton.setOnLongClickListener(new OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
 				Resources res = getResources();
@@ -336,8 +337,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 		startService(serviceIntent);
 		if (!bindService(serviceIntent, this, 0)) throw new RuntimeException("bindService() failed");
 
-		mTerminalView.checkForTypeface();
-		mTerminalView.checkForColors();
+		mTerminalView.checkForFontAndColors();
 
 		mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
 	}

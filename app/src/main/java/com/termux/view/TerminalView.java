@@ -1,16 +1,5 @@
 package com.termux.view;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
-
-import com.termux.terminal.EmulatorDebug;
-import com.termux.terminal.KeyHandler;
-import com.termux.terminal.TerminalColors;
-import com.termux.terminal.TerminalEmulator;
-import com.termux.terminal.TerminalSession;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -29,6 +18,17 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
+
+import com.termux.terminal.EmulatorDebug;
+import com.termux.terminal.KeyHandler;
+import com.termux.terminal.TerminalColors;
+import com.termux.terminal.TerminalEmulator;
+import com.termux.terminal.TerminalSession;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
 
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
@@ -710,67 +710,28 @@ public final class TerminalView extends View {
 		return false;
 	}
 
-	public void checkForTypeface() {
-		new Thread() {
-			@Override
-			public void run() {
-				try {
-					File fontFile = new File("/data/data/com.termux/files/home/.termux/font.ttf");
-					final Typeface newTypeface = fontFile.exists() ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
-					if (newTypeface != mRenderer.mTypeface) {
-						post(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
-									updateSize();
-									invalidate();
-								} catch (Exception e) {
-									Log.e(EmulatorDebug.LOG_TAG, "Error loading font", e);
-								}
-							}
-						});
-					}
-				} catch (Exception e) {
-					Log.e(EmulatorDebug.LOG_TAG, "Error loading font", e);
-				}
-			}
-		}.start();
-	}
+	public void checkForFontAndColors() {
+		try {
+			File fontFile = new File("/data/data/com.termux/files/home/.termux/font.ttf");
+			File colorsFile = new File("/data/data/com.termux/files/home/.termux/colors.properties");
 
-	public void checkForColors() {
-		new Thread() {
-			@Override
-			public void run() {
-				try {
-					File colorsFile = new File("/data/data/com.termux/files/home/.termux/colors.properties");
-					final Properties props = colorsFile.isFile() ? new Properties() : null;
-					if (props != null) {
-						try (InputStream in = new FileInputStream(colorsFile)) {
-							props.load(in);
-						}
-					}
-					post(new Runnable() {
-						@Override
-						public void run() {
-							try {
-								if (props == null) {
-									TerminalColors.COLOR_SCHEME.reset();
-								} else {
-									TerminalColors.COLOR_SCHEME.updateWith(props);
-								}
-								if (mEmulator != null) mEmulator.mColors.reset();
-								invalidate();
-							} catch (Exception e) {
-								Log.e(EmulatorDebug.LOG_TAG, "Setting colors failed: " + e.getMessage());
-							}
-						}
-					});
-				} catch (Exception e) {
-					Log.e(EmulatorDebug.LOG_TAG, "Failed colors handling", e);
+			final Properties props = new Properties();
+			if (colorsFile.isFile()) {
+				try (InputStream in = new FileInputStream(colorsFile)) {
+					props.load(in);
 				}
 			}
-		}.start();
+			TerminalColors.COLOR_SCHEME.updateWith(props);
+			if (mEmulator != null) mEmulator.mColors.reset();
+
+			final Typeface newTypeface = fontFile.exists() ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
+			mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
+			updateSize();
+
+			invalidate();
+		} catch (Exception e) {
+			Log.e(EmulatorDebug.LOG_TAG, "Error loading font", e);
+		}
 	}
 
 	/**
