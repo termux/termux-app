@@ -730,7 +730,7 @@ public final class TerminalView extends View {
 
 			invalidate();
 		} catch (Exception e) {
-			Log.e(EmulatorDebug.LOG_TAG, "Error loading font", e);
+			Log.e(EmulatorDebug.LOG_TAG, "Error in checkForFontAndColors()", e);
 		}
 	}
 
