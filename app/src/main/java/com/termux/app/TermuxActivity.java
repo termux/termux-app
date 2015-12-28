@@ -92,6 +92,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 	private static final int MAX_SESSIONS = 8;
 
+	private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
+
 	private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
 
 	/** The main view of the activity showing the terminal. Initialized in onCreate(). */
@@ -130,6 +132,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 		public void onReceive(Context context, Intent intent) {
 			if (mIsVisible) {
 				String whatToReload = intent.getStringExtra(RELOAD_STYLE_ACTION);
+				if ("storage".equals(whatToReload)) {
+					if (ensureStoragePermissionGranted()) TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
+					return;
+				}
 				if (whatToReload == null || "colors".equals(whatToReload)) mTerminalView.checkForColors();
 				if (whatToReload == null || "font".equals(whatToReload)) mTerminalView.checkForTypeface();
 				if (whatToReload == null || "settings".equals(whatToReload)) mSettings.reloadFromProperties(TermuxActivity.this);
@@ -139,11 +145,17 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 	/** For processes to access shared internal storage (/sdcard) we need this permission. */
 	@TargetApi(Build.VERSION_CODES.M)
-	public void ensureStoragePermissionGranted() {
+	public boolean ensureStoragePermissionGranted() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1234);
+			if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+				return true;
+			} else {
+				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUESTCODE_PERMISSION_STORAGE);
+				return false;
 			}
+		} else {
+			// Always granted before Android 6.0.
+			return true;
 		}
 	}
 
@@ -326,8 +338,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 		mTerminalView.checkForTypeface();
 		mTerminalView.checkForColors();
-
-		TermuxInstaller.setupStorageSymlinks(this);
 
 		mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
 	}
@@ -769,6 +779,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			return true;
 		default:
 			return super.onContextItemSelected(item);
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode,  String permissions[], int[] grantResults) {
+		if (requestCode == REQUESTCODE_PERMISSION_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			TermuxInstaller.setupStorageSymlinks(this);
 		}
 	}
 

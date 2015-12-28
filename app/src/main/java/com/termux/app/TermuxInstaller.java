@@ -202,20 +202,21 @@ final class TermuxInstaller {
 	}
 
 	public static void setupStorageSymlinks(final Context context) {
+		final String LOG_TAG = "termux-storage";
 		new Thread() {
 			public void run() {
 				try {
-					File storageDir = new File(TermuxService.FILES_PATH, "storage");
+					File storageDir = new File(TermuxService.HOME_PATH, "storage");
 
-					if (storageDir.exists()) {
-						if (storageDir.isDirectory()) {
-							return;
-						} else {
-							storageDir.delete();
-						}
+					if (storageDir.exists() && !storageDir.delete()) {
+						Log.e(LOG_TAG, "Could not delete old $HOME/storage");
+						return;
 					}
 
-					storageDir.mkdirs();
+					if (!storageDir.mkdirs()) {
+						Log.e(LOG_TAG, "Unable to mkdirs() for $HOME/storage");
+						return;
+					}
 
 					File sharedDir = Environment.getExternalStorageDirectory();
 					Os.symlink(sharedDir.getAbsolutePath(), new File(storageDir, "shared").getAbsolutePath());
@@ -225,9 +226,6 @@ final class TermuxInstaller {
 
 					File dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 					Os.symlink(dcimDir.getAbsolutePath(), new File(storageDir, "dcim").getAbsolutePath());
-
-					File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-					Os.symlink(documentsDir.getAbsolutePath(), new File(storageDir, "documents").getAbsolutePath());
 
 					File picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 					Os.symlink(picturesDir.getAbsolutePath(), new File(storageDir, "pictures").getAbsolutePath());
@@ -244,7 +242,7 @@ final class TermuxInstaller {
 						Os.symlink(externalDir.getAbsolutePath(), new File(storageDir, "external").getAbsolutePath());
 					}
 				} catch (Exception e) {
-					Log.e("termux", "Error setting up link", e);
+					Log.e(LOG_TAG, "Error setting up link", e);
 				}
 			}
 		}.start();
