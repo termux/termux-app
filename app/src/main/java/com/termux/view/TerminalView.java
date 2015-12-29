@@ -644,13 +644,20 @@ public final class TerminalView extends View {
 			if (resultingKeyCode > -1) {
 				handleKeyCode(resultingKeyCode, 0);
 			} else {
-				// The below two workarounds are needed on at least Logitech Keyboard k810 on Samsung Galaxy Tab Pro
-				// (Android 4.4) with the stock Samsung Keyboard. They should be harmless when not used since the need
-				// to input the original characters instead of the new ones using the keyboard should be low.
-				// Rewrite U+02DC 'SMALL TILDE' to U+007E 'TILDE' for ~ to work in shells:
-				if (codePoint == 0x02DC) codePoint = 0x07E;
-				// Rewrite U+02CB 'MODIFIER LETTER GRAVE ACCENT' to U+0060 'GRAVE ACCENT' for ` (backticks) to work:
-				if (codePoint == 0x02CB) codePoint = 0x60;
+				// Work around bluetooth keyboards sending funny unicode characters instead
+				// of the more normal ones from ASCII that terminal programs expect - the
+				// desire to input the original characters should be low.
+				switch (codePoint) {
+					case 0x02DC: // SMALL TILDE.
+						codePoint = 0x007E; // TILDE (~).
+						break;
+					case 0x02CB: // MODIFIER LETTER GRAVE ACCENT.
+						codePoint = 0x0060; // GRAVE ACCENT (`).
+						break;
+					case 0x02C6: // MODIFIER LETTER CIRCUMFLEX ACCENT.
+						codePoint = 0x005E; // CIRCUMFLEX ACCENT (^).
+						break;
+				}
 
 				// If left alt, send escape before the code point to make e.g. Alt+B and Alt+F work in readline:
 				mTermSession.writeCodePoint(leftAltDownFromEvent, codePoint);
