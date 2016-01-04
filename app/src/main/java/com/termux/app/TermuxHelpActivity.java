@@ -16,7 +16,6 @@ import android.widget.RelativeLayout;
 public final class TermuxHelpActivity extends Activity {
 
 	private WebView mWebView;
-	private ProgressBar mProgressBar;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +24,10 @@ public final class TermuxHelpActivity extends Activity {
 		final RelativeLayout progressLayout = new RelativeLayout(this);
 		RelativeLayout.LayoutParams lParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		lParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-		mProgressBar = new ProgressBar(this);
-		mProgressBar.setIndeterminate(true);
-		mProgressBar.setLayoutParams(lParams);
-		progressLayout.addView(mProgressBar);
+		ProgressBar progressBar = new ProgressBar(this);
+		progressBar.setIndeterminate(true);
+		progressBar.setLayoutParams(lParams);
+		progressLayout.addView(progressBar);
 
 		mWebView = new WebView(this);
 		WebSettings settings = mWebView.getSettings();
