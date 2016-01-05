@@ -16,8 +16,6 @@ package com.termux.drawer;
  * limitations under the License.
  */
 
-import java.util.List;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -27,8 +25,6 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -38,6 +34,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+
+import java.util.List;
 
 /**
  * DrawerLayout acts as a top-level container for window content that allows for interactive "drawer" views to be pulled
@@ -1423,38 +1421,6 @@ public class DrawerLayout extends ViewGroup {
 	}
 
 	@Override
-	protected void onRestoreInstanceState(Parcelable state) {
-		final SavedState ss = (SavedState) state;
-		super.onRestoreInstanceState(ss.getSuperState());
-
-		if (ss.openDrawerGravity != Gravity.NO_GRAVITY) {
-			final View toOpen = findDrawerWithGravity(ss.openDrawerGravity);
-			if (toOpen != null) {
-				openDrawer(toOpen);
-			}
-		}
-
-		setDrawerLockMode(ss.lockModeLeft, Gravity.LEFT);
-		setDrawerLockMode(ss.lockModeRight, Gravity.RIGHT);
-	}
-
-	@Override
-	protected Parcelable onSaveInstanceState() {
-		final Parcelable superState = super.onSaveInstanceState();
-		final SavedState ss = new SavedState(superState);
-
-		final View openDrawer = findOpenDrawer();
-		if (openDrawer != null) {
-			ss.openDrawerGravity = ((LayoutParams) openDrawer.getLayoutParams()).gravity;
-		}
-
-		ss.lockModeLeft = mLockModeLeft;
-		ss.lockModeRight = mLockModeRight;
-
-		return ss;
-	}
-
-	@Override
 	public void addView(View child, int index, ViewGroup.LayoutParams params) {
 		super.addView(child, index, params);
 
@@ -1484,30 +1450,6 @@ public class DrawerLayout extends ViewGroup {
 		// content and not opened drawers if a drawer is opened.
 		return child.getImportantForAccessibility() != View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
 				&& child.getImportantForAccessibility() != View.IMPORTANT_FOR_ACCESSIBILITY_NO;
-	}
-
-	/**
-	 * State persisted across instances
-	 */
-	protected static class SavedState extends BaseSavedState {
-		int openDrawerGravity = Gravity.NO_GRAVITY;
-		int lockModeLeft = LOCK_MODE_UNLOCKED;
-		int lockModeRight = LOCK_MODE_UNLOCKED;
-
-		public SavedState(Parcel in) {
-			super(in);
-			openDrawerGravity = in.readInt();
-		}
-
-		public SavedState(Parcelable superState) {
-			super(superState);
-		}
-
-		@Override
-		public void writeToParcel(Parcel dest, int flags) {
-			super.writeToParcel(dest, flags);
-			dest.writeInt(openDrawerGravity);
-		}
 	}
 
 	private class ViewDragCallback extends ViewDragHelper.Callback {
