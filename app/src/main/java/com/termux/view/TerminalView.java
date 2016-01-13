@@ -350,18 +350,35 @@ public final class TerminalView extends View {
 	public void onScreenUpdated() {
 		if (mEmulator == null) return;
 
+		boolean skipScrolling = false;
 		if (mIsSelectingText) {
+			// Do not scroll when selecting text.
+			int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
 			int rowShift = mEmulator.getScrollCounter();
-			mSelY1 -= rowShift;
-			mSelY2 -= rowShift;
+			if (-mTopRow + rowShift > rowsInHistory) {
+				// .. unless we're hitting the end of history transcript, in which
+				// case we abort text selection and scroll to end.
+				toggleSelectingText(null);
+			} else {
+				skipScrolling = true;
+				mTopRow -= rowShift;
+				mSelY1 -= rowShift;
+				mSelY2 -= rowShift;
+			}
 		}
-		mEmulator.clearScrollCounter();
 
-		if (mTopRow != 0) {
+		if (!skipScrolling && mTopRow != 0) {
 			// Scroll down if not already there.
+			if (mTopRow < -3) {
+				// Awaken scroll bars only if scrolling a noticeable amount
+				// - we do not want visible scroll bars during normal typing
+				// of one row at a time.
+				awakenScrollBars();
+			}
 			mTopRow = 0;
-			scrollTo(0, 0);
 		}
+
+		mEmulator.clearScrollCounter();
 
 		invalidate();
 	}
