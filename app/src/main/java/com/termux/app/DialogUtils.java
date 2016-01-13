@@ -3,6 +3,7 @@ package com.termux.app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.text.Selection;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -69,7 +70,10 @@ final class DialogUtils {
 		}
 
 		dialogHolder[0] = builder.create();
-		dialogHolder[0].getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+		if ((activity.getResources().getConfiguration().hardKeyboardHidden & Configuration.HARDKEYBOARDHIDDEN_YES) == 0) {
+			// Show soft keyboard unless hardware keyboard available.
+			dialogHolder[0].getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+		}
 		dialogHolder[0].show();
 	}
 
