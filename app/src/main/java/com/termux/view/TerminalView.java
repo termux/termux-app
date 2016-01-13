@@ -117,7 +117,6 @@ public final class TerminalView extends View {
 
 			@Override
 			public boolean onScroll(MotionEvent e2, float distanceX, float distanceY) {
-				Log.e("termux", "onScroll=" + e2 + ", mIsselection=" + mIsSelectingText + ", mouse=" + e2.isFromSource(InputDevice.SOURCE_MOUSE));
 				if (mEmulator == null || mIsSelectingText) return true;
 				if (mEmulator.isMouseTrackingActive() && e2.isFromSource(InputDevice.SOURCE_MOUSE)) {
 					// If moving with mouse pointer while pressing button, report that instead of scroll.
@@ -136,6 +135,7 @@ public final class TerminalView extends View {
 
 			@Override
 			public boolean onScale(float focusX, float focusY, float scale) {
+				if (mEmulator == null || mIsSelectingText) return true;
 				mScaleFactor *= scale;
 				mScaleFactor = mOnKeyListener.onScale(mScaleFactor);
 				return true;
@@ -502,8 +502,7 @@ public final class TerminalView extends View {
 
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) mActionMode.invalidateContentRect();
 				invalidate();
-				// Return to prevent gestures when moving while selecting text.
-				return true;
+				break;
 			default:
 				break;
 			}
