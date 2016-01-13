@@ -531,18 +531,11 @@ public final class TerminalView extends View {
 						break;
 				}
 				return true;
-			} else if (action == MotionEvent.ACTION_DOWN) {
-				// Start text selection with mouse. Note that the check against MotionEvent.ACTION_DOWN is
-				// important, since we otherwise would pick up secondary mouse button up actions.
-				toggleSelectingText(ev);
-				return true;
 			}
-		} else {
-			mGestureRecognizer.onTouchEvent(ev);
-			return true;
 		}
 
-		return false;
+		mGestureRecognizer.onTouchEvent(ev);
+		return true;
 	}
 
 	@Override
