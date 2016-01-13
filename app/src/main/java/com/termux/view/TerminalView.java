@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -895,9 +896,13 @@ public final class TerminalView extends View {
 			final ActionMode.Callback callback = new ActionMode.Callback() {
 				@Override
 				public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+					final int[] ACTION_MODE_ATTRS = { android.R.attr.actionModeCopyDrawable, android.R.attr.actionModePasteDrawable, };
+					TypedArray styledAttributes = getContext().obtainStyledAttributes(ACTION_MODE_ATTRS);
+					int show = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
+
 					ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-					menu.add(Menu.NONE, 1, Menu.NONE, R.string.copy_text);
-					menu.add(Menu.NONE, 2, Menu.NONE, R.string.paste_text).setEnabled(clipboard.hasPrimaryClip());
+					menu.add(Menu.NONE, 1, Menu.NONE, R.string.copy_text).setIcon(styledAttributes.getResourceId(0, 0)).setShowAsAction(show);
+					menu.add(Menu.NONE, 2, Menu.NONE, R.string.paste_text).setIcon(styledAttributes.getResourceId(1, 0)).setEnabled(clipboard.hasPrimaryClip()).setShowAsAction(show);
 					menu.add(Menu.NONE, 3, Menu.NONE, R.string.text_selection_more);
 					return true;
 				}
