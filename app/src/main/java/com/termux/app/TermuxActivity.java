@@ -82,7 +82,8 @@ import java.util.regex.Pattern;
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
 
-	private static final int CONTEXTMENU_SELECT_ID = 0;
+	private static final int CONTEXTMENU_SELECT_URL_ID = 0;
+	private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 1;
 	private static final int CONTEXTMENU_PASTE_ID = 3;
 	private static final int CONTEXTMENU_KILL_PROCESS_ID = 4;
 	private static final int CONTEXTMENU_RESET_TERMINAL_ID = 5;
@@ -122,7 +123,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 	 */
 	boolean mIsVisible;
 
-	private SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
+	private final SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
 			new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
 			                             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
 	private int mBellSoundId;
@@ -218,6 +219,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 					getDrawer().closeDrawers();
 				} else if (unicodeChar == 'f'/* full screen */) {
 					toggleImmersive();
+				} else if (unicodeChar == 'k'/* keyboard */) {
+					InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 				} else if (unicodeChar == 'm'/* menu */) {
 					mTerminalView.showContextMenu();
 				} else if (unicodeChar == 'r'/* rename */) {
@@ -256,28 +260,22 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			}
 
 			@Override
-			public void onLongPress(MotionEvent event) {
-				mTerminalView.showContextMenu();
-			}
-
-			@Override
 			public void onSingleTapUp(MotionEvent e) {
-				switch (mSettings.mTapBehaviour) {
-					case TermuxPreferences.TAP_TOGGLE_KEYBOARD:
-						// Toggle keyboard visibility if tapping with a finger:
-						InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-						imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
-						break;
-					case TermuxPreferences.TAP_SHOW_MENU:
-						mTerminalView.showContextMenu();
-						break;
-				}
+				InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+				mgr.showSoftInput(mTerminalView, InputMethodManager.SHOW_IMPLICIT);
 			}
 
 			@Override
 			public boolean shouldBackButtonBeMappedToEscape() {
 				return mSettings.mBackIsEscape;
 			}
+
+			@Override
+			public void copyModeChanged(boolean copyMode) {
+				// Disable drawer while copying.
+				getDrawer().setDrawerLockMode(copyMode ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
+			}
+
 		});
 
 		View newSessionButton = findViewById(R.id.new_session_button);
@@ -389,7 +387,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			@Override
 			public void onClipboardText(TerminalSession session, String text) {
 				if (!mIsVisible) return;
-				showToast("Clipboard set:\n\"" + text + "\"", true);
+				showToast("Clipboard:\n\"" + text + "\"", false);
 				ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 				clipboard.setPrimaryClip(new ClipData(null, new String[] { "text/plain" }, new ClipData.Item(text)));
 			}
@@ -475,6 +473,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 				TermuxInstaller.setupIfNeeded(TermuxActivity.this, new Runnable() {
 					@Override
 					public void run() {
+						if (mTermService == null) return; // Activity might have been destroyed.
 						try {
 							if (TermuxPreferences.isShowWelcomeDialog(TermuxActivity.this)) {
 								new AlertDialog.Builder(TermuxActivity.this).setTitle(R.string.welcome_dialog_title).setMessage(R.string.welcome_dialog_body)
@@ -623,9 +622,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 		TerminalSession currentSession = getCurrentTermSession();
 		if (currentSession == null) return;
 
-		ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-		menu.add(Menu.NONE, CONTEXTMENU_PASTE_ID, Menu.NONE, R.string.paste_text).setEnabled(clipboard.hasPrimaryClip());
-		menu.add(Menu.NONE, CONTEXTMENU_SELECT_ID, Menu.NONE, R.string.select);
+		menu.add(Menu.NONE, CONTEXTMENU_SELECT_URL_ID, Menu.NONE, R.string.select_url);
+		menu.add(Menu.NONE, CONTEXTMENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.select_all_and_share);
 		menu.add(Menu.NONE, CONTEXTMENU_RESET_TERMINAL_ID, Menu.NONE, R.string.reset_terminal);
 		menu.add(Menu.NONE, CONTEXTMENU_KILL_PROCESS_ID, Menu.NONE, R.string.kill_process).setEnabled(currentSession.isRunning());
 		menu.add(Menu.NONE, CONTEXTMENU_TOGGLE_FULLSCREEN_ID, Menu.NONE, R.string.toggle_fullscreen).setCheckable(true).setChecked(mSettings.isFullScreen());
@@ -701,89 +699,74 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
+		TerminalSession session = getCurrentTermSession();
+
 		switch (item.getItemId()) {
-		case CONTEXTMENU_SELECT_ID:
-			CharSequence[] items = new CharSequence[] { getString(R.string.select_text), getString(R.string.select_url),
-					getString(R.string.select_all_and_share) };
-			new AlertDialog.Builder(this).setItems(items, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						mTerminalView.toggleSelectingText();
-						break;
-					case 1:
-						showUrlSelection();
-						break;
-					case 2:
-						TerminalSession session = getCurrentTermSession();
-						if (session != null) {
-							Intent intent = new Intent(Intent.ACTION_SEND);
-							intent.setType("text/plain");
-							intent.putExtra(Intent.EXTRA_TEXT, session.getEmulator().getScreen().getTranscriptText().trim());
-							intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_transcript_title));
-							startActivity(Intent.createChooser(intent, getString(R.string.share_transcript_chooser_title)));
-						}
-						break;
+			case CONTEXTMENU_SELECT_URL_ID:
+				showUrlSelection();
+				return true;
+			case CONTEXTMENU_SHARE_TRANSCRIPT_ID:
+				if (session != null) {
+					Intent intent = new Intent(Intent.ACTION_SEND);
+					intent.setType("text/plain");
+					intent.putExtra(Intent.EXTRA_TEXT, session.getEmulator().getScreen().getTranscriptText().trim());
+					intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_transcript_title));
+					startActivity(Intent.createChooser(intent, getString(R.string.share_transcript_chooser_title)));
+				}
+				return true;
+			case CONTEXTMENU_PASTE_ID:
+				doPaste();
+				return true;
+			case CONTEXTMENU_KILL_PROCESS_ID:
+				final AlertDialog.Builder b = new AlertDialog.Builder(this);
+				b.setIcon(android.R.drawable.ic_dialog_alert);
+				b.setMessage(R.string.confirm_kill_process);
+				b.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.dismiss();
+						getCurrentTermSession().finishIfRunning();
 					}
-					dialog.dismiss();
+				});
+				b.setNegativeButton(android.R.string.no, null);
+				b.show();
+				return true;
+			case CONTEXTMENU_RESET_TERMINAL_ID: {
+				if (session != null) {
+					session.reset();
+					showToast(getResources().getString(R.string.reset_toast_notification), true);
 				}
-			}).show();
-			return true;
-		case CONTEXTMENU_PASTE_ID:
-			doPaste();
-			return true;
-		case CONTEXTMENU_KILL_PROCESS_ID:
-			final AlertDialog.Builder b = new AlertDialog.Builder(this);
-			b.setIcon(android.R.drawable.ic_dialog_alert);
-			b.setMessage(R.string.confirm_kill_process);
-			b.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int id) {
-					dialog.dismiss();
-					getCurrentTermSession().finishIfRunning();
+				return true;
+			}
+			case CONTEXTMENU_STYLING_ID: {
+				Intent stylingIntent = new Intent();
+				stylingIntent.setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity");
+				try {
+					startActivity(stylingIntent);
+				} catch (ActivityNotFoundException e) {
+					new AlertDialog.Builder(this).setMessage(R.string.styling_not_installed)
+							.setPositiveButton(R.string.styling_install, new android.content.DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=com.termux.styling")));
+								}
+							}).setNegativeButton(android.R.string.cancel, null).show();
 				}
-			});
-			b.setNegativeButton(android.R.string.no, null);
-			b.show();
-			return true;
-		case CONTEXTMENU_RESET_TERMINAL_ID: {
-			TerminalSession session = getCurrentTermSession();
-			if (session != null) {
-				session.reset();
-				showToast(getResources().getString(R.string.reset_toast_notification), true);
 			}
 			return true;
-		}
-		case CONTEXTMENU_STYLING_ID: {
-			Intent stylingIntent = new Intent();
-			stylingIntent.setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity");
-			try {
-				startActivity(stylingIntent);
-			} catch (ActivityNotFoundException e) {
-				new AlertDialog.Builder(this).setMessage(R.string.styling_not_installed)
-						.setPositiveButton(R.string.styling_install, new android.content.DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=com.termux.styling")));
-							}
-						}).setNegativeButton(android.R.string.cancel, null).show();
-			}
-		}
-			return true;
-		case CONTEXTMENU_TOGGLE_FULLSCREEN_ID:
-			toggleImmersive();
-			return true;
-		case CONTEXTMENU_HELP_ID:
-			startActivity(new Intent(this, TermuxHelpActivity.class));
-			return true;
-		default:
-			return super.onContextItemSelected(item);
+			case CONTEXTMENU_TOGGLE_FULLSCREEN_ID:
+				toggleImmersive();
+				return true;
+			case CONTEXTMENU_HELP_ID:
+				startActivity(new Intent(this, TermuxHelpActivity.class));
+				return true;
+			default:
+				return super.onContextItemSelected(item);
 		}
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode,  String permissions[], int[] grantResults) {
+	public void onRequestPermissionsResult(int requestCode,  @NonNull String permissions[], @NonNull int[] grantResults) {
 		if (requestCode == REQUESTCODE_PERMISSION_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 			TermuxInstaller.setupStorageSymlinks(this);
 		}

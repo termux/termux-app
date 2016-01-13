@@ -61,6 +61,10 @@ public final class TerminalBuffer {
 			TerminalRow lineObject = mLines[externalToInternalRow(row)];
 			int x1Index = lineObject.findStartOfColumn(x1);
 			int x2Index = (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
+			if (x2Index == x1Index) {
+				// Selected the start of a wide character.
+				x2Index = lineObject.findStartOfColumn(x2+1);
+			}
 			char[] line = lineObject.mText;
 			int lastPrintingCharIndex = -1;
 			int i;
@@ -71,7 +75,7 @@ public final class TerminalBuffer {
 			} else {
 				for (i = x1Index; i < x2Index; ++i) {
 					char c = line[i];
-					if (c != ' ' && !Character.isLowSurrogate(c)) lastPrintingCharIndex = i;
+					if (c != ' ') lastPrintingCharIndex = i;
 				}
 			}
 			if (lastPrintingCharIndex != -1) builder.append(line, x1Index, lastPrintingCharIndex - x1Index + 1);

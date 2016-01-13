@@ -1,17 +1,26 @@
 package com.termux.view;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
@@ -19,8 +28,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
 
+import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.KeyHandler;
+import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -34,7 +45,7 @@ import java.util.Properties;
 public final class TerminalView extends View {
 
 	/** Log view key and IME events. */
-	private static final boolean LOG_KEY_EVENTS = false;
+	private static final boolean LOG_KEY_EVENTS = true;
 
 	/** The currently displayed terminal session, whose emulator is {@link #mEmulator}. */
 	TerminalSession mTermSession;
@@ -51,9 +62,11 @@ public final class TerminalView extends View {
 	/** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
 	boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
 
-	boolean mIsSelectingText = false;
-	int mSelXAnchor = -1, mSelYAnchor = -1;
+	boolean mIsSelectingText = false, mIsDraggingLeftSelection, mInitialTextSelection;
 	int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
+	float mSelectionDownX, mSelectionDownY;
+	private ActionMode mActionMode;
+	private BitmapDrawable mLeftSelectionHandle, mRightSelectionHandle;
 
 	float mScaleFactor = 1.f;
 	final GestureAndScaleRecognizer mGestureRecognizer;
@@ -78,7 +91,7 @@ public final class TerminalView extends View {
 			@Override
 			public boolean onUp(MotionEvent e) {
 				mScrollRemainder = 0.0f;
-				if (mEmulator != null && mEmulator.isMouseTrackingActive()) {
+				if (mEmulator != null && mEmulator.isMouseTrackingActive() && !mIsSelectingText) {
 					// Quick event processing when mouse tracking is active - do not wait for check of double tapping
 					// for zooming.
 					sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, true);
@@ -91,6 +104,7 @@ public final class TerminalView extends View {
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
 				if (mEmulator == null) return true;
+				if (mIsSelectingText) { toggleSelectingText(null); return true; }
 				requestFocus();
 				if (!mEmulator.isMouseTrackingActive()) {
 					if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
@@ -103,7 +117,8 @@ public final class TerminalView extends View {
 
 			@Override
 			public boolean onScroll(MotionEvent e2, float distanceX, float distanceY) {
-				if (mEmulator == null) return true;
+				Log.e("termux", "onScroll=" + e2 + ", mIsselection=" + mIsSelectingText + ", mouse=" + e2.isFromSource(InputDevice.SOURCE_MOUSE));
+				if (mEmulator == null || mIsSelectingText) return true;
 				if (mEmulator.isMouseTrackingActive() && e2.isFromSource(InputDevice.SOURCE_MOUSE)) {
 					// If moving with mouse pointer while pressing button, report that instead of scroll.
 					// This means that we never report moving with button press-events for touch input,
@@ -128,7 +143,7 @@ public final class TerminalView extends View {
 
 			@Override
 			public boolean onFling(final MotionEvent e2, float velocityX, float velocityY) {
-				if (mEmulator == null) return true;
+				if (mEmulator == null || mIsSelectingText) return true;
 				// Do not start scrolling until last fling has been taken care of:
 				if (!mScroller.isFinished()) return true;
 
@@ -175,9 +190,9 @@ public final class TerminalView extends View {
 
 			@Override
 			public void onLongPress(MotionEvent e) {
-				if (mEmulator != null && !mGestureRecognizer.isInProgress()) {
+				if (!mGestureRecognizer.isInProgress()) {
 					performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-					mOnKeyListener.onLongPress(e);
+					toggleSelectingText(e);
 				}
 			}
 		});
@@ -228,7 +243,7 @@ public final class TerminalView extends View {
 		//
 		// So a bit messy. If this gets too messy it's perhaps best resolved by reverting back to just
 		// "TYPE_NULL" and let the Pinyin Input english keyboard be in word mode.
-		outAttrs.inputType = InputType.TYPE_NULL | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+		outAttrs.inputType = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
 
 		// Let part of the application show behind when in landscape:
 		outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
@@ -339,7 +354,6 @@ public final class TerminalView extends View {
 			int rowShift = mEmulator.getScrollCounter();
 			mSelY1 -= rowShift;
 			mSelY2 -= rowShift;
-			mSelYAnchor -= rowShift;
 		}
 		mEmulator.clearScrollCounter();
 
@@ -422,66 +436,91 @@ public final class TerminalView extends View {
 
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
+	@TargetApi(23)
 	public boolean onTouchEvent(MotionEvent ev) {
 		if (mEmulator == null) return true;
-		final boolean eventFromMouse = ev.isFromSource(InputDevice.SOURCE_MOUSE);
 		final int action = ev.getAction();
 
-		if (eventFromMouse) {
-			if ((ev.getButtonState() & MotionEvent.BUTTON_SECONDARY) != 0) {
-				if (action == MotionEvent.ACTION_DOWN) showContextMenu();
-				return true;
-			} else if (mEmulator.isMouseTrackingActive() && (ev.getAction() == MotionEvent.ACTION_DOWN || ev.getAction() == MotionEvent.ACTION_UP)) {
-				sendMouseEventCode(ev, TerminalEmulator.MOUSE_LEFT_BUTTON, ev.getAction() == MotionEvent.ACTION_DOWN);
-				return true;
-			} else if (!mEmulator.isMouseTrackingActive() && action == MotionEvent.ACTION_DOWN) {
-				// Start text selection with mouse. Note that the check against MotionEvent.ACTION_DOWN is
-				// important, since we otherwise would pick up secondary mouse button up actions.
-				mIsSelectingText = true;
-			}
-		} else if (!mIsSelectingText) {
-			mGestureRecognizer.onTouchEvent(ev);
-			return true;
-		}
-
 		if (mIsSelectingText) {
+			int cy = (int) (ev.getY() / mRenderer.mFontLineSpacing) + mTopRow;
 			int cx = (int) (ev.getX() / mRenderer.mFontWidth);
-			// Offset for finger:
-			final int SELECT_TEXT_OFFSET_Y = eventFromMouse ? 0 : -40;
-			int cy = (int) ((ev.getY() + SELECT_TEXT_OFFSET_Y) / mRenderer.mFontLineSpacing) + mTopRow;
+
 			switch (action) {
+			case MotionEvent.ACTION_UP:
+				mInitialTextSelection = false;
+				break;
 			case MotionEvent.ACTION_DOWN:
-				mSelXAnchor = cx;
-				mSelYAnchor = cy;
-				mSelX1 = cx;
-				mSelY1 = cy;
-				mSelX2 = mSelX1;
-				mSelY2 = mSelY1;
-				invalidate();
+				int distanceFromSel1 = Math.abs(cx-mSelX1) + Math.abs(cy-mSelY1);
+				int distanceFromSel2 = Math.abs(cx-mSelX2) + Math.abs(cy-mSelY2);
+				mIsDraggingLeftSelection = distanceFromSel1 <= distanceFromSel2;
+				mSelectionDownX = ev.getX();
+				mSelectionDownY = ev.getY();
 				break;
 			case MotionEvent.ACTION_MOVE:
-			case MotionEvent.ACTION_UP:
-				boolean touchBeforeAnchor = (cy < mSelYAnchor || (cy == mSelYAnchor && cx < mSelXAnchor));
-				int minx = touchBeforeAnchor ? cx : mSelXAnchor;
-				int maxx = !touchBeforeAnchor ? cx : mSelXAnchor;
-				int miny = touchBeforeAnchor ? cy : mSelYAnchor;
-				int maxy = !touchBeforeAnchor ? cy : mSelYAnchor;
-				mSelX1 = minx;
-				mSelY1 = miny;
-				mSelX2 = maxx;
-				mSelY2 = maxy;
-				if (action == MotionEvent.ACTION_UP) {
-					String selectedText = mEmulator.getSelectedText(mSelX1, mSelY1, mSelX2, mSelY2).trim();
-					mTermSession.clipboardText(selectedText);
-					toggleSelectingText();
+				if (mInitialTextSelection) break;
+				float deltaX = ev.getX() - mSelectionDownX;
+				float deltaY = ev.getY() - mSelectionDownY;
+				int deltaCols = (int) Math.ceil(deltaX / mRenderer.mFontWidth);
+				int deltaRows = (int) Math.ceil(deltaY / mRenderer.mFontLineSpacing);
+				mSelectionDownX += deltaCols * mRenderer.mFontWidth;
+				mSelectionDownY += deltaRows * mRenderer.mFontLineSpacing;
+				if (mIsDraggingLeftSelection) {
+					mSelX1 += deltaCols;
+					mSelY1 += deltaRows;
+				} else {
+					mSelX2 += deltaCols;
+					mSelY2 += deltaRows;
 				}
+
+				mSelX1 = Math.min(mEmulator.mColumns, Math.max(0, mSelX1));
+				mSelX2 = Math.min(mEmulator.mColumns, Math.max(0, mSelX2));
+
+				if (mSelY1 == mSelY2 && mSelX1 > mSelX2 || mSelY1 > mSelY2) {
+					// Switch handles.
+					mIsDraggingLeftSelection = !mIsDraggingLeftSelection;
+					int tmpX1 = mSelX1, tmpY1 = mSelY1;
+					mSelX1 = mSelX2; mSelY1 = mSelY2;
+					mSelX2 = tmpX1; mSelY2 = tmpY1;
+				}
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) mActionMode.invalidateContentRect();
 				invalidate();
 				break;
 			default:
-				toggleSelectingText();
-				invalidate();
 				break;
 			}
+			mGestureRecognizer.onTouchEvent(ev);
+			return true;
+		} else if (ev.isFromSource(InputDevice.SOURCE_MOUSE)) {
+			if (ev.isButtonPressed(MotionEvent.BUTTON_SECONDARY)) {
+				if (action == MotionEvent.ACTION_DOWN) showContextMenu();
+				return true;
+			} else if (ev.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
+				ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+				ClipData clipData = clipboard.getPrimaryClip();
+				if (clipData != null) {
+					CharSequence paste = clipData.getItemAt(0).coerceToText(getContext());
+					if (!TextUtils.isEmpty(paste)) mEmulator.paste(paste.toString());
+				}
+			} else if (mEmulator.isMouseTrackingActive()) { // BUTTON_PRIMARY.
+				switch (ev.getAction()) {
+					case MotionEvent.ACTION_DOWN:
+					case MotionEvent.ACTION_UP:
+						sendMouseEventCode(ev, TerminalEmulator.MOUSE_LEFT_BUTTON, ev.getAction() == MotionEvent.ACTION_DOWN);
+						break;
+					case MotionEvent.ACTION_MOVE:
+						sendMouseEventCode(ev, TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, true);
+						break;
+				}
+				return true;
+			} else if (action == MotionEvent.ACTION_DOWN) {
+				// Start text selection with mouse. Note that the check against MotionEvent.ACTION_DOWN is
+				// important, since we otherwise would pick up secondary mouse button up actions.
+				toggleSelectingText(ev);
+				return true;
+			}
+		} else {
+			mGestureRecognizer.onTouchEvent(ev);
 			return true;
 		}
 
@@ -491,13 +530,18 @@ public final class TerminalView extends View {
 	@Override
 	public boolean onKeyPreIme(int keyCode, KeyEvent event) {
 		if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
-		if (keyCode == KeyEvent.KEYCODE_BACK && mOnKeyListener.shouldBackButtonBeMappedToEscape()) {
-			// Intercept back button to treat it as escape:
-			switch (event.getAction()) {
-			case KeyEvent.ACTION_DOWN:
-				return onKeyDown(keyCode, event);
-			case KeyEvent.ACTION_UP:
-				return onKeyUp(keyCode, event);
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (mIsSelectingText) {
+				toggleSelectingText(null);
+				return true;
+			} else if (mOnKeyListener.shouldBackButtonBeMappedToEscape()) {
+				// Intercept back button to treat it as escape:
+				switch (event.getAction()) {
+					case KeyEvent.ACTION_DOWN:
+						return onKeyDown(keyCode, event);
+					case KeyEvent.ACTION_UP:
+						return onKeyUp(keyCode, event);
+				}
 			}
 		}
 		return super.onKeyPreIme(keyCode, event);
@@ -776,13 +820,147 @@ public final class TerminalView extends View {
 			canvas.drawColor(0XFF000000);
 		} else {
 			mRenderer.render(mEmulator, canvas, mTopRow, mSelY1, mSelY2, mSelX1, mSelX2);
+
+			if (mIsSelectingText) {
+				final int gripHandleWidth = mLeftSelectionHandle.getIntrinsicWidth();
+				final int gripHandleMargin = gripHandleWidth / 4; // See the png.
+
+				int right = Math.round((mSelX1) * mRenderer.mFontWidth) + gripHandleMargin;
+				int top = (mSelY1+1 - mTopRow)*mRenderer.mFontLineSpacing + mRenderer.mFontLineSpacingAndAscent;
+				mLeftSelectionHandle.setBounds(right - gripHandleWidth, top, right, top + mLeftSelectionHandle.getIntrinsicHeight());
+				mLeftSelectionHandle.draw(canvas);
+
+				int left = Math.round((mSelX2+1)*mRenderer.mFontWidth) - gripHandleMargin;
+				top = (mSelY2+1 - mTopRow) *mRenderer.mFontLineSpacing + mRenderer.mFontLineSpacingAndAscent;
+				mRightSelectionHandle.setBounds(left, top, left + gripHandleWidth, top + mRightSelectionHandle.getIntrinsicHeight());
+				mRightSelectionHandle.draw(canvas);
+			}
 		}
 	}
 
 	/** Toggle text selection mode in the view. */
-	public void toggleSelectingText() {
+	@TargetApi(23)
+	public void toggleSelectingText(MotionEvent ev) {
 		mIsSelectingText = !mIsSelectingText;
-		if (!mIsSelectingText) mSelX1 = mSelY1 = mSelX2 = mSelY2 = -1;
+		mOnKeyListener.copyModeChanged(mIsSelectingText);
+
+		if (mIsSelectingText) {
+			if (mLeftSelectionHandle == null) {
+				mLeftSelectionHandle = (BitmapDrawable) getContext().getDrawable(R.drawable.text_select_handle_left_material);
+				mRightSelectionHandle = (BitmapDrawable) getContext().getDrawable(R.drawable.text_select_handle_right_material);
+			}
+
+			int cx = (int) (ev.getX() / mRenderer.mFontWidth);
+			final boolean eventFromMouse = ev.isFromSource(InputDevice.SOURCE_MOUSE);
+			// Offset for finger:
+			final int SELECT_TEXT_OFFSET_Y = eventFromMouse ? 0 : -40;
+			int cy = (int) ((ev.getY() + SELECT_TEXT_OFFSET_Y) / mRenderer.mFontLineSpacing) + mTopRow;
+
+			mSelX1 = mSelX2 = cx;
+			mSelY1 = mSelY2 = cy;
+
+			TerminalBuffer screen = mEmulator.getScreen();
+			if (!" ".equals(screen.getSelectedText(mSelX1, mSelY1, mSelX1, mSelY1))) {
+				// Selecting something other than whitespace. Expand to word.
+				while (mSelX1 > 0 && !"".equals(screen.getSelectedText(mSelX1-1, mSelY1, mSelX1-1, mSelY1))) {
+					mSelX1--;
+				}
+				while (mSelX2 < mEmulator.mColumns-1 && !"".equals(screen.getSelectedText(mSelX2+1, mSelY1, mSelX2+1, mSelY1))) {
+					mSelX2++;
+				}
+			}
+
+			mInitialTextSelection = true;
+			mIsDraggingLeftSelection = true;
+			mSelectionDownX = ev.getX();
+			mSelectionDownY = ev.getY();
+
+			final ActionMode.Callback callback = new ActionMode.Callback() {
+				@Override
+				public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+					ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+					menu.add(Menu.NONE, 1, Menu.NONE, R.string.copy_text);
+					menu.add(Menu.NONE, 2, Menu.NONE, R.string.paste_text).setEnabled(clipboard.hasPrimaryClip());
+					menu.add(Menu.NONE, 3, Menu.NONE, R.string.text_selection_more);
+					return true;
+				}
+
+				@Override
+				public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+					return false;
+				}
+
+				@Override
+				public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+					switch (item.getItemId()) {
+						case 1:
+							String selectedText = mEmulator.getSelectedText(mSelX1, mSelY1, mSelX2, mSelY2).trim();
+							mTermSession.clipboardText(selectedText);
+							break;
+						case 2:
+							ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+							ClipData clipData = clipboard.getPrimaryClip();
+							if (clipData != null) {
+								CharSequence paste = clipData.getItemAt(0).coerceToText(getContext());
+								if (!TextUtils.isEmpty(paste)) mEmulator.paste(paste.toString());
+							}
+							break;
+						case 3:
+							showContextMenu();
+							break;
+					}
+					toggleSelectingText(null);
+					return true;
+				}
+
+				@Override
+				public void onDestroyActionMode(ActionMode mode) {
+				}
+
+			};
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				mActionMode = startActionMode(new ActionMode.Callback2() {
+					@Override
+					public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+						return callback.onCreateActionMode(mode, menu);
+					}
+
+					@Override
+					public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+						return false;
+					}
+
+					@Override
+					public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+						return callback.onActionItemClicked(mode, item);
+					}
+
+					@Override
+					public void onDestroyActionMode(ActionMode mode) {
+						// Ignore.
+					}
+
+					@Override
+					public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+						int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
+						int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
+						int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
+						int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
+						outRect.set(Math.min(x1, x2), y1, Math.max(x1, x2), y2);
+					}
+				}, ActionMode.TYPE_FLOATING);
+			} else {
+				mActionMode = startActionMode(callback);
+			}
+
+
+			invalidate();
+		} else {
+			mActionMode.finish();
+			mSelX1 = mSelY1 = mSelX2 = mSelY2 = -1;
+			invalidate();
+		}
 	}
 
 	public TerminalSession getCurrentSession() {

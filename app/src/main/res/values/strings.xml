@@ -29,18 +29,18 @@
 
    <string name="reset_toast_notification">Terminal reset.</string>
 
-  <string name="select">Select…</string>
-  <string name="select_text">Select text</string>
   <string name="select_url">Select URL</string>
   <string name="select_url_dialog_title">Click URL to copy or long press to open</string>
-  <string name="select_all_and_share">Select all text and share</string>
+  <string name="select_all_and_share">Share transcript</string>
   <string name="select_url_no_found">No URL found in the terminal.</string>
   <string name="select_url_copied_to_clipboard">URL copied to clipboard</string>
   <string name="share_transcript_chooser_title">Send text to:</string>
 
   <string name="paste_text">Paste</string>
-  <string name="kill_process">Hangup</string>
+  <string name="copy_text">Copy</string>
+  <string name="text_selection_more">More…</string>
 
+  <string name="kill_process">Hangup</string>
   <string name="confirm_kill_process">Close this process?</string>
 
   <string name="session_rename_title">Set session name</string>

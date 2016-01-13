@@ -1,7 +1,5 @@
 package com.termux.app;
 
-import com.termux.terminal.TerminalSession;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -9,6 +7,8 @@ import android.support.annotation.IntDef;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
+
+import com.termux.terminal.TerminalSession;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,14 +26,6 @@ final class TermuxPreferences {
 	static final int BELL_BEEP = 2;
 	static final int BELL_IGNORE = 3;
 
-	@IntDef({TAP_TOGGLE_KEYBOARD, TAP_SHOW_MENU, TAP_IGNORE})
-	@Retention(RetentionPolicy.SOURCE)
-	public @interface TapTerminalBehaviour {}
-
-	static final int TAP_TOGGLE_KEYBOARD = 1;
-	static final int TAP_SHOW_MENU = 2;
-	static final int TAP_IGNORE = 3;
-
 	private final int MIN_FONTSIZE;
 	private static final int MAX_FONTSIZE = 256;
 
@@ -47,9 +39,6 @@ final class TermuxPreferences {
 
 	@AsciiBellBehaviour
 	int mBellBehaviour = BELL_VIBRATE;
-
-	@TapTerminalBehaviour
-	int mTapBehaviour = TAP_TOGGLE_KEYBOARD;
 
 	boolean mBackIsEscape = true;
 
@@ -124,42 +113,26 @@ final class TermuxPreferences {
 	public void reloadFromProperties(Context context) {
 		try {
 			File propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
+			Properties props = new Properties();
 			if (propsFile.isFile() && propsFile.canRead()) {
-				Properties props = new Properties();
 				try (FileInputStream in = new FileInputStream(propsFile)) {
 					props.load(in);
 				}
-
-				switch (props.getProperty("bell-character", "vibrate")) {
-					case "beep":
-						mBellBehaviour = BELL_BEEP;
-						break;
-					case "ignore":
-						mBellBehaviour = BELL_IGNORE;
-						break;
-					default: // "vibrate".
-						mBellBehaviour = BELL_VIBRATE;
-						break;
-				}
-
-				switch (props.getProperty("tap-screen", "toggle-keyboard")) {
-					case "show-menu":
-						mTapBehaviour = TAP_SHOW_MENU;
-						break;
-					case "ignore":
-						mTapBehaviour = TAP_IGNORE;
-						break;
-					default: // "toggle-keyboard".
-						mTapBehaviour = TAP_TOGGLE_KEYBOARD;
-						break;
-				}
-
-				mBackIsEscape = !"back".equals(props.getProperty("back-key", "escape"));
-			} else {
-				mBellBehaviour = BELL_VIBRATE;
-				mTapBehaviour = TAP_TOGGLE_KEYBOARD;
-				mBackIsEscape = true;
 			}
+
+			switch (props.getProperty("bell-character", "vibrate")) {
+				case "beep":
+					mBellBehaviour = BELL_BEEP;
+					break;
+				case "ignore":
+					mBellBehaviour = BELL_IGNORE;
+					break;
+				default: // "vibrate".
+					mBellBehaviour = BELL_VIBRATE;
+					break;
+			}
+
+			mBackIsEscape = "escape".equals(props.getProperty("back-key", "escape"));
 		} catch (Exception e) {
 			Toast.makeText(context, "Error loading properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
 			Log.e("termux", "Error loading props", e);
