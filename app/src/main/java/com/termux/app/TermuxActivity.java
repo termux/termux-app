@@ -291,30 +291,19 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			@Override
 			public boolean onLongClick(View v) {
 				Resources res = getResources();
-				new AlertDialog.Builder(TermuxActivity.this).setTitle(R.string.new_session)
-						.setItems(new String[] { res.getString(R.string.new_session_normal_unnamed), res.getString(R.string.new_session_normal_named),
-								res.getString(R.string.new_session_failsafe) }, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						switch (which) {
-						case 0:
-							addNewSession(false, null);
-							break;
-						case 1:
-							DialogUtils.textInput(TermuxActivity.this, R.string.session_new_named_title, R.string.session_new_named_positive_button, null,
-									new DialogUtils.TextSetListener() {
-								@Override
-								public void onTextSet(String text) {
-									addNewSession(false, text);
-								}
-							});
-							break;
-						case 2:
-							addNewSession(true, null);
-							break;
+				DialogUtils.textInput(TermuxActivity.this, R.string.session_new_named_title, R.string.session_new_named_positive_button, null,
+					new DialogUtils.TextSetListener() {
+						@Override
+						public void onTextSet(String text) {
+							addNewSession(false, text);
+						}
+					}, R.string.new_session_failsafe, new DialogUtils.TextSetListener() {
+						@Override
+						public void onTextSet(String text) {
+							addNewSession(true, text);
 						}
 					}
-				}).show();
+				);
 				return true;
 			}
 		});
@@ -509,7 +498,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 					public void onTextSet(String text) {
 						sessionToRename.mSessionName = text;
 					}
-				});
+				}, -1, null);
 	}
 
 	@Override

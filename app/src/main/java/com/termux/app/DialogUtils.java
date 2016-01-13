@@ -14,7 +14,8 @@ final class DialogUtils {
 		void onTextSet(String text);
 	}
 
-	static void textInput(Activity activity, int titleText, int positiveButtonText, String initialText, final TextSetListener onPositive) {
+	static void textInput(Activity activity, int titleText, int positiveButtonText, String initialText, final TextSetListener onPositive,
+										 int neutralButtonText, final TextSetListener onNeutral) {
 		final EditText input = new EditText(activity);
 		input.setSingleLine();
 		if (initialText != null) input.setText(initialText);
@@ -31,12 +32,26 @@ final class DialogUtils {
 		layout.setPadding(paddingTopAndSides, paddingTopAndSides, paddingTopAndSides, paddingBottom);
 		layout.addView(input);
 
-		new AlertDialog.Builder(activity).setTitle(titleText).setView(layout).setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface d, int whichButton) {
-				onPositive.onTextSet(input.getText().toString());
-			}
-		}).setNegativeButton(android.R.string.cancel, null).show();
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+			.setTitle(titleText).setView(layout)
+			.setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface d, int whichButton) {
+					onPositive.onTextSet(input.getText().toString());
+				}
+			})
+			.setNegativeButton(android.R.string.cancel, null);
+
+		if (onNeutral != null) {
+			builder.setNeutralButton(neutralButtonText, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					onNeutral.onTextSet(input.getText().toString());
+				}
+			});
+		}
+
+		builder.show();
 		input.requestFocus();
 	}
 

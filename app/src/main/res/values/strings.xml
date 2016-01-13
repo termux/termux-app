@@ -3,8 +3,6 @@
    <string name="application_name">Termux</string>
    <string name="shared_user_label">Termux user</string>
    <string name="new_session">New session</string>
-   <string name="new_session_normal_unnamed">Normal - unnamed</string>
-   <string name="new_session_normal_named">Normal - named</string>
    <string name="new_session_failsafe">Failsafe</string>
    <string name="toggle_soft_keyboard">Keyboard</string>
    <string name="reset_terminal">Reset</string>
