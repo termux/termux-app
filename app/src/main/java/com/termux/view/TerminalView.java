@@ -190,7 +190,7 @@ public final class TerminalView extends View {
 
 			@Override
 			public void onLongPress(MotionEvent e) {
-				if (!mGestureRecognizer.isInProgress()) {
+				if (!mGestureRecognizer.isInProgress() && !mIsSelectingText) {
 					performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
 					toggleSelectingText(e);
 				}
@@ -485,7 +485,8 @@ public final class TerminalView extends View {
 
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) mActionMode.invalidateContentRect();
 				invalidate();
-				break;
+				// Return to prevent gestures when moving while selecting text.
+				return true;
 			default:
 				break;
 			}
