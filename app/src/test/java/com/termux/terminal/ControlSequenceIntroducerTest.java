@@ -20,4 +20,13 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
 		withTerminalSized(3, 4).enterString("1\r\n2\r\n3\r\nhi\033[Sy").assertLinesAre("2  ", "3  ", "hi ", "  y");
 	}
 
+	/** CSI Ps X  Erase Ps Character(s) (default = 1) (ECH). */
+	public void testCsiX() {
+		// See https://code.google.com/p/chromium/issues/detail?id=212712 where test was extraced from.
+		withTerminalSized(13, 2).enterString("abcdefghijkl\b\b\b\b\b\033[X").assertLinesAre("abcdefg ijkl ", "             ");
+		withTerminalSized(13, 2).enterString("abcdefghijkl\b\b\b\b\b\033[1X").assertLinesAre("abcdefg ijkl ", "             ");
+		withTerminalSized(13, 2).enterString("abcdefghijkl\b\b\b\b\b\033[2X").assertLinesAre("abcdefg  jkl ", "             ");
+		withTerminalSized(13, 2).enterString("abcdefghijkl\b\b\b\b\b\033[20X").assertLinesAre("abcdefg      ", "             ");
+	}
+
 }
