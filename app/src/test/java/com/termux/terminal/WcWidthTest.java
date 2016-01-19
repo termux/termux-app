@@ -39,6 +39,7 @@ public class WcWidthTest extends TestCase {
 	public void testCombining() {
 		assertWidthIs(0, 0x0302);
 		assertWidthIs(0, 0x0308);
+		assertWidthIs(0, 0x2060);
 	}
 
 	public void testWatch() {
