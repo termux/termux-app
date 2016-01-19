@@ -172,4 +172,45 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		}
 	}
 
+	/**
+	 * Test interactions between the cursor overflow bit and various escape sequences.
+	 * <p/>
+	 * Adapted from hterm:
+	 * https://chromium.googlesource.com/chromiumos/platform/assets/+/2337afa5c063127d5ce40ec7fec9b602d096df86%5E%21/#F2
+	 */
+	public void testClearingOfAutowrap() {
+		// Fill a row with the last hyphen wrong, then run a command that
+		// modifies the screen, then add a hyphen. The wrap bit should be
+		// cleared, so the extra hyphen can fix the row.
+		withTerminalSized(15, 6);
+
+		enterString("-----  1  ----X");
+		enterString("\033[K-");  // EL
+
+		enterString("-----  2  ----X");
+		enterString("\033[J-");  // ED
+
+		enterString("-----  3  ----X");
+		enterString("\033[@-");  // ICH
+
+		enterString("-----  4  ----X");
+		enterString("\033[P-");  // DCH
+
+		enterString("-----  5  ----X");
+		enterString("\033[X-");  // ECH
+
+		// DL will delete the entire line but clear the wrap bit, so we
+		// expect a hyphen at the end and nothing else.
+		enterString("XXXXXXXXXXXXXXX");
+		enterString("\033[M-");  // DL
+
+		assertLinesAre(
+				"-----  1  -----",
+				"-----  2  -----",
+				"-----  3  -----",
+				"-----  4  -----",
+				"-----  5  -----",
+				"              -");
+	}
+
 }

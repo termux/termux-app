@@ -907,8 +907,9 @@ public final class TerminalEmulator {
 	/** Process byte while in the {@link #ESC_CSI_QUESTIONMARK} escape state. */
 	private void doCsiQuestionMark(int b) {
 		switch (b) {
-		case 'J': // Selective erase in display (DECSED - http://www.vt100.net/docs/vt510-rm/DECSED).
-		case 'K': // Selective erase in line (DECSEL - http://vt100.net/docs/vt510-rm/DECSEL).
+		case 'J': // Selective erase in display (DECSED) - http://www.vt100.net/docs/vt510-rm/DECSED.
+		case 'K': // Selective erase in line (DECSEL) - http://vt100.net/docs/vt510-rm/DECSEL.
+			mAboutToAutoWrap = false;
 			int fillChar = ' ';
 			int startCol = -1;
 			int startRow = -1;
@@ -1326,9 +1327,8 @@ public final class TerminalEmulator {
 			continueSequence(ESC_CSI_ARGS_ASTERIX);
 			break;
 		case '@': {
-			// ESC [ Pn @ - ICH Insert Characters.
-			// "This control function inserts one or more space (SP) characters starting at the cursor position."
-			// http://www.vt100.net/docs/vt510-rm/ICH
+			// "CSI{n}@" -  Insert ${n} space characters (ICH) - http://www.vt100.net/docs/vt510-rm/ICH.
+			mAboutToAutoWrap = false;
 			int columnsAfterCursor = mColumns - mCursorCol;
 			int spacesToInsert = Math.min(getArg0(1), columnsAfterCursor);
 			int charsToMove = columnsAfterCursor - spacesToInsert;
@@ -1365,7 +1365,7 @@ public final class TerminalEmulator {
 		case 'I': // Cursor Horizontal Forward Tabulation (CHT). Move the active position n tabs forward.
 			setCursorCol(nextTabStop(getArg0(1)));
 			break;
-		case 'J': // ESC [ Pn J - ED - Erase in Display
+		case 'J': // "${CSI}${0,1,2}J" - Erase in Display (ED)
 			// ED ignores the scrolling margins.
 			switch (getArg0(0)) {
 			case 0: // Erase from the active position to the end of the screen, inclusive (default).
@@ -1382,8 +1382,9 @@ public final class TerminalEmulator {
 				break;
 			default:
 				unknownSequence(b);
-				break;
+				return;
 			}
+			mAboutToAutoWrap = false;
 			break;
 		case 'K': // "CSI{n}K" - Erase in line (EL).
 			switch (getArg0(0)) {
@@ -1398,8 +1399,9 @@ public final class TerminalEmulator {
 				break;
 			default:
 				unknownSequence(b);
-				break;
+				return;
 			}
+			mAboutToAutoWrap = false;
 			break;
 		case 'L': // "${CSI}{N}L" - insert ${N} lines (IL).
 		{
@@ -1412,6 +1414,7 @@ public final class TerminalEmulator {
 			break;
 		case 'M': // "${CSI}${N}M" - delete N lines (DL).
 		{
+			mAboutToAutoWrap = false;
 			int linesAfterCursor = mBottomMargin - mCursorRow;
 			int linesToDelete = Math.min(getArg0(1), linesAfterCursor);
 			int linesToMove = linesAfterCursor - linesToDelete;
@@ -1426,6 +1429,7 @@ public final class TerminalEmulator {
 			// As characters are deleted, the remaining characters between the cursor and right margin move to the left.
 			// Character attributes move with the characters. The terminal adds blank spaces with no visual character
 			// attributes at the right margin. DCH has no effect outside the scrolling margins."
+			mAboutToAutoWrap = false;
 			int cellsAfterCursor = mColumns - mCursorCol;
 			int cellsToDelete = Math.min(getArg0(1), cellsAfterCursor);
 			int cellsToMove = cellsAfterCursor - cellsToDelete;
@@ -1456,6 +1460,7 @@ public final class TerminalEmulator {
 			}
 			break;
 		case 'X': // "${CSI}${N}X" - Erase ${N:=1} character(s) (ECH). FIXME: Clears character attributes?
+			mAboutToAutoWrap = false;
 			mScreen.blockSet(mCursorCol, mCursorRow, Math.min(getArg0(1), mColumns - mCursorCol), 1, ' ', getStyle());
 			break;
 		case 'Z': // Cursor Backward Tabulation (CBT). Move the active position n tabs backward.
