@@ -132,7 +132,7 @@ final class TermuxPreferences {
 					break;
 			}
 
-			mBackIsEscape = "escape".equals(props.getProperty("back-key", "escape"));
+			mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
 		} catch (Exception e) {
 			Toast.makeText(context, "Error loading properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
 			Log.e("termux", "Error loading props", e);
