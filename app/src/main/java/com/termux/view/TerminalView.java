@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.os.Build;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -692,6 +693,10 @@ public final class TerminalView extends View {
 				// As left alt+b, jumping forward in readline:
 				codePoint = 'b';
 				leftAltDownFromEvent = true;
+			} else if (codePoint == 'v' || codePoint == 'V') {
+				codePoint = -1;
+				AudioManager audio = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+				audio.adjustSuggestedStreamVolume(AudioManager.ADJUST_SAME, AudioManager.USE_DEFAULT_STREAM_TYPE, AudioManager.FLAG_SHOW_UI);
 			}
 		}
 
