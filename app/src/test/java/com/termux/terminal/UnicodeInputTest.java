@@ -12,6 +12,47 @@ public class UnicodeInputTest extends TerminalTestCase {
 		withTerminalSized(5, 5);
 		mTerminal.append(new byte[]{(byte) 0b11101111, (byte) 'a'}, 2);
 		assertLineIs(0, ((char) TerminalEmulator.UNICODE_REPLACEMENT_CHAR) + "a   ");
+
+		// https://code.google.com/p/chromium/issues/detail?id=212704
+		byte[] input = new byte[]{
+				(byte) 0x61, (byte) 0xF1,
+				(byte) 0x80, (byte) 0x80,
+				(byte) 0xe1, (byte) 0x80,
+				(byte) 0xc2, (byte) 0x62,
+				(byte) 0x80, (byte) 0x63,
+				(byte) 0x80, (byte) 0xbf,
+				(byte) 0x64
+		};
+		withTerminalSized(10, 2);
+		mTerminal.append(input, input.length);
+		assertLinesAre("a\uFFFD\uFFFD\uFFFDb\uFFFDc\uFFFD\uFFFDd", "          ");
+
+		// Surrogate pairs.
+		withTerminalSized(5, 2);
+		input = new byte[]{
+				(byte) 0xed, (byte) 0xa0,
+				(byte) 0x80, (byte) 0xed,
+				(byte) 0xad, (byte) 0xbf,
+				(byte) 0xed, (byte) 0xae,
+				(byte) 0x80, (byte) 0xed,
+				(byte) 0xbf, (byte) 0xbf
+		};
+		mTerminal.append(input, input.length);
+		assertLinesAre("\uFFFD\uFFFD\uFFFD\uFFFD ", "     ");
+
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=746900: "with this patch 0xe0 0x80 is decoded as two U+FFFDs,
+		// but 0xe0 0xa0 is decoded as a single U+FFFD, and this is correct according to the "Best Practices", but IE
+		// and Chrome (Version 22.0.1229.94) decode both of them as two U+FFFDs. Opera 12.11 decodes both of them as
+		// one U+FFFD".
+		withTerminalSized(5, 2);
+		input = new byte[]{(byte) 0xe0, (byte) 0xa0, ' '};
+		mTerminal.append(input, input.length);
+		assertLinesAre("\uFFFD    ", "     ");
+
+		// withTerminalSized(5, 2);
+		// input = new byte[]{(byte) 0xe0, (byte) 0x80, 'a'};
+		// mTerminal.append(input, input.length);
+		// assertLinesAre("\uFFFD\uFFFDa  ", "     ");
 	}
 
 	public void testUnassignedCodePoint() throws UnsupportedEncodingException {

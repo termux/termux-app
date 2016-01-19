@@ -218,7 +218,7 @@ public final class TerminalEmulator {
 	 */
 	private int mScrollCounter = 0;
 
-	private int mUtf8ToFollow, mUtf8Index;
+	private byte mUtf8ToFollow, mUtf8Index;
 	private final byte[] mUtf8InputBuffer = new byte[4];
 
 	public final TerminalColors mColors = new TerminalColors();
@@ -424,7 +424,11 @@ public final class TerminalEmulator {
 						processCodePoint(/* escape (hexadecimal=0x1B, octal=033): */27);
 						processCodePoint((codePoint & 0x7F) + 0x40);
 					} else {
-						if (Character.UNASSIGNED == Character.getType(codePoint)) codePoint = UNICODE_REPLACEMENT_CHAR;
+						switch (Character.getType(codePoint)) {
+							case Character.UNASSIGNED:
+							case Character.SURROGATE:
+								codePoint = UNICODE_REPLACEMENT_CHAR;
+						}
 						processCodePoint(codePoint);
 					}
 				}
