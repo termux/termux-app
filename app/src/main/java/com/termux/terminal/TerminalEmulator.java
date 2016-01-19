@@ -1229,6 +1229,11 @@ public final class TerminalEmulator {
 				mScreen.blockSet(mRightMargin - 1, mTopMargin, 1, rows, ' ', TextStyle.encode(mForeColor, mBackColor, 0));
 			}
 			break;
+		case 'c': // RIS - Reset to Initial State (http://vt100.net/docs/vt510-rm/RIS).
+			reset();
+			blockClear(0, 0, mColumns, mRows);
+			setCursorPosition(0, 0);
+			break;
 		case 'D': // INDEX
 			doLinefeed();
 			break;

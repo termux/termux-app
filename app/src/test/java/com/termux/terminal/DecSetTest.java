@@ -28,6 +28,11 @@ public class DecSetTest extends TerminalTestCase {
 		assertFalse(mTerminal.isShowingCursor());
 		mTerminal.reset();
 		assertTrue("Resetting the terminal should show the cursor", mTerminal.isShowingCursor());
+
+		enterString("\033[?25l");
+		assertFalse(mTerminal.isShowingCursor());
+		enterString("\033c"); // RIS resetting should reveal cursor.
+		assertTrue(mTerminal.isShowingCursor());
 	}
 
 	/** DECSET 2004, controls bracketed paste mode. */
