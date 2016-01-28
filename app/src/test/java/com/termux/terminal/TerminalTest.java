@@ -92,6 +92,7 @@ public class TerminalTest extends TerminalTestCase {
 		assertEnteringStringGivesResponse("\033[6n", "\033[2;1R");
 	}
 
+	/** Test the cursor shape changes using DECSCUSR. */
 	public void testSetCursorStyle() throws Exception {
 		withTerminalSized(5, 5);
 		assertEquals(TerminalEmulator.CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
