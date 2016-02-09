@@ -5,6 +5,7 @@
 # Built application files
 build/
 *.apk
+*.so
 
 # Crashlytics configuations
 com_crashlytics_export_strings.xml
