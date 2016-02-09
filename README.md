@@ -20,7 +20,7 @@ Released under [the GPLv3 license](https://www.gnu.org/licenses/gpl.html). Conta
 
 Building JNI libraries
 ======================
-For ease of use, the JNI libraries are checked into version control. Execute the `build-jnilibs.sh` script to rebuild them.
+Execute the `build-jnilibs.sh` script to build the required JNI libraries.
 
 Terminal resources
 ==================

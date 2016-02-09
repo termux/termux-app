@@ -82,14 +82,17 @@ public final class TerminalSession extends TerminalOutput {
 	/** Callback which gets notified when a session finishes or changes title. */
 	final SessionChangedCallback mChangeCallback;
 
-	/** The pid of the shell process or -1 if not running. */
+	/** The pid of the shell process. 0 if not started and -1 if finished running. */
 	int mShellPid;
-	int mShellExitStatus = -1;
+
+	/** The exit status of the shell process. Only valid if ${@link #mShellPid} is -1. */
+	int mShellExitStatus;
+
 	/**
 	 * The file descriptor referencing the master half of a pseudo-terminal pair, resulting from calling
 	 * {@link JNI#createSubprocess(String, String, String[], String[], int[])}.
 	 */
-	final int mTerminalFileDescriptor;
+	private int mTerminalFileDescriptor;
 
 	/** Set by the application for user identification of session, not by terminal. */
 	public String mSessionName;
@@ -128,20 +131,26 @@ public final class TerminalSession extends TerminalOutput {
 		}
 	};
 
+	private final String mShellPath;
+	private final String mCwd;
+	private final String[] mArgs;
+	private final String[] mEnv;
+
 	public TerminalSession(String shellPath, String cwd, String[] args, String[] env, SessionChangedCallback changeCallback) {
 		mChangeCallback = changeCallback;
 
-		int[] processId = new int[1];
-		mTerminalFileDescriptor = JNI.createSubprocess(shellPath, cwd, args, env, processId);
-		mShellPid = processId[0];
+		this.mShellPath = shellPath;
+		this.mCwd = cwd;
+		this.mArgs = args;
+		this.mEnv = env;
 	}
 
 	/** Inform the attached pty of the new size and reflow or initialize the emulator. */
 	public void updateSize(int columns, int rows) {
-		JNI.setPtyWindowSize(mTerminalFileDescriptor, rows, columns);
 		if (mEmulator == null) {
 			initializeEmulator(columns, rows);
 		} else {
+			JNI.setPtyWindowSize(mTerminalFileDescriptor, rows, columns);
 			mEmulator.resize(columns, rows);
 		}
 	}
@@ -161,6 +170,11 @@ public final class TerminalSession extends TerminalOutput {
 	 */
 	public void initializeEmulator(int columns, int rows) {
 		mEmulator = new TerminalEmulator(this, columns, rows, /* transcript= */5000);
+
+		int[] processId = new int[1];
+		mTerminalFileDescriptor = JNI.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns);
+		mShellPid = processId[0];
+
 		final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor);
 
 		new Thread("TermSessionInputReader[pid=" + mShellPid + "]") {
@@ -204,7 +218,7 @@ public final class TerminalSession extends TerminalOutput {
 	/** Write data to the shell process. */
 	@Override
 	public void write(byte[] data, int offset, int count) {
-		mTerminalToProcessIOQueue.write(data, offset, count);
+		if (mShellPid > 0) mTerminalToProcessIOQueue.write(data, offset, count);
 	}
 
 	/** Write the Unicode code point to the terminal encoded in UTF-8. */

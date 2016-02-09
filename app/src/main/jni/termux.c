@@ -22,7 +22,14 @@ static int throw_runtime_exception(JNIEnv* env, char const* message)
         return -1;
 }
 
-static int create_subprocess(JNIEnv* env, char const* cmd, char const* cwd, char* const argv[], char** envp, int* pProcessId)
+static int create_subprocess(JNIEnv* env,
+                             char const* cmd,
+                             char const* cwd,
+                             char* const argv[],
+                             char** envp,
+                             int* pProcessId,
+                             jint rows,
+                             jint columns)
 {
         int ptm = open("/dev/ptmx", O_RDWR | O_CLOEXEC);
         if (ptm < 0) return throw_runtime_exception(env, "Cannot open /dev/ptmx");
@@ -49,8 +56,8 @@ static int create_subprocess(JNIEnv* env, char const* cmd, char const* cwd, char
         tios.c_iflag &= ~(IXON | IXOFF);
         tcsetattr(ptm, TCSANOW, &tios);
 
-		/** Set initial winsize (better too small than too large). */
-        struct winsize sz = { .ws_row = 20, .ws_col = 20 };
+        /** Set initial winsize. */
+        struct winsize sz = { .ws_row = rows, .ws_col = columns };
         ioctl(ptm, TIOCSWINSZ, &sz);
 
         pid_t pid = fork();
@@ -105,7 +112,16 @@ static int create_subprocess(JNIEnv* env, char const* cmd, char const* cwd, char
         }
 }
 
-JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(JNIEnv* env, jclass TERMUX_UNUSED(clazz), jstring cmd, jstring cwd, jobjectArray args, jobjectArray envVars, jintArray processIdArray)
+JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(
+    JNIEnv* env,
+    jclass TERMUX_UNUSED(clazz),
+    jstring cmd,
+    jstring cwd,
+    jobjectArray args,
+    jobjectArray envVars,
+    jintArray processIdArray,
+    jint rows,
+    jint columns)
 {
         jsize size = args ? (*env)->GetArrayLength(env, args) : 0;
         char** argv = NULL;
@@ -140,7 +156,7 @@ JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(JNIEnv* env
         int procId = 0;
 	char const* cmd_cwd = (*env)->GetStringUTFChars(env, cwd, NULL);
         char const* cmd_utf8 = (*env)->GetStringUTFChars(env, cmd, NULL);
-        int ptm = create_subprocess(env, cmd_utf8, cmd_cwd, argv, envp, &procId);
+        int ptm = create_subprocess(env, cmd_utf8, cmd_cwd, argv, envp, &procId, rows, columns);
         (*env)->ReleaseStringUTFChars(env, cmd, cmd_utf8);
         (*env)->ReleaseStringUTFChars(env, cmd, cmd_cwd);
 
