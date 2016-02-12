@@ -47,7 +47,7 @@ import java.util.Properties;
 public final class TerminalView extends View {
 
 	/** Log view key and IME events. */
-	private static final boolean LOG_KEY_EVENTS = true;
+	private static final boolean LOG_KEY_EVENTS = false;
 
 	/** The currently displayed terminal session, whose emulator is {@link #mEmulator}. */
 	TerminalSession mTermSession;
