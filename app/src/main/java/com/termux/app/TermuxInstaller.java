@@ -182,7 +182,7 @@ final class TermuxInstaller {
 		if (arch.startsWith("arm") || arch.equals("aarch64")) {
 			// Handle different arm variants such as armv7l:
 			arch = "arm";
-		} else if (arch.equals("x86_64")) {
+		} else if (arch.startsWith("x86")) { // "x86" on arcwelder, "x86_64" on 64-bit android.
 			arch = "i686";
 		}
 		return new URL("https://termux.net/bootstrap/bootstrap-" + arch + ".zip");
