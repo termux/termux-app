@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
+import android.webkit.MimeTypeMap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,7 +16,7 @@ import java.io.FileNotFoundException;
 public class TermuxFilePickerProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
-        return false;
+        return true;
     }
 
     @Override
@@ -25,7 +26,20 @@ public class TermuxFilePickerProvider extends ContentProvider {
 
     @Override
     public String getType(@NonNull Uri uri) {
-        return null;
+		String contentType = null;
+		String path = uri.getPath();
+		int lastDotIndex = path.lastIndexOf('.');
+		String possibleFileExtension = path.substring(lastDotIndex + 1, path.length());
+		if (possibleFileExtension.contains("/")) {
+			// The dot was in the path, so not a file extension.
+		} else {
+			MimeTypeMap mimeTypes = MimeTypeMap.getSingleton();
+			// Lower casing makes it work with e.g. "JPG":
+			contentType = mimeTypes.getMimeTypeFromExtension(possibleFileExtension.toLowerCase());
+		}
+
+		if (contentType == null) contentType = "application/octet-stream";
+		return contentType;
     }
 
     @Override
