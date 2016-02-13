@@ -525,6 +525,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 		}
 
 		registerReceiver(mBroadcastReceiever, new IntentFilter(RELOAD_STYLE_ACTION));
+
+		// The current terminal session may have changed while being away, force
+		// a refresh of the displayed terminal:
+		mTerminalView.onScreenUpdated();
 	}
 
 	@Override
