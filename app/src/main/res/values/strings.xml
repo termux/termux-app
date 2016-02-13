@@ -12,7 +12,7 @@
    <string name="help">Help</string>
 
    <string name="welcome_dialog_title">Welcome to Termux</string>
-   <string name="welcome_dialog_body">Long press anywhere on the terminal for a context menu where Help is available.\n\nExecute \'apt update\' to update the packages list before installing packages.</string>
+   <string name="welcome_dialog_body">Long press and select <i>More…</i> to show a menu where <i>Help</i> is available.\n\nExecute <b>apt update</b> to update the packages list before installing packages.</string>
    <string name="welcome_dialog_dont_show_again_button">Do not show again</string>
 
    <string name="bootstrap_installer_body">Installing…</string>
