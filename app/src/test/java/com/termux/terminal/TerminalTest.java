@@ -258,4 +258,9 @@ public class TerminalTest extends TerminalTestCase {
 		withTerminalSized(3, 3).enterString("abc\r ").assertLinesAre(" bc", "   ", "   ").assertCursorAt(0, 1);
 	}
 
+    public void testTab() {
+        withTerminalSized(11, 2).enterString("01234567890\r\tXX").assertLinesAre("01234567XX0", "           ");
+        withTerminalSized(11, 2).enterString("01234567890\033[44m\r\tXX").assertLinesAre("01234567XX0", "           ");
+    }
+
 }

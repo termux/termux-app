@@ -425,9 +425,9 @@ public final class TerminalEmulator {
 						processCodePoint((codePoint & 0x7F) + 0x40);
 					} else {
 						switch (Character.getType(codePoint)) {
-							case Character.UNASSIGNED:
-							case Character.SURROGATE:
-								codePoint = UNICODE_REPLACEMENT_CHAR;
+						case Character.UNASSIGNED:
+						case Character.SURROGATE:
+							codePoint = UNICODE_REPLACEMENT_CHAR;
 						}
 						processCodePoint(codePoint);
 					}
@@ -474,16 +474,19 @@ public final class TerminalEmulator {
 			else
 				mSession.onBell();
 			break;
-		case 8: // BS
-			setCursorCol(Math.max(mLeftMargin, mCursorCol - 1));
-			break;
-		case 9: // Horizontal tab - move to next tab stop, but not past edge of screen
-			int nextTabStop = nextTabStop(1);
-			while (mCursorCol < nextTabStop) {
-				// Emit newlines to get background color right.
-				processCodePoint(' ');
-			}
-			break;
+        case 8: // Backspace (BS, ^H).
+            setCursorCol(Math.max(mLeftMargin, mCursorCol - 1));
+            break;
+        case 9: // Horizontal tab (HT, \t) - move to next tab stop, but not past edge of screen
+		    // XXX: Should perhaps use color if writing to new cells. Try with
+		    //       printf "\033[41m\tXX\033[0m\n"
+		    // The OSX Terminal.app colors the spaces from the tab red, but xterm does not.
+		    // Note that Terminal.app only colors on new cells, in e.g.
+		    //       printf "\033[41m\t\r\033[42m\tXX\033[0m\n"
+		    // the first cells are created with a red background, but when tabbing over
+		    // them again with a green background they are not overwritten.
+            mCursorCol = nextTabStop(1);
+            break;
 		case 10: // Line feed (LF, \n).
 		case 11: // Vertical tab (VT, \v).
 		case 12: // Form feed (FF, \f).
@@ -1331,7 +1334,7 @@ public final class TerminalEmulator {
 			continueSequence(ESC_CSI_ARGS_ASTERIX);
 			break;
 		case '@': {
-			// "CSI{n}@" -  Insert ${n} space characters (ICH) - http://www.vt100.net/docs/vt510-rm/ICH.
+			// "CSI{n}@" - Insert ${n} space characters (ICH) - http://www.vt100.net/docs/vt510-rm/ICH.
 			mAboutToAutoWrap = false;
 			int columnsAfterCursor = mColumns - mCursorCol;
 			int spacesToInsert = Math.min(getArg0(1), columnsAfterCursor);

@@ -163,7 +163,12 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		}
 	}
 
-	public void testHorizontalTabColorsBackground() {
+    /**
+     * See comments on horizontal tab handling in TerminalEmulator.java.
+     *
+     * We do not want to color already written cells when tabbing over them.
+     */
+	public void DISABLED_testHorizontalTabColorsBackground() {
 		withTerminalSized(10, 3).enterString("\033[48;5;15m").enterString("\t");
 		assertCursorAt(0, 8);
 		for (int i = 0; i < 10; i++) {
