@@ -127,9 +127,13 @@ public final class TerminalBuffer {
 		mLines[externalToInternalRow(row)].mLineWrap = true;
 	}
 
-	private boolean getLineWrap(int row) {
+	public boolean getLineWrap(int row) {
 		return mLines[externalToInternalRow(row)].mLineWrap;
 	}
+
+    public void clearLineWrap(int row) {
+        mLines[externalToInternalRow(row)].mLineWrap = false;
+    }
 
 	/**
 	 * Resize the screen which this transcript backs. Currently, this only works if the number of columns does not

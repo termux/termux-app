@@ -218,4 +218,13 @@ public class CursorAndScreenTest extends TerminalTestCase {
 				"              -");
 	}
 
+    public void testBackspaceAcrossWrappedLines() {
+        // Backspace should not go to previous line if not auto-wrapped:
+        withTerminalSized(3, 3).enterString("hi\r\n\b\byou").assertLinesAre("hi ", "you", "   ");
+        // Backspace should go to previous line if auto-wrapped:
+        withTerminalSized(3, 3).enterString("hi y").assertLinesAre("hi ", "y  ", "   ").enterString("\b\b#").assertLinesAre("hi#", "y  ", "   ");
+        // Initial backspace should do nothing:
+        withTerminalSized(3, 3).enterString("\b\b\b\bhi").assertLinesAre("hi ", "   ", "   ");
+    }
+
 }
