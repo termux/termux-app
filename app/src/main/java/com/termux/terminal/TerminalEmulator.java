@@ -477,9 +477,10 @@ public final class TerminalEmulator {
         case 8: // Backspace (BS, ^H).
             if (mLeftMargin == mCursorCol) {
                 // Jump to previous line if it was auto-wrapped.
-                if (mCursorRow > 0 && mScreen.getLineWrap(mCursorRow-1)) {
-                    mScreen.clearLineWrap(mCursorRow - 1);
-                    setCursorRowCol(mCursorRow-1,mRightMargin-1);
+                int previousRow = mCursorRow - 1;
+                if (previousRow >= 0 && mScreen.getLineWrap(previousRow)) {
+                    mScreen.clearLineWrap(previousRow);
+                    setCursorRowCol(previousRow, mRightMargin - 1);
                 }
             } else {
                 setCursorCol(mCursorCol - 1);
