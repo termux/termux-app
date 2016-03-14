@@ -55,7 +55,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 	/** Intent action to toggle the wifi lock, {@link #mWifiLock}, which this service may hold. */
 	private static final String ACTION_LOCK_WIFI = "com.termux.service_toggle_wifi_lock";
 	/** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
-	private static final String ACTION_EXECUTE = "com.termux.service_execute";
+	public static final String ACTION_EXECUTE = "com.termux.service_execute";
 
 	/** This service is only bound from inside the same process and never uses IPC. */
 	class LocalBinder extends Binder {
@@ -239,7 +239,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
 		final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
 		String[] env;
 		if (failSafe) {
-			env = new String[] { termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv };
+            final String pathEnv = "PATH=" + System.getenv("PATH");
+            env = new String[] { termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv };
 		} else {
 			final String ps1Env = "PS1=$ ";
 			final String ldEnv = "LD_LIBRARY_PATH=" + PREFIX_PATH + "/lib";
