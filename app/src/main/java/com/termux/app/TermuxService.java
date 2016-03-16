@@ -57,6 +57,10 @@ public final class TermuxService extends Service implements SessionChangedCallba
 	/** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
 	public static final String ACTION_EXECUTE = "com.termux.service_execute";
 
+    public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
+
+    public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
+
 	/** This service is only bound from inside the same process and never uses IPC. */
 	class LocalBinder extends Binder {
 		public final TermuxService service = TermuxService.this;
@@ -113,8 +117,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
 		} else if (ACTION_EXECUTE.equals(action)) {
 			Uri executableUri = intent.getData();
 			String executablePath = (executableUri == null ? null : executableUri.getPath());
-			String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra("com.termux.execute.arguments"));
-			String cwd = intent.getStringExtra("com.termux.execute.cwd");
+			String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(EXTRA_ARGUMENTS));
+			String cwd = intent.getStringExtra(EXTRA_CURRENT_WORKING_DIRECTORY);
 			TerminalSession newSession = createTermSession(executablePath, arguments, cwd, false);
 
 			// Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
