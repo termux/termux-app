@@ -90,7 +90,7 @@ public final class TerminalSession extends TerminalOutput {
 
 	/**
 	 * The file descriptor referencing the master half of a pseudo-terminal pair, resulting from calling
-	 * {@link JNI#createSubprocess(String, String, String[], String[], int[])}.
+	 * {@link JNI#createSubprocess(String, String, String[], String[], int[], int, int)}.
 	 */
 	private int mTerminalFileDescriptor;
 
