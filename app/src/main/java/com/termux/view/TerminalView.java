@@ -779,8 +779,9 @@ public final class TerminalView extends View {
 
 	public void checkForFontAndColors() {
 		try {
-			File fontFile = new File("/data/data/com.termux/files/home/.termux/font.ttf");
-			File colorsFile = new File("/data/data/com.termux/files/home/.termux/colors.properties");
+            // Hard-coded paths since this file is used also in Termux:Float.
+            @SuppressLint("SdCardPath") File fontFile = new File("/data/data/com.termux/files/home/.termux/font.ttf");
+            @SuppressLint("SdCardPath") File colorsFile = new File("/data/data/com.termux/files/home/.termux/colors.properties");
 
 			final Properties props = new Properties();
 			if (colorsFile.isFile()) {
@@ -896,12 +897,16 @@ public final class TerminalView extends View {
 				public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 					final int[] ACTION_MODE_ATTRS = { android.R.attr.actionModeCopyDrawable, android.R.attr.actionModePasteDrawable, };
 					TypedArray styledAttributes = getContext().obtainStyledAttributes(ACTION_MODE_ATTRS);
-					int show = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
+                    try {
+                        int show = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
 
-					ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-					menu.add(Menu.NONE, 1, Menu.NONE, R.string.copy_text).setIcon(styledAttributes.getResourceId(0, 0)).setShowAsAction(show);
-					menu.add(Menu.NONE, 2, Menu.NONE, R.string.paste_text).setIcon(styledAttributes.getResourceId(1, 0)).setEnabled(clipboard.hasPrimaryClip()).setShowAsAction(show);
-					menu.add(Menu.NONE, 3, Menu.NONE, R.string.text_selection_more);
+                        ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                        menu.add(Menu.NONE, 1, Menu.NONE, R.string.copy_text).setIcon(styledAttributes.getResourceId(0, 0)).setShowAsAction(show);
+                        menu.add(Menu.NONE, 2, Menu.NONE, R.string.paste_text).setIcon(styledAttributes.getResourceId(1, 0)).setEnabled(clipboard.hasPrimaryClip()).setShowAsAction(show);
+                        menu.add(Menu.NONE, 3, Menu.NONE, R.string.text_selection_more);
+                    } finally {
+                        styledAttributes.recycle();
+                    }
 					return true;
 				}
 
