@@ -44,6 +44,21 @@
             android:label="@string/application_name" />
 
         <activity
+            android:name="com.termux.filepicker.TermuxFileReceiverActivity"
+            android:label="@string/application_name"
+            android:taskAffinity="com.termux.filereceiver"
+            android:excludeFromRecents="true"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name="com.termux.filepicker.TermuxFilePickerActivity"
             android:label="@string/application_name"
             android:theme="@android:style/Theme.Material.Light.DarkActionBar"

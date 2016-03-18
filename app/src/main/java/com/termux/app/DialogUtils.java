@@ -13,14 +13,17 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-final class DialogUtils {
+public final class DialogUtils {
 
 	public interface TextSetListener {
 		void onTextSet(String text);
 	}
 
-	static void textInput(Activity activity, int titleText, int positiveButtonText, String initialText, final TextSetListener onPositive,
-										 int neutralButtonText, final TextSetListener onNeutral) {
+	public static void textInput(Activity activity, int titleText, String initialText,
+                                 int positiveButtonText, final TextSetListener onPositive,
+                                 int neutralButtonText, final TextSetListener onNeutral,
+                                 int negativeButtonText, final TextSetListener onNegative,
+                                 final DialogInterface.OnDismissListener onDismiss) {
 		final EditText input = new EditText(activity);
 		input.setSingleLine();
 		if (initialText != null) {
@@ -57,23 +60,32 @@ final class DialogUtils {
 					public void onClick(DialogInterface d, int whichButton) {
 						onPositive.onTextSet(input.getText().toString());
 				}
-			})
-				.setNegativeButton(android.R.string.cancel, null);
-
-		if (onNeutral != null) {
-			builder.setNeutralButton(neutralButtonText, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					onNeutral.onTextSet(input.getText().toString());
-				}
 			});
-		}
+
+        if (onNeutral != null) {
+            builder.setNeutralButton(neutralButtonText, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    onNeutral.onTextSet(input.getText().toString());
+                }
+            });
+        }
+
+        if (onNegative == null) {
+            builder.setNegativeButton(android.R.string.cancel, null);
+        } else {
+            builder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    onNegative.onTextSet(input.getText().toString());
+                }
+            });
+        }
+
+        if (onDismiss != null) builder.setOnDismissListener(onDismiss);
 
 		dialogHolder[0] = builder.create();
-		if ((activity.getResources().getConfiguration().hardKeyboardHidden & Configuration.HARDKEYBOARDHIDDEN_YES) == 0) {
-			// Show soft keyboard unless hardware keyboard available.
-			dialogHolder[0].getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-		}
+        dialogHolder[0].setCanceledOnTouchOutside(false);
 		dialogHolder[0].show();
 	}
 

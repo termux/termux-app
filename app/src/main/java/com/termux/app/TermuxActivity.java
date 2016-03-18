@@ -287,28 +287,28 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			}
 		});
 
-		newSessionButton.setOnLongClickListener(new OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				Resources res = getResources();
-				DialogUtils.textInput(TermuxActivity.this, R.string.session_new_named_title, R.string.session_new_named_positive_button, null,
-					new DialogUtils.TextSetListener() {
-						@Override
-						public void onTextSet(String text) {
-							addNewSession(false, text);
-						}
-					}, R.string.new_session_failsafe, new DialogUtils.TextSetListener() {
-						@Override
-						public void onTextSet(String text) {
-							addNewSession(true, text);
-						}
-					}
-				);
-				return true;
-			}
-		});
+        newSessionButton.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Resources res = getResources();
+                DialogUtils.textInput(TermuxActivity.this, R.string.session_new_named_title, null, R.string.session_new_named_positive_button,
+                        new DialogUtils.TextSetListener() {
+                            @Override
+                            public void onTextSet(String text) {
+                                addNewSession(false, text);
+                            }
+                        }, R.string.new_session_failsafe, new DialogUtils.TextSetListener() {
+                            @Override
+                            public void onTextSet(String text) {
+                                addNewSession(true, text);
+                            }
+                        }
+                        , -1, null, null);
+                return true;
+            }
+        });
 
-		findViewById(R.id.toggle_keyboard_button).setOnClickListener(new OnClickListener() {
+        findViewById(R.id.toggle_keyboard_button).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -492,14 +492,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 	@SuppressLint("InflateParams")
 	void renameSession(final TerminalSession sessionToRename) {
-		DialogUtils.textInput(this, R.string.session_rename_title, R.string.session_rename_positive_button, sessionToRename.mSessionName,
-				new DialogUtils.TextSetListener() {
-					@Override
-					public void onTextSet(String text) {
-						sessionToRename.mSessionName = text;
-					}
-				}, -1, null);
-	}
+        DialogUtils.textInput(this, R.string.session_rename_title, sessionToRename.mSessionName, R.string.session_rename_positive_button, new DialogUtils.TextSetListener() {
+            @Override
+            public void onTextSet(String text) {
+                sessionToRename.mSessionName = text;
+            }
+        }, -1, null, -1, null, null);
+    }
 
 	@Override
 	public void onServiceDisconnected(ComponentName name) {

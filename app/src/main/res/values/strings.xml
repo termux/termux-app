@@ -55,4 +55,8 @@
 
   <string name="empty_folder">Empty folder.</string>
 
+  <string name="file_received_title">Save file in ~/downloads/</string>
+  <string name="file_received_edit_button">Edit</string>
+  <string name="file_received_open_folder_button">Open folder</string>
+
 </resources>
