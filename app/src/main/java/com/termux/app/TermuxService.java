@@ -241,11 +241,14 @@ public final class TermuxService extends Service implements SessionChangedCallba
 		final String prefixEnv = "PREFIX=" + PREFIX_PATH;
 		final String androidRootEnv = "ANDROID_ROOT=" + System.getenv("ANDROID_ROOT");
 		final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
+        // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
+        // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
+        final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
 		String[] env;
 		if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             final String pathEnv = "PATH=" + System.getenv("PATH");
-            env = new String[] { termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv };
+            env = new String[] { termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv, externalStorageEnv };
 		} else {
 			final String ps1Env = "PS1=$ ";
 			final String ldEnv = "LD_LIBRARY_PATH=" + PREFIX_PATH + "/lib";
@@ -253,7 +256,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 			final String pathEnv = "PATH=" + PREFIX_PATH + "/bin:" + PREFIX_PATH + "/bin/applets";
 			final String pwdEnv = "PWD=" + cwd;
 
-			env = new String[] { termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv };
+			env = new String[] { termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv };
 		}
 
 		String shellName;
