@@ -176,17 +176,19 @@ final class TermuxInstaller {
 		}.start();
 	}
 
-	/** Get bootstrap zip url for this systems cpu architecture. */
-	static URL determineZipUrl() throws MalformedURLException {
-		String arch = System.getProperty("os.arch");
-		if (arch.startsWith("arm") || arch.equals("aarch64")) {
-			// Handle different arm variants such as armv7l:
-			arch = "arm";
-		} else if (arch.startsWith("x86")) { // "x86" on arcwelder, "x86_64" on 64-bit android.
-			arch = "i686";
-		}
-		return new URL("https://termux.net/bootstrap/bootstrap-" + arch + ".zip");
-	}
+    /** Get bootstrap zip url for this systems cpu architecture. */
+    static URL determineZipUrl() throws MalformedURLException {
+        String arch = System.getProperty("os.arch");
+        if (arch.startsWith("armv8")) {
+            arch = "aarch64";
+        } else if (arch.startsWith("arm")) {
+            // Handle different arm variants such as armv7l:
+            arch = "arm";
+        } else if (arch.startsWith("x86")) { // "x86" on arcwelder, "x86_64" on 64-bit android.
+            arch = "i686";
+        }
+        return new URL("https://termux.net/bootstrap/bootstrap-" + arch + ".zip");
+    }
 
 	/** Delete a folder and all its content or throw. */
 	static void deleteFolder(File fileOrDirectory) {
