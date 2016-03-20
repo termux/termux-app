@@ -243,13 +243,14 @@ public final class TermuxService extends Service implements SessionChangedCallba
 		final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
 		String[] env;
 		if (failSafe) {
+            // Keep the default path so that system binaries can be used in the failsafe session.
             final String pathEnv = "PATH=" + System.getenv("PATH");
             env = new String[] { termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv };
 		} else {
 			final String ps1Env = "PS1=$ ";
 			final String ldEnv = "LD_LIBRARY_PATH=" + PREFIX_PATH + "/lib";
 			final String langEnv = "LANG=en_US.UTF-8";
-			final String pathEnv = "PATH=" + PREFIX_PATH + "/bin:" + PREFIX_PATH + "/bin/applets:" + System.getenv("PATH");
+			final String pathEnv = "PATH=" + PREFIX_PATH + "/bin:" + PREFIX_PATH + "/bin/applets";
 			final String pwdEnv = "PWD=" + cwd;
 
 			env = new String[] { termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv };
