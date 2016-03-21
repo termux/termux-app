@@ -290,7 +290,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         newSessionButton.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Resources res = getResources();
                 DialogUtils.textInput(TermuxActivity.this, R.string.session_new_named_title, null, R.string.session_new_named_positive_button,
                         new DialogUtils.TextSetListener() {
                             @Override
