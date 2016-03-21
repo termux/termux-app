@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.util.Log;
-import android.util.MutableBoolean;
 import android.util.Patterns;
 
 import com.termux.R;
