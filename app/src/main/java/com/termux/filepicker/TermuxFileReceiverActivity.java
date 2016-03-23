@@ -46,16 +46,6 @@ public class TermuxFileReceiverActivity extends Activity {
         final String type = intent.getType();
         final String scheme = intent.getScheme();
 
-        if (intent.getExtras() == null) {
-            Log.e("termux", "NULL EXTRAS");
-        } else {
-            for (String key : intent.getExtras().keySet()) {
-                Object value = intent.getExtras().get(key);
-                Log.d("termux", String.format("Extra %s %s (%s)", key,
-                    value.toString(), value.getClass().getName()));
-            }
-        }
-
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             final String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
             final Uri sharedUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -74,9 +64,9 @@ public class TermuxFileReceiverActivity extends Activity {
             } else {
                 showErrorDialogAndQuit("Send action without content - nothing to save.");
             }
-        } else if (scheme.equals("content")) {
+        } else if ("content".equals(scheme)) {
             handleContentUri(intent.getData(), intent.getStringExtra(Intent.EXTRA_TITLE));
-        } else if (scheme.equals("file")) {
+        } else if ("file".equals(scheme)) {
             // When e.g. clicking on a downloaded apk:
             String path = intent.getData().getPath();
             File file = new File(path);
@@ -87,7 +77,7 @@ public class TermuxFileReceiverActivity extends Activity {
                 showErrorDialogAndQuit("Cannot open file: " + e.getMessage() + ".");
             }
         } else {
-            showErrorDialogAndQuit("Unhandled scheme: " + intent.getScheme() + ".");
+            showErrorDialogAndQuit("Unable to receive any file or URL.");
         }
     }
 
