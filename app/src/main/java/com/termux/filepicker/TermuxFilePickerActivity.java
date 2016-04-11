@@ -1,6 +1,5 @@
 package com.termux.filepicker;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
@@ -12,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.termux.R;
+import com.termux.app.TermuxService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,9 +22,6 @@ import java.util.List;
 
 /** Activity allowing picking files from the $HOME folder. */
 public class TermuxFilePickerActivity extends ListActivity {
-
-    @SuppressLint("SdCardPath")
-    final String TERMUX_HOME = "/data/data/com.termux/files/home";
 
     private File mCurrentDirectory;
     private final List<File> mFiles = new ArrayList<>();
@@ -38,7 +35,7 @@ public class TermuxFilePickerActivity extends ListActivity {
 
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mFileNames);
 
-        enterDirectory(new File(TERMUX_HOME));
+        enterDirectory(new File(TermuxService.HOME_PATH));
         setListAdapter(mAdapter);
     }
 
@@ -69,11 +66,11 @@ public class TermuxFilePickerActivity extends ListActivity {
     }
 
     void enterDirectory(File directory) {
-        getActionBar().setDisplayHomeAsUpEnabled(!directory.getAbsolutePath().equals(TERMUX_HOME));
+        getActionBar().setDisplayHomeAsUpEnabled(!directory.getAbsolutePath().equals(TermuxService.HOME_PATH));
 
         String title = directory.getAbsolutePath() + "/";
-        if (title.startsWith(TERMUX_HOME)) {
-            title = "~" + title.substring(TERMUX_HOME.length(), title.length());
+        if (title.startsWith(TermuxService.HOME_PATH)) {
+            title = "~" + title.substring(TermuxService.HOME_PATH.length(), title.length());
         }
         setTitle(title);
 
