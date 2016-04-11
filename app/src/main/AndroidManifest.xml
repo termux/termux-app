@@ -83,7 +83,7 @@
         </activity>
 
         <provider android:authorities="com.termux.filepicker.provider"
-            android:readPermission="com.termux.filepickder.READ"
+            android:readPermission="com.termux.filepicker.READ"
             android:exported="true"
             android:grantUriPermissions="true"
             android:name="com.termux.filepicker.TermuxFilePickerProvider" />
