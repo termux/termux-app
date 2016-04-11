@@ -34,6 +34,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -678,7 +679,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 					public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 						dialog.dismiss();
 						String url = (String) urls[position];
-						startActivity(Intent.createChooser(new Intent(Intent.ACTION_VIEW, Uri.parse(url)), null));
+                        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        try {
+                            startActivity(i, null);
+                        } catch (ActivityNotFoundException e) {
+                            // If no applications match, Android displays a system message.
+                            startActivity(Intent.createChooser(i, null));
+                        }
 						return true;
 					}
 				});
