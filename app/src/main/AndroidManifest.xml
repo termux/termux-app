@@ -49,8 +49,8 @@
             android:taskAffinity="com.termux.filereceiver"
             android:excludeFromRecents="true"
             android:noHistory="true">
+            <!-- Accept multiple file types when sending. -->
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="application/*" />
@@ -60,6 +60,16 @@
                 <data android:mimeType="multipart/*" />
                 <data android:mimeType="text/*" />
                 <data android:mimeType="video/*" />
+            </intent-filter>
+            <!-- Be more restrictive for viewing files, restricting ourselves to text files. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="application/*xml*" />
+                <data android:mimeType="application/*latex*" />
+                <data android:mimeType="application/javascript" />
             </intent-filter>
         </activity>
 
