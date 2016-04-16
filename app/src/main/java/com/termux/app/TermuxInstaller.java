@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
+import android.os.Build;
 import android.os.Environment;
 import android.system.Os;
 import android.util.Log;
@@ -23,6 +24,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -178,16 +180,25 @@ final class TermuxInstaller {
 
     /** Get bootstrap zip url for this systems cpu architecture. */
     static URL determineZipUrl() throws MalformedURLException {
-        String arch = System.getProperty("os.arch");
-        if (arch.startsWith("armv8")) {
-            arch = "aarch64";
-        } else if (arch.startsWith("arm")) {
-            // Handle different arm variants such as armv7l:
-            arch = "arm";
-        } else if (arch.startsWith("x86")) { // "x86" on arcwelder, "x86_64" on 64-bit android.
-            arch = "i686";
+        String termuxArch = null;
+        // Note that we cannot use System.getProperty("os.arch") since that may give e.g. "aarch64"
+        // while a 64-bit runtime may not be installed (like on the Samsung Galaxy S5 Neo).
+        // Instead we search through the supported abi:s on the device, see:
+        // http://developer.android.com/ndk/guides/abis.html
+        // Note that we search for abi:s in preferred order, and want to avoid installing arm on
+        // an x86 system where arm emulation is available.
+        final String[] androidArchNames = {"arm64-v8a", "x86", "armeabi-v7a"};
+        final String[] termuxArchNames = {"aarch64", "i686", "arm"};
+
+        final List<String> supportedArches = Arrays.asList(Build.SUPPORTED_ABIS);
+        for (int i = 0; i < termuxArchNames.length; i++) {
+            if (supportedArches.contains(androidArchNames[i])) {
+                termuxArch = termuxArchNames[i];
+                break;
+            }
         }
-        return new URL("https://termux.net/bootstrap/bootstrap-" + arch + ".zip");
+
+        return new URL("https://termux.net/bootstrap/bootstrap-" + termuxArch + ".zip");
     }
 
 	/** Delete a folder and all its content or throw. */
