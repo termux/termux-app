@@ -98,6 +98,17 @@
             android:grantUriPermissions="true"
             android:name="com.termux.filepicker.TermuxFilePickerProvider" />
 
+        <provider
+            android:name=".filepicker.TermuxDocumentsProvider"
+            android:authorities="com.termux.documents"
+            android:grantUriPermissions="true"
+            android:exported="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
         <service
             android:name="com.termux.app.TermuxService"
             android:exported="false" />
