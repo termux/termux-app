@@ -133,6 +133,7 @@ public class TermuxFileReceiverActivity extends Activity {
                     }
 
                     // Do this for the user if necessary:
+                    //noinspection ResultOfMethodCallIgnored
                     editorProgramFile.setExecutable(true);
 
                     final Uri scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
@@ -201,6 +202,7 @@ public class TermuxFileReceiverActivity extends Activity {
         }
 
         // Do this for the user if necessary:
+        //noinspection ResultOfMethodCallIgnored
         urlOpenerProgramFile.setExecutable(true);
 
         final Uri urlOpenerProgramUri = new Uri.Builder().scheme("file").path(URL_OPENER_PROGRAM).build();
