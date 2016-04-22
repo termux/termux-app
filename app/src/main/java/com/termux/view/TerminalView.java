@@ -652,52 +652,55 @@ public final class TerminalView extends View {
 				resultingKeyCode = KeyEvent.KEYCODE_F12;
 			}
 		} else if (mVirtualFnKeyDown) {
-			if (codePoint == 'w' || codePoint == 'W') {
-				resultingKeyCode = KeyEvent.KEYCODE_DPAD_UP;
-			} else if (codePoint == 'a' || codePoint == 'A') {
-				resultingKeyCode = KeyEvent.KEYCODE_DPAD_LEFT;
-			} else if (codePoint == 's' || codePoint == 'S') {
-				resultingKeyCode = KeyEvent.KEYCODE_DPAD_DOWN;
-			} else if (codePoint == 'd' || codePoint == 'D') {
-				resultingKeyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
-			} else if (codePoint == 'p' || codePoint == 'P') {
-				resultingKeyCode = KeyEvent.KEYCODE_PAGE_UP;
-			} else if (codePoint == 'n' || codePoint == 'N') {
-				resultingKeyCode = KeyEvent.KEYCODE_PAGE_DOWN;
-			} else if (codePoint == 't' || codePoint == 'T') {
-				resultingKeyCode = KeyEvent.KEYCODE_TAB;
-			} else if (codePoint == 'l' || codePoint == 'L') {
-				codePoint = '|';
-			} else if (codePoint == 'u' || codePoint == 'U') {
-				codePoint = '_';
-			} else if (codePoint == 'e' || codePoint == 'E') {
-				codePoint = 27; // ^[ (Esc)
-			} else if (codePoint == '.') {
-				codePoint = 28; // ^\
-			} else if (codePoint > '0' && codePoint <= '9') {
-				// F1-F9
-				resultingKeyCode = (codePoint - '1') + KeyEvent.KEYCODE_F1;
-			} else if (codePoint == '0') {
-				resultingKeyCode = KeyEvent.KEYCODE_F10;
-			} else if (codePoint == 'i' || codePoint == 'I') {
-				resultingKeyCode = KeyEvent.KEYCODE_INSERT;
-			} else if (codePoint == 'x' || codePoint == 'X') {
-				resultingKeyCode = KeyEvent.KEYCODE_FORWARD_DEL;
-			} else if (codePoint == 'h' || codePoint == 'H') {
-				resultingKeyCode = KeyEvent.KEYCODE_MOVE_HOME;
-			} else if (codePoint == 'f' || codePoint == 'F') {
-				// As left alt+f, jumping forward in readline:
-				codePoint = 'f';
-				leftAltDownFromEvent = true;
-			} else if (codePoint == 'b' || codePoint == 'B') {
-				// As left alt+b, jumping forward in readline:
-				codePoint = 'b';
-				leftAltDownFromEvent = true;
-			} else if (codePoint == 'v' || codePoint == 'V') {
-				codePoint = -1;
-				AudioManager audio = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
-				audio.adjustSuggestedStreamVolume(AudioManager.ADJUST_SAME, AudioManager.USE_DEFAULT_STREAM_TYPE, AudioManager.FLAG_SHOW_UI);
-			}
+            int lowerCase = Character.toLowerCase(codePoint);
+            switch (lowerCase) {
+                // Arrow keys.
+                case 'w': resultingKeyCode = KeyEvent.KEYCODE_DPAD_UP; break;
+                case 'a': resultingKeyCode = KeyEvent.KEYCODE_DPAD_LEFT; break;
+                case 's': resultingKeyCode = KeyEvent.KEYCODE_DPAD_DOWN; break;
+                case 'd': resultingKeyCode = KeyEvent.KEYCODE_DPAD_RIGHT; break;
+
+                // Page up and down.
+                case 'p': resultingKeyCode = KeyEvent.KEYCODE_PAGE_UP; break;
+                case 'n': resultingKeyCode = KeyEvent.KEYCODE_PAGE_DOWN; break;
+
+                // Some special keys:
+                case 't': resultingKeyCode = KeyEvent.KEYCODE_TAB; break;
+                case 'i': resultingKeyCode = KeyEvent.KEYCODE_INSERT; break;
+                case 'h': resultingKeyCode = KeyEvent.KEYCODE_MOVE_HOME; break;
+
+                // Special characters to input.
+                case 'u': codePoint = '_'; break;
+                case 'l': codePoint = '|'; break;
+
+                // Function keys.
+                case '1': case '2': case '3':
+                case '4': case '5': case '6':
+                case '7': case '8': case '9':
+                    resultingKeyCode = (codePoint - '1') + KeyEvent.KEYCODE_F1;
+                    break;
+                case '0':
+                    resultingKeyCode = KeyEvent.KEYCODE_F10;
+                    break;
+
+                // Other special keys.
+                case 'e': codePoint = /*Escape*/ 27; break;
+                case '.': codePoint = /*^.*/ 28; break;
+
+                case 'b': // alt+b, jumping backward in readline.
+                case 'f': // alf+f, jumping forward in readline.
+                case 'x': // alt+x, common in emacs.
+                    codePoint = lowerCase;
+                    leftAltDownFromEvent = true;
+                    break;
+
+                // Volume control.
+                case 'v':
+                    codePoint = -1;
+                    AudioManager audio = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+                    audio.adjustSuggestedStreamVolume(AudioManager.ADJUST_SAME, AudioManager.USE_DEFAULT_STREAM_TYPE, AudioManager.FLAG_SHOW_UI);
+                    break;
+            }
 		}
 
 		if (codePoint > -1) {
