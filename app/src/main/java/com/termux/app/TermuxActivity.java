@@ -389,6 +389,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 						case TermuxPreferences.BELL_VIBRATE:
 							((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(50);
 							break;
+                        case TermuxPreferences.BELL_IGNORE:
+                            // Ignore the bell character.
+                            break;
 					}
 
 				}
