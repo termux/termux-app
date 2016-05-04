@@ -821,8 +821,8 @@ public final class TerminalView extends View {
 		if (viewWidth == 0 || viewHeight == 0 || mTermSession == null) return;
 
 		// Set to 80 and 24 if you want to enable vttest.
-		int newColumns = Math.max(8, (int) (viewWidth / mRenderer.mFontWidth));
-		int newRows = Math.max(8, (viewHeight - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
+		int newColumns = Math.max(4, (int) (viewWidth / mRenderer.mFontWidth));
+		int newRows = Math.max(4, (viewHeight - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
 
 		if (mEmulator == null || (newColumns != mEmulator.mColumns || newRows != mEmulator.mRows)) {
 			mTermSession.updateSize(newColumns, newRows);
