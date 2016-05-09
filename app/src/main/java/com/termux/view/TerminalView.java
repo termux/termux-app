@@ -259,42 +259,17 @@ public final class TerminalView extends View {
 			}
 
 			@Override
-			public boolean clearMetaKeyStates(int states) {
-				if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: clearMetaKeyStates(" + states + ")");
-				return true;
-			}
-
-			@Override
 			public boolean endBatchEdit() {
 				if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: endBatchEdit()");
 				return false;
 			}
 
-			@Override
-			public boolean finishComposingText() {
-				if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: finishComposingText()");
-				return true;
-			}
-
-			@Override
-			public int getCursorCapsMode(int reqModes) {
-				if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: getCursorCapsMode(" + reqModes + ")");
-				int mode = 0;
-				if ((reqModes & TextUtils.CAP_MODE_CHARACTERS) != 0) {
-					mode |= TextUtils.CAP_MODE_CHARACTERS;
-				}
-				return mode;
-			}
-
-			@Override
-			public CharSequence getTextAfterCursor(int n, int flags) {
-				return "";
-			}
-
-			@Override
-			public CharSequence getTextBeforeCursor(int n, int flags) {
-				return "";
-			}
+            @Override
+            public boolean finishComposingText() {
+                if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: finishComposingText()");
+                commitText(getEditable(), 0);
+                return true;
+            }
 
 			@Override
 			public boolean commitText(CharSequence text, int newCursorPosition) {
