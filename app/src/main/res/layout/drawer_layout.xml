@@ -1,58 +1,73 @@
-<com.termux.drawer.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/drawer_layout"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <com.termux.view.TerminalView
-        android:id="@+id/terminal_view"
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:focusableInTouchMode="true"
-        android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
-        android:scrollbars="vertical" />
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/viewpager"
+        android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/left_drawer"
-        android:layout_width="240dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="@android:color/white"
-        android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
-        android:orientation="vertical" >
-
-        <ListView
-            android:id="@+id/left_drawer_list"
+        <com.termux.view.TerminalView
+            android:id="@+id/terminal_view"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_gravity="top"
-            android:layout_weight="1"
-            android:choiceMode="singleChoice"
-            android:longClickable="true" />
+            android:layout_height="match_parent"
+            android:focusableInTouchMode="true"
+            android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
+            android:scrollbars="vertical" />
 
         <LinearLayout
-            style="?android:attr/buttonBarStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:id="@+id/left_drawer"
+            android:layout_width="240dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="@android:color/white"
+            android:choiceMode="singleChoice"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/toggle_keyboard_button"
-                style="?android:attr/buttonBarButtonStyle"
+            <ListView
+                android:id="@+id/left_drawer_list"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:choiceMode="singleChoice"
+                android:longClickable="true" />
+
+            <LinearLayout
+                style="?android:attr/buttonBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/toggle_soft_keyboard" />
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/new_session_button"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/new_session" />
+                <Button
+                    android:id="@+id/toggle_keyboard_button"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/toggle_soft_keyboard" />
+
+                <Button
+                    android:id="@+id/new_session_button"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/new_session" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
 
-</com.termux.drawer.DrawerLayout>
+    </android.support.v4.widget.DrawerLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

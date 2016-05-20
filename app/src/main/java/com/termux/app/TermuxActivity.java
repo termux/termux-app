@@ -29,6 +29,9 @@ import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -52,17 +55,18 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.termux.R;
-import com.termux.drawer.DrawerLayout;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
 import com.termux.view.TerminalKeyListener;
 import com.termux.view.TerminalView;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -165,14 +169,73 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 		// Prevent overdraw:
 		getWindow().getDecorView().setBackground(null);
 
-		setContentView(R.layout.drawer_layout);
+        mSettings = new TermuxPreferences(this);
+
+        setContentView(R.layout.drawer_layout);
 		mTerminalView = (TerminalView) findViewById(R.id.terminal_view);
-		mSettings = new TermuxPreferences(this);
-		mTerminalView.setTextSize(mSettings.getFontSize());
+
+        mTerminalView.setTextSize(mSettings.getFontSize());
 		mFullScreenHelper.setImmersive(mSettings.isFullScreen());
 		mTerminalView.requestFocus();
 
-		OnKeyListener keyListener = new OnKeyListener() {
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        if (mSettings.isShowExtraKeys()) viewPager.setVisibility(View.VISIBLE);
+
+        viewPager.setAdapter(new PagerAdapter() {
+            @Override
+            public int getCount() {
+                return 2;
+            }
+
+            @Override
+            public boolean isViewFromObject(View view, Object object) {
+                return view == object;
+            }
+
+            @Override
+            public Object instantiateItem(ViewGroup collection, int position) {
+                LayoutInflater inflater = LayoutInflater.from(TermuxActivity.this);
+                View layout;
+                if (position == 0) {
+                    layout = (View) inflater.inflate(R.layout.extra_keys_main, collection, false);
+                    mTerminalView.mModifiers = (TerminalView.KeyboardModifiers) layout;
+                } else {
+                    layout = (View) inflater.inflate(R.layout.extra_keys_right, collection, false);
+                    final EditText editText = (EditText) layout.findViewById(R.id.text_input);
+                    editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                        @Override
+                        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                            String s = editText.getText().toString() + "\n";
+                            getCurrentTermSession().write(s);
+                            editText.setText("");
+                            return true;
+                        }
+                    });
+                }
+                collection.addView(layout);
+                return layout;
+            }
+
+            @Override
+            public void destroyItem(ViewGroup collection, int position, Object view) {
+                collection.removeView((View) view);
+            }
+        });
+
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                int newHeight;
+                if (position == 0) {
+                    mTerminalView.requestFocus();
+                } else {
+                    final EditText editText = (EditText) viewPager.findViewById(R.id.text_input);
+                    if (editText != null) editText.requestFocus();
+                }
+            }
+        });
+
+        OnKeyListener keyListener = new OnKeyListener() {
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
@@ -213,7 +276,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 					if (--index < 0) index = mTermService.getSessions().size() - 1;
 					switchToSession(mTermService.getSessions().get(index));
 				} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-					getDrawer().openDrawer(Gravity.START);
+					getDrawer().openDrawer(Gravity.LEFT);
 				} else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
 					getDrawer().closeDrawers();
 				} else if (unicodeChar == 'f'/* full screen */) {
@@ -315,7 +378,17 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 			}
 		});
 
-		registerForContextMenu(mTerminalView);
+        findViewById(R.id.toggle_keyboard_button).setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                View extraKeysView = findViewById(R.id.viewpager);
+                mSettings.toggleShowExtraKeys(TermuxActivity.this);
+                extraKeysView.setVisibility(mSettings.isShowExtraKeys() ? View.VISIBLE : View.GONE);
+                return true;
+            }
+        });
+
+        registerForContextMenu(mTerminalView);
 
 		Intent serviceIntent = new Intent(this, TermuxService.class);
 		// Start the service and make it run regardless of who is bound to it:
@@ -362,7 +435,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 					finish();
 					return;
 				}
-				if (mIsVisible && finishedSession != getCurrentTermSession()) {
+                if (mIsVisible && finishedSession != getCurrentTermSession()) {
 					// Show toast for non-current sessions that exit.
 					int indexOfSession = mTermService.getSessions().indexOf(finishedSession);
 					// Verify that session was not removed before we got told about it finishing:
@@ -543,10 +616,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 	@Override
 	public void onBackPressed() {
-		if (getDrawer().isDrawerOpen(Gravity.START))
-			getDrawer().closeDrawers();
-		else
-			finish();
+		if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
+            getDrawer().closeDrawers();
+        } else {
+            finish();
+        }
 	}
 
 	@Override
