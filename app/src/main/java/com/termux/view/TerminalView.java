@@ -46,8 +46,15 @@ import java.util.Properties;
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
 
-	/** Log view key and IME events. */
-	private static final boolean LOG_KEY_EVENTS = false;
+    /** Log view key and IME events. */
+    private static final boolean LOG_KEY_EVENTS = false;
+
+    public static interface KeyboardModifiers {
+        public boolean readControlButton();
+        public boolean readAltButton();
+    }
+
+    public KeyboardModifiers mModifiers;
 
 	/** The currently displayed terminal session, whose emulator is {@link #mEmulator}. */
 	TerminalSession mTermSession;
@@ -601,8 +608,15 @@ public final class TerminalView extends View {
 					+ leftAltDownFromEvent + ")");
 		}
 
+        boolean controlDown = controlDownFromEvent || mVirtualControlKeyDown;
+        boolean altDown = leftAltDownFromEvent;
+        if (mModifiers != null) {
+            if (mModifiers.readControlButton()) controlDown = true;
+            if (mModifiers.readAltButton()) altDown = true;
+        }
+
 		int resultingKeyCode = -1; // Set if virtual key causes this to be translated to key event.
-		if (controlDownFromEvent || mVirtualControlKeyDown) {
+		if (controlDown) {
 			if (codePoint >= 'a' && codePoint <= 'z') {
 				codePoint = codePoint - 'a' + 1;
 			} else if (codePoint >= 'A' && codePoint <= 'Z') {
@@ -666,7 +680,7 @@ public final class TerminalView extends View {
                 case 'f': // alf+f, jumping forward in readline.
                 case 'x': // alt+x, common in emacs.
                     codePoint = lowerCase;
-                    leftAltDownFromEvent = true;
+                    altDown = true;
                     break;
 
                 // Volume control.
@@ -698,7 +712,7 @@ public final class TerminalView extends View {
 				}
 
 				// If left alt, send escape before the code point to make e.g. Alt+B and Alt+F work in readline:
-				mTermSession.writeCodePoint(leftAltDownFromEvent, codePoint);
+				mTermSession.writeCodePoint(altDown, codePoint);
 			}
 		}
 	}
@@ -770,7 +784,7 @@ public final class TerminalView extends View {
 			TerminalColors.COLOR_SCHEME.updateWith(props);
 			if (mEmulator != null) mEmulator.mColors.reset();
 
-			final Typeface newTypeface = fontFile.exists() ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
+			final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
 			mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
 			updateSize();
 
