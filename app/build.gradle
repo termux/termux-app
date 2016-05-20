@@ -5,26 +5,28 @@ android {
     buildToolsVersion "23.0.3"
 
     dependencies {
-        compile 'com.android.support:support-annotations:23.3.0'
-    }
-
-    sourceSets {
-        main {
-            jni.srcDirs = []
-        }
+        compile 'com.android.support:support-annotations:23.4.0'
+        compile "com.android.support:support-v4:23.4.0"
     }
 
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 34
-        versionName "0.34"
+        versionCode 35
+        versionName "0.35"
+
+        ndk {
+            moduleName "libtermux"
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86"
+            cFlags "-std=c11 -Wall -Wextra -Os -fno-stack-protector -nostdlib -Wl,--gc-sections"
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
