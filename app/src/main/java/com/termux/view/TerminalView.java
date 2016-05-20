@@ -49,9 +49,9 @@ public final class TerminalView extends View {
     /** Log view key and IME events. */
     private static final boolean LOG_KEY_EVENTS = false;
 
-    public static interface KeyboardModifiers {
-        public boolean readControlButton();
-        public boolean readAltButton();
+    public interface KeyboardModifiers {
+        boolean readControlButton();
+        boolean readAltButton();
     }
 
     public KeyboardModifiers mModifiers;
@@ -219,7 +219,7 @@ public final class TerminalView extends View {
 
 	/**
 	 * Attach a {@link TerminalSession} to this view.
-	 * 
+	 *
 	 * @param session
 	 *            The {@link TerminalSession} this view will be displaying.
 	 */
@@ -369,7 +369,7 @@ public final class TerminalView extends View {
 
 	/**
 	 * Sets the text size, which in turn sets the number of rows and columns.
-	 * 
+	 *
 	 * @param textSize
 	 *            the new font size, in density-independent pixels.
 	 */
@@ -728,7 +728,7 @@ public final class TerminalView extends View {
 
 	/**
 	 * Called when a key is released in the view.
-	 * 
+	 *
 	 * @param keyCode
 	 *            The keycode of the key which was released.
 	 * @param event

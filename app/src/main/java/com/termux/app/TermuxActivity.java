@@ -66,7 +66,6 @@ import com.termux.terminal.TerminalSession.SessionChangedCallback;
 import com.termux.view.TerminalKeyListener;
 import com.termux.view.TerminalView;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
