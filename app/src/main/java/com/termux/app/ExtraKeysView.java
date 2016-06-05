@@ -1,7 +1,9 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -9,6 +11,8 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ToggleButton;
 
+import com.termux.R;
+import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalView;
 
 /**
@@ -25,15 +29,27 @@ public final class ExtraKeysView extends GridLayout implements TerminalView.Keyb
         reload();
     }
 
-    private static int keyNameToKeyCode(String keyName) {
+    private static void sendKey(View view, String keyName) {
+        int keyCode = 0;
+        String chars = null;
         switch (keyName) {
-            case "ESC": return KeyEvent.KEYCODE_ESCAPE;
-            case "TAB": return KeyEvent.KEYCODE_TAB;
-            case "▲": return KeyEvent.KEYCODE_DPAD_UP;
-            case "◀": return KeyEvent.KEYCODE_DPAD_LEFT;
-            case "▶": return KeyEvent.KEYCODE_DPAD_RIGHT;
-            case "▼": return KeyEvent.KEYCODE_DPAD_DOWN;
-            default: return -1;
+            case "ESC": keyCode = KeyEvent.KEYCODE_ESCAPE; break;
+            case "TAB": keyCode = KeyEvent.KEYCODE_TAB; break;
+            case "▲": keyCode = KeyEvent.KEYCODE_DPAD_UP; break;
+            case "◀": keyCode = KeyEvent.KEYCODE_DPAD_LEFT; break;
+            case "▶": keyCode = KeyEvent.KEYCODE_DPAD_RIGHT; break;
+            case "▼": keyCode = KeyEvent.KEYCODE_DPAD_DOWN; break;
+            case "―": chars = "-"; break;
+            default: chars = keyName;
+        }
+
+        if (keyCode > 0) {
+            view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
+            view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+        } else {
+            TerminalView terminalView = (TerminalView) view.findViewById(R.id.terminal_view);
+            TerminalSession session = terminalView.getCurrentSession();
+            if (session != null) session.write(chars);
         }
     }
 
@@ -42,6 +58,7 @@ public final class ExtraKeysView extends GridLayout implements TerminalView.Keyb
     private ToggleButton fnButton;
 
     public boolean readControlButton() {
+        if (controlButton.isPressed()) return true;
         boolean result = controlButton.isChecked();
         if (result) {
             controlButton.setChecked(false);
@@ -51,6 +68,7 @@ public final class ExtraKeysView extends GridLayout implements TerminalView.Keyb
     }
 
     public boolean readAltButton() {
+        if (altButton.isPressed()) return true;
         boolean result = altButton.isChecked();
         if (result) {
             altButton.setChecked(false);
@@ -60,6 +78,7 @@ public final class ExtraKeysView extends GridLayout implements TerminalView.Keyb
     }
 
     public boolean readFnButton() {
+        if (fnButton.isPressed()) return true;
         boolean result = fnButton.isChecked();
         if (result) {
             fnButton.setChecked(false);
@@ -73,7 +92,7 @@ public final class ExtraKeysView extends GridLayout implements TerminalView.Keyb
         removeAllViews();
 
         String[][] buttons = {
-            {"ESC", "CTRL", "ALT", "▲", "▼", "◀", "▶"}
+            {"ESC", "CTRL", "ALT", "TAB", "―", "/", "|"}
         };
 
         final int rows = buttons.length;
@@ -90,12 +109,15 @@ public final class ExtraKeysView extends GridLayout implements TerminalView.Keyb
                 switch (buttonText) {
                     case "CTRL":
                         button = controlButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
+                        button.setClickable(true);
                         break;
                     case "ALT":
                         button = altButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
+                        button.setClickable(true);
                         break;
                     case "FN":
                         button = fnButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
+                        button.setClickable(true);
                         break;
                     default:
                         button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
@@ -119,9 +141,7 @@ public final class ExtraKeysView extends GridLayout implements TerminalView.Keyb
                                 self.setTextColor(self.isChecked() ? 0xFF80DEEA : TEXT_COLOR);
                                 break;
                             default:
-                                int keyCode = keyNameToKeyCode(buttonText);
-                                root.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
-                                root.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+                                sendKey(root, buttonText);
                                 break;
                         }
                     }
