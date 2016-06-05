@@ -5,6 +5,4 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_alignParentBottom="true"
-    android:background="#263238"
-    android:orientation="horizontal"
-    android:textColor="@android:color/white" />
+    android:orientation="horizontal" />

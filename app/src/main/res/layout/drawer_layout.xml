@@ -27,6 +27,7 @@
             android:choiceMode="singleChoice"
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp"
+            android:descendantFocusability="blocksDescendants"
             android:orientation="vertical">
 
             <ListView
@@ -63,11 +64,12 @@
         </LinearLayout>
 
     </android.support.v4.widget.DrawerLayout>
-
+•
     <android.support.v4.view.ViewPager
         android:id="@+id/viewpager"
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:background="@android:drawable/screen_background_dark_transparent"
         android:layout_alignParentBottom="true" />
 </RelativeLayout>
