@@ -208,11 +208,6 @@ JNIEXPORT int JNICALL Java_com_termux_terminal_JNI_waitFor(JNIEnv* TERMUX_UNUSED
     }
 }
 
-JNIEXPORT void JNICALL Java_com_termux_terminal_JNI_hangupProcessGroup(JNIEnv* TERMUX_UNUSED(env), jclass TERMUX_UNUSED(clazz), jint procId)
-{
-    killpg(procId, SIGHUP);
-}
-
 JNIEXPORT void JNICALL Java_com_termux_terminal_JNI_close(JNIEnv* TERMUX_UNUSED(env), jclass TERMUX_UNUSED(clazz), jint fileDescriptor)
 {
     close(fileDescriptor);

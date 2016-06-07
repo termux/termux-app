@@ -1,5 +1,13 @@
 package com.termux.terminal;
 
+import android.annotation.SuppressLint;
+import android.os.Handler;
+import android.os.Message;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.OsConstants;
+import android.util.Log;
+
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,11 +16,6 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-
-import android.annotation.SuppressLint;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 
 /**
  * A terminal session, consisting of a process coupled to a terminal interface.
@@ -190,10 +193,6 @@ public final class TerminalSession extends TerminalOutput {
 					}
 				} catch (Exception e) {
 					// Ignore, just shutting down.
-				} finally {
-					// Now wait for process exit:
-					int processExitCode = JNI.waitFor(mShellPid);
-					mMainThreadHandler.sendMessage(mMainThreadHandler.obtainMessage(MSG_PROCESS_EXITED, processExitCode));
 				}
 			}
 		}.start();
@@ -213,7 +212,16 @@ public final class TerminalSession extends TerminalOutput {
 				}
 			}
 		}.start();
-	}
+
+        new Thread("TermSessionWaiter[pid=" + mShellPid + "]") {
+            @Override
+            public void run() {
+                int processExitCode = JNI.waitFor(mShellPid);
+                mMainThreadHandler.sendMessage(mMainThreadHandler.obtainMessage(MSG_PROCESS_EXITED, processExitCode));
+            }
+        }.start();
+
+    }
 
 	/** Write data to the shell process. */
 	@Override
@@ -273,20 +281,16 @@ public final class TerminalSession extends TerminalOutput {
 		notifyScreenUpdate();
 	}
 
-	/**
-	 * Finish this terminal session. Frees resources used by the terminal emulator and closes the attached
-	 * <code>InputStream</code> and <code>OutputStream</code>.
-	 */
-	public void finishIfRunning() {
-		if (isRunning()) {
-			JNI.hangupProcessGroup(mShellPid);
-			// Stop the reader and writer threads, and close the I/O streams. Note that
-			// cleanupResources() will be run later.
-			mTerminalToProcessIOQueue.close();
-			mProcessToTerminalIOQueue.close();
-			JNI.close(mTerminalFileDescriptor);
-		}
-	}
+    /** Finish this terminal session by sending SIGKILL to the shell. */
+    public void finishIfRunning() {
+        if (isRunning()) {
+            try {
+                Os.kill(mShellPid, OsConstants.SIGKILL);
+            } catch (ErrnoException e) {
+                Log.w("termux", "Failed sending SIGKILL: " + e.getMessage());
+            }
+        }
+    }
 
 	/** Cleanup resources when the process exits. */
 	void cleanupResources(int exitStatus) {

@@ -40,15 +40,6 @@ final class JNI {
 	 */
 	public static native int waitFor(int processId);
 
-	/**
-	 * Send SIGHUP to a process group.
-	 * 
-	 * There exists a kill(2) system call wrapper in {@link android.os.Process#sendSignal(int, int)}, but that makes a
-	 * "if (pid > 0)" check so cannot be used for sending to a process group:
-	 * https://android.googlesource.com/platform/frameworks/base/+/donut-release/core/jni/android_util_Process.cpp
-	 */
-	public static native void hangupProcessGroup(int processId);
-
 	/** Close a file descriptor through the close(2) system call. */
 	public static native void close(int fileDescriptor);
 
