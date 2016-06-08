@@ -11,5 +11,6 @@
     android:textColor="@android:color/white"
     android:backgroundTint="@android:color/transparent"
     android:paddingTop="0dp"
+    android:textCursorDrawable="@null"
     android:paddingBottom="0dp"
     tools:ignore="LabelFor" />
