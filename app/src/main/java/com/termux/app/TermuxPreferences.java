@@ -1,17 +1,36 @@
 package com.termux.app;
 
-import com.termux.terminal.TerminalSession;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.IntDef;
+import android.util.Log;
 import android.util.TypedValue;
+import android.widget.Toast;
+
+import com.termux.terminal.TerminalSession;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Properties;
 
 final class TermuxPreferences {
 
+	@IntDef({BELL_VIBRATE, BELL_BEEP, BELL_IGNORE})
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface AsciiBellBehaviour {}
+
+	static final int BELL_VIBRATE = 1;
+	static final int BELL_BEEP = 2;
+	static final int BELL_IGNORE = 3;
+
 	private final int MIN_FONTSIZE;
 	private static final int MAX_FONTSIZE = 256;
+
 	private static final String FULLSCREEN_KEY = "fullscreen";
+    private static final String SHOW_EXTRA_KEYS_KEY = "show_extra_keys";
 	private static final String FONTSIZE_KEY = "fontsize";
 	private static final String CURRENT_SESSION_KEY = "current_session";
 	private static final String SHOW_WELCOME_DIALOG_KEY = "intro_dialog";
@@ -19,7 +38,14 @@ final class TermuxPreferences {
 	private boolean mFullScreen;
 	private int mFontSize;
 
+	@AsciiBellBehaviour
+	int mBellBehaviour = BELL_VIBRATE;
+
+    boolean mBackIsEscape;
+    boolean mShowExtraKeys;
+
 	TermuxPreferences(Context context) {
+		reloadFromProperties(context);
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
 		float dipInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
@@ -29,6 +55,7 @@ final class TermuxPreferences {
 		MIN_FONTSIZE = (int) (4f * dipInPixels);
 
 		mFullScreen = prefs.getBoolean(FULLSCREEN_KEY, false);
+        mShowExtraKeys = prefs.getBoolean(SHOW_EXTRA_KEYS_KEY, false);
 
 		// http://www.google.com/design/spec/style/typography.html#typography-line-height
 		int defaultFontSize = Math.round(12 * dipInPixels);
@@ -49,11 +76,19 @@ final class TermuxPreferences {
 
 	void setFullScreen(Context context, boolean newValue) {
 		mFullScreen = newValue;
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		prefs.edit().putBoolean(FULLSCREEN_KEY, newValue).apply();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(FULLSCREEN_KEY, newValue).apply();
 	}
 
-	int getFontSize() {
+    boolean isShowExtraKeys() {
+        return mShowExtraKeys;
+    }
+
+    void toggleShowExtraKeys(Context context) {
+        mShowExtraKeys = !mShowExtraKeys;
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SHOW_EXTRA_KEYS_KEY, mShowExtraKeys).apply();
+    }
+
+    int getFontSize() {
 		return mFontSize;
 	}
 
@@ -84,6 +119,35 @@ final class TermuxPreferences {
 
 	public static void disableWelcomeDialog(Context context) {
 		PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SHOW_WELCOME_DIALOG_KEY, false).apply();
+	}
+
+	public void reloadFromProperties(Context context) {
+		try {
+			File propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
+			Properties props = new Properties();
+			if (propsFile.isFile() && propsFile.canRead()) {
+				try (FileInputStream in = new FileInputStream(propsFile)) {
+					props.load(in);
+				}
+			}
+
+			switch (props.getProperty("bell-character", "vibrate")) {
+				case "beep":
+					mBellBehaviour = BELL_BEEP;
+					break;
+				case "ignore":
+					mBellBehaviour = BELL_IGNORE;
+					break;
+				default: // "vibrate".
+					mBellBehaviour = BELL_VIBRATE;
+					break;
+			}
+
+			mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
+		} catch (Exception e) {
+			Toast.makeText(context, "Error loading properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
+			Log.e("termux", "Error loading props", e);
+		}
 	}
 
 }

@@ -184,6 +184,7 @@ public final class TerminalRow {
 		mSpaceUsed += javaCharDifference;
 
 		// Store char. A combining character is stored at the end of the existing contents so that it modifies them:
+		//noinspection ResultOfMethodCallIgnored - since we already now how many java chars is used.
 		Character.toChars(codePoint, text, oldStartOfColumnIndex + (newIsCombining ? oldCharactersUsedForColumn : 0));
 
 		if (oldCodePointDisplayWidth == 2 && newCodePointDisplayWidth == 1) {

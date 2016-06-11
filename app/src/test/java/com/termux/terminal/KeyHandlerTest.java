@@ -1,6 +1,7 @@
 package com.termux.terminal;
 
 import android.view.KeyEvent;
+
 import junit.framework.TestCase;
 
 public class KeyHandlerTest extends TestCase {
@@ -109,6 +110,10 @@ public class KeyHandlerTest extends TestCase {
 
 		// Backspace.
 		assertKeysEquals("\u007f", KeyHandler.getCode(KeyEvent.KEYCODE_DEL, 0, false, false));
+
+		// Space.
+		assertNull(KeyHandler.getCode(KeyEvent.KEYCODE_SPACE, 0, false, false));
+		assertKeysEquals("\u0000", KeyHandler.getCode(KeyEvent.KEYCODE_SPACE, KeyHandler.KEYMOD_CTRL, false, false));
 
 		// Back tab.
 		assertKeysEquals("\033[Z", KeyHandler.getCode(KeyEvent.KEYCODE_TAB, KeyHandler.KEYMOD_SHIFT, false, false));

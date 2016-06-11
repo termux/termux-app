@@ -2,43 +2,32 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.3"
 
-    sourceSets {
-	    main {
-		    jni.srcDirs = []
-	    }
+    dependencies {
+        compile 'com.android.support:support-annotations:23.4.0'
+        compile "com.android.support:support-v4:23.4.0"
     }
 
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion 21
-        targetSdkVersion 22
-        versionCode 17
-        versionName "0.17"
-    }
+        targetSdkVersion 23
+        versionCode 35
+        versionName "0.35"
 
-    signingConfigs {
-	release {
-	    if (System.getenv("TRAVIS")) {
-		    storeFile rootProject.file('travis.keystore')
-		    storePassword 'abcdef'
-		    keyAlias 'travis'
-		    keyPassword 'abcdef'
-	    } else {
-		    storeFile new File(TERMUX_KEYSTORE_FILE)
-		    storePassword TERMUX_KEYSTORE_PASSWORD
-		    keyAlias TERMUX_KEYSTORE_ALIAS
-		    keyPassword TERMUX_KEYSTORE_PASSWORD
-	    }
-	}
+        ndk {
+            moduleName "libtermux"
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86"
+            cFlags "-std=c11 -Wall -Wextra -Os -fno-stack-protector -nostdlib -Wl,--gc-sections"
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-	    signingConfig signingConfigs.release
         }
     }
 }

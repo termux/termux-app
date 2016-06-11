@@ -11,9 +11,9 @@ android:
   components:
     - platform-tools
     - tools
-    - build-tools-23.0.1
+    - build-tools-23.0.3
     - android-23
-    - sys-img-x86-android-23
+    - extra-android-m2repository
 
 script:
   - ./gradlew testDebugUnitTest

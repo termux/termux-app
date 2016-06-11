@@ -33,8 +33,7 @@ public final class TerminalEmulator {
 	private static final boolean LOG_ESCAPE_SEQUENCES = false;
 
 	public static final int MOUSE_LEFT_BUTTON = 0;
-	public static final int MOUSE_MIDDLE_BUTTON = 1;
-	public static final int MOUSE_RIGHT_BUTTON = 2;
+
 	/** Mouse moving while having left mouse button pressed. */
 	public static final int MOUSE_LEFT_BUTTON_MOVED = 32;
 	public static final int MOUSE_WHEELUP_BUTTON = 64;
@@ -219,7 +218,7 @@ public final class TerminalEmulator {
 	 */
 	private int mScrollCounter = 0;
 
-	private int mUtf8ToFollow, mUtf8Index;
+	private byte mUtf8ToFollow, mUtf8Index;
 	private final byte[] mUtf8InputBuffer = new byte[4];
 
 	public final TerminalColors mColors = new TerminalColors();
@@ -425,7 +424,11 @@ public final class TerminalEmulator {
 						processCodePoint(/* escape (hexadecimal=0x1B, octal=033): */27);
 						processCodePoint((codePoint & 0x7F) + 0x40);
 					} else {
-						if (Character.UNASSIGNED == Character.getType(codePoint)) codePoint = UNICODE_REPLACEMENT_CHAR;
+						switch (Character.getType(codePoint)) {
+						case Character.UNASSIGNED:
+						case Character.SURROGATE:
+							codePoint = UNICODE_REPLACEMENT_CHAR;
+						}
 						processCodePoint(codePoint);
 					}
 				}
@@ -471,16 +474,28 @@ public final class TerminalEmulator {
 			else
 				mSession.onBell();
 			break;
-		case 8: // BS
-			setCursorCol(Math.max(mLeftMargin, mCursorCol - 1));
-			break;
-		case 9: // Horizontal tab - move to next tab stop, but not past edge of screen
-			int nextTabStop = nextTabStop(1);
-			while (mCursorCol < nextTabStop) {
-				// Emit newlines to get background color right.
-				processCodePoint(' ');
-			}
-			break;
+        case 8: // Backspace (BS, ^H).
+            if (mLeftMargin == mCursorCol) {
+                // Jump to previous line if it was auto-wrapped.
+                int previousRow = mCursorRow - 1;
+                if (previousRow >= 0 && mScreen.getLineWrap(previousRow)) {
+                    mScreen.clearLineWrap(previousRow);
+                    setCursorRowCol(previousRow, mRightMargin - 1);
+                }
+            } else {
+                setCursorCol(mCursorCol - 1);
+            }
+            break;
+        case 9: // Horizontal tab (HT, \t) - move to next tab stop, but not past edge of screen
+		    // XXX: Should perhaps use color if writing to new cells. Try with
+		    //       printf "\033[41m\tXX\033[0m\n"
+		    // The OSX Terminal.app colors the spaces from the tab red, but xterm does not.
+		    // Note that Terminal.app only colors on new cells, in e.g.
+		    //       printf "\033[41m\t\r\033[42m\tXX\033[0m\n"
+		    // the first cells are created with a red background, but when tabbing over
+		    // them again with a green background they are not overwritten.
+            mCursorCol = nextTabStop(1);
+            break;
 		case 10: // Line feed (LF, \n).
 		case 11: // Vertical tab (VT, \v).
 		case 12: // Form feed (FF, \f).
@@ -908,8 +923,9 @@ public final class TerminalEmulator {
 	/** Process byte while in the {@link #ESC_CSI_QUESTIONMARK} escape state. */
 	private void doCsiQuestionMark(int b) {
 		switch (b) {
-		case 'J': // Selective erase in display (DECSED - http://www.vt100.net/docs/vt510-rm/DECSED).
-		case 'K': // Selective erase in line (DECSEL - http://vt100.net/docs/vt510-rm/DECSEL).
+		case 'J': // Selective erase in display (DECSED) - http://www.vt100.net/docs/vt510-rm/DECSED.
+		case 'K': // Selective erase in line (DECSEL) - http://vt100.net/docs/vt510-rm/DECSEL.
+			mAboutToAutoWrap = false;
 			int fillChar = ' ';
 			int startCol = -1;
 			int startRow = -1;
@@ -1230,6 +1246,11 @@ public final class TerminalEmulator {
 				mScreen.blockSet(mRightMargin - 1, mTopMargin, 1, rows, ' ', TextStyle.encode(mForeColor, mBackColor, 0));
 			}
 			break;
+		case 'c': // RIS - Reset to Initial State (http://vt100.net/docs/vt510-rm/RIS).
+			reset();
+			blockClear(0, 0, mColumns, mRows);
+			setCursorPosition(0, 0);
+			break;
 		case 'D': // INDEX
 			doLinefeed();
 			break;
@@ -1322,9 +1343,8 @@ public final class TerminalEmulator {
 			continueSequence(ESC_CSI_ARGS_ASTERIX);
 			break;
 		case '@': {
-			// ESC [ Pn @ - ICH Insert Characters.
-			// "This control function inserts one or more space (SP) characters starting at the cursor position."
-			// http://www.vt100.net/docs/vt510-rm/ICH
+			// "CSI{n}@" - Insert ${n} space characters (ICH) - http://www.vt100.net/docs/vt510-rm/ICH.
+			mAboutToAutoWrap = false;
 			int columnsAfterCursor = mColumns - mCursorCol;
 			int spacesToInsert = Math.min(getArg0(1), columnsAfterCursor);
 			int charsToMove = columnsAfterCursor - spacesToInsert;
@@ -1361,7 +1381,7 @@ public final class TerminalEmulator {
 		case 'I': // Cursor Horizontal Forward Tabulation (CHT). Move the active position n tabs forward.
 			setCursorCol(nextTabStop(getArg0(1)));
 			break;
-		case 'J': // ESC [ Pn J - ED - Erase in Display
+		case 'J': // "${CSI}${0,1,2}J" - Erase in Display (ED)
 			// ED ignores the scrolling margins.
 			switch (getArg0(0)) {
 			case 0: // Erase from the active position to the end of the screen, inclusive (default).
@@ -1378,8 +1398,9 @@ public final class TerminalEmulator {
 				break;
 			default:
 				unknownSequence(b);
-				break;
+				return;
 			}
+			mAboutToAutoWrap = false;
 			break;
 		case 'K': // "CSI{n}K" - Erase in line (EL).
 			switch (getArg0(0)) {
@@ -1394,8 +1415,9 @@ public final class TerminalEmulator {
 				break;
 			default:
 				unknownSequence(b);
-				break;
+				return;
 			}
+			mAboutToAutoWrap = false;
 			break;
 		case 'L': // "${CSI}{N}L" - insert ${N} lines (IL).
 		{
@@ -1408,6 +1430,7 @@ public final class TerminalEmulator {
 			break;
 		case 'M': // "${CSI}${N}M" - delete N lines (DL).
 		{
+			mAboutToAutoWrap = false;
 			int linesAfterCursor = mBottomMargin - mCursorRow;
 			int linesToDelete = Math.min(getArg0(1), linesAfterCursor);
 			int linesToMove = linesAfterCursor - linesToDelete;
@@ -1422,6 +1445,7 @@ public final class TerminalEmulator {
 			// As characters are deleted, the remaining characters between the cursor and right margin move to the left.
 			// Character attributes move with the characters. The terminal adds blank spaces with no visual character
 			// attributes at the right margin. DCH has no effect outside the scrolling margins."
+			mAboutToAutoWrap = false;
 			int cellsAfterCursor = mColumns - mCursorCol;
 			int cellsToDelete = Math.min(getArg0(1), cellsAfterCursor);
 			int cellsToMove = cellsAfterCursor - cellsToDelete;
@@ -1444,7 +1468,7 @@ public final class TerminalEmulator {
 				final int linesToScrollArg = getArg0(1);
 				final int linesBetweenTopAndBottomMargins = mBottomMargin - mTopMargin;
 				final int linesToScroll = Math.min(linesBetweenTopAndBottomMargins, linesToScrollArg);
-				mScreen.blockCopy(0, mTopMargin, mColumns, linesBetweenTopAndBottomMargins - linesToScroll, 0, linesToScroll);
+				mScreen.blockCopy(0, mTopMargin, mColumns, linesBetweenTopAndBottomMargins - linesToScroll, 0, mTopMargin + linesToScroll);
 				blockClear(0, mTopMargin, mColumns, linesToScroll);
 			} else {
 				// "${CSI}${func};${startx};${starty};${firstrow};${lastrow}T" - initiate highlight mouse tracking.
@@ -1452,6 +1476,7 @@ public final class TerminalEmulator {
 			}
 			break;
 		case 'X': // "${CSI}${N}X" - Erase ${N:=1} character(s) (ECH). FIXME: Clears character attributes?
+			mAboutToAutoWrap = false;
 			mScreen.blockSet(mCursorCol, mCursorRow, Math.min(getArg0(1), mColumns - mCursorCol), 1, ' ', getStyle());
 			break;
 		case 'Z': // Cursor Backward Tabulation (CBT). Move the active position n tabs backward.
@@ -2156,15 +2181,22 @@ public final class TerminalEmulator {
 
 		final boolean autoWrap = isDecsetInternalBitSet(DECSET_BIT_AUTOWRAP);
 		final int displayWidth = WcWidth.width(codePoint);
+		final boolean cursorInLastColumn = mCursorCol == mRightMargin - 1;
 
-		if (autoWrap && (mCursorCol == mRightMargin - 1 && ((mAboutToAutoWrap && displayWidth == 1) || displayWidth == 2))) {
-			mScreen.setLineWrap(mCursorRow);
-			mCursorCol = mLeftMargin;
-			if (mCursorRow + 1 < mBottomMargin) {
-				mCursorRow++;
-			} else {
-				scrollDownOneLine();
+		if (autoWrap) {
+			if (cursorInLastColumn && ((mAboutToAutoWrap && displayWidth == 1) || displayWidth == 2)) {
+				mScreen.setLineWrap(mCursorRow);
+				mCursorCol = mLeftMargin;
+				if (mCursorRow + 1 < mBottomMargin) {
+					mCursorRow++;
+				} else {
+					scrollDownOneLine();
+				}
 			}
+		} else if (cursorInLastColumn && displayWidth == 2) {
+			// The behaviour when a wide character is output with cursor in the last column when
+			// autowrap is disabled is not obvious - it's ignored here.
+			return;
 		}
 
 		if (mInsertMode && displayWidth > 0) {

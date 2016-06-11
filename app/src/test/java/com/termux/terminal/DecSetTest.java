@@ -4,13 +4,13 @@ package com.termux.terminal;
  * <pre>
  * "CSI ? Pm h", DEC Private Mode Set (DECSET)
  * </pre>
- * 
+ * <p/>
  * and
- * 
+ * <p/>
  * <pre>
  * "CSI ? Pm l", DEC Private Mode Reset (DECRST)
  * </pre>
- * 
+ * <p/>
  * controls various aspects of the terminal
  */
 public class DecSetTest extends TerminalTestCase {
@@ -28,6 +28,11 @@ public class DecSetTest extends TerminalTestCase {
 		assertFalse(mTerminal.isShowingCursor());
 		mTerminal.reset();
 		assertTrue("Resetting the terminal should show the cursor", mTerminal.isShowingCursor());
+
+		enterString("\033[?25l");
+		assertFalse(mTerminal.isShowingCursor());
+		enterString("\033c"); // RIS resetting should reveal cursor.
+		assertTrue(mTerminal.isShowingCursor());
 	}
 
 	/** DECSET 2004, controls bracketed paste mode. */
@@ -57,6 +62,17 @@ public class DecSetTest extends TerminalTestCase {
 		mTerminal.reset();
 		mTerminal.paste("a");
 		assertEquals("Terminal reset() should disable bracketed paste mode", "a", mOutput.getOutputAndClear());
+	}
+
+	/** DECSET 7, DECAWM, controls wraparound mode. */
+	public void testWrapAroundMode() {
+		// Default with wraparound:
+		withTerminalSized(3, 3).enterString("abcd").assertLinesAre("abc", "d  ", "   ");
+		// With wraparound disabled:
+		withTerminalSized(3, 3).enterString("\033[?7labcd").assertLinesAre("abd", "   ", "   ");
+		enterString("efg").assertLinesAre("abg", "   ", "   ");
+		// Re-enabling wraparound:
+		enterString("\033[?7hhij").assertLinesAre("abh", "ij ", "   ");
 	}
 
 }

@@ -6,10 +6,13 @@
     <style name="Theme.Termux" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#000000</item>
         <item name="android:windowBackground">@android:color/black</item>
-        
+
         <!-- Seen in buttons on left drawer: -->
         <item name="android:colorAccent">#212121</item>
-    	<item name="android:alertDialogTheme">@style/TermuxAlertDialogStyle</item>
+        <item name="android:alertDialogTheme">@style/TermuxAlertDialogStyle</item>
+        <!-- Avoid action mode toolbar pushing down terminal content when
+             selecting text on pre-6.0 (non-floating toolbar). -->
+        <item name="android:windowActionModeOverlay">true</item>
     </style>
 
 	<style name="TermuxAlertDialogStyle" parent="@android:style/Theme.Material.Light.Dialog.Alert">

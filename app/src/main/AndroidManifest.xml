@@ -4,8 +4,8 @@
     android:sharedUserId="com.termux"
     android:sharedUserLabel="@string/shared_user_label" >
 
-	<uses-feature android:name="android.hardware.touchscreen" android:required="false" />
-	<uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.software.leanback" android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -14,11 +14,13 @@
 
     <application
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backupscheme"
         android:icon="@drawable/ic_launcher"
         android:banner="@drawable/banner"
         android:label="@string/application_name"
         android:theme="@style/Theme.Termux"
         android:supportsRtl="false" >
+
         <activity
             android:name="com.termux.app.TermuxActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
@@ -28,18 +30,64 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-		    <intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-		    </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
         </activity>
+
         <activity
             android:name="com.termux.app.TermuxHelpActivity"
             android:exported="false"
-            android:label="@string/application_help" />
+            android:theme="@android:style/Theme.Material.Light.DarkActionBar"
+            android:parentActivityName=".app.TermuxActivity"
+            android:label="@string/application_name" />
+
+        <activity
+            android:name="com.termux.filepicker.TermuxFileReceiverActivity"
+            android:label="@string/application_name"
+            android:taskAffinity="com.termux.filereceiver"
+            android:excludeFromRecents="true"
+            android:noHistory="true">
+            <!-- Accept multiple file types when sending. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/*" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="message/*" />
+                <data android:mimeType="multipart/*" />
+                <data android:mimeType="text/*" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+            <!-- Be more restrictive for viewing files, restricting ourselves to text files. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="application/*xml*" />
+                <data android:mimeType="application/*latex*" />
+                <data android:mimeType="application/javascript" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name=".filepicker.TermuxDocumentsProvider"
+            android:authorities="com.termux.documents"
+            android:grantUriPermissions="true"
+            android:exported="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
         <service
             android:name="com.termux.app.TermuxService"
             android:exported="false" />
+
     </application>
 
 </manifest>

@@ -55,7 +55,11 @@ public final class TermuxService extends Service implements SessionChangedCallba
 	/** Intent action to toggle the wifi lock, {@link #mWifiLock}, which this service may hold. */
 	private static final String ACTION_LOCK_WIFI = "com.termux.service_toggle_wifi_lock";
 	/** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
-	private static final String ACTION_EXECUTE = "com.termux.service_execute";
+	public static final String ACTION_EXECUTE = "com.termux.service_execute";
+
+    public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
+
+    public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
 
 	/** This service is only bound from inside the same process and never uses IPC. */
 	class LocalBinder extends Binder {
@@ -113,8 +117,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
 		} else if (ACTION_EXECUTE.equals(action)) {
 			Uri executableUri = intent.getData();
 			String executablePath = (executableUri == null ? null : executableUri.getPath());
-			String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra("com.termux.execute.arguments"));
-			String cwd = intent.getStringExtra("com.termux.execute.cwd");
+			String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(EXTRA_ARGUMENTS));
+			String cwd = intent.getStringExtra(EXTRA_CURRENT_WORKING_DIRECTORY);
 			TerminalSession newSession = createTermSession(executablePath, arguments, cwd, false);
 
 			// Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
@@ -237,17 +241,22 @@ public final class TermuxService extends Service implements SessionChangedCallba
 		final String prefixEnv = "PREFIX=" + PREFIX_PATH;
 		final String androidRootEnv = "ANDROID_ROOT=" + System.getenv("ANDROID_ROOT");
 		final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
+        // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
+        // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
+        final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
 		String[] env;
 		if (failSafe) {
-			env = new String[] { termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv };
+            // Keep the default path so that system binaries can be used in the failsafe session.
+            final String pathEnv = "PATH=" + System.getenv("PATH");
+            env = new String[] { termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv, externalStorageEnv };
 		} else {
 			final String ps1Env = "PS1=$ ";
 			final String ldEnv = "LD_LIBRARY_PATH=" + PREFIX_PATH + "/lib";
 			final String langEnv = "LANG=en_US.UTF-8";
-			final String pathEnv = "PATH=" + PREFIX_PATH + "/bin:" + PREFIX_PATH + "/bin/applets:" + System.getenv("PATH");
+			final String pathEnv = "PATH=" + PREFIX_PATH + "/bin:" + PREFIX_PATH + "/bin/applets";
 			final String pwdEnv = "PWD=" + cwd;
 
-			env = new String[] { termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv };
+			env = new String[] { termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv };
 		}
 
 		String shellName;

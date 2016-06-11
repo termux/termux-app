@@ -1,5 +1,8 @@
 package com.termux.terminal;
 
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
+
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -9,19 +12,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
-
-import com.termux.terminal.TerminalEmulator;
-import com.termux.terminal.TerminalOutput;
-
 public abstract class TerminalTestCase extends TestCase {
 
 	public static class MockTerminalOutput extends TerminalOutput {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		public final List<ChangedTitle> titleChanges = new ArrayList<>();
 		public final List<String> clipboardPuts = new ArrayList<>();
 		public int bellsRung = 0;
+        public int colorsChanged = 0;
 
 		@Override
 		public void write(byte[] data, int offset, int count) {
@@ -52,12 +50,17 @@ public abstract class TerminalTestCase extends TestCase {
 		public void onBell() {
 			bellsRung++;
 		}
-	}
+
+        @Override
+        public void onColorsChanged() {
+            colorsChanged++;
+        }
+    }
 
 	public TerminalEmulator mTerminal;
 	public MockTerminalOutput mOutput;
 
-	public static class ChangedTitle {
+	public static final class ChangedTitle {
 		final String oldTitle;
 		final String newTitle;
 
@@ -68,6 +71,7 @@ public abstract class TerminalTestCase extends TestCase {
 
 		@Override
 		public boolean equals(Object o) {
+			if (!(o instanceof ChangedTitle)) return false;
 			ChangedTitle other = (ChangedTitle) o;
 			return Objects.equals(oldTitle, other.oldTitle) && Objects.equals(newTitle, other.newTitle);
 		}
@@ -115,8 +119,8 @@ public abstract class TerminalTestCase extends TestCase {
 		}
 	}
 
-	private static class LineWrapper {
-		TerminalRow mLine;
+	private static final class LineWrapper {
+		final TerminalRow mLine;
 
 		public LineWrapper(TerminalRow line) {
 			mLine = line;
@@ -129,7 +133,7 @@ public abstract class TerminalTestCase extends TestCase {
 
 		@Override
 		public boolean equals(Object o) {
-			return ((LineWrapper) o).mLine == mLine;
+			return o instanceof LineWrapper && ((LineWrapper) o).mLine == mLine;
 		}
 	}
 

@@ -163,7 +163,12 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		}
 	}
 
-	public void testHorizontalTabColorsBackground() {
+    /**
+     * See comments on horizontal tab handling in TerminalEmulator.java.
+     *
+     * We do not want to color already written cells when tabbing over them.
+     */
+	public void DISABLED_testHorizontalTabColorsBackground() {
 		withTerminalSized(10, 3).enterString("\033[48;5;15m").enterString("\t");
 		assertCursorAt(0, 8);
 		for (int i = 0; i < 10; i++) {
@@ -171,5 +176,55 @@ public class CursorAndScreenTest extends TerminalTestCase {
 			assertEquals(expectedColor, TextStyle.decodeBackColor(getStyleAt(0, i)));
 		}
 	}
+
+	/**
+	 * Test interactions between the cursor overflow bit and various escape sequences.
+	 * <p/>
+	 * Adapted from hterm:
+	 * https://chromium.googlesource.com/chromiumos/platform/assets/+/2337afa5c063127d5ce40ec7fec9b602d096df86%5E%21/#F2
+	 */
+	public void testClearingOfAutowrap() {
+		// Fill a row with the last hyphen wrong, then run a command that
+		// modifies the screen, then add a hyphen. The wrap bit should be
+		// cleared, so the extra hyphen can fix the row.
+		withTerminalSized(15, 6);
+
+		enterString("-----  1  ----X");
+		enterString("\033[K-");  // EL
+
+		enterString("-----  2  ----X");
+		enterString("\033[J-");  // ED
+
+		enterString("-----  3  ----X");
+		enterString("\033[@-");  // ICH
+
+		enterString("-----  4  ----X");
+		enterString("\033[P-");  // DCH
+
+		enterString("-----  5  ----X");
+		enterString("\033[X-");  // ECH
+
+		// DL will delete the entire line but clear the wrap bit, so we
+		// expect a hyphen at the end and nothing else.
+		enterString("XXXXXXXXXXXXXXX");
+		enterString("\033[M-");  // DL
+
+		assertLinesAre(
+				"-----  1  -----",
+				"-----  2  -----",
+				"-----  3  -----",
+				"-----  4  -----",
+				"-----  5  -----",
+				"              -");
+	}
+
+    public void testBackspaceAcrossWrappedLines() {
+        // Backspace should not go to previous line if not auto-wrapped:
+        withTerminalSized(3, 3).enterString("hi\r\n\b\byou").assertLinesAre("hi ", "you", "   ");
+        // Backspace should go to previous line if auto-wrapped:
+        withTerminalSized(3, 3).enterString("hi y").assertLinesAre("hi ", "y  ", "   ").enterString("\b\b#").assertLinesAre("hi#", "y  ", "   ");
+        // Initial backspace should do nothing:
+        withTerminalSized(3, 3).enterString("\b\b\b\bhi").assertLinesAre("hi ", "   ", "   ");
+    }
 
 }

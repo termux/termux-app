@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
    <string name="application_name">Termux</string>
-   <string name="application_help">Termux help</string>
    <string name="shared_user_label">Termux user</string>
    <string name="new_session">New session</string>
-   <string name="new_session_normal_unnamed">Normal - unnamed</string>
-   <string name="new_session_normal_named">Normal - named</string>
    <string name="new_session_failsafe">Failsafe</string>
    <string name="toggle_soft_keyboard">Keyboard</string>
    <string name="reset_terminal">Reset</string>
@@ -15,7 +12,7 @@
    <string name="help">Help</string>
 
    <string name="welcome_dialog_title">Welcome to Termux</string>
-   <string name="welcome_dialog_body">Long press anywhere on the terminal for a context menu where Help is available.\n\nExecute \'apt update\' to update the packages list before installing packages.</string>
+   <string name="welcome_dialog_body">Long press and select <i>More…</i> to show a menu where <i>Help</i> is available.\n\nExecute <b>apt update</b> to update the packages list before installing packages.</string>
    <string name="welcome_dialog_dont_show_again_button">Do not show again</string>
 
    <string name="bootstrap_installer_body">Installing…</string>
@@ -30,18 +27,18 @@
 
    <string name="reset_toast_notification">Terminal reset.</string>
 
-  <string name="select">Select…</string>
-  <string name="select_text">Select text</string>
   <string name="select_url">Select URL</string>
   <string name="select_url_dialog_title">Click URL to copy or long press to open</string>
-  <string name="select_all_and_share">Select all text and share</string>
+  <string name="select_all_and_share">Share transcript</string>
   <string name="select_url_no_found">No URL found in the terminal.</string>
   <string name="select_url_copied_to_clipboard">URL copied to clipboard</string>
   <string name="share_transcript_chooser_title">Send text to:</string>
 
   <string name="paste_text">Paste</string>
-  <string name="kill_process">Hangup</string>
+  <string name="copy_text">Copy</string>
+  <string name="text_selection_more">More…</string>
 
+  <string name="kill_process">Hangup</string>
   <string name="confirm_kill_process">Close this process?</string>
 
   <string name="session_rename_title">Set session name</string>
@@ -55,5 +52,9 @@
   <string name="notification_action_exit">Exit</string>
   <string name="notification_action_wakelock">Wake</string>
   <string name="notification_action_wifilock">Wifi</string>
+
+  <string name="file_received_title">Save file in ~/downloads/</string>
+  <string name="file_received_edit_button">Edit</string>
+  <string name="file_received_open_folder_button">Open folder</string>
 
 </resources>

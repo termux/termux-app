@@ -2,7 +2,7 @@ package com.termux.terminal;
 
 /**
  * ${CSI}${top};${bottom}r" - set Scrolling Region [top;bottom] (default = full size of window) (DECSTBM).
- * 
+ * <p/>
  * "DECSTBM moves the cursor to column 1, line 1 of the page" (http://www.vt100.net/docs/vt510-rm/DECSTBM).
  */
 public class ScrollRegionTest extends TerminalTestCase {
@@ -94,4 +94,8 @@ public class ScrollRegionTest extends TerminalTestCase {
 		withTerminalSized(3, 3).enterString("\033[?69h\033[0;2sABCD\0339").assertLinesAre("B  ", "D  ", "   ");
 	}
 
+	public void testScrollDownWithScrollRegion() {
+		withTerminalSized(2, 5).enterString("1\r\n2\r\n3\r\n4\r\n5").assertLinesAre("1 ", "2 ", "3 ", "4 ", "5 ");
+		enterString("\033[3r").enterString("\033[2T").assertLinesAre("1 ", "2 ", "  ", "  ", "3 ");
+	}
 }

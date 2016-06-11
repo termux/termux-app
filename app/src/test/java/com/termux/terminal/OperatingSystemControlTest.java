@@ -1,10 +1,10 @@
 package com.termux.terminal;
 
+import android.util.Base64;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import android.util.Base64;
 
 /** "ESC ]" is the Operating System Command. */
 public class OperatingSystemControlTest extends TerminalTestCase {
@@ -15,7 +15,7 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 		withTerminalSized(10, 10);
 		enterString("\033]0;Hello, world\007");
 		assertEquals("Hello, world", mTerminal.getTitle());
-		expectedTitleChanges.add(new ChangedTitle((String) null, "Hello, world"));
+		expectedTitleChanges.add(new ChangedTitle(null, "Hello, world"));
 		assertEquals(expectedTitleChanges, mOutput.titleChanges);
 
 		enterString("\033]0;Goodbye, world\007");

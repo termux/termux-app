@@ -1,16 +1,5 @@
 package com.termux.app;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -18,12 +7,27 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
+import android.os.Build;
+import android.os.Environment;
 import android.system.Os;
 import android.util.Log;
 import android.util.Pair;
+import android.view.WindowManager;
 
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Install the Termux bootstrap packages if necessary by following the below steps:
@@ -138,27 +142,35 @@ final class TermuxInstaller {
 					activity.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
-									.setNegativeButton(R.string.bootstrap_error_abort, new OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.dismiss();
-									activity.finish();
-								}
-							}).setPositiveButton(R.string.bootstrap_error_try_again, new OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.dismiss();
-									TermuxInstaller.setupIfNeeded(activity, whenDone);
-								}
-							}).show();
+							try {
+								new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
+										.setNegativeButton(R.string.bootstrap_error_abort, new OnClickListener() {
+											@Override
+											public void onClick(DialogInterface dialog, int which) {
+												dialog.dismiss();
+												activity.finish();
+											}
+										}).setPositiveButton(R.string.bootstrap_error_try_again, new OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										dialog.dismiss();
+										TermuxInstaller.setupIfNeeded(activity, whenDone);
+									}
+								}).show();
+							} catch (WindowManager.BadTokenException e) {
+								// Activity already dismissed - ignore.
+							}
 						}
 					});
 				} finally {
 					activity.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							progress.dismiss();
+							try {
+								progress.dismiss();
+							} catch (RuntimeException e) {
+								// Activity already dismissed - ignore.
+							}
 						}
 					});
 				}
@@ -166,17 +178,28 @@ final class TermuxInstaller {
 		}.start();
 	}
 
-	/** Get bootstrap zip url for this systems cpu architecture. */
-	static URL determineZipUrl() throws MalformedURLException {
-		String arch = System.getProperty("os.arch");
-		if (arch.startsWith("arm") || arch.equals("aarch64")) {
-			// Handle different arm variants such as armv7l:
-			arch = "arm";
-		} else if (arch.equals("x86_64")) {
-			arch = "i686";
-		}
-		return new URL("http://apt.termux.com/bootstrap/bootstrap-" + arch + ".zip");
-	}
+    /** Get bootstrap zip url for this systems cpu architecture. */
+    static URL determineZipUrl() throws MalformedURLException {
+        String termuxArch = null;
+        // Note that we cannot use System.getProperty("os.arch") since that may give e.g. "aarch64"
+        // while a 64-bit runtime may not be installed (like on the Samsung Galaxy S5 Neo).
+        // Instead we search through the supported abi:s on the device, see:
+        // http://developer.android.com/ndk/guides/abis.html
+        // Note that we search for abi:s in preferred order, and want to avoid installing arm on
+        // an x86 system where arm emulation is available.
+        final String[] androidArchNames = {"arm64-v8a", "x86", "armeabi-v7a"};
+        final String[] termuxArchNames = {"aarch64", "i686", "arm"};
+
+        final List<String> supportedArches = Arrays.asList(Build.SUPPORTED_ABIS);
+        for (int i = 0; i < termuxArchNames.length; i++) {
+            if (supportedArches.contains(androidArchNames[i])) {
+                termuxArch = termuxArchNames[i];
+                break;
+            }
+        }
+
+        return new URL("https://termux.net/bootstrap/bootstrap-" + termuxArch + ".zip");
+    }
 
 	/** Delete a folder and all its content or throw. */
 	static void deleteFolder(File fileOrDirectory) {
@@ -189,6 +212,53 @@ final class TermuxInstaller {
 		if (!fileOrDirectory.delete()) {
 			throw new RuntimeException("Unable to delete " + (fileOrDirectory.isDirectory() ? "directory " : "file ") + fileOrDirectory.getAbsolutePath());
 		}
+	}
+
+	public static void setupStorageSymlinks(final Context context) {
+		final String LOG_TAG = "termux-storage";
+		new Thread() {
+			public void run() {
+				try {
+					File storageDir = new File(TermuxService.HOME_PATH, "storage");
+
+					if (storageDir.exists() && !storageDir.delete()) {
+						Log.e(LOG_TAG, "Could not delete old $HOME/storage");
+						return;
+					}
+
+					if (!storageDir.mkdirs()) {
+						Log.e(LOG_TAG, "Unable to mkdirs() for $HOME/storage");
+						return;
+					}
+
+					File sharedDir = Environment.getExternalStorageDirectory();
+					Os.symlink(sharedDir.getAbsolutePath(), new File(storageDir, "shared").getAbsolutePath());
+
+					File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+					Os.symlink(downloadsDir.getAbsolutePath(), new File(storageDir, "downloads").getAbsolutePath());
+
+					File dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+					Os.symlink(dcimDir.getAbsolutePath(), new File(storageDir, "dcim").getAbsolutePath());
+
+					File picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+					Os.symlink(picturesDir.getAbsolutePath(), new File(storageDir, "pictures").getAbsolutePath());
+
+					File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+					Os.symlink(musicDir.getAbsolutePath(), new File(storageDir, "music").getAbsolutePath());
+
+					File moviesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+					Os.symlink(moviesDir.getAbsolutePath(), new File(storageDir, "movies").getAbsolutePath());
+
+					final File[] dirs = context.getExternalFilesDirs(null);
+					if (dirs != null && dirs.length >= 2) {
+						final File externalDir = dirs[1];
+						Os.symlink(externalDir.getAbsolutePath(), new File(storageDir, "external").getAbsolutePath());
+					}
+				} catch (Exception e) {
+					Log.e(LOG_TAG, "Error setting up link", e);
+				}
+			}
+		}.start();
 	}
 
 }

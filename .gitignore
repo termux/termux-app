@@ -4,6 +4,8 @@
 
 # Built application files
 build/
+*.apk
+*.so
 
 # Crashlytics configuations
 com_crashlytics_export_strings.xml
@@ -29,6 +31,7 @@ local.properties
 .idea/modules.xml
 .idea/scopes/scope_settings.xml
 .idea/vcs.xml
+.idea/dictionaries/
 *.iml
 
 # OS-specific files

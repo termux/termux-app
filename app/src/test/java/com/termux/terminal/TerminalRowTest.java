@@ -1,9 +1,9 @@
 package com.termux.terminal;
 
+import junit.framework.TestCase;
+
 import java.util.Arrays;
 import java.util.Random;
-
-import junit.framework.TestCase;
 
 public class TerminalRowTest extends TestCase {
 
@@ -96,7 +96,7 @@ public class TerminalRowTest extends TestCase {
 		assertEquals(80, row.getSpaceUsed());
 		assertColumnCharIndicesStartsWith(0, 1, 2, 3);
 
-		char[] someChars = new char[] { 'a', 'c', 'e', '4', '5', '6', '7', '8' };
+		char[] someChars = new char[]{'a', 'c', 'e', '4', '5', '6', '7', '8'};
 
 		char[] rawLine = new char[80];
 		Arrays.fill(rawLine, ' ');
@@ -373,13 +373,13 @@ public class TerminalRowTest extends TestCase {
 		assertEquals(0, WcWidth.width(0x009F));
 		assertEquals(1, Character.charCount(0x009F));
 
-		int[] points = new int[] { 0xC2541, 'a', '8', 0x73EE, 0x009F, 0x881F, 0x8324, 0xD4C9, 0xFFFD, 'B', 0x009B, 0x61C9, 'Z' };
+		int[] points = new int[]{0xC2541, 'a', '8', 0x73EE, 0x009F, 0x881F, 0x8324, 0xD4C9, 0xFFFD, 'B', 0x009B, 0x61C9, 'Z'};
 		// int[] expected = new int[] { TerminalEmulator.UNICODE_REPLACEMENT_CHAR, 'a', '8', 0x73EE, 0x009F, 0x881F, 0x8324, 0xD4C9, 0xFFFD,
 		// 'B', 0x009B, 0x61C9, 'Z' };
 		int currentColumn = 0;
-		for (int i = 0; i < points.length; i++) {
-			row.setChar(currentColumn, points[i], 0);
-			currentColumn += WcWidth.width(points[i]);
+		for (int point : points) {
+			row.setChar(currentColumn, point, 0);
+			currentColumn += WcWidth.width(point);
 		}
 		// assertLineStartsWith(points);
 		// assertEquals(Character.highSurrogate(0xC2541), line.mText[0]);

@@ -28,7 +28,7 @@ final class JNI {
 	 * @return the file descriptor resulting from opening /dev/ptmx master device. The sub process will have opened the
 	 *         slave device counterpart (/dev/pts/$N) and have it as stdint, stdout and stderr.
 	 */
-	public static native int createSubprocess(String cmd, String cwd, String[] args, String[] envVars, int[] processId);
+	public static native int createSubprocess(String cmd, String cwd, String[] args, String[] envVars, int[] processId, int rows, int columns);
 
 	/** Set the window size for a given pty, which allows connected programs to learn how large their screen is. */
 	public static native void setPtyWindowSize(int fd, int rows, int cols);
@@ -39,15 +39,6 @@ final class JNI {
 	 * @return if >= 0, the exit status of the process. If < 0, the signal causing the process to stop negated.
 	 */
 	public static native int waitFor(int processId);
-
-	/**
-	 * Send SIGHUP to a process group.
-	 * 
-	 * There exists a kill(2) system call wrapper in {@link android.os.Process#sendSignal(int, int)}, but that makes a
-	 * "if (pid > 0)" check so cannot be used for sending to a process group:
-	 * https://android.googlesource.com/platform/frameworks/base/+/donut-release/core/jni/android_util_Process.cpp
-	 */
-	public static native void hangupProcessGroup(int processId);
 
 	/** Close a file descriptor through the close(2) system call. */
 	public static native void close(int fileDescriptor);
