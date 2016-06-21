@@ -187,8 +187,8 @@ final class TermuxInstaller {
         // http://developer.android.com/ndk/guides/abis.html
         // Note that we search for abi:s in preferred order, and want to avoid installing arm on
         // an x86 system where arm emulation is available.
-        final String[] androidArchNames = {"arm64-v8a", "x86", "armeabi-v7a"};
-        final String[] termuxArchNames = {"aarch64", "i686", "arm"};
+        final String[] androidArchNames = {"arm64-v8a", "x86_64", "x86", "armeabi-v7a"};
+        final String[] termuxArchNames = {"aarch64", "x86_64", "i686", "arm"};
 
         final List<String> supportedArches = Arrays.asList(Build.SUPPORTED_ABIS);
         for (int i = 0; i < termuxArchNames.length; i++) {
