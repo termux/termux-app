@@ -38,8 +38,8 @@
   <string name="copy_text">Copy</string>
   <string name="text_selection_more">More…</string>
 
-  <string name="kill_process">Hangup</string>
-  <string name="confirm_kill_process">Close this process?</string>
+  <string name="kill_process">Kill process (%d)</string>
+  <string name="confirm_kill_process">Really kill this session?</string>
 
   <string name="session_rename_title">Set session name</string>
   <string name="session_rename_positive_button">Set</string>
