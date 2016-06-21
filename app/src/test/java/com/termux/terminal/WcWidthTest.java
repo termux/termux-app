@@ -60,4 +60,8 @@ public class WcWidthTest extends TestCase {
 		assertWidthIs(2, 0x11A3);
 	}
 
+    public void testKoala() {
+        assertWidthIs(1, 0x1F428);
+    }
+
 }
