@@ -111,7 +111,8 @@ public final class TermuxKeyListener implements TerminalKeyListener {
                 mActivity.changeFontSize(false);
             } else if (unicodeChar >= '1' && unicodeChar <= '9') {
                 int num = unicodeChar - '1';
-                if (service.getSessions().size() > num) mActivity.switchToSession(service.getSessions().get(num));
+                if (service.getSessions().size() > num)
+                    mActivity.switchToSession(service.getSessions().get(num));
             }
             return true;
         }
@@ -235,7 +236,7 @@ public final class TermuxKeyListener implements TerminalKeyListener {
                 session.writeCodePoint(altDown, resultingCodePoint);
             }
             return true;
-        }  else if (ctrlDown) {
+        } else if (ctrlDown) {
             List<TermuxPreferences.KeyboardShortcut> shortcuts = mActivity.mSettings.shortcuts;
             if (!shortcuts.isEmpty()) {
                 for (int i = shortcuts.size() - 1; i >= 0; i--) {

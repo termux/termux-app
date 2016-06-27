@@ -31,14 +31,29 @@ public final class ExtraKeysView extends GridLayout {
         int keyCode = 0;
         String chars = null;
         switch (keyName) {
-            case "ESC": keyCode = KeyEvent.KEYCODE_ESCAPE; break;
-            case "TAB": keyCode = KeyEvent.KEYCODE_TAB; break;
-            case "▲": keyCode = KeyEvent.KEYCODE_DPAD_UP; break;
-            case "◀": keyCode = KeyEvent.KEYCODE_DPAD_LEFT; break;
-            case "▶": keyCode = KeyEvent.KEYCODE_DPAD_RIGHT; break;
-            case "▼": keyCode = KeyEvent.KEYCODE_DPAD_DOWN; break;
-            case "―": chars = "-"; break;
-            default: chars = keyName;
+            case "ESC":
+                keyCode = KeyEvent.KEYCODE_ESCAPE;
+                break;
+            case "TAB":
+                keyCode = KeyEvent.KEYCODE_TAB;
+                break;
+            case "▲":
+                keyCode = KeyEvent.KEYCODE_DPAD_UP;
+                break;
+            case "◀":
+                keyCode = KeyEvent.KEYCODE_DPAD_LEFT;
+                break;
+            case "▶":
+                keyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
+                break;
+            case "▼":
+                keyCode = KeyEvent.KEYCODE_DPAD_DOWN;
+                break;
+            case "―":
+                chars = "-";
+                break;
+            default:
+                chars = keyName;
         }
 
         if (keyCode > 0) {

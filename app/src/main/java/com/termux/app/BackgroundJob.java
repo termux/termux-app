@@ -21,7 +21,7 @@ public final class BackgroundJob {
     public BackgroundJob(File cwd, File fileToExecute, String[] args) throws IOException {
         String[] env = buildEnvironment(false, cwd.getAbsolutePath());
 
-        String[] progArray = new String[args.length+1];
+        String[] progArray = new String[args.length + 1];
 
         mProcess = Runtime.getRuntime().exec(progArray, env, cwd);
 
@@ -81,32 +81,32 @@ public final class BackgroundJob {
     }
 
     public String[] buildEnvironment(boolean failSafe, String cwd) {
-            new File(TermuxService.HOME_PATH).mkdirs();
+        new File(TermuxService.HOME_PATH).mkdirs();
 
-            if (cwd == null) cwd = TermuxService.HOME_PATH;
+        if (cwd == null) cwd = TermuxService.HOME_PATH;
 
-            final String termEnv = "TERM=xterm-256color";
-            final String homeEnv = "HOME=" + TermuxService.HOME_PATH;
-            final String prefixEnv = "PREFIX=" + TermuxService.PREFIX_PATH;
-            final String androidRootEnv = "ANDROID_ROOT=" + System.getenv("ANDROID_ROOT");
-            final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
-            // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
-            // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
-            final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
-            String[] env;
-            if (failSafe) {
-                // Keep the default path so that system binaries can be used in the failsafe session.
-                final String pathEnv = "PATH=" + System.getenv("PATH");
-                return new String[] { termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv, externalStorageEnv };
-            } else {
-                final String ps1Env = "PS1=$ ";
-                final String ldEnv = "LD_LIBRARY_PATH=" + TermuxService.PREFIX_PATH + "/lib";
-                final String langEnv = "LANG=en_US.UTF-8";
-                final String pathEnv = "PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets";
-                final String pwdEnv = "PWD=" + cwd;
+        final String termEnv = "TERM=xterm-256color";
+        final String homeEnv = "HOME=" + TermuxService.HOME_PATH;
+        final String prefixEnv = "PREFIX=" + TermuxService.PREFIX_PATH;
+        final String androidRootEnv = "ANDROID_ROOT=" + System.getenv("ANDROID_ROOT");
+        final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
+        // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
+        // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
+        final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
+        String[] env;
+        if (failSafe) {
+            // Keep the default path so that system binaries can be used in the failsafe session.
+            final String pathEnv = "PATH=" + System.getenv("PATH");
+            return new String[]{termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv, externalStorageEnv};
+        } else {
+            final String ps1Env = "PS1=$ ";
+            final String ldEnv = "LD_LIBRARY_PATH=" + TermuxService.PREFIX_PATH + "/lib";
+            final String langEnv = "LANG=en_US.UTF-8";
+            final String pathEnv = "PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets";
+            final String pwdEnv = "PWD=" + cwd;
 
-                return new String[] { termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv };
-            }
+            return new String[]{termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv};
         }
+    }
 
 }

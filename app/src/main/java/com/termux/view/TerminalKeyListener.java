@@ -9,20 +9,20 @@ import com.termux.terminal.TerminalSession;
 /**
  * Input and scale listener which may be set on a {@link TerminalView} through
  * {@link TerminalView#setOnKeyListener(TerminalKeyListener)}.
- *
+ * <p/>
  * TODO: Rename to TerminalViewClient.
  */
 public interface TerminalKeyListener {
 
-	/** Callback function on scale events according to {@link ScaleGestureDetector#getScaleFactor()}. */
-	float onScale(float scale);
+    /** Callback function on scale events according to {@link ScaleGestureDetector#getScaleFactor()}. */
+    float onScale(float scale);
 
-	/** On a single tap on the terminal if terminal mouse reporting not enabled. */
-	void onSingleTapUp(MotionEvent e);
+    /** On a single tap on the terminal if terminal mouse reporting not enabled. */
+    void onSingleTapUp(MotionEvent e);
 
-	boolean shouldBackButtonBeMappedToEscape();
+    boolean shouldBackButtonBeMappedToEscape();
 
-	void copyModeChanged(boolean copyMode);
+    void copyModeChanged(boolean copyMode);
 
     boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession session);
 

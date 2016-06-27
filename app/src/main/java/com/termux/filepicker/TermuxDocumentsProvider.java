@@ -23,9 +23,9 @@ import java.util.LinkedList;
 /**
  * A document provider for the Storage Access Framework which exposes the files in the
  * $HOME/ folder to other apps.
- * <p>
+ * <p/>
  * Note that this replaces providing an activity matching the ACTION_GET_CONTENT intent:
- * <p>
+ * <p/>
  * "A document provider and ACTION_GET_CONTENT should be considered mutually exclusive. If you
  * support both of them simultaneously, your app will appear twice in the system picker UI,
  * offering two different ways of accessing your stored data. This would be confusing for users."
@@ -172,7 +172,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
     /**
      * Get the document id given a file. This document id must be consistent across time as other
      * applications may save the ID and use it to reference documents later.
-     * <p>
+     * <p/>
      * The reverse of @{link #getFileForDocId}.
      */
     private static String getDocIdForFile(File file) {
