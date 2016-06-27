@@ -1,68 +1,65 @@
 package com.termux.app;
 
-import android.app.Activity;
-import android.graphics.Rect;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
+
+import com.termux.R;
 
 /**
- * Utility to make the touch keyboard and immersive mode work with full screen activities.
- * 
+ * Utility to manage full screen immersive mode.
+ * <p/>
  * See https://code.google.com/p/android/issues/detail?id=5497
  */
-final class FullScreenHelper implements ViewTreeObserver.OnGlobalLayoutListener {
+final class FullScreenHelper {
 
-	private boolean mEnabled = false;
-	private final Activity mActivity;
-	private final Rect mWindowRect = new Rect();
+    private boolean mEnabled = false;
+    final TermuxActivity mActivity;
 
-	public FullScreenHelper(Activity activity) {
-		this.mActivity = activity;
-	}
+    public FullScreenHelper(TermuxActivity activity) {
+        this.mActivity = activity;
+    }
 
-	public void setImmersive(boolean enabled) {
-		Window win = mActivity.getWindow();
+    public void setImmersive(boolean enabled) {
+        if (enabled == mEnabled) return;
+        mEnabled = enabled;
 
-		if (enabled == mEnabled) {
-			if (!enabled) win.setFlags(0, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-			return;
-		}
-		mEnabled = enabled;
+        View decorView = mActivity.getWindow().getDecorView();
 
-		final View childViewOfContent = ((FrameLayout) mActivity.findViewById(android.R.id.content)).getChildAt(0);
-		if (enabled) {
-			win.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-			setImmersiveMode();
-			childViewOfContent.getViewTreeObserver().addOnGlobalLayoutListener(this);
-		} else {
-			win.setFlags(0, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-			win.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-			childViewOfContent.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-			((LayoutParams) childViewOfContent.getLayoutParams()).height = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-		}
-	}
+        if (enabled) {
+            decorView.setOnSystemUiVisibilityChangeListener
+                (new View.OnSystemUiVisibilityChangeListener() {
+                    @Override
+                    public void onSystemUiVisibilityChange(int visibility) {
+                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                            if (mActivity.mSettings.isShowExtraKeys()) {
+                                mActivity.findViewById(R.id.viewpager).setVisibility(View.VISIBLE);
+                            }
+                            setImmersiveMode();
+                        } else {
+                            mActivity.findViewById(R.id.viewpager).setVisibility(View.GONE);
+                        }
+                    }
+                });
+            setImmersiveMode();
+        } else {
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+            decorView.setOnSystemUiVisibilityChangeListener(null);
+        }
+    }
 
-	private void setImmersiveMode() {
-		mActivity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-	}
+    private static boolean isColorLight(int color) {
+        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
+        return darkness < 0.5;
+    }
 
-	@Override
-	public void onGlobalLayout() {
-		final View childViewOfContent = ((FrameLayout) mActivity.findViewById(android.R.id.content)).getChildAt(0);
-
-		if (mEnabled) setImmersiveMode();
-
-		childViewOfContent.getWindowVisibleDisplayFrame(mWindowRect);
-		int usableHeightNow = Math.min(mWindowRect.height(), childViewOfContent.getRootView().getHeight());
-		FrameLayout.LayoutParams layout = (LayoutParams) childViewOfContent.getLayoutParams();
-		if (layout.height != usableHeightNow) {
-			layout.height = usableHeightNow;
-			childViewOfContent.requestLayout();
-		}
-	}
+    void setImmersiveMode() {
+        int flags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        int color = ((ColorDrawable) mActivity.getWindow().getDecorView().getBackground()).getColor();
+        if (isColorLight(color)) flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        mActivity.getWindow().getDecorView().setSystemUiVisibility(flags);
+    }
 
 }

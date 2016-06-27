@@ -352,4 +352,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
 		if (mSessionChangeCallback != null) mSessionChangeCallback.onBell(session);
 	}
 
+    @Override
+    public void onColorsChanged(TerminalSession session) {
+        if (mSessionChangeCallback != null) mSessionChangeCallback.onColorsChanged(session);
+    }
+
 }

@@ -1816,6 +1816,7 @@ public final class TerminalEmulator {
 							return;
 						} else {
 							mColors.tryParseColor(colorIndex, textParameter.substring(parsingPairStart, i));
+                            mSession.onColorsChanged();
 							colorIndex = -1;
 							parsingPairStart = -1;
 						}
@@ -1851,6 +1852,7 @@ public final class TerminalEmulator {
 									+ String.format(Locale.US, "%04x", b) + bellOrStringTerminator);
 						} else {
 							mColors.tryParseColor(specialIndex, colorSpec);
+                            mSession.onColorsChanged();
 						}
 						specialIndex++;
 						if (endOfInput || (specialIndex > TextStyle.COLOR_INDEX_CURSOR) || ++charIndex >= textParameter.length()) break;
@@ -1877,6 +1879,7 @@ public final class TerminalEmulator {
 			// parameters are given, the entire table will be reset.
 			if (textParameter.isEmpty()) {
 				mColors.reset();
+                mSession.onColorsChanged();
 			} else {
 				int lastIndex = 0;
 				for (int charIndex = 0;; charIndex++) {
@@ -1885,6 +1888,7 @@ public final class TerminalEmulator {
 						try {
 							int colorToReset = Integer.parseInt(textParameter.substring(lastIndex, charIndex));
 							mColors.reset(colorToReset);
+                            mSession.onColorsChanged();
 							if (endOfInput) break;
 							charIndex++;
 							lastIndex = charIndex;
@@ -1899,6 +1903,7 @@ public final class TerminalEmulator {
 		case 111: // Reset background color.
 		case 112: // Reset cursor color.
 			mColors.reset(TextStyle.COLOR_INDEX_FOREGROUND + (value - 110));
+            mSession.onColorsChanged();
 			break;
 		case 119: // Reset highlight color.
 			break;
@@ -2273,6 +2278,7 @@ public final class TerminalEmulator {
 		mUtf8Index = mUtf8ToFollow = 0;
 
 		mColors.reset();
+        mSession.onColorsChanged();
 	}
 
 	public String getSelectedText(int x1, int y1, int x2, int y2) {

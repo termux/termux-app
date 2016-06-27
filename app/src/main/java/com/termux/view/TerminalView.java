@@ -10,7 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.AudioManager;
 import android.os.Build;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -34,27 +33,14 @@ import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalBuffer;
-import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
 
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
 
     /** Log view key and IME events. */
     private static final boolean LOG_KEY_EVENTS = false;
-
-    public interface KeyboardModifiers {
-        boolean readControlButton();
-        boolean readAltButton();
-    }
-
-    public KeyboardModifiers mModifiers;
 
 	/** The currently displayed terminal session, whose emulator is {@link #mEmulator}. */
 	TerminalSession mTermSession;
@@ -67,9 +53,6 @@ public final class TerminalView extends View {
 
 	/** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
 	int mTopRow;
-
-	/** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
-	boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
 
 	boolean mIsSelectingText = false, mIsDraggingLeftSelection, mInitialTextSelection;
 	int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
@@ -245,10 +228,13 @@ public final class TerminalView extends View {
 		//
 		// If using just "TYPE_NULL", there is a problem with the "Google Pinyin Input" being in
 		// word mode when used with the "En" tab available when the "Show English keyboard" option
-		// is enabled - see https://github.com/termux/termux-packages/issues/25.
+		// is enabled - see https://github.com/termux/termux-packages/issues/25. It also causes
+        // the normal Google keyboard to show a row of numbers, see
+        // https://github.com/termux/termux-app/issues/87
 		//
-		// Adding TYPE_TEXT_FLAG_NO_SUGGESTIONS fixes Pinyin Input, put causes Swype to be put in
-		// word mode... Using TYPE_TEXT_VARIATION_VISIBLE_PASSWORD fixes that.
+		// Adding TYPE_TEXT_FLAG_NO_SUGGESTIONS fixes Pinyin Input and removes the row of numbers
+        // on the Google keyboard. . It also causes Swype to be put in
+		// word mode, but using TYPE_TEXT_VARIATION_VISIBLE_PASSWORD fixes that.
 		//
 		// So a bit messy. If this gets too messy it's perhaps best resolved by reverting back to just
 		// "TYPE_NULL" and let the Pinyin Input english keyboard be in word mode.
@@ -259,28 +245,20 @@ public final class TerminalView extends View {
 
 		return new BaseInputConnection(this, true) {
 
-			@Override
-			public boolean beginBatchEdit() {
-				if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: beginBatchEdit()");
-				return true;
-			}
-
-			@Override
-			public boolean endBatchEdit() {
-				if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: endBatchEdit()");
-				return false;
-			}
-
             @Override
             public boolean finishComposingText() {
                 if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: finishComposingText()");
                 commitText(getEditable(), 0);
+
+                // Clear the editable.
+                getEditable().clear();
+
                 return true;
             }
 
-			@Override
-			public boolean commitText(CharSequence text, int newCursorPosition) {
-				if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: commitText(\"" + text + "\", " + newCursorPosition + ")");
+            @Override
+            public boolean commitText(CharSequence text, int newCursorPosition) {
+                if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: commitText(\"" + text + "\", " + newCursorPosition + ")");
 				if (mEmulator == null) return true;
 				final int textLengthInChars = text.length();
 				for (int i = 0; i < textLengthInChars; i++) {
@@ -296,9 +274,24 @@ public final class TerminalView extends View {
 					} else {
 						codePoint = firstChar;
 					}
-					inputCodePoint(codePoint, false, false);
+
+                    boolean ctrlHeld = false;
+                    if (codePoint <= 31 && codePoint != 27) {
+                        // E.g. penti keyboard for ctrl input.
+                        ctrlHeld = true;
+                        switch (codePoint) {
+                            case 31: codePoint = '_'; break;
+                            case 30: codePoint = '^'; break;
+                            case 29: codePoint = ']'; break;
+                            case 28: codePoint = '\\'; break;
+                            default: codePoint += 96; break;
+                        }
+                    }
+
+                    inputCodePoint(codePoint, ctrlHeld, false);
 				}
-				return true;
+
+                return true;
 			}
 
 			@Override
@@ -313,7 +306,18 @@ public final class TerminalView extends View {
 				return true;
 			}
 
-		};
+            @Override
+            public boolean setComposingText(CharSequence text, int newCursorPosition) {
+                if (text.length() == 0) {
+                    // Avoid log spam "SpannableStringBuilder: SPAN_EXCLUSIVE_EXCLUSIVE spans cannot
+                    // have a zero length" when backspacing with the Google keyboard.
+                    getEditable().clear();
+                } else {
+                    super.setComposingText(text, newCursorPosition);
+                }
+                return true;
+            }
+        };
 	}
 
 	@Override
@@ -377,6 +381,12 @@ public final class TerminalView extends View {
 		mRenderer = new TerminalRenderer(textSize, mRenderer == null ? Typeface.MONOSPACE : mRenderer.mTypeface);
 		updateSize();
 	}
+
+    public void setTypeface(Typeface newTypeface) {
+        mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
+        updateSize();
+        invalidate();
+    }
 
 	@Override
 	public boolean onCheckIsTextEditor() {
@@ -546,19 +556,22 @@ public final class TerminalView extends View {
 		if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
 		if (mEmulator == null) return true;
 
-		int metaState = event.getMetaState();
-		boolean controlDownFromEvent = event.isCtrlPressed();
-		boolean leftAltDownFromEvent = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0;
-		boolean rightAltDownFromEvent = (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
-
-		if (handleVirtualKeys(keyCode, event, true)) {
+		if (mOnKeyListener.onKeyDown(keyCode, event, mTermSession)) {
 			invalidate();
 			return true;
 		} else if (event.isSystem() && (!mOnKeyListener.shouldBackButtonBeMappedToEscape() || keyCode != KeyEvent.KEYCODE_BACK)) {
 			return super.onKeyDown(keyCode, event);
-		}
+		} else if (event.getAction() == KeyEvent.ACTION_MULTIPLE && keyCode == KeyEvent.KEYCODE_UNKNOWN) {
+            mTermSession.write(event.getCharacters());
+            return true;
+        }
 
-		int keyMod = 0;
+        final int metaState = event.getMetaState();
+        final boolean controlDownFromEvent = event.isCtrlPressed();
+        final boolean leftAltDownFromEvent = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0;
+        final boolean rightAltDownFromEvent = (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
+
+        int keyMod = 0;
 		if (controlDownFromEvent) keyMod |= KeyHandler.KEYMOD_CTRL;
 		if (event.isAltPressed()) keyMod |= KeyHandler.KEYMOD_ALT;
 		if (event.isShiftPressed()) keyMod |= KeyHandler.KEYMOD_SHIFT;
@@ -608,15 +621,12 @@ public final class TerminalView extends View {
 					+ leftAltDownFromEvent + ")");
 		}
 
-        boolean controlDown = controlDownFromEvent || mVirtualControlKeyDown;
-        boolean altDown = leftAltDownFromEvent;
-        if (mModifiers != null) {
-            if (mModifiers.readControlButton()) controlDown = true;
-            if (mModifiers.readAltButton()) altDown = true;
-        }
+        final boolean controlDown = controlDownFromEvent || mOnKeyListener.readControlKey();
+        final boolean altDown = leftAltDownFromEvent || mOnKeyListener.readAltKey();
 
-		int resultingKeyCode = -1; // Set if virtual key causes this to be translated to key event.
-		if (controlDown) {
+        if (mOnKeyListener.onCodePoint(codePoint, controlDown, mTermSession)) return;
+
+        if (controlDown) {
 			if (codePoint >= 'a' && codePoint <= 'z') {
 				codePoint = codePoint - 'a' + 1;
 			} else if (codePoint >= 'A' && codePoint <= 'Z') {
@@ -635,87 +645,29 @@ public final class TerminalView extends View {
 				codePoint = 31;
 			} else if (codePoint == '8') {
 				codePoint = 127; // DEL
-			} else if (codePoint == '9') {
-				resultingKeyCode = KeyEvent.KEYCODE_F11;
-			} else if (codePoint == '0') {
-				resultingKeyCode = KeyEvent.KEYCODE_F12;
 			}
-		} else if (mVirtualFnKeyDown) {
-            int lowerCase = Character.toLowerCase(codePoint);
-            switch (lowerCase) {
-                // Arrow keys.
-                case 'w': resultingKeyCode = KeyEvent.KEYCODE_DPAD_UP; break;
-                case 'a': resultingKeyCode = KeyEvent.KEYCODE_DPAD_LEFT; break;
-                case 's': resultingKeyCode = KeyEvent.KEYCODE_DPAD_DOWN; break;
-                case 'd': resultingKeyCode = KeyEvent.KEYCODE_DPAD_RIGHT; break;
+		}
 
-                // Page up and down.
-                case 'p': resultingKeyCode = KeyEvent.KEYCODE_PAGE_UP; break;
-                case 'n': resultingKeyCode = KeyEvent.KEYCODE_PAGE_DOWN; break;
-
-                // Some special keys:
-                case 't': resultingKeyCode = KeyEvent.KEYCODE_TAB; break;
-                case 'i': resultingKeyCode = KeyEvent.KEYCODE_INSERT; break;
-                case 'h': resultingKeyCode = KeyEvent.KEYCODE_MOVE_HOME; break;
-
-                // Special characters to input.
-                case 'u': codePoint = '_'; break;
-                case 'l': codePoint = '|'; break;
-
-                // Function keys.
-                case '1': case '2': case '3':
-                case '4': case '5': case '6':
-                case '7': case '8': case '9':
-                    resultingKeyCode = (codePoint - '1') + KeyEvent.KEYCODE_F1;
+        if (codePoint > -1) {
+            // Work around bluetooth keyboards sending funny unicode characters instead
+            // of the more normal ones from ASCII that terminal programs expect - the
+            // desire to input the original characters should be low.
+            switch (codePoint) {
+                case 0x02DC: // SMALL TILDE.
+                    codePoint = 0x007E; // TILDE (~).
                     break;
-                case '0':
-                    resultingKeyCode = KeyEvent.KEYCODE_F10;
+                case 0x02CB: // MODIFIER LETTER GRAVE ACCENT.
+                    codePoint = 0x0060; // GRAVE ACCENT (`).
                     break;
-
-                // Other special keys.
-                case 'e': codePoint = /*Escape*/ 27; break;
-                case '.': codePoint = /*^.*/ 28; break;
-
-                case 'b': // alt+b, jumping backward in readline.
-                case 'f': // alf+f, jumping forward in readline.
-                case 'x': // alt+x, common in emacs.
-                    codePoint = lowerCase;
-                    altDown = true;
-                    break;
-
-                // Volume control.
-                case 'v':
-                    codePoint = -1;
-                    AudioManager audio = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
-                    audio.adjustSuggestedStreamVolume(AudioManager.ADJUST_SAME, AudioManager.USE_DEFAULT_STREAM_TYPE, AudioManager.FLAG_SHOW_UI);
+                case 0x02C6: // MODIFIER LETTER CIRCUMFLEX ACCENT.
+                    codePoint = 0x005E; // CIRCUMFLEX ACCENT (^).
                     break;
             }
-		}
 
-		if (codePoint > -1) {
-			if (resultingKeyCode > -1) {
-				handleKeyCode(resultingKeyCode, 0);
-			} else {
-				// Work around bluetooth keyboards sending funny unicode characters instead
-				// of the more normal ones from ASCII that terminal programs expect - the
-				// desire to input the original characters should be low.
-				switch (codePoint) {
-					case 0x02DC: // SMALL TILDE.
-						codePoint = 0x007E; // TILDE (~).
-						break;
-					case 0x02CB: // MODIFIER LETTER GRAVE ACCENT.
-						codePoint = 0x0060; // GRAVE ACCENT (`).
-						break;
-					case 0x02C6: // MODIFIER LETTER CIRCUMFLEX ACCENT.
-						codePoint = 0x005E; // CIRCUMFLEX ACCENT (^).
-						break;
-				}
-
-				// If left alt, send escape before the code point to make e.g. Alt+B and Alt+F work in readline:
-				mTermSession.writeCodePoint(altDown, codePoint);
-			}
-		}
-	}
+            // If left alt, send escape before the code point to make e.g. Alt+B and Alt+F work in readline:
+            mTermSession.writeCodePoint(altDown, codePoint);
+        }
+    }
 
 	/** Input the specified keyCode if applicable and return if the input was consumed. */
 	public boolean handleKeyCode(int keyCode, int keyMod) {
@@ -740,7 +692,7 @@ public final class TerminalView extends View {
 		if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "onKeyUp(keyCode=" + keyCode + ", event=" + event + ")");
 		if (mEmulator == null) return true;
 
-		if (handleVirtualKeys(keyCode, event, false)) {
+		if (mOnKeyListener.onKeyUp(keyCode, event)) {
 			invalidate();
 			return true;
 		} else if (event.isSystem()) {
@@ -749,49 +701,6 @@ public final class TerminalView extends View {
 		}
 
 		return true;
-	}
-
-	/** Handle dedicated volume buttons as virtual keys if applicable. */
-	private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
-		InputDevice inputDevice = event.getDevice();
-		if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
-			// Do not steal dedicated buttons from a full external keyboard.
-			return false;
-		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "handleVirtualKeys(down=" + down + ") taking ctrl event");
-			mVirtualControlKeyDown = down;
-			return true;
-		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-			if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "handleVirtualKeys(down=" + down + ") taking Fn event");
-			mVirtualFnKeyDown = down;
-			return true;
-		}
-		return false;
-	}
-
-	public void checkForFontAndColors() {
-		try {
-            // Hard-coded paths since this file is used also in Termux:Float.
-            @SuppressLint("SdCardPath") File fontFile = new File("/data/data/com.termux/files/home/.termux/font.ttf");
-            @SuppressLint("SdCardPath") File colorsFile = new File("/data/data/com.termux/files/home/.termux/colors.properties");
-
-			final Properties props = new Properties();
-			if (colorsFile.isFile()) {
-				try (InputStream in = new FileInputStream(colorsFile)) {
-					props.load(in);
-				}
-			}
-			TerminalColors.COLOR_SCHEME.updateWith(props);
-			if (mEmulator != null) mEmulator.mColors.reset();
-
-			final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
-			mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
-			updateSize();
-
-			invalidate();
-		} catch (Exception e) {
-			Log.e(EmulatorDebug.LOG_TAG, "Error in checkForFontAndColors()", e);
-		}
 	}
 
 	/**

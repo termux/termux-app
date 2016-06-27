@@ -41,6 +41,9 @@ public final class TerminalSession extends TerminalOutput {
 		void onClipboardText(TerminalSession session, String text);
 
 		void onBell(TerminalSession session);
+
+        void onColorsChanged(TerminalSession session);
+
 	}
 
 	private static FileDescriptor wrapFileDescriptor(int fileDescriptor) {
@@ -328,5 +331,12 @@ public final class TerminalSession extends TerminalOutput {
 	public void onBell() {
 		mChangeCallback.onBell(this);
 	}
+
+    @Override
+    public void onColorsChanged() {
+        mChangeCallback.onColorsChanged(this);
+    }
+
+    public int getPid() { return mShellPid; }
 
 }

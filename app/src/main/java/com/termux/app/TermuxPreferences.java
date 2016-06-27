@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 final class TermuxPreferences {
@@ -83,9 +85,10 @@ final class TermuxPreferences {
         return mShowExtraKeys;
     }
 
-    void toggleShowExtraKeys(Context context) {
+    boolean toggleShowExtraKeys(Context context) {
         mShowExtraKeys = !mShowExtraKeys;
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SHOW_EXTRA_KEYS_KEY, mShowExtraKeys).apply();
+        return mShowExtraKeys;
     }
 
     int getFontSize() {
@@ -123,7 +126,9 @@ final class TermuxPreferences {
 
 	public void reloadFromProperties(Context context) {
 		try {
-			File propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
+			File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
+            if (!propsFile.exists()) propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
+
 			Properties props = new Properties();
 			if (propsFile.isFile() && propsFile.canRead()) {
 				try (FileInputStream in = new FileInputStream(propsFile)) {
@@ -144,10 +149,57 @@ final class TermuxPreferences {
 			}
 
 			mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
+
+            shortcuts.clear();
+            parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
+            parseAction("shortcut.next-session", SHORTCUT_ACTION_NEXT_SESSION, props);
+            parseAction("shortcut.previous-session", SHORTCUT_ACTION_PREVIOUS_SESSION, props);
+            parseAction("shortcut.rename-session", SHORTCUT_ACTION_RENAME_SESSION, props);
 		} catch (Exception e) {
 			Toast.makeText(context, "Error loading properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
 			Log.e("termux", "Error loading props", e);
 		}
 	}
+
+    public static final int SHORTCUT_ACTION_CREATE_SESSION = 1;
+    public static final int SHORTCUT_ACTION_NEXT_SESSION = 2;
+    public static final int SHORTCUT_ACTION_PREVIOUS_SESSION = 3;
+    public static final int SHORTCUT_ACTION_RENAME_SESSION = 4;
+
+    public final static class KeyboardShortcut {
+
+        public KeyboardShortcut(int codePoint, int shortcutAction) {
+            this.codePoint = codePoint;
+            this.shortcutAction = shortcutAction;
+        }
+
+        final int codePoint;
+        final int shortcutAction;
+    }
+
+    final List<KeyboardShortcut> shortcuts = new ArrayList<>();
+
+    private void parseAction(String name, int shortcutAction, Properties props) {
+        String value = props.getProperty(name);
+        if (value == null) return;
+        String[] parts = value.trim().split("\\+");
+        String input = parts.length == 2 ? parts[1].trim() : null;
+        if (!(parts.length == 2 && parts[0].trim().equalsIgnoreCase("ctrl")) || input.isEmpty() || input.length() > 2) {
+            Log.e("termux", "Keyboard shortcut '" + name + "' is not Ctrl+<something>");
+            return;
+        }
+
+        char c = input.charAt(0);
+        int codePoint = c;
+        if (Character.isLowSurrogate(c)) {
+            if (input.length() != 2 || Character.isHighSurrogate(input.charAt(1))) {
+                Log.e("termux", "Keyboard shortcut '" + name + "' is not Ctrl+<something>");
+                return;
+            } else {
+                codePoint = Character.toCodePoint(input.charAt(1), c);
+            }
+        }
+        shortcuts.add(new KeyboardShortcut(codePoint, shortcutAction));
+    }
 
 }

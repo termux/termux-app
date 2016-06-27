@@ -23,4 +23,6 @@ public abstract class TerminalOutput {
 	/** Notify the terminal client that a bell character (ASCII 7, bell, BEL, \a, ^G)) has been received. */
 	public abstract void onBell();
 
+    public abstract void onColorsChanged();
+
 }
