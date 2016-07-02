@@ -189,7 +189,7 @@ final class TermuxPreferences {
             mHatKey = getCodePoint(props.getProperty("hat-key", "."));
 
             mJmbBackKey = getCodePoint(props.getProperty("jump-backward-key", "b"));
-            mJmbForwardKey = getCodePoint(props.getProperty("-key", "f"));
+            mJmbForwardKey = getCodePoint(props.getProperty("jump-forward-key", "f"));
             mEmacsXKey = getCodePoint(props.getProperty("emacs-x-key", "x"));
 
             mShowVolKey = getCodePoint(props.getProperty("show-volume-key", "v"));
