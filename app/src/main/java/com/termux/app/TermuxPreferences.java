@@ -46,6 +46,24 @@ final class TermuxPreferences {
 
     boolean mBackIsEscape;
     boolean mShowExtraKeys;
+    int mLeftKey,
+        mRightKey,
+        mUpKey,
+        mDownKey,
+        mPgUpKey,
+        mPgDownKey,
+        mTabKey,
+        mInsertKey,
+        mHomeKey,
+        mUderscoreKey,
+        mPipeKey,
+        mEscapeKey,
+        mHatKey,
+        mJmbBackKey,
+        mJmbForwardKey,
+        mEmacsXKey,
+        mShowVolKey,
+        mWriteModeKey;
 
     TermuxPreferences(Context context) {
         reloadFromProperties(context);
@@ -152,6 +170,32 @@ final class TermuxPreferences {
 
             mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
 
+            mLeftKey = getCodePoint(props.getProperty("left-key", "a"));
+            mRightKey = getCodePoint(props.getProperty("right-key", "d"));
+            mUpKey = getCodePoint(props.getProperty("up-key", "w"));
+            mDownKey = getCodePoint(props.getProperty("down-key", "s"));
+
+            mPgUpKey = getCodePoint(props.getProperty("page-up-key", "p"));
+            mPgDownKey = getCodePoint(props.getProperty("page-down-key", "n"));
+
+            mTabKey = getCodePoint(props.getProperty("tab-key", "t"));
+            mInsertKey = getCodePoint(props.getProperty("insert-key", "i"));
+            mHomeKey = getCodePoint(props.getProperty("home-key", "h"));
+
+            mUderscoreKey = getCodePoint(props.getProperty("underscore-key", "u"));
+            mPipeKey = getCodePoint(props.getProperty("pipe-key", "p"));
+
+            mEscapeKey = getCodePoint(props.getProperty("escape-key", "e"));
+            mHatKey = getCodePoint(props.getProperty("hat-key", "."));
+
+            mJmbBackKey = getCodePoint(props.getProperty("jump-backward-key", "b"));
+            mJmbForwardKey = getCodePoint(props.getProperty("-key", "f"));
+            mEmacsXKey = getCodePoint(props.getProperty("emacs-x-key", "x"));
+
+            mShowVolKey = getCodePoint(props.getProperty("show-volume-key", "v"));
+
+            mWriteModeKey = getCodePoint(props.getProperty("show-extra-keys-key", "q"));
+
             shortcuts.clear();
             parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
             parseAction("shortcut.next-session", SHORTCUT_ACTION_NEXT_SESSION, props);
@@ -204,4 +248,17 @@ final class TermuxPreferences {
         shortcuts.add(new KeyboardShortcut(codePoint, shortcutAction));
     }
 
+    private int getCodePoint(String input){
+      char c = input.charAt(0);
+      int codePoint = c;
+      if (Character.isLowSurrogate(c)) {
+          if (input.length() != 2 || Character.isHighSurrogate(input.charAt(1))) {
+              Log.e("termux", "Keyboard key '" + input + "' is not a valid character");
+              return 0;
+          } else {
+              codePoint = Character.toCodePoint(input.charAt(1), c);
+          }
+      }
+      return codePoint;
+    }
 }

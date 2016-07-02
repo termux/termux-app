@@ -49,6 +49,96 @@ public final class TermuxKeyListener implements TerminalKeyListener {
     }
 
     @Override
+    public int getLeftKey() {
+        return mActivity.mSettings.mLeftKey;
+    }
+
+    @Override
+    public int getRightKey() {
+        return mActivity.mSettings.mRightKey;
+    }
+
+    @Override
+    public int getUpKey() {
+        return mActivity.mSettings.mUpKey;
+    }
+
+    @Override
+    public int getDownKey() {
+        return mActivity.mSettings.mDownKey;
+    }
+
+    @Override
+    public int getPgUpKey() {
+        return mActivity.mSettings.mPgUpKey;
+    }
+
+    @Override
+    public int getPgDownKey() {
+        return mActivity.mSettings.mPgDownKey;
+    }
+
+    @Override
+    public int getTabKey() {
+        return mActivity.mSettings.mTabKey;
+    }
+
+    @Override
+    public int getInsertKey() {
+        return mActivity.mSettings.mInsertKey;
+    }
+
+    @Override
+    public int getHomeKey() {
+        return mActivity.mSettings.mHomeKey;
+    }
+
+    @Override
+    public int getUderscoreKey() {
+        return mActivity.mSettings.mUderscoreKey;
+    }
+
+    @Override
+    public int getPipeKey() {
+        return mActivity.mSettings.mPipeKey;
+    }
+
+    @Override
+    public int getEscapeKey() {
+        return mActivity.mSettings.mEscapeKey;
+    }
+
+    @Override
+    public int getHatKey() {
+        return mActivity.mSettings.mHatKey;
+    }
+
+    @Override
+    public int getJmbBackKey() {
+        return mActivity.mSettings.mJmbBackKey;
+    }
+
+    @Override
+    public int getJmbForwardKey() {
+        return mActivity.mSettings.mJmbForwardKey;
+    }
+
+    @Override
+    public int getEmacsXKey() {
+        return mActivity.mSettings.mEmacsXKey;
+    }
+
+    @Override
+    public int getShowVolKey() {
+        return mActivity.mSettings.mShowVolKey;
+    }
+
+    @Override
+    public int getWriteModeKey() {
+        return mActivity.mSettings.mWriteModeKey;
+    }
+
+    @Override
     public void copyModeChanged(boolean copyMode) {
         // Disable drawer while copying.
         mActivity.getDrawer().setDrawerLockMode(copyMode ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
@@ -143,91 +233,75 @@ public final class TermuxKeyListener implements TerminalKeyListener {
             int resultingCodePoint = -1;
             boolean altDown = false;
             int lowerCase = Character.toLowerCase(codePoint);
-            switch (lowerCase) {
-                // Arrow keys.
-                case 'w':
-                    resultingKeyCode = KeyEvent.KEYCODE_DPAD_UP;
-                    break;
-                case 'a':
-                    resultingKeyCode = KeyEvent.KEYCODE_DPAD_LEFT;
-                    break;
-                case 's':
-                    resultingKeyCode = KeyEvent.KEYCODE_DPAD_DOWN;
-                    break;
-                case 'd':
-                    resultingKeyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
-                    break;
 
-                // Page up and down.
-                case 'p':
-                    resultingKeyCode = KeyEvent.KEYCODE_PAGE_UP;
-                    break;
-                case 'n':
-                    resultingKeyCode = KeyEvent.KEYCODE_PAGE_DOWN;
-                    break;
+            if(lowerCase == getUpKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_DPAD_UP;
+            }else if(lowerCase == getLeftKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_DPAD_LEFT;
+            }else if(lowerCase == getDownKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_DPAD_DOWN;
+            }else if(lowerCase == getRightKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
 
-                // Some special keys:
-                case 't':
-                    resultingKeyCode = KeyEvent.KEYCODE_TAB;
-                    break;
-                case 'i':
-                    resultingKeyCode = KeyEvent.KEYCODE_INSERT;
-                    break;
-                case 'h':
-                    resultingKeyCode = KeyEvent.KEYCODE_MOVE_HOME;
-                    break;
+            // Page up and down.
+          }else if(lowerCase == getPgUpKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_PAGE_UP;
+            }else if(lowerCase == getPgDownKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_PAGE_DOWN;
 
-                // Special characters to input.
-                case 'u':
-                    resultingCodePoint = '_';
-                    break;
-                case 'l':
-                    resultingCodePoint = '|';
-                    break;
+            // Some special keys:
+          }else if(lowerCase == getTabKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_TAB;
+            }else if(lowerCase == getInsertKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_INSERT;
+            }else if(lowerCase == getHomeKey()){
+                resultingKeyCode = KeyEvent.KEYCODE_MOVE_HOME;
 
-                // Function keys.
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                    resultingKeyCode = (codePoint - '1') + KeyEvent.KEYCODE_F1;
-                    break;
-                case '0':
-                    resultingKeyCode = KeyEvent.KEYCODE_F10;
-                    break;
+            // Special characters to input.
+          }else if(lowerCase == getUderscoreKey()){
+                resultingCodePoint = '_';
+            }else if(lowerCase == getPipeKey()){
+                resultingCodePoint = '|';
 
-                // Other special keys.
-                case 'e':
-                    resultingCodePoint = /*Escape*/ 27;
-                    break;
-                case '.':
-                    resultingCodePoint = /*^.*/ 28;
-                    break;
+            // Function keys.
+          }else if(lowerCase == '1' ||
+                    lowerCase == '2' ||
+                    lowerCase == '3' ||
+                    lowerCase == '4' ||
+                    lowerCase == '5' ||
+                    lowerCase == '6' ||
+                    lowerCase == '7' ||
+                    lowerCase == '8' ||
+                    lowerCase == '9' ){
+                resultingKeyCode = (codePoint - '1') + KeyEvent.KEYCODE_F1;
+            }else if(lowerCase == '0'){
+                resultingKeyCode = KeyEvent.KEYCODE_F10;
 
-                case 'b': // alt+b, jumping backward in readline.
-                case 'f': // alf+f, jumping forward in readline.
-                case 'x': // alt+x, common in emacs.
-                    resultingCodePoint = lowerCase;
-                    altDown = true;
-                    break;
+            // Other special keys.
+          }else if(lowerCase == getEscapeKey()){
+                resultingCodePoint = /*Escape*/ 27;
+            }else if(lowerCase == getHatKey()){
+                resultingCodePoint = /*^.*/ 28;
 
-                // Volume control.
-                case 'v':
-                    resultingCodePoint = -1;
-                    AudioManager audio = (AudioManager) mActivity.getSystemService(Context.AUDIO_SERVICE);
-                    audio.adjustSuggestedStreamVolume(AudioManager.ADJUST_SAME, AudioManager.USE_DEFAULT_STREAM_TYPE, AudioManager.FLAG_SHOW_UI);
-                    break;
+            }else if(lowerCase == getJmbBackKey() ||
+                      lowerCase == getJmbForwardKey() ||
+                      lowerCase == getEmacsXKey()){
+              // alt+b, jumping backward in readline.
+              // alf+f, jumping forward in readline.
+              // alt+x, common in emacs.
+                resultingCodePoint = lowerCase;
+                altDown = true;
 
-                // Writing mode:
-                case 'q':
-                    mActivity.toggleShowExtraKeys();
-                    break;
-            }
+            // Volume control.
+          }else if(lowerCase == getShowVolKey()){
+                resultingCodePoint = -1;
+                AudioManager audio = (AudioManager) mActivity.getSystemService(Context.AUDIO_SERVICE);
+                audio.adjustSuggestedStreamVolume(AudioManager.ADJUST_SAME, AudioManager.USE_DEFAULT_STREAM_TYPE, AudioManager.FLAG_SHOW_UI);
+
+            // Writing mode:
+          }else if(lowerCase == getWriteModeKey()){
+                mActivity.toggleShowExtraKeys();
+        }
 
             if (resultingKeyCode != -1) {
                 TerminalEmulator term = session.getEmulator();

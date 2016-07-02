@@ -22,6 +22,25 @@ public interface TerminalKeyListener {
 
     boolean shouldBackButtonBeMappedToEscape();
 
+    int getLeftKey();
+    int getRightKey();
+    int getUpKey();
+    int getDownKey();
+    int getPgUpKey();
+    int getPgDownKey();
+    int getTabKey();
+    int getInsertKey();
+    int getHomeKey();
+    int getUderscoreKey();
+    int getPipeKey();
+    int getEscapeKey();
+    int getHatKey();
+    int getJmbBackKey();
+    int getJmbForwardKey();
+    int getEmacsXKey();
+    int getShowVolKey();
+    int getWriteModeKey();
+
     void copyModeChanged(boolean copyMode);
 
     boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession session);
