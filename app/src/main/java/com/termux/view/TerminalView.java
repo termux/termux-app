@@ -80,16 +80,19 @@ public final class TerminalView extends View {
         super(context, attributes);
         mGestureRecognizer = new GestureAndScaleRecognizer(context, new GestureAndScaleRecognizer.Listener() {
 
+            boolean scrolledWithFinger;
+
             @Override
             public boolean onUp(MotionEvent e) {
                 mScrollRemainder = 0.0f;
-                if (mEmulator != null && mEmulator.isMouseTrackingActive() && !mIsSelectingText) {
+                if (mEmulator != null && mEmulator.isMouseTrackingActive() && !mIsSelectingText && !scrolledWithFinger) {
                     // Quick event processing when mouse tracking is active - do not wait for check of double tapping
                     // for zooming.
                     sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, true);
                     sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, false);
                     return true;
                 }
+                scrolledWithFinger = false;
                 return false;
             }
 
@@ -111,19 +114,20 @@ public final class TerminalView extends View {
             }
 
             @Override
-            public boolean onScroll(MotionEvent e2, float distanceX, float distanceY) {
+            public boolean onScroll(MotionEvent e, float distanceX, float distanceY) {
                 if (mEmulator == null || mIsSelectingText) return true;
-                if (mEmulator.isMouseTrackingActive() && e2.isFromSource(InputDevice.SOURCE_MOUSE)) {
+                if (mEmulator.isMouseTrackingActive() && e.isFromSource(InputDevice.SOURCE_MOUSE)) {
                     // If moving with mouse pointer while pressing button, report that instead of scroll.
                     // This means that we never report moving with button press-events for touch input,
                     // since we cannot just start sending these events without a starting press event,
                     // which we do not do for touch input, only mouse in onTouchEvent().
-                    sendMouseEventCode(e2, TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, true);
+                    sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, true);
                 } else {
+                    scrolledWithFinger = true;
                     distanceY += mScrollRemainder;
                     int deltaRows = (int) (distanceY / mRenderer.mFontLineSpacing);
                     mScrollRemainder = distanceY - deltaRows * mRenderer.mFontLineSpacing;
-                    doScroll(e2, deltaRows);
+                    doScroll(e, deltaRows);
                 }
                 return true;
             }
