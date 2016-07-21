@@ -1,10 +1,9 @@
 package com.termux.terminal;
 
-import android.view.KeyEvent;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import static android.view.KeyEvent.KEYCODE_BACK;
 import static android.view.KeyEvent.KEYCODE_BREAK;
 import static android.view.KeyEvent.KEYCODE_DEL;
 import static android.view.KeyEvent.KEYCODE_DPAD_CENTER;
@@ -51,6 +50,7 @@ import static android.view.KeyEvent.KEYCODE_NUMPAD_SUBTRACT;
 import static android.view.KeyEvent.KEYCODE_NUM_LOCK;
 import static android.view.KeyEvent.KEYCODE_PAGE_DOWN;
 import static android.view.KeyEvent.KEYCODE_PAGE_UP;
+import static android.view.KeyEvent.KEYCODE_SPACE;
 import static android.view.KeyEvent.KEYCODE_SYSRQ;
 import static android.view.KeyEvent.KEYCODE_TAB;
 
@@ -98,7 +98,7 @@ public final class KeyHandler {
         TERMCAP_TO_KEYCODE.put("kb", KEYCODE_DEL); // backspace key
 
         TERMCAP_TO_KEYCODE.put("kd", KEYCODE_DPAD_DOWN); // terminfo=kcud1, down-arrow key
-        TERMCAP_TO_KEYCODE.put("kh", KeyEvent.KEYCODE_HOME);
+        TERMCAP_TO_KEYCODE.put("kh", KEYCODE_HOME);
         TERMCAP_TO_KEYCODE.put("kl", KEYCODE_DPAD_LEFT);
         TERMCAP_TO_KEYCODE.put("kr", KEYCODE_DPAD_RIGHT);
 
@@ -107,10 +107,10 @@ public final class KeyHandler {
         // t_K3 <kPageUp> keypad page-up key
         // t_K4 <kEnd> keypad end key
         // t_K5 <kPageDown> keypad page-down key
-        TERMCAP_TO_KEYCODE.put("K1", KeyEvent.KEYCODE_HOME);
-        TERMCAP_TO_KEYCODE.put("K3", KeyEvent.KEYCODE_PAGE_UP);
-        TERMCAP_TO_KEYCODE.put("K4", KeyEvent.KEYCODE_MOVE_END);
-        TERMCAP_TO_KEYCODE.put("K5", KeyEvent.KEYCODE_PAGE_DOWN);
+        TERMCAP_TO_KEYCODE.put("K1", KEYCODE_HOME);
+        TERMCAP_TO_KEYCODE.put("K3", KEYCODE_PAGE_UP);
+        TERMCAP_TO_KEYCODE.put("K4", KEYCODE_MOVE_END);
+        TERMCAP_TO_KEYCODE.put("K5", KEYCODE_PAGE_DOWN);
 
         TERMCAP_TO_KEYCODE.put("ku", KEYCODE_DPAD_UP);
 
@@ -162,7 +162,7 @@ public final class KeyHandler {
             case KEYCODE_DPAD_LEFT:
                 return (keyMode == 0) ? (cursorApp ? "\033OD" : "\033[D") : transformForModifiers("\033[1", keyMode, 'D');
 
-            case KeyEvent.KEYCODE_HOME:
+            case KEYCODE_HOME:
                 return (keyMode == 0) ? (cursorApp ? "\033OH" : "\033[H") : transformForModifiers("\033[1", keyMode, 'H');
             case KEYCODE_MOVE_END:
                 return (keyMode == 0) ? (cursorApp ? "\033OF" : "\033[F") : transformForModifiers("\033[1", keyMode, 'F');
@@ -209,7 +209,7 @@ public final class KeyHandler {
                 return "\033[34~"; // Pause/Break
 
             case KEYCODE_ESCAPE:
-            case KeyEvent.KEYCODE_BACK:
+            case KEYCODE_BACK:
                 return "\033";
 
             case KEYCODE_INSERT:
@@ -230,7 +230,7 @@ public final class KeyHandler {
             case KEYCODE_NUM_LOCK:
                 return "\033OP";
 
-            case KeyEvent.KEYCODE_SPACE:
+            case KEYCODE_SPACE:
                 // If ctrl is not down, return null so that it goes through normal input processing (which may e.g. cause a
                 // combining accent to be written):
                 return ((keyMode & KEYMOD_CTRL) == 0) ? null : "\0";
