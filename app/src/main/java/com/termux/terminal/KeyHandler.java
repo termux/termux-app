@@ -225,8 +225,9 @@ public final class KeyHandler {
             case KEYCODE_PAGE_DOWN:
                 return "\033[6~";
             case KEYCODE_DEL:
-                // Yes, this needs to U+007F and not U+0008!
-                return "\u007F";
+                String prefix = ((keyMode & KEYMOD_ALT) == 0) ? "" : "\033";
+                // Just do what xterm and gnome-terminal does:
+                return prefix + (((keyMode & KEYMOD_CTRL) == 0) ? "\u007F" : "\u0008");
             case KEYCODE_NUM_LOCK:
                 return "\033OP";
 
