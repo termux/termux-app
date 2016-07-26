@@ -664,7 +664,9 @@ public final class TerminalView extends View {
                 codePoint = 29;
             } else if (codePoint == '^' || codePoint == '6') {
                 codePoint = 30; // control-^
-            } else if (codePoint == '_' || codePoint == '7') {
+            } else if (codePoint == '_' || codePoint == '7' || codePoint == '/') {
+                // "Ctrl-/ sends 0x1f which is equivalent of Ctrl-_ since the days of VT102"
+                // - http://apple.stackexchange.com/questions/24261/how-do-i-send-c-that-is-control-slash-to-the-terminal
                 codePoint = 31;
             } else if (codePoint == '8') {
                 codePoint = 127; // DEL
