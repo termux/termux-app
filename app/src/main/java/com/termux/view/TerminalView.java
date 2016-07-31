@@ -229,21 +229,18 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Make the IME run in a limited "generate key events" mode.
+        // Using InputType.TYPE_TEXT_VARIATION_URI avoids having an extra row of numbers on the
+        // Google keyboard. https://github.com/termux/termux-app/issues/87.
+        // It also makes the '/' keyboard more accessible, and makes some sense.
         //
         // If using just "TYPE_NULL", there is a problem with the "Google Pinyin Input" being in
         // word mode when used with the "En" tab available when the "Show English keyboard" option
-        // is enabled - see https://github.com/termux/termux-packages/issues/25. It also causes
-        // the normal Google keyboard to show a row of numbers, see
-        // https://github.com/termux/termux-app/issues/87
-        //
+        // is enabled - see https://github.com/termux/termux-packages/issues/25.
         // Adding TYPE_TEXT_FLAG_NO_SUGGESTIONS fixes Pinyin Input and removes the row of numbers
         // on the Google keyboard. . It also causes Swype to be put in
-        // word mode, but using TYPE_TEXT_VARIATION_VISIBLE_PASSWORD fixes that.
-        //
-        // So a bit messy. If this gets too messy it's perhaps best resolved by reverting back to just
-        // "TYPE_NULL" and let the Pinyin Input english keyboard be in word mode.
-        outAttrs.inputType = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+        // word mode, but using TYPE_TEXT_VARIATION_VISIBLE_PASSWORD would fix that. But for now
+        // use InputType.TYPE_TEXT_VARIATION_URI as it makes more sense.
+        outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_URI;
 
         // Let part of the application show behind when in landscape:
         outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
