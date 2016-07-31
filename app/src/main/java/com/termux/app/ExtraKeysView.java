@@ -27,7 +27,7 @@ public final class ExtraKeysView extends GridLayout {
         reload();
     }
 
-    private static void sendKey(View view, String keyName) {
+    static void sendKey(View view, String keyName) {
         int keyCode = 0;
         String chars = null;
         switch (keyName) {

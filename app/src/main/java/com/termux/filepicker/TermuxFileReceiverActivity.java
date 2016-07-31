@@ -35,7 +35,7 @@ public class TermuxFileReceiverActivity extends Activity {
      * name input dialog to be implicitly dismissed, and we do not want to finish the activity directly
      * when showing the error dialog.
      */
-    private boolean mFinishOnDismissNameDialog = true;
+    boolean mFinishOnDismissNameDialog = true;
 
     @Override
     protected void onResume() {

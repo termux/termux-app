@@ -9,6 +9,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.os.Build;
 import android.os.Environment;
+import android.os.UserManager;
 import android.system.Os;
 import android.util.Log;
 import android.util.Pair;
@@ -54,7 +55,7 @@ final class TermuxInstaller {
     static void setupIfNeeded(final Activity activity, final Runnable whenDone) {
         // Termux can only be run as the primary user (device owner) since only that
         // account has the expected file system paths. Verify that:
-        android.os.UserManager um = (android.os.UserManager) activity.getSystemService(Context.USER_SERVICE);
+        UserManager um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
         boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
         if (!isPrimaryUser) {
             new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_not_primary_user_message)
