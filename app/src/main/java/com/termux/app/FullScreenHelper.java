@@ -2,6 +2,7 @@ package com.termux.app;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.view.View;
 
 import com.termux.R;
@@ -58,7 +59,8 @@ final class FullScreenHelper {
             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             | View.SYSTEM_UI_FLAG_FULLSCREEN;
         int color = ((ColorDrawable) mActivity.getWindow().getDecorView().getBackground()).getColor();
-        if (isColorLight(color)) flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isColorLight(color))
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
         mActivity.getWindow().getDecorView().setSystemUiVisibility(flags);
     }
 
