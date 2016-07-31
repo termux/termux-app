@@ -13,12 +13,12 @@ android {
         applicationId "com.termux"
         minSdkVersion 21
         targetSdkVersion 24
-        versionCode 35
+        versionCode 36
         versionName "0.35"
 
         ndk {
             moduleName "libtermux"
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86"
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             cFlags "-std=c11 -Wall -Wextra -Os -fno-stack-protector -nostdlib -Wl,--gc-sections"
         }
     }
