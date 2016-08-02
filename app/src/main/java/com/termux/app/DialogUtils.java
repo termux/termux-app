@@ -11,8 +11,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import android.R;
-
 public final class DialogUtils {
 
     public interface TextSetListener {
@@ -72,7 +70,7 @@ public final class DialogUtils {
         }
 
         if (onNegative == null) {
-            builder.setNegativeButton(R.string.cancel, null);
+            builder.setNegativeButton(android.R.string.cancel, null);
         } else {
             builder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
                 @Override
