@@ -15,6 +15,12 @@ public class WcWidthTest extends TestCase {
 		}
 	}
 
+    public void testSomeWidthOne() {
+        assertWidthIs(1, 'å');
+        assertWidthIs(1, 'ä');
+        assertWidthIs(1, 'ö');
+    }
+
 	public void testSomeWide() {
 		assertWidthIs(2, 'Ａ');
 		assertWidthIs(2, 'Ｂ');
@@ -37,13 +43,21 @@ public class WcWidthTest extends TestCase {
 	}
 
 	public void testCombining() {
-		assertWidthIs(0, 0x0302);
-		assertWidthIs(0, 0x0308);
-		assertWidthIs(0, 0x2060);
+        assertWidthIs(0, 0x0302);
+        assertWidthIs(0, 0x0308);
+    }
+
+    public void testWordJoiner() {
+        // https://en.wikipedia.org/wiki/Word_joiner
+        // The word joiner (WJ) is a code point in Unicode used to separate words when using scripts
+        // that do not use explicit spacing. It is encoded since Unicode version 3.2
+        // (released in 2002) as U+2060 WORD JOINER (HTML &#8288;).
+        // The word joiner does not produce any space, and prohibits a line break at its position.
+        assertWidthIs(0, 0x2060);
 	}
 
 	public void testWatch() {
-		assertWidthIs(1, 0x231a);
+
 	}
 
 	public void testSofthyphen() {
@@ -57,11 +71,13 @@ public class WcWidthTest extends TestCase {
 	}
 
 	public void testHangul() {
-		assertWidthIs(2, 0x11A3);
+		assertWidthIs(1, 0x11A3);
 	}
 
-    public void testKoala() {
-        assertWidthIs(1, 0x1F428);
+    public void testEmojis() {
+        assertWidthIs(2, 0x1F428); // KOALA.
+        assertWidthIs(2, 0x231a);  // WATCH.
+        assertWidthIs(2, 0x1F643); // UPSIDE-DOWN FACE (Unicode 8).
     }
 
 }
