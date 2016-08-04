@@ -228,18 +228,13 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Using InputType.TYPE_TEXT_VARIATION_URI avoids having an extra row of numbers on the
-        // Google keyboard. https://github.com/termux/termux-app/issues/87.
-        // It also makes the '/' keyboard more accessible, and makes some sense.
+        // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
         //
-        // If using just "TYPE_NULL", there is a problem with the "Google Pinyin Input" being in
-        // word mode when used with the "En" tab available when the "Show English keyboard" option
-        // is enabled - see https://github.com/termux/termux-packages/issues/25.
-        // Adding TYPE_TEXT_FLAG_NO_SUGGESTIONS fixes Pinyin Input and removes the row of numbers
-        // on the Google keyboard. . It also causes Swype to be put in
-        // word mode, but using TYPE_TEXT_VARIATION_VISIBLE_PASSWORD would fix that. But for now
-        // use InputType.TYPE_TEXT_VARIATION_URI as it makes more sense.
-        outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_URI;
+        // Previous keyboard issues:
+        // https://github.com/termux/termux-packages/issues/25
+        // https://github.com/termux/termux-app/issues/87.
+        // https://github.com/termux/termux-app/issues/126 for breakage from that.
+        outAttrs.inputType = InputType.TYPE_NULL;
 
         // Let part of the application show behind when in landscape:
         outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
@@ -310,17 +305,18 @@ public final class TerminalView extends View {
             public boolean deleteSurroundingText(int leftLength, int rightLength) {
                 if (LOG_KEY_EVENTS)
                     Log.i(EmulatorDebug.LOG_TAG, "IME: deleteSurroundingText(" + leftLength + ", " + rightLength + ")");
-
-                // Swype keyboard sometimes(?) sends this on backspace:
-                if (leftLength == 0 && rightLength == 0) leftLength = 1;
-
-                for (int i = 0; i < leftLength; i++)
-                    sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                // If leftLength=2 it may be due to a UTF-16 surrogate pair. So we cannot send
+                // multiple key events for that. Let's just hope that keyboards don't use
+                // leftLength > 1 for other purposes (such as holding down backspace for repeat).
+                sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
                 return true;
             }
 
             @Override
             public boolean setComposingText(CharSequence text, int newCursorPosition) {
+                if (LOG_KEY_EVENTS)
+                    Log.i(EmulatorDebug.LOG_TAG, "IME: setComposingText(\"" + text  + "\", " + newCursorPosition + ")");
+
                 if (text.length() == 0) {
                     // Avoid log spam "SpannableStringBuilder: SPAN_EXCLUSIVE_EXCLUSIVE spans cannot
                     // have a zero length" when backspacing with the Google keyboard.
