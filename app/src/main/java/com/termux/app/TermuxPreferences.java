@@ -184,9 +184,9 @@ final class TermuxPreferences {
     private void parseAction(String name, int shortcutAction, Properties props) {
         String value = props.getProperty(name);
         if (value == null) return;
-        String[] parts = value.trim().split("\\+");
+        String[] parts = value.toLowerCase().trim().split("\\+");
         String input = parts.length == 2 ? parts[1].trim() : null;
-        if (!(parts.length == 2 && parts[0].trim().equalsIgnoreCase("ctrl")) || input.isEmpty() || input.length() > 2) {
+        if (!(parts.length == 2 && parts[0].trim().equals("ctrl")) || input.isEmpty() || input.length() > 2) {
             Log.e("termux", "Keyboard shortcut '" + name + "' is not Ctrl+<something>");
             return;
         }

@@ -250,9 +250,10 @@ public final class TermuxKeyListener implements TerminalKeyListener {
 
             List<TermuxPreferences.KeyboardShortcut> shortcuts = mActivity.mSettings.shortcuts;
             if (!shortcuts.isEmpty()) {
+                int codePointLowerCase = Character.toLowerCase(codePoint);
                 for (int i = shortcuts.size() - 1; i >= 0; i--) {
                     TermuxPreferences.KeyboardShortcut shortcut = shortcuts.get(i);
-                    if (codePoint == shortcut.codePoint) {
+                    if (codePointLowerCase == shortcut.codePoint) {
                         switch (shortcut.shortcutAction) {
                             case TermuxPreferences.SHORTCUT_ACTION_CREATE_SESSION:
                                 mActivity.addNewSession(false, null);
