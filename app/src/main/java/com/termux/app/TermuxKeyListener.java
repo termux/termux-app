@@ -55,31 +55,12 @@ public final class TermuxKeyListener implements TerminalKeyListener {
         mActivity.getDrawer().setDrawerLockMode(copyMode ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
-    private void returnOnFinishedSession(TerminalSession currentSession) {
-        // Return pressed with finished session - remove it.
-        currentSession.finishIfRunning();
-
-        TermuxService service = mActivity.mTermService;
-
-        int index = service.removeTermSession(currentSession);
-        mActivity.mListViewAdapter.notifyDataSetChanged();
-        if (mActivity.mTermService.getSessions().isEmpty()) {
-            // There are no sessions to show, so finish the activity.
-            mActivity.finish();
-        } else {
-            if (index >= service.getSessions().size()) {
-                index = service.getSessions().size() - 1;
-            }
-            mActivity.switchToSession(service.getSessions().get(index));
-        }
-    }
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession currentSession) {
         if (handleVirtualKeys(keyCode, e, true)) return true;
 
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
-            returnOnFinishedSession(currentSession);
+            mActivity.removeFinishedSession(currentSession);
             return true;
         } else if (e.isCtrlPressed() && e.isShiftPressed()) {
             // Get the unmodified code point:
@@ -244,7 +225,7 @@ public final class TermuxKeyListener implements TerminalKeyListener {
             return true;
         } else if (ctrlDown) {
             if (codePoint == 106 /* Ctrl+j or \n */ && !session.isRunning()) {
-                returnOnFinishedSession(session);
+                mActivity.removeFinishedSession(session);
                 return true;
             }
 

@@ -245,9 +245,15 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                         @Override
                         public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                            String s = editText.getText().toString() + "\n";
-                            getCurrentTermSession().write(s);
-                            editText.setText("");
+                            TerminalSession session = getCurrentTermSession();
+                            if (session != null) {
+                                if (session.isRunning()) {
+                                    session.write(editText.getText().toString() + "\n");
+                                } else {
+                                    removeFinishedSession(session);
+                                }
+                                editText.setText("");
+                            }
                             return true;
                         }
                     });
@@ -844,6 +850,23 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
         mLastToast.setGravity(Gravity.TOP, 0, 0);
         mLastToast.show();
+    }
+
+    public void removeFinishedSession(TerminalSession finishedSession) {
+        // Return pressed with finished session - remove it.
+        TermuxService service = mTermService;
+
+        int index = service.removeTermSession(finishedSession);
+        mListViewAdapter.notifyDataSetChanged();
+        if (mTermService.getSessions().isEmpty()) {
+            // There are no sessions to show, so finish the activity.
+            finish();
+        } else {
+            if (index >= service.getSessions().size()) {
+                index = service.getSessions().size() - 1;
+            }
+            switchToSession(service.getSessions().get(index));
+        }
     }
 
 }
