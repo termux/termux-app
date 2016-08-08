@@ -165,8 +165,8 @@ public final class ExtraKeysView extends GridLayout {
                 param.rightMargin = param.topMargin = 0;
                 param.setGravity(Gravity.LEFT);
                 float weight = "▲▼◀▶".contains(buttonText) ? 0.7f : 1.f;
-                param.columnSpec = GridLayout.spec(col, weight);
-                param.rowSpec = GridLayout.spec(row, 1.f);
+                param.columnSpec = GridLayout.spec(col, GridLayout.FILL, weight);
+                param.rowSpec = GridLayout.spec(row, GridLayout.FILL, 1.f);
                 button.setLayoutParams(param);
 
                 addView(button);
