@@ -26,7 +26,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -184,25 +186,28 @@ final class TermuxInstaller {
 
     /** Get bootstrap zip url for this systems cpu architecture. */
     static URL determineZipUrl() throws MalformedURLException {
-        String termuxArch = null;
+        String archName = determineTermuxArchName();
+        return new URL("https://termux.net/bootstrap/bootstrap-" + archName + ".zip");
+    }
+
+    private static String determineTermuxArchName() {
         // Note that we cannot use System.getProperty("os.arch") since that may give e.g. "aarch64"
         // while a 64-bit runtime may not be installed (like on the Samsung Galaxy S5 Neo).
         // Instead we search through the supported abi:s on the device, see:
         // http://developer.android.com/ndk/guides/abis.html
-        // Note that we search for abi:s in preferred order, and want to avoid installing arm on
-        // an x86 system where arm emulation is available.
-        final String[] androidArchNames = {"arm64-v8a", "x86_64", "x86", "armeabi-v7a"};
-        final String[] termuxArchNames = {"aarch64", "x86_64", "i686", "arm"};
-
-        final List<String> supportedArches = Arrays.asList(Build.SUPPORTED_ABIS);
-        for (int i = 0; i < termuxArchNames.length; i++) {
-            if (supportedArches.contains(androidArchNames[i])) {
-                termuxArch = termuxArchNames[i];
-                break;
+        // Note that we search for abi:s in preferred order (the ordering of the
+        // Build.SUPPORTED_ABIS list) to avoid e.g. installing arm on an x86 system where arm
+        // emulation is available.
+        for (String androidArch : Build.SUPPORTED_ABIS) {
+            switch (androidArch) {
+                case "arm64-v8a": return "aarch64";
+                case "armeabi-v7a": return "arm";
+                case "x86_64": return "x86_64";
+                case "x86": return "i686";
             }
         }
-
-        return new URL("https://termux.net/bootstrap/bootstrap-" + termuxArch + ".zip");
+        throw new RuntimeException("Unable to determine arch from Build.SUPPORTED_ABIS =  " +
+            Arrays.toString(Build.SUPPORTED_ABIS));
     }
 
     /** Delete a folder and all its content or throw. */
