@@ -141,10 +141,10 @@ public class KeyHandlerTest extends TestCase {
 		assertKeysEquals("\033[1;6D", KeyHandler.getCode(KeyEvent.KEYCODE_DPAD_LEFT, mod, false, false));
 
 		// Home/end keys:
-		assertKeysEquals("\033[H", KeyHandler.getCode(KeyEvent.KEYCODE_HOME, 0, false, false));
+		assertKeysEquals("\033[H", KeyHandler.getCode(KeyEvent.KEYCODE_MOVE_HOME, 0, false, false));
 		assertKeysEquals("\033[F", KeyHandler.getCode(KeyEvent.KEYCODE_MOVE_END, 0, false, false));
 		// ... shifted:
-		assertKeysEquals("\033[1;2H", KeyHandler.getCode(KeyEvent.KEYCODE_HOME, KeyHandler.KEYMOD_SHIFT, false, false));
+		assertKeysEquals("\033[1;2H", KeyHandler.getCode(KeyEvent.KEYCODE_MOVE_HOME, KeyHandler.KEYMOD_SHIFT, false, false));
 		assertKeysEquals("\033[1;2F", KeyHandler.getCode(KeyEvent.KEYCODE_MOVE_END, KeyHandler.KEYMOD_SHIFT, false, false));
 
 		// Function keys F1-F12:
