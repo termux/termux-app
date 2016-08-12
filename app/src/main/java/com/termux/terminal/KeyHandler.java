@@ -26,9 +26,9 @@ import static android.view.KeyEvent.KEYCODE_F7;
 import static android.view.KeyEvent.KEYCODE_F8;
 import static android.view.KeyEvent.KEYCODE_F9;
 import static android.view.KeyEvent.KEYCODE_FORWARD_DEL;
-import static android.view.KeyEvent.KEYCODE_HOME;
 import static android.view.KeyEvent.KEYCODE_INSERT;
 import static android.view.KeyEvent.KEYCODE_MOVE_END;
+import static android.view.KeyEvent.KEYCODE_MOVE_HOME;
 import static android.view.KeyEvent.KEYCODE_NUMPAD_0;
 import static android.view.KeyEvent.KEYCODE_NUMPAD_1;
 import static android.view.KeyEvent.KEYCODE_NUMPAD_2;
@@ -66,7 +66,7 @@ public final class KeyHandler {
         // terminfo: http://pubs.opengroup.org/onlinepubs/7990989799/xcurses/terminfo.html
         // termcap: http://man7.org/linux/man-pages/man5/termcap.5.html
         TERMCAP_TO_KEYCODE.put("%i", KEYMOD_SHIFT | KEYCODE_DPAD_RIGHT);
-        TERMCAP_TO_KEYCODE.put("#2", KEYMOD_SHIFT | KEYCODE_HOME); // Shifted home
+        TERMCAP_TO_KEYCODE.put("#2", KEYMOD_SHIFT | KEYCODE_MOVE_HOME); // Shifted home
         TERMCAP_TO_KEYCODE.put("#4", KEYMOD_SHIFT | KEYCODE_DPAD_LEFT);
         TERMCAP_TO_KEYCODE.put("*7", KEYMOD_SHIFT | KEYCODE_MOVE_END); // Shifted end key
 
@@ -98,7 +98,7 @@ public final class KeyHandler {
         TERMCAP_TO_KEYCODE.put("kb", KEYCODE_DEL); // backspace key
 
         TERMCAP_TO_KEYCODE.put("kd", KEYCODE_DPAD_DOWN); // terminfo=kcud1, down-arrow key
-        TERMCAP_TO_KEYCODE.put("kh", KEYCODE_HOME);
+        TERMCAP_TO_KEYCODE.put("kh", KEYCODE_MOVE_HOME);
         TERMCAP_TO_KEYCODE.put("kl", KEYCODE_DPAD_LEFT);
         TERMCAP_TO_KEYCODE.put("kr", KEYCODE_DPAD_RIGHT);
 
@@ -107,7 +107,7 @@ public final class KeyHandler {
         // t_K3 <kPageUp> keypad page-up key
         // t_K4 <kEnd> keypad end key
         // t_K5 <kPageDown> keypad page-down key
-        TERMCAP_TO_KEYCODE.put("K1", KEYCODE_HOME);
+        TERMCAP_TO_KEYCODE.put("K1", KEYCODE_MOVE_HOME);
         TERMCAP_TO_KEYCODE.put("K3", KEYCODE_PAGE_UP);
         TERMCAP_TO_KEYCODE.put("K4", KEYCODE_MOVE_END);
         TERMCAP_TO_KEYCODE.put("K5", KEYCODE_PAGE_DOWN);
@@ -162,7 +162,9 @@ public final class KeyHandler {
             case KEYCODE_DPAD_LEFT:
                 return (keyMode == 0) ? (cursorApp ? "\033OD" : "\033[D") : transformForModifiers("\033[1", keyMode, 'D');
 
-            case KEYCODE_HOME:
+            case KEYCODE_MOVE_HOME:
+                // Note that KEYCODE_HOME is handled by the system and never delivered to applications.
+                // On a Logitech k810 keyboard KEYCODE_MOVE_HOME is sent by FN+LeftArrow.
                 return (keyMode == 0) ? (cursorApp ? "\033OH" : "\033[H") : transformForModifiers("\033[1", keyMode, 'H');
             case KEYCODE_MOVE_END:
                 return (keyMode == 0) ? (cursorApp ? "\033OF" : "\033[F") : transformForModifiers("\033[1", keyMode, 'F');
