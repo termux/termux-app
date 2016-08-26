@@ -13,7 +13,7 @@ public class TextStyleTest extends TestCase {
 		for (int fx : ALL_EFFECTS) {
 			for (int fg = 0; fg < TextStyle.NUM_INDEXED_COLORS; fg++) {
 				for (int bg = 0; bg < TextStyle.NUM_INDEXED_COLORS; bg++) {
-					int encoded = TextStyle.encode(fg, bg, fx);
+					long encoded = TextStyle.encode(fg, bg, fx);
 					assertEquals(fg, TextStyle.decodeForeColor(encoded));
 					assertEquals(bg, TextStyle.decodeBackColor(encoded));
 					assertEquals(fx, TextStyle.decodeEffect(encoded));
@@ -22,7 +22,23 @@ public class TextStyleTest extends TestCase {
 		}
 	}
 
-	public void testEncodingCombinations() {
+    public void testEncoding24Bit() {
+        int[] values = {255, 240, 127, 1, 0};
+        for (int red : values) {
+            for (int green : values) {
+                for (int blue : values) {
+                    int argb = 0xFF000000 | (red << 16) | (green << 8) | blue;
+                    long encoded = TextStyle.encode(argb, 0, 0);
+                    assertEquals(argb, TextStyle.decodeForeColor(encoded));
+                    encoded = TextStyle.encode(0, argb, 0);
+                    assertEquals(argb, TextStyle.decodeBackColor(encoded));
+                }
+            }
+        }
+    }
+
+
+    public void testEncodingCombinations() {
 		for (int f1 : ALL_EFFECTS) {
 			for (int f2 : ALL_EFFECTS) {
 				int combined = f1 | f2;
@@ -32,13 +48,13 @@ public class TextStyleTest extends TestCase {
 	}
 
 	public void testEncodingStrikeThrough() {
-		int encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,
+		long encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,
 				TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH);
 		assertTrue((TextStyle.decodeEffect(encoded) & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0);
 	}
 
 	public void testEncodingProtected() {
-		int encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,
+        long encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,
 				TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH);
 		assertTrue((TextStyle.decodeEffect(encoded) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED) == 0);
 		encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,

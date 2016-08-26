@@ -240,7 +240,7 @@ public abstract class TerminalTestCase extends TestCase {
 	}
 
 	/** For testing only. Encoded style according to {@link TextStyle}. */
-	public int getStyleAt(int externalRow, int column) {
+	public long getStyleAt(int externalRow, int column) {
 		return mTerminal.getScreen().getStyleAt(externalRow, column);
 	}
 
@@ -296,7 +296,7 @@ public abstract class TerminalTestCase extends TestCase {
 	}
 
 	public void assertForegroundColorAt(int externalRow, int column, int color) {
-		int style = mTerminal.getScreen().mLines[mTerminal.getScreen().externalToInternalRow(externalRow)].getStyle(column);
+		long style = mTerminal.getScreen().mLines[mTerminal.getScreen().externalToInternalRow(externalRow)].getStyle(column);
 		assertEquals(color, TextStyle.decodeForeColor(style));
 	}
 

@@ -206,10 +206,15 @@ public final class TerminalEmulator {
      */
     private boolean mAboutToAutoWrap;
 
-    /** Foreground and background color indices, 0..255. */
+    /**
+     * Current foreground and background colors. Can either be a color index in [0,259] or a truecolor (24-bit) value.
+     * For a 24-bit value the top byte (0xff000000) is set.
+     *
+     * @see TextStyle
+     */
     int mForeColor, mBackColor;
 
-    /** Current TextStyle effect */
+    /** Current {@link TextStyle} effect. */
     private int mEffect;
 
     /**
@@ -611,7 +616,7 @@ public final class TerminalEmulator {
                                     int left = Math.min(getArg(argIndex++, 1, true) + effectiveLeftMargin, effectiveRightMargin + 1);
                                     int bottom = Math.min(getArg(argIndex++, mRows, true) + effectiveTopMargin, effectiveBottomMargin);
                                     int right = Math.min(getArg(argIndex, mColumns, true) + effectiveLeftMargin, effectiveRightMargin);
-                                    int style = getStyle();
+                                    long style = getStyle();
                                     for (int row = top - 1; row < bottom; row++)
                                         for (int col = left - 1; col < right; col++)
                                             if (!selective || (TextStyle.decodeEffect(mScreen.getStyleAt(row, col)) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED) == 0)
@@ -953,7 +958,7 @@ public final class TerminalEmulator {
                         unknownSequence(b);
                         break;
                 }
-                int style = getStyle();
+                long style = getStyle();
                 for (int row = startRow; row < endRow; row++) {
                     for (int col = startCol; col < endCol; col++) {
                         if ((TextStyle.decodeEffect(mScreen.getStyleAt(row, col)) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED) == 0)
@@ -1687,43 +1692,42 @@ public final class TerminalEmulator {
             } else if (code >= 30 && code <= 37) {
                 mForeColor = code - 30;
             } else if (code == 38 || code == 48) {
-                // ISO-8613-3 controls to set foreground (38) or background (48) colors.
-                // P_s = (38|48) ; 2 ; P_r ; P_g ; P_b => Set to RGB value in range (0-255).
-                // P_s = (38|48) ; 5 ; P_s => Set to indexed color.
-                if (i + 2 <= mArgIndex) {
-                    int color = -1;
-                    int firstArg = mArgs[i + 1];
-                    if (firstArg == 2) {
-                        if (i + 4 > mArgIndex) {
-                            Log.w(EmulatorDebug.LOG_TAG, "Too few CSI" + code + ";2 RGB arguments");
-                        } else {
-                            int red = mArgs[i + 2], green = mArgs[i + 3], blue = mArgs[i + 4];
-                            if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
-                                finishSequenceAndLogError("Invalid RGB: " + red + "," + green + "," + blue);
-                            } else {
-                                // TODO: Implement 24 bit color.
-                                finishSequenceAndLogError("Unimplemented RGB: " + red + "," + green + "," + blue);
-                            }
-                            i += 4; // "2;P_r;P_g;P_r"
-                        }
-                    } else if (firstArg == 5) {
-                        color = mArgs[i + 2];
-                        i += 2; // "5;P_s"
+                // Extended set foreground(38)/background (48) color.
+                // This is followed by either "2;$R;$G;$B" to set a 24-bit color or
+                // "5;$INDEX" to set an indexed color.
+                if (i + 2 > mArgIndex) continue;
+                int firstArg = mArgs[i + 1];
+                if (firstArg == 2) {
+                    if (i + 4 > mArgIndex) {
+                        Log.w(EmulatorDebug.LOG_TAG, "Too few CSI" + code + ";2 RGB arguments");
                     } else {
-                        finishSequenceAndLogError("Invalid ISO-8613-3 SGR first argument: " + firstArg);
-                    }
-                    if (i != -1) {
-                        if (color >= 0 && color < TextStyle.NUM_INDEXED_COLORS) {
-                            if (code == 38) {
-                                mForeColor = color;
-                            } else {
-                                mBackColor = color;
-                            }
+                        int red = mArgs[i + 2], green = mArgs[i + 3], blue = mArgs[i + 4];
+                        if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
+                            finishSequenceAndLogError("Invalid RGB: " + red + "," + green + "," + blue);
                         } else {
-                            if (LOG_ESCAPE_SEQUENCES)
-                                Log.w(EmulatorDebug.LOG_TAG, "Invalid color index: " + color);
+                            int argbColor = 0xff000000 | (red << 16) | (green << 8) | blue;
+                            if (code == 38) {
+                                mForeColor = argbColor;
+                            } else {
+                                mBackColor = argbColor;
+                            }
                         }
+                        i += 4; // "2;P_r;P_g;P_r"
                     }
+                } else if (firstArg == 5) {
+                    int color = mArgs[i + 2];
+                    i += 2; // "5;P_s"
+                    if (color >= 0 && color < TextStyle.NUM_INDEXED_COLORS) {
+                        if (code == 38) {
+                            mForeColor = color;
+                        } else {
+                            mBackColor = color;
+                        }
+                    } else {
+                        if (LOG_ESCAPE_SEQUENCES) Log.w(EmulatorDebug.LOG_TAG, "Invalid color index: " + color);
+                    }
+                } else {
+                    finishSequenceAndLogError("Invalid ISO-8613-3 SGR first argument: " + firstArg);
                 }
             } else if (code == 39) { // Set default foreground color.
                 mForeColor = TextStyle.COLOR_INDEX_FOREGROUND;
@@ -1924,7 +1928,7 @@ public final class TerminalEmulator {
         mScreen.blockSet(sx, sy, w, h, ' ', getStyle());
     }
 
-    private int getStyle() {
+    private long getStyle() {
         return TextStyle.encode(mForeColor, mBackColor, mEffect);
     }
 

@@ -18,7 +18,7 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		assertLinesAre("ABCDE", "FGHIJ", "KLMNO", "PQRST", "UVWXY");
 		for (int row = 0; row < 5; row++) {
 			for (int col = 0; col < 5; col++) {
-				int s = getStyleAt(row, col);
+                long s = getStyleAt(row, col);
 				Assert.assertEquals(col, TextStyle.decodeForeColor(s));
 				Assert.assertEquals(row, TextStyle.decodeBackColor(s));
 			}
@@ -28,7 +28,7 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		assertLinesAre("KLMNO", "PQRST", "UVWXY", "     ", "     ");
 		for (int row = 0; row < 3; row++) {
 			for (int col = 0; col < 5; col++) {
-				int s = getStyleAt(row, col);
+				long s = getStyleAt(row, col);
 				Assert.assertEquals(col, TextStyle.decodeForeColor(s));
 				Assert.assertEquals(row + 2, TextStyle.decodeBackColor(s));
 			}
@@ -43,7 +43,7 @@ public class CursorAndScreenTest extends TerminalTestCase {
 			for (int col = 0; col < 5; col++) {
 				int wantedForeground = (row == 1 || row == 2) ? 98 : col;
 				int wantedBackground = (row == 1 || row == 2) ? 99 : (row == 0 ? 2 : row);
-				int s = getStyleAt(row, col);
+                long s = getStyleAt(row, col);
 				Assert.assertEquals(wantedForeground, TextStyle.decodeForeColor(s));
 				Assert.assertEquals(wantedBackground, TextStyle.decodeBackColor(s));
 			}

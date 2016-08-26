@@ -82,7 +82,7 @@ final class TerminalRenderer {
             final char[] line = lineObject.mText;
             final int charsUsedInLine = lineObject.getSpaceUsed();
 
-            int lastRunStyle = 0;
+            long lastRunStyle = 0;
             boolean lastRunInsideCursor = false;
             int lastRunStartColumn = -1;
             int lastRunStartIndex = 0;
@@ -97,7 +97,7 @@ final class TerminalRenderer {
                 final int codePoint = charIsHighsurrogate ? Character.toCodePoint(charAtIndex, line[currentCharIndex + 1]) : charAtIndex;
                 final int codePointWcWidth = WcWidth.width(codePoint);
                 final boolean insideCursor = (column >= selx1 && column <= selx2) || (cursorX == column || (codePointWcWidth == 2 && cursorX == column + 1));
-                final int style = lineObject.getStyle(column);
+                final long style = lineObject.getStyle(column);
 
                 // Check if the measured text width for this code point is not the same as that expected by wcwidth().
                 // This could happen for some fonts which are not truly monospace, or for more exotic characters such as
@@ -154,9 +154,17 @@ final class TerminalRenderer {
      * @param reverseVideo    if the screen is rendered with the global reverse video flag set
      */
     private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y, int startColumn, int runWidthColumns, int startCharIndex, int runWidthChars,
-                             float mes, boolean cursor, int textStyle, boolean reverseVideo) {
+                             float mes, boolean cursor, long textStyle, boolean reverseVideo) {
         int foreColor = TextStyle.decodeForeColor(textStyle);
         int backColor = TextStyle.decodeBackColor(textStyle);
+
+        int foreColorIndex = -1;
+        if ((foreColor & 0xff000000) != 0xff000000) {
+            foreColorIndex = foreColor;
+            foreColor = palette[foreColor];
+        }
+        if ((backColor & 0xff000000) != 0xff000000) backColor = palette[backColor];
+
         final int effect = TextStyle.decodeEffect(textStyle);
         float left = startColumn * mFontWidth;
         float right = left + runWidthColumns * mFontWidth;
@@ -180,9 +188,9 @@ final class TerminalRenderer {
             backColor = tmp;
         }
 
-        if (backColor != TextStyle.COLOR_INDEX_BACKGROUND) {
+        if (backColor != palette[TextStyle.COLOR_INDEX_BACKGROUND]) {
             // Only draw non-default background.
-            mTextPaint.setColor(palette[backColor]);
+            mTextPaint.setColor(backColor);
             canvas.drawRect(left, y - mFontLineSpacingAndAscent + mFontAscent, right, y, mTextPaint);
         }
 
@@ -195,26 +203,25 @@ final class TerminalRenderer {
             final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
 
             // Let bold have bright colors if applicable (one of the first 8):
-            final int actualForeColor = foreColor + (bold && foreColor < 8 ? 8 : 0);
+            if (bold && foreColorIndex >= 0 && foreColorIndex < 8) foreColor = palette[foreColorIndex + 8];
 
-            int foreColorARGB = palette[actualForeColor];
             if (dim) {
-                int red = (0xFF & (foreColorARGB >> 16));
-                int green = (0xFF & (foreColorARGB >> 8));
-                int blue = (0xFF & foreColorARGB);
+                int red = (0xFF & (foreColor >> 16));
+                int green = (0xFF & (foreColor >> 8));
+                int blue = (0xFF & foreColor);
                 // Dim color handling used by libvte which in turn took it from xterm
                 // (https://bug735245.bugzilla-attachments.gnome.org/attachment.cgi?id=284267):
                 red = red * 2 / 3;
                 green = green * 2 / 3;
                 blue = blue * 2 / 3;
-                foreColorARGB = 0xFF000000 + (red << 16) + (green << 8) + blue;
+                foreColor = 0xFF000000 + (red << 16) + (green << 8) + blue;
             }
 
             mTextPaint.setFakeBoldText(bold);
             mTextPaint.setUnderlineText(underline);
             mTextPaint.setTextSkewX(italic ? -0.35f : 0.f);
             mTextPaint.setStrikeThruText(strikeThrough);
-            mTextPaint.setColor(foreColorARGB);
+            mTextPaint.setColor(foreColor);
 
             // The text alignment is the default Paint.Align.LEFT.
             canvas.drawText(text, startCharIndex, runWidthChars, left, y - mFontLineSpacingAndAscent, mTextPaint);

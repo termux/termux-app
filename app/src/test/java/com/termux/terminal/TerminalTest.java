@@ -147,12 +147,11 @@ public class TerminalTest extends TerminalTestCase {
 		enterString("\033[38;5;119m");
 		assertEquals(119, mTerminal.mForeColor);
 		assertEquals(TextStyle.COLOR_INDEX_BACKGROUND, mTerminal.mBackColor);
-
 		enterString("\033[48;5;129m");
 		assertEquals(119, mTerminal.mForeColor);
 		assertEquals(129, mTerminal.mBackColor);
 
-		// Invalid parameter:
+        // Invalid parameter:
 		enterString("\033[48;8;129m");
 		assertEquals(119, mTerminal.mForeColor);
 		assertEquals(129, mTerminal.mBackColor);
@@ -161,7 +160,31 @@ public class TerminalTest extends TerminalTestCase {
 		enterString("\033[38;5;178;48;5;179;m");
 		assertEquals(178, mTerminal.mForeColor);
 		assertEquals(179, mTerminal.mBackColor);
-	}
+
+        // 24 bit colors:
+        enterString(("\033[0m")); // Reset fg and bg colors.
+        enterString("\033[38;2;255;127;2m");
+        int expectedForeground = 0xff000000 | (255 << 16) | (127 << 8) | 2;
+        assertEquals(expectedForeground, mTerminal.mForeColor);
+        assertEquals(TextStyle.COLOR_INDEX_BACKGROUND, mTerminal.mBackColor);
+        enterString("\033[48;2;1;2;254m");
+        int expectedBackground = 0xff000000 | (1 << 16) | (2 << 8) | 254;
+        assertEquals(expectedForeground, mTerminal.mForeColor);
+        assertEquals(expectedBackground, mTerminal.mBackColor);
+
+        // 24 bit colors, set fg and bg at once:
+        enterString(("\033[0m")); // Reset fg and bg colors.
+        assertEquals(TextStyle.COLOR_INDEX_FOREGROUND, mTerminal.mForeColor);
+        assertEquals(TextStyle.COLOR_INDEX_BACKGROUND, mTerminal.mBackColor);
+        enterString("\033[38;2;255;127;2;48;2;1;2;254m");
+        assertEquals(expectedForeground, mTerminal.mForeColor);
+        assertEquals(expectedBackground, mTerminal.mBackColor);
+
+        // 24 bit colors, invalid input:
+        enterString("\033[38;2;300;127;2;48;2;1;300;254m");
+        assertEquals(expectedForeground, mTerminal.mForeColor);
+        assertEquals(expectedBackground, mTerminal.mBackColor);
+    }
 
 	public void testBackgroundColorErase() {
 		final int rows = 3;
@@ -169,7 +192,7 @@ public class TerminalTest extends TerminalTestCase {
 		withTerminalSized(cols, rows);
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {
-				int style = getStyleAt(r, c);
+                long style = getStyleAt(r, c);
 				assertEquals(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.decodeForeColor(style));
 				assertEquals(TextStyle.COLOR_INDEX_BACKGROUND, TextStyle.decodeBackColor(style));
 			}
@@ -182,7 +205,7 @@ public class TerminalTest extends TerminalTestCase {
 		enterString("\033[2J");
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {
-				int style = getStyleAt(r, c);
+                long style = getStyleAt(r, c);
 				assertEquals(119, TextStyle.decodeForeColor(style));
 				assertEquals(129, TextStyle.decodeBackColor(style));
 			}
@@ -193,7 +216,7 @@ public class TerminalTest extends TerminalTestCase {
 		enterString("\033[2L");
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {
-				int style = getStyleAt(r, c);
+                long style = getStyleAt(r, c);
 				assertEquals((r == 0 || r == 1) ? 139 : 129, TextStyle.decodeBackColor(style));
 			}
 		}

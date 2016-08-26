@@ -140,7 +140,7 @@ public final class TerminalBuffer {
      * @param newRows    The number of rows the screen should have.
      * @param cursor     An int[2] containing the (column, row) cursor location.
      */
-    public void resize(int newColumns, int newRows, int newTotalRows, int[] cursor, int currentStyle, boolean altScreen) {
+    public void resize(int newColumns, int newRows, int newTotalRows, int[] cursor, long currentStyle, boolean altScreen) {
         // newRows > mTotalRows should not normally happen since mTotalRows is TRANSCRIPT_ROWS (10000):
         if (newColumns == mColumns && newRows <= mTotalRows) {
             // Fast resize where just the rows changed.
@@ -237,7 +237,7 @@ public final class TerminalBuffer {
                 }
 
                 int currentOldCol = 0;
-                int styleAtCol = 0;
+                long styleAtCol = 0;
                 for (int i = 0; i < lastNonSpaceIndex; i++) {
                     // Note that looping over java character, not cells.
                     char c = oldLine.mText[i];
@@ -321,7 +321,7 @@ public final class TerminalBuffer {
      * @param bottomMargin One line after the last line that is scrolled.
      * @param style        the style for the newly exposed line.
      */
-    public void scrollDownOneLine(int topMargin, int bottomMargin, int style) {
+    public void scrollDownOneLine(int topMargin, int bottomMargin, long style) {
         if (topMargin > bottomMargin - 1 || topMargin < 0 || bottomMargin > mScreenRows)
             throw new IllegalArgumentException("topMargin=" + topMargin + ", bottomMargin=" + bottomMargin + ", mScreenRows=" + mScreenRows);
 
@@ -374,7 +374,7 @@ public final class TerminalBuffer {
      * InvalidParemeterException will be thrown. Typically this is called with a "val" argument of 32 to clear a block
      * of characters.
      */
-    public void blockSet(int sx, int sy, int w, int h, int val, int style) {
+    public void blockSet(int sx, int sy, int w, int h, int val, long style) {
         if (sx < 0 || sx + w > mColumns || sy < 0 || sy + h > mScreenRows) {
             throw new IllegalArgumentException(
                 "Illegal arguments! blockSet(" + sx + ", " + sy + ", " + w + ", " + h + ", " + val + ", " + mColumns + ", " + mScreenRows + ")");
@@ -388,14 +388,14 @@ public final class TerminalBuffer {
         return (mLines[row] == null) ? (mLines[row] = new TerminalRow(mColumns, 0)) : mLines[row];
     }
 
-    public void setChar(int column, int row, int codePoint, int style) {
+    public void setChar(int column, int row, int codePoint, long style) {
         if (row >= mScreenRows || column >= mColumns)
             throw new IllegalArgumentException("row=" + row + ", column=" + column + ", mScreenRows=" + mScreenRows + ", mColumns=" + mColumns);
         row = externalToInternalRow(row);
         allocateFullLineIfNecessary(row).setChar(column, codePoint, style);
     }
 
-    public int getStyleAt(int externalRow, int column) {
+    public long getStyleAt(int externalRow, int column) {
         return allocateFullLineIfNecessary(externalToInternalRow(externalRow)).getStyle(column);
     }
 
@@ -407,7 +407,7 @@ public final class TerminalBuffer {
             int startOfLine = (rectangular || y == top) ? left : leftMargin;
             int endOfLine = (rectangular || y + 1 == bottom) ? right : rightMargin;
             for (int x = startOfLine; x < endOfLine; x++) {
-                int currentStyle = line.getStyle(x);
+                long currentStyle = line.getStyle(x);
                 int foreColor = TextStyle.decodeForeColor(currentStyle);
                 int backColor = TextStyle.decodeBackColor(currentStyle);
                 int effect = TextStyle.decodeEffect(currentStyle);

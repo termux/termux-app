@@ -20,13 +20,13 @@ public final class TerminalRow {
     /** If this row has been line wrapped due to text output at the end of line. */
     boolean mLineWrap;
     /** The style bits of each cell in the row. See {@link TextStyle}. */
-    final int[] mStyle;
+    final long[] mStyle;
 
     /** Construct a blank row (containing only whitespace, ' ') with a specified style. */
-    public TerminalRow(int columns, int style) {
+    public TerminalRow(int columns, long style) {
         mColumns = columns;
         mText = new char[(int) (SPARE_CAPACITY_FACTOR * columns)];
-        mStyle = new int[columns];
+        mStyle = new long[columns];
         clear(style);
     }
 
@@ -112,14 +112,14 @@ public final class TerminalRow {
         return false;
     }
 
-    public void clear(int style) {
+    public void clear(long style) {
         Arrays.fill(mText, ' ');
         Arrays.fill(mStyle, style);
         mSpaceUsed = (short) mColumns;
     }
 
     // https://github.com/steven676/Android-Terminal-Emulator/commit/9a47042620bec87617f0b4f5d50568535668fe26
-    public void setChar(int columnToSet, int codePoint, int style) {
+    public void setChar(int columnToSet, int codePoint, long style) {
         mStyle[columnToSet] = style;
 
         final int newCodePointDisplayWidth = WcWidth.width(codePoint);
@@ -225,7 +225,7 @@ public final class TerminalRow {
         return true;
     }
 
-    public final int getStyle(int column) {
+    public final long getStyle(int column) {
         return mStyle[column];
     }
 

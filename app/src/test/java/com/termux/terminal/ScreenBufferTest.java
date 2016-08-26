@@ -1,6 +1,6 @@
 package com.termux.terminal;
 
-public class ScreenBufferTest extends TerminalTest {
+public class ScreenBufferTest extends TerminalTestCase {
 
 	public void testBasics() {
 		TerminalBuffer screen = new TerminalBuffer(5, 3, 3);
