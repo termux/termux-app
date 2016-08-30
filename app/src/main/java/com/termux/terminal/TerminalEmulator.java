@@ -12,7 +12,7 @@ import java.util.Stack;
 /**
  * Renders text into a screen. Contains all the terminal-specific knowledge and state. Emulates a subset of the X Window
  * System xterm terminal, which in turn is an emulator for a subset of the Digital Equipment Corporation vt100 terminal.
- * <p/>
+ * <p>
  * References:
  * <ul>
  * <li>http://invisible-island.net/xterm/ctlseqs/ctlseqs.html</li>
@@ -145,7 +145,7 @@ public final class TerminalEmulator {
     /**
      * The alternate screen buffer, exactly as large as the display and contains no additional saved lines (so that when
      * the alternate screen buffer is active, you cannot scroll back to view saved lines).
-     * <p/>
+     * <p>
      * See http://www.xfree86.org/current/ctlseqs.html#The%20Alternate%20Screen%20Buffer
      */
     final TerminalBuffer mAltBuffer;
@@ -628,7 +628,7 @@ public final class TerminalEmulator {
                             case 't': // "${CSI}${TOP}${LEFT}${BOTTOM}${RIGHT}${ATTRIBUTES}$t"
                                 // Reverse attributes in rectangular area (DECRARA - http://www.vt100.net/docs/vt510-rm/DECRARA).
                                 boolean reverse = b == 't';
-                                // FIXME: "coordinates of the rectangular area are affected by the setting of origin mode (DECOM)".s
+                                // FIXME: "coordinates of the rectangular area are affected by the setting of origin mode (DECOM)".
                                 int top = Math.min(getArg(0, 1, true) - 1, effectiveBottomMargin) + effectiveTopMargin;
                                 int left = Math.min(getArg(1, 1, true) - 1, effectiveRightMargin) + effectiveLeftMargin;
                                 int bottom = Math.min(getArg(2, mRows, true) + 1, effectiveBottomMargin - 1) + effectiveTopMargin;
