@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
+import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -233,7 +234,8 @@ public final class TerminalView extends View {
         // Previous keyboard issues:
         // https://github.com/termux/termux-packages/issues/25
         // https://github.com/termux/termux-app/issues/87.
-        // https://github.com/termux/termux-app/issues/126 for breakage from that.
+        // https://github.com/termux/termux-app/issues/126.
+        // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
         outAttrs.inputType = InputType.TYPE_NULL;
 
         // Let part of the application show behind when in landscape:
@@ -244,19 +246,41 @@ public final class TerminalView extends View {
             @Override
             public boolean finishComposingText() {
                 if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: finishComposingText()");
-                commitText(getEditable(), 0);
+                super.finishComposingText();
 
-                // Clear the editable.
+                sendTextToTerminal(getEditable());
                 getEditable().clear();
-
                 return true;
             }
 
             @Override
             public boolean commitText(CharSequence text, int newCursorPosition) {
-                if (LOG_KEY_EVENTS)
+                if (LOG_KEY_EVENTS) {
                     Log.i(EmulatorDebug.LOG_TAG, "IME: commitText(\"" + text + "\", " + newCursorPosition + ")");
+                }
+                super.commitText(text, newCursorPosition);
+
                 if (mEmulator == null) return true;
+
+                Editable content = getEditable();
+                sendTextToTerminal(content);
+                content.clear();
+                return true;
+            }
+
+            @Override
+            public boolean deleteSurroundingText(int leftLength, int rightLength) {
+                if (LOG_KEY_EVENTS)
+                    Log.i(EmulatorDebug.LOG_TAG, "IME: deleteSurroundingText(" + leftLength + ", " + rightLength + ")");
+                // If leftLength=2 it may be due to a UTF-16 surrogate pair. So we cannot send
+                // multiple key events for that. Let's just hope that keyboards don't use
+                // leftLength > 1 for other purposes (such as holding down backspace for repeat).
+                sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                return super.deleteSurroundingText(leftLength, rightLength);
+            }
+
+
+            void sendTextToTerminal(CharSequence text) {
                 final int textLengthInChars = text.length();
                 for (int i = 0; i < textLengthInChars; i++) {
                     char firstChar = text.charAt(i);
@@ -297,35 +321,8 @@ public final class TerminalView extends View {
 
                     inputCodePoint(codePoint, ctrlHeld, false);
                 }
-
-                return true;
             }
 
-            @Override
-            public boolean deleteSurroundingText(int leftLength, int rightLength) {
-                if (LOG_KEY_EVENTS)
-                    Log.i(EmulatorDebug.LOG_TAG, "IME: deleteSurroundingText(" + leftLength + ", " + rightLength + ")");
-                // If leftLength=2 it may be due to a UTF-16 surrogate pair. So we cannot send
-                // multiple key events for that. Let's just hope that keyboards don't use
-                // leftLength > 1 for other purposes (such as holding down backspace for repeat).
-                sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-                return true;
-            }
-
-            @Override
-            public boolean setComposingText(CharSequence text, int newCursorPosition) {
-                if (LOG_KEY_EVENTS)
-                    Log.i(EmulatorDebug.LOG_TAG, "IME: setComposingText(\"" + text  + "\", " + newCursorPosition + ")");
-
-                if (text.length() == 0) {
-                    // Avoid log spam "SpannableStringBuilder: SPAN_EXCLUSIVE_EXCLUSIVE spans cannot
-                    // have a zero length" when backspacing with the Google keyboard.
-                    getEditable().clear();
-                } else {
-                    super.setComposingText(text, newCursorPosition);
-                }
-                return true;
-            }
         };
     }
 
