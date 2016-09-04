@@ -13,8 +13,8 @@ android {
         applicationId "com.termux"
         minSdkVersion 21
         targetSdkVersion 24
-        versionCode 39
-        versionName "0.39"
+        versionCode 40
+        versionName "0.40"
 
         ndk {
             moduleName "libtermux"
