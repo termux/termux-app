@@ -173,5 +173,19 @@ public class KeyHandlerTest extends TestCase {
 		assertKeysEquals("\033[21;2~", KeyHandler.getCode(KeyEvent.KEYCODE_F10, KeyHandler.KEYMOD_SHIFT, false, false));
 		assertKeysEquals("\033[23;2~", KeyHandler.getCode(KeyEvent.KEYCODE_F11, KeyHandler.KEYMOD_SHIFT, false, false));
 		assertKeysEquals("\033[24;2~", KeyHandler.getCode(KeyEvent.KEYCODE_F12, KeyHandler.KEYMOD_SHIFT, false, false));
-	}
+
+        assertKeysEquals("0", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_0, 0, false, false));
+        assertKeysEquals("1", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_1, 0, false, false));
+        assertKeysEquals("2", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_2, 0, false, false));
+        assertKeysEquals("3", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_3, 0, false, false));
+        assertKeysEquals("4", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_4, 0, false, false));
+        assertKeysEquals("5", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_5, 0, false, false));
+        assertKeysEquals("6", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_6, 0, false, false));
+        assertKeysEquals("7", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_7, 0, false, false));
+        assertKeysEquals("8", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_8, 0, false, false));
+        assertKeysEquals("9", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_9, 0, false, false));
+        assertKeysEquals(",", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_COMMA, 0, false, false));
+        assertKeysEquals(".", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_DOT, 0, false, false));
+    }
+
 }

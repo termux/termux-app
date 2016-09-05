@@ -219,9 +219,6 @@ public final class KeyHandler {
             case KEYCODE_FORWARD_DEL:
                 return transformForModifiers("\033[3", keyMode, '~');
 
-            case KEYCODE_NUMPAD_DOT:
-                return keypadApplication ? "\033On" : "\033[3~";
-
             case KEYCODE_PAGE_UP:
                 return "\033[5~";
             case KEYCODE_PAGE_DOWN:
@@ -251,12 +248,14 @@ public final class KeyHandler {
                 return keypadApplication ? transformForModifiers("\033O", keyMode, 'k') : "+";
             case KEYCODE_NUMPAD_COMMA:
                 return ",";
+            case KEYCODE_NUMPAD_DOT:
+                return keypadApplication ? "\033On" : ".";
             case KEYCODE_NUMPAD_SUBTRACT:
                 return keypadApplication ? transformForModifiers("\033O", keyMode, 'm') : "-";
             case KEYCODE_NUMPAD_DIVIDE:
                 return keypadApplication ? transformForModifiers("\033O", keyMode, 'o') : "/";
             case KEYCODE_NUMPAD_0:
-                return keypadApplication ? transformForModifiers("\033O", keyMode, 'p') : "1";
+                return keypadApplication ? transformForModifiers("\033O", keyMode, 'p') : "0";
             case KEYCODE_NUMPAD_1:
                 return keypadApplication ? transformForModifiers("\033O", keyMode, 'q') : "1";
             case KEYCODE_NUMPAD_2:
