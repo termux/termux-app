@@ -61,7 +61,7 @@ public final class TermuxKeyListener implements TerminalKeyListener {
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
             mActivity.removeFinishedSession(currentSession);
             return true;
-        } else if (e.isCtrlPressed() && e.isShiftPressed()) {
+        } else if (e.isCtrlPressed() && e.isAltPressed()) {
             // Get the unmodified code point:
             int unicodeChar = e.getUnicodeChar(0);
 
