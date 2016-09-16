@@ -160,7 +160,7 @@ public final class TermuxKeyListener implements TerminalKeyListener {
                     resultingKeyCode = KeyEvent.KEYCODE_INSERT;
                     break;
                 case 'h':
-                    resultingKeyCode = KeyEvent.KEYCODE_MOVE_HOME;
+                    resultingCodePoint = '~';
                     break;
 
                 // Special characters to input.
