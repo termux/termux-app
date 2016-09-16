@@ -46,17 +46,17 @@ public final class TextStyle {
         long result = effect & 0b111111111;
         if ((0xff000000 & foreColor) == 0xff000000) {
             // 24-bit color.
-            result |= CHARACTER_ATTRIBUTE_TRUECOLOR_FOREGROUND | (((long) foreColor & 0x00ffffffL) << 40L);
+            result |= CHARACTER_ATTRIBUTE_TRUECOLOR_FOREGROUND | ((foreColor & 0x00ffffffL) << 40L);
         } else {
             // Indexed color.
-            result |= (((long) foreColor) & 0b111111111L) << 40;
+            result |= (foreColor & 0b111111111L) << 40;
         }
         if ((0xff000000 & backColor) == 0xff000000) {
             // 24-bit color.
-            result |= CHARACTER_ATTRIBUTE_TRUECOLOR_BACKGROUND | (((long) backColor & 0x00ffffffL) << 16L);
+            result |= CHARACTER_ATTRIBUTE_TRUECOLOR_BACKGROUND | ((backColor & 0x00ffffffL) << 16L);
         } else {
             // Indexed color.
-            result |= (((long) backColor) & 0b111111111L) << 16L;
+            result |= (backColor & 0b111111111L) << 16L;
         }
 
         return result;
