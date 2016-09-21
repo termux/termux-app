@@ -17,9 +17,7 @@ android {
         versionName "0.42"
 
         ndk {
-            moduleName "libtermux"
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-            cFlags "-std=c11 -Wall -Wextra -Os -fno-stack-protector -nostdlib -Wl,--gc-sections"
+            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
     }
 
@@ -28,6 +26,12 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
         }
     }
 }
