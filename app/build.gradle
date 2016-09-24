@@ -16,6 +16,12 @@ android {
         versionCode 42
         versionName "0.42"
 
+        externalNativeBuild {
+            ndkBuild {
+                cFlags "-std=c11 -Wall -Wextra -Werror -Os -fno-stack-protector -Wl,--gc-sections"
+            }
+        }
+
         ndk {
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
@@ -30,8 +36,8 @@ android {
     }
 
     externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
+        ndkBuild {
+            path "src/main/jni/Android.mk"
         }
     }
 }
