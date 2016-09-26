@@ -429,6 +429,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             final StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
             final StyleSpan italicSpan = new StyleSpan(Typeface.ITALIC);
 
+            @NonNull
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View row = convertView;
@@ -534,6 +535,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             @Override
             public void onTextSet(String text) {
                 sessionToRename.mSessionName = text;
+                mListViewAdapter.notifyDataSetChanged();
             }
         }, -1, null, -1, null, null);
     }
