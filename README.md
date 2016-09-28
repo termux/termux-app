@@ -18,10 +18,6 @@ License
 =======
 Released under [the GPLv3 license](https://www.gnu.org/licenses/gpl.html). Contains code from `Terminal Emulator for Android` which is released under [the Apache License 2.0](https://www.apache.org/licenses/).
 
-Building JNI libraries
-======================
-Execute the `build-jnilibs.sh` script to build the required JNI libraries.
-
 Terminal resources
 ==================
 * [XTerm control sequences](http://invisible-island.net/xterm/ctlseqs/ctlseqs.html)
