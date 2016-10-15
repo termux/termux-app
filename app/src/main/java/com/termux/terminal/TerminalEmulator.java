@@ -722,7 +722,6 @@ public final class TerminalEmulator {
                         }
                         break;
                     case ESC_PERCENT:
-                        Log.i(EmulatorDebug.LOG_TAG, "Ignoring character set sequence 'ESC % " + (char) b + "'");
                         break;
                     case ESC_OSC:
                         doOsc(b);
