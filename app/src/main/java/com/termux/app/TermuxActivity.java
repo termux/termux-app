@@ -431,7 +431,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
             @NonNull
             @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
+            public View getView(int position, View convertView, @NonNull ViewGroup parent) {
                 View row = convertView;
                 if (row == null) {
                     LayoutInflater inflater = getLayoutInflater();
