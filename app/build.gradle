@@ -1,18 +1,18 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.3"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
 
     dependencies {
-        compile 'com.android.support:support-annotations:24.2.1'
-        compile "com.android.support:support-v4:24.2.1"
+        compile 'com.android.support:support-annotations:25.0.0'
+        compile "com.android.support:support-v4:25.0.0"
     }
 
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion 21
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 42
         versionName "0.42"
 
