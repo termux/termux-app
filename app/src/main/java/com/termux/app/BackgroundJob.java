@@ -7,55 +7,71 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * A background job launched by Termux.
  */
 public final class BackgroundJob {
 
-    private static final String LOG_TAG = "termux-background";
+    private static final String LOG_TAG = "termux-job";
 
     final Process mProcess;
 
-    public BackgroundJob(File cwd, File fileToExecute, String[] args) throws IOException {
-        String[] env = buildEnvironment(false, cwd.getAbsolutePath());
+    public BackgroundJob(String cwd, String fileToExecute, final String[] args) {
+        String[] env = buildEnvironment(false, cwd);
+        if (cwd == null) cwd = TermuxService.HOME_PATH;
 
-        String[] progArray = new String[args.length + 1];
+        String[] modifiedArgs;
+        if (args == null) {
+            modifiedArgs = new String[]{fileToExecute};
+        } else {
+            modifiedArgs = new String[args.length + 1];
+            modifiedArgs[0] = fileToExecute;
+            System.arraycopy(args, 0, modifiedArgs, 1, args.length);
+        }
+        final String[] progArray = modifiedArgs;
 
-        mProcess = Runtime.getRuntime().exec(progArray, env, cwd);
+        final String processDescription = Arrays.toString(progArray);
+
+        Process process;
+        try {
+            process = Runtime.getRuntime().exec(progArray, env, new File(cwd));
+        } catch (IOException e) {
+            mProcess = null;
+            // TODO: Visible error message?
+            Log.e(LOG_TAG, "Failed running background job: " + processDescription, e);
+            return;
+        }
+        mProcess = process;
+        final int pid = getPid(mProcess);
 
         new Thread() {
             @Override
             public void run() {
-                while (true) {
-                    try {
-                        int exitCode = mProcess.waitFor();
-                        if (exitCode == 0) {
-                            Log.i(LOG_TAG, "exited normally");
-                            return;
-                        } else {
-                            Log.i(LOG_TAG, "exited with exit code: " + exitCode);
-                        }
-                    } catch (InterruptedException e) {
-                        // Ignore.
-                    }
-                }
-            }
-        }.start();
-
-        new Thread() {
-            @Override
-            public void run() {
+                Log.i(LOG_TAG, "[" + pid + "] starting: " + processDescription);
                 InputStream stdout = mProcess.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stdout, StandardCharsets.UTF_8));
                 String line;
                 try {
                     // FIXME: Long lines.
                     while ((line = reader.readLine()) != null) {
-                        Log.i(LOG_TAG, line);
+                        Log.i(LOG_TAG, "[" + pid + "] stdout: " + line);
                     }
                 } catch (IOException e) {
+                    Log.e(LOG_TAG, "Error reading output", e);
+                }
+
+                try {
+                    int exitCode = mProcess.waitFor();
+                    if (exitCode == 0) {
+                        Log.i(LOG_TAG, "[" + pid + "] exited normally");
+                    } else {
+                        Log.w(LOG_TAG, "[" + pid + "] exited with code: " + exitCode);
+                    }
+                } catch (InterruptedException e) {
                     // Ignore.
                 }
             }
@@ -71,7 +87,7 @@ public final class BackgroundJob {
                 try {
                     // FIXME: Long lines.
                     while ((line = reader.readLine()) != null) {
-                        Log.e(LOG_TAG, line);
+                        Log.i(LOG_TAG, "[" + pid + "] stderr: " + line);
                     }
                 } catch (IOException e) {
                     // Ignore.
@@ -80,7 +96,7 @@ public final class BackgroundJob {
         };
     }
 
-    public String[] buildEnvironment(boolean failSafe, String cwd) {
+    public static String[] buildEnvironment(boolean failSafe, String cwd) {
         new File(TermuxService.HOME_PATH).mkdirs();
 
         if (cwd == null) cwd = TermuxService.HOME_PATH;
@@ -107,6 +123,20 @@ public final class BackgroundJob {
 
             return new String[]{termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv};
         }
+    }
+
+    public static int getPid(Process p) {
+        int pid = -1;
+
+        try {
+            Field f = p.getClass().getDeclaredField("pid");
+            f.setAccessible(true);
+            pid = f.getInt(p);
+            f.setAccessible(false);
+        } catch (Throwable e) {
+            pid = -1;
+        }
+        return pid;
     }
 
 }

@@ -119,21 +119,26 @@ public final class TermuxService extends Service implements SessionChangedCallba
             String executablePath = (executableUri == null ? null : executableUri.getPath());
             String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(EXTRA_ARGUMENTS));
             String cwd = intent.getStringExtra(EXTRA_CURRENT_WORKING_DIRECTORY);
-            TerminalSession newSession = createTermSession(executablePath, arguments, cwd, false);
 
-            // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
-            if (executablePath != null) {
-                int lastSlash = executablePath.lastIndexOf('/');
-                String name = (lastSlash == -1) ? executablePath : executablePath.substring(lastSlash + 1);
-                name = name.replace('-', ' ');
-                newSession.mSessionName = name;
+            if (intent.getBooleanExtra("com.termux.execute.background", false)) {
+                new BackgroundJob(cwd, executablePath, arguments);
+            } else {
+                TerminalSession newSession = createTermSession(executablePath, arguments, cwd, false);
+
+                // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
+                if (executablePath != null) {
+                    int lastSlash = executablePath.lastIndexOf('/');
+                    String name = (lastSlash == -1) ? executablePath : executablePath.substring(lastSlash + 1);
+                    name = name.replace('-', ' ');
+                    newSession.mSessionName = name;
+                }
+
+                // Make the newly created session the current one to be displayed:
+                TermuxPreferences.storeCurrentSession(this, newSession);
+
+                // Launch the main Termux app, which will now show to current session:
+                startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
-
-            // Make the newly created session the current one to be displayed:
-            TermuxPreferences.storeCurrentSession(this, newSession);
-
-            // Launch the main Termux app, which will now show to current session:
-            startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         } else if (action != null) {
             Log.e(EmulatorDebug.LOG_TAG, "Unknown TermuxService action: '" + action + "'");
         }
@@ -236,28 +241,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
         if (cwd == null) cwd = HOME_PATH;
 
-        final String termEnv = "TERM=xterm-256color";
-        final String homeEnv = "HOME=" + HOME_PATH;
-        final String prefixEnv = "PREFIX=" + PREFIX_PATH;
-        final String androidRootEnv = "ANDROID_ROOT=" + System.getenv("ANDROID_ROOT");
-        final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
-        // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
-        // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
-        final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
-        String[] env;
-        if (failSafe) {
-            // Keep the default path so that system binaries can be used in the failsafe session.
-            final String pathEnv = "PATH=" + System.getenv("PATH");
-            env = new String[]{termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv, externalStorageEnv};
-        } else {
-            final String ps1Env = "PS1=$ ";
-            final String ldEnv = "LD_LIBRARY_PATH=" + PREFIX_PATH + "/lib";
-            final String langEnv = "LANG=en_US.UTF-8";
-            final String pathEnv = "PATH=" + PREFIX_PATH + "/bin:" + PREFIX_PATH + "/bin/applets";
-            final String pwdEnv = "PWD=" + cwd;
-
-            env = new String[]{termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv};
-        }
+        String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
 
         String shellName;
         if (executablePath == null) {
