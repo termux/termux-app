@@ -38,6 +38,8 @@ public final class TerminalSession extends TerminalOutput {
 
         void onSessionFinished(TerminalSession finishedSession);
 
+        void onSessionClosingItself(TerminalSession session);
+
         void onClipboardText(TerminalSession session, String text);
 
         void onBell(TerminalSession session);
@@ -119,6 +121,16 @@ public final class TerminalSession extends TerminalOutput {
                 int exitCode = (Integer) msg.obj;
                 cleanupResources(exitCode);
                 mChangeCallback.onSessionFinished(TerminalSession.this);
+
+                if (exitCode == -1 || exitCode == 129) {
+                    // Process terminated with SIGHUP (signal 1), or exited with
+                    // status 128+1 (= shell's last child terminated with SIGHUP).
+                    // Scripts can use this to indicate that they want to close
+                    // the session without waiting for the user to press Return.
+
+                    mChangeCallback.onSessionClosingItself(TerminalSession.this);
+                    return;
+                }
 
                 String exitDescription = "\r\n[Process completed";
                 if (exitCode > 0) {

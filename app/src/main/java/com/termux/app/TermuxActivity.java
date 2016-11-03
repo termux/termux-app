@@ -393,6 +393,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
 
             @Override
+            public void onSessionClosingItself(TerminalSession session) {
+                removeFinishedSession(session);
+            }
+
+            @Override
             public void onClipboardText(TerminalSession session, String text) {
                 if (!mIsVisible) return;
                 showToast("Clipboard:\n\"" + text + "\"", false);
@@ -855,7 +860,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     public void removeFinishedSession(TerminalSession finishedSession) {
-        // Return pressed with finished session - remove it.
         TermuxService service = mTermService;
 
         int index = service.removeTermSession(finishedSession);
