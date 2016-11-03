@@ -73,6 +73,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -860,19 +861,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     public void removeFinishedSession(TerminalSession finishedSession) {
-        TermuxService service = mTermService;
+        int index = mTermService.removeTermSession(finishedSession);
+        List<TerminalSession> remainingSessions = mTermService.getSessions();
 
-        int index = service.removeTermSession(finishedSession);
         mListViewAdapter.notifyDataSetChanged();
-        if (mTermService.getSessions().isEmpty()) {
-            // There are no sessions to show, so finish the activity.
+        if (remainingSessions.isEmpty())
             finish();
-        } else {
-            if (index >= service.getSessions().size()) {
-                index = service.getSessions().size() - 1;
-            }
-            switchToSession(service.getSessions().get(index));
-        }
+        else
+            switchToSession(remainingSessions.get(Math.min(index, remainingSessions.size() - 1)));
     }
 
 }
