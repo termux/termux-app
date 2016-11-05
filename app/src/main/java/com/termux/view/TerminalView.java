@@ -215,7 +215,9 @@ public final class TerminalView extends View {
         if (session == mTermSession) return false;
         mTopRow = 0;
 
+        if (mTermSession != null) mTermSession.mAttached = false;
         mTermSession = session;
+        session.mAttached = true;
         mEmulator = null;
         mCombiningAccent = 0;
 

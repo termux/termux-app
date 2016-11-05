@@ -1,6 +1,7 @@
 package com.termux.app;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -56,6 +57,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
     private static final String ACTION_LOCK_WIFI = "com.termux.service_toggle_wifi_lock";
     /** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
     public static final String ACTION_EXECUTE = "com.termux.service_execute";
+    /** Intent action to open a terminal window to attach to an already running terminal session. */
+    public static final String ACTION_SHOW_TERMINAL = "com.termux.service_show_terminal";
 
     public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
 
@@ -77,7 +80,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     final List<TerminalSession> mTerminalSessions = new ArrayList<>();
 
     /** Note that the service may often outlive the activity, so need to clear this reference. */
-    SessionChangedCallback mSessionChangeCallback;
+    final List<SessionChangedCallback> mSessionChangeCallbacks = new ArrayList<>();
 
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
@@ -139,6 +142,13 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 // Launch the main Termux app, which will now show to current session:
                 startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
+        } else if (ACTION_SHOW_TERMINAL.equals(action)) {
+            ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            if (activityManager.getAppTasks().isEmpty()) {
+                startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } else {
+                activityManager.getAppTasks().get(0).moveToFront();
+            }
         } else if (action != null) {
             Log.e(EmulatorDebug.LOG_TAG, "Unknown TermuxService action: '" + action + "'");
         }
@@ -169,11 +179,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     private Notification buildNotification() {
-        Intent notifyIntent = new Intent(this, TermuxActivity.class);
-        // PendingIntent#getActivity(): "Note that the activity will be started outside of the context of an existing
-        // activity, so you must use the Intent.FLAG_ACTIVITY_NEW_TASK launch flag in the Intent":
-        notifyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notifyIntent, 0);
+        Intent notifyIntent = new Intent(this, TermuxService.class);
+        notifyIntent.setAction(ACTION_SHOW_TERMINAL);
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, notifyIntent, 0);
 
         int sessionCount = mTerminalSessions.size();
         String contentText = sessionCount + " terminal session" + (sessionCount == 1 ? "" : "s");
@@ -234,6 +242,15 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     public List<TerminalSession> getSessions() {
         return mTerminalSessions;
+    }
+
+    public TerminalSession getFirstUnattachedSession() {
+        for (TerminalSession session : mTerminalSessions) {
+            if (!session.mAttached)
+                return session;
+        }
+
+        return null;
     }
 
     TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
@@ -306,6 +323,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
             // holding wake lock since there may be daemon processes (e.g. sshd) running.
             stopSelf();
         } else {
+            onSessionRemoved(sessionToRemove);
             updateNotification();
         }
         return indexOfRemoved;
@@ -313,33 +331,78 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onTitleChanged(TerminalSession changedSession) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onTitleChanged(changedSession);
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onTitleChanged(changedSession);
+        }
+    }
+
+    @Override
+    public void onSessionCreated(TerminalSession createdSession) {
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onSessionCreated(createdSession);
+        }
     }
 
     @Override
     public void onSessionFinished(final TerminalSession finishedSession) {
-        if (mSessionChangeCallback != null)
-            mSessionChangeCallback.onSessionFinished(finishedSession);
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onSessionFinished(finishedSession);
+        }
+    }
+
+    @Override
+    public void onSessionRemoved(TerminalSession removedSession) {
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onSessionRemoved(removedSession);
+        }
+    }
+
+    @Override
+    public void onSessionRenamed(TerminalSession renamedSession) {
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onSessionRenamed(renamedSession);
+        }
     }
 
     @Override
     public void onTextChanged(TerminalSession changedSession) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onTextChanged(changedSession);
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onTextChanged(changedSession);
+        }
     }
 
     @Override
     public void onClipboardText(TerminalSession session, String text) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onClipboardText(session, text);
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onClipboardText(session, text);
+        }
     }
 
     @Override
     public void onBell(TerminalSession session) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onBell(session);
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onBell(session);
+        }
     }
 
     @Override
     public void onColorsChanged(TerminalSession session) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onColorsChanged(session);
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onColorsChanged(session);
+        }
     }
 
+    @Override
+    public void onAttach(TerminalSession attachedSession) {
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onAttach(attachedSession);
+        }
+    }
+
+    @Override
+    public void onDetach(TerminalSession detachedSession) {
+        for (SessionChangedCallback callback : mSessionChangeCallbacks) {
+            callback.onDetach(detachedSession);
+        }
+    }
 }

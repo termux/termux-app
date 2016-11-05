@@ -84,6 +84,8 @@ public final class TermuxKeyListener implements TerminalKeyListener {
                 mActivity.renameSession(currentSession);
             } else if (unicodeChar == 'c'/* create */) {
                 mActivity.addNewSession(false, null);
+            } else if (unicodeChar == 'w'/* window */) {
+                mActivity.addNewWindow();
             } else if (unicodeChar == 'u' /* urls */) {
                 mActivity.showUrlSelection();
             } else if (unicodeChar == 'v') {
