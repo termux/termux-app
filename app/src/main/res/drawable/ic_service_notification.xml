@@ -1,0 +1,33 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="48dp"
+    android:width="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!--
+        https://material.google.com/style/icons.html
+    -->
+
+    <!-- Screen border. -->
+    <path android:fillColor="#00000000"
+          android:strokeColor="#000"
+          android:strokeWidth="3"
+          android:pathData="M7,4
+                            l34,0
+                            q3 0,3 3
+                            l0,34
+                            q0 3, -3 3
+                            l-34,0
+                            q-3 0, -3-3
+                            l0 -34
+                            q0 -3, 3 -3"
+          />
+
+    <!-- Block cursor. -->
+    <path android:fillColor="#000"
+          android:pathData="M12,12
+                            l5,0
+                            l0,10
+                            l-5,0"
+        />
+
+</vector>
