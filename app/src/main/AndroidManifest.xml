@@ -16,6 +16,7 @@
         android:allowBackup="true"
         android:fullBackupContent="@xml/backupscheme"
         android:icon="@drawable/ic_launcher"
+        android:roundIcon="@drawable/ic_launcher_round"
         android:banner="@drawable/banner"
         android:label="@string/application_name"
         android:theme="@style/Theme.Termux"
