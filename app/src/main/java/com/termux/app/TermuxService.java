@@ -242,8 +242,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
         if (cwd == null) cwd = HOME_PATH;
 
         String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
+        boolean isLoginShell = false;
 
-        String shellName;
         if (executablePath == null) {
             File shell = new File(HOME_PATH, ".termux/shell");
             if (shell.exists()) {
@@ -274,23 +274,18 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 // Fall back to system shell as last resort:
                 executablePath = "/system/bin/sh";
             }
-
-            String[] parts = executablePath.split("/");
-            shellName = "-" + parts[parts.length - 1];
-        } else {
-            int lastSlashIndex = executablePath.lastIndexOf('/');
-            shellName = lastSlashIndex == -1 ? executablePath : executablePath.substring(lastSlashIndex + 1);
+            isLoginShell = true;
         }
 
-        String[] args;
-        if (arguments == null) {
-            args = new String[]{shellName};
-        } else {
-            args = new String[arguments.length + 1];
-            args[0] = shellName;
+        String[] processArgs = BackgroundJob.setupProcessArgs(executablePath, arguments);
+        executablePath = processArgs[0];
+        int lastSlashIndex = executablePath.lastIndexOf('/');
+        String processName = (isLoginShell ? "-" : "") +
+            (lastSlashIndex == -1 ? executablePath : executablePath.substring(lastSlashIndex + 1));
 
-            System.arraycopy(arguments, 0, args, 1, arguments.length);
-        }
+        String[] args = new String[processArgs.length];
+        args[0] = processName;
+        if (processArgs.length > 1) System.arraycopy(processArgs, 1, args, 1, processArgs.length - 1);
 
         TerminalSession session = new TerminalSession(executablePath, cwd, args, env, this);
         mTerminalSessions.add(session);
