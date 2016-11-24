@@ -31,4 +31,3 @@ addons:
     notification_email: fredrik@fornwall.net
     build_command_prepend: "./gradlew clean"
     build_command: "./gradlew assemble"
-    branch_pattern: coverity_scan
