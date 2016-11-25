@@ -31,5 +31,5 @@ addons:
       description: "Terminal emulator and Linux environment for Android"
     notification_email: fredrik@fornwall.net
     build_command_prepend: "./gradlew clean"
-    build_command: "./gradlew assemble"
+    build_command: "./gradlew build"
     branch_pattern: master
