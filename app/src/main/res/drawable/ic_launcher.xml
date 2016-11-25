@@ -20,7 +20,7 @@
           />
 
     <!-- Block cursor. -->
-    <path android:fillColor="#FFFF"
+    <path android:fillColor="#FFF"
           android:pathData="M12,12
                             l5,0
                             l0,10
