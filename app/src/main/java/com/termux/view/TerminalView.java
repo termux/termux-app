@@ -270,15 +270,14 @@ public final class TerminalView extends View {
 
             @Override
             public boolean deleteSurroundingText(int leftLength, int rightLength) {
-                if (LOG_KEY_EVENTS)
+                if (LOG_KEY_EVENTS) {
                     Log.i(EmulatorDebug.LOG_TAG, "IME: deleteSurroundingText(" + leftLength + ", " + rightLength + ")");
-                // If leftLength=2 it may be due to a UTF-16 surrogate pair. So we cannot send
-                // multiple key events for that. Let's just hope that keyboards don't use
-                // leftLength > 1 for other purposes (such as holding down backspace for repeat).
-                sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                }
+                // The stock Samsung keyboard with 'Auto check spelling' enabled sends leftLength > 1.
+                KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
+                for (int i = 0; i < leftLength; i++) sendKeyEvent(deleteKey);
                 return super.deleteSurroundingText(leftLength, rightLength);
             }
-
 
             void sendTextToTerminal(CharSequence text) {
                 final int textLengthInChars = text.length();
