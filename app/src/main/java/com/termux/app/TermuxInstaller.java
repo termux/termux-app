@@ -257,9 +257,13 @@ final class TermuxInstaller {
                     Os.symlink(moviesDir.getAbsolutePath(), new File(storageDir, "movies").getAbsolutePath());
 
                     final File[] dirs = context.getExternalFilesDirs(null);
-                    if (dirs != null && dirs.length >= 2) {
-                        final File externalDir = dirs[1];
-                        Os.symlink(externalDir.getAbsolutePath(), new File(storageDir, "external").getAbsolutePath());
+                    if (dirs != null && dirs.length > 1) {
+                        for (int i = 1; i < dirs.length; i++) {
+                            File dir = dirs[i];
+                            if (dir == null) continue;
+                            String symlinkName = "external-" + i;
+                            Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
+                        }
                     }
                 } catch (Exception e) {
                     Log.e(LOG_TAG, "Error setting up link", e);
