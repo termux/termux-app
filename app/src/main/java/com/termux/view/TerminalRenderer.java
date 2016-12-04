@@ -54,7 +54,8 @@ final class TerminalRenderer {
     }
 
     /** Render the terminal to a canvas with at a specified row scroll, and an optional rectangular selection. */
-    public final void render(TerminalEmulator mEmulator, Canvas canvas, int topRow, int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
+    public final void render(TerminalEmulator mEmulator, Canvas canvas, int topRow,
+                             int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
         final boolean reverseVideo = mEmulator.isReverseVideo();
         final int endRow = topRow + mEmulator.mRows;
         final int columns = mEmulator.mColumns;
@@ -63,6 +64,7 @@ final class TerminalRenderer {
         final boolean cursorVisible = mEmulator.isShowingCursor();
         final TerminalBuffer screen = mEmulator.getScreen();
         final int[] palette = mEmulator.mColors.mCurrentColors;
+        final int cursorShape = mEmulator.getCursorStyle();
 
         if (reverseVideo)
             canvas.drawColor(palette[TextStyle.COLOR_INDEX_FOREGROUND], PorterDuff.Mode.SRC);
@@ -113,8 +115,10 @@ final class TerminalRenderer {
                     } else {
                         final int columnWidthSinceLastRun = column - lastRunStartColumn;
                         final int charsSinceLastRun = currentCharIndex - lastRunStartIndex;
-                        drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun, lastRunStartIndex, charsSinceLastRun,
-                            measuredWidthForRun, lastRunInsideCursor, lastRunStyle, reverseVideo);
+                        int cursorColor = lastRunInsideCursor ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
+                        drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun,
+                            lastRunStartIndex, charsSinceLastRun, measuredWidthForRun,
+                            cursorColor, cursorShape, lastRunStyle, reverseVideo);
                     }
                     measuredWidthForRun = 0.f;
                     lastRunStyle = style;
@@ -135,37 +139,42 @@ final class TerminalRenderer {
 
             final int columnWidthSinceLastRun = columns - lastRunStartColumn;
             final int charsSinceLastRun = currentCharIndex - lastRunStartIndex;
+            int cursorColor = lastRunInsideCursor ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
             drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun, lastRunStartIndex, charsSinceLastRun,
-                measuredWidthForRun, lastRunInsideCursor, lastRunStyle, reverseVideo);
+                measuredWidthForRun, cursorColor, cursorShape, lastRunStyle, reverseVideo);
         }
     }
 
-    /**
-     * @param canvas          the canvas to render on
-     * @param palette         the color palette to look up colors from textStyle
-     * @param y               height offset into the canvas where to render the line: line * {@link #mFontLineSpacing}
-     * @param startColumn     the run offset in columns
-     * @param runWidthColumns the run width in columns - this is computed from wcwidth() and may not be what the font measures to
-     * @param text            the java char array to render text from
-     * @param startCharIndex  index into the text array where to start
-     * @param runWidthChars   number of java characters from the text array to render
-     * @param cursor          true if rendering a cursor or selection
-     * @param textStyle       the background, foreground and effect encoded using {@link TextStyle}
-     * @param reverseVideo    if the screen is rendered with the global reverse video flag set
-     */
-    private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y, int startColumn, int runWidthColumns, int startCharIndex, int runWidthChars,
-                             float mes, boolean cursor, long textStyle, boolean reverseVideo) {
+    private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y, int startColumn, int runWidthColumns,
+                             int startCharIndex, int runWidthChars, float mes, int cursor, int cursorStyle,
+                             long textStyle, boolean reverseVideo) {
         int foreColor = TextStyle.decodeForeColor(textStyle);
+        final int effect = TextStyle.decodeEffect(textStyle);
         int backColor = TextStyle.decodeBackColor(textStyle);
+        final boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
+        final boolean underline = (effect & TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE) != 0;
+        final boolean italic = (effect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0;
+        final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
+        final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
 
-        int foreColorIndex = -1;
         if ((foreColor & 0xff000000) != 0xff000000) {
-            foreColorIndex = foreColor;
+            // Let bold have bright colors if applicable (one of the first 8):
+            if (bold && foreColor >= 0 && foreColor < 8) foreColor += 8;
             foreColor = palette[foreColor];
         }
-        if ((backColor & 0xff000000) != 0xff000000) backColor = palette[backColor];
 
-        final int effect = TextStyle.decodeEffect(textStyle);
+        if ((backColor & 0xff000000) != 0xff000000) {
+            backColor = palette[backColor];
+        }
+
+        // Reverse video here if _one and only one_ of the reverse flags are set:
+        final boolean reverseVideoHere = reverseVideo ^ (effect & (TextStyle.CHARACTER_ATTRIBUTE_INVERSE)) != 0;
+        if (reverseVideoHere) {
+            int tmp = foreColor;
+            foreColor = backColor;
+            backColor = tmp;
+        }
+
         float left = startColumn * mFontWidth;
         float right = left + runWidthColumns * mFontWidth;
 
@@ -179,32 +188,21 @@ final class TerminalRenderer {
             savedMatrix = true;
         }
 
-        // Reverse video here if _one and only one_ of the reverse flags are set:
-        boolean reverseVideoHere = reverseVideo ^ (effect & (TextStyle.CHARACTER_ATTRIBUTE_INVERSE)) != 0;
-        // Switch if _one and only one_ of reverse video and cursor is set:
-        if (reverseVideoHere ^ cursor) {
-            int tmp = foreColor;
-            foreColor = backColor;
-            backColor = tmp;
-        }
-
         if (backColor != palette[TextStyle.COLOR_INDEX_BACKGROUND]) {
             // Only draw non-default background.
             mTextPaint.setColor(backColor);
             canvas.drawRect(left, y - mFontLineSpacingAndAscent + mFontAscent, right, y, mTextPaint);
         }
 
+        if (cursor != 0) {
+            mTextPaint.setColor(cursor);
+            float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
+            if (cursorStyle == TerminalEmulator.CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.;
+            else if (cursorStyle == TerminalEmulator.CURSOR_STYLE_BAR) right -= ((right - left) * 3) / 4.;
+            canvas.drawRect(left, y - cursorHeight, right, y, mTextPaint);
+        }
+
         if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
-            // Treat blink as bold:
-            final boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
-            final boolean underline = (effect & TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE) != 0;
-            final boolean italic = (effect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0;
-            final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
-            final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
-
-            // Let bold have bright colors if applicable (one of the first 8):
-            if (bold && foreColorIndex >= 0 && foreColorIndex < 8) foreColor = palette[foreColorIndex + 8];
-
             if (dim) {
                 int red = (0xFF & (foreColor >> 16));
                 int green = (0xFF & (foreColor >> 8));
