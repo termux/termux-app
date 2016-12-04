@@ -238,8 +238,9 @@ public final class TerminalView extends View {
         // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
         outAttrs.inputType = InputType.TYPE_NULL;
 
-        // Let part of the application show behind when in landscape:
-        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
+        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN |
+                               EditorInfo.IME_FLAG_NO_ENTER_ACTION |
+                               EditorInfo.IME_ACTION_NONE;
 
         return new BaseInputConnection(this, true) {
 
