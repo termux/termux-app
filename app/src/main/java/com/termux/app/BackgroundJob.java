@@ -19,11 +19,11 @@ import java.util.List;
  */
 public final class BackgroundJob {
 
-    private static final String LOG_TAG = "termux-job";
+    private static final String LOG_TAG = "termux-task";
 
     final Process mProcess;
 
-    public BackgroundJob(String cwd, String fileToExecute, final String[] args) {
+    public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service) {
         String[] env = buildEnvironment(false, cwd);
         if (cwd == null) cwd = TermuxService.HOME_PATH;
 
@@ -61,6 +61,7 @@ public final class BackgroundJob {
 
                 try {
                     int exitCode = mProcess.waitFor();
+                    service.onBackgroundJobExited(BackgroundJob.this);
                     if (exitCode == 0) {
                         Log.i(LOG_TAG, "[" + pid + "] exited normally");
                     } else {
