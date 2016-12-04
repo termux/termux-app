@@ -36,7 +36,13 @@ public final class TerminalSession extends TerminalOutput {
 
         void onTitleChanged(TerminalSession changedSession);
 
+        void onSessionCreated(TerminalSession createdSession);
+
         void onSessionFinished(TerminalSession finishedSession);
+
+        void onSessionRemoved(TerminalSession removedSession);
+
+        void onSessionRenamed(TerminalSession renamedSession);
 
         void onClipboardText(TerminalSession session, String text);
 
@@ -44,6 +50,9 @@ public final class TerminalSession extends TerminalOutput {
 
         void onColorsChanged(TerminalSession session);
 
+        void onAttach(TerminalSession attachedSession);
+
+        void onDetach(TerminalSession detachedSession);
     }
 
     private static FileDescriptor wrapFileDescriptor(int fileDescriptor) {
@@ -103,6 +112,8 @@ public final class TerminalSession extends TerminalOutput {
     /** Set by the application for user identification of session, not by terminal. */
     public String mSessionName;
 
+    public boolean mAttached;
+
     @SuppressLint("HandlerLeak")
     final Handler mMainThreadHandler = new Handler() {
         final byte[] mReceiveBuffer = new byte[4 * 1024];
@@ -149,6 +160,8 @@ public final class TerminalSession extends TerminalOutput {
         this.mCwd = cwd;
         this.mArgs = args;
         this.mEnv = env;
+
+        mChangeCallback.onSessionCreated(this);
     }
 
     /** Inform the attached pty of the new size and reflow or initialize the emulator. */

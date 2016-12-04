@@ -5,6 +5,7 @@
    <string name="new_session">New session</string>
    <string name="new_session_failsafe">Failsafe</string>
    <string name="toggle_soft_keyboard">Keyboard</string>
+   <string name="new_window">New window</string>
    <string name="reset_terminal">Reset</string>
    <string name="style_terminal">Style</string>
    <string name="toggle_fullscreen">Fullscreen</string>

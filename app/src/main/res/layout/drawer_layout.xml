@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -37,13 +38,16 @@
                 android:layout_gravity="top"
                 android:layout_weight="1"
                 android:choiceMode="singleChoice"
-                android:longClickable="true" />
+                android:longClickable="true"
+                android:divider="@null"
+                android:dividerHeight="0dp" />
 
             <LinearLayout
                 style="?android:attr/buttonBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:id="@+id/drawer_buttons">
 
                 <Button
                     android:id="@+id/toggle_keyboard_button"
@@ -60,6 +64,16 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/new_session" />
+
+                <Button
+                    android:text="@string/new_window"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/new_window_button"
+                    android:visibility="gone"
+                    android:layout_weight="1" />
+
             </LinearLayout>
         </LinearLayout>
 

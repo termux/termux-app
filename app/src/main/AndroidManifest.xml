@@ -24,8 +24,8 @@
 
         <activity
             android:name="com.termux.app.TermuxActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:launchMode="singleTask"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout"
+            android:launchMode="standard"
             android:windowSoftInputMode="adjustResize|stateAlwaysVisible" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
