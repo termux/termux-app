@@ -106,7 +106,6 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
                 mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, EmulatorDebug.LOG_TAG);
                 mWifiLock.acquire();
-                updateNotification();
 
                 updateNotification();
             }
@@ -117,18 +116,19 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
                 mWifiLock.release();
                 mWifiLock = null;
-                updateNotification();
 
                 updateNotification();
             }
         } else if (ACTION_EXECUTE.equals(action)) {
             Uri executableUri = intent.getData();
             String executablePath = (executableUri == null ? null : executableUri.getPath());
+
             String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(EXTRA_ARGUMENTS));
             String cwd = intent.getStringExtra(EXTRA_CURRENT_WORKING_DIRECTORY);
 
             if (intent.getBooleanExtra("com.termux.execute.background", false)) {
-                mBackgroundTasks.add(new BackgroundJob(cwd, executablePath, arguments, this));
+                BackgroundJob task = new BackgroundJob(cwd, executablePath, arguments, this);
+                mBackgroundTasks.add(task);
                 updateNotification();
             } else {
                 TerminalSession newSession = createTermSession(executablePath, arguments, cwd, false);
