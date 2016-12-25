@@ -58,6 +58,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
 
     public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
+    private static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
 
     /** This service is only bound from inside the same process and never uses IPC. */
     class LocalBinder extends Binder {
@@ -126,7 +127,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
             String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(EXTRA_ARGUMENTS));
             String cwd = intent.getStringExtra(EXTRA_CURRENT_WORKING_DIRECTORY);
 
-            if (intent.getBooleanExtra("com.termux.execute.background", false)) {
+            if (intent.getBooleanExtra(EXTRA_EXECUTE_IN_BACKGROUND, false)) {
                 BackgroundJob task = new BackgroundJob(cwd, executablePath, arguments, this);
                 mBackgroundTasks.add(task);
                 updateNotification();
