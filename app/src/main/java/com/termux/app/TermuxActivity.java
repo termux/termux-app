@@ -522,7 +522,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 finish();
             }
         } else {
-            switchToSession(getStoredCurrentSessionOrLast());
+            Intent i = getIntent();
+            if (i != null && i.getAction().equals(Intent.ACTION_RUN)) {
+                // Android 7.1 app shortcut from res/xml/shortcuts.xml.
+                addNewSession(false, null);
+            } else {
+                switchToSession(getStoredCurrentSessionOrLast());
+            }
         }
     }
 
