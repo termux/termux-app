@@ -5,8 +5,8 @@ android {
     buildToolsVersion "25.0.2"
 
     dependencies {
-        compile 'com.android.support:support-annotations:25.0.1'
-        compile "com.android.support:support-v4:25.0.1"
+        compile 'com.android.support:support-annotations:25.1.0'
+        compile "com.android.support:support-v4:25.1.0"
     }
 
     defaultConfig {
