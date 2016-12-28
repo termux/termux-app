@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -105,7 +106,6 @@ public final class BackgroundJob {
         // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
         // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
         final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
-        String[] env;
         if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             final String pathEnv = "PATH=" + System.getenv("PATH");
@@ -186,9 +186,7 @@ public final class BackgroundJob {
         List<String> result = new ArrayList<>();
         if (interpreter != null) result.add(interpreter);
         result.add(fileToExecute);
-        if (args != null) {
-            for (String arg : args) result.add(arg);
-        }
+        if (args != null) Collections.addAll(result, args);
         return result.toArray(new String[result.size()]);
     }
 
