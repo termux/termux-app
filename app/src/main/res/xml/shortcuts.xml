@@ -1,9 +1,11 @@
-<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+<shortcuts xmlns:tools="http://schemas.android.com/tools"
+           xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut
         android:shortcutId="new_session"
         android:enabled="true"
         android:icon="@drawable/ic_new_session"
-        android:shortcutShortLabel="@string/new_session">
+        android:shortcutShortLabel="@string/new_session"
+        tools:targetApi="n_mr1">
         <intent
             android:action="android.intent.action.RUN"
             android:targetPackage="com.termux"
