@@ -7,7 +7,7 @@ for DENSITY in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
 		PNG=$FOLDER/$FILE.png
 
 		# Update other apps:
-		for APP in tasker widget api; do
+		for APP in api boot styling tasker widget; do
 			APPDIR=../../termux-$APP
 			if [ -d $APPDIR ]; then
 				APP_FOLDER=$APPDIR/app/src/main/res/mipmap-$DENSITY
