@@ -298,6 +298,14 @@ public final class TerminalView extends View {
 
                     boolean ctrlHeld = false;
                     if (codePoint <= 31 && codePoint != 27) {
+                        if (codePoint == '\n') {
+                            // The AOSP keyboard and descendants seems to send \n as text when the enter key is pressed,
+                            // instead of a key event like most other keyboard apps. A terminal expects \r for the enter
+                            // key (although when icrnl is enabled this doesn't make a difference - run 'stty -icrnl' to
+                            // check the behaviour).
+                            codePoint = '\r';
+                        }
+
                         // E.g. penti keyboard for ctrl input.
                         ctrlHeld = true;
                         switch (codePoint) {
