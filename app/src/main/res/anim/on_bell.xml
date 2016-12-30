@@ -1,7 +1,0 @@
-<set xmlns:android="http://schemas.android.com/apk/res/android">
-    <translate android:duration="30"
-               android:fromXDelta="-1%"
-               android:repeatCount="1"
-               android:repeatMode="reverse"
-               android:toXDelta="1%"/>
-</set>
