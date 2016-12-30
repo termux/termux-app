@@ -141,8 +141,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
     int mBellSoundId;
 
-    Animation mOnBellAnimation;
-
     private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -212,8 +210,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-
-        mOnBellAnimation = AnimationUtils.loadAnimation(this, R.anim.on_bell);
 
         mSettings = new TermuxPreferences(this);
 
@@ -409,8 +405,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             @Override
             public void onBell(TerminalSession session) {
                 if (!mIsVisible) return;
-
-                mTerminalView.startAnimation(mOnBellAnimation);
 
                 switch (mSettings.mBellBehaviour) {
                     case TermuxPreferences.BELL_BEEP:
