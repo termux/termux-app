@@ -14,6 +14,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -150,6 +151,11 @@ public final class TermuxService extends Service implements SessionChangedCallba
             }
         } else if (action != null) {
             Log.e(EmulatorDebug.LOG_TAG, "Unknown TermuxService action: '" + action + "'");
+        }
+
+        if ((flags & START_FLAG_REDELIVERY) == 0) {
+            // Service is started by WBR, not restarted by system, so release the WakeLock from WBR.
+            WakefulBroadcastReceiver.completeWakefulIntent(intent);
         }
 
         // If this service really do get killed, there is no point restarting it automatically - let the user do on next
