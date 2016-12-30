@@ -238,9 +238,9 @@ public final class TerminalView extends View {
         // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
         outAttrs.inputType = InputType.TYPE_NULL;
 
-        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN |
-                               EditorInfo.IME_FLAG_NO_ENTER_ACTION |
-                               EditorInfo.IME_ACTION_NONE;
+        // Note that IME_ACTION_NONE cannot be used as that makes it impossible to input newlines using the on-screen
+        // keyboard on Android TV (see https://github.com/termux/termux-app/issues/221).
+        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
 
         return new BaseInputConnection(this, true) {
 
