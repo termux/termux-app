@@ -15,10 +15,10 @@
  <rect fill="#0" width="100%" height="100%" />
 
  <text id="shell_prompt"
-       x="128"
-       y="400"
-       style="fill: #ffffff; font-size: 172px; font-family: Menlo;">
-   <tspan>$ Termux █</tspan>
+       x="200"
+       y="410"
+       style="fill: #ffffff; font-size: 210px; font-family: Menlo, Monospace;">
+   <tspan>Termux  ▌</tspan>
  </text>
 
 </svg>
