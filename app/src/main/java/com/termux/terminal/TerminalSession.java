@@ -123,12 +123,12 @@ public final class TerminalSession extends TerminalOutput {
                 String exitDescription = "\r\n[Process completed";
                 if (exitCode > 0) {
                     // Non-zero process exit.
-                    exitDescription += " with code " + exitCode;
+                    exitDescription += " (code " + exitCode + ")";
                 } else if (exitCode < 0) {
                     // Negated signal.
-                    exitDescription += " with signal " + (-exitCode);
+                    exitDescription += " (signal " + (-exitCode) + ")";
                 }
-                exitDescription += " - press Enter to close]";
+                exitDescription += " - press Enter]";
 
                 byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
                 mEmulator.append(bytesToWrite, bytesToWrite.length);
