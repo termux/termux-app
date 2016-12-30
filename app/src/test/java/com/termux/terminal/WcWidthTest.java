@@ -19,6 +19,7 @@ public class WcWidthTest extends TestCase {
         assertWidthIs(1, 'å');
         assertWidthIs(1, 'ä');
         assertWidthIs(1, 'ö');
+        assertWidthIs(1, 0x23F2);
     }
 
 	public void testSomeWide() {
@@ -45,6 +46,7 @@ public class WcWidthTest extends TestCase {
 	public void testCombining() {
         assertWidthIs(0, 0x0302);
         assertWidthIs(0, 0x0308);
+        assertWidthIs(0, 0xFE0F);
     }
 
     public void testWordJoiner() {
