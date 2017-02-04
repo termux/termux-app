@@ -494,17 +494,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     public void run() {
                         if (mTermService == null) return; // Activity might have been destroyed.
                         try {
-                            if (TermuxPreferences.isShowWelcomeDialog(TermuxActivity.this)) {
-                                new AlertDialog.Builder(TermuxActivity.this).setTitle(R.string.welcome_dialog_title).setMessage(R.string.welcome_dialog_body)
-                                    .setCancelable(false).setPositiveButton(android.R.string.ok, null)
-                                    .setNegativeButton(R.string.welcome_dialog_dont_show_again_button, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            TermuxPreferences.disableWelcomeDialog(TermuxActivity.this);
-                                            dialog.dismiss();
-                                        }
-                                    }).show();
-                            }
                             addNewSession(false, null);
                         } catch (WindowManager.BadTokenException e) {
                             // Activity finished - ignore.
