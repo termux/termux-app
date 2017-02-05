@@ -1,4 +1,4 @@
-sudo: true
+sudo: false
 language: android
 jdk: oraclejdk8
 
@@ -19,7 +19,6 @@ android:
 before_install:
   - git clone https://github.com/urho3d/android-ndk.git $HOME/android-ndk
   - export ANDROID_NDK_HOME=$HOME/android-ndk
-  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
 
 script:
   - ./gradlew testDebugUnitTest
