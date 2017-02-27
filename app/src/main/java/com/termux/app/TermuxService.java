@@ -24,7 +24,6 @@ import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -257,28 +256,11 @@ public final class TermuxService extends Service implements SessionChangedCallba
         boolean isLoginShell = false;
 
         if (executablePath == null) {
-            File shell = new File(HOME_PATH, ".termux/shell");
-            if (shell.exists()) {
-                try {
-                    File canonicalFile = shell.getCanonicalFile();
-                    if (canonicalFile.isFile() && canonicalFile.canExecute()) {
-                        executablePath = canonicalFile.getName().equals("busybox") ? (PREFIX_PATH + "/bin/ash") : canonicalFile.getAbsolutePath();
-                    } else {
-                        Log.w(EmulatorDebug.LOG_TAG, "$HOME/.termux/shell points to non-executable shell: " + canonicalFile.getAbsolutePath());
-                    }
-                } catch (IOException e) {
-                    Log.e(EmulatorDebug.LOG_TAG, "Error checking $HOME/.termux/shell", e);
-                }
-            }
-
-            if (executablePath == null) {
-                // Try bash, zsh and ash in that order:
-                for (String shellBinary : new String[]{"bash", "zsh", "ash"}) {
-                    File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
-                    if (shellFile.canExecute()) {
-                        executablePath = shellFile.getAbsolutePath();
-                        break;
-                    }
+            for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
+                File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
+                if (shellFile.canExecute()) {
+                    executablePath = shellFile.getAbsolutePath();
+                    break;
                 }
             }
 
