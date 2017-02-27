@@ -24,7 +24,7 @@
 
     <!-- Block cursor. -->
     <path android:fillColor="#000"
-          android:pathData="M12,12
+          android:pathData="M14,14
                             l5,0
                             l0,10
                             l-5,0"
