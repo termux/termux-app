@@ -90,6 +90,14 @@
             android:name="com.termux.app.TermuxService"
             android:exported="false" />
 
+        <receiver android:name=".app.TermuxOpenReceiver" />
+
+        <provider android:authorities="com.termux.files"
+                  android:readPermission="android.permission.permRead"
+                  android:exported="true"
+                  android:grantUriPermissions="true"
+                  android:name="com.termux.app.TermuxOpenReceiver$ContentProvider" />
+
     </application>
 
 </manifest>
