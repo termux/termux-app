@@ -42,26 +42,16 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         final String filePath = data.getPath();
         final String contentTypeExtra = intent.getStringExtra("content-type");
         final boolean useChooser = intent.getBooleanExtra("chooser", false);
-        final String actionExtra = intent.getAction();
+        final String intentAction = intent.getAction() == null ? Intent.ACTION_VIEW : intent.getAction();
 
-        String intentAction = null;
-        if (actionExtra == null) {
-            intentAction = Intent.ACTION_VIEW;
-        } else {
-            switch (actionExtra) {
-                case "edit":
-                    intentAction = Intent.ACTION_EDIT;
-                    break;
-                case "send":
-                    intentAction = Intent.ACTION_SEND;
-                    break;
-                case "view":
-                    intentAction = Intent.ACTION_VIEW;
-                    break;
-                default:
-                    Log.e(EmulatorDebug.LOG_TAG, "Invalid action '" + actionExtra + "', using 'view'");
-                    break;
-            }
+        switch (intentAction) {
+            case Intent.ACTION_SEND:
+            case Intent.ACTION_VIEW:
+                // Ok.
+                break;
+            default:
+                Log.e(EmulatorDebug.LOG_TAG, "Invalid action '" + intentAction + "', using 'view'");
+                break;
         }
 
         final File fileToShare = new File(filePath);
@@ -72,7 +62,6 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
 
         Intent sendIntent = new Intent();
         sendIntent.setAction(intentAction);
-        Uri uriToShare = Uri.withAppendedPath(Uri.parse("content://com.termux.files/"), filePath);
         sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         String contentTypeToUse;
@@ -88,7 +77,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             contentTypeToUse = contentTypeExtra;
         }
 
-        sendIntent.putExtra(Intent.EXTRA_SUBJECT, fileToShare.getName());
+        Uri uriToShare = Uri.withAppendedPath(Uri.parse("content://com.termux.files/"), filePath);
 
         if (Intent.ACTION_SEND.equals(intentAction)) {
             sendIntent.putExtra(Intent.EXTRA_STREAM, uriToShare);
@@ -101,7 +90,11 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             sendIntent = Intent.createChooser(sendIntent, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
 
-        context.startActivity(sendIntent);
+        try {
+            context.startActivity(sendIntent);
+        } catch (ActivityNotFoundException e) {
+            Log.e(EmulatorDebug.LOG_TAG, "termux-open: No app handles the url " + data);
+        }
     }
 
     public static class ContentProvider extends android.content.ContentProvider {
@@ -114,7 +107,6 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         @Override
         public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
             File file = new File(uri.getPath());
-            String fileName = file.getName();
 
             if (projection == null) {
                 projection = new String[]{
