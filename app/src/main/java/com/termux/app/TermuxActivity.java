@@ -250,7 +250,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                             TerminalSession session = getCurrentTermSession();
                             if (session != null) {
                                 if (session.isRunning()) {
-                                    session.write(editText.getText().toString() + "\n");
+                                    String textToSend = editText.getText().toString();
+                                    if (textToSend.length() == 0) textToSend = "\n";
+                                    session.write(textToSend);
                                 } else {
                                     removeFinishedSession(session);
                                 }
