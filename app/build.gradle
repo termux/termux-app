@@ -13,8 +13,8 @@ android {
         applicationId "com.termux"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 47
-        versionName "0.47"
+        versionCode 48
+        versionName "0.48"
 
         externalNativeBuild {
             ndkBuild {
