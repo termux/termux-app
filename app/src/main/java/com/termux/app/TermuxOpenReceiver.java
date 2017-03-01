@@ -31,6 +31,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         final boolean isExternalUrl = data.getScheme() != null && !data.getScheme().equals("file");
         if (isExternalUrl) {
             Intent viewIntent = new Intent(Intent.ACTION_VIEW, data);
+            viewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {
                 context.startActivity(viewIntent);
             } catch (ActivityNotFoundException e) {
