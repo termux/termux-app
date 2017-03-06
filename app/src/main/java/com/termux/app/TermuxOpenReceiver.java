@@ -10,6 +10,7 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -106,7 +107,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         @Override
-        public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
             File file = new File(uri.getPath());
 
             if (projection == null) {
@@ -143,27 +144,27 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         @Override
-        public String getType(Uri uri) {
+        public String getType(@NonNull Uri uri) {
             return null;
         }
 
         @Override
-        public Uri insert(Uri uri, ContentValues values) {
+        public Uri insert(@NonNull Uri uri, ContentValues values) {
             return null;
         }
 
         @Override
-        public int delete(Uri uri, String selection, String[] selectionArgs) {
+        public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
             return 0;
         }
 
         @Override
-        public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
             return 0;
         }
 
         @Override
-        public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+        public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
             File file = new File(uri.getPath());
             return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
         }

@@ -7,8 +7,7 @@
   - Text must be included in the image. If your app is available in more
     than one language, you must provide versions of the banner image for each supported language.
  -->
-<svg xmlns:svg="http://www.w3.org/2000/svg"
-     xmlns="http://www.w3.org/2000/svg"
+<svg xmlns="http://www.w3.org/2000/svg"
      version="1.1"
      viewBox="0 0 1280 720">
 
