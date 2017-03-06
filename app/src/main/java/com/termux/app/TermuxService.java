@@ -174,7 +174,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     /** Update the shown foreground service notification after making any changes that affect it. */
-    private void updateNotification() {
+    void updateNotification() {
         if (mWakeLock == null && mTerminalSessions.isEmpty() && mBackgroundTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             stopSelf();
