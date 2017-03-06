@@ -158,7 +158,6 @@ public final class BackgroundJob {
                             if (c == ' ' || c == '\n') {
                                 if (builder.length() == 0) {
                                     // Skip whitespace after shebang.
-                                    continue;
                                 } else {
                                     // End of shebang.
                                     String executable = builder.toString();
