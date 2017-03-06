@@ -104,7 +104,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, EmulatorDebug.LOG_TAG);
                 mWakeLock.acquire();
 
-                WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
+                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, EmulatorDebug.LOG_TAG);
                 mWifiLock.acquire();
 

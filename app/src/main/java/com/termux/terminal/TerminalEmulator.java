@@ -56,8 +56,6 @@ public final class TerminalEmulator {
     private static final int ESC_SELECT_LEFT_PAREN = 3;
     /** Escape processing: Have seen ESC and a character-set-select ) char */
     private static final int ESC_SELECT_RIGHT_PAREN = 4;
-    /** Escape processing: Have seen ESC and a character-set-select + char */
-    // private static final int ESC_SELECT_PLUS = 5;
     /** Escape processing: "ESC [" or CSI (Control Sequence Introducer). */
     private static final int ESC_CSI = 6;
     /** Escape processing: ESC [ ? */
