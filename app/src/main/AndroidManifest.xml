@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
+        android:extractNativeLibs="false"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backupscheme"
         android:icon="@mipmap/ic_launcher"
