@@ -29,23 +29,10 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             return;
         }
 
-        final boolean isExternalUrl = data.getScheme() != null && !data.getScheme().equals("file");
-        if (isExternalUrl) {
-            Intent viewIntent = new Intent(Intent.ACTION_VIEW, data);
-            viewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                context.startActivity(viewIntent);
-            } catch (ActivityNotFoundException e) {
-                Log.e(EmulatorDebug.LOG_TAG, "termux-open: No app handles the url " + data);
-            }
-            return;
-        }
-
         final String filePath = data.getPath();
         final String contentTypeExtra = intent.getStringExtra("content-type");
         final boolean useChooser = intent.getBooleanExtra("chooser", false);
         final String intentAction = intent.getAction() == null ? Intent.ACTION_VIEW : intent.getAction();
-
         switch (intentAction) {
             case Intent.ACTION_SEND:
             case Intent.ACTION_VIEW:
@@ -54,6 +41,24 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             default:
                 Log.e(EmulatorDebug.LOG_TAG, "Invalid action '" + intentAction + "', using 'view'");
                 break;
+        }
+
+        final boolean isExternalUrl = data.getScheme() != null && !data.getScheme().equals("file");
+        if (isExternalUrl) {
+            Intent urlIntent = new Intent(intentAction, data);
+            if (intentAction.equals(Intent.ACTION_SEND)) {
+                urlIntent.putExtra(Intent.EXTRA_TEXT, data.toString());
+                urlIntent.setData(null);
+            } else if (contentTypeExtra != null) {
+                urlIntent.setDataAndType(data, contentTypeExtra);
+            }
+            urlIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                context.startActivity(urlIntent);
+            } catch (ActivityNotFoundException e) {
+                Log.e(EmulatorDebug.LOG_TAG, "termux-open: No app handles the url " + data);
+            }
+            return;
         }
 
         final File fileToShare = new File(filePath);
