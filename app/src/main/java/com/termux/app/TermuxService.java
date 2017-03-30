@@ -313,6 +313,12 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     @Override
+    public void onSessionClosingItself(TerminalSession session) {
+        if (mSessionChangeCallback != null)
+            mSessionChangeCallback.onSessionClosingItself(session);
+    }
+
+    @Override
     public void onTextChanged(TerminalSession changedSession) {
         if (mSessionChangeCallback != null) mSessionChangeCallback.onTextChanged(changedSession);
     }
