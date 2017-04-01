@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Background for the window, used to draw a border -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+    <stroke
+        android:width="1px"
+        android:color="@android:color/white" />
+    <solid android:color="#FF000000" />
+</shape>

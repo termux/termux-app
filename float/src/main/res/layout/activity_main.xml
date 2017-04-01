@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.termux.window.TermuxFloatView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/window_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/floating_window_background"
+    android:padding="1px" >
+
+    <com.termux.view.TerminalView
+        android:id="@+id/terminal_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:scrollbars="vertical" />
+
+</com.termux.window.TermuxFloatView>

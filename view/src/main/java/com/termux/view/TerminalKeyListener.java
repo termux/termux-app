@@ -14,10 +14,14 @@ import com.termux.terminal.TerminalSession;
  */
 public interface TerminalKeyListener {
 
-    /** Callback function on scale events according to {@link ScaleGestureDetector#getScaleFactor()}. */
+    /**
+     * Callback function on scale events according to {@link ScaleGestureDetector#getScaleFactor()}.
+     */
     float onScale(float scale);
 
-    /** On a single tap on the terminal if terminal mouse reporting not enabled. */
+    /**
+     * On a single tap on the terminal if terminal mouse reporting not enabled.
+     */
     void onSingleTapUp(MotionEvent e);
 
     boolean shouldBackButtonBeMappedToEscape();
@@ -33,5 +37,7 @@ public interface TerminalKeyListener {
     boolean readAltKey();
 
     boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session);
+
+    boolean onLongPress(MotionEvent event);
 
 }

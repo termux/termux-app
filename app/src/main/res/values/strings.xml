@@ -30,10 +30,6 @@
   <string name="select_url_copied_to_clipboard">URL copied to clipboard</string>
   <string name="share_transcript_chooser_title">Send text to:</string>
 
-  <string name="paste_text">Paste</string>
-  <string name="copy_text">Copy</string>
-  <string name="text_selection_more">More…</string>
-
   <string name="kill_process">Kill process (%d)</string>
   <string name="confirm_kill_process">Really kill this session?</string>
 

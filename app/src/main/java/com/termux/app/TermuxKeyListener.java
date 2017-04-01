@@ -256,6 +256,11 @@ public final class TermuxKeyListener implements TerminalKeyListener {
         return false;
     }
 
+    @Override
+    public boolean onLongPress(MotionEvent event) {
+        return false;
+    }
+
     /** Handle dedicated volume buttons as virtual keys if applicable. */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
         InputDevice inputDevice = event.getDevice();

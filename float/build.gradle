@@ -6,27 +6,32 @@ android {
 
     dependencies {
         compile 'com.android.support:support-annotations:25.3.1'
-        compile "com.android.support:support-v4:25.3.1"
         compile project(":view")
     }
 
     defaultConfig {
-        applicationId "com.termux"
+        applicationId "com.termux.window"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 48
-        versionName "0.48"
-    }
+        versionCode 1
+        versionName "1.0"
 
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.3.1'
     testCompile 'junit:junit:4.12'
 }

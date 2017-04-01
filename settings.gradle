@@ -1,1 +1,1 @@
-include ':app'
+include ':app', ':terminal', ':view', ':float'
