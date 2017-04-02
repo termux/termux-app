@@ -188,8 +188,9 @@ public final class TerminalView extends View {
 
             @Override
             public void onLongPress(MotionEvent e) {
+                if (mGestureRecognizer.isInProgress()) return;
                 if (mOnKeyListener.onLongPress(e)) return;
-                if (!mGestureRecognizer.isInProgress() && !mIsSelectingText) {
+                if (!mIsSelectingText) {
                     performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                     toggleSelectingText(e);
                 }
