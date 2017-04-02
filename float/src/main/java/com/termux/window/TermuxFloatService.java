@@ -124,13 +124,12 @@ public class TermuxFloatService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
         if (ACTION_HIDE.equals(action)) {
-            mVisibleWindow = false;
-            mFloatingWindow.setVisibility(View.GONE);
-            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
+            setVisible(false);
         } else if (ACTION_SHOW.equals(action)) {
-            mFloatingWindow.setVisibility(View.VISIBLE);
-            mVisibleWindow = true;
-            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
+            setVisible(true);
+        } else if (!mVisibleWindow) {
+            // Show window if hidden when launched through launcher icon.
+            setVisible(true);
         }
         return Service.START_NOT_STICKY;
     }
@@ -139,6 +138,12 @@ public class TermuxFloatService extends Service {
     public void onDestroy() {
         super.onDestroy();
         if (mFloatingWindow != null) mFloatingWindow.closeFloatingWindow();
+    }
+
+    private void setVisible(boolean newVisibility) {
+        mVisibleWindow = newVisibility;
+        mFloatingWindow.setVisibility(newVisibility ? View.VISIBLE : View.GONE);
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
     }
 
     public void changeFontSize(boolean increase) {
