@@ -3,7 +3,7 @@ package com.termux.terminal;
 /**
  * A circular buffer of {@link TerminalRow}:s which keeps notes about what is visible on a logical screen and the scroll
  * history.
- * <p/>
+ * <p>
  * See {@link #externalToInternalRow(int)} for how to map from logical screen rows to array indices.
  */
 public final class TerminalBuffer {
@@ -92,22 +92,20 @@ public final class TerminalBuffer {
 
     /**
      * Convert a row value from the public external coordinate system to our internal private coordinate system.
-     * <p/>
-     * <ul>
-     * <li>External coordinate system: -mActiveTranscriptRows to mScreenRows-1, with the screen being 0..mScreenRows-1.
-     * <li>Internal coordinate system: the mScreenRows lines starting at mScreenFirstRow comprise the screen, while the
-     * mActiveTranscriptRows lines ending at mScreenFirstRow-1 form the transcript (as a circular buffer).
-     * </ul>
-     * <p/>
-     * External <---> Internal:
-     * <p/>
+     *
      * <pre>
-     * [ ...                            ]           [ ...                                     ]
-     * [ -mActiveTranscriptRows         ]           [ mScreenFirstRow - mActiveTranscriptRows ]
-     * [ ...                            ]           [ ...                                     ]
-     * [ 0 (visible screen starts here) ]  <----->  [ mScreenFirstRow                         ]
-     * [ ...                            ]           [ ...                                     ]
-     * [ mScreenRows-1                  ]           [ mScreenFirstRow + mScreenRows-1         ]
+     * - External coordinate system: -mActiveTranscriptRows to mScreenRows-1, with the screen being 0..mScreenRows-1.
+     * - Internal coordinate system: the mScreenRows lines starting at mScreenFirstRow comprise the screen, while the
+     *   mActiveTranscriptRows lines ending at mScreenFirstRow-1 form the transcript (as a circular buffer).
+     *
+     * External ↔ Internal:
+     *
+     * [ ...                            ]     [ ...                                     ]
+     * [ -mActiveTranscriptRows         ]     [ mScreenFirstRow - mActiveTranscriptRows ]
+     * [ ...                            ]     [ ...                                     ]
+     * [ 0 (visible screen starts here) ]  ↔  [ mScreenFirstRow                         ]
+     * [ ...                            ]     [ ...                                     ]
+     * [ mScreenRows-1                  ]     [ mScreenFirstRow + mScreenRows-1         ]
      * </pre>
      *
      * @param externalRow a row in the external coordinate system.

@@ -19,13 +19,13 @@ import java.util.UUID;
 
 /**
  * A terminal session, consisting of a process coupled to a terminal interface.
- * <p/>
+ * <p>
  * The subprocess will be executed by the constructor, and when the size is made known by a call to
  * {@link #updateSize(int, int)} terminal emulation will begin and threads will be spawned to handle the subprocess I/O.
  * All terminal emulation and callback methods will be performed on the main thread.
- * <p/>
+ * <p>
  * The child process may be exited forcefully by using the {@link #finishIfRunning()} method.
- * <p/>
+ * <p>
  * NOTE: The terminal session may outlive the EmulatorView, so be careful with callbacks!
  */
 public final class TerminalSession extends TerminalOutput {

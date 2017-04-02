@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 /**
  * A row in a terminal, composed of a fixed number of cells.
- * <p/>
+ * <p>
  * The text in the row is stored in a char[] array, {@link #mText}, for quick access during rendering.
  */
 public final class TerminalRow {

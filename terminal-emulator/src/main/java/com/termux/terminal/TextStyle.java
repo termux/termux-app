@@ -1,10 +1,13 @@
 package com.termux.terminal;
 
 /**
+ * <p>
  * Encodes effects, foreground and background colors into a 64 bit long, which are stored for each cell in a terminal
  * row in {@link TerminalRow#mStyle}.
- * <p/>
+ * </p>
+ * <p>
  * The bit layout is:
+ * </p>
  * - 16 flags (11 currently used).
  * - 24 for foreground color (only 9 first bits if a color index).
  * - 24 for background color (only 9 first bits if a color index).
@@ -20,9 +23,10 @@ public final class TextStyle {
     public final static int CHARACTER_ATTRIBUTE_STRIKETHROUGH = 1 << 6;
     /**
      * The selective erase control functions (DECSED and DECSEL) can only erase characters defined as erasable.
-     * <p/>
+     * <p>
      * This bit is set if DECSCA (Select Character Protection Attribute) has been used to define the characters that
      * come after it as erasable from the screen.
+     * </p>
      */
     public final static int CHARACTER_ATTRIBUTE_PROTECTED = 1 << 7;
     /** Dim colors. Also known as faint or half intensity. */
