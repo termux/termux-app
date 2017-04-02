@@ -37,8 +37,9 @@ public class TermuxFloatViewClient implements TerminalViewClient {
     @Override
     public boolean onLongPress(MotionEvent event) {
         view.updateLongPressMode(true);
-        view.initialX = view.layoutParams.x;
-        view.initialY = view.layoutParams.y;
+        view.getLocationOnScreen(view.location);
+        view.initialX = view.location[0];
+        view.initialY = view.location[1];
         view.initialTouchX = event.getRawX();
         view.initialTouchY = event.getRawY();
         return true;

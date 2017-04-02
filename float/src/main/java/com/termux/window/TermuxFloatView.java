@@ -128,8 +128,8 @@ public class TermuxFloatView extends LinearLayout {
         if (isInLongPressState) return true;
 
         getLocationOnScreen(location);
-        int x = layoutParams.x; // location[0];
-        int y = layoutParams.y; // location[1];
+        int x = location[0];
+        int y = location[1];
         float touchX = event.getRawX();
         float touchY = event.getRawY();
         boolean clickedInside = (touchX >= x) && (touchX <= (x + layoutParams.width)) && (touchY >= y) && (touchY <= (y + layoutParams.height));
