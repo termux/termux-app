@@ -33,6 +33,12 @@ android {
     }
 }
 
+tasks.withType(Test) {
+    testLogging {
+        events "started", "passed", "skipped", "failed"
+    }
+}
+
 dependencies {
     testCompile 'junit:junit:4.12'
 }

@@ -12,10 +12,6 @@ Termux app
 
 Note that this repository is for the app itself (the user interface and the terminal emulation). For the packages installable inside the app, see [termux/termux-packages](https://github.com/termux/termux-packages)
 
-License
-=======
-Released under [the GPLv3 license](https://www.gnu.org/licenses/gpl.html). Contains code from `Terminal Emulator for Android` which is released under [the Apache License 2.0](https://www.apache.org/licenses/).
-
 Terminal resources
 ==================
 * [XTerm control sequences](http://invisible-island.net/xterm/ctlseqs/ctlseqs.html)
