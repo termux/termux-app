@@ -8,11 +8,10 @@ import com.termux.terminal.TerminalSession;
 
 /**
  * Input and scale listener which may be set on a {@link TerminalView} through
- * {@link TerminalView#setOnKeyListener(TerminalKeyListener)}.
+ * {@link TerminalView#setOnKeyListener(TerminalViewClient)}.
  * <p/>
- * TODO: Rename to TerminalViewClient.
  */
-public interface TerminalKeyListener {
+public interface TerminalViewClient {
 
     /**
      * Callback function on scale events according to {@link ScaleGestureDetector#getScaleFactor()}.

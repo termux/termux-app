@@ -48,7 +48,7 @@ public final class TerminalView extends View {
 
     TerminalRenderer mRenderer;
 
-    TerminalKeyListener mOnKeyListener;
+    TerminalViewClient mClient;
 
     /** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
     int mTopRow;
@@ -105,7 +105,7 @@ public final class TerminalView extends View {
                 requestFocus();
                 if (!mEmulator.isMouseTrackingActive()) {
                     if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
-                        mOnKeyListener.onSingleTapUp(e);
+                        mClient.onSingleTapUp(e);
                         return true;
                     }
                 }
@@ -135,7 +135,7 @@ public final class TerminalView extends View {
             public boolean onScale(float focusX, float focusY, float scale) {
                 if (mEmulator == null || mIsSelectingText) return true;
                 mScaleFactor *= scale;
-                mScaleFactor = mOnKeyListener.onScale(mScaleFactor);
+                mScaleFactor = mClient.onScale(mScaleFactor);
                 return true;
             }
 
@@ -189,7 +189,7 @@ public final class TerminalView extends View {
             @Override
             public void onLongPress(MotionEvent e) {
                 if (mGestureRecognizer.isInProgress()) return;
-                if (mOnKeyListener.onLongPress(e)) return;
+                if (mClient.onLongPress(e)) return;
                 if (!mIsSelectingText) {
                     performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                     toggleSelectingText(e);
@@ -203,8 +203,8 @@ public final class TerminalView extends View {
      * @param onKeyListener Listener for all kinds of key events, both hardware and IME (which makes it different from that
      *                      available with {@link View#setOnKeyListener(OnKeyListener)}.
      */
-    public void setOnKeyListener(TerminalKeyListener onKeyListener) {
-        this.mOnKeyListener = onKeyListener;
+    public void setOnKeyListener(TerminalViewClient onKeyListener) {
+        this.mClient = onKeyListener;
     }
 
     /**
@@ -556,7 +556,7 @@ public final class TerminalView extends View {
             if (mIsSelectingText) {
                 toggleSelectingText(null);
                 return true;
-            } else if (mOnKeyListener.shouldBackButtonBeMappedToEscape()) {
+            } else if (mClient.shouldBackButtonBeMappedToEscape()) {
                 // Intercept back button to treat it as escape:
                 switch (event.getAction()) {
                     case KeyEvent.ACTION_DOWN:
@@ -575,10 +575,10 @@ public final class TerminalView extends View {
             Log.i(EmulatorDebug.LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
         if (mEmulator == null) return true;
 
-        if (mOnKeyListener.onKeyDown(keyCode, event, mTermSession)) {
+        if (mClient.onKeyDown(keyCode, event, mTermSession)) {
             invalidate();
             return true;
-        } else if (event.isSystem() && (!mOnKeyListener.shouldBackButtonBeMappedToEscape() || keyCode != KeyEvent.KEYCODE_BACK)) {
+        } else if (event.isSystem() && (!mClient.shouldBackButtonBeMappedToEscape() || keyCode != KeyEvent.KEYCODE_BACK)) {
             return super.onKeyDown(keyCode, event);
         } else if (event.getAction() == KeyEvent.ACTION_MULTIPLE && keyCode == KeyEvent.KEYCODE_UNKNOWN) {
             mTermSession.write(event.getCharacters());
@@ -642,10 +642,10 @@ public final class TerminalView extends View {
                 + leftAltDownFromEvent + ")");
         }
 
-        final boolean controlDown = controlDownFromEvent || mOnKeyListener.readControlKey();
-        final boolean altDown = leftAltDownFromEvent || mOnKeyListener.readAltKey();
+        final boolean controlDown = controlDownFromEvent || mClient.readControlKey();
+        final boolean altDown = leftAltDownFromEvent || mClient.readAltKey();
 
-        if (mOnKeyListener.onCodePoint(codePoint, controlDown, mTermSession)) return;
+        if (mClient.onCodePoint(codePoint, controlDown, mTermSession)) return;
 
         if (controlDown) {
             if (codePoint >= 'a' && codePoint <= 'z') {
@@ -714,7 +714,7 @@ public final class TerminalView extends View {
             Log.i(EmulatorDebug.LOG_TAG, "onKeyUp(keyCode=" + keyCode + ", event=" + event + ")");
         if (mEmulator == null) return true;
 
-        if (mOnKeyListener.onKeyUp(keyCode, event)) {
+        if (mClient.onKeyUp(keyCode, event)) {
             invalidate();
             return true;
         } else if (event.isSystem()) {
@@ -782,7 +782,7 @@ public final class TerminalView extends View {
     @TargetApi(23)
     public void toggleSelectingText(MotionEvent ev) {
         mIsSelectingText = !mIsSelectingText;
-        mOnKeyListener.copyModeChanged(mIsSelectingText);
+        mClient.copyModeChanged(mIsSelectingText);
 
         if (mIsSelectingText) {
             if (mLeftSelectionHandle == null) {

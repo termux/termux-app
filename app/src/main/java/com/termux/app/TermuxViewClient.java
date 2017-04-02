@@ -1,7 +1,9 @@
-package com.termux.window;
+package com.termux.app;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.support.v4.widget.DrawerLayout;
+import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -10,75 +12,99 @@ import android.view.inputmethod.InputMethodManager;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
-import com.termux.view.TerminalKeyListener;
+import com.termux.view.TerminalViewClient;
 
-public class TermuxFloatKeyListener implements TerminalKeyListener {
+import java.util.List;
 
-    private final TermuxFloatView view;
-    /**
-     * Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys.
-     */
+public final class TermuxViewClient implements TerminalViewClient {
+
+    final TermuxActivity mActivity;
+
+    /** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
     boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
 
-    public TermuxFloatKeyListener(TermuxFloatView view) {
-        this.view = view;
+    public TermuxViewClient(TermuxActivity activity) {
+        this.mActivity = activity;
     }
 
     @Override
     public float onScale(float scale) {
         if (scale < 0.9f || scale > 1.1f) {
             boolean increase = scale > 1.f;
-            ((TermuxFloatService) view.getContext()).changeFontSize(increase);
+            mActivity.changeFontSize(increase);
             return 1.0f;
         }
         return scale;
     }
 
     @Override
-    public boolean onLongPress(MotionEvent event) {
-        view.updateLongPressMode(true);
-        view.initialX = view.layoutParams.x;
-        view.initialY = view.layoutParams.y;
-        view.initialTouchX = event.getRawX();
-        view.initialTouchY = event.getRawY();
-        return true;
-    }
-
-    @Override
     public void onSingleTapUp(MotionEvent e) {
-        // Do nothing.
+        InputMethodManager mgr = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        mgr.showSoftInput(mActivity.mTerminalView, InputMethodManager.SHOW_IMPLICIT);
     }
 
     @Override
     public boolean shouldBackButtonBeMappedToEscape() {
-        return false;
+        return mActivity.mSettings.mBackIsEscape;
     }
 
     @Override
     public void copyModeChanged(boolean copyMode) {
-
+        // Disable drawer while copying.
+        mActivity.getDrawer().setDrawerLockMode(copyMode ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession session) {
+    public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession currentSession) {
         if (handleVirtualKeys(keyCode, e, true)) return true;
 
-        if (e.isCtrlPressed() && e.isAltPressed()) {
+        if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
+            mActivity.removeFinishedSession(currentSession);
+            return true;
+        } else if (e.isCtrlPressed() && e.isAltPressed()) {
             // Get the unmodified code point:
             int unicodeChar = e.getUnicodeChar(0);
 
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN || unicodeChar == 'n'/* next */) {
-                // TODO: Toggle minimized or not.
+                mActivity.switchToSession(true);
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP || unicodeChar == 'p' /* previous */) {
+                mActivity.switchToSession(false);
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                mActivity.getDrawer().openDrawer(Gravity.LEFT);
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                mActivity.getDrawer().closeDrawers();
             } else if (unicodeChar == 'f'/* full screen */) {
-                // TODO: Toggle full screen.
+                mActivity.toggleImmersive();
             } else if (unicodeChar == 'k'/* keyboard */) {
-                InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            } else if (unicodeChar == 'm'/* menu */) {
+                mActivity.mTerminalView.showContextMenu();
+            } else if (unicodeChar == 'r'/* rename */) {
+                mActivity.renameSession(currentSession);
+            } else if (unicodeChar == 'c'/* create */) {
+                mActivity.addNewSession(false, null);
+            } else if (unicodeChar == 'u' /* urls */) {
+                mActivity.showUrlSelection();
+            } else if (unicodeChar == 'v') {
+                mActivity.doPaste();
+            } else if (unicodeChar == '+' || e.getUnicodeChar(KeyEvent.META_SHIFT_ON) == '+') {
+                // We also check for the shifted char here since shift may be required to produce '+',
+                // see https://github.com/termux/termux-api/issues/2
+                mActivity.changeFontSize(true);
+            } else if (unicodeChar == '-') {
+                mActivity.changeFontSize(false);
+            } else if (unicodeChar >= '1' && unicodeChar <= '9') {
+                int num = unicodeChar - '1';
+                TermuxService service = mActivity.mTermService;
+                if (service.getSessions().size() > num)
+                    mActivity.switchToSession(service.getSessions().get(num));
             }
             return true;
         }
 
         return false;
+
     }
 
     @Override
@@ -86,19 +112,18 @@ public class TermuxFloatKeyListener implements TerminalKeyListener {
         return handleVirtualKeys(keyCode, e, false);
     }
 
-
     @Override
     public boolean readControlKey() {
-        return mVirtualControlKeyDown;
+        return (mActivity.mExtraKeysView != null && mActivity.mExtraKeysView.readControlButton()) || mVirtualControlKeyDown;
     }
 
     @Override
     public boolean readAltKey() {
-        return false;
+        return (mActivity.mExtraKeysView != null && mActivity.mExtraKeysView.readAltButton());
     }
 
     @Override
-    public boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session) {
+    public boolean onCodePoint(final int codePoint, boolean ctrlDown, TerminalSession session) {
         if (mVirtualFnKeyDown) {
             int resultingKeyCode = -1;
             int resultingCodePoint = -1;
@@ -180,8 +205,13 @@ public class TermuxFloatKeyListener implements TerminalKeyListener {
                 // Volume control.
                 case 'v':
                     resultingCodePoint = -1;
-                    AudioManager audio = (AudioManager) view.getContext().getSystemService(Context.AUDIO_SERVICE);
+                    AudioManager audio = (AudioManager) mActivity.getSystemService(Context.AUDIO_SERVICE);
                     audio.adjustSuggestedStreamVolume(AudioManager.ADJUST_SAME, AudioManager.USE_DEFAULT_STREAM_TYPE, AudioManager.FLAG_SHOW_UI);
+                    break;
+
+                // Writing mode:
+                case 'q':
+                    mActivity.toggleShowExtraKeys();
                     break;
             }
 
@@ -192,14 +222,46 @@ public class TermuxFloatKeyListener implements TerminalKeyListener {
                 session.writeCodePoint(altDown, resultingCodePoint);
             }
             return true;
+        } else if (ctrlDown) {
+            if (codePoint == 106 /* Ctrl+j or \n */ && !session.isRunning()) {
+                mActivity.removeFinishedSession(session);
+                return true;
+            }
+
+            List<TermuxPreferences.KeyboardShortcut> shortcuts = mActivity.mSettings.shortcuts;
+            if (!shortcuts.isEmpty()) {
+                int codePointLowerCase = Character.toLowerCase(codePoint);
+                for (int i = shortcuts.size() - 1; i >= 0; i--) {
+                    TermuxPreferences.KeyboardShortcut shortcut = shortcuts.get(i);
+                    if (codePointLowerCase == shortcut.codePoint) {
+                        switch (shortcut.shortcutAction) {
+                            case TermuxPreferences.SHORTCUT_ACTION_CREATE_SESSION:
+                                mActivity.addNewSession(false, null);
+                                return true;
+                            case TermuxPreferences.SHORTCUT_ACTION_PREVIOUS_SESSION:
+                                mActivity.switchToSession(false);
+                                return true;
+                            case TermuxPreferences.SHORTCUT_ACTION_NEXT_SESSION:
+                                mActivity.switchToSession(true);
+                                return true;
+                            case TermuxPreferences.SHORTCUT_ACTION_RENAME_SESSION:
+                                mActivity.renameSession(mActivity.getCurrentTermSession());
+                                return true;
+                        }
+                    }
+                }
+            }
         }
 
         return false;
     }
 
-    /**
-     * Handle dedicated volume buttons as virtual keys if applicable.
-     */
+    @Override
+    public boolean onLongPress(MotionEvent event) {
+        return false;
+    }
+
+    /** Handle dedicated volume buttons as virtual keys if applicable. */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
         InputDevice inputDevice = event.getDevice();
         if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
@@ -214,5 +276,6 @@ public class TermuxFloatKeyListener implements TerminalKeyListener {
         }
         return false;
     }
+
 
 }

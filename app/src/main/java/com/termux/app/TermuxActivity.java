@@ -213,7 +213,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         setContentView(R.layout.drawer_layout);
         mTerminalView = (TerminalView) findViewById(R.id.terminal_view);
-        mTerminalView.setOnKeyListener(new TermuxKeyListener(this));
+        mTerminalView.setOnKeyListener(new TermuxViewClient(this));
 
         mTerminalView.setTextSize(mSettings.getFontSize());
         mFullScreenHelper.setImmersive(mSettings.isFullScreen());

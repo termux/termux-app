@@ -87,7 +87,7 @@ public class TermuxFloatView extends LinearLayout {
 
     public void initializeFloatingWindow() {
         mTerminalView = (TerminalView) findViewById(R.id.terminal_view);
-        mTerminalView.setOnKeyListener(new TermuxFloatKeyListener(this));
+        mTerminalView.setOnKeyListener(new TermuxFloatViewClient(this));
     }
 
     @Override
