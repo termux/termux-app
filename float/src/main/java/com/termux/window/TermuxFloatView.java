@@ -1,16 +1,11 @@
 package com.termux.window;
 
-import com.termux.terminal.TerminalSession;
-import com.termux.view.TerminalKeyListener;
-import com.termux.view.TerminalView;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
@@ -18,6 +13,8 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.termux.view.TerminalView;
 
 public class TermuxFloatView extends LinearLayout {
 
@@ -37,12 +34,14 @@ public class TermuxFloatView extends LinearLayout {
 	Toast mLastToast;
 
 	private boolean withFocus = true;
-	private int initialX;
-	private int initialY;
-	private float initialTouchX;
-	private float initialTouchY;
+	int initialX;
+	int initialY;
+	float initialTouchX;
+	float initialTouchY;
 
 	boolean isInLongPressState;
+
+    final int[] location = new int[2];
 
 	final ScaleGestureDetector mScaleDetector = new ScaleGestureDetector(getContext(), new OnScaleGestureListener() {
 		private static final int MIN_SIZE = 50;
@@ -86,69 +85,7 @@ public class TermuxFloatView extends LinearLayout {
 
 	public void initializeFloatingWindow() {
 		mTerminalView = (TerminalView) findViewById(R.id.terminal_view);
-
-		mTerminalView.setOnKeyListener(new TerminalKeyListener() {
-			@Override
-			public float onScale(float scale) {
-				if (scale < 0.9f || scale > 1.1f) {
-					boolean increase = scale > 1.f;
-					((TermuxFloatService) getContext()).changeFontSize(increase);
-					return 1.0f;
-				}
-				return scale;
-			}
-
-			@Override
-			public boolean onLongPress(MotionEvent event) {
-				updateLongPressMode(true);
-				initialX = layoutParams.x;
-				initialY = layoutParams.y;
-				initialTouchX = event.getRawX();
-				initialTouchY = event.getRawY();
-                return true;
-			}
-
-            @Override
-            public void onSingleTapUp(MotionEvent e) {
-                // Do nothing.
-            }
-
-			@Override
-			public boolean shouldBackButtonBeMappedToEscape() {
-				return true;
-			}
-
-			@Override
-			public void copyModeChanged(boolean copyMode) {
-
-			}
-
-			@Override
-			public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession session) {
-				return false;
-			}
-
-			@Override
-			public boolean onKeyUp(int keyCode, KeyEvent e) {
-				return false;
-			}
-
-			@Override
-			public boolean readControlKey() {
-				return false;
-			}
-
-			@Override
-			public boolean readAltKey() {
-				return false;
-			}
-
-			@Override
-			public boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session) {
-				return false;
-			}
-
-		});
+		mTerminalView.setOnKeyListener(new TermuxFloatKeyListener(this));
 	}
 
 	@Override
@@ -185,32 +122,29 @@ public class TermuxFloatView extends LinearLayout {
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
 		if (isInLongPressState) return true;
-		if (event.getAction() == MotionEvent.ACTION_DOWN) {
-			if ((event.getMetaState() & (KeyEvent.META_CTRL_ON | KeyEvent.META_ALT_ON)) != 0) {
-				updateLongPressMode(true);
-				initialX = layoutParams.x;
-				initialY = layoutParams.y;
-				initialTouchX = event.getRawX();
-				initialTouchY = event.getRawY();
-				return true;
-			}
-			// FIXME: params.x and params.y are outdated when snapping to end of screen, where the movement stops but x
-			// and y are wrong.
-			float touchX = event.getRawX();
-			float touchY = event.getRawY();
-			boolean clickedInside = (touchX >= layoutParams.x) && (touchX <= (layoutParams.x + layoutParams.width)) && (touchY >= layoutParams.y)
-					&& (touchY <= (layoutParams.y + layoutParams.height));
-			if (withFocus != clickedInside) {
-				changeFocus(clickedInside);
-			} else if (clickedInside) {
-				// When clicking inside, show keyboard if the user has hidden it:
-				showTouchKeyboard();
-			}
-		}
+
+        getLocationOnScreen(location);
+        int x = layoutParams.x; // location[0];
+        int y = layoutParams.y; // location[1];
+        float touchX = event.getRawX();
+        float touchY = event.getRawY();
+        boolean clickedInside = (touchX >= x) && (touchX <= (x + layoutParams.width)) && (touchY >= y) && (touchY <= (y + layoutParams.height));
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (!clickedInside) changeFocus(false);
+                break;
+            case MotionEvent.ACTION_UP:
+                if (clickedInside) {
+                    changeFocus(true);
+                    showTouchKeyboard();
+                }
+                break;
+        }
 		return false;
 	}
 
-	private void showTouchKeyboard() {
+	void showTouchKeyboard() {
 		mTerminalView.post(new Runnable() {
 			@Override
 			public void run() {
@@ -219,10 +153,10 @@ public class TermuxFloatView extends LinearLayout {
 		});
 	}
 
-	private void updateLongPressMode(boolean newValue) {
+	void updateLongPressMode(boolean newValue) {
 		isInLongPressState = newValue;
 		setBackgroundResource(newValue ? R.drawable.floating_window_background_resize : R.drawable.floating_window_background);
-		setAlpha(newValue ? ALPHA_MOVING : ALPHA_FOCUS);
+		setAlpha(newValue ? ALPHA_MOVING : (withFocus ? ALPHA_FOCUS : ALPHA_NOT_FOCUS));
 		if (newValue) {
 			Toast toast = Toast.makeText(getContext(), R.string.after_long_press, Toast.LENGTH_SHORT);
 			toast.setGravity(Gravity.CENTER, 0, 0);
@@ -254,12 +188,15 @@ public class TermuxFloatView extends LinearLayout {
 	}
 
 	/** Visually indicate focus and show the soft input as needed. */
-	private void changeFocus(boolean newFocus) {
-		withFocus = newFocus;
+	void changeFocus(boolean newFocus) {
+        if (newFocus == withFocus) {
+            if (newFocus) showTouchKeyboard();
+            return;
+        }
+        withFocus = newFocus;
 		layoutParams.flags = computeLayoutFlags(withFocus);
 		mWindowManager.updateViewLayout(this, layoutParams);
 		setAlpha(newFocus ? ALPHA_FOCUS : ALPHA_NOT_FOCUS);
-		if (newFocus) showTouchKeyboard();
 	}
 
 	/** Show a toast and dismiss the last one if still visible. */
