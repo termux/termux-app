@@ -29,10 +29,10 @@ import java.io.IOException;
 
 public class TermuxFloatService extends Service {
 
-	public static final String ACTION_HIDE = "com.termux.float.hide";
-	public static final String ACTION_SHOW = "com.termux.float.show";
+    public static final String ACTION_HIDE = "com.termux.float.hide";
+    public static final String ACTION_SHOW = "com.termux.float.show";
 
-	/**
+    /**
      * Note that this is a symlink on the Android M preview.
      */
     @SuppressLint("SdCardPath")
@@ -52,7 +52,7 @@ public class TermuxFloatService extends Service {
     private static final String FONTSIZE_KEY = "fontsize";
     private TermuxFloatView mFloatingWindow;
     private int mFontSize;
-	private boolean mVisibleWindow = true;
+    private boolean mVisibleWindow = true;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -71,71 +71,71 @@ public class TermuxFloatService extends Service {
             mFontSize = DEFAULT_FONTSIZE;
         }
 
-		TermuxFloatView floatingWindow = (TermuxFloatView) ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.activity_main, null);
-		floatingWindow.initializeFloatingWindow();
-		floatingWindow.mTerminalView.setTextSize(mFontSize);
+        TermuxFloatView floatingWindow = (TermuxFloatView) ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.activity_main, null);
+        floatingWindow.initializeFloatingWindow();
+        floatingWindow.mTerminalView.setTextSize(mFontSize);
 
         TerminalSession session = createTermSession();
-		floatingWindow.mTerminalView.attachSession(session);
+        floatingWindow.mTerminalView.attachSession(session);
 
-		try {
-			floatingWindow.launchFloatingWindow();
-		} catch (Exception e) {
-			// Settings.canDrawOverlays() does not work (always returns false, perhaps due to sharedUserId?).
-			// So instead we catch the exception and prompt here.
-			startActivity(new Intent(this, TermuxFloatPermissionActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-			stopSelf();
-			return;
-		}
+        try {
+            floatingWindow.launchFloatingWindow();
+        } catch (Exception e) {
+            // Settings.canDrawOverlays() does not work (always returns false, perhaps due to sharedUserId?).
+            // So instead we catch the exception and prompt here.
+            startActivity(new Intent(this, TermuxFloatPermissionActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            stopSelf();
+            return;
+        }
 
-		mFloatingWindow = floatingWindow;
+        mFloatingWindow = floatingWindow;
 
-		Toast toast = Toast.makeText(this, R.string.initial_instruction_toast, Toast.LENGTH_LONG);
-		toast.setGravity(Gravity.CENTER, 0, 0);
-		TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
-		if (v != null) v.setGravity(Gravity.CENTER);
-		toast.show();
+        Toast toast = Toast.makeText(this, R.string.initial_instruction_toast, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
+        if (v != null) v.setGravity(Gravity.CENTER);
+        toast.show();
 
-		startForeground(NOTIFICATION_ID, buildNotification());
+        startForeground(NOTIFICATION_ID, buildNotification());
     }
 
-	private Notification buildNotification() {
-		final Resources res = getResources();
-		final String contentTitle = res.getString(R.string.notification_title);
-		final String contentText = res.getString(mVisibleWindow ? R.string.notification_message_visible : R.string.notification_message_hidden);
+    private Notification buildNotification() {
+        final Resources res = getResources();
+        final String contentTitle = res.getString(R.string.notification_title);
+        final String contentText = res.getString(mVisibleWindow ? R.string.notification_message_visible : R.string.notification_message_hidden);
 
-		final String intentAction = mVisibleWindow ? ACTION_HIDE : ACTION_SHOW;
-		Intent actionIntent = new Intent(this, TermuxFloatService.class).setAction(intentAction);
+        final String intentAction = mVisibleWindow ? ACTION_HIDE : ACTION_SHOW;
+        Intent actionIntent = new Intent(this, TermuxFloatService.class).setAction(intentAction);
 
-		Notification.Builder builder = new Notification.Builder(this).setContentTitle(contentTitle).setContentText(contentText)
-				.setPriority(Notification.PRIORITY_MIN).setSmallIcon(R.mipmap.ic_service_notification)
-				.setColor(0xFF000000)
-				.setContentIntent(PendingIntent.getService(this, 0, actionIntent, 0))
-				.setOngoing(true).setShowWhen(false);
+        Notification.Builder builder = new Notification.Builder(this).setContentTitle(contentTitle).setContentText(contentText)
+            .setPriority(Notification.PRIORITY_MIN).setSmallIcon(R.mipmap.ic_service_notification)
+            .setColor(0xFF000000)
+            .setContentIntent(PendingIntent.getService(this, 0, actionIntent, 0))
+            .setOngoing(true).setShowWhen(false);
 
-		//final int messageId = mVisibleWindow ? R.string.toggle_hide : R.string.toggle_show;
-		//builder.addAction(android.R.drawable.ic_menu_preferences, res.getString(messageId), PendingIntent.getService(this, 0, actionIntent, 0));
-		return builder.build();
-	}
+        //final int messageId = mVisibleWindow ? R.string.toggle_hide : R.string.toggle_show;
+        //builder.addAction(android.R.drawable.ic_menu_preferences, res.getString(messageId), PendingIntent.getService(this, 0, actionIntent, 0));
+        return builder.build();
+    }
 
 
-	@SuppressLint("Wakelock")
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		String action = intent.getAction();
-		if (ACTION_HIDE.equals(action)) {
-			mVisibleWindow = false;
-			mFloatingWindow.setVisibility(View.GONE);
-			((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
-		} else if (ACTION_SHOW.equals(action)) {
-			mFloatingWindow.setVisibility(View.VISIBLE);
-			mVisibleWindow = true;
-			((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
-		}
-		return Service.START_NOT_STICKY;
-	}
+    @SuppressLint("Wakelock")
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        String action = intent.getAction();
+        if (ACTION_HIDE.equals(action)) {
+            mVisibleWindow = false;
+            mFloatingWindow.setVisibility(View.GONE);
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
+        } else if (ACTION_SHOW.equals(action)) {
+            mFloatingWindow.setVisibility(View.VISIBLE);
+            mVisibleWindow = true;
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
+        }
+        return Service.START_NOT_STICKY;
+    }
 
-	@Override
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (mFloatingWindow != null) mFloatingWindow.closeFloatingWindow();

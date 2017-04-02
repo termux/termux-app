@@ -15,7 +15,9 @@ import com.termux.view.TerminalKeyListener;
 public class TermuxFloatKeyListener implements TerminalKeyListener {
 
     private final TermuxFloatView view;
-    /** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
+    /**
+     * Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys.
+     */
     boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
 
     public TermuxFloatKeyListener(TermuxFloatView view) {
@@ -195,7 +197,9 @@ public class TermuxFloatKeyListener implements TerminalKeyListener {
         return false;
     }
 
-    /** Handle dedicated volume buttons as virtual keys if applicable. */
+    /**
+     * Handle dedicated volume buttons as virtual keys if applicable.
+     */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
         InputDevice inputDevice = event.getDevice();
         if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
