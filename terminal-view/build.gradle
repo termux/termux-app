@@ -1,4 +1,20 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7"
+    id "com.github.dcendents.android-maven" version "1.5"
+}
+
 apply plugin: 'com.android.library'
+
+ext {
+    bintrayName = 'terminal-view'
+    publishedGroupId = 'com.termux'
+    libraryName = 'TerminalView'
+    artifact = 'terminal-view'
+    libraryDescription = 'The terminal view used in Termux'
+    siteUrl = 'https://github.com/termux/termux'
+    gitUrl = 'https://github.com/termux/termux.git'
+    libraryVersion = '0.49'
+}
 
 android {
     compileSdkVersion 25
@@ -26,3 +42,5 @@ android {
 dependencies {
     testCompile 'junit:junit:4.12'
 }
+
+apply from: '../scripts/bintray-publish.gradle'

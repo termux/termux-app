@@ -1,0 +1,78 @@
+// Start https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle
+apply plugin: 'com.github.dcendents.android-maven'
+group = publishedGroupId // Maven Group ID for the artifact
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                groupId publishedGroupId
+                artifactId artifact
+
+                name libraryName
+                description libraryDescription
+                url siteUrl
+
+                licenses {
+                    license {
+                        name 'GNU General Public License version 3'
+                        url 'https://opensource.org/licenses/gpl-3.0.html'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'fornwall'
+                        name 'Fredrik Fornwall'
+                        email 'fredrik@fornwall.net'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+// End https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle
+
+// Start https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle
+apply plugin: 'com.jfrog.bintray'
+
+version = libraryVersion
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from android.sourceSets.main.java.srcDirs
+}
+
+artifacts {
+	archives sourcesJar
+}
+
+bintray {
+	user = System.getenv('BINTRAY_USER')
+	key = System.getenv('BINTRAY_API_KEY')
+
+	configurations = ['archives']
+	pkg {
+		repo = 'maven'
+		name = bintrayName
+		userOrg = 'termux'
+		desc = libraryDescription
+		websiteUrl = siteUrl
+		vcsUrl = gitUrl
+		licenses = ['GPL-3.0']
+		publish = true
+		publicDownloadNumbers = true
+		version {
+			desc = libraryDescription
+			gpg {
+				sign = false //Determines whether to GPG sign the files. The default is false
+				// passphrase = properties.getProperty("bintray.gpg.password")
+			}
+		}
+	}
+}
