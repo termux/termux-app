@@ -6,7 +6,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
 /** A combination of {@link GestureDetector} and {@link ScaleGestureDetector}. */
-public final class GestureAndScaleRecognizer {
+final class GestureAndScaleRecognizer {
 
     public interface Listener {
         boolean onSingleTapUp(MotionEvent e);
