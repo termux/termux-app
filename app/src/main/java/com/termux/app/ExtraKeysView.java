@@ -3,6 +3,7 @@ package com.termux.app;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -144,6 +145,7 @@ public final class ExtraKeysView extends GridLayout {
                 button.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
                         View root = getRootView();
                         switch (buttonText) {
                             case "CTRL":
