@@ -76,6 +76,18 @@
             </intent-filter>
         </activity>
 
+        <activity-alias
+            android:name=".HomeActivity"
+            android:targetActivity="com.termux.app.TermuxActivity">
+
+            <!-- Launch activity automatically on boot -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.IOT_LAUNCHER"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity-alias>
+
         <provider
             android:name=".filepicker.TermuxDocumentsProvider"
             android:authorities="com.termux.documents"
