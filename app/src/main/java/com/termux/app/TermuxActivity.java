@@ -397,7 +397,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             @Override
             public void onClipboardText(TerminalSession session, String text) {
                 if (!mIsVisible) return;
-                showToast("Clipboard:\n\"" + text + "\"", false);
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 clipboard.setPrimaryClip(new ClipData(null, new String[]{"text/plain"}, new ClipData.Item(text)));
             }
