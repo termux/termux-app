@@ -227,4 +227,44 @@ public class CursorAndScreenTest extends TerminalTestCase {
         withTerminalSized(3, 3).enterString("\b\b\b\bhi").assertLinesAre("hi ", "   ", "   ");
     }
 
+	public void testCursorSaveRestoreLocation() {
+		// DEC save/restore
+		withTerminalSized(4, 2).enterString("t\0337est\r\nme\0338ry ").assertLinesAre("try ", "me  ");
+		// ANSI.SYS save/restore
+		withTerminalSized(4, 2).enterString("t\033[sest\r\nme\033[ury ").assertLinesAre("try ", "me  ");
+		// Alternate screen enter/exit
+		withTerminalSized(4, 2).enterString("t\033[?1049h\033[Hest\r\nme").assertLinesAre("est ", "me  ").enterString("\033[?1049lry").assertLinesAre("try ", "    ");
+	}
+
+	public void testCursorSaveRestoreTextStyle() {
+		long s;
+
+		// DEC save/restore
+		withTerminalSized(4, 2).enterString("\033[31;42;4m..\0337\033[36;47;24m\0338..");
+		s = getStyleAt(0, 3);
+		Assert.assertEquals(1, TextStyle.decodeForeColor(s));
+		Assert.assertEquals(2, TextStyle.decodeBackColor(s));
+		Assert.assertEquals(TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE, TextStyle.decodeEffect(s));
+
+		// ANSI.SYS save/restore
+		withTerminalSized(4, 2).enterString("\033[31;42;4m..\033[s\033[36;47;24m\033[u..");
+		s = getStyleAt(0, 3);
+		Assert.assertEquals(1, TextStyle.decodeForeColor(s));
+		Assert.assertEquals(2, TextStyle.decodeBackColor(s));
+		Assert.assertEquals(TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE, TextStyle.decodeEffect(s));
+
+		// Alternate screen enter/exit
+		withTerminalSized(4, 2);
+		enterString("\033[31;42;4m..\033[?1049h\033[H\033[36;47;24m.");
+		s = getStyleAt(0, 0);
+		Assert.assertEquals(6, TextStyle.decodeForeColor(s));
+		Assert.assertEquals(7, TextStyle.decodeBackColor(s));
+		Assert.assertEquals(0, TextStyle.decodeEffect(s));
+		enterString("\033[?1049l..");
+		s = getStyleAt(0, 3);
+		Assert.assertEquals(1, TextStyle.decodeForeColor(s));
+		Assert.assertEquals(2, TextStyle.decodeBackColor(s));
+		Assert.assertEquals(TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE, TextStyle.decodeEffect(s));
+	}
+
 }
