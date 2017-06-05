@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <string name="application_name">Termux</string>
+   <string name="shared_user_label">Používateľ Termuxu</string>
+   <string name="new_session">Nová relácia</string>
+   <string name="new_session_failsafe">Zabezpečená</string>
+   <string name="toggle_soft_keyboard">Klávesnica</string>
+   <string name="reset_terminal">Obnoviť</string>
+   <string name="style_terminal">Štýl</string>
+   <string name="toggle_fullscreen">Celá obrazovka</string>
+   <string name="share_transcript_title">Prepis terminálu</string>
+   <string name="help">Pomocník</string>
+
+   <string name="bootstrap_installer_body">Inštaluje sa…</string>
+   <string name="bootstrap_error_title">Nie je možné nainštalovať</string>
+   <string name="bootstrap_error_body">Termuxu sa nepodarilo nainštalovať bootstrap balíčky.\n\nSkontrolujte vaše pripojenie k sieti a skúste znova.</string>
+   <string name="bootstrap_error_abort">Zrušiť</string>
+   <string name="bootstrap_error_try_again">Skúsiť znova</string>
+   <string name="bootstrap_error_not_primary_user_message">Termux môže byť nainštalovaný len na primárny účet používateľa.</string>
+
+   <string name="max_terminals_reached_title">Dosiahnutý maximálny počet terminálov</string>
+   <string name="max_terminals_reached_message">Zatvorte existujúce terminály pred vytvorením nového terminálu.</string>
+
+   <string name="reset_toast_notification">Terminál bol obnovený.</string>
+
+  <string name="select_url">Vyberte URL adresu</string>
+  <string name="select_url_dialog_title">Kliknutím na URL adresu ju skopírujete, dlhým stlačením ju otvoríte</string>
+  <string name="select_all_and_share">Zdieľať prepis</string>
+  <string name="select_url_no_found">Nenašla sa žiadna URL adresa v termináli.</string>
+  <string name="select_url_copied_to_clipboard">URL adresa bola skopírovaná do schránky</string>
+  <string name="share_transcript_chooser_title">Poslať text do:</string>
+
+  <string name="paste_text">Prilepiť</string>
+  <string name="copy_text">Kopírovať</string>
+  <string name="text_selection_more">Ďalšie…</string>
+
+  <string name="kill_process">Ukončiť proces (%d)</string>
+  <string name="confirm_kill_process">Ukončiť túto reláciu?</string>
+
+  <string name="session_rename_title">Nastaviť názov relácie</string>
+  <string name="session_rename_positive_button">Nastaviť</string>
+  <string name="session_new_named_title">Nová pomenovaná relácia</string>
+  <string name="session_new_named_positive_button">Vytvoriť</string>
+
+  <string name="styling_not_installed">Doplnok Termux:Štýl nie je nainštalovaný.</string>
+  <string name="styling_install">Nainštalovať</string>
+
+  <string name="notification_action_exit">Ukončiť</string>
+  <string name="notification_action_wake_lock">Zamknúť spánok zariadenia</string>
+  <string name="notification_action_wake_unlock">Odomknúť spánok zariadenia</string>
+
+  <string name="file_received_title">Uložiť súbor do ~/downloads/</string>
+  <string name="file_received_edit_button">Upraviť</string>
+  <string name="file_received_open_folder_button">Otvoriť priečinok</string>
+
+</resources>
