@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <string name="application_name">Termux</string>
+   <string name="shared_user_label">Utente Termux</string>
+   <string name="new_session">Nuova sessione</string>
+   <string name="new_session_failsafe">Failsafe</string>/////////////////////
+   <string name="toggle_soft_keyboard">Tastiera</string>
+   <string name="reset_terminal">Resetta</string>
+   <string name="style_terminal">Stile</string>
+   <string name="toggle_fullscreen">Schermo intero</string>
+   <string name="share_transcript_title">Trascrizione terminale</string>
+   <string name="help">Aiuto</string>
+
+   <string name="welcome_dialog_title">Benvenuti in Termux</string>
+   <string name="welcome_dialog_body">Premi a lungo e seleziona <i>Altro…</i> per mostrare un menu dove <i>Aiuto</i> è disponibile.\n\nEsegui <b>apt update</b> per aggiornare la lista dei pacchetti prima di installarne.</string>
+   <string name="welcome_dialog_dont_show_again_button">Non mostrare più</string>
+
+   <string name="bootstrap_installer_body">Installazione…</string>
+   <string name="bootstrap_error_title">Impossibile installare</string>
+   <string name="bootstrap_error_body">Termux non ha potuto installare i pacchetti bootstrap.\n\nControlla la tua connessione e riprova.</string>
+   <string name="bootstrap_error_abort">Interrompi</string>
+   <string name="bootstrap_error_try_again">Riprova</string>
+   <string name="bootstrap_error_not_primary_user_message">Termux può essere installato solo nell\'account utente principale.</string>
+
+   <string name="max_terminals_reached_title">Massimo terminali raggiunto</string>
+   <string name="max_terminals_reached_message">Chiudi quelli esistenti prima di crearne di nuovi.</string>
+
+   <string name="reset_toast_notification">Terminale resettato.</string>
+
+  <string name="select_url">Seleziona URL</string>
+  <string name="select_url_dialog_title">Clicca l\'URL per copiarlo o premi a lungo per aprirlo</string>
+  <string name="select_all_and_share">Condividi la trascrizione</string>
+  <string name="select_url_no_found">Nessun URL trovato nel terminale.</string>
+  <string name="select_url_copied_to_clipboard">URL copiato negli appunti</string>
+  <string name="share_transcript_chooser_title">Invia testo a:</string>
+
+  <string name="paste_text">Incolla</string>
+  <string name="copy_text">Copia</string>
+  <string name="text_selection_more">Altro…</string>
+
+  <string name="kill_process">Termina processo (%d)</string>
+  <string name="confirm_kill_process">Terminare veramente questa sessione?</string>
+
+  <string name="session_rename_title">Imposta nome sessione</string>
+  <string name="session_rename_positive_button">Imposta</string>
+  <string name="session_new_named_title">Nuova sessione con nome</string>
+  <string name="session_new_named_positive_button">Crea</string>
+
+  <string name="styling_not_installed">L\'add-on Termux:Style non è installato.</string>
+  <string name="styling_install">Installa</string>
+
+  <string name="notification_action_exit">Esci</string>
+  <string name="notification_action_wakelock">Acceso</string>
+  <string name="notification_action_wifilock">Wifi</string>
+
+  <string name="file_received_title">Salva file in ~/downloads/</string>
+  <string name="file_received_edit_button">Modifica</string>
+  <string name="file_received_open_folder_button">Apri cartella</string>
+
+</resources>
