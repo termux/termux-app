@@ -13,7 +13,7 @@ ext {
     libraryDescription = 'The terminal emulator used in Termux'
     siteUrl = 'https://github.com/termux/termux'
     gitUrl = 'https://github.com/termux/termux.git'
-    libraryVersion = '0.49'
+    libraryVersion = '0.50'
 }
 
 android {
