@@ -29,4 +29,10 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
 		withTerminalSized(13, 2).enterString("abcdefghijkl\b\b\b\b\b\033[20X").assertLinesAre("abcdefg      ", "             ");
 	}
 
+	/** CSI Pm m  Set SGR parameter(s) from semicolon-separated list Pm. */
+	public void testCsiSGRParameters() {
+		// Set more parameters (19) than supported (16).  Additional parameters should be silently consumed.
+		withTerminalSized(3, 2).enterString("\033[0;38;2;255;255;255;48;2;0;0;0;1;2;3;4;5;7;8;9mabc").assertLinesAre("abc", "   ");
+	}
+
 }
