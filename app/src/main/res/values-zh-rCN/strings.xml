@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <string name="application_name">Termux</string>
+   <string name="shared_user_label">Termux用户</string>
+   <string name="new_session">新会话</string>
+   <string name="new_session_failsafe">Failsafe</string>
+   <string name="toggle_soft_keyboard">键盘</string>
+   <string name="reset_terminal">重置</string>
+   <string name="style_terminal">主题风格</string>
+   <string name="toggle_fullscreen">全屏</string>
+   <string name="share_transcript_title">终端副本</string>
+   <string name="help">帮助</string>
+
+   <string name="bootstrap_installer_body">正在安装…</string>
+   <string name="bootstrap_error_title">无法安装</string>
+   <string name="bootstrap_error_body">Termux无法安装引导程序包！\n\n请检查网路链接后重试。</string>
+   <string name="bootstrap_error_abort">放弃</string>
+   <string name="bootstrap_error_try_again">重试</string>
+   <string name="bootstrap_error_not_primary_user_message">Termux只能安装在主用户账户上！</string>
+
+   <string name="max_terminals_reached_title">已达最大终端数！</string>
+   <string name="max_terminals_reached_message">请关闭任意一个终端以新建终端会话。</string>
+
+   <string name="reset_toast_notification">终端重置。</string>
+
+  <string name="select_url">选择链接</string>
+  <string name="select_url_dialog_title">点击链接复制或长按打开</string>
+  <string name="select_all_and_share">分享副本</string>
+  <string name="select_url_no_found">终端中未找到任何链接。</string>
+  <string name="select_url_copied_to_clipboard">链接已复制到剪切板</string>
+  <string name="share_transcript_chooser_title">Send text to:</string>
+
+  <string name="paste_text">粘贴</string>
+  <string name="copy_text">复制</string>
+  <string name="text_selection_more">更多</string>
+
+  <string name="kill_process">杀死进程 (%d)</string>
+  <string name="confirm_kill_process">确认杀死该对话？</string>
+
+  <string name="session_rename_title">设置会话名称</string>
+  <string name="session_rename_positive_button">设置</string>
+  <string name="session_new_named_title">新命名会话</string>
+  <string name="session_new_named_positive_button">新建</string>
+
+  <string name="styling_not_installed">Termux:Style 插件未安装。</string>
+  <string name="styling_install">安装</string>
+
+  <string name="notification_action_exit">退出</string>
+  <string name="notification_action_wake_lock">获取唤醒锁(权限)</string>
+  <string name="notification_action_wake_unlock">释放唤醒锁(权限)</string>
+
+  <string name="file_received_title">保存到 ~/downloads/</string>
+  <string name="file_received_edit_button">编辑</string>
+  <string name="file_received_open_folder_button">打开文件夹</string>
+
+</resources>
