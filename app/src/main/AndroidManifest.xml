@@ -99,6 +99,7 @@
                   android:grantUriPermissions="true"
                   android:name="com.termux.app.TermuxOpenReceiver$ContentProvider" />
 
+        <meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
     </application>
 
 </manifest>
