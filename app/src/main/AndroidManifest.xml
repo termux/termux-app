@@ -80,7 +80,7 @@
             android:name=".HomeActivity"
             android:targetActivity="com.termux.app.TermuxActivity">
 
-            <!-- Launch activity automatically on boot -->
+            <!-- Launch activity automatically on boot on Android Things devices -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.IOT_LAUNCHER"/>
