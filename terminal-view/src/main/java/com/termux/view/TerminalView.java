@@ -761,6 +761,7 @@ public final class TerminalView extends View {
         if (mEmulator == null) {
             canvas.drawColor(0XFF000000);
         } else {
+            setContentDescription(getText());
             mRenderer.render(mEmulator, canvas, mTopRow, mSelY1, mSelY2, mSelX1, mSelX2);
 
             if (mIsSelectingText) {
@@ -913,6 +914,10 @@ public final class TerminalView extends View {
 
     public TerminalSession getCurrentSession() {
         return mTermSession;
+    }
+
+    private CharSequence getText() {
+        return mEmulator.getScreen().getSelectedText(0, mTopRow, mEmulator.mColumns, mTopRow +mEmulator.mRows);
     }
 
 }
