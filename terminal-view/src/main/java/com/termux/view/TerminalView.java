@@ -834,6 +834,10 @@ public final class TerminalView extends View {
 
                 @Override
                 public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                    if (!mIsSelectingText) {
+                        // Fix issue where the dialog is pressed while being dismissed.
+                        return true;
+                    }
                     switch (item.getItemId()) {
                         case 1:
                             String selectedText = mEmulator.getSelectedText(mSelX1, mSelY1, mSelX2, mSelY2).trim();
