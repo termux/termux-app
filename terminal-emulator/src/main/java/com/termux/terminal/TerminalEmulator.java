@@ -419,10 +419,11 @@ public final class TerminalEmulator {
                     mUtf8Index = mUtf8ToFollow = 0;
 
                     if (codePoint >= 0x80 && codePoint <= 0x9F) {
-                        // Sequence decoded to a C1 control character which is the same as escape followed by
-                        // ((code & 0x7F) + 0x40).
-                        processCodePoint(/* escape (hexadecimal=0x1B, octal=033): */27);
-                        processCodePoint((codePoint & 0x7F) + 0x40);
+                        // Sequence decoded to a C1 control character which we ignore. They are
+                        // not used nowadays and increases the risk of messing up the terminal state
+                        // on binary input. XTerm does not allow them in utf-8:
+                        // "It is not possible to use a C1 control obtained from decoding the
+                        // UTF-8 text" - http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
                     } else {
                         switch (Character.getType(codePoint)) {
                             case Character.UNASSIGNED:
