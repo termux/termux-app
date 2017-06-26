@@ -384,6 +384,7 @@ public final class TerminalView extends View {
         mEmulator.clearScrollCounter();
 
         invalidate();
+        setContentDescription(getText());
     }
 
     /**
@@ -761,7 +762,6 @@ public final class TerminalView extends View {
         if (mEmulator == null) {
             canvas.drawColor(0XFF000000);
         } else {
-            setContentDescription(getText());
             mRenderer.render(mEmulator, canvas, mTopRow, mSelY1, mSelY2, mSelX1, mSelX2);
 
             if (mIsSelectingText) {
