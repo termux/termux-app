@@ -35,4 +35,12 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
 		withTerminalSized(3, 2).enterString("\033[0;38;2;255;255;255;48;2;0;0;0;1;2;3;4;5;7;8;9mabc").assertLinesAre("abc", "   ");
 	}
 
+    /** CSI Ps b  Repeat the preceding graphic character Ps times (REP). */
+    public void testRepeat() {
+        withTerminalSized(3, 2).enterString("a\033[b").assertLinesAre("aa ", "   ");
+        withTerminalSized(3, 2).enterString("a\033[2b").assertLinesAre("aaa", "   ");
+        // When no char has been output we ignore REP:
+        withTerminalSized(3, 2).enterString("\033[b").assertLinesAre("   ", "   ");
+    }
+
 }

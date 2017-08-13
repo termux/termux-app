@@ -223,6 +223,7 @@ public final class TerminalEmulator {
 
     private byte mUtf8ToFollow, mUtf8Index;
     private final byte[] mUtf8InputBuffer = new byte[4];
+    private int mLastEmittedCodePoint = -1;
 
     public final TerminalColors mColors = new TerminalColors();
 
@@ -1509,6 +1510,11 @@ public final class TerminalEmulator {
             case '`': // Horizontal position absolute (HPA - http://www.vt100.net/docs/vt510-rm/HPA).
                 setCursorColRespectingOriginMode(getArg0(1) - 1);
                 break;
+            case 'b': // Repeat the preceding graphic character Ps times (REP).
+                if (mLastEmittedCodePoint == -1) break;
+                final int numRepeat = getArg0(1);
+                for (int i = 0; i < numRepeat; i++) emitCodePoint(mLastEmittedCodePoint);
+                break;
             case 'c': // Primary Device Attributes (http://www.vt100.net/docs/vt510-rm/DA1) if argument is missing or zero.
                 // The important part that may still be used by some (tmux stores this value but does not currently use it)
                 // is the first response parameter identifying the terminal service class, where we send 64 for "vt420".
@@ -1574,6 +1580,7 @@ public final class TerminalEmulator {
                 // Also require that top + 2 <= bottom.
                 mTopMargin = Math.max(0, Math.min(getArg0(1) - 1, mRows - 2));
                 mBottomMargin = Math.max(mTopMargin + 2, Math.min(getArg1(mRows), mRows));
+
                 // DECSTBM moves the cursor to column 1, line 1 of the page respecting origin mode.
                 setCursorPosition(0, 0);
             }
@@ -2091,6 +2098,7 @@ public final class TerminalEmulator {
      * @param codePoint The code point of the character to display
      */
     private void emitCodePoint(int codePoint) {
+        mLastEmittedCodePoint = codePoint;
         if (mUseLineDrawingUsesG0 ? mUseLineDrawingG0 : mUseLineDrawingG1) {
             // http://www.vt100.net/docs/vt102-ug/table5-15.html.
             switch (codePoint) {
