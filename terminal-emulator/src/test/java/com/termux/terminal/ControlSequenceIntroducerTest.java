@@ -41,6 +41,9 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
         withTerminalSized(3, 2).enterString("a\033[2b").assertLinesAre("aaa", "   ");
         // When no char has been output we ignore REP:
         withTerminalSized(3, 2).enterString("\033[b").assertLinesAre("   ", "   ");
+        // This shows that REP outputs the last emitted code point and not the one relative to the
+        // current cursor position:
+        withTerminalSized(5, 2).enterString("abcde\033[2G\033[2b\n").assertLinesAre("aeede", "     ");
     }
 
 }
