@@ -185,7 +185,17 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     void updateBackgroundColor() {
         TerminalSession session = getCurrentTermSession();
         if (session != null && session.getEmulator() != null) {
-            getWindow().getDecorView().setBackgroundColor(session.getEmulator().mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]);
+            View decorView = getWindow().getDecorView();
+            int systemUiVisibility = decorView.getSystemUiVisibility();
+            decorView.setBackgroundColor(session.getEmulator().mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (TerminalColors.COLOR_SCHEME.mLightTheme) {
+                    decorView.setSystemUiVisibility(systemUiVisibility | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                } else {
+                    decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                }
+            }
         }
     }
 

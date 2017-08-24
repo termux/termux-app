@@ -59,6 +59,10 @@ public final class TerminalColorScheme {
         // COLOR_INDEX_DEFAULT_FOREGROUND, COLOR_INDEX_DEFAULT_BACKGROUND and COLOR_INDEX_DEFAULT_CURSOR:
         0xffffffff, 0xff000000, 0xffA9AAA9};
 
+    private static final boolean DEFAULT_IS_LIGHT = false;
+
+    public boolean mLightTheme = false;
+
     public final int[] mDefaultColors = new int[TextStyle.NUM_INDEXED_COLORS];
 
     public TerminalColorScheme() {
@@ -67,6 +71,7 @@ public final class TerminalColorScheme {
 
     private void reset() {
         System.arraycopy(DEFAULT_COLORSCHEME, 0, mDefaultColors, 0, TextStyle.NUM_INDEXED_COLORS);
+        mLightTheme = DEFAULT_IS_LIGHT;
     }
 
     public void updateWith(Properties props) {
@@ -76,27 +81,37 @@ public final class TerminalColorScheme {
             String value = (String) entries.getValue();
             int colorIndex;
 
-            if (key.equals("foreground")) {
-                colorIndex = TextStyle.COLOR_INDEX_FOREGROUND;
-            } else if (key.equals("background")) {
-                colorIndex = TextStyle.COLOR_INDEX_BACKGROUND;
-            } else if (key.equals("cursor")) {
-                colorIndex = TextStyle.COLOR_INDEX_CURSOR;
-            } else if (key.startsWith("color")) {
-                try {
-                    colorIndex = Integer.parseInt(key.substring(5));
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Invalid property: '" + key + "'");
+            if (key.equals("variant")) {
+                if (value.equals("dark")) {
+                    mLightTheme = false;
+                } else if (value.equals("light")) {
+                    mLightTheme = true;
+                } else {
+                    throw new IllegalArgumentException("Property '" + key + "' has invalid variant: '" + value + "'");
                 }
             } else {
-                throw new IllegalArgumentException("Invalid property: '" + key + "'");
+                if (key.equals("foreground")) {
+                    colorIndex = TextStyle.COLOR_INDEX_FOREGROUND;
+                } else if (key.equals("background")) {
+                    colorIndex = TextStyle.COLOR_INDEX_BACKGROUND;
+                } else if (key.equals("cursor")) {
+                    colorIndex = TextStyle.COLOR_INDEX_CURSOR;
+                } else if (key.startsWith("color")) {
+                    try {
+                        colorIndex = Integer.parseInt(key.substring(5));
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("Invalid property: '" + key + "'");
+                    }
+                } else {
+                    throw new IllegalArgumentException("Invalid property: '" + key + "'");
+                }
+
+                int colorValue = TerminalColors.parse(value);
+                if (colorValue == 0)
+                    throw new IllegalArgumentException("Property '" + key + "' has invalid color: '" + value + "'");
+
+                mDefaultColors[colorIndex] = colorValue;
             }
-
-            int colorValue = TerminalColors.parse(value);
-            if (colorValue == 0)
-                throw new IllegalArgumentException("Property '" + key + "' has invalid color: '" + value + "'");
-
-            mDefaultColors[colorIndex] = colorValue;
         }
     }
 
