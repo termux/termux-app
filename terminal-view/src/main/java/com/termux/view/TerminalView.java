@@ -182,8 +182,41 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                // Do not treat is as a single confirmed tap - it may be followed by zoom.
-                return false;
+                // Now double tap and drag has been treated as a MOUSE_LEFT_BUTTON_MOVED event.
+                return true;
+            }
+
+            private float dragStartX, dragStartY;
+            private boolean dragged;
+
+            @Override
+            public boolean onDoubleTapEvent(MotionEvent e) {
+                if (mEmulator.isMouseTrackingActive() && !e.isFromSource(InputDevice.SOURCE_MOUSE)) {
+                    switch (e.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            dragStartX = e.getX();
+                            dragStartY = e.getY();
+                            dragged = false;
+                            sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, true);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            if (!dragged) {
+                                sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, false);
+                                sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, true);
+                            }
+                            sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, false);
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            if (Math.abs(e.getX() - dragStartX) >= mRenderer.mFontWidth || Math.abs(e.getY() - dragStartY) >= mRenderer.mFontLineSpacing) {
+                                dragStartX = e.getX();
+                                dragStartY = e.getY();
+                                dragged = true;
+                                sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, true);
+                            }
+                            break;
+                    }
+                }
+                return true;
             }
 
             @Override
