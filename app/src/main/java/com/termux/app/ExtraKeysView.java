@@ -68,6 +68,7 @@ public final class ExtraKeysView extends GridLayout {
     }
 
     private ToggleButton controlButton;
+    private ToggleButton shiftButton;
     private ToggleButton altButton;
     private ToggleButton fnButton;
 
@@ -77,6 +78,16 @@ public final class ExtraKeysView extends GridLayout {
         if (result) {
             controlButton.setChecked(false);
             controlButton.setTextColor(TEXT_COLOR);
+        }
+        return result;
+    }
+    
+    public boolean readShiftButton() {
+        if (shiftButton.isPressed()) return true;
+        boolean result = shiftButton.isChecked();
+        if (result) {
+            shiftButton.setChecked(false);
+            shiftButton.setTextColor(TEXT_COLOR);
         }
         return result;
     }
@@ -106,7 +117,7 @@ public final class ExtraKeysView extends GridLayout {
         removeAllViews();
 
         String[][] buttons = {
-            {"ESC", "CTRL", "ALT", "TAB", "―", "/", "|"}
+            {"ESC", "CTRL", "SHIFT", "ALT", "TAB", "―", "/", "|"}
         };
 
         final int rows = buttons.length;
@@ -123,6 +134,10 @@ public final class ExtraKeysView extends GridLayout {
                 switch (buttonText) {
                     case "CTRL":
                         button = controlButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
+                        button.setClickable(true);
+                        break;
+                    case "SHIFT":
+                        button = shiftButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
                         button.setClickable(true);
                         break;
                     case "ALT":
@@ -149,6 +164,7 @@ public final class ExtraKeysView extends GridLayout {
                         View root = getRootView();
                         switch (buttonText) {
                             case "CTRL":
+                            case "SHIFT";
                             case "ALT":
                             case "FN":
                                 ToggleButton self = (ToggleButton) finalButton;
