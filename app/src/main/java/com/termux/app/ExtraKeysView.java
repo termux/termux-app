@@ -164,7 +164,7 @@ public final class ExtraKeysView extends GridLayout {
                         View root = getRootView();
                         switch (buttonText) {
                             case "CTRL":
-                            case "SHIFT";
+                            case "SHIFT":
                             case "ALT":
                             case "FN":
                                 ToggleButton self = (ToggleButton) finalButton;
