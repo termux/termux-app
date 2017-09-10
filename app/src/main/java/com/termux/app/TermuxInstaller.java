@@ -5,6 +5,13 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Build;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface.OnDismissListener;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Environment;
 import android.system.Os;
 import android.util.Pair;
@@ -28,6 +35,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -379,6 +389,48 @@ public final class TermuxInstaller {
             }
         }.start();
     }
+
+    public static void setupAppListCache(final Context context) {
+        final String LOG_TAG = "termux-applist";
+        final String APPLIST_CACHE_FILE = ".apps";
+        new Thread() {
+            public void run() {
+                try {
+
+                    final File targetFile = new File(TermuxService.HOME_PATH, APPLIST_CACHE_FILE);
+                    final FileOutputStream outStream = new FileOutputStream(targetFile);
+                    final PrintStream printStream = new PrintStream(outStream);
+
+                    final PackageManager pm = context.getPackageManager();
+                    List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+                    for (ApplicationInfo packageInfo : packages) {
+                        final String  packageName     = packageInfo.packageName;
+                        final String  appName         = packageInfo.loadLabel(pm).toString();
+                        final String  sourceDir       = packageInfo.sourceDir;
+                        final Intent  LaunchActivity  = pm.getLaunchIntentForPackage(packageName);
+                        final Boolean isSystemApp     = ((packageInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 1) ? true : false;
+
+                        Log.d(LOG_TAG, "[" + LaunchActivity + "] : [" + packageName + "] : [" + isSystemApp + "] : [" + appName + "]");
+                        if (LaunchActivity == null) {
+                            continue;
+                        }
+
+                        final String  LaunchComponent = LaunchActivity.getComponent().flattenToShortString();
+                        printStream.print( appName + "|" + LaunchComponent + "|" + packageName + "|" + isSystemApp + "\n");
+                    } // for package in packages
+
+                    // close file
+                    printStream.flush();
+                    printStream.close();
+                    outStream.flush();
+                    outStream.close();
+
+                } catch (Exception e) {
+                    Log.e(LOG_TAG, "Error setting up applist-cache", e);
+                }
+            }
+        }.start();
+    };
 
     private static Error ensureDirectoryExists(File directory) {
         return FileUtils.createDirectoryFile(directory.getAbsolutePath());
