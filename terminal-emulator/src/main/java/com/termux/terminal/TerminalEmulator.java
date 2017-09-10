@@ -223,6 +223,7 @@ public final class TerminalEmulator {
 
     private byte mUtf8ToFollow, mUtf8Index;
     private final byte[] mUtf8InputBuffer = new byte[4];
+    private int mLastEmittedCodePoint = -1;
 
     public final TerminalColors mColors = new TerminalColors();
 
@@ -419,10 +420,11 @@ public final class TerminalEmulator {
                     mUtf8Index = mUtf8ToFollow = 0;
 
                     if (codePoint >= 0x80 && codePoint <= 0x9F) {
-                        // Sequence decoded to a C1 control character which is the same as escape followed by
-                        // ((code & 0x7F) + 0x40).
-                        processCodePoint(/* escape (hexadecimal=0x1B, octal=033): */27);
-                        processCodePoint((codePoint & 0x7F) + 0x40);
+                        // Sequence decoded to a C1 control character which we ignore. They are
+                        // not used nowadays and increases the risk of messing up the terminal state
+                        // on binary input. XTerm does not allow them in utf-8:
+                        // "It is not possible to use a C1 control obtained from decoding the
+                        // UTF-8 text" - http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
                     } else {
                         switch (Character.getType(codePoint)) {
                             case Character.UNASSIGNED:
@@ -632,6 +634,7 @@ public final class TerminalEmulator {
                                 int bottom = Math.min(getArg(2, mRows, true) + 1, effectiveBottomMargin - 1) + effectiveTopMargin;
                                 int right = Math.min(getArg(3, mColumns, true) + 1, effectiveRightMargin - 1) + effectiveLeftMargin;
                                 if (mArgIndex >= 4) {
+                                    if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
                                     for (int i = 4; i <= mArgIndex; i++) {
                                         int bits = 0;
                                         boolean setOrClear = true; // True if setting, false if clearing.
@@ -965,6 +968,7 @@ public final class TerminalEmulator {
                 break;
             case 'h':
             case 'l':
+                if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
                 for (int i = 0; i <= mArgIndex; i++)
                     doDecSetOrReset(b == 'h', mArgs[i]);
                 break;
@@ -981,6 +985,7 @@ public final class TerminalEmulator {
                 break;
             case 'r':
             case 's':
+                if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
                 for (int i = 0; i <= mArgIndex; i++) {
                     int externalBit = mArgs[i];
                     int internalBit = mapDecSetBitToInternalBit(externalBit);
@@ -1307,6 +1312,8 @@ public final class TerminalEmulator {
         state.mSavedCursorRow = mCursorRow;
         state.mSavedCursorCol = mCursorCol;
         state.mSavedEffect = mEffect;
+        state.mSavedForeColor = mForeColor;
+        state.mSavedBackColor = mBackColor;
         state.mSavedDecFlags = mCurrentDecSetFlags;
         state.mUseLineDrawingG0 = mUseLineDrawingG0;
         state.mUseLineDrawingG1 = mUseLineDrawingG1;
@@ -1318,6 +1325,8 @@ public final class TerminalEmulator {
         SavedScreenState state = (mScreen == mMainBuffer) ? mSavedStateMain : mSavedStateAlt;
         setCursorRowCol(state.mSavedCursorRow, state.mSavedCursorCol);
         mEffect = state.mSavedEffect;
+        mForeColor = state.mSavedForeColor;
+        mBackColor = state.mSavedBackColor;
         int mask = (DECSET_BIT_AUTOWRAP | DECSET_BIT_ORIGIN_MODE);
         mCurrentDecSetFlags = (mCurrentDecSetFlags & ~mask) | (state.mSavedDecFlags & mask);
         mUseLineDrawingG0 = state.mUseLineDrawingG0;
@@ -1501,6 +1510,11 @@ public final class TerminalEmulator {
             case '`': // Horizontal position absolute (HPA - http://www.vt100.net/docs/vt510-rm/HPA).
                 setCursorColRespectingOriginMode(getArg0(1) - 1);
                 break;
+            case 'b': // Repeat the preceding graphic character Ps times (REP).
+                if (mLastEmittedCodePoint == -1) break;
+                final int numRepeat = getArg0(1);
+                for (int i = 0; i < numRepeat; i++) emitCodePoint(mLastEmittedCodePoint);
+                break;
             case 'c': // Primary Device Attributes (http://www.vt100.net/docs/vt510-rm/DA1) if argument is missing or zero.
                 // The important part that may still be used by some (tmux stores this value but does not currently use it)
                 // is the first response parameter identifying the terminal service class, where we send 64 for "vt420".
@@ -1566,6 +1580,7 @@ public final class TerminalEmulator {
                 // Also require that top + 2 <= bottom.
                 mTopMargin = Math.max(0, Math.min(getArg0(1) - 1, mRows - 2));
                 mBottomMargin = Math.max(mTopMargin + 2, Math.min(getArg1(mRows), mRows));
+
                 // DECSTBM moves the cursor to column 1, line 1 of the page respecting origin mode.
                 setCursorPosition(0, 0);
             }
@@ -1639,6 +1654,7 @@ public final class TerminalEmulator {
 
     /** Select Graphic Rendition (SGR) - see http://en.wikipedia.org/wiki/ANSI_escape_code#graphics. */
     private void selectGraphicRendition() {
+        if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
         for (int i = 0; i <= mArgIndex; i++) {
             int code = mArgs[i];
             if (code < 0) {
@@ -2049,6 +2065,7 @@ public final class TerminalEmulator {
             buf.append(", escapeState=");
             buf.append(mEscapeState);
             boolean firstArg = true;
+            if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
             for (int i = 0; i <= mArgIndex; i++) {
                 int value = mArgs[i];
                 if (value >= 0) {
@@ -2081,6 +2098,7 @@ public final class TerminalEmulator {
      * @param codePoint The code point of the character to display
      */
     private void emitCodePoint(int codePoint) {
+        mLastEmittedCodePoint = codePoint;
         if (mUseLineDrawingUsesG0 ? mUseLineDrawingG0 : mUseLineDrawingG1) {
             // http://www.vt100.net/docs/vt102-ug/table5-15.html.
             switch (codePoint) {
@@ -2263,8 +2281,8 @@ public final class TerminalEmulator {
         mBottomMargin = mRows;
         mRightMargin = mColumns;
         mAboutToAutoWrap = false;
-        mForeColor = TextStyle.COLOR_INDEX_FOREGROUND;
-        mBackColor = TextStyle.COLOR_INDEX_BACKGROUND;
+        mForeColor = mSavedStateMain.mSavedForeColor = mSavedStateAlt.mSavedForeColor = TextStyle.COLOR_INDEX_FOREGROUND;
+        mBackColor = mSavedStateMain.mSavedBackColor = mSavedStateAlt.mSavedBackColor = TextStyle.COLOR_INDEX_BACKGROUND;
         setDefaultTabStops();
 
         mUseLineDrawingG0 = mUseLineDrawingG1 = false;
@@ -2318,7 +2336,7 @@ public final class TerminalEmulator {
     static final class SavedScreenState {
         /** Saved state of the cursor position, Used to implement the save/restore cursor position escape sequences. */
         int mSavedCursorRow, mSavedCursorCol;
-        int mSavedEffect;
+        int mSavedEffect, mSavedForeColor, mSavedBackColor;
         int mSavedDecFlags;
         boolean mUseLineDrawingG0, mUseLineDrawingG1, mUseLineDrawingUsesG0 = true;
     }
