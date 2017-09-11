@@ -7,9 +7,11 @@ Termux app
 
 * [Termux on Google Play Store](https://play.google.com/store/apps/details?id=com.termux)
 * [Termux on F-Droid](https://f-droid.org/repository/browse/?fdid=com.termux)
-* [Termux Wiki](https://wiki.termux.com/wiki/)  
-* [Termux Help](http://termux.com/help/)
+* [Termux Facebook](https://facebook.com/termux/)
 * [Termux Google+ community](http://termux.com/community/)
+* [Termux Help](http://termux.com/help/)
+* [Termux Twitter](http://twitter.com/termux/)
+* [Termux Wiki](https://wiki.termux.com/wiki/)  
 
 Note that this repository is for the app itself (the user interface and the terminal emulation). For the packages installable inside the app, see [termux/termux-packages](https://github.com/termux/termux-packages)
 
