@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <string name="application_name">Termux</string>
+   <string name="shared_user_label">Termux kullanıcısı</string>
+   <string name="new_session">Yeni oturum</string>
+   <string name="new_session_failsafe">Güvenli mod</string>
+   <string name="toggle_soft_keyboard">Klavye</string>
+   <string name="reset_terminal">Sıfırla</string>
+   <string name="style_terminal">Stil</string>
+   <string name="toggle_fullscreen">Tam ekran</string>
+   <string name="share_transcript_title">Terminal içeriği</string>
+   <string name="help">Yardım</string>
+
+   <string name="bootstrap_installer_body">Yükleniyor...</string>
+   <string name="bootstrap_error_title">Yüklenemedi</string>
+   <string name="bootstrap_error_body">Termux başlangıç paketlerini yükleyemedi.\n
+ \n
+ İnternet bağlantınızı kontrol edip yeniden deneyin.</string>
+   <string name="bootstrap_error_abort">İptal</string>
+   <string name="bootstrap_error_try_again">Tekrar dene</string>
+   <string name="bootstrap_error_not_primary_user_message">Termux sadece ana hesaba yüklenebilir.</string>
+
+   <string name="max_terminals_reached_title">Maksimum terminal sayısına ulaşıldı</string>
+   <string name="max_terminals_reached_message">Var olanları kapatıp yenisini açabilirsiniz.</string>
+
+   <string name="reset_toast_notification">Terminal sıfırlandı.</string>
+
+  <string name="select_url">URL seç</string>
+  <string name="select_url_dialog_title">URL\'ye tıklayarak kopyala veya basılı tutarak aç</string>
+  <string name="select_all_and_share">İçeriği paylaş</string>
+  <string name="select_url_no_found">Terminalde URL bulunamadı.</string>
+  <string name="select_url_copied_to_clipboard">URL panoya kopyalandı</string>
+  <string name="share_transcript_chooser_title">Yazıyı gönder:</string>
+
+  <string name="kill_process">İşlemi sonlandır (%d)</string>
+  <string name="confirm_kill_process">Gerçekten sonlandırılsın mı?</string>
+
+  <string name="session_rename_title">Oturum ismini ayarla</string>
+  <string name="session_rename_positive_button">Ayarla</string>
+  <string name="session_new_named_title">Yeni isimli oturum</string>
+  <string name="session_new_named_positive_button">Oluştur</string>
+
+  <string name="styling_not_installed">Termux:Style eklentisi yüklü değil.</string>
+  <string name="styling_install">Yükle</string>
+
+  <string name="notification_action_exit">Çıkış</string>
+  <string name="notification_action_wake_lock">Uyandırıcı kilidini aktifleştir</string>
+  <string name="notification_action_wake_unlock">Uyandırıcı kilidini bırak</string>
+
+  <string name="file_received_title">Dosyayı ~/downloads/\'a kaydet</string>
+  <string name="file_received_edit_button">Düzenle</string>
+  <string name="file_received_open_folder_button">Klasör aç</string>
+
+</resources>
