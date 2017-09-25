@@ -125,7 +125,7 @@ public final class TerminalSession extends TerminalOutput {
                     if (exists) { 
                         int exitCode = (Integer) msg.obj;
                         if (exitCode == 0) {
-                            exitDescription = "session ended with exit code 0";
+                            String exitDescription = "session ended with exit code 0";
                             byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
                             mEmulator.append(bytesToWrite, bytesToWrite.length);
                             notifyScreenUpdate();
