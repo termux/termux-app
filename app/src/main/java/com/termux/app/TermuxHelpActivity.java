@@ -39,7 +39,7 @@ public final class TermuxHelpActivity extends Activity {
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (url.startsWith("https://termux.com")) {
+                if (url.startsWith("https://wiki.termux.com")) {
                     // Inline help.
                     setContentView(progressLayout);
                     return false;
@@ -60,7 +60,7 @@ public final class TermuxHelpActivity extends Activity {
                 setContentView(mWebView);
             }
         });
-        mWebView.loadUrl("https://termux.com/help.html");
+        mWebView.loadUrl("https://wiki.termux.com/wiki/Main_Page");
     }
 
     @Override
