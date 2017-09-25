@@ -151,7 +151,7 @@ public final class TerminalSession extends TerminalOutput {
                         mEmulator.append(bytesToWrite, bytesToWrite.length);
                         notifyScreenUpdate();
                     }
- 
+                } 
             }
         }
     };
