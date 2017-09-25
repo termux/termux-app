@@ -120,12 +120,13 @@ public final class TerminalSession extends TerminalOutput {
             File tmpDir = new File("/data/data/com.termux/files/home/.hushlogout");
             boolean exists = tmpDir.exists();
             if (exists) { 
-                
-                mShellExitStatus = exitStatus;
+                int exitCode = (Integer) msg.obj;
+                mShellExitStatus = exitCode;
                 mShellPid = -1;
                 mTerminalToProcessIOQueue.close();
                 mProcessToTerminalIOQueue.close();
                 JNI.close(mTerminalFileDescriptor);
+                mChangeCallback.onSessionFinished(TerminalSession.this);
             }    
             else {
                 if (msg.what == MSG_PROCESS_EXITED) {
