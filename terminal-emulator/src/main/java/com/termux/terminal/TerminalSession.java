@@ -120,15 +120,11 @@ public final class TerminalSession extends TerminalOutput {
             
             else {
                 if (msg.what == MSG_PROCESS_EXITED) {
-                    File tmpDir = new File("/data/data/com.termux/files/home/.hushlogout");
+                    File tmpDir = new File("/sdcard/.hushlogout");
                     boolean exists = tmpDir.exists();
                     if (exists) { 
                         int exitCode = (Integer) msg.obj;
-                        mShellExitStatus = exitCode;
-                        mShellPid = -1;
-                        mTerminalToProcessIOQueue.close();                         mProcessToTerminalIOQueue.close();
-                        JNI.close(mTerminalFileDescriptor);
-                        mChangeCallback.onSessionFinished(TerminalSession.this);
+                        cleanupResources(exitCode);
                     }
                     
                 
