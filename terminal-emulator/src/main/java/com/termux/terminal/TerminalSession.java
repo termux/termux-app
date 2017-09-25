@@ -117,37 +117,40 @@ public final class TerminalSession extends TerminalOutput {
                     notifyScreenUpdate();
                 }
             }
-            File tmpDir = new File("/data/data/com.termux/files/home/.hushlogout");
-            boolean exists = tmpDir.exists();
-            if (exists) { 
-                int exitCode = (Integer) msg.obj;
-                mShellExitStatus = exitCode;
-                mShellPid = -1;
-                mTerminalToProcessIOQueue.close();
-                mProcessToTerminalIOQueue.close();
-                JNI.close(mTerminalFileDescriptor);
-                mChangeCallback.onSessionFinished(TerminalSession.this);
-            }    
+            
             else {
                 if (msg.what == MSG_PROCESS_EXITED) {
-                    int exitCode = (Integer) msg.obj;
-                    cleanupResources(exitCode);
-                    mChangeCallback.onSessionFinished(TerminalSession.this);
-
-                    String exitDescription = "\r\n[Process completed";
-                    if (exitCode > 0) {
-                        // Non-zero process exit.
-                        exitDescription += " (code " + exitCode + ")";
-                    } else if (exitCode < 0) {
-                        // Negated signal.
-                        exitDescription += " (signal " + (-exitCode) + ")";
+                    File tmpDir = new File("/data/data/com.termux/files/home/.hushlogout");
+                    boolean exists = tmpDir.exists();
+                    if (exists) { 
+                        int exitCode = (Integer) msg.obj;
+                        mShellExitStatus = exitCode;
+                        mShellPid = -1;
+                        mTerminalToProcessIOQueue.close();                         mProcessToTerminalIOQueue.close();
+                        JNI.close(mTerminalFileDescriptor);
+                        mChangeCallback.onSessionFinished(TerminalSession.this);
                     }
-                    exitDescription += " - press Enter]";
+                    
                 
-                    byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
-                    mEmulator.append(bytesToWrite, bytesToWrite.length);
-                    notifyScreenUpdate();
-                }
+                    else {
+                        int exitCode = (Integer) msg.obj;
+                        cleanupResources(exitCode);
+                        mChangeCallback.onSessionFinished(TerminalSession.this);
+   
+                        String exitDescription = "\r\n[Process completed";
+                        if (exitCode > 0) {
+                            // Non-zero process exit.
+                            exitDescription += " (code " + exitCode + ")";
+                        } else if (exitCode < 0) {
+                            // Negated signal.
+                            exitDescription += " (signal " + (-exitCode) + ")";
+                        }
+                        exitDescription += " - press Enter]";
+                    
+                        byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
+                        mEmulator.append(bytesToWrite, bytesToWrite.length);
+                        notifyScreenUpdate();
+                    }
  
             }
         }
