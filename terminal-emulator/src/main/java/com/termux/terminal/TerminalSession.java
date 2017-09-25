@@ -124,7 +124,15 @@ public final class TerminalSession extends TerminalOutput {
                     boolean exists = tmpDir.exists();
                     if (exists) { 
                         int exitCode = (Integer) msg.obj;
+                        if (exitCode == 0) {
+                            exitDescription = "session ended with exit code 0";
+                            byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
+                            mEmulator.append(bytesToWrite, bytesToWrite.length);
+                            notifyScreenUpdate();
+                        } 
+                        else {
                         cleanupResources(exitCode);
+                        } 
                     }
                     
                 
