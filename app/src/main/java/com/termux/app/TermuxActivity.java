@@ -39,11 +39,14 @@ import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -138,6 +141,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
     int mBellSoundId;
+
+    /** Swipe gesture detection.
+     */
+    GestureDetector mGestureDetector;
+    View.OnTouchListener mGestureListener;
 
     private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
         @Override
@@ -337,6 +345,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         checkForFontAndColors();
 
         mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
+
+        mGestureDetector = new GestureDetector(this, new SwipeGestureListener());
+        mGestureListener = new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent ev) {
+                return mGestureDetector.onTouchEvent(ev);
+            }
+        };
+        mTerminalView.setOnTouchListener(mGestureListener);
     }
 
     void toggleShowExtraKeys() {
@@ -867,4 +883,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
+    class SwipeGestureListener extends SimpleOnGestureListener {
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            Toast.makeText(TermuxActivity.this, "onFling", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+    }
 }
