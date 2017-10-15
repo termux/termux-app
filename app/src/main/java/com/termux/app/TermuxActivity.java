@@ -909,9 +909,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
 
         public boolean onHorizontalSwipe(boolean isRight) {
-            Toast.makeText(TermuxActivity.this,
-                           "horizontal swipe ".concat(isRight ? "right " : "left "),
-                           Toast.LENGTH_SHORT).show();
+            switchToSession(isRight);
             return true;
         }
     }
