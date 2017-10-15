@@ -886,7 +886,32 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     class SwipeGestureListener extends SimpleOnGestureListener {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            Toast.makeText(TermuxActivity.this, "onFling", Toast.LENGTH_SHORT).show();
+            double dx = e2.getX() - e1.getX();
+            double dy = e2.getY() - e1.getY();
+
+            double distance = Math.hypot(dx, dy);
+            double angle = Math.atan(dy / dx);
+
+            boolean isRight = dx > 0;
+
+            double maxAngleForHorizontal = Math.PI / 8;
+            boolean isHorizontal = Math.abs(angle) < maxAngleForHorizontal;
+
+            double minInchesForSwipe = 1.2;
+            int dpi = getResources().getDisplayMetrics().densityDpi;
+            boolean isSwipe = (distance / dpi) > minInchesForSwipe;
+
+            if (isSwipe && isHorizontal) {
+                return onHorizontalSwipe(isRight);
+            }
+
+            return false;
+        }
+
+        public boolean onHorizontalSwipe(boolean isRight) {
+            Toast.makeText(TermuxActivity.this,
+                           "horizontal swipe ".concat(isRight ? "right " : "left "),
+                           Toast.LENGTH_SHORT).show();
             return true;
         }
     }
