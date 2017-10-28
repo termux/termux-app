@@ -103,6 +103,7 @@ public abstract class TerminalTestCase extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
+		super.setUp();
 		mOutput = new MockTerminalOutput();
 	}
 

@@ -27,6 +27,7 @@ public class TerminalRowTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
+		super.setUp();
 		row = new TerminalRow(COLUMNS, TextStyle.NORMAL);
 	}
 
