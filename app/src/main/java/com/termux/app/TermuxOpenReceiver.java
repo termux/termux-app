@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -18,6 +19,7 @@ import com.termux.terminal.EmulatorDebug;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class TermuxOpenReceiver extends BroadcastReceiver {
 
@@ -171,6 +173,16 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         @Override
         public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
             File file = new File(uri.getPath());
+            try {
+                String path = file.getCanonicalPath();
+                String storagePath = Environment.getExternalStorageDirectory().getCanonicalPath();
+                // See https://support.google.com/faqs/answer/7496913:
+                if (!(path.startsWith(TermuxService.FILES_PATH) || path.startsWith(storagePath))) {
+                    throw new IllegalArgumentException("Invalid path: " + path);
+                }
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
             return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
         }
     }
