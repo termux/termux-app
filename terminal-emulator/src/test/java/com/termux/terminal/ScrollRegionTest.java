@@ -98,4 +98,13 @@ public class ScrollRegionTest extends TerminalTestCase {
 		withTerminalSized(2, 5).enterString("1\r\n2\r\n3\r\n4\r\n5").assertLinesAre("1 ", "2 ", "3 ", "4 ", "5 ");
 		enterString("\033[3r").enterString("\033[2T").assertLinesAre("1 ", "2 ", "  ", "  ", "3 ");
 	}
+
+	public void testScrollDownBelowScrollRegion() {
+		withTerminalSized(2, 5).enterString("1\r\n2\r\n3\r\n4\r\n5").assertLinesAre("1 ", "2 ", "3 ", "4 ", "5 ");
+		enterString("\033[1;3r"); // DECSTBM margins.
+		enterString("\033[4;1H"); // Place cursor just below bottom margin.
+		enterString("QQ\r\nRR\r\n\r\n\r\nYY");
+		assertLinesAre("1 ", "2 ", "3 ", "QQ", "YY");
+	}
+
 }

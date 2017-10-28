@@ -1192,12 +1192,20 @@ public final class TerminalEmulator {
     }
 
     private void doLinefeed() {
+        boolean belowScrollingRegion = mCursorRow >= mBottomMargin;
         int newCursorRow = mCursorRow + 1;
-        if (newCursorRow >= mBottomMargin) {
-            scrollDownOneLine();
-            newCursorRow = mBottomMargin - 1;
+        if (belowScrollingRegion) {
+            // Move down (but not scroll) as long as we are above the last row.
+            if (mCursorRow != mRows - 1) {
+                setCursorRow(newCursorRow);
+            }
+        } else {
+            if (newCursorRow == mBottomMargin) {
+                scrollDownOneLine();
+                newCursorRow = mBottomMargin - 1;
+            }
+            setCursorRow(newCursorRow);
         }
-        setCursorRow(newCursorRow);
     }
 
     private void continueSequence(int state) {
@@ -1571,7 +1579,7 @@ public final class TerminalEmulator {
                 break;
             case 'r': // "CSI${top};${bottom}r" - set top and bottom Margins (DECSTBM).
             {
-                // http://www.vt100.net/docs/vt510-rm/DECSTBM
+                // https://vt100.net/docs/vt510-rm/DECSTBM.html
                 // The top margin defaults to 1, the bottom margin defaults to mRows.
                 // The escape sequence numbers top 1..23, but we number top 0..22.
                 // The escape sequence numbers bottom 2..24, and so do we (because we use a zero based numbering
