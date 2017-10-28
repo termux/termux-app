@@ -1,6 +1,6 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7"
-    id "com.github.dcendents.android-maven" version "1.5"
+    id "com.jfrog.bintray" version "1.7.3"
+    id "com.github.dcendents.android-maven" version "2.0"
 }
 
 apply plugin: 'com.android.library'
@@ -13,12 +13,12 @@ ext {
     libraryDescription = 'The terminal emulator used in Termux'
     siteUrl = 'https://github.com/termux/termux'
     gitUrl = 'https://github.com/termux/termux.git'
-    libraryVersion = '0.50'
+    libraryVersion = '0.51'
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "27.0.0"
 
     defaultConfig {
         minSdkVersion 21

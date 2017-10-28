@@ -12,7 +12,7 @@ android:
   components:
     - platform-tools
     - tools
-    - build-tools-26.0.2
+    - build-tools-27.0.0
     - android-26
     - extra-android-m2repository
 
