@@ -2,6 +2,7 @@ package com.termux.app;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -11,6 +12,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -40,6 +42,8 @@ import java.util.List;
  * {@link #buildNotification()}.
  */
 public final class TermuxService extends Service implements SessionChangedCallback {
+
+    private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
 
     /** Note that this is a symlink on the Android M preview. */
     @SuppressLint("SdCardPath")
@@ -170,6 +174,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onCreate() {
+        setupNotificationChannel();
         startForeground(NOTIFICATION_ID, buildNotification());
     }
 
@@ -216,6 +221,10 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
         // Background color for small notification icon:
         builder.setColor(0xFF000000);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder.setChannelId(NOTIFICATION_CHANNEL_ID);
+        }
 
         Resources res = getResources();
         Intent exitIntent = new Intent(this, TermuxService.class).setAction(ACTION_STOP_SERVICE);
@@ -340,5 +349,18 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 updateNotification();
             }
         });
+    }
+
+    private void setupNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+
+        String channelName = "Termux";
+        String channelDescription = "Notifications from Termux";
+        int importance = NotificationManager.IMPORTANCE_LOW;
+
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName,importance);
+        channel.setDescription(channelDescription);
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.createNotificationChannel(channel);
     }
 }
