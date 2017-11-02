@@ -6,8 +6,8 @@ android {
 
     dependencies {
         compile 'com.android.support:support-annotations:27.0.0'
-        compile "com.android.support:support-core-utils:26.1.0"
-        compile "com.android.support:support-core-ui:26.1.0"
+        compile "com.android.support:support-core-utils:27.0.0"
+        compile "com.android.support:support-core-ui:27.0.0"
         compile project(":terminal-view")
     }
 
