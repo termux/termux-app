@@ -1,12 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     buildToolsVersion "27.0.0"
 
     dependencies {
         compile 'com.android.support:support-annotations:27.0.0'
-        compile "com.android.support:support-core-utils:27.0.0"
         compile "com.android.support:support-core-ui:27.0.0"
         compile project(":terminal-view")
     }
@@ -14,7 +13,7 @@ android {
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 54
         versionName "0.54"
     }
