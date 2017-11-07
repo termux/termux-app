@@ -260,7 +260,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         boolean isLoginShell = false;
 
         if (executablePath == null) {
-            for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
+            for (String shellBinary : new String[]{"login", "bash", "zsh", "fish", "tcsh"}) {
                 File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
                 if (shellFile.canExecute()) {
                     executablePath = shellFile.getAbsolutePath();
