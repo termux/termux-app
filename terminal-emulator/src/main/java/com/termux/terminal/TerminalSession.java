@@ -73,7 +73,14 @@ public final class TerminalSession extends TerminalOutput {
     public final String mHandle = UUID.randomUUID().toString();
 
     TerminalEmulator mEmulator;
-
+    
+    void showToast(String text, boolean longDuration) {
+        if (mLastToast != null) mLastToast.cancel();
+        mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
+        mLastToast.setGravity(Gravity.TOP, 0, 0);
+        mLastToast.show();
+    }
+    
     /**
      * A queue written to from a separate thread when the process outputs, and read by main thread to process by
      * terminal emulator.
@@ -134,7 +141,7 @@ public final class TerminalSession extends TerminalOutput {
                         else {
                             printString = "Session exited with exit code";
                             printString += exitCode;
-                            showToast(toToastTitle(printString) , false);
+                            showToast(printString , false);
                             cleanupResources(exitCode);
                         } 
                     }
