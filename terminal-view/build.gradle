@@ -1,6 +1,6 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7"
-    id "com.github.dcendents.android-maven" version "1.5"
+    id "com.jfrog.bintray" version "1.7.3"
+    id "com.github.dcendents.android-maven" version "2.0"
 }
 
 apply plugin: 'com.android.library'
@@ -13,21 +13,21 @@ ext {
     libraryDescription = 'The terminal view used in Termux'
     siteUrl = 'https://github.com/termux/termux'
     gitUrl = 'https://github.com/termux/termux.git'
-    libraryVersion = '0.49'
+    libraryVersion = '0.50'
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     buildToolsVersion "27.0.1"
 
     dependencies {
-        compile 'com.android.support:support-annotations:25.3.1'
+        compile 'com.android.support:support-annotations:27.0.0'
         compile project(":terminal-emulator")
     }
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 27
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
