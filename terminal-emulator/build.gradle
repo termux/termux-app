@@ -13,12 +13,12 @@ ext {
     libraryDescription = 'The terminal emulator used in Termux'
     siteUrl = 'https://github.com/termux/termux'
     gitUrl = 'https://github.com/termux/termux.git'
-    libraryVersion = '0.51'
+    libraryVersion = '0.52'
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "27.0.0"
+    buildToolsVersion "27.0.1"
 
     defaultConfig {
         minSdkVersion 21
