@@ -7,6 +7,7 @@ import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
 import android.util.Log;
+import android.widget.toast
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -131,7 +132,10 @@ public final class TerminalSession extends TerminalOutput {
                             notifyScreenUpdate();
                         } 
                         else {
-                        cleanupResources(exitCode);
+                            printString = "Session exited with exit code";
+                            printString += exitCode;
+                            showToast(toToastTitle(printString) , false);
+                            cleanupResources(exitCode);
                         } 
                     }
                     
