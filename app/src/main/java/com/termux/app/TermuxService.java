@@ -207,8 +207,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
         builder.setOngoing(true);
 
         // If holding a wake or wifi lock consider the notification of high priority since it's using power,
-        // otherwise use a minimal priority since this is just a background service notification:
-        builder.setPriority((wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_MIN);
+        // otherwise use a low priority
+        builder.setPriority((wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_LOW);
 
         // No need to show a timestamp:
         builder.setShowWhen(false);
