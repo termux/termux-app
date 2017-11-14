@@ -909,6 +909,8 @@ public final class TerminalView extends View {
         }
     }
 
+    public String getText() { return mTermSession.getEmulator().getScreen().getTranscriptText(); }
+
     public TerminalSession getCurrentSession() {
         return mTermSession;
     }

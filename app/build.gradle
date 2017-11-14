@@ -5,8 +5,8 @@ android {
     buildToolsVersion "27.0.1"
 
     dependencies {
-        compile 'com.android.support:support-annotations:27.0.0'
-        compile "com.android.support:support-core-ui:27.0.0"
+        compile 'com.android.support:support-annotations:27.0.1'
+        compile 'com.android.support:support-core-ui:27.0.1'
         compile project(":terminal-view")
     }
 
@@ -16,6 +16,7 @@ android {
         targetSdkVersion 27
         versionCode 54
         versionName "0.54"
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 
     buildTypes {
@@ -29,4 +30,10 @@ android {
 
 dependencies {
     testCompile 'junit:junit:4.12'
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test:rules:1.0.1'
+    androidTestCompile 'org.hamcrest:hamcrest-library:1.3'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-intents:3.0.1'
+    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.3'
 }
