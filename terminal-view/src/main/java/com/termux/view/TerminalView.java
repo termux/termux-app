@@ -7,6 +7,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
 import android.os.Build;
 import android.text.Editable;
 import android.text.InputType;
@@ -27,6 +29,8 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
+
+import androidx.annotation.VisibleForTesting;
 
 import androidx.annotation.RequiresApi;
 
@@ -794,7 +798,7 @@ public final class TerminalView extends View {
         return mTermSession;
     }
 
-    private CharSequence getText() {
+    public CharSequence getText() {
         return mEmulator.getScreen().getSelectedText(0, mTopRow, mEmulator.mColumns, mTopRow + mEmulator.mRows);
     }
 

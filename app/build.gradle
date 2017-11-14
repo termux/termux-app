@@ -1,3 +1,6 @@
+import java.security.DigestInputStream
+import java.security.MessageDigest
+
 plugins {
   id "com.android.application"
 }
@@ -37,6 +40,7 @@ android {
         manifestPlaceholders.TERMUX_STYLING_APP_NAME = "Termux:Styling"
         manifestPlaceholders.TERMUX_TASKER_APP_NAME = "Termux:Tasker"
         manifestPlaceholders.TERMUX_WIDGET_APP_NAME = "Termux:Widget"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         externalNativeBuild {
             ndkBuild {
@@ -94,8 +98,15 @@ android {
 }
 
 dependencies {
-    testImplementation "junit:junit:4.13.2"
-    testImplementation "org.robolectric:robolectric:4.4"
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.4'
+
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test:rules:1.2.0'
+    androidTestImplementation 'org.hamcrest:hamcrest-library:1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.2.0'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
 }
 
 task versionName {
@@ -105,7 +116,7 @@ task versionName {
 }
 
 def downloadBootstrap(String arch, String expectedChecksum, String version) {
-    def digest = java.security.MessageDigest.getInstance("SHA-256")
+    def digest = MessageDigest.getInstance("SHA-256")
 
     def localUrl = "src/main/cpp/bootstrap-" + arch + ".zip"
     def file = new File(projectDir, localUrl)
@@ -134,7 +145,7 @@ def downloadBootstrap(String arch, String expectedChecksum, String version) {
 
     def connection = new URL(remoteUrl).openConnection()
     connection.setInstanceFollowRedirects(true)
-    def digestStream = new java.security.DigestInputStream(connection.inputStream, digest)
+    def digestStream = new DigestInputStream(connection.inputStream, digest)
     out << digestStream
     out.close()
 
@@ -164,7 +175,7 @@ task downloadBootstraps() {
 }
 
 afterEvaluate {
-  android.applicationVariants.all { variant ->
-    variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
-  }
+    android.applicationVariants.all { variant ->
+        variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
+    }
 }
