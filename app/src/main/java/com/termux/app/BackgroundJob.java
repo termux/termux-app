@@ -1,5 +1,7 @@
 package com.termux.app;
 
+import android.content.Context;
+import android.system.Os;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -25,7 +27,7 @@ public final class BackgroundJob {
     final Process mProcess;
 
     public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service) {
-        String[] env = buildEnvironment(false, cwd);
+        String[] env = buildEnvironment(false, cwd, service.getApplicationContext());
         if (cwd == null) cwd = TermuxService.HOME_PATH;
 
         final String[] progArray = setupProcessArgs(fileToExecute, args);
@@ -93,7 +95,7 @@ public final class BackgroundJob {
         };
     }
 
-    public static String[] buildEnvironment(boolean failSafe, String cwd) {
+    public static String[] buildEnvironment(boolean failSafe, String cwd, Context context) {
         new File(TermuxService.HOME_PATH).mkdirs();
 
         if (cwd == null) cwd = TermuxService.HOME_PATH;
@@ -116,7 +118,7 @@ public final class BackgroundJob {
             final String langEnv = "LANG=en_US.UTF-8";
             final String pathEnv = "PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets";
             final String pwdEnv = "PWD=" + cwd;
-            final String tmpdirEnv = "TMPDIR=" + TermuxService.PREFIX_PATH + "/tmp";
+            final String tmpdirEnv = "TMPDIR=" + getTmpDir(context);
 
             return new String[]{termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv, tmpdirEnv};
         }
@@ -190,4 +192,64 @@ public final class BackgroundJob {
         return result.toArray(new String[result.size()]);
     }
 
+    private static String getTmpDir(Context context) {
+        File cacheDir = context.getApplicationContext().getCacheDir();
+        File tmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
+
+        if (!cacheDir.isDirectory()) {
+            try {
+                // if cacheDir exists but it is not a directory,
+                // then it should be removed to avoid error in
+                // further steps
+                if (cacheDir.exists()) {
+                    cacheDir.delete();
+                }
+
+                cacheDir.mkdirs();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return getFallbackTmpDir();
+            }
+        }
+
+        // try to make a symlink from cacheDir to tmpDir
+        if (cacheDir.isDirectory()) {
+            try {
+                if (tmpDir.exists()) {
+                    if (tmpDir.getCanonicalFile().equals(tmpDir.getAbsoluteFile())) {
+                        TermuxInstaller.deleteFolder(tmpDir);
+                    }
+                }
+
+                if (!tmpDir.exists()) {
+                    Os.symlink(cacheDir.getAbsolutePath(), tmpDir.getAbsolutePath());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return getFallbackTmpDir();
+            }
+        } else {
+            return getFallbackTmpDir();
+        }
+
+        return cacheDir.getAbsolutePath();
+    }
+
+    private static String getFallbackTmpDir() {
+        File tmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
+
+        try {
+            if (tmpDir.exists() && !tmpDir.isDirectory()) {
+                if (!tmpDir.getCanonicalFile().equals(tmpDir.getAbsoluteFile())) {
+                    tmpDir.delete();
+                }
+            } else {
+                tmpDir.mkdirs();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return tmpDir.getAbsolutePath();
+    }
 }
