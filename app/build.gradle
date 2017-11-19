@@ -5,9 +5,9 @@ android {
     buildToolsVersion "27.0.1"
 
     dependencies {
-        compile 'com.android.support:support-annotations:27.0.0'
-        compile "com.android.support:support-core-ui:27.0.0"
-        compile project(":terminal-view")
+        implementation 'com.android.support:support-annotations:27.0.0'
+        implementation "com.android.support:support-core-ui:27.0.0"
+        implementation project(":terminal-view")
     }
 
     defaultConfig {
@@ -28,5 +28,5 @@ android {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
