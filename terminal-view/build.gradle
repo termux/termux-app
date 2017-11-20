@@ -21,8 +21,8 @@ android {
     buildToolsVersion "27.0.1"
 
     dependencies {
-        compile 'com.android.support:support-annotations:27.0.0'
-        compile project(":terminal-emulator")
+        implementation 'com.android.support:support-annotations:27.0.0'
+        api project(":terminal-emulator")
     }
 
     defaultConfig {
@@ -40,7 +40,7 @@ android {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 apply from: '../scripts/bintray-publish.gradle'

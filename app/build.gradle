@@ -5,17 +5,17 @@ android {
     buildToolsVersion "27.0.1"
 
     dependencies {
-        compile 'com.android.support:support-annotations:27.0.1'
-        compile 'com.android.support:support-core-ui:27.0.1'
-        compile project(":terminal-view")
+        implementation 'com.android.support:support-annotations:27.0.1'
+        implementation 'com.android.support:support-core-ui:27.0.1'
+        implementation project(":terminal-view")
     }
 
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 54
-        versionName "0.54"
+        versionCode 56
+        versionName "0.56"
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 
@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
     androidTestCompile 'com.android.support.test:runner:1.0.1'
     androidTestCompile 'com.android.support.test:rules:1.0.1'
     androidTestCompile 'org.hamcrest:hamcrest-library:1.3'
