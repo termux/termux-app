@@ -211,14 +211,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mSettings = new TermuxPreferences(this);
 
         setContentView(R.layout.drawer_layout);
-        mTerminalView = (TerminalView) findViewById(R.id.terminal_view);
+        mTerminalView = findViewById(R.id.terminal_view);
         mTerminalView.setOnKeyListener(new TermuxViewClient(this));
 
         mTerminalView.setTextSize(mSettings.getFontSize());
         mFullScreenHelper.setImmersive(mSettings.isFullScreen());
         mTerminalView.requestFocus();
 
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        final ViewPager viewPager = findViewById(R.id.viewpager);
         if (mSettings.isShowExtraKeys()) viewPager.setVisibility(View.VISIBLE);
 
         viewPager.setAdapter(new PagerAdapter() {
@@ -228,19 +228,20 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
 
             @Override
-            public boolean isViewFromObject(View view, Object object) {
+            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
                 return view == object;
             }
 
+            @NonNull
             @Override
-            public Object instantiateItem(ViewGroup collection, int position) {
+            public Object instantiateItem(@NonNull ViewGroup collection, int position) {
                 LayoutInflater inflater = LayoutInflater.from(TermuxActivity.this);
                 View layout;
                 if (position == 0) {
                     layout = mExtraKeysView = (ExtraKeysView) inflater.inflate(R.layout.extra_keys_main, collection, false);
                 } else {
                     layout = inflater.inflate(R.layout.extra_keys_right, collection, false);
-                    final EditText editText = (EditText) layout.findViewById(R.id.text_input);
+                    final EditText editText = layout.findViewById(R.id.text_input);
                     editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                         @Override
                         public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -264,7 +265,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
 
             @Override
-            public void destroyItem(ViewGroup collection, int position, Object view) {
+            public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
                 collection.removeView((View) view);
             }
         });
@@ -275,7 +276,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 if (position == 0) {
                     mTerminalView.requestFocus();
                 } else {
-                    final EditText editText = (EditText) viewPager.findViewById(R.id.text_input);
+                    final EditText editText = viewPager.findViewById(R.id.text_input);
                     if (editText != null) editText.requestFocus();
                 }
             }
@@ -339,7 +340,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     void toggleShowExtraKeys() {
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        final ViewPager viewPager = findViewById(R.id.viewpager);
         final boolean showNow = mSettings.toggleShowExtraKeys(TermuxActivity.this);
         viewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
         if (showNow && viewPager.getCurrentItem() == 1) {
@@ -424,7 +425,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
         };
 
-        ListView listView = (ListView) findViewById(R.id.left_drawer_list);
+        ListView listView = findViewById(R.id.left_drawer_list);
         mListViewAdapter = new ArrayAdapter<TerminalSession>(getApplicationContext(), R.layout.line_in_drawer, mTermService.getSessions()) {
             final StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
             final StyleSpan italicSpan = new StyleSpan(Typeface.ITALIC);
@@ -441,7 +442,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 TerminalSession sessionAtRow = getItem(position);
                 boolean sessionRunning = sessionAtRow.isRunning();
 
-                TextView firstLineView = (TextView) row.findViewById(R.id.row_line);
+                TextView firstLineView = row.findViewById(R.id.row_line);
 
                 String name = sessionAtRow.mSessionName;
                 String sessionTitle = sessionAtRow.getTitle();
@@ -537,10 +538,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-        if (mTermService != null) {
-            // Respect being stopped from the TermuxService notification action.
-            finish();
-        }
+        // Respect being stopped from the TermuxService notification action.
+        finish();
     }
 
     @Nullable
@@ -643,8 +642,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         TerminalSession session = getCurrentTermSession();
         final int indexOfSession = mTermService.getSessions().indexOf(session);
         showToast(toToastTitle(session), false);
-        mListViewAdapter.notifyDataSetChanged();
-        final ListView lv = ((ListView) findViewById(R.id.left_drawer_list));
+            mListViewAdapter.notifyDataSetChanged();
+        final ListView lv = findViewById(R.id.left_drawer_list);
         lv.setItemChecked(indexOfSession, true);
         lv.smoothScrollToPosition(indexOfSession);
     }
