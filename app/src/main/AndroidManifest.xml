@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.termux"
     android:installLocation="internalOnly"
     android:sharedUserId="com.termux"
@@ -65,7 +66,7 @@
                 <data android:mimeType="video/*" />
             </intent-filter>
             <!-- Be more restrictive for viewing files, restricting ourselves to text files. -->
-            <intent-filter>
+            <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/*" />
