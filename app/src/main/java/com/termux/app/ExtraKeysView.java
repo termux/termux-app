@@ -61,7 +61,7 @@ public final class ExtraKeysView extends GridLayout {
             view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
             view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
         } else {
-            TerminalView terminalView = (TerminalView) view.findViewById(R.id.terminal_view);
+            TerminalView terminalView = view.findViewById(R.id.terminal_view);
             TerminalSession session = terminalView.getCurrentSession();
             if (session != null) session.write(chars);
         }
