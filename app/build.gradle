@@ -5,8 +5,8 @@ android {
     buildToolsVersion "27.0.1"
 
     dependencies {
-        implementation 'com.android.support:support-annotations:27.0.0'
-        implementation "com.android.support:support-core-ui:27.0.0"
+        implementation 'com.android.support:support-annotations:27.0.1'
+        implementation "com.android.support:support-core-ui:27.0.1"
         implementation project(":terminal-view")
     }
 
