@@ -127,9 +127,13 @@ public class TermuxFileReceiverActivity extends Activity {
 
                     final File editorProgramFile = new File(EDITOR_PROGRAM);
                     if (!editorProgramFile.isFile()) {
-                        showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
-                            + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
-                        return;
+                        //showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
+                        //    + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
+                        linesToWrite =  "#!/data/data/com.termux/files/usr/bin/bash\n" +
+                                        "\n" + 
+                                        "vi $1\n";
+                        printToFile(linesToWrite, new File("/data/data/com.termux/files/usr/home/bin/termux-file-editor"));
+                        Toast.makeText(context, "Default script will load,You can modify it at $HOME/bin/termux-file-editor", Toast.LENGTH_LONG).show();
                     }
 
                     // Do this for the user if necessary:
