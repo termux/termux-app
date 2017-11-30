@@ -23,7 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.io.BufferedWriter;                                               import java.io.FileWriter;                                                   import java.io.OutputStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class TermuxFileReceiverActivity extends Activity {
@@ -136,7 +138,7 @@ public class TermuxFileReceiverActivity extends Activity {
                         linesToWrite =  "#!/data/data/com.termux/files/usr/bin/bash\n" +
                                         "\n" + 
                                         "vi $1\n";
-                        printToFile(linesToWrite, new File("/data/data/com.termux/files/usr/home/bin/termux-file-editor"));
+                        printToFile(linesToWrite, new File(EDITOR_PROGRAM));
                         Toast.makeText(context, "Default script will load,You can modify it at $HOME/bin/termux-file-editor", Toast.LENGTH_LONG).show();
                     }
 
