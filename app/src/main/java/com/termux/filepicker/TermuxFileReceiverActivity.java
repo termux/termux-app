@@ -28,7 +28,8 @@ public class TermuxFileReceiverActivity extends Activity {
     static final String TERMUX_RECEIVEDIR = TermuxService.FILES_PATH + "/home/downloads";
     static final String EDITOR_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-file-editor";
     static final String URL_OPENER_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-url-opener";
-
+    public String linesToWrite;
+    
     /**
      * If the activity should be finished when the name input dialog is dismissed. This is disabled
      * before showing an error dialog, since the act of showing the error dialog will cause the
