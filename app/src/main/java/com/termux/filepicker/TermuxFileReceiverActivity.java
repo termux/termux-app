@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.util.Patterns;
+import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.DialogUtils;
@@ -22,6 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.io.BufferedWriter;                                               import java.io.FileWriter;                                                   import java.io.OutputStream;
+import java.io.PrintWriter;
 
 public class TermuxFileReceiverActivity extends Activity {
 
