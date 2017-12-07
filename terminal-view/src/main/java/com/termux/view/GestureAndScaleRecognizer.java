@@ -85,6 +85,7 @@ final class GestureAndScaleRecognizer {
                 return mListener.onScale(detector.getFocusX(), detector.getFocusY(), detector.getScaleFactor());
             }
         });
+        mScaleDetector.setQuickScaleEnabled(false);
     }
 
     public void onTouchEvent(MotionEvent event) {
