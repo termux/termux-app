@@ -24,6 +24,10 @@
         android:theme="@style/Theme.Termux"
         android:supportsRtl="false" >
 
+        <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8
+             mark the app with "This app is optimized to run in full screen." -->
+        <meta-data android:name="android.max_aspect" android:value="10.0" />
+
         <activity
             android:name="com.termux.app.TermuxActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
