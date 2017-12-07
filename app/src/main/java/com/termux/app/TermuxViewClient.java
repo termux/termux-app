@@ -73,8 +73,6 @@ public final class TermuxViewClient implements TerminalViewClient {
                 mActivity.getDrawer().openDrawer(Gravity.LEFT);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 mActivity.getDrawer().closeDrawers();
-            } else if (unicodeChar == 'f'/* full screen */) {
-                mActivity.toggleImmersive();
             } else if (unicodeChar == 'k'/* keyboard */) {
                 InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);

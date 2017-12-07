@@ -73,6 +73,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,7 +96,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private static final int CONTEXTMENU_KILL_PROCESS_ID = 4;
     private static final int CONTEXTMENU_RESET_TERMINAL_ID = 5;
     private static final int CONTEXTMENU_STYLING_ID = 6;
-    private static final int CONTEXTMENU_TOGGLE_FULLSCREEN_ID = 7;
     private static final int CONTEXTMENU_HELP_ID = 8;
 
     private static final int MAX_SESSIONS = 8;
@@ -110,8 +110,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     TerminalView mTerminalView;
 
     ExtraKeysView mExtraKeysView;
-
-    final FullScreenHelper mFullScreenHelper = new FullScreenHelper(this);
 
     TermuxPreferences mSettings;
 
@@ -215,7 +213,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mTerminalView.setOnKeyListener(new TermuxViewClient(this));
 
         mTerminalView.setTextSize(mSettings.getFontSize());
-        mFullScreenHelper.setImmersive(mSettings.isFullScreen());
         mTerminalView.requestFocus();
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
@@ -642,7 +639,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         TerminalSession session = getCurrentTermSession();
         final int indexOfSession = mTermService.getSessions().indexOf(session);
         showToast(toToastTitle(session), false);
-            mListViewAdapter.notifyDataSetChanged();
+        mListViewAdapter.notifyDataSetChanged();
         final ListView lv = findViewById(R.id.left_drawer_list);
         lv.setItemChecked(indexOfSession, true);
         lv.smoothScrollToPosition(indexOfSession);
@@ -657,7 +654,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXTMENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.select_all_and_share);
         menu.add(Menu.NONE, CONTEXTMENU_RESET_TERMINAL_ID, Menu.NONE, R.string.reset_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.kill_process, getCurrentTermSession().getPid())).setEnabled(currentSession.isRunning());
-        menu.add(Menu.NONE, CONTEXTMENU_TOGGLE_FULLSCREEN_ID, Menu.NONE, R.string.toggle_fullscreen).setCheckable(true).setChecked(mSettings.isFullScreen());
         menu.add(Menu.NONE, CONTEXTMENU_STYLING_ID, Menu.NONE, R.string.style_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_HELP_ID, Menu.NONE, R.string.help);
     }
@@ -791,11 +787,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                             }
                         }).setNegativeButton(android.R.string.cancel, null).show();
                 }
-            }
-            return true;
-            case CONTEXTMENU_TOGGLE_FULLSCREEN_ID:
-                toggleImmersive();
                 return true;
+            }
             case CONTEXTMENU_HELP_ID:
                 startActivity(new Intent(this, TermuxHelpActivity.class));
                 return true;
@@ -809,12 +802,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (requestCode == REQUESTCODE_PERMISSION_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             TermuxInstaller.setupStorageSymlinks(this);
         }
-    }
-
-    void toggleImmersive() {
-        boolean newValue = !mSettings.isFullScreen();
-        mSettings.setFullScreen(this, newValue);
-        mFullScreenHelper.setImmersive(newValue);
     }
 
     void changeFontSize(boolean increase) {
@@ -835,9 +822,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public TerminalSession getStoredCurrentSessionOrLast() {
         TerminalSession stored = TermuxPreferences.getCurrentSession(this);
         if (stored != null) return stored;
-        int numberOfSessions = mTermService.getSessions().size();
-        if (numberOfSessions == 0) return null;
-        return mTermService.getSessions().get(numberOfSessions - 1);
+        List<TerminalSession> sessions = mTermService.getSessions();
+        return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
     }
 
     /** Show a toast and dismiss the last one if still visible. */

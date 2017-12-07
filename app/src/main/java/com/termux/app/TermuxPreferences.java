@@ -32,12 +32,10 @@ final class TermuxPreferences {
     private final int MIN_FONTSIZE;
     private static final int MAX_FONTSIZE = 256;
 
-    private static final String FULLSCREEN_KEY = "fullscreen";
     private static final String SHOW_EXTRA_KEYS_KEY = "show_extra_keys";
     private static final String FONTSIZE_KEY = "fontsize";
     private static final String CURRENT_SESSION_KEY = "current_session";
 
-    private boolean mFullScreen;
     private int mFontSize;
 
     @AsciiBellBehaviour
@@ -56,7 +54,6 @@ final class TermuxPreferences {
         // to prevent invisible text due to zoom be mistake:
         MIN_FONTSIZE = (int) (4f * dipInPixels);
 
-        mFullScreen = prefs.getBoolean(FULLSCREEN_KEY, false);
         mShowExtraKeys = prefs.getBoolean(SHOW_EXTRA_KEYS_KEY, false);
 
         // http://www.google.com/design/spec/style/typography.html#typography-line-height
@@ -70,15 +67,6 @@ final class TermuxPreferences {
             mFontSize = defaultFontSize;
         }
         mFontSize = Math.max(MIN_FONTSIZE, Math.min(mFontSize, MAX_FONTSIZE));
-    }
-
-    boolean isFullScreen() {
-        return mFullScreen;
-    }
-
-    void setFullScreen(Context context, boolean newValue) {
-        mFullScreen = newValue;
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(FULLSCREEN_KEY, newValue).apply();
     }
 
     boolean isShowExtraKeys() {
