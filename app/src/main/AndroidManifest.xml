@@ -32,6 +32,7 @@
             android:name="com.termux.app.TermuxActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:launchMode="singleTask"
+            android:resizeableActivity="true"
             android:windowSoftInputMode="adjustResize|stateAlwaysVisible" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,6 +50,7 @@
             android:exported="false"
             android:theme="@android:style/Theme.Material.Light.DarkActionBar"
             android:parentActivityName=".app.TermuxActivity"
+            android:resizeableActivity="true"
             android:label="@string/application_name" />
 
         <activity
@@ -56,6 +58,7 @@
             android:label="@string/application_name"
             android:taskAffinity="com.termux.filereceiver"
             android:excludeFromRecents="true"
+            android:resizeableActivity="true"
             android:noHistory="true">
             <!-- Accept multiple file types when sending. -->
             <intent-filter>
