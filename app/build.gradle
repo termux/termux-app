@@ -14,8 +14,6 @@ android {
         applicationId "com.termux"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 56
-        versionName "0.56"
         versionCode 59
         versionName "0.59"
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
