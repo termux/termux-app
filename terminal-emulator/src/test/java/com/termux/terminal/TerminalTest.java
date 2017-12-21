@@ -55,6 +55,14 @@ public class TerminalTest extends TerminalTestCase {
 		assertEquals("\033[<0;3;4M", mOutput.getOutputAndClear());
 		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, false);
 		assertEquals("\033[<0;3;4m", mOutput.getOutputAndClear());
+
+		// When the client says that a click is outside (which could happen when pixels are outside
+		// the terminal area, see https://github.com/termux/termux-app/issues/501) the terminal
+		// sends a click at the edge.
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 0, 0, true);
+		assertEquals("\033[<0;1;1M", mOutput.getOutputAndClear());
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 11, 11, false);
+		assertEquals("\033[<0;10;10m", mOutput.getOutputAndClear());
 	}
 
 	public void testNormalization() throws UnsupportedEncodingException {

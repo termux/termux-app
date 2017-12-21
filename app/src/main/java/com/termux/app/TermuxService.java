@@ -244,7 +244,6 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
         for (int i = 0; i < mTerminalSessions.size(); i++)
             mTerminalSessions.get(i).finishIfRunning();
-        mTerminalSessions.clear();
     }
 
     public List<TerminalSession> getSessions() {
