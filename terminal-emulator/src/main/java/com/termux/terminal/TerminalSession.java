@@ -28,7 +28,7 @@ import java.util.UUID;
  * <p>
  * NOTE: The terminal session may outlive the EmulatorView, so be careful with callbacks!
  */
-public final class TerminalSession extends TerminalOutput {
+public class TerminalSession extends TerminalOutput implements TerminalInterface {
 
     /** Callback to be invoked when a {@link TerminalSession} changes. */
     public interface SessionChangedCallback {
@@ -65,8 +65,8 @@ public final class TerminalSession extends TerminalOutput {
         return result;
     }
 
-    private static final int MSG_NEW_INPUT = 1;
-    private static final int MSG_PROCESS_EXITED = 4;
+    protected static final int MSG_NEW_INPUT = 1;
+    protected static final int MSG_PROCESS_EXITED = 4;
 
     public final String mHandle = UUID.randomUUID().toString();
 

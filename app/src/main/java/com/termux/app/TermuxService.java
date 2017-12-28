@@ -20,6 +20,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
+import com.termux.terminal.BluetoothSession;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
@@ -285,6 +286,13 @@ public final class TermuxService extends Service implements SessionChangedCallba
         if (processArgs.length > 1) System.arraycopy(processArgs, 1, args, 1, processArgs.length - 1);
 
         TerminalSession session = new TerminalSession(executablePath, cwd, args, env, this);
+        mTerminalSessions.add(session);
+        updateNotification();
+        return session;
+    }
+
+    TerminalSession createBluetoothSession(String uuid) {
+        BluetoothSession session = new BluetoothSession(uuid, null,  null, null, this);
         mTerminalSessions.add(session);
         updateNotification();
         return session;

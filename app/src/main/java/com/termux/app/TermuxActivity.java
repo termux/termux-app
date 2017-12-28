@@ -60,8 +60,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.termux.R;
+import com.termux.terminal.BluetoothSession;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
+import com.termux.terminal.TerminalInterface;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
 import com.termux.terminal.TextStyle;
@@ -70,6 +72,7 @@ import com.termux.view.TerminalView;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -90,27 +93,31 @@ import java.util.regex.Pattern;
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
 
-    private static final int CONTEXTMENU_SELECT_URL_ID = 0;
-    private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 1;
-    private static final int CONTEXTMENU_PASTE_ID = 3;
-    private static final int CONTEXTMENU_KILL_PROCESS_ID = 4;
-    private static final int CONTEXTMENU_RESET_TERMINAL_ID = 5;
-    private static final int CONTEXTMENU_STYLING_ID = 6;
-    private static final int CONTEXTMENU_HELP_ID = 8;
+    private static final int CONTEXTMENU_BLUETOOTH = 0;
+    private static final int CONTEXTMENU_SELECT_URL_ID = 1;
+    private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 2;
+    private static final int CONTEXTMENU_PASTE_ID = 4;
+    private static final int CONTEXTMENU_KILL_PROCESS_ID = 5;
+    private static final int CONTEXTMENU_RESET_TERMINAL_ID = 6;
+    private static final int CONTEXTMENU_STYLING_ID = 7;
+    private static final int CONTEXTMENU_HELP_ID = 9;
+    private static final int CONTEXTMENU_DISCONNECT_ID = 10;
 
     private static final int MAX_SESSIONS = 8;
-
     private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
 
     private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
 
-    /** The main view of the activity showing the terminal. Initialized in onCreate(). */
+
+    /**
+     * The main view of the activity showing the terminal. Initialized in onCreate().
+     */
     @SuppressWarnings("NullableProblems")
     @NonNull
     TerminalView mTerminalView;
 
     ExtraKeysView mExtraKeysView;
-
+    Bluetooth Bluetooth;
     TermuxPreferences mSettings;
 
     /**
@@ -120,10 +127,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
      */
     TermuxService mTermService;
 
-    /** Initialized in {@link #onServiceConnected(ComponentName, IBinder)}. */
+    /**
+     * Initialized in {@link #onServiceConnected(ComponentName, IBinder)}.
+     */
     ArrayAdapter<TerminalSession> mListViewAdapter;
 
-    /** The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}. */
+    /**
+     * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
+     */
     Toast mLastToast;
 
     /**
@@ -186,7 +197,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    /** For processes to access shared internal storage (/sdcard) we need this permission. */
+    /**
+     * For processes to access shared internal storage (/sdcard) we need this permission.
+     */
     @TargetApi(Build.VERSION_CODES.M)
     public boolean ensureStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -207,6 +220,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         super.onCreate(bundle);
 
         mSettings = new TermuxPreferences(this);
+        Bluetooth = new Bluetooth(this);
 
         setContentView(R.layout.drawer_layout);
         mTerminalView = findViewById(R.id.terminal_view);
@@ -611,7 +625,25 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    /** Try switching to session and note about it, but do nothing if already displaying the session. */
+    void addNewBluetoothSession(int index, String sessionName) {
+        Bluetooth bluetooth = new Bluetooth(this);
+        try {
+            ArrayList<String[]> pairedDevices = bluetooth.getPairedDeviceList();
+            TerminalSession newSession = mTermService.createBluetoothSession(pairedDevices.get(index)[1]);
+            if (sessionName != null) {
+                newSession.mSessionName = sessionName;
+            }
+            switchToSession(newSession);
+            getDrawer().closeDrawers();
+
+        } catch (Exception ex) {
+            showToast("Can't initialize new connection", true);
+        }
+    }
+
+    /**
+     * Try switching to session and note about it, but do nothing if already displaying the session.
+     */
     void switchToSession(TerminalSession session) {
         if (mTerminalView.attachSession(session)) {
             noteSessionInfo();
@@ -647,18 +679,26 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        TerminalSession currentSession = getCurrentTermSession();
-        if (currentSession == null) return;
+        TerminalInterface currentSession = getCurrentTermSession();
 
+        if (currentSession == null) return;
+        menu.add(Menu.NONE, CONTEXTMENU_BLUETOOTH, Menu.NONE, R.string.bluetooth);
         menu.add(Menu.NONE, CONTEXTMENU_SELECT_URL_ID, Menu.NONE, R.string.select_url);
         menu.add(Menu.NONE, CONTEXTMENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.select_all_and_share);
         menu.add(Menu.NONE, CONTEXTMENU_RESET_TERMINAL_ID, Menu.NONE, R.string.reset_terminal);
-        menu.add(Menu.NONE, CONTEXTMENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.kill_process, getCurrentTermSession().getPid())).setEnabled(currentSession.isRunning());
+        if (currentSession instanceof BluetoothSession) {
+            menu.add(Menu.NONE, CONTEXTMENU_DISCONNECT_ID, Menu.NONE, R.string.bluetooth_disconnect);
+        } else {
+            menu.add(Menu.NONE, CONTEXTMENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.kill_process, getCurrentTermSession().getPid())).setEnabled(currentSession.isRunning());
+        }
         menu.add(Menu.NONE, CONTEXTMENU_STYLING_ID, Menu.NONE, R.string.style_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_HELP_ID, Menu.NONE, R.string.help);
+
     }
 
-    /** Hook system menu to show context menu instead. */
+    /**
+     * Hook system menu to show context menu instead.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mTerminalView.showContextMenu();
@@ -730,11 +770,57 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         dialog.show();
     }
 
+    public void showBluetoothDeviceList() {
+        final CharSequence[] cdeviceList;
+        try {
+            ArrayList<String[]> pairedDevices = Bluetooth.getPairedDeviceList();
+            int msize = pairedDevices.size();
+            if (msize != 0) {
+                cdeviceList = new CharSequence[pairedDevices.size()];
+                for (int i = 0; i < pairedDevices.size(); i++) {
+                    cdeviceList[i] = pairedDevices.get(i)[0] + " " + pairedDevices.get(i)[1];
+                }
+            } else {
+                return;
+            }
+        } catch (Exception e) {
+            new AlertDialog.Builder(this).setMessage(e.toString()).show();
+            return;
+        }
+
+        final AlertDialog dialog = new AlertDialog.Builder(TermuxActivity.this).setItems(cdeviceList, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface di, int which) {
+                String device = (String) cdeviceList[which];
+                showToast(device, true);
+                addNewBluetoothSession(which, cdeviceList[which].toString());
+            }
+        }).setTitle("Device List").create();
+        dialog.show();
+    }
+
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         TerminalSession session = getCurrentTermSession();
-
         switch (item.getItemId()) {
+            case CONTEXTMENU_BLUETOOTH:
+                showBluetoothDeviceList();
+                return true;
+            case CONTEXTMENU_DISCONNECT_ID:
+                final AlertDialog.Builder c = new AlertDialog.Builder(this);
+                c.setIcon(android.R.drawable.ic_dialog_alert);
+                c.setMessage(R.string.confirm_disconnect_bt);
+                c.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                        getCurrentTermSession().finishIfRunning();
+                        showToast(getResources().getString(R.string.bluetooth_disconnected ) + "\n" + getCurrentTermSession().mSessionName, true);
+                    }
+                });
+                c.setNegativeButton(android.R.string.no, null);
+                c.show();
+                return true;
             case CONTEXTMENU_SELECT_URL_ID:
                 showUrlSelection();
                 return true;
@@ -818,7 +904,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             getCurrentTermSession().getEmulator().paste(paste.toString());
     }
 
-    /** The current session as stored or the last one if that does not exist. */
+    /**
+     * The current session as stored or the last one if that does not exist.
+     */
     public TerminalSession getStoredCurrentSessionOrLast() {
         TerminalSession stored = TermuxPreferences.getCurrentSession(this);
         if (stored != null) return stored;
@@ -826,7 +914,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
     }
 
-    /** Show a toast and dismiss the last one if still visible. */
+    /**
+     * Show a toast and dismiss the last one if still visible.
+     */
     void showToast(String text, boolean longDuration) {
         if (mLastToast != null) mLastToast.cancel();
         mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
@@ -848,6 +938,18 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 index = service.getSessions().size() - 1;
             }
             switchToSession(service.getSessions().get(index));
+        }
+    }
+
+    // Call Back method  to get the Message form other Activity
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // check if the request code is same as what is passed  here it is 2
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                showBluetoothDeviceList();
+            }
         }
     }
 
