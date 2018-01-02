@@ -255,7 +255,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
         if (cwd == null) cwd = HOME_PATH;
 
-        String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
+        String[] env = BackgroundJob.buildEnvironment(failSafe, cwd, getApplicationContext());
         boolean isLoginShell = false;
 
         if (executablePath == null) {
