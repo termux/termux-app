@@ -228,10 +228,12 @@ final class TermuxInstaller {
                 try {
                     File storageDir = new File(TermuxService.HOME_PATH, "storage");
 
+                    /* commented out to merge/overwrite existing folder
                     if (storageDir.exists() && !storageDir.delete()) {
                         Log.e(LOG_TAG, "Could not delete old $HOME/storage");
                         return;
                     }
+		    */
 
                     if (!storageDir.mkdirs()) {
                         Log.e(LOG_TAG, "Unable to mkdirs() for $HOME/storage");
