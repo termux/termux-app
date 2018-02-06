@@ -232,7 +232,7 @@ final class TermuxInstaller {
 			    try {
 				    deleteFolder(storageDir);
 			    } catch (Exception e) {
-				    Log.e(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage);
+				    Log.e(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage());
 				    return;
 			    }
                     }
