@@ -231,7 +231,7 @@ final class TermuxInstaller {
                     if (storageDir.exists()) {
 			    try {
 				    deleteFolder(storageDir);
-			    } catch (e) {
+			    } catch (Exception e) {
 				    Log.e(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage);
 				    return;
 			    }
