@@ -1,10 +1,17 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ScheduledExecutorService;
+
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
@@ -38,30 +45,39 @@ public final class ExtraKeysView extends GridLayout {
             case "TAB":
                 keyCode = KeyEvent.KEYCODE_TAB;
                 break;
-            case "▲":
+            case "HOME":
+                keyCode = KeyEvent.KEYCODE_MOVE_HOME;
+                break;
+            case "END":
+                keyCode = KeyEvent.KEYCODE_MOVE_END;
+                break;
+            case "PGUP":
+                keyCode = KeyEvent.KEYCODE_PAGE_UP;
+                break;
+            case "PGDN":
+                keyCode = KeyEvent.KEYCODE_PAGE_DOWN;
+                break;
+            case "↑":
                 keyCode = KeyEvent.KEYCODE_DPAD_UP;
                 break;
-            case "◀":
+            case "←":
                 keyCode = KeyEvent.KEYCODE_DPAD_LEFT;
                 break;
-            case "▶":
+            case "→":
                 keyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
                 break;
-            case "▼":
+            case "↓":
                 keyCode = KeyEvent.KEYCODE_DPAD_DOWN;
-                break;
-            case "―":
-                chars = "-";
                 break;
             default:
                 chars = keyName;
         }
 
+        TerminalView terminalView = view.findViewById(R.id.terminal_view);
         if (keyCode > 0) {
-            view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
-            view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+            terminalView.onKeyDown(keyCode, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+//          view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
         } else {
-            TerminalView terminalView = view.findViewById(R.id.terminal_view);
             TerminalSession session = terminalView.getCurrentSession();
             if (session != null) session.write(chars);
         }
@@ -70,6 +86,8 @@ public final class ExtraKeysView extends GridLayout {
     private ToggleButton controlButton;
     private ToggleButton altButton;
     private ToggleButton fnButton;
+    private ScheduledExecutorService scheduledExecutor;
+    private int longPressCount;
 
     public boolean readControlButton() {
         if (controlButton.isPressed()) return true;
@@ -106,19 +124,19 @@ public final class ExtraKeysView extends GridLayout {
         removeAllViews();
 
         String[][] buttons = {
-            {"ESC", "CTRL", "ALT", "TAB", "―", "/", "|"}
+            {"ESC", "/", "-", "HOME", "↑", "END", "PGUP"},
+            {"TAB", "CTRL", "ALT", "←", "↓", "→", "PGDN"}
         };
 
         final int rows = buttons.length;
-        final int cols = buttons[0].length;
+        final int[] cols = {buttons[0].length, buttons[1].length};
 
         setRowCount(rows);
-        setColumnCount(cols);
+        setColumnCount(cols[0]);
 
         for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
+            for (int col = 0; col < cols[row]; col++) {
                 final String buttonText = buttons[row][col];
-
                 Button button;
                 switch (buttonText) {
                     case "CTRL":
@@ -140,6 +158,7 @@ public final class ExtraKeysView extends GridLayout {
 
                 button.setText(buttonText);
                 button.setTextColor(TEXT_COLOR);
+                button.setPadding(0, 0, 0, 0);
 
                 final Button finalButton = button;
                 button.setOnClickListener(new OnClickListener() {
@@ -162,12 +181,49 @@ public final class ExtraKeysView extends GridLayout {
                     }
                 });
 
-                GridLayout.LayoutParams param = new GridLayout.LayoutParams();
-                param.height = param.width = 0;
-                param.rightMargin = param.topMargin = 0;
+                button.setOnTouchListener(new OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        final View root = getRootView();
+                        switch (event.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+                                longPressCount = 0;
+                                v.setBackgroundColor(Color.GRAY);
+                                if (!"CTRLALT".contains(buttonText)) {
+                                    scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+                                    scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            longPressCount++;
+                                            sendKey(root, buttonText);
+                                        }
+                                    }, 400, 100, TimeUnit.MILLISECONDS);
+                                }
+                                return true;
+                            case MotionEvent.ACTION_UP:
+                            case MotionEvent.ACTION_CANCEL:
+                                performClick();
+                                v.setBackgroundColor(Color.BLACK);
+                                if (scheduledExecutor != null) {
+                                    scheduledExecutor.shutdownNow();
+                                    scheduledExecutor = null;
+                                }
+                                if (longPressCount == 0) {
+                                    v.performClick();
+                                }
+                                return true;
+                            default:
+                                return true;
+                        }
+
+                    }
+                });
+
+                LayoutParams param = new GridLayout.LayoutParams();
+                param.width = param.height = 0;
+                param.setMargins(0, 0, 0, 0);
                 param.setGravity(Gravity.LEFT);
-                float weight = "▲▼◀▶".contains(buttonText) ? 0.7f : 1.f;
-                param.columnSpec = GridLayout.spec(col, GridLayout.FILL, weight);
+                param.columnSpec = GridLayout.spec(col, GridLayout.FILL, 1.f);
                 param.rowSpec = GridLayout.spec(row, GridLayout.FILL, 1.f);
                 button.setLayoutParams(param);
 
