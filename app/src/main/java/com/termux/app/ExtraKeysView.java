@@ -1,7 +1,6 @@
 package com.termux.app;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 
 import java.util.concurrent.Executors;
@@ -28,6 +27,8 @@ import com.termux.view.TerminalView;
 public final class ExtraKeysView extends GridLayout {
 
     private static final int TEXT_COLOR = 0xFFFFFFFF;
+    private static final int BUTTON_COLOR = 0xFF000000;
+    private static final int BUTTON_PRESSED_COLOR = 0xFF888888;
 
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -188,7 +189,7 @@ public final class ExtraKeysView extends GridLayout {
                         switch (event.getAction()) {
                             case MotionEvent.ACTION_DOWN:
                                 longPressCount = 0;
-                                v.setBackgroundColor(Color.GRAY);
+                                v.setBackgroundColor(BUTTON_PRESSED_COLOR);
                                 if (!"CTRLALT".contains(buttonText)) {
                                     scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
                                     scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
@@ -203,7 +204,7 @@ public final class ExtraKeysView extends GridLayout {
                             case MotionEvent.ACTION_UP:
                             case MotionEvent.ACTION_CANCEL:
                                 performClick();
-                                v.setBackgroundColor(Color.BLACK);
+                                v.setBackgroundColor(BUTTON_COLOR);
                                 if (scheduledExecutor != null) {
                                     scheduledExecutor.shutdownNow();
                                     scheduledExecutor = null;
