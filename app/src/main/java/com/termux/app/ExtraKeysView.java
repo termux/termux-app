@@ -1,6 +1,7 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 
 import java.util.concurrent.Executors;
@@ -14,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.PopupWindow;
 import android.widget.ToggleButton;
 
 import com.termux.R;
@@ -88,6 +90,7 @@ public final class ExtraKeysView extends GridLayout {
     private ToggleButton altButton;
     private ToggleButton fnButton;
     private ScheduledExecutorService scheduledExecutor;
+    private PopupWindow popupWindow;
     private int longPressCount;
 
     public boolean readControlButton() {
@@ -118,6 +121,30 @@ public final class ExtraKeysView extends GridLayout {
             fnButton.setTextColor(TEXT_COLOR);
         }
         return result;
+    }
+
+    void popup(View view, String text) {
+        int width = view.getMeasuredWidth();
+        int height = view.getMeasuredHeight();
+        Button button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
+        button.setText(text);
+        button.setMinHeight(0);
+        button.setMinWidth(0);
+        button.setMinimumWidth(0);
+        button.setMinimumHeight(0);
+        button.setPadding(0, 0, 0, 0);
+        button.setTextColor(TEXT_COLOR);
+        button.setWidth(width);
+        button.setHeight(height);
+        button.setBackgroundColor(BUTTON_PRESSED_COLOR);
+        popupWindow = new PopupWindow(this);
+        popupWindow.setWidth(LayoutParams.WRAP_CONTENT);
+        popupWindow.setHeight(LayoutParams.WRAP_CONTENT);
+        popupWindow.setContentView(button);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setFocusable(false);
+        popupWindow.showAsDropDown(view, 0, -2 * height);
     }
 
     void reload() {
@@ -190,7 +217,7 @@ public final class ExtraKeysView extends GridLayout {
                             case MotionEvent.ACTION_DOWN:
                                 longPressCount = 0;
                                 v.setBackgroundColor(BUTTON_PRESSED_COLOR);
-                                if (!"CTRLALT".contains(buttonText)) {
+                                if ("↑↓←→".contains(buttonText)) {
                                     scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
                                     scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
                                         @Override
@@ -201,15 +228,37 @@ public final class ExtraKeysView extends GridLayout {
                                     }, 400, 100, TimeUnit.MILLISECONDS);
                                 }
                                 return true;
+                            case MotionEvent.ACTION_MOVE:
+                                if ("-/".contains(buttonText)) {
+                                    if (popupWindow == null && event.getY() < 0) {
+                                        v.setBackgroundColor(BUTTON_COLOR);
+                                        String text = "-".equals(buttonText) ? "|" : "\\";
+                                        popup(v, text);
+                                    }
+                                    if (popupWindow != null && event.getY() > 0) {
+                                        v.setBackgroundColor(BUTTON_PRESSED_COLOR);
+                                        popupWindow.dismiss();
+                                        popupWindow = null;
+                                    }
+                                }
+                                return true;
                             case MotionEvent.ACTION_UP:
                             case MotionEvent.ACTION_CANCEL:
+                                performClick();
                                 v.setBackgroundColor(BUTTON_COLOR);
                                 if (scheduledExecutor != null) {
                                     scheduledExecutor.shutdownNow();
                                     scheduledExecutor = null;
                                 }
                                 if (longPressCount == 0) {
-                                    v.performClick();
+                                    if (popupWindow != null) {
+                                        popupWindow.setContentView(null);
+                                        popupWindow.dismiss();
+                                        popupWindow = null;
+                                        sendKey(root, "-".equals(buttonText) ? "|" : "\\");
+                                    } else {
+                                        v.performClick();
+                                    }
                                 }
                                 return true;
                             default:
