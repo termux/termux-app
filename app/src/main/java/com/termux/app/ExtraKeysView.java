@@ -1,7 +1,6 @@
 package com.termux.app;
 
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 
 import java.util.concurrent.Executors;
@@ -128,12 +127,12 @@ public final class ExtraKeysView extends GridLayout {
         int height = view.getMeasuredHeight();
         Button button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
         button.setText(text);
+        button.setTextColor(TEXT_COLOR);
+        button.setPadding(0, 0, 0, 0);
         button.setMinHeight(0);
         button.setMinWidth(0);
         button.setMinimumWidth(0);
         button.setMinimumHeight(0);
-        button.setPadding(0, 0, 0, 0);
-        button.setTextColor(TEXT_COLOR);
         button.setWidth(width);
         button.setHeight(height);
         button.setBackgroundColor(BUTTON_PRESSED_COLOR);
@@ -141,7 +140,6 @@ public final class ExtraKeysView extends GridLayout {
         popupWindow.setWidth(LayoutParams.WRAP_CONTENT);
         popupWindow.setHeight(LayoutParams.WRAP_CONTENT);
         popupWindow.setContentView(button);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
         popupWindow.setOutsideTouchable(true);
         popupWindow.setFocusable(false);
         popupWindow.showAsDropDown(view, 0, -2 * height);
@@ -250,7 +248,7 @@ public final class ExtraKeysView extends GridLayout {
                                     scheduledExecutor = null;
                                 }
                                 if (longPressCount == 0) {
-                                    if (popupWindow != null) {
+                                    if (popupWindow != null && "-/".contains(buttonText)) {
                                         popupWindow.setContentView(null);
                                         popupWindow.dismiss();
                                         popupWindow = null;
