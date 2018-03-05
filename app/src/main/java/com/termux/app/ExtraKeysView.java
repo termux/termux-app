@@ -71,6 +71,9 @@ public final class ExtraKeysView extends GridLayout {
             case "↓":
                 keyCode = KeyEvent.KEYCODE_DPAD_DOWN;
                 break;
+            case "―":
+                chars = "-";
+                break;
             default:
                 chars = keyName;
         }
@@ -150,7 +153,7 @@ public final class ExtraKeysView extends GridLayout {
         removeAllViews();
 
         String[][] buttons = {
-            {"ESC", "/", "-", "HOME", "↑", "END", "PGUP"},
+            {"ESC", "/", "―", "HOME", "↑", "END", "PGUP"},
             {"TAB", "CTRL", "ALT", "←", "↓", "→", "PGDN"}
         };
 
@@ -227,10 +230,10 @@ public final class ExtraKeysView extends GridLayout {
                                 }
                                 return true;
                             case MotionEvent.ACTION_MOVE:
-                                if ("-/".contains(buttonText)) {
+                                if ("―/".contains(buttonText)) {
                                     if (popupWindow == null && event.getY() < 0) {
                                         v.setBackgroundColor(BUTTON_COLOR);
-                                        String text = "-".equals(buttonText) ? "|" : "\\";
+                                        String text = "―".equals(buttonText) ? "|" : "\\";
                                         popup(v, text);
                                     }
                                     if (popupWindow != null && event.getY() > 0) {
@@ -248,11 +251,11 @@ public final class ExtraKeysView extends GridLayout {
                                     scheduledExecutor = null;
                                 }
                                 if (longPressCount == 0) {
-                                    if (popupWindow != null && "-/".contains(buttonText)) {
+                                    if (popupWindow != null && "―/".contains(buttonText)) {
                                         popupWindow.setContentView(null);
                                         popupWindow.dismiss();
                                         popupWindow = null;
-                                        sendKey(root, "-".equals(buttonText) ? "|" : "\\");
+                                        sendKey(root, "―".equals(buttonText) ? "|" : "\\");
                                     } else {
                                         v.performClick();
                                     }
