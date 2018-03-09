@@ -586,8 +586,8 @@ public final class TerminalView extends View {
         }
 
         final int metaState = event.getMetaState();
-        final boolean controlDownFromEvent = event.isCtrlPressed() || mClient.readControlKey();
-        final boolean leftAltDownFromEvent = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0 || mClient.readAltKey();
+        final boolean controlDownFromEvent = event.isCtrlPressed();
+        final boolean leftAltDownFromEvent = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0;
         final boolean rightAltDownFromEvent = (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
 
         int keyMod = 0;
