@@ -226,7 +226,7 @@ public final class ExtraKeysView extends GridLayout {
                                             longPressCount++;
                                             sendKey(root, buttonText);
                                         }
-                                    }, 400, 100, TimeUnit.MILLISECONDS);
+                                    }, 400, 80, TimeUnit.MILLISECONDS);
                                 }
                                 return true;
                             case MotionEvent.ACTION_MOVE:
