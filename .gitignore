@@ -33,6 +33,8 @@ local.properties
 .idea/scopes/scope_settings.xml
 .idea/vcs.xml
 .idea/dictionaries/
+.idea/caches/
+.idea/codeStyles/
 *.iml
 
 # OS-specific files
