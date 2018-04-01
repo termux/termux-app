@@ -21,7 +21,7 @@ android {
     buildToolsVersion "27.0.3"
 
     dependencies {
-        implementation 'com.android.support:support-annotations:27.0.2'
+        implementation 'com.android.support:support-annotations:27.1.0'
         api project(":terminal-emulator")
     }
 
