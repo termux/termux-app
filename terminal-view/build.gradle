@@ -18,7 +18,6 @@ ext {
 
 android {
     compileSdkVersion 27
-    buildToolsVersion "27.0.3"
 
     dependencies {
         implementation 'com.android.support:support-annotations:27.1.0'
