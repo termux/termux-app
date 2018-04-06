@@ -217,6 +217,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
         if (mSettings.isShowExtraKeys()) viewPager.setVisibility(View.VISIBLE);
+        
+        
+        ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
+        layoutParams.height = layoutParams.height * mSettings.mExtraKeys.length;
+        viewPager.setLayoutParams(layoutParams);
 
         viewPager.setAdapter(new PagerAdapter() {
             @Override
@@ -236,6 +241,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 View layout;
                 if (position == 0) {
                     layout = mExtraKeysView = (ExtraKeysView) inflater.inflate(R.layout.extra_keys_main, collection, false);
+                    mExtraKeysView.reload(mSettings.mExtraKeys);
                 } else {
                     layout = inflater.inflate(R.layout.extra_keys_right, collection, false);
                     final EditText editText = layout.findViewById(R.id.text_input);
