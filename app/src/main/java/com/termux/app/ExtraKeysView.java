@@ -24,8 +24,6 @@ public final class ExtraKeysView extends GridLayout {
 
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        reload();
     }
 
     static void sendKey(View view, String keyName) {
@@ -101,23 +99,23 @@ public final class ExtraKeysView extends GridLayout {
         return result;
     }
 
-    void reload() {
+    void reload(final String[][] buttons) {
         altButton = controlButton = null;
         removeAllViews();
 
-        String[][] buttons = {
-            {"ESC", "CTRL", "ALT", "TAB", "―", "/", "|"}
-        };
-
         final int rows = buttons.length;
-        final int cols = buttons[0].length;
+        int mx = 0;
+        for (int row = 0; row < rows; row++) {
+            if(buttons[row].length > mx) mx = buttons[row].length;
+        }
+        final int cols = mx;
 
         setRowCount(rows);
         setColumnCount(cols);
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                final String buttonText = buttons[row][col];
+                final String buttonText = (buttons[row][col] == null ? " " : buttons[row][col]);
 
                 Button button;
                 switch (buttonText) {
