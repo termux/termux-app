@@ -25,7 +25,9 @@ import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -89,6 +91,7 @@ import java.util.regex.Pattern;
  * about memory leaks.
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
+    private static final Handler handler = new Handler(Looper.getMainLooper());
 
     private static final int CONTEXTMENU_SELECT_URL_ID = 0;
     private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 1;
@@ -108,6 +111,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     @SuppressWarnings("NullableProblems")
     @NonNull
     TerminalView mTerminalView;
+
+    View mRootView;
 
     ExtraKeysView mExtraKeysView;
 
@@ -211,12 +216,20 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         setContentView(R.layout.drawer_layout);
         mTerminalView = findViewById(R.id.terminal_view);
         mTerminalView.setOnKeyListener(new TermuxViewClient(this));
+        mTerminalView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                updateShowExtraKeys();
+            }
+        });
+
+        mRootView = findViewById(R.id.root);
 
         mTerminalView.setTextSize(mSettings.getFontSize());
         mTerminalView.requestFocus();
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
-        if (mSettings.isShowExtraKeys()) viewPager.setVisibility(View.VISIBLE);
+        updateShowExtraKeys();
 
         viewPager.setAdapter(new PagerAdapter() {
             @Override
@@ -339,11 +352,26 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     void toggleShowExtraKeys() {
         final ViewPager viewPager = findViewById(R.id.viewpager);
         final boolean showNow = mSettings.toggleShowExtraKeys(TermuxActivity.this);
-        viewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
+        updateShowExtraKeys();
         if (showNow && viewPager.getCurrentItem() == 1) {
             // Focus the text input view if just revealed.
             findViewById(R.id.text_input).requestFocus();
         }
+    }
+
+    // base on the idea of https://stackoverflow.com/a/26964010
+    void updateShowExtraKeys() {
+        final ViewPager viewPager = findViewById(R.id.viewpager);
+        final boolean showSetting = mSettings.isShowExtraKeys();
+        final boolean isKeyboardVisible = mRootView.getHeight() * 0.75 > mTerminalView.getHeight();
+
+        // Without waiting one main loop cycle, the view will not be laid out correctly/ not shown
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                viewPager.setVisibility(showSetting && isKeyboardVisible ? View.VISIBLE : View.GONE);
+            }
+        });
     }
 
     /**
