@@ -70,7 +70,7 @@
         android:id="@+id/viewpager"
         android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="75dp"
         android:background="@android:drawable/screen_background_dark_transparent"
         android:layout_alignParentBottom="true" />
 </RelativeLayout>
