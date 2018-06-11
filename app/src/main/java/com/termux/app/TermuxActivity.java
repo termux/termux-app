@@ -400,7 +400,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
                         break;
                     case TermuxPreferences.BELL_VIBRATE:
-                        ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(50);
+                        BellUtil.with(TermuxActivity.this).doBell();
                         break;
                     case TermuxPreferences.BELL_IGNORE:
                         // Ignore the bell character.
