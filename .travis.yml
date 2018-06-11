@@ -23,13 +23,9 @@ before_install:
 
 script:
   - ./gradlew testDebugUnitTest
-
-addons:
-  coverity_scan:
-    project:
-      name: "termux/termux-app"
-      description: "Terminal emulator and Linux environment for Android"
-    notification_email: fredrik@fornwall.net
-    build_command_prepend: "./gradlew clean"
-    build_command: "./gradlew build"
-    branch_pattern: master
+  - ./gradlew clean
+  - ./gradlew build
+  - cd app/build/outputs/apk/debug/
+  - mv app-debug.apk termux-$(date +"%Y%m%d").apk
+  - curl --upload-file termux-$(date +"%Y%m%d").apk https://transfer.sh/termux-$(date +"%Y%m%d").apk
+ 
