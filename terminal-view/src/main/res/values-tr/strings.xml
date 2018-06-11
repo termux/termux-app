@@ -1,0 +1,5 @@
+<resources>
+  <string name="paste_text">Yapıştır</string>
+  <string name="copy_text">Kopyala</string>
+  <string name="text_selection_more">Daha fazla...</string>
+</resources>

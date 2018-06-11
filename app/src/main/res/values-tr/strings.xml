@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <string name="application_name">Termux</string>
+   <string name="shared_user_label">Termux kullanıcısı</string>
+   <string name="new_session">Yeni oturum</string>
+   <string name="toggle_soft_keyboard">Klavye</string>
+   <string name="reset_terminal">Sıfırla</string>
+   <string name="style_terminal">Stil</string>
+   <string name="help">Yardım</string>
+
+   <string name="bootstrap_installer_body">Yükleniyor...</string>
+   <string name="bootstrap_error_title">Yükleyemiyor</string>
+   <string name="bootstrap_error_body">Termux, önyükleme paketlerini yükleyemedi.\n
+  \n
+  Ağ bağlantınızı kontrol edip tekrar deneyin.</string>
+   <string name="bootstrap_error_abort">İptal</string>
+   <string name="bootstrap_error_try_again">Tekrar deneyin</string>
+   <string name="bootstrap_error_not_primary_user_message">Termux sadece birincil kullanıcı hesabına yüklenebilir.</string>
+
+   <string name="max_terminals_reached_title">Maksimum terminal sayısına ulaşıldı</string>
+   <string name="max_terminals_reached_message">Yeni oluşturmadan önce mevcut olanları kapatın.</string>
+
+   <string name="reset_toast_notification">Terminal sıfırlandı.</string>
+
+  <string name="select_url">URL seç</string>
+  <string name="select_url_dialog_title">Kopyalamak için URL\'yi tıklayın veya açmak için uzun basın</string>
+  <string name="select_url_no_found">Terminalde hiçbir URL bulunamadı.</string>
+  <string name="select_url_copied_to_clipboard">URL panoya kopyalandı</string>
+  <string name="share_transcript_chooser_title">Metin gönder:</string>
+
+  <string name="kill_process">Süreci öldür (%d)</string>
+  <string name="confirm_kill_process">Bu oturumu kapatmak istiyor musunuz?</string>
+
+  <string name="session_rename_title">Oturum adını ayarla</string>
+  <string name="session_rename_positive_button">Ayarla</string>
+  <string name="session_new_named_title">Yeni adlandırılmış oturum</string>
+  <string name="session_new_named_positive_button">Oluştur</string>
+
+  <string name="styling_not_installed">Termux: Stil eklentisi yüklü değil.</string>
+  <string name="styling_install">Kur</string>
+
+  <string name="notification_action_exit">Çıkış</string>
+
+  <string name="file_received_title">~/downloads/ içine kaydet</string>
+  <string name="file_received_edit_button">Düzenle</string>
+  <string name="file_received_open_folder_button">Klasör aç</string>
+
+</resources>
