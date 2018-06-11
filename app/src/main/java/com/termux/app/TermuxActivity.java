@@ -91,7 +91,7 @@ import java.util.regex.Pattern;
  * about memory leaks.
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
-    private static final Handler handler = new Handler(Looper.getMainLooper());
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     private static final int CONTEXTMENU_SELECT_URL_ID = 0;
     private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 1;
