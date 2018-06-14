@@ -4,8 +4,8 @@ android {
     compileSdkVersion 27
 
     dependencies {
-        implementation 'com.android.support:support-annotations:27.1.0'
-        implementation "com.android.support:support-core-ui:27.1.0"
+        implementation 'com.android.support:support-annotations:27.1.1'
+        implementation "com.android.support:support-core-ui:27.1.1"
         implementation project(":terminal-view")
     }
 
