@@ -195,7 +195,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
             final String name = file.getName();
             final int lastDot = name.lastIndexOf('.');
             if (lastDot >= 0) {
-                final String extension = name.substring(lastDot + 1);
+                final String extension = name.substring(lastDot + 1).toLowerCase();
                 final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
                 if (mime != null) return mime;
             }
