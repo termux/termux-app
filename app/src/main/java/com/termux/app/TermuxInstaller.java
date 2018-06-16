@@ -229,12 +229,12 @@ final class TermuxInstaller {
                     File storageDir = new File(TermuxService.HOME_PATH, "storage");
 
                     if (storageDir.exists()) {
-			            try {
-			        	    deleteFolder(storageDir);
-			            } catch (Exception e) {
-		        		    Log.e(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage());
-			        	    return;
-	        		    }
+                        try {
+                            deleteFolder(storageDir);
+                        } catch (Exception e) {
+                            Log.e(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage());
+                            return;
+                        }
                     }
 
                     if (!storageDir.mkdirs()) {
