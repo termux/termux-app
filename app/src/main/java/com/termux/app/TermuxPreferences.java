@@ -17,6 +17,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.json.JSONArray;
 
 final class TermuxPreferences {
 
@@ -103,6 +104,8 @@ final class TermuxPreferences {
         }
         return null;
     }
+    
+    public String[][] mExtraKeys;
 
     public void reloadFromProperties(Context context) {
         try {
@@ -127,6 +130,16 @@ final class TermuxPreferences {
                 default: // "vibrate".
                     mBellBehaviour = BELL_VIBRATE;
                     break;
+            }
+            
+            JSONArray arr = new JSONArray(props.getProperty("extrakeys", "[[\"ESC\",\"CTRL\",\"ALT\",\"TAB\",\"―\",\"/\",\"|\"]]"));
+            mExtraKeys = new String[arr.length()][];
+            for(int i = 0; i < arr.length(); i++) {
+                JSONArray line = arr.getJSONArray(i);
+                mExtraKeys[i] = new String[line.length()];
+                for(int j = 0; j < line.length(); j++) {
+                    mExtraKeys[i][j] = line.getString(j);
+                }
             }
 
             mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
