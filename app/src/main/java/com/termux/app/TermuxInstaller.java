@@ -21,6 +21,7 @@ import com.termux.terminal.EmulatorDebug;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -209,11 +210,15 @@ final class TermuxInstaller {
     }
 
     /** Delete a folder and all its content or throw. */
-    static void deleteFolder(File fileOrDirectory) {
+    static void deleteFolder(File fileOrDirectory) throws IOException {
         File[] children = fileOrDirectory.listFiles();
         if (children != null) {
             for (File child : children) {
-                deleteFolder(child);
+                if (child.getCanonicalFile().equals(child.getAbsoluteFile())) {
+                    deleteFolder(child);
+                } else {
+                    child.delete();
+                }
             }
         }
         if (!fileOrDirectory.delete()) {
@@ -231,7 +236,7 @@ final class TermuxInstaller {
                     if (storageDir.exists()) {
                         try {
                             deleteFolder(storageDir);
-                        } catch (Exception e) {
+                        } catch (IOException e) {
                             Log.e(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage());
                             return;
                         }
