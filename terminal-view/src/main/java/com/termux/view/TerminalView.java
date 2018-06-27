@@ -15,6 +15,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.accessibility.AccessibilityManager;
 import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -74,6 +75,8 @@ public final class TerminalView extends View {
 
     /** If non-zero, this is the last unicode code point received if that was a combining character. */
     int mCombiningAccent;
+
+    private boolean mAccessibilityEnabled;
 
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
         super(context, attributes);
@@ -197,6 +200,8 @@ public final class TerminalView extends View {
             }
         });
         mScroller = new Scroller(context);
+        AccessibilityManager am = (AccessibilityManager) context.getSystemService(context.ACCESSIBILITY_SERVICE);
+        mAccessibilityEnabled = am.isEnabled();
     }
 
     /**
@@ -384,7 +389,7 @@ public final class TerminalView extends View {
         mEmulator.clearScrollCounter();
 
         invalidate();
-        setContentDescription(getText());
+        if (mAccessibilityEnabled) setContentDescription(getText());
     }
 
     /**
