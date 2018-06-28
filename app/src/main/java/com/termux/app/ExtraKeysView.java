@@ -1,13 +1,13 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledExecutorService;
 
-import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -28,8 +28,8 @@ import com.termux.view.TerminalView;
 public final class ExtraKeysView extends GridLayout {
 
     private static final int TEXT_COLOR = 0xFFFFFFFF;
-    private static final int BUTTON_COLOR = 0xFF000000;
-    private static final int BUTTON_PRESSED_COLOR = 0xFF888888;
+    private static final int BUTTON_COLOR = 0x00000000;
+    private static final int BUTTON_PRESSED_COLOR = 0x7FFFFFFF;
 
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -269,9 +269,13 @@ public final class ExtraKeysView extends GridLayout {
                 });
 
                 LayoutParams param = new GridLayout.LayoutParams();
-                param.width = param.height = 0;
+                param.width = 0;
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP){  //special handle api 21
+                    param.height = (int)(37.5 * getResources().getDisplayMetrics().density + 0.5); // 37.5 equal to R.id.viewpager layout_heihgt / rows in DP
+                }else{
+                    param.height = 0;
+                }
                 param.setMargins(0, 0, 0, 0);
-                param.setGravity(Gravity.LEFT);
                 param.columnSpec = GridLayout.spec(col, GridLayout.FILL, 1.f);
                 param.rowSpec = GridLayout.spec(row, GridLayout.FILL, 1.f);
                 button.setLayoutParams(param);
