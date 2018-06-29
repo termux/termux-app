@@ -209,18 +209,18 @@ final class TermuxInstaller {
             Arrays.toString(Build.SUPPORTED_ABIS));
     }
 
-    /** Delete a folder and all its content or throw. */
+    /** Delete a folder and all its content or throw. Don't follow symlinks. */
     static void deleteFolder(File fileOrDirectory) throws IOException {
-        File[] children = fileOrDirectory.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                if (child.getCanonicalFile().equals(child.getAbsoluteFile())) {
+        if (fileOrDirectory.getCanonicalPath().equals(fileOrDirectory.getAbsolutePath()) && fileOrDirectory.isDirectory()) {
+            File[] children = fileOrDirectory.listFiles();
+
+            if (children != null) {
+                for (File child : children) {
                     deleteFolder(child);
-                } else {
-                    child.delete();
                 }
             }
         }
+
         if (!fileOrDirectory.delete()) {
             throw new RuntimeException("Unable to delete " + (fileOrDirectory.isDirectory() ? "directory " : "file ") + fileOrDirectory.getAbsolutePath());
         }
