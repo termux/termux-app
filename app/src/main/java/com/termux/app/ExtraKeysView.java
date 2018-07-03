@@ -1,6 +1,7 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.util.AttributeSet;
 
@@ -188,6 +189,9 @@ public final class ExtraKeysView extends GridLayout {
                 button.setText(buttonText);
                 button.setTextColor(TEXT_COLOR);
                 button.setPadding(0, 0, 0, 0);
+                if("↑←↓→".contains(buttonText)){
+                    button.setTypeface(button.getTypeface(),Typeface.BOLD);
+                }
 
                 final Button finalButton = button;
                 button.setOnClickListener(new OnClickListener() {
@@ -271,7 +275,7 @@ public final class ExtraKeysView extends GridLayout {
                 LayoutParams param = new GridLayout.LayoutParams();
                 param.width = 0;
                 if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP){  //special handle api 21
-                    param.height = (int)(37.5 * getResources().getDisplayMetrics().density + 0.5); // 37.5 equal to R.id.viewpager layout_heihgt / rows in DP
+                    param.height = (int)(32 * getResources().getDisplayMetrics().density + 0.5); // 32 equal to R.id.viewpager layout_heihgt / rows in DP
                 }else{
                     param.height = 0;
                 }
