@@ -250,6 +250,14 @@ public final class TermuxService extends Service implements SessionChangedCallba
         return mTerminalSessions;
     }
 
+    public boolean isWakelockEnabled() {
+        if (mWakeLock == null) {
+            return false;
+        } else {
+            return mWakeLock.isHeld();
+        }
+    }
+
     TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
         new File(HOME_PATH).mkdirs();
 
