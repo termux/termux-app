@@ -59,6 +59,7 @@ public final class KeyHandler {
     public static final int KEYMOD_ALT = 0x80000000;
     public static final int KEYMOD_CTRL = 0x40000000;
     public static final int KEYMOD_SHIFT = 0x20000000;
+    public static final int KEYMOD_FUNCTION = 0x10000000;
 
     private static final Map<String, Integer> TERMCAP_TO_KEYCODE = new HashMap<>();
 
@@ -154,13 +155,29 @@ public final class KeyHandler {
                 return "\015";
 
             case KEYCODE_DPAD_UP:
-                return (keyMode == 0) ? (cursorApp ? "\033OA" : "\033[A") : transformForModifiers("\033[1", keyMode, 'A');
+                if((keyMode & KEYMOD_FUNCTION) != 0) {
+                    return transformForModifiers("\033[5", keyMode, '~');
+                } else {
+                    return (keyMode == 0) ? (cursorApp ? "\033OA" : "\033[A") : transformForModifiers("\033[1", keyMode, 'A');
+                }
             case KEYCODE_DPAD_DOWN:
-                return (keyMode == 0) ? (cursorApp ? "\033OB" : "\033[B") : transformForModifiers("\033[1", keyMode, 'B');
+                if((keyMode & KEYMOD_FUNCTION) != 0) {
+                    return transformForModifiers("\033[6", keyMode, '~');
+                } else {
+                    return (keyMode == 0) ? (cursorApp ? "\033OB" : "\033[B") : transformForModifiers("\033[1", keyMode, 'B');
+                }
             case KEYCODE_DPAD_RIGHT:
-                return (keyMode == 0) ? (cursorApp ? "\033OC" : "\033[C") : transformForModifiers("\033[1", keyMode, 'C');
+                if((keyMode & KEYMOD_FUNCTION) != 0) {
+                    return ((keyMode & ~KEYMOD_FUNCTION) == 0) ? "\033[F" : transformForModifiers("\033[1", keyMode, 'F');
+                } else {
+                    return (keyMode == 0) ? (cursorApp ? "\033OC" : "\033[C") : transformForModifiers("\033[1", keyMode, 'C');
+                }
             case KEYCODE_DPAD_LEFT:
-                return (keyMode == 0) ? (cursorApp ? "\033OD" : "\033[D") : transformForModifiers("\033[1", keyMode, 'D');
+                if((keyMode & KEYMOD_FUNCTION) != 0) {
+                    return ((keyMode & ~KEYMOD_FUNCTION) == 0) ? "\033[H" : transformForModifiers("\033[1", keyMode, 'H');
+                } else {
+                    return (keyMode == 0) ? (cursorApp ? "\033OD" : "\033[D") : transformForModifiers("\033[1", keyMode, 'D');
+                }
 
             case KEYCODE_MOVE_HOME:
                 // Note that KEYCODE_HOME is handled by the system and never delivered to applications.
@@ -283,7 +300,7 @@ public final class KeyHandler {
 
     private static String transformForModifiers(String start, int keymod, char lastChar) {
         int modifier;
-        switch (keymod) {
+        switch (keymod & (KEYMOD_SHIFT | KEYMOD_ALT | KEYMOD_CTRL)) {
             case KEYMOD_SHIFT:
                 modifier = 2;
                 break;
