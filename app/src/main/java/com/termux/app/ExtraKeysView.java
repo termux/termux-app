@@ -57,6 +57,12 @@ public final class ExtraKeysView extends GridLayout {
             case "PGDN":
                 keyCode = KeyEvent.KEYCODE_PAGE_DOWN;
                 break;
+            case "INS":
+                keyCode = KeyEvent.KEYCODE_INSERT;
+                break;
+            case "DEL":
+                keyCode = KeyEvent.KEYCODE_FORWARD_DEL;
+                break;
             case "↑":
                 keyCode = KeyEvent.KEYCODE_DPAD_UP;
                 break;
@@ -69,7 +75,13 @@ public final class ExtraKeysView extends GridLayout {
             case "↓":
                 keyCode = KeyEvent.KEYCODE_DPAD_DOWN;
                 break;
+            case "↲":
+                keyCode = KeyEvent.KEYCODE_ENTER;
+                break;
             case "―":
+                chars = "-";
+                break;
+            case "-":
                 chars = "-";
                 break;
             default:
