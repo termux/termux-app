@@ -101,36 +101,48 @@ public final class ExtraKeysView extends GridLayout {
     private ToggleButton controlButton;
     private ToggleButton altButton;
     private ToggleButton fnButton;
+    private boolean hasControlButton = false;
+    private boolean hasAltButton = false;
+    private boolean hasFnButton = false;
     private ScheduledExecutorService scheduledExecutor;
     private PopupWindow popupWindow;
     private int longPressCount;
 
     public boolean readControlButton() {
-        if (controlButton.isPressed()) return true;
-        boolean result = controlButton.isChecked();
-        if (result) {
-            controlButton.setChecked(false);
-            controlButton.setTextColor(TEXT_COLOR);
+        boolean result = false;
+        if (hasControlButton) {
+            if (controlButton.isPressed()) return true;
+            result = controlButton.isChecked();
+            if (result) {
+                controlButton.setChecked(false);
+                controlButton.setTextColor(TEXT_COLOR);
+            }
         }
         return result;
     }
 
     public boolean readAltButton() {
-        if (altButton.isPressed()) return true;
-        boolean result = altButton.isChecked();
-        if (result) {
-            altButton.setChecked(false);
-            altButton.setTextColor(TEXT_COLOR);
+        boolean result = false;
+        if (hasAltButton) {
+            if (altButton.isPressed()) return true;
+            result = altButton.isChecked();
+            if (result) {
+                altButton.setChecked(false);
+                altButton.setTextColor(TEXT_COLOR);
+            }
         }
         return result;
     }
 
     public boolean readFnButton() {
-        if (fnButton.isPressed()) return true;
-        boolean result = fnButton.isChecked();
-        if (result) {
-            fnButton.setChecked(false);
-            fnButton.setTextColor(TEXT_COLOR);
+        boolean result = false;
+        if (hasFnButton) {
+            if (fnButton.isPressed()) return true;
+            result = fnButton.isChecked();
+            if (result) {
+                fnButton.setChecked(false);
+                fnButton.setTextColor(TEXT_COLOR);
+            }
         }
         return result;
     }
@@ -159,7 +171,7 @@ public final class ExtraKeysView extends GridLayout {
     }
 
     void reload(final String[][] buttons) {
-        altButton = controlButton = null;
+        altButton = controlButton = fnButton = null;
         removeAllViews();
 
         int mx = 0;
@@ -179,14 +191,17 @@ public final class ExtraKeysView extends GridLayout {
                 Button button;
                 switch (buttonText) {
                     case "CTRL":
+                        hasControlButton = true;
                         button = controlButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
                         button.setClickable(true);
                         break;
                     case "ALT":
+                        hasAltButton = true;
                         button = altButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
                         button.setClickable(true);
                         break;
                     case "FN":
+                        hasFnButton = true;
                         button = fnButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
                         button.setClickable(true);
                         break;
