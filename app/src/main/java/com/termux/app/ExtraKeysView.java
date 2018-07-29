@@ -174,15 +174,15 @@ public final class ExtraKeysView extends GridLayout {
         altButton = controlButton = fnButton = null;
         removeAllViews();
 
+        final int rows = buttons.length;
         int mx = 0;
         for (int row = 0; row < rows; row++) {
             if(buttons[row].length > mx) mx = buttons[row].length;
         }
-        final int rows = buttons.length;
         final int cols = mx;
 
         setRowCount(rows);
-        setColumnCount(cols[0]);
+        setColumnCount(cols);
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
