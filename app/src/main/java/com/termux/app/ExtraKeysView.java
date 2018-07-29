@@ -296,7 +296,7 @@ public final class ExtraKeysView extends GridLayout {
                 LayoutParams param = new GridLayout.LayoutParams();
                 param.width = 0;
                 if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP){  //special handle api 21
-                    param.height = (int)(37.5 * getResources().getDisplayMetrics().density + 0.5); // 37.5 equal to R.id.viewpager layout_heihgt / rows in DP
+                    param.height = (int)(37.5 * getResources().getDisplayMetrics().density + 0.5); // 37.5 equal to R.id.viewpager layout_height / rows in DP
                 }else{
                     param.height = 0;
                 }
