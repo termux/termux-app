@@ -255,7 +255,7 @@ public final class ExtraKeysView extends GridLayout {
                                 }
                                 return true;
                             case MotionEvent.ACTION_MOVE:
-                                if ("―/".contains(buttonText)) {
+                                if ("―/-".contains(buttonText)) {
                                     if (popupWindow == null && event.getY() < 0) {
                                         v.setBackgroundColor(BUTTON_COLOR);
                                         String text = "―".equals(buttonText) ? "|" : "\\";
@@ -276,7 +276,7 @@ public final class ExtraKeysView extends GridLayout {
                                     scheduledExecutor = null;
                                 }
                                 if (longPressCount == 0) {
-                                    if (popupWindow != null && "―/".contains(buttonText)) {
+                                    if (popupWindow != null && "―/-".contains(buttonText)) {
                                         popupWindow.setContentView(null);
                                         popupWindow.dismiss();
                                         popupWindow = null;
