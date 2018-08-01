@@ -327,12 +327,7 @@ public final class ExtraKeysView extends GridLayout {
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                String buttonText = buttons[row][col];
-                
-                if(buttonText == null) {
-                    // The button will be an empty button outputting a space character, like s space bar
-                    buttonText = " ";
-                }
+                final String buttonText = buttons[row][col];
                 
                 Button button;
                 if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
