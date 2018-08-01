@@ -98,7 +98,7 @@ public final class ExtraKeysView extends GridLayout {
         ToggleButton button = null;
     }
     
-    private Map<String, Boolean> specialButtons = new HashMap<String, Boolean>() {{
+    private Map<SpecialButton, SpecialButtonState> specialButtons = new HashMap<SpecialButton, SpecialButtonState>() {{
         put(SpecialButton.CTRL, new SpecialButtonState());
         put(SpecialButton.ALT, new SpecialButtonState());
         put(SpecialButton.FN, new SpecialButtonState());
@@ -110,12 +110,12 @@ public final class ExtraKeysView extends GridLayout {
     
     /** @deprecated, call readSpecialButton(SpecialButton.CTRL); */
     public boolean readControlButton() {
-        return readSpecialButton(SpecialButton.FN);
+        return readSpecialButton(SpecialButton.CTRL);
     }
     
     /** @deprecated, call readSpecialButton(SpecialButton.ALT); */
     public boolean readAltButton() {
-        return readSpecialButton(SpecialButton.FN);
+        return readSpecialButton(SpecialButton.ALT);
     }
     
     /** @deprecated, call readSpecialButton(SpecialButton.FN); */
@@ -126,7 +126,7 @@ public final class ExtraKeysView extends GridLayout {
     public boolean readSpecialButton(SpecialButton name) {
         SpecialButtonState state = specialButtons.get(name);
         if(state == null)
-            throw Exception("Must be a valid special button (see source)");
+            throw new RuntimeException("Must be a valid special button (see source)");
         
         if (! state.isOn)
             return false;
@@ -172,14 +172,15 @@ public final class ExtraKeysView extends GridLayout {
         put("UP", "↑"); // U+2191 ↑ UPWARDS ARROW
         put("DOWN", "↓"); // U+2193 ↓ DOWNWARDS ARROW
     }};
-    
+
     static final CharDisplayMap wellKnownCharactersDisplay = new CharDisplayMap() {{
         // well known characters // https://en.wikipedia.org/wiki/{Enter_key, Tab_key, Delete_key}
         put("ENTER", "↲"); // U+21B2 ↲ DOWNWARDS ARROW WITH TIP LEFTWARDS
         put("TAB", "↹"); // U+21B9 ↹ LEFTWARDS ARROW TO BAR OVER RIGHTWARDS ARROW TO BAR
         put("BKSP", "⌫"); // U+232B ⌫ ERASE TO THE LEFT sometimes seen and easy to understand
         put("DEL", "⌦"); // U+2326 ⌦ ERASE TO THE RIGHT not well known but easy to understand
-        
+    }};
+
     static final CharDisplayMap lessKnownCharactersDisplay = new CharDisplayMap() {{
         // https://en.wikipedia.org/wiki/{Home_key, End_key, Page_Up_and_Page_Down_keys}
         // home key can mean "goto the beginning of line" or "goto first page" depending on context, hence the diagonal
