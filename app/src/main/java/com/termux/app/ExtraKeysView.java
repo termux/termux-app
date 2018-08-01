@@ -87,56 +87,58 @@ public final class ExtraKeysView extends GridLayout {
                 session.write(KeyName);
         }
     }
-
-    private ToggleButton controlButton;
-    private ToggleButton altButton;
-    private ToggleButton fnButton;
     
-    private boolean hasControlButton = false;
-    private boolean hasAltButton = false;
-    private boolean hasFnButton = false;
+    public enum SpecialButton {
+        CTRL, ALT, FN
+    }
+    
+    private static class SpecialButtonState {
+        boolean isOn = false;
+        ToggleButton button = null;
+    }
+    
+    private Map<String, Boolean> specialButtons = new HashMap<String, Boolean>() {{
+        put(SpecialButton.CTRL, new SpecialButtonState());
+        put(SpecialButton.ALT, new SpecialButtonState());
+        put(SpecialButton.FN, new SpecialButtonState());
+    }};
     
     private ScheduledExecutorService scheduledExecutor;
     private PopupWindow popupWindow;
     private int longPressCount;
-
+    
+    /** @deprecated, call readSpecialButton(SpecialButton.CTRL); */
     public boolean readControlButton() {
-        boolean result = false;
-        if (hasControlButton) {
-            if (controlButton.isPressed()) return true;
-            result = controlButton.isChecked();
-            if (result) {
-                controlButton.setChecked(false);
-                controlButton.setTextColor(TEXT_COLOR);
-            }
-        }
-        return result;
+        return readSpecialButton(SpecialButton.FN);
     }
-
+    
+    /** @deprecated, call readSpecialButton(SpecialButton.ALT); */
     public boolean readAltButton() {
-        boolean result = false;
-        if (hasAltButton) {
-            if (altButton.isPressed()) return true;
-            result = altButton.isChecked();
-            if (result) {
-                altButton.setChecked(false);
-                altButton.setTextColor(TEXT_COLOR);
-            }
-        }
-        return result;
+        return readSpecialButton(SpecialButton.FN);
     }
-
+    
+    /** @deprecated, call readSpecialButton(SpecialButton.FN); */
     public boolean readFnButton() {
-        boolean result = false;
-        if (hasFnButton) {
-            if (fnButton.isPressed()) return true;
-            result = fnButton.isChecked();
-            if (result) {
-                fnButton.setChecked(false);
-                fnButton.setTextColor(TEXT_COLOR);
-            }
+        return readSpecialButton(SpecialButton.FN);
+    }
+    
+    public boolean readSpecialButton(SpecialButton name) {
+        SpecialButtonState state = specialButtons.get(name);
+        if(state == null)
+            throws Exception("Must be a valid special button (see source)");
+        
+        if (! state.isOn)
+            return false;
+        
+        if (state.button.isPressed())
+            return true;
+        
+        if (state.button.isChecked()) {
+            state.button.setChecked(false);
+            state.button.setTextColor(TEXT_COLOR);
         }
-        return result;
+        
+        return state.button.isChecked();
     }
 
     void popup(View view, String text) {
@@ -307,7 +309,9 @@ public final class ExtraKeysView extends GridLayout {
      * "-_-" will input the string "-_-"
      */
     void reload(String[][] buttons, CharDisplayMap charDisplayMap) {
-        altButton = controlButton = fnButton = null;
+        for(SpecialButtonState state : specialButtons.values())
+            state.button = null;
+            
         removeAllViews();
         
         replaceAliases(buttons); // modifies the array
@@ -320,33 +324,24 @@ public final class ExtraKeysView extends GridLayout {
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                final String buttonText = (buttons[row][col] == null ? " " : buttons[row][col]);
-                // if (buttons[row][col] == null) then the button will be an empty button outputting a space character
-
+                String buttonText = buttons[row][col];
+                
+                if(buttonText == null) {
+                    // The button will be an empty button outputting a space character, like s space bar
+                    buttonText = " ";
+                }
+                
                 Button button;
-                switch (buttonText) {
-                    case "CTRL":
-                        hasControlButton = true;
-                        button = controlButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
-                        button.setClickable(true);
-                        break;
-                    case "ALT":
-                        hasAltButton = true;
-                        button = altButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
-                        button.setClickable(true);
-                        break;
-                    case "FN":
-                        hasFnButton = true;
-                        button = fnButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
-                        button.setClickable(true);
-                        break;
-                    default:
-                        button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
-                        break;
+                if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
+                    state = specialButtons.get(SpecialButton.valueOf(buttonText)); // for valueOf: https://stackoverflow.com/a/604426/1980630
+                    state.isOn = true;
+                    button = state.button = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
+                    button.setClickable(true);
+                } else {
+                    button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
                 }
                 
                 final String displayedText = charDisplayMap.get(buttonText, buttonText);
-                
                 button.setText(displayedText);
                 button.setTextColor(TEXT_COLOR);
                 button.setPadding(0, 0, 0, 0);
@@ -357,17 +352,12 @@ public final class ExtraKeysView extends GridLayout {
                     public void onClick(View v) {
                         finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
                         View root = getRootView();
-                        switch (buttonText) {
-                            case "CTRL":
-                            case "ALT":
-                            case "FN":
-                                ToggleButton self = (ToggleButton) finalButton;
-                                self.setChecked(self.isChecked());
-                                self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
-                                break;
-                            default:
-                                sendKey(root, buttonText);
-                                break;
+                        if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
+                            ToggleButton self = (ToggleButton) finalButton;
+                            self.setChecked(self.isChecked());
+                            self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
+                        } else {
+                            sendKey(root, buttonText);
                         }
                     }
                 });
@@ -427,15 +417,14 @@ public final class ExtraKeysView extends GridLayout {
                             default:
                                 return true;
                         }
-
                     }
                 });
 
                 LayoutParams param = new GridLayout.LayoutParams();
                 param.width = 0;
-                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP){  //special handle api 21
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {  //special handle api 21
                     param.height = (int)(37.5 * getResources().getDisplayMetrics().density + 0.5); // 37.5 equal to R.id.viewpager layout_height / rows in DP
-                }else{
+                } else {
                     param.height = 0;
                 }
                 param.setMargins(0, 0, 0, 0);
