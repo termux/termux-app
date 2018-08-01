@@ -331,7 +331,7 @@ public final class ExtraKeysView extends GridLayout {
                 
                 Button button;
                 if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
-                    state = specialButtons.get(SpecialButton.valueOf(buttonText)); // for valueOf: https://stackoverflow.com/a/604426/1980630
+                    SpecialButtonState state = specialButtons.get(SpecialButton.valueOf(buttonText)); // for valueOf: https://stackoverflow.com/a/604426/1980630
                     state.isOn = true;
                     button = state.button = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
                     button.setClickable(true);
