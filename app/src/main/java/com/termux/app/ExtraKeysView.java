@@ -125,7 +125,7 @@ public final class ExtraKeysView extends GridLayout {
     
     public boolean readSpecialButton(SpecialButton name) {
         SpecialButtonState state = specialButtons.get(name);
-        if(state == null)
+        if (state == null)
             throw new RuntimeException("Must be a valid special button (see source)");
         
         if (! state.isOn)
@@ -134,12 +134,12 @@ public final class ExtraKeysView extends GridLayout {
         if (state.button.isPressed())
             return true;
         
-        if (state.button.isChecked()) {
-            state.button.setChecked(false);
-            state.button.setTextColor(TEXT_COLOR);
-        }
-        
-        return state.button.isChecked();
+        if (! state.button.isChecked())
+            return false;
+
+        state.button.setChecked(false);
+        state.button.setTextColor(TEXT_COLOR);
+        return true;
     }
 
     void popup(View view, String text) {
