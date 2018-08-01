@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
@@ -52,7 +53,7 @@ public final class ExtraKeysView extends GridLayout {
         }
     }
     
-    static CharDisplayMap extends CharDisplayMap {}
+    static class CharDisplayMap extends CleverMap<String, String> {}
     
     /**
      * Keys are displayed in a natural looking way, like "→" for "RIGHT"
@@ -125,7 +126,7 @@ public final class ExtraKeysView extends GridLayout {
     public boolean readSpecialButton(SpecialButton name) {
         SpecialButtonState state = specialButtons.get(name);
         if(state == null)
-            throws Exception("Must be a valid special button (see source)");
+            throw Exception("Must be a valid special button (see source)");
         
         if (! state.isOn)
             return false;
@@ -304,6 +305,7 @@ public final class ExtraKeysView extends GridLayout {
      *
      * Examples:
      * "ENTER" will trigger the ENTER keycode
+     * "LEFT" will trigger the LEFT keycode and be displayed as "←"
      * "→" will input a "→" character
      * "−" will input a "−" character
      * "-_-" will input the string "-_-"
@@ -385,7 +387,7 @@ public final class ExtraKeysView extends GridLayout {
                             case MotionEvent.ACTION_MOVE:
                                 // These two keys have a Move-Up button appearing
                                 if (Arrays.asList("/", "-").contains(buttonText)) {
-                                    if (popupWindow == null &gfv& event.getY() < 0) {
+                                    if (popupWindow == null && event.getY() < 0) {
                                         v.setBackgroundColor(BUTTON_COLOR);
                                         String text = "-".equals(buttonText) ? "|" : "\\";
                                         popup(v, text);
@@ -406,7 +408,7 @@ public final class ExtraKeysView extends GridLayout {
                                     scheduledExecutor = null;
                                 }
                                 if (longPressCount == 0) {
-                                    if (popupWindow != null && "/-".contains(buttonText)) {
+                                    if (popupWindow != null && Arrays.asList("/", "-").contains(buttonText)) {
                                         popupWindow.setContentView(null);
                                         popupWindow.dismiss();
                                         popupWindow = null;

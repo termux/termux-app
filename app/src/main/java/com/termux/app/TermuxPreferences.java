@@ -12,6 +12,7 @@ import com.termux.terminal.TerminalSession;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -115,8 +116,9 @@ final class TermuxPreferences {
 
             Properties props = new Properties();
             if (propsFile.isFile() && propsFile.canRead()) {
+                String encoding = "utf-8"; // most useful default nowadays
                 try (FileInputStream in = new FileInputStream(propsFile)) {
-                    props.load(in);
+                    props.load(new InputStreamReader(in, encoding));
                 }
             }
 
