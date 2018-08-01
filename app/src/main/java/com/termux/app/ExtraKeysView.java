@@ -8,6 +8,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledExecutorService;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Arrays;
+
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -29,122 +33,113 @@ public final class ExtraKeysView extends GridLayout {
 
     private static final int TEXT_COLOR = 0xFFFFFFFF;
     private static final int BUTTON_COLOR = 0x00000000;
+    private static final int INTERESTING_COLOR = 0xFF80DEEA;
     private static final int BUTTON_PRESSED_COLOR = 0x7FFFFFFF;
-
+    
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-
-    static void sendKey(View view, String keyName) {
-        int keyCode = 0;
-        String chars = null;
-        switch (keyName) {
-            case "ESC":
-                keyCode = KeyEvent.KEYCODE_ESCAPE;
-                break;
-            case "TAB":
-                keyCode = KeyEvent.KEYCODE_TAB;
-                break;
-            case "HOME":
-                keyCode = KeyEvent.KEYCODE_MOVE_HOME;
-                break;
-            case "END":
-                keyCode = KeyEvent.KEYCODE_MOVE_END;
-                break;
-            case "PGUP":
-                keyCode = KeyEvent.KEYCODE_PAGE_UP;
-                break;
-            case "PGDN":
-                keyCode = KeyEvent.KEYCODE_PAGE_DOWN;
-                break;
-            case "INS":
-                keyCode = KeyEvent.KEYCODE_INSERT;
-                break;
-            case "DEL":
-                keyCode = KeyEvent.KEYCODE_FORWARD_DEL;
-                break;
-            case "↑":
-                keyCode = KeyEvent.KEYCODE_DPAD_UP;
-                break;
-            case "←":
-                keyCode = KeyEvent.KEYCODE_DPAD_LEFT;
-                break;
-            case "→":
-                keyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
-                break;
-            case "↓":
-                keyCode = KeyEvent.KEYCODE_DPAD_DOWN;
-                break;
-            case "↲":
-                keyCode = KeyEvent.KEYCODE_ENTER;
-                break;
-            case "―":
-                chars = "-";
-                break;
-            case "-":
-                chars = "-";
-                break;
-            default:
-                chars = keyName;
-        }
-
-        TerminalView terminalView = view.findViewById(R.id.terminal_view);
-        if (keyCode > 0) {
-            terminalView.onKeyDown(keyCode, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
-//          view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
-        } else {
-            TerminalSession session = terminalView.getCurrentSession();
-            if (session != null) session.write(chars);
+    
+    /**
+     * HashMap that implements Python dict.get(key, default) function.
+     * Default java.util .get(key) is then the same as .get(key, null);
+     */
+    static class CleverMap<K,V> extends HashMap<K,V> {
+        V get(K key, V defaultValue) {
+            if(containsKey(key))
+                return get(key);
+            else
+                return defaultValue;
         }
     }
-
-    private ToggleButton controlButton;
-    private ToggleButton altButton;
-    private ToggleButton fnButton;
-    private boolean hasControlButton = false;
-    private boolean hasAltButton = false;
-    private boolean hasFnButton = false;
+    
+    static class CharDisplayMap extends CleverMap<String, String> {}
+    
+    /**
+     * Keys are displayed in a natural looking way, like "→" for "RIGHT"
+     */
+    static final Map<String, Integer> keyCodesForString = new HashMap<String, Integer>() {{
+        put("ESC", KeyEvent.KEYCODE_ESCAPE);
+        put("TAB", KeyEvent.KEYCODE_TAB);
+        put("HOME", KeyEvent.KEYCODE_MOVE_HOME);
+        put("END", KeyEvent.KEYCODE_MOVE_END);
+        put("PGUP", KeyEvent.KEYCODE_PAGE_UP);
+        put("PGDN", KeyEvent.KEYCODE_PAGE_DOWN);
+        put("INS", KeyEvent.KEYCODE_INSERT);
+        put("DEL", KeyEvent.KEYCODE_FORWARD_DEL);
+        put("BKSP", KeyEvent.KEYCODE_DEL);
+        put("UP", KeyEvent.KEYCODE_DPAD_UP);
+        put("LEFT", KeyEvent.KEYCODE_DPAD_LEFT);
+        put("RIGHT", KeyEvent.KEYCODE_DPAD_RIGHT);
+        put("DOWN", KeyEvent.KEYCODE_DPAD_DOWN);
+        put("ENTER", KeyEvent.KEYCODE_ENTER);
+    }};
+    
+    static void sendKey(View view, String keyName) {
+        TerminalView terminalView = view.findViewById(R.id.terminal_view);
+        if (keyCodesForString.containsKey(keyName)) {
+            int keyCode = keyCodesForString.get(keyName);
+            terminalView.onKeyDown(keyCode, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+            // view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+        } else {
+            // not a control char
+            TerminalSession session = terminalView.getCurrentSession();
+            if (session != null)
+                session.write(keyName);
+        }
+    }
+    
+    public enum SpecialButton {
+        CTRL, ALT, FN
+    }
+    
+    private static class SpecialButtonState {
+        boolean isOn = false;
+        ToggleButton button = null;
+    }
+    
+    private Map<String, Boolean> specialButtons = new HashMap<String, Boolean>() {{
+        put(SpecialButton.CTRL, new SpecialButtonState());
+        put(SpecialButton.ALT, new SpecialButtonState());
+        put(SpecialButton.FN, new SpecialButtonState());
+    }};
+    
     private ScheduledExecutorService scheduledExecutor;
     private PopupWindow popupWindow;
     private int longPressCount;
-
+    
+    /** @deprecated, call readSpecialButton(SpecialButton.CTRL); */
     public boolean readControlButton() {
-        boolean result = false;
-        if (hasControlButton) {
-            if (controlButton.isPressed()) return true;
-            result = controlButton.isChecked();
-            if (result) {
-                controlButton.setChecked(false);
-                controlButton.setTextColor(TEXT_COLOR);
-            }
-        }
-        return result;
+        return readSpecialButton(SpecialButton.FN);
     }
-
+    
+    /** @deprecated, call readSpecialButton(SpecialButton.ALT); */
     public boolean readAltButton() {
-        boolean result = false;
-        if (hasAltButton) {
-            if (altButton.isPressed()) return true;
-            result = altButton.isChecked();
-            if (result) {
-                altButton.setChecked(false);
-                altButton.setTextColor(TEXT_COLOR);
-            }
-        }
-        return result;
+        return readSpecialButton(SpecialButton.FN);
     }
-
+    
+    /** @deprecated, call readSpecialButton(SpecialButton.FN); */
     public boolean readFnButton() {
-        boolean result = false;
-        if (hasFnButton) {
-            if (fnButton.isPressed()) return true;
-            result = fnButton.isChecked();
-            if (result) {
-                fnButton.setChecked(false);
-                fnButton.setTextColor(TEXT_COLOR);
-            }
+        return readSpecialButton(SpecialButton.FN);
+    }
+    
+    public boolean readSpecialButton(SpecialButton name) {
+        SpecialButtonState state = specialButtons.get(name);
+        if(state == null)
+            throw Exception("Must be a valid special button (see source)");
+        
+        if (! state.isOn)
+            return false;
+        
+        if (state.button.isPressed())
+            return true;
+        
+        if (state.button.isChecked()) {
+            state.button.setChecked(false);
+            state.button.setTextColor(TEXT_COLOR);
         }
-        return result;
+        
+        return state.button.isChecked();
     }
 
     void popup(View view, String text) {
@@ -169,48 +164,187 @@ public final class ExtraKeysView extends GridLayout {
         popupWindow.setFocusable(false);
         popupWindow.showAsDropDown(view, 0, -2 * height);
     }
-
-    void reload(final String[][] buttons) {
-        altButton = controlButton = fnButton = null;
+    
+    static final CharDisplayMap classicArrowsDisplay = new CharDisplayMap() {{
+        // classic arrow keys (for ◀ ▶ ▲ ▼ @see arrowVariationDisplay) 
+        put("LEFT", "←"); // U+2190 ← LEFTWARDS ARROW
+        put("RIGHT", "→"); // U+2192 → RIGHTWARDS ARROW
+        put("UP", "↑"); // U+2191 ↑ UPWARDS ARROW
+        put("DOWN", "↓"); // U+2193 ↓ DOWNWARDS ARROW
+    }};
+    
+    static final CharDisplayMap wellKnownCharactersDisplay = new CharDisplayMap() {{
+        // well known characters // https://en.wikipedia.org/wiki/{Enter_key, Tab_key, Delete_key}
+        put("ENTER", "↲"); // U+21B2 ↲ DOWNWARDS ARROW WITH TIP LEFTWARDS
+        put("TAB", "↹"); // U+21B9 ↹ LEFTWARDS ARROW TO BAR OVER RIGHTWARDS ARROW TO BAR
+        put("BKSP", "⌫"); // U+232B ⌫ ERASE TO THE LEFT sometimes seen and easy to understand
+        put("DEL", "⌦"); // U+2326 ⌦ ERASE TO THE RIGHT not well known but easy to understand
+        
+    static final CharDisplayMap lessKnownCharactersDisplay = new CharDisplayMap() {{
+        // https://en.wikipedia.org/wiki/{Home_key, End_key, Page_Up_and_Page_Down_keys}
+        // home key can mean "goto the beginning of line" or "goto first page" depending on context, hence the diagonal
+        put("HOME", "⇱"); // from IEC 9995 // U+21F1 ⇱ NORTH WEST ARROW TO CORNER
+        put("END", "⇲"); // from IEC 9995 // ⇲ // U+21F2 ⇲ SOUTH EAST ARROW TO CORNER
+        put("PGUP", "⇑"); // no ISO character exists, U+21D1 ⇑ UPWARDS DOUBLE ARROW will do the trick
+        put("PGDN", "⇓"); // no ISO character exists, U+21D3 ⇓ DOWNWARDS DOUBLE ARROW will do the trick
+    }};
+    
+    static final CharDisplayMap arrowTriangleVariationDisplay = new CharDisplayMap() {{
+        // alternative to classic arrow keys 
+        put("LEFT", "◀"); // U+25C0 ◀ BLACK LEFT-POINTING TRIANGLE
+        put("RIGHT", "▶"); // U+25B6 ▶ BLACK RIGHT-POINTING TRIANGLE
+        put("UP", "▲"); // U+25B2 ▲ BLACK UP-POINTING TRIANGLE
+        put("DOWN", "▼"); // U+25BC ▼ BLACK DOWN-POINTING TRIANGLE
+    }};
+    
+    static final CharDisplayMap notKnownIsoCharacters = new CharDisplayMap() {{
+        // Control chars that are more clear as text // https://en.wikipedia.org/wiki/{Function_key, Alt_key, Control_key, Esc_key}
+        // put("FN", "FN"); // no ISO character exists
+        put("CTRL", "⎈"); // ISO character "U+2388 ⎈ HELM SYMBOL" is unknown to people and never printed on computers, however "U+25C7 ◇ WHITE DIAMOND" is a nice presentation, and "^" for terminal app and mac is often used 
+        put("ALT", "⎇"); // ISO character "U+2387 ⎇ ALTERNATIVE KEY SYMBOL'" is unknown to people and only printed as the Option key "⌥" on Mac computer
+        put("ESC", "⎋"); // ISO character "U+238B ⎋ BROKEN CIRCLE WITH NORTHWEST ARROW" is unknown to people and not often printed on computers 
+    }};
+    
+    static final CharDisplayMap nicerLookingDisplay = new CharDisplayMap() {{
+        // nicer looking for most cases
+        put("-", "―"); // U+2015 ― HORIZONTAL BAR
+    }};
+    
+    /**
+     * Keys are displayed in a natural looking way, like "→" for "RIGHT" or "↲" for ENTER
+     */
+    public static final CharDisplayMap defaultCharDisplay = new CharDisplayMap() {{
+        putAll(classicArrowsDisplay);
+        putAll(wellKnownCharactersDisplay);
+        putAll(nicerLookingDisplay);
+        // all other characters are displayed as themselves
+    }};
+    
+    public static final CharDisplayMap lotsOfArrowsCharDisplay = new CharDisplayMap() {{
+        putAll(classicArrowsDisplay);
+        putAll(wellKnownCharactersDisplay);
+        putAll(lessKnownCharactersDisplay); // NEW
+        putAll(nicerLookingDisplay);
+    }};
+    
+    public static final CharDisplayMap arrowsOnlyCharDisplay = new CharDisplayMap() {{
+        putAll(classicArrowsDisplay);
+        // putAll(wellKnownCharactersDisplay); // REMOVED
+        // putAll(lessKnownCharactersDisplay); // REMOVED
+        putAll(nicerLookingDisplay);
+    }};
+    
+    public static final CharDisplayMap fullIsoCharDisplay = new CharDisplayMap() {{
+        putAll(classicArrowsDisplay);
+        putAll(wellKnownCharactersDisplay);
+        putAll(lessKnownCharactersDisplay); // NEW
+        putAll(nicerLookingDisplay);
+        putAll(notKnownIsoCharacters); // NEW
+    }};
+    
+    /**
+     * Some people might call our keys differently
+     */
+    static final CharDisplayMap controlCharsAliases = new CharDisplayMap() {{
+        put("ESCAPE", "ESC");
+        put("CONTROL", "CTRL");
+        put("RETURN", "ENTER"); // Technically different keys, but most applications won't see the difference
+        put("FUNCTION", "FN");
+        // no alias for ALT
+        
+        // Directions are sometimes written as first and last letter for brevety
+        put("LT", "LEFT"); 
+        put("RT", "RIGHT");
+        put("DN", "DOWN");
+        // put("UP", "UP"); well, the direction is already two letters
+        
+        put("PAGEUP", "PGUP");
+        put("PAGE_UP", "PGUP");
+        put("PAGE UP", "PGUP");
+        put("PAGE-UP", "PGUP");
+        
+        // no alias for HOME
+        // no alias for END
+        
+        put("PAGEDOWN", "PGDN");
+        put("PAGE_DOWN", "PGDN");
+        put("PAGE_DOWN", "PGDN");
+        put("PAGE-DOWN", "PGDN");
+        
+        put("DELETE", "DEL");
+        put("BACKSPACE", "BKSP");
+    }};
+    
+    /**
+     * Applies the 'controlCharsAliases' mapping to all the strings in *buttons*
+     * Modifies the array, doesn't return a new one.
+     */
+    void replaceAliases(String[][] buttons) {
+        for(int i = 0; i < buttons.length; i++)
+            for(int j = 0; j < buttons[i].length; j++)
+                buttons[i][j] = controlCharsAliases.get(buttons[i][j], buttons[i][j]);
+    }
+    
+    /**
+     * General util function to compute the longest column length in a matrix.
+     */
+    static int maximumLength(String[][] matrix) {
+        int m = 0;
+        for (int i = 0; i < matrix.length; i++)
+            m = Math.max(m, matrix[i].length);
+        return m;
+    }
+    
+    /**
+     * Reload the view given parameters in termux.properties
+     *
+     * @buttons matrix of String as defined in termux.properties extrakeys
+     * Can Contain The Strings CTRL ALT TAB FN ENTER LEFT RIGHT UP DOWN or normal strings
+     * Some aliases are possible like RETURN for ENTER, LT for LEFT and more (@see controlCharsAliases for the whole list).
+     * Any string of length > 1 in total Uppercase will print a warning
+     *
+     * Examples:
+     * "ENTER" will trigger the ENTER keycode
+     * "LEFT" will trigger the LEFT keycode and be displayed as "←"
+     * "→" will input a "→" character
+     * "−" will input a "−" character
+     * "-_-" will input the string "-_-"
+     */
+    void reload(String[][] buttons, CharDisplayMap charDisplayMap) {
+        for(SpecialButtonState state : specialButtons.values())
+            state.button = null;
+            
         removeAllViews();
+        
+        replaceAliases(buttons); // modifies the array
 
         final int rows = buttons.length;
-        int mx = 0;
-        for (int row = 0; row < rows; row++) {
-            if(buttons[row].length > mx) mx = buttons[row].length;
-        }
-        final int cols = mx;
+        final int cols = maximumLength(buttons);
 
         setRowCount(rows);
         setColumnCount(cols);
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                final String buttonText = (buttons[row][col] == null ? " " : buttons[row][col]);
-
-                Button button;
-                switch (buttonText) {
-                    case "CTRL":
-                        hasControlButton = true;
-                        button = controlButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
-                        button.setClickable(true);
-                        break;
-                    case "ALT":
-                        hasAltButton = true;
-                        button = altButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
-                        button.setClickable(true);
-                        break;
-                    case "FN":
-                        hasFnButton = true;
-                        button = fnButton = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
-                        button.setClickable(true);
-                        break;
-                    default:
-                        button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
-                        break;
+                String buttonText = buttons[row][col];
+                
+                if(buttonText == null) {
+                    // The button will be an empty button outputting a space character, like s space bar
+                    buttonText = " ";
                 }
-
-                button.setText(buttonText);
+                
+                Button button;
+                if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
+                    state = specialButtons.get(SpecialButton.valueOf(buttonText)); // for valueOf: https://stackoverflow.com/a/604426/1980630
+                    state.isOn = true;
+                    button = state.button = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
+                    button.setClickable(true);
+                } else {
+                    button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
+                }
+                
+                final String displayedText = charDisplayMap.get(buttonText, buttonText);
+                button.setText(displayedText);
                 button.setTextColor(TEXT_COLOR);
                 button.setPadding(0, 0, 0, 0);
 
@@ -220,17 +354,12 @@ public final class ExtraKeysView extends GridLayout {
                     public void onClick(View v) {
                         finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
                         View root = getRootView();
-                        switch (buttonText) {
-                            case "CTRL":
-                            case "ALT":
-                            case "FN":
-                                ToggleButton self = (ToggleButton) finalButton;
-                                self.setChecked(self.isChecked());
-                                self.setTextColor(self.isChecked() ? 0xFF80DEEA : TEXT_COLOR);
-                                break;
-                            default:
-                                sendKey(root, buttonText);
-                                break;
+                        if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
+                            ToggleButton self = (ToggleButton) finalButton;
+                            self.setChecked(self.isChecked());
+                            self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
+                        } else {
+                            sendKey(root, buttonText);
                         }
                     }
                 });
@@ -243,7 +372,7 @@ public final class ExtraKeysView extends GridLayout {
                             case MotionEvent.ACTION_DOWN:
                                 longPressCount = 0;
                                 v.setBackgroundColor(BUTTON_PRESSED_COLOR);
-                                if ("↑↓←→".contains(buttonText)) {
+                                if (Arrays.asList("UP", "DOWN", "LEFT", "RIGHT").contains(buttonText)) {
                                     scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
                                     scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
                                         @Override
@@ -254,11 +383,13 @@ public final class ExtraKeysView extends GridLayout {
                                     }, 400, 80, TimeUnit.MILLISECONDS);
                                 }
                                 return true;
+                            
                             case MotionEvent.ACTION_MOVE:
-                                if ("―/-".contains(buttonText)) {
+                                // These two keys have a Move-Up button appearing
+                                if (Arrays.asList("/", "-").contains(buttonText)) {
                                     if (popupWindow == null && event.getY() < 0) {
                                         v.setBackgroundColor(BUTTON_COLOR);
-                                        String text = "―".equals(buttonText) ? "|" : "\\";
+                                        String text = "-".equals(buttonText) ? "|" : "\\";
                                         popup(v, text);
                                     }
                                     if (popupWindow != null && event.getY() > 0) {
@@ -268,6 +399,7 @@ public final class ExtraKeysView extends GridLayout {
                                     }
                                 }
                                 return true;
+                            
                             case MotionEvent.ACTION_UP:
                             case MotionEvent.ACTION_CANCEL:
                                 v.setBackgroundColor(BUTTON_COLOR);
@@ -276,28 +408,28 @@ public final class ExtraKeysView extends GridLayout {
                                     scheduledExecutor = null;
                                 }
                                 if (longPressCount == 0) {
-                                    if (popupWindow != null && "―/-".contains(buttonText)) {
+                                    if (popupWindow != null && Arrays.asList("/", "-").contains(buttonText)) {
                                         popupWindow.setContentView(null);
                                         popupWindow.dismiss();
                                         popupWindow = null;
-                                        sendKey(root, "―".equals(buttonText) ? "|" : "\\");
+                                        sendKey(root, "-".equals(buttonText) ? "|" : "\\");
                                     } else {
                                         v.performClick();
                                     }
                                 }
                                 return true;
+                            
                             default:
                                 return true;
                         }
-
                     }
                 });
 
                 LayoutParams param = new GridLayout.LayoutParams();
                 param.width = 0;
-                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP){  //special handle api 21
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) { // special handle api 21
                     param.height = (int)(37.5 * getResources().getDisplayMetrics().density + 0.5); // 37.5 equal to R.id.viewpager layout_height / rows in DP
-                }else{
+                } else {
                     param.height = 0;
                 }
                 param.setMargins(0, 0, 0, 0);
