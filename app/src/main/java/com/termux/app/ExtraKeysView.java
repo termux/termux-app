@@ -326,7 +326,7 @@ public final class ExtraKeysView extends GridLayout {
         setColumnCount(cols);
 
         for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
+            for (int col = 0; col < buttons[row].length; col++) {
                 final String buttonText = buttons[row][col];
                 
                 Button button;
