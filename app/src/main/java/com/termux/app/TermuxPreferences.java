@@ -45,6 +45,13 @@ final class TermuxPreferences {
 
     boolean mBackIsEscape;
     boolean mShowExtraKeys;
+    
+    /**
+     * If value is not in the range [min, max], set it to either min or max.
+     */
+    static int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
+    }
 
     TermuxPreferences(Context context) {
         reloadFromProperties(context);
@@ -68,7 +75,7 @@ final class TermuxPreferences {
         } catch (NumberFormatException | ClassCastException e) {
             mFontSize = defaultFontSize;
         }
-        mFontSize = Math.max(MIN_FONTSIZE, Math.min(mFontSize, MAX_FONTSIZE));
+        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE); 
     }
 
     boolean isShowExtraKeys() {
@@ -134,7 +141,7 @@ final class TermuxPreferences {
                     break;
             }
             
-            JSONArray arr = new JSONArray(props.getProperty("extrakeys", "[[\"ESC\",\"CTRL\",\"ALT\",\"TAB\",\"―\",\"/\",\"|\"]]"));
+            JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[[\"ESC\",\"CTRL\",\"ALT\",\"TAB\",\"-\",\"/\",\"|\"]]"));
             mExtraKeys = new String[arr.length()][];
             for(int i = 0; i < arr.length(); i++) {
                 JSONArray line = arr.getJSONArray(i);
