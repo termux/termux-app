@@ -66,7 +66,7 @@ public final class ExtraKeysView extends GridLayout {
         put("PGDN", KeyEvent.KEYCODE_PAGE_DOWN);
         put("INS", KeyEvent.KEYCODE_INSERT);
         put("DEL", KeyEvent.KEYCODE_FORWARD_DEL);
-        put("BKSP", KeyEvent.KEYCODE_BACKWARD_DEL);
+        put("BKSP", KeyEvent.KEYCODE_DEL);
         put("UP", KeyEvent.KEYCODE_DPAD_UP);
         put("LEFT", KeyEvent.KEYCODE_DPAD_LEFT);
         put("RIGHT", KeyEvent.KEYCODE_DPAD_RIGHT);
@@ -84,7 +84,7 @@ public final class ExtraKeysView extends GridLayout {
             // not a control char
             TerminalSession session = terminalView.getCurrentSession();
             if (session != null)
-                session.write(KeyName);
+                session.write(keyName);
         }
     }
     
@@ -381,6 +381,7 @@ public final class ExtraKeysView extends GridLayout {
                                     }, 400, 80, TimeUnit.MILLISECONDS);
                                 }
                                 return true;
+                            
                             case MotionEvent.ACTION_MOVE:
                                 // These two keys have a Move-Up button appearing
                                 if (Arrays.asList("/", "-").contains(buttonText)) {
@@ -396,6 +397,7 @@ public final class ExtraKeysView extends GridLayout {
                                     }
                                 }
                                 return true;
+                            
                             case MotionEvent.ACTION_UP:
                             case MotionEvent.ACTION_CANCEL:
                                 v.setBackgroundColor(BUTTON_COLOR);
@@ -414,6 +416,7 @@ public final class ExtraKeysView extends GridLayout {
                                     }
                                 }
                                 return true;
+                            
                             default:
                                 return true;
                         }
@@ -422,7 +425,7 @@ public final class ExtraKeysView extends GridLayout {
 
                 LayoutParams param = new GridLayout.LayoutParams();
                 param.width = 0;
-                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {  //special handle api 21
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) { // special handle api 21
                     param.height = (int)(37.5 * getResources().getDisplayMetrics().density + 0.5); // 37.5 equal to R.id.viewpager layout_height / rows in DP
                 } else {
                     param.height = 0;
