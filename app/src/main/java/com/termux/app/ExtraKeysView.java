@@ -257,7 +257,7 @@ public final class ExtraKeysView extends GridLayout {
         put("LT", "LEFT"); 
         put("RT", "RIGHT");
         put("DN", "DOWN");
-        // put("UP", "UP"); well, the direction is already two letters
+        // put("UP", "UP"); well, "UP" is already two letters
         
         put("PAGEUP", "PGUP");
         put("PAGE_UP", "PGUP");
@@ -274,6 +274,11 @@ public final class ExtraKeysView extends GridLayout {
         
         put("DELETE", "DEL");
         put("BACKSPACE", "BKSP");
+        
+        // easier for writing in termux.properties
+        put("BACKSLASH", "\\");
+        put("QUOTE", "\"");
+        put("APOSTROPHE", "'");
     }};
     
     /**
