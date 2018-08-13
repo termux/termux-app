@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 65
         versionName "0.65"
     }
