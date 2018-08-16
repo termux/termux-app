@@ -22,6 +22,7 @@
 
    <string name="reset_toast_notification">Terminal reset.</string>
 
+    <string name="bluetooth">Bluetooth</string>
   <string name="select_url">Select URL</string>
   <string name="select_url_dialog_title">Click URL to copy or long press to open</string>
   <string name="select_all_and_share">Share transcript</string>
@@ -47,5 +48,9 @@
   <string name="file_received_title">Save file in ~/downloads/</string>
   <string name="file_received_edit_button">Edit</string>
   <string name="file_received_open_folder_button">Open folder</string>
+    <string name="bluetooth_disconnect">Disconnect</string>
+    <string name="confirm_disconnect_process">Really disconnect sesssion ?</string>
+    <string name="bluetooth_disconnected">Bluetooth disconnected</string>
+    <string name="confirm_disconnect_bt">Really disconnect?</string>
 
 </resources>
