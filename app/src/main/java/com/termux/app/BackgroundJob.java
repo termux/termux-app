@@ -103,13 +103,16 @@ public final class BackgroundJob {
         final String prefixEnv = "PREFIX=" + TermuxService.PREFIX_PATH;
         final String androidRootEnv = "ANDROID_ROOT=" + System.getenv("ANDROID_ROOT");
         final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
+        // Needed for dalvikvm on some devices. Without these variable, such
+        // tools as 'dx' or 'ecj' may fail.
+        final String bootClassPathEnv = "BOOTCLASSPATH=" + System.getenv("BOOTCLASSPATH");
         // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
         // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
         final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
         if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             final String pathEnv = "PATH=" + System.getenv("PATH");
-            return new String[]{termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv, externalStorageEnv};
+            return new String[]{termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, bootClassPathEnv, pathEnv, externalStorageEnv};
         } else {
             final String ldEnv = "LD_LIBRARY_PATH=" + TermuxService.PREFIX_PATH + "/lib";
             final String langEnv = "LANG=en_US.UTF-8";
@@ -117,7 +120,7 @@ public final class BackgroundJob {
             final String pwdEnv = "PWD=" + cwd;
             final String tmpdirEnv = "TMPDIR=" + TermuxService.PREFIX_PATH + "/tmp";
 
-            return new String[]{termEnv, homeEnv, prefixEnv, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv, tmpdirEnv};
+            return new String[]{termEnv, homeEnv, prefixEnv, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, bootClassPathEnv, externalStorageEnv, tmpdirEnv};
         }
     }
 
