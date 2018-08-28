@@ -17,11 +17,11 @@ ext {
 }
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 28
 
         externalNativeBuild {
             ndkBuild {

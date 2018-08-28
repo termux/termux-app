@@ -17,7 +17,7 @@ ext {
 }
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     dependencies {
         implementation 'com.android.support:support-annotations:27.1.1'
@@ -26,7 +26,7 @@ android {
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 28
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 

@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     dependencies {
         implementation 'com.android.support:support-annotations:27.1.1'
