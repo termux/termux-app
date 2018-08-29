@@ -17,8 +17,9 @@ android:
     - extra-android-m2repository
 
 before_install:
-  - git clone https://github.com/urho3d/android-ndk.git $HOME/android-ndk
-  - export ANDROID_NDK_HOME=$HOME/android-ndk
+    #- git clone https://github.com/urho3d/android-ndk.git $HOME/android-ndk
+    #- export ANDROID_NDK_HOME=$HOME/android-ndk
+  - yes | sdkmanager "ndk-bundle"
   - yes | sdkmanager "platforms;android-28"
 
 script:
