@@ -139,7 +139,7 @@ public class TermuxFileReceiverActivity extends Activity {
                                         "\n" + 
                                         "vi $1\n";
                         printToFile(linesToWrite, new File(EDITOR_PROGRAM));
-                        Toast.makeText(context, "Default script will load,You can modify it at $HOME/bin/termux-file-editor", Toast.LENGTH_LONG).show();
+                        Toast.makeText(TermuxFileReceiverActivity.this, "Default script will load,You can modify it at $HOME/bin/termux-file-editor", Toast.LENGTH_LONG).show();
                     }
 
                     // Do this for the user if necessary:
