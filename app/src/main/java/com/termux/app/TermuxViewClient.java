@@ -20,7 +20,9 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     final TermuxActivity mActivity;
 
-    /** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
+    /**
+     * Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys.
+     */
     boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
 
     public TermuxViewClient(TermuxActivity activity) {
@@ -70,7 +72,7 @@ public final class TermuxViewClient implements TerminalViewClient {
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP || unicodeChar == 'p' /* previous */) {
                 mActivity.switchToSession(false);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                mActivity.getDrawer().openDrawer(Gravity.LEFT);
+                mActivity.getDrawer().openDrawer(Gravity.START);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 mActivity.getDrawer().closeDrawers();
             } else if (unicodeChar == 'k'/* keyboard */) {
@@ -259,7 +261,9 @@ public final class TermuxViewClient implements TerminalViewClient {
         return false;
     }
 
-    /** Handle dedicated volume buttons as virtual keys if applicable. */
+    /**
+     * Handle dedicated volume buttons as virtual keys if applicable.
+     */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
         InputDevice inputDevice = event.getDevice();
         if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
@@ -274,6 +278,4 @@ public final class TermuxViewClient implements TerminalViewClient {
         }
         return false;
     }
-
-
 }

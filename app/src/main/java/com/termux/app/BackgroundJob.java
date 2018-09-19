@@ -188,5 +188,4 @@ public final class BackgroundJob {
         if (args != null) Collections.addAll(result, args);
         return result.toArray(new String[result.size()]);
     }
-
 }

@@ -105,7 +105,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
             if (mWakeLock == null) {
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
                 mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, EmulatorDebug.LOG_TAG);
-                mWakeLock.acquire();
+                mWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
 
                 // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
                 WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -251,11 +251,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     public boolean isWakelockEnabled() {
-        if (mWakeLock == null) {
-            return false;
-        } else {
-            return mWakeLock.isHeld();
-        }
+        return mWakeLock != null && mWakeLock.isHeld();
     }
 
     TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
@@ -343,12 +339,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     public void onBackgroundJobExited(final BackgroundJob task) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mBackgroundTasks.remove(task);
-                updateNotification();
-            }
+        mHandler.post(() -> {
+            mBackgroundTasks.remove(task);
+            updateNotification();
         });
     }
 

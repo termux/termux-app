@@ -63,7 +63,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
     };
 
     @Override
-    public Cursor queryRoots(String[] projection) throws FileNotFoundException {
+    public Cursor queryRoots(String[] projection) {
         final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_ROOT_PROJECTION);
         @SuppressWarnings("ConstantConditions") final String applicationName = getContext().getString(R.string.application_name);
 
@@ -238,5 +238,4 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Document.COLUMN_FLAGS, flags);
         row.add(Document.COLUMN_ICON, R.mipmap.ic_launcher);
     }
-
 }

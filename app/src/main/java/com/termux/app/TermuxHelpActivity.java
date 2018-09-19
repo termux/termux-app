@@ -71,5 +71,4 @@ public final class TermuxHelpActivity extends Activity {
             super.onBackPressed();
         }
     }
-
 }

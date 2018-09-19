@@ -2,13 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
-
-    dependencies {
-        implementation 'com.android.support:support-annotations:27.1.1'
-        implementation "com.android.support:support-core-ui:27.1.1"
-        implementation project(":terminal-view")
-    }
-
+	buildToolsVersion '28.0.2'
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion 21
@@ -23,9 +17,21 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+		debug {
+			zipAlignEnabled true
+		}
+    }
+
+	compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
+    implementation project(':terminal-view')
+    implementation 'com.android.support:support-annotations:28.0.0-rc02'
+    implementation 'com.android.support:support-core-ui:28.0.0-rc02'
+
     testImplementation 'junit:junit:4.12'
 }

@@ -23,7 +23,8 @@
         android:banner="@drawable/banner"
         android:label="@string/application_name"
         android:theme="@style/Theme.Termux"
-        android:supportsRtl="false" >
+        android:supportsRtl="false"
+        tools:targetApi="m">
 
         <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8
              mark the app with "This app is optimized to run in full screen." -->
@@ -34,7 +35,8 @@
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
-            android:windowSoftInputMode="adjustResize|stateAlwaysVisible" >
+            android:windowSoftInputMode="adjustResize|stateAlwaysVisible"
+            tools:targetApi="n">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -52,7 +54,8 @@
             android:theme="@android:style/Theme.Material.Light.DarkActionBar"
             android:parentActivityName=".app.TermuxActivity"
             android:resizeableActivity="true"
-            android:label="@string/application_name" />
+            android:label="@string/application_name"
+            tools:targetApi="n" />
 
         <activity
             android:name="com.termux.filepicker.TermuxFileReceiverActivity"
@@ -60,7 +63,8 @@
             android:taskAffinity="com.termux.filereceiver"
             android:excludeFromRecents="true"
             android:resizeableActivity="true"
-            android:noHistory="true">
+            android:noHistory="true"
+            tools:targetApi="n">
             <!-- Accept multiple file types when sending. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>

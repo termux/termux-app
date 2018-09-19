@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import com.termux.terminal.TerminalSession;
 
+import org.json.JSONArray;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -18,7 +20,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.json.JSONArray;
 
 final class TermuxPreferences {
 
@@ -45,7 +46,7 @@ final class TermuxPreferences {
 
     boolean mBackIsEscape;
     boolean mShowExtraKeys;
-    
+
     /**
      * If value is not in the range [min, max], set it to either min or max.
      */
@@ -75,7 +76,7 @@ final class TermuxPreferences {
         } catch (NumberFormatException | ClassCastException e) {
             mFontSize = defaultFontSize;
         }
-        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE); 
+        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE);
     }
 
     boolean isShowExtraKeys() {
@@ -112,7 +113,7 @@ final class TermuxPreferences {
         }
         return null;
     }
-    
+
     public String[][] mExtraKeys;
 
     public void reloadFromProperties(Context context) {
@@ -140,13 +141,13 @@ final class TermuxPreferences {
                     mBellBehaviour = BELL_VIBRATE;
                     break;
             }
-            
+
             JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', '-', 'DOWN', 'UP']]"));
             mExtraKeys = new String[arr.length()][];
-            for(int i = 0; i < arr.length(); i++) {
+            for (int i = 0; i < arr.length(); i++) {
                 JSONArray line = arr.getJSONArray(i);
                 mExtraKeys[i] = new String[line.length()];
-                for(int j = 0; j < line.length(); j++) {
+                for (int j = 0; j < line.length(); j++) {
                     mExtraKeys[i][j] = line.getString(j);
                 }
             }
@@ -204,5 +205,4 @@ final class TermuxPreferences {
         }
         shortcuts.add(new KeyboardShortcut(codePoint, shortcutAction));
     }
-
 }

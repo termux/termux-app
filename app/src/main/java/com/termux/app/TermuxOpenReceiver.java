@@ -186,5 +186,4 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
         }
     }
-
 }

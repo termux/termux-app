@@ -4,9 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.DialogInterface.OnDismissListener;
 import android.os.Build;
 import android.os.Environment;
 import android.os.UserManager;
@@ -52,7 +49,9 @@ import java.util.zip.ZipInputStream;
  */
 final class TermuxInstaller {
 
-    /** Performs setup if necessary. */
+    /**
+     * Performs setup if necessary.
+     */
     static void setupIfNeeded(final Activity activity, final Runnable whenDone) {
         // Termux can only be run as the primary user (device owner) since only that
         // account has the expected file system paths. Verify that:
@@ -60,12 +59,7 @@ final class TermuxInstaller {
         boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
         if (!isPrimaryUser) {
             new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_not_primary_user_message)
-                .setOnDismissListener(new OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        System.exit(0);
-                    }
-                }).setPositiveButton(android.R.string.ok, null).show();
+                .setOnDismissListener(dialog -> System.exit(0)).setPositiveButton(android.R.string.ok, null).show();
             return;
         }
 
@@ -136,46 +130,29 @@ final class TermuxInstaller {
                         throw new RuntimeException("Unable to rename staging folder");
                     }
 
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            whenDone.run();
-                        }
-                    });
+                    activity.runOnUiThread(whenDone);
                 } catch (final Exception e) {
                     Log.e(EmulatorDebug.LOG_TAG, "Bootstrap error", e);
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
-                                    .setNegativeButton(R.string.bootstrap_error_abort, new OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                            activity.finish();
-                                        }
-                                    }).setPositiveButton(R.string.bootstrap_error_try_again, new OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                        TermuxInstaller.setupIfNeeded(activity, whenDone);
-                                    }
-                                }).show();
-                            } catch (WindowManager.BadTokenException e) {
-                                // Activity already dismissed - ignore.
-                            }
+                    activity.runOnUiThread(() -> {
+                        try {
+                            new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
+                                .setNegativeButton(R.string.bootstrap_error_abort, (dialog, which) -> {
+                                    dialog.dismiss();
+                                    activity.finish();
+                                }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
+                                dialog.dismiss();
+                                TermuxInstaller.setupIfNeeded(activity, whenDone);
+                            }).show();
+                        } catch (WindowManager.BadTokenException e1) {
+                            // Activity already dismissed - ignore.
                         }
                     });
                 } finally {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                progress.dismiss();
-                            } catch (RuntimeException e) {
-                                // Activity already dismissed - ignore.
-                            }
+                    activity.runOnUiThread(() -> {
+                        try {
+                            progress.dismiss();
+                        } catch (RuntimeException e) {
+                            // Activity already dismissed - ignore.
                         }
                     });
                 }
@@ -183,7 +160,9 @@ final class TermuxInstaller {
         }.start();
     }
 
-    /** Get bootstrap zip url for this systems cpu architecture. */
+    /**
+     * Get bootstrap zip url for this systems cpu architecture.
+     */
     static URL determineZipUrl() throws MalformedURLException {
         String archName = determineTermuxArchName();
         return new URL("https://termux.net/bootstrap/bootstrap-" + archName + ".zip");
@@ -199,17 +178,23 @@ final class TermuxInstaller {
         // emulation is available.
         for (String androidArch : Build.SUPPORTED_ABIS) {
             switch (androidArch) {
-                case "arm64-v8a": return "aarch64";
-                case "armeabi-v7a": return "arm";
-                case "x86_64": return "x86_64";
-                case "x86": return "i686";
+                case "arm64-v8a":
+                    return "aarch64";
+                case "armeabi-v7a":
+                    return "arm";
+                case "x86_64":
+                    return "x86_64";
+                case "x86":
+                    return "i686";
             }
         }
         throw new RuntimeException("Unable to determine arch from Build.SUPPORTED_ABIS =  " +
             Arrays.toString(Build.SUPPORTED_ABIS));
     }
 
-    /** Delete a folder and all its content or throw. Don't follow symlinks. */
+    /**
+     * Delete a folder and all its content or throw. Don't follow symlinks.
+     */
     static void deleteFolder(File fileOrDirectory) throws IOException {
         if (fileOrDirectory.getCanonicalPath().equals(fileOrDirectory.getAbsolutePath()) && fileOrDirectory.isDirectory()) {
             File[] children = fileOrDirectory.listFiles();
@@ -280,5 +265,4 @@ final class TermuxInstaller {
             }
         }.start();
     }
-
 }
