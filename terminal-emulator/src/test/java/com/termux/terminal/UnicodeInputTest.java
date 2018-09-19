@@ -1,10 +1,8 @@
 package com.termux.terminal;
 
-import java.io.UnsupportedEncodingException;
-
 public class UnicodeInputTest extends TerminalTestCase {
 
-	public void testIllFormedUtf8SuccessorByteNotConsumed() throws Exception {
+    public void testIllFormedUtf8SuccessorByteNotConsumed() {
 		// The Unicode Standard Version 6.2 – Core Specification (http://www.unicode.org/versions/Unicode6.2.0/ch03.pdf):
 		// "If the converter encounters an ill-formed UTF-8 code unit sequence which starts with a valid first byte, but which does not
 		// continue with valid successor bytes (see Table 3-7), it must not consume the successor bytes as part of the ill-formed
@@ -55,14 +53,14 @@ public class UnicodeInputTest extends TerminalTestCase {
 		// assertLinesAre("\uFFFD\uFFFDa  ", "     ");
 	}
 
-	public void testUnassignedCodePoint() throws UnsupportedEncodingException {
+    public void testUnassignedCodePoint() {
 		withTerminalSized(3, 3);
 		// UTF-8 for U+C2541, an unassigned code point:
 		byte[] b = new byte[]{(byte) 0xf3, (byte) 0x82, (byte) 0x95, (byte) 0x81};
 		mTerminal.append(b, b.length);
 		enterString("Y");
 		assertEquals(1, Character.charCount(TerminalEmulator.UNICODE_REPLACEMENT_CHAR));
-		assertLineStartsWith(0, TerminalEmulator.UNICODE_REPLACEMENT_CHAR, (int) 'Y', ' ');
+        assertLineStartsWith(TerminalEmulator.UNICODE_REPLACEMENT_CHAR, (int) 'Y', ' ');
 	}
 
 	public void testStuff() {
@@ -74,11 +72,11 @@ public class UnicodeInputTest extends TerminalTestCase {
 		mTerminal.append(b, b.length);
 	}
 
-	public void testSimpleCombining() throws Exception {
+    public void testSimpleCombining() {
 		withTerminalSized(3, 2).enterString(" a\u0302 ").assertLinesAre(" a\u0302 ", "   ");
 	}
 
-	public void testCombiningCharacterInFirstColumn() throws Exception {
+    public void testCombiningCharacterInFirstColumn() {
 		withTerminalSized(5, 3).enterString("test\r\nhi\r\n").assertLinesAre("test ", "hi   ", "     ");
 
 		// U+0302 is COMBINING CIRCUMFLEX ACCENT. Test case from mosh (http://mosh.mit.edu/).
@@ -86,20 +84,20 @@ public class UnicodeInputTest extends TerminalTestCase {
 		assertLinesAre("test ", "abc  ", " \u0302    ", "def  ", "     ");
 	}
 
-	public void testCombiningCharacterInLastColumn() throws Exception {
+    public void testCombiningCharacterInLastColumn() {
 		withTerminalSized(3, 2).enterString("  a\u0302").assertLinesAre("  a\u0302", "   ");
 		withTerminalSized(3, 2).enterString("  à̲").assertLinesAre("  à̲", "   ");
 		withTerminalSized(3, 2).enterString("Aà̲F").assertLinesAre("Aà̲F", "   ");
 	}
 
-	public void testWideCharacterInLastColumn() throws Exception {
+    public void testWideCharacterInLastColumn() {
 		withTerminalSized(3, 2).enterString("  枝\u0302").assertLinesAre("   ", "枝\u0302 ");
 
 		withTerminalSized(3, 2).enterString(" 枝").assertLinesAre(" 枝", "   ").assertCursorAt(0, 2);
 		enterString("a").assertLinesAre(" 枝", "a  ");
 	}
 
-	public void testWideCharacterDeletion() throws Exception {
+    public void testWideCharacterDeletion() {
 		// CSI Ps D Cursor Backward Ps Times
 		withTerminalSized(3, 2).enterString("枝\033[Da").assertLinesAre(" a ", "   ");
 		withTerminalSized(3, 2).enterString("枝\033[2Da").assertLinesAre("a  ", "   ");
@@ -118,14 +116,14 @@ public class UnicodeInputTest extends TerminalTestCase {
 		withTerminalSized(3, 2).enterString("abc\033[3D枝").assertLinesAre("枝c", "   ");
 	}
 
-	public void testOverlongUtf8Encoding() throws Exception {
+    public void testOverlongUtf8Encoding() {
 		// U+0020 should be encoded as 0x20, 0xc0 0xa0 is an overlong encoding
 		// so should be replaced with the replacement char U+FFFD.
 		withTerminalSized(5, 5).mTerminal.append(new byte[]{(byte) 0xc0, (byte) 0xa0, 'Y'}, 3);
 		assertLineIs(0, "\uFFFDY   ");
 	}
 
-	public void testWideCharacterWithoutWrapping() throws Exception {
+    public void testWideCharacterWithoutWrapping() {
 		// With wraparound disabled. The behaviour when a wide character is output with cursor in
 		// the last column when autowrap is disabled is not obvious, but we expect the wide
 		// character to be ignored here.

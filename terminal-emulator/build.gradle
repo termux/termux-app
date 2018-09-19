@@ -1,6 +1,6 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.3"
-    id "com.github.dcendents.android-maven" version "2.0"
+    id "com.jfrog.bintray" version "1.8.4"
+    id "com.github.dcendents.android-maven" version "2.1"
 }
 
 apply plugin: 'com.android.library'
@@ -18,6 +18,7 @@ ext {
 
 android {
     compileSdkVersion 28
+	buildToolsVersion '28.0.2'
 
     defaultConfig {
         minSdkVersion 21
@@ -45,6 +46,11 @@ android {
         ndkBuild {
             path "src/main/jni/Android.mk"
         }
+    }
+
+	compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

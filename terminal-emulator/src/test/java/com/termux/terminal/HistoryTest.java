@@ -1,6 +1,5 @@
 package com.termux.terminal;
 
-
 public class HistoryTest extends TerminalTestCase {
 
 	public void testHistory() {

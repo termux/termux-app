@@ -212,8 +212,8 @@ public abstract class TerminalTestCase extends TestCase {
 		return this;
 	}
 
-	protected TerminalTestCase assertLineStartsWith(int line, int... codePoints) {
-		char[] chars = mTerminal.getScreen().mLines[mTerminal.getScreen().externalToInternalRow(line)].mText;
+    protected TerminalTestCase assertLineStartsWith(int... codePoints) {
+        char[] chars = mTerminal.getScreen().mLines[mTerminal.getScreen().externalToInternalRow(0)].mText;
 		int charIndex = 0;
 		for (int i = 0; i < codePoints.length; i++) {
 			int lineCodePoint = chars[charIndex++];
