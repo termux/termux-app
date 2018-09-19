@@ -108,5 +108,4 @@ final class GestureAndScaleRecognizer {
     public boolean isInProgress() {
         return mScaleDetector.isInProgress();
     }
-
 }

@@ -1,6 +1,6 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.3"
-    id "com.github.dcendents.android-maven" version "2.0"
+    id "com.jfrog.bintray" version "1.8.4"
+    id "com.github.dcendents.android-maven" version "2.1"
 }
 
 apply plugin: 'com.android.library'
@@ -18,11 +18,7 @@ ext {
 
 android {
     compileSdkVersion 28
-
-    dependencies {
-        implementation 'com.android.support:support-annotations:27.1.1'
-        api project(":terminal-emulator")
-    }
+	buildToolsVersion '28.0.2'
 
     defaultConfig {
         minSdkVersion 21
@@ -36,9 +32,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+	compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
+    api project(':terminal-emulator')
+    implementation 'com.android.support:support-annotations:28.0.0-rc02'
+
     testImplementation 'junit:junit:4.12'
 }
 
