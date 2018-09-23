@@ -1,17 +1,17 @@
-Termux app
-==========
 [![Travis build status](https://travis-ci.org/termux/termux-app.svg?branch=master)](https://travis-ci.org/termux/termux-app)
 [![Join the chat at https://gitter.im/termux/termux](https://badges.gitter.im/termux/termux.svg)](https://gitter.im/termux/termux)
+
+
+Termux app
+==========
 
 [Termux](https://termux.com) is an Android terminal app and Linux environment.
 
 * [Termux on Google Play Store](https://play.google.com/store/apps/details?id=com.termux)
 * [Termux on F-Droid](https://f-droid.org/repository/browse/?fdid=com.termux)
-* [Termux Facebook](https://facebook.com/termux/)
 * [Termux Google+ community](http://termux.com/community/)
-* [Termux Help](http://termux.com/help/)
+* [Termux Wiki](https://wiki.termux.com/wiki/)
 * [Termux Twitter](http://twitter.com/termux/)
-* [Termux Wiki](https://wiki.termux.com/wiki/)  
 
 Note that this repository is for the app itself (the user interface and the terminal emulation). For the packages installable inside the app, see [termux/termux-packages](https://github.com/termux/termux-packages)
 
