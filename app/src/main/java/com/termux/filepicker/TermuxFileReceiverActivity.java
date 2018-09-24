@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.util.Patterns;
+import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.DialogUtils;
@@ -22,13 +23,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 public class TermuxFileReceiverActivity extends Activity {
 
     static final String TERMUX_RECEIVEDIR = TermuxService.FILES_PATH + "/home/downloads";
     static final String EDITOR_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-file-editor";
     static final String URL_OPENER_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-url-opener";
-
+    public String linesToWrite;
+    
     /**
      * If the activity should be finished when the name input dialog is dismissed. This is disabled
      * before showing an error dialog, since the act of showing the error dialog will cause the
@@ -127,9 +133,13 @@ public class TermuxFileReceiverActivity extends Activity {
 
                     final File editorProgramFile = new File(EDITOR_PROGRAM);
                     if (!editorProgramFile.isFile()) {
-                        showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
-                            + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
-                        return;
+                        //showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
+                        //    + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
+                        linesToWrite =  "#!/data/data/com.termux/files/usr/bin/bash\n" +
+                                        "\n" + 
+                                        "vi $1\n";
+                        printToFile(linesToWrite, new File(EDITOR_PROGRAM));
+                        Toast.makeText(TermuxFileReceiverActivity.this, "Default script will load,You can modify it at $HOME/bin/termux-file-editor", Toast.LENGTH_LONG).show();
                     }
 
                     // Do this for the user if necessary:
