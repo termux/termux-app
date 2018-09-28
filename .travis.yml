@@ -1,6 +1,6 @@
 sudo: false
 language: android
-jdk: oraclejdk8
+jdk: oraclejdk11
 
 env:
   global:
@@ -12,13 +12,11 @@ android:
   components:
     - platform-tools
     - tools
-    - build-tools-28.0.2
+    - build-tools-28.0.3
     - android-28
     - extra-android-m2repository
 
 before_install:
-    #- git clone https://github.com/urho3d/android-ndk.git $HOME/android-ndk
-    #- export ANDROID_NDK_HOME=$HOME/android-ndk
   - yes | sdkmanager "ndk-bundle"
   - yes | sdkmanager "platforms;android-28"
 
