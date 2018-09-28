@@ -108,17 +108,17 @@ public final class ExtraKeysView extends GridLayout {
     private PopupWindow popupWindow;
     private int longPressCount;
     
-    /** @deprecated, call readSpecialButton(SpecialButton.CTRL); */
+    /** @deprecated call readSpecialButton(SpecialButton.CTRL); */
     public boolean readControlButton() {
         return readSpecialButton(SpecialButton.CTRL);
     }
     
-    /** @deprecated, call readSpecialButton(SpecialButton.ALT); */
+    /** @deprecated call readSpecialButton(SpecialButton.ALT); */
     public boolean readAltButton() {
         return readSpecialButton(SpecialButton.ALT);
     }
     
-    /** @deprecated, call readSpecialButton(SpecialButton.FN); */
+    /** @deprecated call readSpecialButton(SpecialButton.FN); */
     public boolean readFnButton() {
         return readSpecialButton(SpecialButton.FN);
     }
@@ -269,7 +269,6 @@ public final class ExtraKeysView extends GridLayout {
         
         put("PAGEDOWN", "PGDN");
         put("PAGE_DOWN", "PGDN");
-        put("PAGE_DOWN", "PGDN");
         put("PAGE-DOWN", "PGDN");
         
         put("DELETE", "DEL");
@@ -296,15 +295,14 @@ public final class ExtraKeysView extends GridLayout {
      */
     static int maximumLength(String[][] matrix) {
         int m = 0;
-        for (int i = 0; i < matrix.length; i++)
-            m = Math.max(m, matrix[i].length);
+        for (String[] aMatrix : matrix) m = Math.max(m, aMatrix.length);
         return m;
     }
     
     /**
      * Reload the view given parameters in termux.properties
      *
-     * @buttons matrix of String as defined in termux.properties extrakeys
+     * @param buttons matrix of String as defined in termux.properties extrakeys
      * Can Contain The Strings CTRL ALT TAB FN ENTER LEFT RIGHT UP DOWN or normal strings
      * Some aliases are possible like RETURN for ENTER, LT for LEFT and more (@see controlCharsAliases for the whole list).
      * Any string of length > 1 in total Uppercase will print a warning
@@ -350,79 +348,70 @@ public final class ExtraKeysView extends GridLayout {
                 button.setPadding(0, 0, 0, 0);
 
                 final Button finalButton = button;
-                button.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
-                        View root = getRootView();
-                        if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
-                            ToggleButton self = (ToggleButton) finalButton;
-                            self.setChecked(self.isChecked());
-                            self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
-                        } else {
-                            sendKey(root, buttonText);
-                        }
+                button.setOnClickListener(v -> {
+                    finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                    View root = getRootView();
+                    if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
+                        ToggleButton self = (ToggleButton) finalButton;
+                        self.setChecked(self.isChecked());
+                        self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
+                    } else {
+                        sendKey(root, buttonText);
                     }
                 });
 
-                button.setOnTouchListener(new OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        final View root = getRootView();
-                        switch (event.getAction()) {
-                            case MotionEvent.ACTION_DOWN:
-                                longPressCount = 0;
-                                v.setBackgroundColor(BUTTON_PRESSED_COLOR);
-                                if (Arrays.asList("UP", "DOWN", "LEFT", "RIGHT").contains(buttonText)) {
-                                    scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-                                    scheduledExecutor.scheduleWithFixedDelay(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            longPressCount++;
-                                            sendKey(root, buttonText);
-                                        }
-                                    }, 400, 80, TimeUnit.MILLISECONDS);
+                button.setOnTouchListener((v, event) -> {
+                    final View root = getRootView();
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            longPressCount = 0;
+                            v.setBackgroundColor(BUTTON_PRESSED_COLOR);
+                            if (Arrays.asList("UP", "DOWN", "LEFT", "RIGHT").contains(buttonText)) {
+                                scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+                                scheduledExecutor.scheduleWithFixedDelay(() -> {
+                                    longPressCount++;
+                                    sendKey(root, buttonText);
+                                }, 400, 80, TimeUnit.MILLISECONDS);
+                            }
+                            return true;
+
+                        case MotionEvent.ACTION_MOVE:
+                            // These two keys have a Move-Up button appearing
+                            if (Arrays.asList("/", "-").contains(buttonText)) {
+                                if (popupWindow == null && event.getY() < 0) {
+                                    v.setBackgroundColor(BUTTON_COLOR);
+                                    String text = "-".equals(buttonText) ? "|" : "\\";
+                                    popup(v, text);
                                 }
-                                return true;
-                            
-                            case MotionEvent.ACTION_MOVE:
-                                // These two keys have a Move-Up button appearing
-                                if (Arrays.asList("/", "-").contains(buttonText)) {
-                                    if (popupWindow == null && event.getY() < 0) {
-                                        v.setBackgroundColor(BUTTON_COLOR);
-                                        String text = "-".equals(buttonText) ? "|" : "\\";
-                                        popup(v, text);
-                                    }
-                                    if (popupWindow != null && event.getY() > 0) {
-                                        v.setBackgroundColor(BUTTON_PRESSED_COLOR);
-                                        popupWindow.dismiss();
-                                        popupWindow = null;
-                                    }
+                                if (popupWindow != null && event.getY() > 0) {
+                                    v.setBackgroundColor(BUTTON_PRESSED_COLOR);
+                                    popupWindow.dismiss();
+                                    popupWindow = null;
                                 }
-                                return true;
-                            
-                            case MotionEvent.ACTION_UP:
-                            case MotionEvent.ACTION_CANCEL:
-                                v.setBackgroundColor(BUTTON_COLOR);
-                                if (scheduledExecutor != null) {
-                                    scheduledExecutor.shutdownNow();
-                                    scheduledExecutor = null;
+                            }
+                            return true;
+
+                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_CANCEL:
+                            v.setBackgroundColor(BUTTON_COLOR);
+                            if (scheduledExecutor != null) {
+                                scheduledExecutor.shutdownNow();
+                                scheduledExecutor = null;
+                            }
+                            if (longPressCount == 0) {
+                                if (popupWindow != null && Arrays.asList("/", "-").contains(buttonText)) {
+                                    popupWindow.setContentView(null);
+                                    popupWindow.dismiss();
+                                    popupWindow = null;
+                                    sendKey(root, "-".equals(buttonText) ? "|" : "\\");
+                                } else {
+                                    v.performClick();
                                 }
-                                if (longPressCount == 0) {
-                                    if (popupWindow != null && Arrays.asList("/", "-").contains(buttonText)) {
-                                        popupWindow.setContentView(null);
-                                        popupWindow.dismiss();
-                                        popupWindow = null;
-                                        sendKey(root, "-".equals(buttonText) ? "|" : "\\");
-                                    } else {
-                                        v.performClick();
-                                    }
-                                }
-                                return true;
-                            
-                            default:
-                                return true;
-                        }
+                            }
+                            return true;
+
+                        default:
+                            return true;
                     }
                 });
 

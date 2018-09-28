@@ -343,12 +343,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     public void onBackgroundJobExited(final BackgroundJob task) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mBackgroundTasks.remove(task);
-                updateNotification();
-            }
+        mHandler.post(() -> {
+            mBackgroundTasks.remove(task);
+            updateNotification();
         });
     }
 

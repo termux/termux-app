@@ -9,7 +9,6 @@ import android.view.KeyEvent;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 public final class DialogUtils {
 
@@ -31,13 +30,10 @@ public final class DialogUtils {
 
         final AlertDialog[] dialogHolder = new AlertDialog[1];
         input.setImeActionLabel(activity.getResources().getString(positiveButtonText), KeyEvent.KEYCODE_ENTER);
-        input.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                onPositive.onTextSet(input.getText().toString());
-                dialogHolder[0].dismiss();
-                return true;
-            }
+        input.setOnEditorActionListener((v, actionId, event) -> {
+            onPositive.onTextSet(input.getText().toString());
+            dialogHolder[0].dismiss();
+            return true;
         });
 
         float dipInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, activity.getResources().getDisplayMetrics());
@@ -53,31 +49,16 @@ public final class DialogUtils {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
             .setTitle(titleText).setView(layout)
-            .setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface d, int whichButton) {
-                    onPositive.onTextSet(input.getText().toString());
-                }
-            });
+            .setPositiveButton(positiveButtonText, (d, whichButton) -> onPositive.onTextSet(input.getText().toString()));
 
         if (onNeutral != null) {
-            builder.setNeutralButton(neutralButtonText, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    onNeutral.onTextSet(input.getText().toString());
-                }
-            });
+            builder.setNeutralButton(neutralButtonText, (dialog, which) -> onNeutral.onTextSet(input.getText().toString()));
         }
 
         if (onNegative == null) {
             builder.setNegativeButton(android.R.string.cancel, null);
         } else {
-            builder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    onNegative.onTextSet(input.getText().toString());
-                }
-            });
+            builder.setNegativeButton(negativeButtonText, (dialog, which) -> onNegative.onTextSet(input.getText().toString()));
         }
 
         if (onDismiss != null) builder.setOnDismissListener(onDismiss);

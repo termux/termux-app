@@ -1,6 +1,6 @@
 package com.termux.terminal;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class CursorAndScreenTest extends TerminalTestCase {
 
