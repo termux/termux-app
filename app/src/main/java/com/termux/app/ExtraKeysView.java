@@ -35,7 +35,7 @@ public final class ExtraKeysView extends GridLayout {
     private static final int BUTTON_COLOR = 0x00000000;
     private static final int INTERESTING_COLOR = 0xFF80DEEA;
     private static final int BUTTON_PRESSED_COLOR = 0x7FFFFFFF;
-    
+
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -116,11 +116,6 @@ public final class ExtraKeysView extends GridLayout {
     /** @deprecated call readSpecialButton(SpecialButton.ALT); */
     public boolean readAltButton() {
         return readSpecialButton(SpecialButton.ALT);
-    }
-    
-    /** @deprecated call readSpecialButton(SpecialButton.FN); */
-    public boolean readFnButton() {
-        return readSpecialButton(SpecialButton.FN);
     }
     
     public boolean readSpecialButton(SpecialButton name) {
