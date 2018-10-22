@@ -7,18 +7,19 @@ import android.support.annotation.IntDef;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
-
 import com.termux.terminal.TerminalSession;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.json.JSONArray;
 
 final class TermuxPreferences {
 
@@ -116,52 +117,59 @@ final class TermuxPreferences {
     public String[][] mExtraKeys;
 
     public void reloadFromProperties(Context context) {
-        try {
-            File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
-            if (!propsFile.exists())
-                propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
+        File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
+        if (!propsFile.exists())
+            propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
 
-            Properties props = new Properties();
+        Properties props = new Properties();
+        try {
             if (propsFile.isFile() && propsFile.canRead()) {
                 String encoding = "utf-8"; // most useful default nowadays
                 try (FileInputStream in = new FileInputStream(propsFile)) {
                     props.load(new InputStreamReader(in, encoding));
                 }
             }
+        } catch (IOException e) {
+            Toast.makeText(context, "Could not open the propertiey file termux.properties.", Toast.LENGTH_LONG).show();
+            Log.e("termux", "Error loading props", e);
+        }
 
-            switch (props.getProperty("bell-character", "vibrate")) {
-                case "beep":
-                    mBellBehaviour = BELL_BEEP;
-                    break;
-                case "ignore":
-                    mBellBehaviour = BELL_IGNORE;
-                    break;
-                default: // "vibrate".
-                    mBellBehaviour = BELL_VIBRATE;
-                    break;
-            }
-            
+        switch (props.getProperty("bell-character", "vibrate")) {
+            case "beep":
+                mBellBehaviour = BELL_BEEP;
+                break;
+            case "ignore":
+                mBellBehaviour = BELL_IGNORE;
+                break;
+            default: // "vibrate".
+                mBellBehaviour = BELL_VIBRATE;
+                break;
+        }
+
+        try {
             JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', '-', 'DOWN', 'UP']]"));
+
             mExtraKeys = new String[arr.length()][];
-            for(int i = 0; i < arr.length(); i++) {
+            for (int i = 0; i < arr.length(); i++) {
                 JSONArray line = arr.getJSONArray(i);
                 mExtraKeys[i] = new String[line.length()];
-                for(int j = 0; j < line.length(); j++) {
+                for (int j = 0; j < line.length(); j++) {
                     mExtraKeys[i][j] = line.getString(j);
                 }
             }
-
-            mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
-
-            shortcuts.clear();
-            parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
-            parseAction("shortcut.next-session", SHORTCUT_ACTION_NEXT_SESSION, props);
-            parseAction("shortcut.previous-session", SHORTCUT_ACTION_PREVIOUS_SESSION, props);
-            parseAction("shortcut.rename-session", SHORTCUT_ACTION_RENAME_SESSION, props);
-        } catch (Exception e) {
-            Toast.makeText(context, "Error loading properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
+            mExtraKeys = new String[0][];
         }
+
+        mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
+
+        shortcuts.clear();
+        parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
+        parseAction("shortcut.next-session", SHORTCUT_ACTION_NEXT_SESSION, props);
+        parseAction("shortcut.previous-session", SHORTCUT_ACTION_PREVIOUS_SESSION, props);
+        parseAction("shortcut.rename-session", SHORTCUT_ACTION_RENAME_SESSION, props);
     }
 
     public static final int SHORTCUT_ACTION_CREATE_SESSION = 1;
