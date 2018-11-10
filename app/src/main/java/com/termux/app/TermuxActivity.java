@@ -666,7 +666,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             return;
         }
 
-        final CharSequence[] urls = urlSet.toArray(new CharSequence[urlSet.size()]);
+        final CharSequence[] urls = urlSet.toArray(new CharSequence[0]);
         Collections.reverse(Arrays.asList(urls)); // Latest first.
 
         // Click to copy url to clipboard:

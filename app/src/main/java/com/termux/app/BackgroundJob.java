@@ -186,7 +186,7 @@ public final class BackgroundJob {
         if (interpreter != null) result.add(interpreter);
         result.add(fileToExecute);
         if (args != null) Collections.addAll(result, args);
-        return result.toArray(new String[result.size()]);
+        return result.toArray(new String[0]);
     }
 
 }
