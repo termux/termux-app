@@ -764,25 +764,22 @@ public final class TerminalView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (mEmulator == null) {
-            canvas.drawColor(0XFF000000);
-        } else {
-            mRenderer.render(mEmulator, canvas, mTopRow, mSelY1, mSelY2, mSelX1, mSelX2);
+        canvas.drawColor(0XFF000000);
+        mRenderer.render(mEmulator, canvas, mTopRow, mSelY1, mSelY2, mSelX1, mSelX2);
 
-            if (mIsSelectingText) {
-                final int gripHandleWidth = mLeftSelectionHandle.getIntrinsicWidth();
-                final int gripHandleMargin = gripHandleWidth / 4; // See the png.
+        if (mIsSelectingText) {
+            final int gripHandleWidth = mLeftSelectionHandle.getIntrinsicWidth();
+            final int gripHandleMargin = gripHandleWidth / 4; // See the png.
 
-                int right = Math.round((mSelX1) * mRenderer.mFontWidth) + gripHandleMargin;
-                int top = (mSelY1 + 1 - mTopRow) * mRenderer.mFontLineSpacing + mRenderer.mFontLineSpacingAndAscent;
-                mLeftSelectionHandle.setBounds(right - gripHandleWidth, top, right, top + mLeftSelectionHandle.getIntrinsicHeight());
-                mLeftSelectionHandle.draw(canvas);
+            int right = Math.round((mSelX1) * mRenderer.mFontWidth) + gripHandleMargin;
+            int top = (mSelY1 + 1 - mTopRow) * mRenderer.mFontLineSpacing + mRenderer.mFontLineSpacingAndAscent;
+            mLeftSelectionHandle.setBounds(right - gripHandleWidth, top, right, top + mLeftSelectionHandle.getIntrinsicHeight());
+            mLeftSelectionHandle.draw(canvas);
 
-                int left = Math.round((mSelX2 + 1) * mRenderer.mFontWidth) - gripHandleMargin;
-                top = (mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing + mRenderer.mFontLineSpacingAndAscent;
-                mRightSelectionHandle.setBounds(left, top, left + gripHandleWidth, top + mRightSelectionHandle.getIntrinsicHeight());
-                mRightSelectionHandle.draw(canvas);
-            }
+            int left = Math.round((mSelX2 + 1) * mRenderer.mFontWidth) - gripHandleMargin;
+            top = (mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing + mRenderer.mFontLineSpacingAndAscent;
+            mRightSelectionHandle.setBounds(left, top, left + gripHandleWidth, top + mRightSelectionHandle.getIntrinsicHeight());
+            mRightSelectionHandle.draw(canvas);
         }
     }
 
