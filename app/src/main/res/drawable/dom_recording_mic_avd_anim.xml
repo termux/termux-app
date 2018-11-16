@@ -1,0 +1,75 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="vector"
+            android:width="40dp"
+            android:height="40dp"
+            android:viewportWidth="40"
+            android:viewportHeight="40">
+            <path
+                android:name="circle_midle"
+                android:pathData="M 20 5 C 11.716 5 5 11.716 5 20 C 5 28.284 11.716 35 20 35 C 28.284 35 35 28.284 35 20 C 35 11.716 28.284 5 20 5 Z"
+                android:fillColor="#d04400"
+                android:fillAlpha="0.74901962"
+                android:strokeColor="#f7f7f7"
+                android:strokeAlpha="0"
+                android:strokeWidth="1.99999988"/>
+            <path
+                android:name="circle_start"
+                android:pathData="M 20 7 C 12.82 7 7 12.82 7 20 C 7 27.18 12.82 33 20 33 C 27.18 33 33 27.18 33 20 C 33 12.82 27.18 7 20 7 Z"
+                android:fillColor="#d04400"
+                android:strokeColor="#f7f7f7"
+                android:strokeAlpha="0"
+                android:strokeWidth="1.99999988"/>
+            <path
+                android:name="circle_end"
+                android:pathData="M 20 2 C 10.059 2 2 10.059 2 20 C 2 29.941 10.059 38 20 38 C 29.941 38 38 29.941 38 20 C 38 10.059 29.941 2 20 2 Z"
+                android:fillColor="#d04400"
+                android:fillAlpha="0.53589743"
+                android:strokeColor="#f7f7f7"
+                android:strokeAlpha="0"
+                android:strokeWidth="1.99999964"/>
+            <path
+                android:name="mic"
+                android:pathData="M 20 10.5 C 21.657 10.5 23 11.843 23 13.5 L 23 19.5 C 23 21.157 21.657 22.5 20 22.5 C 18.343 22.5 17 21.157 17 19.5 L 17 13.5 C 17 11.843 18.343 10.5 20 10.5 M 27 19.5 C 27 23.03 24.39 25.94 21 26.43 L 21 29.5 L 19 29.5 L 19 26.43 C 15.61 25.94 13 23.03 13 19.5 L 15 19.5 C 15 22.261 17.239 24.5 20 24.5 C 22.761 24.5 25 22.261 25 19.5 Z"
+                android:fillColor="#ffffff"
+                android:strokeWidth="1"/>
+        </vector>
+    </aapt:attr>
+    <target android:name="circle_end">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="pathData"
+                android:duration="502"
+                android:valueFrom="M 20 7 C 12.82 7 7 12.82 7 20 C 7 27.18 12.82 33 20 33 C 27.18 33 33 27.18 33 20 C 33 12.82 27.18 7 20 7 Z"
+                android:valueTo="M 20 2 C 10.059 2 2 10.059 2 20 C 2 29.941 10.059 38 20 38 C 29.941 38 38 29.941 38 20 C 38 10.059 29.941 2 20 2 Z"
+                android:valueType="pathType"
+                android:interpolator="@android:interpolator/fast_out_slow_in"/>
+        </aapt:attr>
+    </target>
+    <target android:name="circle_midle">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="pathData"
+                android:startOffset="502"
+                android:duration="398"
+                android:valueFrom="M 20 7 C 12.82 7 7 12.82 7 20 C 7 27.18 12.82 33 20 33 C 27.18 33 33 27.18 33 20 C 33 12.82 27.18 7 20 7 Z"
+                android:valueTo="M 20 2 C 10.059 2 2 10.059 2 20 C 2 29.941 10.059 38 20 38 C 29.941 38 38 29.941 38 20 C 38 10.059 29.941 2 20 2 Z"
+                android:valueType="pathType"
+                android:interpolator="@android:interpolator/fast_out_slow_in"/>
+        </aapt:attr>
+    </target>
+    <target android:name="mic">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="fillAlpha"
+                android:duration="900"
+                android:valueFrom="1"
+                android:valueTo="0"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/fast_out_slow_in"/>
+        </aapt:attr>
+    </target>
+</animated-vector>

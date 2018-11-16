@@ -46,15 +46,15 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     /** Note that this is a symlink on the Android M preview. */
     @SuppressLint("SdCardPath")
-    public static final String FILES_PATH = "/data/data/com.termux/files";
+    public static final String FILES_PATH = "/data/data/pl.sviete.dom/files";
     public static final String PREFIX_PATH = FILES_PATH + "/usr";
     public static final String HOME_PATH = FILES_PATH + "/home";
 
     private static final int NOTIFICATION_ID = 1337;
 
     private static final String ACTION_STOP_SERVICE = "com.termux.service_stop";
-    private static final String ACTION_LOCK_WAKE = "com.termux.service_wake_lock";
-    private static final String ACTION_UNLOCK_WAKE = "com.termux.service_wake_unlock";
+    public static final String ACTION_LOCK_WAKE = "com.termux.service_wake_lock";
+    public static final String ACTION_UNLOCK_WAKE = "com.termux.service_wake_unlock";
     /** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
     public static final String ACTION_EXECUTE = "com.termux.service_execute";
 

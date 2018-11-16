@@ -1,0 +1,10 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true"
+        android:drawable="@drawable/dom_recognition_progress_focused" />
+
+    <item android:drawable="@drawable/dom_recognition_progress_unfocused" />
+
+    <item android:drawable="@drawable/dom_recognition_progress_focused" android:state_focused="true" android:state_pressed="false" android:state_selected="true"/>
+
+</selector>

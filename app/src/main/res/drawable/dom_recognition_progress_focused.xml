@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+    <group
+        android:name="center_the_icon"
+        android:translateX="0">
+        <path
+            android:fillColor="#6a626463"
+            android:pathData="M20,0
+        A10,10 0 1,1 20,40
+        A10,10 0 1,1 20,0 Z" />
+    </group>
+</vector>

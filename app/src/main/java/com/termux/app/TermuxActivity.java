@@ -25,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
@@ -52,6 +53,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.termux.R;
+import com.termux.dom.FloatingViewService;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
@@ -305,6 +307,27 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         checkForFontAndColors();
 
         mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
+
+        // ais-dom
+        // Delay the service start until the app comes to foreground - to the launcher activity's onCreate method.
+        Intent aisPanelService = new Intent(getApplicationContext(), com.termux.dom.AisPanelService.class);
+        startService(aisPanelService);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getApplicationContext())) {
+            //If the draw over permission is not available open the settings screen to grant the permission.
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:" + getPackageName()));
+            int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
+            startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
+        } else {
+            Log.i(EmulatorDebug.LOG_TAG, "start FloatingViewService");
+            startService(new Intent(TermuxActivity.this, FloatingViewService.class));
+            // go back to home
+            Intent startMain = new Intent(Intent.ACTION_MAIN);
+            startMain.addCategory(Intent.CATEGORY_HOME);
+            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(startMain);
+
+        }
     }
 
     void toggleShowExtraKeys() {

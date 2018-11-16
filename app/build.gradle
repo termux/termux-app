@@ -10,7 +10,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.termux"
+        applicationId "pl.sviete.dom"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 65
@@ -31,6 +31,15 @@ android {
     }
 }
 
+
+repositories {
+    maven { url "https://jitpack.io" }
+    mavenCentral()
+    jcenter()
+}
+
 dependencies {
     testImplementation 'junit:junit:4.12'
+    implementation 'com.koushikdutta.async:androidasync:2.1.9'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.9.1'
 }

@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -82,8 +83,8 @@ final class TermuxInstaller {
                     final byte[] buffer = new byte[8096];
                     final List<Pair<String, String>> symlinks = new ArrayList<>(50);
 
-                    final URL zipUrl = determineZipUrl();
-                    try (ZipInputStream zipInput = new ZipInputStream(zipUrl.openStream())) {
+                    InputStream inputStream = activity.getAssets().open("bootstrap/bootstrap-arm.zip");
+                    try (ZipInputStream zipInput = new ZipInputStream(inputStream)) {
                         ZipEntry zipEntry;
                         while ((zipEntry = zipInput.getNextEntry()) != null) {
                             if (zipEntry.getName().equals("SYMLINKS.txt")) {
@@ -121,7 +122,11 @@ final class TermuxInstaller {
                     if (symlinks.isEmpty())
                         throw new RuntimeException("No SYMLINKS.txt encountered");
                     for (Pair<String, String> symlink : symlinks) {
-                        Os.symlink(symlink.first, symlink.second);
+                        try {
+                            Os.symlink(symlink.first, symlink.second);
+                        } catch(Exception e){
+                            Log.e(EmulatorDebug.LOG_TAG, "symlink.first " + symlink.first + " symlink.second " + symlink.second);
+                        }
                     }
 
                     if (!STAGING_PREFIX_FILE.renameTo(PREFIX_FILE)) {

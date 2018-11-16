@@ -1,0 +1,37 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="40.0"
+    android:viewportHeight="40.0">
+
+    <path
+        android:fillColor="#ffbd77"
+        android:pathData="M 15, 20
+                          m -11.5, 0
+                          a 16,16 0 1,0 33,0
+                          a 16,16 0 1,0 -33,0"/>
+    <path
+        android:name="circle_end"
+        android:pathData="M 20 2 C 10.059 2 2 10.059 2 20 C 2 29.941 10.059 38 20 38 C 29.941 38 38 29.941 38 20 C 38 10.059 29.941 2 20 2 Z"
+        android:fillColor="#d04400"
+        android:fillAlpha="0.53589743"
+        android:strokeColor="#f7f7f7"
+        android:strokeAlpha="0"
+        android:strokeWidth="1.99999964"/>
+
+    <path
+        android:fillColor="#6a626463"
+        android:pathData="M20,0
+        A10,10 0 1,1 20,40
+        A10,10 0 1,1 20,0 Z" />
+
+    <group android:translateX="8"
+        android:translateY="8" >
+        <path android:fillColor="#FFF"
+            android:pathData="M12,14c1.66,0 2.99,-1.34 2.99,-3L15,5c0,-1.66 -1.34,-3 -3,-3S9,3.34 9,5v6c0,1.66 1.34,3 3,3zM17.3,11c0,3 -2.54,5.1 -5.3,5.1S6.7,14 6.7,11L5,11c0,3.41 2.72,6.23 6,6.72L11,21h2v-3.28c3.28,-0.48 6,-3.3 6,-6.72h-1.7z"/>
+
+
+    </group>
+
+</vector>
+

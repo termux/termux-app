@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-   <string name="application_name">Termux</string>
-   <string name="shared_user_label">Termux user</string>
+   <string name="application_name">Dom</string>
+   <string name="shared_user_label">Dom user</string>
    <string name="new_session">New session</string>
    <string name="new_session_failsafe">Failsafe</string>
    <string name="toggle_soft_keyboard">Keyboard</string>
@@ -47,5 +47,10 @@
   <string name="file_received_title">Save file in ~/downloads/</string>
   <string name="file_received_edit_button">Edit</string>
   <string name="file_received_open_folder_button">Open folder</string>
+
+  <!--AIS dom-->
+  <string name="accessibility_service_label">Keyboard access for AIS dom</string>
+  <string name="accessibility_service_description">To be able to assist you AIS dom need access to keyboard - your remote controller.</string>
+
 
 </resources>

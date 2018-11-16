@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.termux"
     android:installLocation="internalOnly"
-    android:sharedUserId="com.termux"
+    android:sharedUserId="pl.sviete.dom"
     android:sharedUserLabel="@string/shared_user_label" >
 
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
@@ -13,6 +13,15 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+
 
     <application
         android:extractNativeLibs="true"
@@ -111,6 +120,21 @@
             android:name="com.termux.app.TermuxService"
             android:exported="false" />
 
+        <service android:name=".dom.DomAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:label="@string/accessibility_service_label">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+        <service
+            android:name=".dom.FloatingViewService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
         <receiver android:name=".app.TermuxOpenReceiver" />
 
         <provider android:authorities="com.termux.files"

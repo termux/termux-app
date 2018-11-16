@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!--Root container-->
+    <RelativeLayout
+        android:id="@+id/root_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:ignore="UselessParent">
+
+        <!--View while view is collapsed-->
+        <RelativeLayout
+            android:id="@+id/collapse_view"
+            android:layout_width="wrap_content"
+            android:visibility="visible"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!--Mic on floating widget -->
+            <ToggleButton
+                android:id="@+id/collapsed_iv"
+                style="@style/domToggleButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/dom_mic_button_toggle_bg"
+                android:textOff=""
+                android:textOn="" />
+
+            <com.termux.dom.RecognitionProgressView
+                android:id="@+id/ais_recognition_view"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_alignLeft="@+id/btnSpeak"
+                android:layout_marginLeft="38dp"
+                android:layout_marginBottom="18dp"
+                android:background="@drawable/dom_recognition_progress_view_bg" />
+
+            <!--Close button-->
+            <ImageView
+                android:id="@+id/close_btn"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/dom_mic_close"
+                tools:ignore="ContentDescription"/>
+        </RelativeLayout>
+
+        <!--View while view is expanded-->
+        <LinearLayout
+            android:id="@+id/expanded_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#8cffbd77"
+            android:visibility="gone"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <ImageView
+                    android:id="@+id/close_button"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentLeft="true"
+                    android:src="@drawable/dom_mic_close"/>
+            </RelativeLayout>
+
+            <!--Album image for the song currently playing.-->
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/dom_music_player"
+                tools:ignore="ContentDescription"/>
+
+            <!--Previous button-->
+            <ImageView
+                android:id="@+id/prev_btn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:src="@mipmap/dom_music_previous"
+                tools:ignore="ContentDescription"/>
+
+            <!--Play button-->
+            <ImageView
+                android:id="@+id/play_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:src="@mipmap/dom_music_play"
+                tools:ignore="ContentDescription"/>
+
+            <!--Next button-->
+            <ImageView
+                android:id="@+id/next_btn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:src="@mipmap/dom_music_play_next"
+                tools:ignore="ContentDescription"/>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <ImageView
+                    android:id="@+id/open_button"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/dom_mic_home"/>
+            </RelativeLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</FrameLayout>
