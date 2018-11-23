@@ -5,14 +5,15 @@
     android:viewportHeight="108">
 
     <path
-        android:fillColor="#FF000000"
+        android:fillColor="#000000"
         android:pathData="M18,54
                           A36,36 0 1,1 90,54
                           A36,36 0 1,1 18,54 Z" />
 
+    <!-- Keep in sync with adaptive ic_foreground.xml: -->
     <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M36,38
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,38
                           h6
                           l12,16
                           l-12,16
@@ -20,12 +21,14 @@
                           l12,-16
                           "
         />
+
     <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M54,66
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,66
                           h18
                           v4
                           h-18
                           "
         />
+
 </vector>
