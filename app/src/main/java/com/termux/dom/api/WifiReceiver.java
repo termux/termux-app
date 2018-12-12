@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.termux.dom.AisCoreUtils;
 import com.termux.dom.AisPanelService;
 
 import org.json.JSONException;
@@ -80,9 +81,6 @@ public class WifiReceiver extends BroadcastReceiver {
                         }
                         in.close();
                         if (con.getResponseCode() == HttpURLConnection.HTTP_OK){
-//                            Log.d(TAG, "response: " + response.toString());
-//                            JSONObject jResp = new JSONObject(response.toString());
-//                            Log.d(TAG, attrToCheck + ": " + jResp.getString(attrToCheck));
                             return "ok";
                         }
 
@@ -183,17 +181,17 @@ public class WifiReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        Log.d(TAG, "onReceive " + intent.getAction());
+
+        // publish only if we are on box
+        if (!AisCoreUtils.onBox()){
+            return;
+        }
 
 
         if (intent.getAction().equals("android.net.wifi.STATE_CHANGE")){
 
             // wifi state change
             NetworkInfo netInfo = (NetworkInfo) intent.getExtras().get("networkInfo");
-
-            Log.d(TAG, "STATE_CHANGE netInfo.isAvailable() " + netInfo.isAvailable());
-            Log.d(TAG, "STATE_CHANGE netInfo.isConnected() " + netInfo.isConnected());
-
 
             String ssid = netInfo.getExtraInfo();
             String type = netInfo.getTypeName();
@@ -247,8 +245,6 @@ public class WifiReceiver extends BroadcastReceiver {
                         SetIotSettingsTask task = new SetIotSettingsTask();
                         task.execute(new String[] {});
                     }
-
-
 
                     try {
                         onReceiveWifiConnectionInfo(context);
