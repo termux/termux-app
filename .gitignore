@@ -30,5 +30,6 @@ local.properties
 ._*
 .Spotlight-V100
 .Trashes
+.swp
 ehthumbs.db
 Thumbs.db

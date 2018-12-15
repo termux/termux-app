@@ -18,7 +18,7 @@
         android:extractNativeLibs="true"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backupscheme"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_launcher"
         android:banner="@drawable/banner"
         android:label="@string/application_name"
         android:theme="@style/Theme.Termux"

@@ -4,7 +4,13 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Keep in sync with non-adaptive ic_launcher.xml -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M18,54
+                          A36,36 0 1,1 90,54
+                          A36,36 0 1,1 18,54 Z" />
+
+    <!-- Keep in sync with adaptive ic_foreground.xml: -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="M34,38
