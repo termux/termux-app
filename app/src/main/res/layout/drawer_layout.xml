@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
-    <android.support.v4.widget.DrawerLayout
+    <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
         android:layout_alignParentTop="true"
@@ -66,9 +66,9 @@
             </LinearLayout>
         </LinearLayout>
 
-    </android.support.v4.widget.DrawerLayout>
+    </androidx.drawerlayout.widget.DrawerLayout>
 
-    <android.support.v4.view.ViewPager
+    <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewpager"
         android:visibility="gone"
         android:layout_width="match_parent"

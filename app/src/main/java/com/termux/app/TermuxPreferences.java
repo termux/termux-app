@@ -3,7 +3,6 @@ package com.termux.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.IntDef;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
@@ -20,6 +19,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import androidx.annotation.IntDef;
 
 final class TermuxPreferences {
 

@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -20,6 +19,8 @@ import com.termux.terminal.EmulatorDebug;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import androidx.annotation.NonNull;
 
 public class TermuxOpenReceiver extends BroadcastReceiver {
 

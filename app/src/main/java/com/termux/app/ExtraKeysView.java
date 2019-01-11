@@ -108,16 +108,6 @@ public final class ExtraKeysView extends GridLayout {
     private PopupWindow popupWindow;
     private int longPressCount;
     
-    /** @deprecated call readSpecialButton(SpecialButton.CTRL); */
-    public boolean readControlButton() {
-        return readSpecialButton(SpecialButton.CTRL);
-    }
-    
-    /** @deprecated call readSpecialButton(SpecialButton.ALT); */
-    public boolean readAltButton() {
-        return readSpecialButton(SpecialButton.ALT);
-    }
-    
     public boolean readSpecialButton(SpecialButton name) {
         SpecialButtonState state = specialButtons.get(name);
         if (state == null)

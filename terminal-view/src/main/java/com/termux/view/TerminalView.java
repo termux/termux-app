@@ -200,7 +200,7 @@ public final class TerminalView extends View {
             }
         });
         mScroller = new Scroller(context);
-        AccessibilityManager am = (AccessibilityManager) context.getSystemService(context.ACCESSIBILITY_SERVICE);
+        AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mAccessibilityEnabled = am.isEnabled();
     }
 
