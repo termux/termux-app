@@ -40,7 +40,9 @@ final class TermuxPreferences {
     private static final String SHOW_EXTRA_KEYS_KEY = "show_extra_keys";
     private static final String FONTSIZE_KEY = "fontsize";
     private static final String CURRENT_SESSION_KEY = "current_session";
+    private static final String SCREEN_ALWAYS_ON_KEY = "screen_always_on";
 
+    private boolean mScreenAlwaysOn;
     private int mFontSize;
 
     @AsciiBellBehaviour
@@ -67,6 +69,7 @@ final class TermuxPreferences {
         MIN_FONTSIZE = (int) (4f * dipInPixels);
 
         mShowExtraKeys = prefs.getBoolean(SHOW_EXTRA_KEYS_KEY, true);
+        mScreenAlwaysOn = prefs.getBoolean(SCREEN_ALWAYS_ON_KEY, false);
 
         // http://www.google.com/design/spec/style/typography.html#typography-line-height
         int defaultFontSize = Math.round(12 * dipInPixels);
@@ -101,6 +104,15 @@ final class TermuxPreferences {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putString(FONTSIZE_KEY, Integer.toString(mFontSize)).apply();
+    }
+
+    boolean isScreenAlwaysOn() {
+        return mScreenAlwaysOn;
+    }
+
+    void setScreenAlwaysOn(Context context, boolean newValue) {
+        mScreenAlwaysOn = newValue;
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SCREEN_ALWAYS_ON_KEY, newValue).apply();
     }
 
     static void storeCurrentSession(Context context, TerminalSession session) {

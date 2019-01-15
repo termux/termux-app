@@ -9,6 +9,7 @@
    <string name="style_terminal">Style</string>
    <string name="share_transcript_title">Terminal transcript</string>
    <string name="help">Help</string>
+   <string name="toggle_keep_screen_on">Keep screen on</string>
 
    <string name="bootstrap_installer_body">Installing…</string>
    <string name="bootstrap_error_title">Unable to install</string>
