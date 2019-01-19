@@ -7,18 +7,11 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.Message;
-import android.system.ErrnoException;
-import android.system.Os;
-import android.system.OsConstants;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -65,40 +58,26 @@ public class BluetoothSession extends TerminalSession {
             @Override
             public void run() {
 
-                OutputStream tmpOut;
-                InputStream tmpIn;
-
                 if (btSocket.isConnected()) try {
-                    tmpOut = btSocket.getOutputStream();
-                    tmpIn = btSocket.getInputStream();
-                    mmInStream = new DataInputStream(tmpIn);
-                    mmOutStream = new DataOutputStream(tmpOut);
+                    mmInStream = new DataInputStream(btSocket.getInputStream());
+                    mmOutStream = new DataOutputStream(btSocket.getOutputStream());
 
                     while (btSocket.isConnected()) {
 
-                        byte[] scanbytes = new byte[512];
-                        scanbytes[0] = 0;
                         try {
                             int bytesavailable = mmInStream.available();
+
                             if (bytesavailable > 0) {
-                                int iterator = 0;
-                                int bytes;
                                 byte[] curBuf = new byte[bytesavailable];
-                                bytes = mmInStream.read(curBuf);
+                                int bytes = mmInStream.read(curBuf);
+
                                 if (bytes != -1 && bytes >= 0) {
-                                    for (byte b : curBuf) {
-                                        scanbytes[iterator] = b;
-                                        iterator++;
-                                    }
+                                    mProcessToTerminalIOQueue.write(curBuf, 0, curBuf.length);
+                                    mMainThreadHandler.sendEmptyMessage(MSG_NEW_INPUT);
                                 }
                             }
                         } catch (IOException e) {
-                            // do nothing
-                        }
-
-                        if (scanbytes[0] != 0) {
-                            mProcessToTerminalIOQueue.write(scanbytes, 0, scanbytes.length);
-                            mMainThreadHandler.sendEmptyMessage(MSG_NEW_INPUT);
+                            Logger.getLogger("app").warning(e.getLocalizedMessage());
                         }
                     }
 
