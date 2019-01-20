@@ -142,6 +142,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 }
                 checkForFontAndColors();
                 mSettings.reloadFromProperties(TermuxActivity.this);
+
+                if (mExtraKeysView != null) {
+                    mExtraKeysView.reload(mSettings.mExtraKeys, ExtraKeysView.defaultCharDisplay);
+                }
             }
         }
     };
