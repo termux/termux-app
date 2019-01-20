@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -125,9 +126,8 @@ final class TermuxPreferences {
         Properties props = new Properties();
         try {
             if (propsFile.isFile() && propsFile.canRead()) {
-                String encoding = "utf-8"; // most useful default nowadays
                 try (FileInputStream in = new FileInputStream(propsFile)) {
-                    props.load(new InputStreamReader(in, encoding));
+                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
                 }
             }
         } catch (IOException e) {
