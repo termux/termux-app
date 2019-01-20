@@ -27,8 +27,24 @@ final class TermuxPreferences {
 
     @IntDef({BELL_VIBRATE, BELL_BEEP, BELL_IGNORE})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface AsciiBellBehaviour {
+    @interface AsciiBellBehaviour {
     }
+
+    final static class KeyboardShortcut {
+
+        KeyboardShortcut(int codePoint, int shortcutAction) {
+            this.codePoint = codePoint;
+            this.shortcutAction = shortcutAction;
+        }
+
+        final int codePoint;
+        final int shortcutAction;
+    }
+
+    static final int SHORTCUT_ACTION_CREATE_SESSION = 1;
+    static final int SHORTCUT_ACTION_NEXT_SESSION = 2;
+    static final int SHORTCUT_ACTION_PREVIOUS_SESSION = 3;
+    static final int SHORTCUT_ACTION_RENAME_SESSION = 4;
 
     static final int BELL_VIBRATE = 1;
     static final int BELL_BEEP = 2;
@@ -50,7 +66,11 @@ final class TermuxPreferences {
 
     boolean mBackIsEscape;
     boolean mShowExtraKeys;
-    
+
+    String[][] mExtraKeys;
+
+    final List<KeyboardShortcut> shortcuts = new ArrayList<>();
+
     /**
      * If value is not in the range [min, max], set it to either min or max.
      */
@@ -82,10 +102,6 @@ final class TermuxPreferences {
             mFontSize = defaultFontSize;
         }
         mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE); 
-    }
-
-    boolean isShowExtraKeys() {
-        return mShowExtraKeys;
     }
 
     boolean toggleShowExtraKeys(Context context) {
@@ -128,9 +144,7 @@ final class TermuxPreferences {
         return null;
     }
     
-    public String[][] mExtraKeys;
-
-    public void reloadFromProperties(Context context) {
+    void reloadFromProperties(Context context) {
         File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
         if (!propsFile.exists())
             propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
@@ -184,24 +198,6 @@ final class TermuxPreferences {
         parseAction("shortcut.previous-session", SHORTCUT_ACTION_PREVIOUS_SESSION, props);
         parseAction("shortcut.rename-session", SHORTCUT_ACTION_RENAME_SESSION, props);
     }
-
-    public static final int SHORTCUT_ACTION_CREATE_SESSION = 1;
-    public static final int SHORTCUT_ACTION_NEXT_SESSION = 2;
-    public static final int SHORTCUT_ACTION_PREVIOUS_SESSION = 3;
-    public static final int SHORTCUT_ACTION_RENAME_SESSION = 4;
-
-    public final static class KeyboardShortcut {
-
-        public KeyboardShortcut(int codePoint, int shortcutAction) {
-            this.codePoint = codePoint;
-            this.shortcutAction = shortcutAction;
-        }
-
-        final int codePoint;
-        final int shortcutAction;
-    }
-
-    final List<KeyboardShortcut> shortcuts = new ArrayList<>();
 
     private void parseAction(String name, int shortcutAction, Properties props) {
         String value = props.getProperty(name);

@@ -215,7 +215,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mTerminalView.requestFocus();
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
-        if (mSettings.isShowExtraKeys()) viewPager.setVisibility(View.VISIBLE);
+        if (mSettings.mShowExtraKeys) viewPager.setVisibility(View.VISIBLE);
         
         
         ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
