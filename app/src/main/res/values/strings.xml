@@ -2,6 +2,11 @@
 <resources>
    <string name="application_name">Termux</string>
    <string name="shared_user_label">Termux user</string>
+
+   <string name="menu_normal_start">Start</string>
+   <string name="menu_failsafe_start">Open failsafe shell</string>
+   <string name="menu_app_exit">Exit</string>
+
    <string name="new_session">New session</string>
    <string name="new_session_failsafe">Failsafe</string>
    <string name="toggle_soft_keyboard">Keyboard</string>

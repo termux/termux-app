@@ -465,7 +465,33 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 TermuxInstaller.setupIfNeeded(TermuxActivity.this, () -> {
                     if (mTermService == null) return; // Activity might have been destroyed.
                     try {
-                        addNewSession(false, null);
+                        String[] menuEntries = {
+                            getString(R.string.menu_normal_start),
+                            getString(R.string.menu_failsafe_start),
+                            getString(R.string.menu_app_exit)
+                        };
+
+                        AlertDialog.Builder dialog = new AlertDialog.Builder(TermuxActivity.this);
+                        dialog.setCancelable(false);
+                        dialog.setIcon(R.drawable.ic_launcher);
+                        dialog.setTitle(R.string.application_name);
+                        dialog.setItems(menuEntries, (dialog1, which) -> {
+                            switch (which) {
+                                case 0:
+                                    addNewSession(false, null);
+                                    break;
+                                case 1:
+                                    addNewSession(true, null);
+                                    break;
+                                case 2:
+                                    mTermService.stopSelf();
+                                    TermuxActivity.this.finish();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                        dialog.show();
                     } catch (WindowManager.BadTokenException e) {
                         // Activity finished - ignore.
                     }
