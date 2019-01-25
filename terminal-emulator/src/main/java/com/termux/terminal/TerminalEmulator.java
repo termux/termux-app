@@ -1404,7 +1404,7 @@ public final class TerminalEmulator {
             case 'I': // Cursor Horizontal Forward Tabulation (CHT). Move the active position n tabs forward.
                 setCursorCol(nextTabStop(getArg0(1)));
                 break;
-            case 'J': // "${CSI}${0,1,2}J" - Erase in Display (ED)
+            case 'J': // "${CSI}${0,1,2,3}J" - Erase in Display (ED)
                 // ED ignores the scrolling margins.
                 switch (getArg0(0)) {
                     case 0: // Erase from the active position to the end of the screen, inclusive (default).
@@ -1418,6 +1418,9 @@ public final class TerminalEmulator {
                     case 2: // Erase all of the display - all lines are erased, changed to single-width, and the cursor does not
                         // move..
                         blockClear(0, 0, mColumns, mRows);
+                        break;
+                    case 3: // Delete all lines saved in the scrollback buffer (xterm etc)
+                        mMainBuffer.clearTranscript();
                         break;
                     default:
                         unknownSequence(b);
