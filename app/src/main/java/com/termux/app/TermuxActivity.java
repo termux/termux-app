@@ -367,10 +367,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         showToast(toToastTitle(finishedSession) + " - exited", true);
                 }
 
-                if (mTermService.getSessions().size() > 1) {
-                    removeFinishedSession(finishedSession);
-                }
-
+                removeFinishedSession(finishedSession);
                 mListViewAdapter.notifyDataSetChanged();
             }
 
