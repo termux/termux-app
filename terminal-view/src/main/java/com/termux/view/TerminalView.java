@@ -358,10 +358,12 @@ public final class TerminalView extends View {
     public void onScreenUpdated() {
         if (mEmulator == null) return;
 
+        int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
+        if (mTopRow < -rowsInHistory) mTopRow = -rowsInHistory;
+
         boolean skipScrolling = false;
         if (mIsSelectingText) {
             // Do not scroll when selecting text.
-            int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
             int rowShift = mEmulator.getScrollCounter();
             if (-mTopRow + rowShift > rowsInHistory) {
                 // .. unless we're hitting the end of history transcript, in which
