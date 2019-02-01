@@ -585,7 +585,15 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 }
             }
             String executablePath = (failSafe ? "/system/bin/sh" : null);
-            TerminalSession newSession = mTermService.createTermSession(executablePath, null, null, failSafe);
+            String workingDirectory = null;
+            if (mSettings.mUseCurrentSessionCwd) {
+                final TerminalSession currentSession = getCurrentTermSession();
+                if (currentSession != null) {
+                    workingDirectory = currentSession.getCwd();
+                }
+            }
+
+            TerminalSession newSession = mTermService.createTermSession(executablePath, null, workingDirectory, failSafe);
             if (sessionName != null) {
                 newSession.mSessionName = sessionName;
             }

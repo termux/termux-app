@@ -8,6 +8,7 @@ import android.system.Os;
 import android.system.OsConstants;
 import android.util.Log;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -164,6 +165,19 @@ public final class TerminalSession extends TerminalOutput {
     /** The terminal title as set through escape sequences or null if none set. */
     public String getTitle() {
         return (mEmulator == null) ? null : mEmulator.getTitle();
+    }
+
+    /** Returns the shell's working directory or null if it was unavailable. */
+    public String getCwd() {
+        if (mShellPid < 1)
+            return null;
+        try {
+            return new File(String.format("/proc/%s/cwd", mShellPid))
+                .getCanonicalPath();
+        } catch (IOException | SecurityException e) {
+            // Ignore.
+        }
+        return null;
     }
 
     /**

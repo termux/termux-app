@@ -67,6 +67,8 @@ final class TermuxPreferences {
     boolean mBackIsEscape;
     boolean mShowExtraKeys;
 
+    boolean mUseCurrentSessionCwd;
+
     String[][] mExtraKeys;
 
     final List<KeyboardShortcut> shortcuts = new ArrayList<>();
@@ -191,6 +193,8 @@ final class TermuxPreferences {
         }
 
         mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
+
+        mUseCurrentSessionCwd = "current".equals(props.getProperty("session.cwd-on-create", "default"));
 
         shortcuts.clear();
         parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
