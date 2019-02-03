@@ -172,8 +172,14 @@ public final class TerminalSession extends TerminalOutput {
         if (mShellPid < 1)
             return null;
         try {
-            return new File(String.format("/proc/%s/cwd", mShellPid))
+            final String cwdSymlink = String.format("/proc/%s/cwd/", mShellPid);
+            String outputPath = new File(cwdSymlink)
                 .getCanonicalPath();
+            if (!outputPath.endsWith("/"))
+                outputPath += '/';
+
+            if (!cwdSymlink.equals(outputPath))
+                return outputPath;
         } catch (IOException | SecurityException e) {
             // Ignore.
         }
