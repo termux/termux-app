@@ -84,7 +84,7 @@ public final class ExtraKeysView extends GridLayout {
         } else {
             // not a control char
             TerminalSession session = terminalView.getCurrentSession();
-            if (session != null)
+            if (session != null && keyName.length() > 0)
                 session.write(keyName);
         }
     }
