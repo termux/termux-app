@@ -216,8 +216,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
         if (mSettings.mShowExtraKeys) viewPager.setVisibility(View.VISIBLE);
-        
-        
+
+
         ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
         layoutParams.height = layoutParams.height * mSettings.mExtraKeys.length;
         viewPager.setLayoutParams(layoutParams);
@@ -367,8 +367,18 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         showToast(toToastTitle(finishedSession) + " - exited", true);
                 }
 
-                if (mTermService.getSessions().size() > 1) {
-                    removeFinishedSession(finishedSession);
+                if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+                    // On Android TV devices we need to use older behaviour because we may
+                    // not be able to have multiple launcher icons.
+                    if (mTermService.getSessions().size() > 1) {
+                        removeFinishedSession(finishedSession);
+                    }
+                } else {
+                    // Once we have a separate launcher icon for the failsafe session, it
+                    // should be safe to auto-close session on exit code '0' or '130'.
+                    if (finishedSession.getExitStatus() == 0 || finishedSession.getExitStatus() == 130) {
+                        removeFinishedSession(finishedSession);
+                    }
                 }
 
                 mListViewAdapter.notifyDataSetChanged();
@@ -465,8 +475,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 TermuxInstaller.setupIfNeeded(TermuxActivity.this, () -> {
                     if (mTermService == null) return; // Activity might have been destroyed.
                     try {
+                        Bundle bundle = getIntent().getExtras();
+                        boolean launchFailsafe = false;
+                        if (bundle != null) {
+                            launchFailsafe = bundle.getBoolean(TermuxFailsafeActivity.TERMUX_FAILSAFE_SESSION_ACTION, false);
+                        }
                         clearTemporaryDirectory();
-                        addNewSession(false, null);
+                        addNewSession(launchFailsafe, null);
                     } catch (WindowManager.BadTokenException e) {
                         // Activity finished - ignore.
                     }
