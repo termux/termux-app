@@ -48,4 +48,7 @@
     <string name="file_received_title">Save file in ~/downloads/</string>
     <string name="file_received_edit_button">Edit</string>
     <string name="file_received_open_folder_button">Open folder</string>
+
+    <string name="termux_permission_label">Termux Service Permission</string>
+    <string name="termux_permission_description">Access Termux Service to run some scripts</string>
 </resources>

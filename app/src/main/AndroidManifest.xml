@@ -4,6 +4,12 @@
     android:installLocation="internalOnly"
     android:sharedUserId="com.termux"
     android:sharedUserLabel="@string/shared_user_label" >
+    
+    <permission android:name="com.termux.permission.TERMUX_SERVICE"
+        android:label="@string/termux_permission_label"
+        android:description="@string/termux_permission_description"
+        android:icon="@drawable/ic_launcher"
+        android:protectionLevel="dangerous"/>
 
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -111,7 +117,12 @@
 
         <service
             android:name="com.termux.app.TermuxService"
-            android:exported="false" />
+            android:exported="true"
+            android:permission="com.termux.permission.TERMUX_SERVICE">
+            <intent-filter>
+                <action android:name="com.termux.service_execute" />
+            </intent-filter>
+        </service>
 
         <receiver android:name=".app.TermuxOpenReceiver" />
 
