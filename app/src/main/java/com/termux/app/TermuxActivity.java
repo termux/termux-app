@@ -465,6 +465,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 TermuxInstaller.setupIfNeeded(TermuxActivity.this, () -> {
                     if (mTermService == null) return; // Activity might have been destroyed.
                     try {
+                        clearTemporaryDirectory();
                         addNewSession(false, null);
                     } catch (WindowManager.BadTokenException e) {
                         // Activity finished - ignore.
@@ -478,6 +479,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             Intent i = getIntent();
             if (i != null && Intent.ACTION_RUN.equals(i.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
+                clearTemporaryDirectory();
                 addNewSession(false, null);
             } else {
                 switchToSession(getStoredCurrentSessionOrLast());
@@ -572,18 +574,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             new AlertDialog.Builder(this).setTitle(R.string.max_terminals_reached_title).setMessage(R.string.max_terminals_reached_message)
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
-            if (mTermService.getSessions().size() == 0 && !mTermService.isWakelockEnabled()) {
-                File termuxTmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
-                if (termuxTmpDir.exists()) {
-                    try {
-                        TermuxInstaller.deleteFolder(termuxTmpDir);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    termuxTmpDir.mkdirs();
-                }
-            }
             String executablePath = (failSafe ? "/system/bin/sh" : null);
             TerminalSession newSession = mTermService.createTermSession(executablePath, null, null, failSafe);
             if (sessionName != null) {
@@ -828,4 +818,18 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
+    private void clearTemporaryDirectory() {
+        if (mTermService.getSessions().size() == 0 && !mTermService.isWakelockEnabled()) {
+            File termuxTmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
+            if (termuxTmpDir.exists()) {
+                try {
+                    TermuxInstaller.deleteFolder(termuxTmpDir);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                termuxTmpDir.mkdirs();
+            }
+        }
+    }
 }
