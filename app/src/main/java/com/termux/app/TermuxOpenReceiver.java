@@ -87,7 +87,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             contentTypeToUse = contentTypeExtra;
         }
 
-        Uri uriToShare = Uri.withAppendedPath(Uri.parse("content://com.termux.files/"), filePath);
+        Uri uriToShare = Uri.parse("content://com.termux.files" + fileToShare.getAbsolutePath());
 
         if (Intent.ACTION_SEND.equals(intentAction)) {
             sendIntent.putExtra(Intent.EXTRA_STREAM, uriToShare);
