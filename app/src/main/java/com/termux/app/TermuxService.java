@@ -295,6 +295,12 @@ public final class TermuxService extends Service implements SessionChangedCallba
         TerminalSession session = new TerminalSession(executablePath, cwd, args, env, this);
         mTerminalSessions.add(session);
         updateNotification();
+
+        // Make sure that terminal styling is always applied.
+        Intent stylingIntent = new Intent("com.termux.app.reload_style");
+        stylingIntent.putExtra("com.termux.app.reload_style", "styling");
+        sendBroadcast(stylingIntent);
+
         return session;
     }
 
