@@ -157,7 +157,7 @@ final class TermuxPreferences {
                 }
             }
         } catch (IOException e) {
-            Toast.makeText(context, "Could not open the propertiey file termux.properties.", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Could not open properties file termux.properties.", Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
         }
 
