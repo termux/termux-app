@@ -50,5 +50,5 @@
     <string name="file_received_open_folder_button">Open folder</string>
 
     <string name="termux_permission_label">Termux Service Permission</string>
-    <string name="termux_permission_description">Access Termux Service to run some scripts</string>
+    <string name="termux_permission_description">Allows application to execute arbitrary shell commands within Termux.</string>
 </resources>
