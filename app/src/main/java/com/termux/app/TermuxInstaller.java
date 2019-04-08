@@ -171,7 +171,7 @@ final class TermuxInstaller {
     private static URL determineZipUrl() throws MalformedURLException {
         String archName = determineTermuxArchName();
         String url = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-            ? "https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-" + archName + ".zip"
+            ? "https://termux.org/bootstrap-" + archName + ".zip"
             : "https://termux.net/bootstrap/bootstrap-" + archName + ".zip";
         return new URL(url);
     }
