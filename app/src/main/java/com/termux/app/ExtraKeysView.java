@@ -115,10 +115,14 @@ public final class ExtraKeysView extends GridLayout {
         
         if (! state.isOn)
             return false;
-        
+
+        if (state.button == null) {
+            return false;
+        }
+
         if (state.button.isPressed())
             return true;
-        
+
         if (! state.button.isChecked())
             return false;
 
