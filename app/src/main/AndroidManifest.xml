@@ -30,6 +30,7 @@
 
         <activity
             android:name="com.termux.app.TermuxActivity"
+            android:label="@string/application_name"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
