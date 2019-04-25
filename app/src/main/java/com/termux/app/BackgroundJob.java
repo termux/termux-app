@@ -108,6 +108,11 @@ public final class BackgroundJob {
         // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
         // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
         environment.add("EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE"));
+        String androidRuntimeRoot = System.getenv("ANDROID_RUNTIME_ROOT");
+        // ANDROID_RUNTIME_ROOT is required for `am` to run on Android Q
+        if (androidRuntimeRoot != null) {
+            environment.add("ANDROID_RUNTIME_ROOT=" + androidRuntimeRoot);
+        }
         if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             environment.add("PATH= " + System.getenv("PATH"));
