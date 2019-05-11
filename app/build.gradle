@@ -14,8 +14,8 @@ android {
         applicationId "com.termux"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 68
-        versionName "0.68"
+        versionCode 69
+        versionName "0.69"
     }
 
     buildTypes {
