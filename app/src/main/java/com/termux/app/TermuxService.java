@@ -214,7 +214,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         builder.setShowWhen(false);
 
         // Background color for small notification icon:
-        builder.setColor(0xFF000000);
+        builder.setColor(0xFF607D8B);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             builder.setChannelId(NOTIFICATION_CHANNEL_ID);
