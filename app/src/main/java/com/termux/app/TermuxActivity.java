@@ -83,6 +83,8 @@ import androidx.viewpager.widget.ViewPager;
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
 
+    public static final String TERMUX_FAILSAFE_SESSION_ACTION = "com.termux.app.failsafe_session";
+
     private static final int CONTEXTMENU_SELECT_URL_ID = 0;
     private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 1;
     private static final int CONTEXTMENU_PASTE_ID = 3;
@@ -478,7 +480,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         Bundle bundle = getIntent().getExtras();
                         boolean launchFailsafe = false;
                         if (bundle != null) {
-                            launchFailsafe = bundle.getBoolean(TermuxFailsafeActivity.TERMUX_FAILSAFE_SESSION_ACTION, false);
+                            launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
                         }
                         clearTemporaryDirectory();
                         addNewSession(launchFailsafe, null);
@@ -495,7 +497,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             if (i != null && Intent.ACTION_RUN.equals(i.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
                 clearTemporaryDirectory();
-                addNewSession(false, null);
+                boolean failSafe = i.getBooleanExtra(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                addNewSession(failSafe, null);
             } else {
                 switchToSession(getStoredCurrentSessionOrLast());
             }
