@@ -103,6 +103,7 @@ public final class BackgroundJob {
         environment.add("TERM=xterm-256color");
         environment.add("HOME=" + TermuxService.HOME_PATH);
         environment.add("PREFIX=" + TermuxService.PREFIX_PATH);
+        environment.add("BOOTCLASSPATH" + System.getenv("BOOTCLASSPATH"));
         environment.add("ANDROID_ROOT=" + System.getenv("ANDROID_ROOT"));
         environment.add("ANDROID_DATA=" + System.getenv("ANDROID_DATA"));
         // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
