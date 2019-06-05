@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="application_name">Termux</string>
+    <string name="shared_user_label">Пользователь termux</string>
+    <string name="new_session">Новый терминал</string>
+    <string name="new_session_failsafe">Отказоустойчивость</string>
+    <string name="toggle_soft_keyboard">Клавиатура</string>
+    <string name="reset_terminal">Сброс</string>
+    <string name="style_terminal">Стили</string>
+    <string name="share_transcript_title">Расшифровка терминала</string>
+    <string name="help">Помогите</string>
+    <string name="toggle_keep_screen_on">Держать экран включенным</string>
+
+    <string name="bootstrap_installer_body">Установка</string>
+    <string name="bootstrap_error_title">Невозможно установить</string>
+    <string name="bootstrap_error_body">Termux не смог установить Bootstrap</string>
+    <string name="bootstrap_error_abort">Прервать</string>
+    <string name="bootstrap_error_try_again">Попробуйте снова</string>
+    <string name="bootstrap_error_not_primary_user_message">Termux может быть установлен только на главный аккаунт</string>
+
+    <string name="max_terminals_reached_title">Слишком много терминалов</string>
+    <string name="max_terminals_reached_message">Закройте существующие, прежде чем создавать новые.</string>
+
+    <string name="reset_toast_notification">Сброс терминала</string>
+
+    <string name="select_url">Выберите URL</string>
+    <string name="select_url_dialog_title">Долгое нажатие откроет ссылку, а короткое скопирует</string>
+    <string name="select_all_and_share">Поделиться расшифрофкой</string>
+    <string name="select_url_no_found">Ссылки не найдены</string>
+    <string name="select_url_copied_to_clipboard">URL скопирован</string>
+    <string name="share_transcript_chooser_title">Отправить текст</string>
+
+    <string name="kill_process">Убить процесс (%d)</string>
+    <string name="confirm_kill_process">Закончить сессию?</string>
+
+    <string name="session_rename_title">Переименовать терминал в</string>
+    <string name="session_rename_positive_button">Переименовать</string>
+    <string name="session_new_named_title">Новый названный терминал</string>
+    <string name="session_new_named_positive_button">Создать</string>
+
+    <string name="styling_not_installed">Termux:Style не установлен.</string>
+    <string name="styling_install">Установить</string>
+
+    <string name="notification_action_exit">Выход</string>
+    <string name="notification_action_wake_lock">Включить wakelock</string>
+    <string name="notification_action_wake_unlock">Выключить wakelock</string>
+
+    <string name="file_received_title">Сохранить файл в ~/downloads/</string>
+    <string name="file_received_edit_button">Изменить</string>
+    <string name="file_received_open_folder_button">Открыть папку</string>
+</resources>

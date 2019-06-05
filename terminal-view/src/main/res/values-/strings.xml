@@ -1,0 +1,5 @@
+<resources>
+  <string name="paste_text">Вставить</string>
+  <string name="copy_text">Копировать</string>
+  <string name="text_selection_more">Больше</string>
+</resources>
