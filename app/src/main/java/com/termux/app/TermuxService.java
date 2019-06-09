@@ -136,7 +136,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 mBackgroundTasks.add(task);
                 updateNotification();
             } else {
-                TerminalSession newSession = createTermSession(executablePath, arguments, cwd, false);
+                boolean failsafe = intent.getBooleanExtra(TermuxActivity.TERMUX_FAILSAFE_SESSION_ACTION, false);
+                TerminalSession newSession = createTermSession(executablePath, arguments, cwd, failsafe);
 
                 // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
                 if (executablePath != null) {
@@ -271,11 +272,13 @@ public final class TermuxService extends Service implements SessionChangedCallba
         boolean isLoginShell = false;
 
         if (executablePath == null) {
-            for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
-                File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
-                if (shellFile.canExecute()) {
-                    executablePath = shellFile.getAbsolutePath();
-                    break;
+            if (!failSafe) {
+                for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
+                    File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
+                    if (shellFile.canExecute()) {
+                        executablePath = shellFile.getAbsolutePath();
+                        break;
+                    }
                 }
             }
 
