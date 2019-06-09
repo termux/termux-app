@@ -243,7 +243,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
             try {
                 TermuxInstaller.deleteFolder(termuxTmpDir.getCanonicalFile());
             } catch (Exception e) {
-                Log.e(EmulatorDebug.LOG_TAG, "Error while removing directory " + termuxTmpDir.getAbsolutePath(), e);
+                Log.e(EmulatorDebug.LOG_TAG, "Error while removing file at " + termuxTmpDir.getAbsolutePath(), e);
             }
 
             termuxTmpDir.mkdirs();
