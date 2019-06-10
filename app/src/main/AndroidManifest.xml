@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.termux"
-    android:installLocation="internalOnly"
+    android:installLocation="externalOnly"
     android:sharedUserId="com.termux"
     android:sharedUserLabel="@string/shared_user_label" >
 
