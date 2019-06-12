@@ -73,6 +73,18 @@ public final class ExtraKeysView extends GridLayout {
         put("RIGHT", KeyEvent.KEYCODE_DPAD_RIGHT);
         put("DOWN", KeyEvent.KEYCODE_DPAD_DOWN);
         put("ENTER", KeyEvent.KEYCODE_ENTER);
+        put("F1", KeyEvent.KEYCODE_F1);
+        put("F2", KeyEvent.KEYCODE_F2);
+        put("F3", KeyEvent.KEYCODE_F3);
+        put("F4", KeyEvent.KEYCODE_F4);
+        put("F5", KeyEvent.KEYCODE_F5);
+        put("F6", KeyEvent.KEYCODE_F6);
+        put("F7", KeyEvent.KEYCODE_F7);
+        put("F8", KeyEvent.KEYCODE_F8);
+        put("F9", KeyEvent.KEYCODE_F9);
+        put("F10", KeyEvent.KEYCODE_F10);
+        put("F11", KeyEvent.KEYCODE_F11);
+        put("F12", KeyEvent.KEYCODE_F12);
     }};
     
     static void sendKey(View view, String keyName) {
