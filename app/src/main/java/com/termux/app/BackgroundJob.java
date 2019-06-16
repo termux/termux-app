@@ -93,6 +93,13 @@ public final class BackgroundJob {
         };
     }
 
+    private static void addToEnvIfPresent(List<String> environment, String name) {
+        String value = System.getenv(name);
+        if (value != null) {
+            environment.add(name + "=" + value);
+        }
+    }
+
     static String[] buildEnvironment(boolean failSafe, String cwd) {
         new File(TermuxService.HOME_PATH).mkdirs();
 
@@ -109,11 +116,9 @@ public final class BackgroundJob {
         // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
         // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
         environment.add("EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE"));
-        String androidRuntimeRoot = System.getenv("ANDROID_RUNTIME_ROOT");
-        // ANDROID_RUNTIME_ROOT is required for `am` to run on Android Q
-        if (androidRuntimeRoot != null) {
-            environment.add("ANDROID_RUNTIME_ROOT=" + androidRuntimeRoot);
-        }
+        // ANDROID_RUNTIME_ROOT and ANDROID_TZDATA_ROOT are required for `am` to run on Android Q
+        addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
+        addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
         if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             environment.add("PATH= " + System.getenv("PATH"));
