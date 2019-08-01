@@ -24,7 +24,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Vibrator;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -402,7 +401,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
                         break;
                     case TermuxPreferences.BELL_VIBRATE:
-                        BellUtil.with(TermuxActivity.this).doBell();
+                        BellUtil.getInstance(TermuxActivity.this).doBell();
                         break;
                     case TermuxPreferences.BELL_IGNORE:
                         // Ignore the bell character.
