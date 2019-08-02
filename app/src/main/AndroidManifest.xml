@@ -110,7 +110,7 @@
 
         <service
             android:name="com.termux.app.TermuxService"
-            android:exported="false" />
+            android:exported="true" />
 
         <receiver android:name=".app.TermuxOpenReceiver" />
 
