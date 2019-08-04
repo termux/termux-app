@@ -722,7 +722,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 if (session != null) {
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.setType("text/plain");
-                    String transcriptText = session.getEmulator().getScreen().getTranscriptText().trim();
+                    String transcriptText = session.getEmulator().getScreen().getTranscriptTextWithoutJoinedLines().trim();
                     // See https://github.com/termux/termux-app/issues/1166.
                     final int MAX_LENGTH = 100_000;
                     if (transcriptText.length() > MAX_LENGTH) {

@@ -41,7 +41,15 @@ public final class TerminalBuffer {
         return getSelectedText(0, -getActiveTranscriptRows(), mColumns, mScreenRows).trim();
     }
 
+    public String getTranscriptTextWithoutJoinedLines() {
+        return getSelectedText(0, -getActiveTranscriptRows(), mColumns, mScreenRows, false).trim();
+    }
+
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2) {
+        return getSelectedText(selX1, selY1, selX2, selY2, true);
+    }
+
+    public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines) {
         final StringBuilder builder = new StringBuilder();
         final int columns = mColumns;
 
@@ -79,7 +87,8 @@ public final class TerminalBuffer {
             }
             if (lastPrintingCharIndex != -1)
                 builder.append(line, x1Index, lastPrintingCharIndex - x1Index + 1);
-            if (!rowLineWrap && row < selY2 && row < mScreenRows - 1) builder.append('\n');
+            if ((!joinBackLines || !rowLineWrap)
+                && row < selY2 && row < mScreenRows - 1) builder.append('\n');
         }
         return builder.toString();
     }
