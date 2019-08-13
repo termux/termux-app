@@ -1,0 +1,10 @@
+image:
+  file: Dockerfile
+  context: abc
+ports:
+- port: 22
+- port: 80
+- port: 443
+- port: 8080
+- port: 8888
+- port: 9999
