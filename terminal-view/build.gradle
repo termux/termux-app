@@ -17,10 +17,10 @@ ext {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     dependencies {
-        implementation "androidx.annotation:annotation:1.0.1"
+        implementation "androidx.annotation:annotation:+"
         api project(":terminal-emulator")
     }
 
