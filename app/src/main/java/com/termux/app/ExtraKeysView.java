@@ -2,6 +2,7 @@ package com.termux.app;
 
 import android.content.Context;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.AttributeSet;
 
 import java.util.concurrent.Executors;
@@ -350,7 +351,15 @@ public final class ExtraKeysView extends GridLayout {
 
                 final Button finalButton = button;
                 button.setOnClickListener(v -> {
-                    finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                    if (Settings.System.getInt(getContext().getContentResolver(),
+                        Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0) {
+
+                        // Depending on DnD settings, value can be >1 but 0 means "disabled".
+                        if (Settings.Global.getInt(getContext().getContentResolver(), "zen_mode", 0) < 1) {
+                            finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                        }
+                    }
+
                     View root = getRootView();
                     if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
                         ToggleButton self = (ToggleButton) finalButton;
