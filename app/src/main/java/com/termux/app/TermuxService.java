@@ -6,6 +6,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -120,7 +121,12 @@ public final class TermuxService extends Service implements SessionChangedCallba
                         whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
                         whitelist.setData(Uri.parse("package:" + packageName));
                         whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(whitelist);
+
+                        try {
+                            startActivity(whitelist);
+                        } catch (ActivityNotFoundException e) {
+                            Log.e(EmulatorDebug.LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
+                        }
                     }
                 }
 
