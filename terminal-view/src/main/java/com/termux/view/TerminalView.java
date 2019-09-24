@@ -88,10 +88,7 @@ public final class TerminalView extends View {
             public boolean onUp(MotionEvent e) {
                 mScrollRemainder = 0.0f;
                 if (mEmulator != null && mEmulator.isMouseTrackingActive() && !mIsSelectingText && !scrolledWithFinger) {
-                    // Quick event processing when mouse tracking is active - do not wait for check of double tapping
-                    // for zooming.
                     sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, true);
-                    sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON, false);
                     return true;
                 }
                 scrolledWithFinger = false;
