@@ -1,4 +1,4 @@
-[![Travis build status](https://travis-ci.org/termux/termux-app.svg?branch=master)](https://travis-ci.org/termux/termux-app)
+[![Build status](https://api.cirrus-ci.com/github/termux/termux-app.svg?branch=master)](https://cirrus-ci.com/termux/termux-app)
 [![Join the chat at https://gitter.im/termux/termux](https://badges.gitter.im/termux/termux.svg)](https://gitter.im/termux/termux)
 
 
