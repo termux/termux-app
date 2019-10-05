@@ -8,14 +8,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.accessibility.AccessibilityManager;
 import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -25,9 +24,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.widget.PopupWindow;
 import android.widget.Scroller;
 
 import com.termux.terminal.EmulatorDebug;
@@ -54,11 +60,14 @@ public final class TerminalView extends View {
     /** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
     int mTopRow;
 
-    boolean mIsSelectingText = false, mIsDraggingLeftSelection, mInitialTextSelection;
+    boolean mIsSelectingText = false;
     int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
-    float mSelectionDownX, mSelectionDownY;
     private ActionMode mActionMode;
-    private BitmapDrawable mLeftSelectionHandle, mRightSelectionHandle;
+    Drawable mSelectHandleLeft;
+    Drawable mSelectHandleRight;
+    final int[] mTempCoords = new int[2];
+    Rect mTempRect;
+    private SelectionModifierCursorController mSelectionModifierCursorController;
 
     float mScaleFactor = 1.f;
     final GestureAndScaleRecognizer mGestureRecognizer;
@@ -102,7 +111,7 @@ public final class TerminalView extends View {
             public boolean onSingleTapUp(MotionEvent e) {
                 if (mEmulator == null) return true;
                 if (mIsSelectingText) {
-                    toggleSelectingText(null);
+                    stopTextSelectionMode();
                     return true;
                 }
                 requestFocus();
@@ -117,7 +126,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onScroll(MotionEvent e, float distanceX, float distanceY) {
-                if (mEmulator == null || mIsSelectingText) return true;
+                if (mEmulator == null) return true;
                 if (mEmulator.isMouseTrackingActive() && e.isFromSource(InputDevice.SOURCE_MOUSE)) {
                     // If moving with mouse pointer while pressing button, report that instead of scroll.
                     // This means that we never report moving with button press-events for touch input,
@@ -195,7 +204,7 @@ public final class TerminalView extends View {
                 if (mClient.onLongPress(e)) return;
                 if (!mIsSelectingText) {
                     performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                    toggleSelectingText(e);
+                    startSelectingText(e);
                 }
             }
         });
@@ -368,7 +377,7 @@ public final class TerminalView extends View {
             if (-mTopRow + rowShift > rowsInHistory) {
                 // .. unless we're hitting the end of history transcript, in which
                 // case we abort text selection and scroll to end.
-                toggleSelectingText(null);
+                stopTextSelectionMode();
             } else {
                 skipScrolling = true;
                 mTopRow -= rowShift;
@@ -475,55 +484,7 @@ public final class TerminalView extends View {
         final int action = ev.getAction();
 
         if (mIsSelectingText) {
-            int cy = (int) (ev.getY() / mRenderer.mFontLineSpacing) + mTopRow;
-            int cx = (int) (ev.getX() / mRenderer.mFontWidth);
-
-            switch (action) {
-                case MotionEvent.ACTION_UP:
-                    mInitialTextSelection = false;
-                    break;
-                case MotionEvent.ACTION_DOWN:
-                    int distanceFromSel1 = Math.abs(cx - mSelX1) + Math.abs(cy - mSelY1);
-                    int distanceFromSel2 = Math.abs(cx - mSelX2) + Math.abs(cy - mSelY2);
-                    mIsDraggingLeftSelection = distanceFromSel1 <= distanceFromSel2;
-                    mSelectionDownX = ev.getX();
-                    mSelectionDownY = ev.getY();
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (mInitialTextSelection) break;
-                    float deltaX = ev.getX() - mSelectionDownX;
-                    float deltaY = ev.getY() - mSelectionDownY;
-                    int deltaCols = (int) Math.ceil(deltaX / mRenderer.mFontWidth);
-                    int deltaRows = (int) Math.ceil(deltaY / mRenderer.mFontLineSpacing);
-                    mSelectionDownX += deltaCols * mRenderer.mFontWidth;
-                    mSelectionDownY += deltaRows * mRenderer.mFontLineSpacing;
-                    if (mIsDraggingLeftSelection) {
-                        mSelX1 += deltaCols;
-                        mSelY1 += deltaRows;
-                    } else {
-                        mSelX2 += deltaCols;
-                        mSelY2 += deltaRows;
-                    }
-
-                    mSelX1 = Math.min(mEmulator.mColumns, Math.max(0, mSelX1));
-                    mSelX2 = Math.min(mEmulator.mColumns, Math.max(0, mSelX2));
-
-                    if (mSelY1 == mSelY2 && mSelX1 > mSelX2 || mSelY1 > mSelY2) {
-                        // Switch handles.
-                        mIsDraggingLeftSelection = !mIsDraggingLeftSelection;
-                        int tmpX1 = mSelX1, tmpY1 = mSelY1;
-                        mSelX1 = mSelX2;
-                        mSelY1 = mSelY2;
-                        mSelX2 = tmpX1;
-                        mSelY2 = tmpY1;
-                    }
-
-                    mActionMode.invalidateContentRect();
-                    invalidate();
-                    break;
-                default:
-                    break;
-            }
+            updateFloatingToolbarVisibility(ev);
             mGestureRecognizer.onTouchEvent(ev);
             return true;
         } else if (ev.isFromSource(InputDevice.SOURCE_MOUSE)) {
@@ -561,7 +522,7 @@ public final class TerminalView extends View {
             Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (mIsSelectingText) {
-                toggleSelectingText(null);
+                stopTextSelectionMode();
                 return true;
             } else if (mClient.shouldBackButtonBeMappedToEscape()) {
                 // Intercept back button to treat it as escape:
@@ -770,59 +731,439 @@ public final class TerminalView extends View {
         } else {
             mRenderer.render(mEmulator, canvas, mTopRow, mSelY1, mSelY2, mSelX1, mSelX2);
 
-            if (mIsSelectingText) {
-                final int gripHandleWidth = mLeftSelectionHandle.getIntrinsicWidth();
-                final int gripHandleMargin = gripHandleWidth / 4; // See the png.
 
-                int right = Math.round((mSelX1) * mRenderer.mFontWidth) + gripHandleMargin;
-                int top = (mSelY1 + 1 - mTopRow) * mRenderer.mFontLineSpacing + mRenderer.mFontLineSpacingAndAscent;
-                mLeftSelectionHandle.setBounds(right - gripHandleWidth, top, right, top + mLeftSelectionHandle.getIntrinsicHeight());
-                mLeftSelectionHandle.draw(canvas);
-
-                int left = Math.round((mSelX2 + 1) * mRenderer.mFontWidth) - gripHandleMargin;
-                top = (mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing + mRenderer.mFontLineSpacingAndAscent;
-                mRightSelectionHandle.setBounds(left, top, left + gripHandleWidth, top + mRightSelectionHandle.getIntrinsicHeight());
-                mRightSelectionHandle.draw(canvas);
+            SelectionModifierCursorController selectionController = getSelectionController();
+            if (selectionController != null && selectionController.isActive()) {
+                selectionController.updatePosition();
             }
         }
     }
 
     /** Toggle text selection mode in the view. */
     @TargetApi(23)
-    public void toggleSelectingText(MotionEvent ev) {
-        mIsSelectingText = !mIsSelectingText;
-        mClient.copyModeChanged(mIsSelectingText);
+    public void startSelectingText(MotionEvent ev) {
+        int cx = (int) (ev.getX() / mRenderer.mFontWidth);
+        final boolean eventFromMouse = ev.isFromSource(InputDevice.SOURCE_MOUSE);
+        // Offset for finger:
+        final int SELECT_TEXT_OFFSET_Y = eventFromMouse ? 0 : -40;
+        int cy = (int) ((ev.getY() + SELECT_TEXT_OFFSET_Y) / mRenderer.mFontLineSpacing) + mTopRow;
 
-        if (mIsSelectingText) {
-            if (mLeftSelectionHandle == null) {
-                mLeftSelectionHandle = (BitmapDrawable) getContext().getDrawable(R.drawable.text_select_handle_left_material);
-                mRightSelectionHandle = (BitmapDrawable) getContext().getDrawable(R.drawable.text_select_handle_right_material);
+        mSelX1 = mSelX2 = cx;
+        mSelY1 = mSelY2 = cy;
+
+        TerminalBuffer screen = mEmulator.getScreen();
+        if (!" ".equals(screen.getSelectedText(mSelX1, mSelY1, mSelX1, mSelY1))) {
+            // Selecting something other than whitespace. Expand to word.
+            while (mSelX1 > 0 && !"".equals(screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1))) {
+                mSelX1--;
+            }
+            while (mSelX2 < mEmulator.mColumns - 1 && !"".equals(screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1))) {
+                mSelX2++;
+            }
+        }
+        startTextSelectionMode();
+    }
+
+    public TerminalSession getCurrentSession() {
+        return mTermSession;
+    }
+
+    private CharSequence getText() {
+        return mEmulator.getScreen().getSelectedText(0, mTopRow, mEmulator.mColumns, mTopRow + mEmulator.mRows);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        if (mSelectionModifierCursorController != null) {
+            getViewTreeObserver().addOnTouchModeChangeListener(mSelectionModifierCursorController);
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+        if (mSelectionModifierCursorController != null) {
+            getViewTreeObserver().removeOnTouchModeChangeListener(mSelectionModifierCursorController);
+            mSelectionModifierCursorController.onDetached();
+        }
+    }
+
+
+    private int getCursorX(float x) {
+        return (int) (x / mRenderer.mFontWidth);
+    }
+
+    private int getCursorY(float y) {
+        return (int) (((y - 40) / mRenderer.mFontLineSpacing) + mTopRow);
+    }
+
+    private int getPointX(int cx) {
+        if (cx > mEmulator.mColumns) {
+            cx = mEmulator.mColumns;
+        }
+        return Math.round(cx * mRenderer.mFontWidth);
+    }
+
+    private int getPointY(int cy) {
+        return Math.round((cy - mTopRow) * mRenderer.mFontLineSpacing);
+    }
+
+    /**
+     * A CursorController instance can be used to control a cursor in the text.
+     * It is not used outside of {@link TerminalView}.
+     */
+    private interface CursorController extends ViewTreeObserver.OnTouchModeChangeListener {
+        /**
+         * Makes the cursor controller visible on screen. Will be drawn by {@link #draw(Canvas)}.
+         * See also {@link #hide()}.
+         */
+        void show();
+
+        /**
+         * Hide the cursor controller from screen.
+         * See also {@link #show()}.
+         */
+        void hide();
+
+        /**
+         * @return true if the CursorController is currently visible
+         */
+        boolean isActive();
+
+        /**
+         * Update the controller's position.
+         */
+        void updatePosition(HandleView handle, int x, int y);
+
+        void updatePosition();
+
+        /**
+         * This method is called by {@link #onTouchEvent(MotionEvent)} and gives the controller
+         * a chance to become active and/or visible.
+         *
+         * @param event The touch event
+         */
+        boolean onTouchEvent(MotionEvent event);
+
+        /**
+         * Called when the view is detached from window. Perform house keeping task, such as
+         * stopping Runnable thread that would otherwise keep a reference on the context, thus
+         * preventing the activity to be recycled.
+         */
+        void onDetached();
+    }
+
+    private class HandleView extends View {
+        private Drawable mDrawable;
+        private PopupWindow mContainer;
+        private int mPointX;
+        private int mPointY;
+        private CursorController mController;
+        private boolean mIsDragging;
+        private float mTouchToWindowOffsetX;
+        private float mTouchToWindowOffsetY;
+        private float mHotspotX;
+        private float mHotspotY;
+        private float mTouchOffsetY;
+        private int mLastParentX;
+        private int mLastParentY;
+
+        int mHandleWidth;
+        private final int mOrigOrient;
+        private int mOrientation;
+
+
+        public static final int LEFT = 0;
+        public static final int RIGHT = 2;
+        private int mHandleHeight;
+
+        public HandleView(CursorController controller, int orientation) {
+            super(TerminalView.this.getContext());
+            mController = controller;
+            mContainer = new PopupWindow(TerminalView.this.getContext(), null,
+                android.R.attr.textSelectHandleWindowStyle);
+            mContainer.setSplitTouchEnabled(true);
+            mContainer.setClippingEnabled(false);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mContainer.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
+            }
+            mContainer.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+            mContainer.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            this.mOrigOrient = orientation;
+            setOrientation(orientation);
+        }
+
+        public void setOrientation(int orientation) {
+            mOrientation = orientation;
+            int handleWidth = 0;
+            switch (orientation) {
+                case LEFT: {
+                    if (mSelectHandleLeft == null) {
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            mSelectHandleLeft = getContext().getDrawable(
+                                R.drawable.text_select_handle_left_material);
+                        } else {
+                            mSelectHandleLeft = getContext().getResources().getDrawable(
+                                R.drawable.text_select_handle_left_material);
+
+                        }
+                    }
+                    //
+                    mDrawable = mSelectHandleLeft;
+                    handleWidth = mDrawable.getIntrinsicWidth();
+                    mHotspotX = (handleWidth * 3) / 4;
+                    break;
+                }
+
+                case RIGHT: {
+                    if (mSelectHandleRight == null) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            mSelectHandleRight = getContext().getDrawable(
+                                R.drawable.text_select_handle_right_material);
+                        } else {
+                            mSelectHandleRight = getContext().getResources().getDrawable(
+                                R.drawable.text_select_handle_right_material);
+                        }
+                    }
+                    mDrawable = mSelectHandleRight;
+                    handleWidth = mDrawable.getIntrinsicWidth();
+                    mHotspotX = handleWidth / 4;
+                    break;
+                }
+
             }
 
-            int cx = (int) (ev.getX() / mRenderer.mFontWidth);
-            final boolean eventFromMouse = ev.isFromSource(InputDevice.SOURCE_MOUSE);
-            // Offset for finger:
-            final int SELECT_TEXT_OFFSET_Y = eventFromMouse ? 0 : -40;
-            int cy = (int) ((ev.getY() + SELECT_TEXT_OFFSET_Y) / mRenderer.mFontLineSpacing) + mTopRow;
+            mHandleHeight = mDrawable.getIntrinsicHeight();
 
-            mSelX1 = mSelX2 = cx;
-            mSelY1 = mSelY2 = cy;
+            mHandleWidth = handleWidth;
+            mTouchOffsetY = -mHandleHeight * 0.3f;
+            mHotspotY = 0;
+            invalidate();
+        }
 
-            TerminalBuffer screen = mEmulator.getScreen();
-            if (!" ".equals(screen.getSelectedText(mSelX1, mSelY1, mSelX1, mSelY1))) {
-                // Selecting something other than whitespace. Expand to word.
-                while (mSelX1 > 0 && !"".equals(screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1))) {
-                    mSelX1--;
-                }
-                while (mSelX2 < mEmulator.mColumns - 1 && !"".equals(screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1))) {
-                    mSelX2++;
-                }
+        public void changeOrientation(int orientation) {
+            if (mOrientation != orientation) {
+                setOrientation(orientation);
+            }
+        }
+
+        @Override
+        public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            setMeasuredDimension(mDrawable.getIntrinsicWidth(),
+                mDrawable.getIntrinsicHeight());
+        }
+
+        public void show() {
+            if (!isPositionVisible()) {
+                hide();
+                return;
+            }
+            mContainer.setContentView(this);
+            final int[] coords = mTempCoords;
+            TerminalView.this.getLocationInWindow(coords);
+            coords[0] += mPointX;
+            coords[1] += mPointY;
+            mContainer.showAtLocation(TerminalView.this, 0, coords[0], coords[1]);
+        }
+
+        public void hide() {
+            mIsDragging = false;
+            mContainer.dismiss();
+        }
+
+        public boolean isShowing() {
+            return mContainer.isShowing();
+        }
+
+        private void checkChangedOrientation() {
+
+            final TerminalView hostView = TerminalView.this;
+            final int left = hostView.getLeft();
+            final int right = hostView.getWidth();
+            final int top = hostView.getTop();
+            final int bottom = hostView.getHeight();
+
+            if (mTempRect == null) {
+                mTempRect = new Rect();
+            }
+            final Rect clip = mTempRect;
+            clip.left = left + TerminalView.this.getPaddingLeft();
+            clip.top = top + TerminalView.this.getPaddingTop();
+            clip.right = right - TerminalView.this.getPaddingRight();
+            clip.bottom = bottom - TerminalView.this.getPaddingBottom();
+
+            final ViewParent parent = hostView.getParent();
+            if (parent == null || !parent.getChildVisibleRect(hostView, clip, null)) {
+                return;
             }
 
-            mInitialTextSelection = true;
-            mIsDraggingLeftSelection = true;
-            mSelectionDownX = ev.getX();
-            mSelectionDownY = ev.getY();
+            final int[] coords = mTempCoords;
+            hostView.getLocationInWindow(coords);
+            final int posX = coords[0] + mPointX;
+            if (posX + (int) mHotspotX < clip.left) {
+                changeOrientation(RIGHT);
+            } else if (posX + mHandleWidth > clip.right) {
+                changeOrientation(LEFT);
+            } else {
+                changeOrientation(mOrigOrient);
+            }
+        }
+
+        private boolean isPositionVisible() {
+            // Always show a dragging handle.
+            if (mIsDragging) {
+                return true;
+            }
+
+            final TerminalView hostView = TerminalView.this;
+            final int left = 0;
+            final int right = hostView.getWidth();
+            final int top = 0;
+            final int bottom = hostView.getHeight();
+
+            if (mTempRect == null) {
+                mTempRect = new Rect();
+            }
+            final Rect clip = mTempRect;
+            clip.left = left + TerminalView.this.getPaddingLeft();
+            clip.top = top + TerminalView.this.getPaddingTop();
+            clip.right = right - TerminalView.this.getPaddingRight();
+            clip.bottom = bottom - TerminalView.this.getPaddingBottom();
+
+            final ViewParent parent = hostView.getParent();
+            if (parent == null || !parent.getChildVisibleRect(hostView, clip, null)) {
+                return false;
+            }
+
+            final int[] coords = mTempCoords;
+            hostView.getLocationInWindow(coords);
+            final int posX = coords[0] + mPointX + (int) mHotspotX;
+            final int posY = coords[1] + mPointY + (int) mHotspotY;
+
+            return posX >= clip.left && posX <= clip.right &&
+                posY >= clip.top && posY <= clip.bottom;
+        }
+
+        private void moveTo(int x, int y) {
+            mPointX = x;
+            mPointY = y;
+            checkChangedOrientation();
+            if (isPositionVisible()) {
+                int[] coords = null;
+                if (mContainer.isShowing()) {
+                    coords = mTempCoords;
+                    TerminalView.this.getLocationInWindow(coords);
+                    int x1 = coords[0] + mPointX;
+                    int y1 = coords[1] + mPointY;
+                    mContainer.update(x1, y1,
+                        getWidth(), getHeight());
+                } else {
+                    show();
+                }
+
+                if (mIsDragging) {
+                    if (coords == null) {
+                        coords = mTempCoords;
+                        TerminalView.this.getLocationInWindow(coords);
+                    }
+                    if (coords[0] != mLastParentX || coords[1] != mLastParentY) {
+                        mTouchToWindowOffsetX += coords[0] - mLastParentX;
+                        mTouchToWindowOffsetY += coords[1] - mLastParentY;
+                        mLastParentX = coords[0];
+                        mLastParentY = coords[1];
+                    }
+                }
+            } else {
+                if (isShowing()) {
+                    hide();
+                }
+            }
+        }
+
+        @Override
+        public void onDraw(Canvas c) {
+            final int drawWidth = mDrawable.getIntrinsicWidth();
+            int height = mDrawable.getIntrinsicHeight();
+            mDrawable.setBounds(0, 0, drawWidth, height);
+            mDrawable.draw(c);
+
+        }
+
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouchEvent(MotionEvent ev) {
+            updateFloatingToolbarVisibility(ev);
+            switch (ev.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN: {
+                    final float rawX = ev.getRawX();
+                    final float rawY = ev.getRawY();
+                    mTouchToWindowOffsetX = rawX - mPointX;
+                    mTouchToWindowOffsetY = rawY - mPointY;
+                    final int[] coords = mTempCoords;
+                    TerminalView.this.getLocationInWindow(coords);
+                    mLastParentX = coords[0];
+                    mLastParentY = coords[1];
+                    mIsDragging = true;
+                    break;
+                }
+
+                case MotionEvent.ACTION_MOVE: {
+                    final float rawX = ev.getRawX();
+                    final float rawY = ev.getRawY();
+
+                    final float newPosX = rawX - mTouchToWindowOffsetX + mHotspotX;
+                    final float newPosY = rawY - mTouchToWindowOffsetY + mHotspotY + mTouchOffsetY;
+
+                    mController.updatePosition(this, Math.round(newPosX), Math.round(newPosY));
+
+
+                    break;
+                }
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    mIsDragging = false;
+            }
+            return true;
+        }
+
+
+        public boolean isDragging() {
+            return mIsDragging;
+        }
+
+        void positionAtCursor(final int cx, final int cy) {
+            int left = (int) (getPointX(cx) - mHotspotX);
+            int bottom = getPointY(cy + 1);
+            moveTo(left, bottom);
+        }
+    }
+
+
+    private class SelectionModifierCursorController implements CursorController {
+        private final int mHandleHeight;
+        // The cursor controller images
+        private HandleView mStartHandle, mEndHandle;
+        // Whether selection anchors are active
+        private boolean mIsShowing;
+
+        SelectionModifierCursorController() {
+            mStartHandle = new HandleView(this, HandleView.LEFT);
+            mEndHandle = new HandleView(this, HandleView.RIGHT);
+
+            mHandleHeight = Math.max(mStartHandle.mHandleHeight, mEndHandle.mHandleHeight);
+        }
+
+        public void show() {
+            mIsShowing = true;
+            updatePosition();
+            mStartHandle.show();
+            mEndHandle.show();
 
             final ActionMode.Callback callback = new ActionMode.Callback() {
                 @Override
@@ -864,7 +1205,7 @@ public final class TerminalView extends View {
                             showContextMenu();
                             break;
                     }
-                    toggleSelectingText(null);
+                    stopTextSelectionMode();
                     return true;
                 }
 
@@ -873,52 +1214,246 @@ public final class TerminalView extends View {
                 }
 
             };
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mActionMode = startActionMode(new ActionMode.Callback2() {
+                    @Override
+                    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                        return callback.onCreateActionMode(mode, menu);
+                    }
 
-            mActionMode = startActionMode(new ActionMode.Callback2() {
-                @Override
-                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    return callback.onCreateActionMode(mode, menu);
+                    @Override
+                    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                        return callback.onActionItemClicked(mode, item);
+                    }
+
+                    @Override
+                    public void onDestroyActionMode(ActionMode mode) {
+                        // Ignore.
+                    }
+
+                    @Override
+                    public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+                        int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
+                        int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
+                        int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
+                        int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
+
+
+                        if (x1 > x2) {
+                            int tmp = x1;
+                            x1 = x2;
+                            x2 = tmp;
+                        }
+
+                        outRect.set(x1, y1 + mHandleHeight, x2, y2 + mHandleHeight);
+                    }
+                }, ActionMode.TYPE_FLOATING);
+            } else {
+                mActionMode = startActionMode(callback);
+            }
+        }
+
+        public void hide() {
+            mStartHandle.hide();
+            mEndHandle.hide();
+            mIsShowing = false;
+            if (mActionMode != null) {
+                // This will hide the mSelectionModifierCursorController
+                mActionMode.finish();
+            }
+
+        }
+
+        public boolean isActive() {
+            return mIsShowing;
+        }
+
+        public void updatePosition(HandleView handle, int x, int y) {
+            final int scrollRows = mEmulator.getScreen().getActiveRows() - mEmulator.mRows;
+            if (y < mRenderer.mFontLineSpacing) {//up
+                mTopRow--;
+                if (mTopRow < -scrollRows) {
+                    mTopRow = -scrollRows;
+                }
+            } else if (y + 2 * mRenderer.mFontLineSpacing > TerminalView.this.getHeight()) {//down
+                mTopRow++;
+                if (mTopRow > 0) {
+                    mTopRow = 0;
+                }
+            }
+            if (handle == mStartHandle) {
+                mSelX1 = getCursorX(x);
+                mSelY1 = getCursorY(y);
+                if (mSelX1 < 0) {
+                    mSelX1 = 0;
+                }
+                if (mSelY1 < -scrollRows) {
+                    mSelY1 = -scrollRows;
+                } else if (mSelY1 > mEmulator.mRows - 1) {
+                    mSelY1 = mEmulator.mRows - 1;
                 }
 
-                @Override
-                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                    return false;
+                if (mSelY1 > mSelY2) {
+                    mSelY1 = mSelY2;
+                }
+                if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
+                    mSelX1 = mSelX2;
+                }
+            } else {
+                mSelX2 = getCursorX(x);
+                mSelY2 = getCursorY(y);
+                if (mSelX2 < 0) {
+                    mSelX2 = 0;
+                }
+                if (mSelY2 < -scrollRows) {
+                    mSelY2 = -scrollRows;
+                } else if (mSelY2 > mEmulator.mRows - 1) {
+                    mSelY2 = mEmulator.mRows - 1;
                 }
 
-                @Override
-                public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                    return callback.onActionItemClicked(mode, item);
+                if (mSelY1 > mSelY2) {
+                    mSelY2 = mSelY1;
                 }
-
-                @Override
-                public void onDestroyActionMode(ActionMode mode) {
-                    // Ignore.
+                if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
+                    mSelX2 = mSelX1;
                 }
-
-                @Override
-                public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-                    int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
-                    int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
-                    int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
-                    int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
-                    outRect.set(Math.min(x1, x2), y1, Math.max(x1, x2), y2);
-                }
-            }, ActionMode.TYPE_FLOATING);
+            }
 
             invalidate();
-        } else {
-            mActionMode.finish();
+        }
+
+        public void updatePosition() {
+            if (!isActive()) {
+                return;
+            }
+
+            mStartHandle.positionAtCursor(mSelX1, mSelY1);
+
+            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2);
+
+            if (mActionMode != null) {
+                mActionMode.invalidate();
+            }
+
+        }
+
+        public boolean onTouchEvent(MotionEvent event) {
+
+            return false;
+        }
+
+
+        /**
+         * @return true iff this controller is currently used to move the selection start.
+         */
+        public boolean isSelectionStartDragged() {
+            return mStartHandle.isDragging();
+        }
+
+        public boolean isSelectionEndDragged() {
+            return mEndHandle.isDragging();
+        }
+
+        public void onTouchModeChanged(boolean isInTouchMode) {
+            if (!isInTouchMode) {
+                hide();
+            }
+        }
+
+        @Override
+        public void onDetached() {
+        }
+    }
+
+    SelectionModifierCursorController getSelectionController() {
+        if (mSelectionModifierCursorController == null) {
+            mSelectionModifierCursorController = new SelectionModifierCursorController();
+
+            final ViewTreeObserver observer = getViewTreeObserver();
+            if (observer != null) {
+                observer.addOnTouchModeChangeListener(mSelectionModifierCursorController);
+            }
+        }
+
+        return mSelectionModifierCursorController;
+    }
+
+    private void hideSelectionModifierCursorController() {
+        if (mSelectionModifierCursorController != null && mSelectionModifierCursorController.isActive()) {
+            mSelectionModifierCursorController.hide();
+        }
+    }
+
+
+    private void startTextSelectionMode() {
+        if (!requestFocus()) {
+            return;
+        }
+
+        getSelectionController().show();
+
+        mIsSelectingText = true;
+
+        mClient.copyModeChanged(mIsSelectingText);
+
+        invalidate();
+    }
+
+    private void stopTextSelectionMode() {
+        if (mIsSelectingText) {
+            hideSelectionModifierCursorController();
             mSelX1 = mSelY1 = mSelX2 = mSelY2 = -1;
+            mIsSelectingText = false;
+
+            mClient.copyModeChanged(mIsSelectingText);
+
             invalidate();
         }
     }
 
-    public TerminalSession getCurrentSession() {
-        return mTermSession;
+
+    private final Runnable mShowFloatingToolbar = new Runnable() {
+        @Override
+        public void run() {
+            if (mActionMode != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    mActionMode.hide(0);  // hide off.
+                }
+            }
+        }
+    };
+
+    void hideFloatingToolbar(int duration) {
+        if (mActionMode != null) {
+            removeCallbacks(mShowFloatingToolbar);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mActionMode.hide(duration);
+            }
+        }
     }
 
-    private CharSequence getText() {
-        return mEmulator.getScreen().getSelectedText(0, mTopRow, mEmulator.mColumns, mTopRow +mEmulator.mRows);
+    private void showFloatingToolbar() {
+        if (mActionMode != null) {
+            int delay = ViewConfiguration.getDoubleTapTimeout();
+            postDelayed(mShowFloatingToolbar, delay);
+        }
     }
 
+    private void updateFloatingToolbarVisibility(MotionEvent event) {
+        if (mActionMode != null) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_MOVE:
+                    hideFloatingToolbar(-1);
+                    break;
+                case MotionEvent.ACTION_UP:  // fall through
+                case MotionEvent.ACTION_CANCEL:
+                    showFloatingToolbar();
+            }
+        }
+    }
 }
