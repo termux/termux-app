@@ -11,7 +11,7 @@ task:
   name: debug-build
 
   depends_on:
-    - Run tests
+    - tests
 
   build_release_apk_script: |
     ./gradlew assembleDebug
