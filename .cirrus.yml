@@ -4,11 +4,11 @@ container:
   memory: 8G
 
 task:
-  name: Run tests
+  name: tests
   script: ./gradlew test
 
 task:
-  name: Build debug apk
+  name: debug-build
 
   depends_on:
     - Run tests
