@@ -454,7 +454,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 } else {
                     firstLineView.setPaintFlags(firstLineView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                 }
-                int color = sessionRunning || sessionAtRow.getExitStatus() == 0 ? Color.BLACK : Color.RED;
+                int color = sessionRunning || sessionAtRow.getExitStatus() == 0 ? Color.WHITE : Color.RED;
                 firstLineView.setTextColor(color);
                 return row;
             }
