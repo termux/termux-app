@@ -15,6 +15,21 @@ Note that this repository is for the app itself (the user interface and the
 terminal emulation). For the packages installable inside the app, see
 [termux/termux-packages](https://github.com/termux/termux-packages)
 
+## Installing
+
+It is highly recommended to use [Google Play](https://play.google.com/store/apps/details?id=com.termux)
+or [F-Droid](https://f-droid.org/repository/browse/?fdid=com.termux) for
+installing application.
+
+People wanting to try out the latest git changes may install current
+development build. It can be obtained directly from [Cirrus CI artifacts](https://api.cirrus-ci.com/v1/artifact/github/termux/termux-app/debug-build/output/app/build/outputs/apk/debug/app-debug.apk).
+
+Note that signature keys of [Google Play](https://play.google.com/store/apps/details?id=com.termux),
+[F-Droid](https://f-droid.org/repository/browse/?fdid=com.termux) and git
+builds are different. All must be signed by same key as Termux app. Before
+you switch the installation source, you will have to uninstall the Termux
+application and all currently installed plugins.
+
 ## Terminal resources
 
 - [XTerm control sequences](http://invisible-island.net/xterm/ctlseqs/ctlseqs.html)
