@@ -5,8 +5,6 @@
 
 [Termux](https://termux.com) is an Android terminal application and Linux environment.
 
-- [Termux on Google Play Store](https://play.google.com/store/apps/details?id=com.termux)
-- [Termux on F-Droid](https://f-droid.org/repository/browse/?fdid=com.termux)
 - [Termux Reddit community](https://reddit.com/r/termux)
 - [Termux Wiki](https://wiki.termux.com/wiki/)
 - [Termux Twitter](http://twitter.com/termux/)
@@ -15,20 +13,21 @@ Note that this repository is for the app itself (the user interface and the
 terminal emulation). For the packages installable inside the app, see
 [termux/termux-packages](https://github.com/termux/termux-packages)
 
-## Installing
+## Installation
 
-It is highly recommended to use [Google Play](https://play.google.com/store/apps/details?id=com.termux)
-or [F-Droid](https://f-droid.org/repository/browse/?fdid=com.termux) for
-installing application.
+Termux:Widget application can be obtained from:
 
-People wanting to try out the latest git changes may install current
-development build. It can be obtained directly from [Cirrus CI artifacts](https://api.cirrus-ci.com/v1/artifact/github/termux/termux-app/debug-build/output/app/build/outputs/apk/debug/app-debug.apk).
+- [Google Play](https://play.google.com/store/apps/details?id=com.termux)
+- [F-Droid](https://f-droid.org/en/packages/com.termux/)
+- [Kali Nethunter Store](https://store.nethunter.com/en/packages/com.termux/)
 
-Note that signature keys of [Google Play](https://play.google.com/store/apps/details?id=com.termux),
-[F-Droid](https://f-droid.org/repository/browse/?fdid=com.termux) and [git](https://api.cirrus-ci.com/v1/artifact/github/termux/termux-app/debug-build/output/app/build/outputs/apk/debug/app-debug.apk)
-builds are different. All must be signed by same key as Termux app. Before
-you switch the installation source, you will have to uninstall the Termux
-application and all currently installed plugins.
+Additionally we offer development builds for those who want to try out latest
+features ready to be included in future versions. Such build can be obtained
+directly from [Cirrus CI artifacts](https://api.cirrus-ci.com/v1/artifact/github/termux/termux-app/debug-build/output/app/build/outputs/apk/debug/app-debug.apk).
+
+Signature keys of all offered builds are different. Before you switch the
+installation source, you will have to uninstall the Termux application and
+all currently installed plugins.
 
 ## Terminal resources
 
