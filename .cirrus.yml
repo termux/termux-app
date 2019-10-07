@@ -1,6 +1,6 @@
 container:
   image: cirrusci/android-sdk:28
-  cpu: 4
+  cpu: 2
   memory: 8G
 
 task:
@@ -13,7 +13,7 @@ task:
   depends_on:
     - tests
 
-  build_release_apk_script: |
+  script: |
     ./gradlew assembleDebug
 
   output_artifacts:
