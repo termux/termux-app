@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -882,6 +883,8 @@ public final class TerminalView extends View {
         public static final int RIGHT = 2;
         private int mHandleHeight;
 
+        private long mLastTime;
+
         public HandleView(CursorController controller, int orientation) {
             super(TerminalView.this.getContext());
             mController = controller;
@@ -983,6 +986,11 @@ public final class TerminalView extends View {
         }
 
         private void checkChangedOrientation() {
+            long millis = SystemClock.currentThreadTimeMillis();
+            if (millis - mLastTime < 50) {
+                return;
+            }
+            mLastTime = millis;
 
             final TerminalView hostView = TerminalView.this;
             final int left = hostView.getLeft();
@@ -1007,7 +1015,7 @@ public final class TerminalView extends View {
             final int[] coords = mTempCoords;
             hostView.getLocationInWindow(coords);
             final int posX = coords[0] + mPointX;
-            if (posX + (int) mHotspotX < clip.left) {
+            if (posX < clip.left) {
                 changeOrientation(RIGHT);
             } else if (posX + mHandleWidth > clip.right) {
                 changeOrientation(LEFT);
