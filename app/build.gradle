@@ -1,4 +1,6 @@
-apply plugin: 'com.android.application'
+plugins {
+  id "com.android.application"
+}
 
 android {
     compileSdkVersion 28
@@ -12,10 +14,21 @@ android {
 
     defaultConfig {
         applicationId "com.termux"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 28
         versionCode 75
         versionName "0.75"
+
+        externalNativeBuild {
+            ndkBuild {
+                cFlags "-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
+            }
+        }
+
+        ndk {
+            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+        }
+
     }
 
     signingConfigs {
@@ -43,6 +56,12 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/cpp/Android.mk"
+        }
+    }
 }
 
 dependencies {
@@ -54,3 +73,69 @@ task versionName {
     print android.defaultConfig.versionName
   }
 }
+
+def downloadBootstrap(String arch, String expectedChecksum, int version) {
+    def digest = java.security.MessageDigest.getInstance("SHA-256")
+
+    def localUrl = "src/main/cpp/bootstrap-" + arch + ".zip"
+    def file = new File(projectDir, localUrl)
+    if (file.exists()) {
+        def buffer = new byte[8192]
+        def input = new FileInputStream(file)
+        while (true) {
+            def readBytes = input.read(buffer)
+            if (readBytes < 0) break
+            digest.update(buffer, 0, readBytes)
+        }
+        def checksum = new BigInteger(1, digest.digest()).toString(16)
+        if (checksum == expectedChecksum) {
+            return
+        } else {
+            logger.quiet("Deleting old local file with wrong hash: " + localUrl)
+            file.delete()
+        }
+    }
+
+    def remoteUrl = "https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-" + arch + "-v" + version + ".zip"
+    logger.quiet("Downloading " + remoteUrl + " ...")
+
+    file.parentFile.mkdirs()
+    def out = new BufferedOutputStream(new FileOutputStream(file))
+
+    def connection = new URL(remoteUrl).openConnection()
+    connection.setInstanceFollowRedirects(true)
+    def digestStream = new java.security.DigestInputStream(connection.inputStream, digest)
+    out << digestStream
+    out.close()
+
+    def checksum = new BigInteger(1, digest.digest()).toString(16)
+    if (checksum != expectedChecksum) {
+        file.delete()
+        throw new GradleException("Wrong checksum for " + remoteUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
+    }
+}
+
+clean {
+    doLast {
+        def tree = fileTree(new File(projectDir, 'src/main/cpp'))
+        tree.include 'bootstrap-*.zip'
+        tree.each { it.delete() }
+    }
+}
+
+task downloadBootstraps(){
+    doLast {
+        def version = 17
+        downloadBootstrap("aarch64", "1846c453e7d4399559683e9a74eb8db048d1e88872668361652752b40ea2f3a2", version)
+        downloadBootstrap("arm",     "2f5a8061a1c13d48b659cb57c3767d59f5151f247ea032e2401135701dbd8058", version)
+        downloadBootstrap("i686",    "ca0e3559c5ac925528a7c8725a83a752ca63d5c1e0ff306e5ecd6ea9dd4c1de5", version)
+        downloadBootstrap("x86_64",  "9de2ac75ed0f3370418d3c55b470c176f69180079ba9461034bc7f6195fc5872", version)
+    }
+}
+
+afterEvaluate {
+  android.applicationVariants.all { variant ->
+    variant.javaCompiler.dependsOn(downloadBootstraps)
+  }
+}
+
