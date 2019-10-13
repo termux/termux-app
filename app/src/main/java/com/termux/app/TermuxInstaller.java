@@ -16,6 +16,7 @@ import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,7 +39,7 @@ import java.util.zip.ZipInputStream;
  * <p/>
  * (3) A staging folder, $STAGING_PREFIX, is {@link #deleteFolder(File)} if left over from broken installation below.
  * <p/>
- * (4) The architecture is determined and an appropriate bootstrap zip url is determined in {@link #determineZipUrl()}.
+ * (4) The zip file is loaded from a shared library.
  * <p/>
  * (5) The zip, containing entries relative to the $PREFIX, is is downloaded and extracted by a zip input stream
  * continuously encountering zip file entries:
@@ -82,8 +83,8 @@ final class TermuxInstaller {
                     final byte[] buffer = new byte[8096];
                     final List<Pair<String, String>> symlinks = new ArrayList<>(50);
 
-                    final URL zipUrl = determineZipUrl();
-                    try (ZipInputStream zipInput = new ZipInputStream(zipUrl.openStream())) {
+                    final byte[] zipBytes = loadZipBytes();
+                    try (ZipInputStream zipInput = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
                         ZipEntry zipEntry;
                         while ((zipEntry = zipInput.getNextEntry()) != null) {
                             if (zipEntry.getName().equals("SYMLINKS.txt")) {
@@ -167,34 +168,13 @@ final class TermuxInstaller {
         }
     }
 
-    /** Get bootstrap zip url for this systems cpu architecture. */
-    private static URL determineZipUrl() throws MalformedURLException {
-        String archName = determineTermuxArchName();
-        String url = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-            ? "https://termux.org/bootstrap-" + archName + ".zip"
-            : "https://termux.net/bootstrap/bootstrap-" + archName + ".zip";
-        return new URL(url);
+    public static byte[] loadZipBytes() {
+        // Only load the shared library when necessary to save memory usage.
+        System.loadLibrary("termux-bootstrap");
+        return getZip();
     }
 
-    private static String determineTermuxArchName() {
-        // Note that we cannot use System.getProperty("os.arch") since that may give e.g. "aarch64"
-        // while a 64-bit runtime may not be installed (like on the Samsung Galaxy S5 Neo).
-        // Instead we search through the supported abi:s on the device, see:
-        // http://developer.android.com/ndk/guides/abis.html
-        // Note that we search for abi:s in preferred order (the ordering of the
-        // Build.SUPPORTED_ABIS list) to avoid e.g. installing arm on an x86 system where arm
-        // emulation is available.
-        for (String androidArch : Build.SUPPORTED_ABIS) {
-            switch (androidArch) {
-                case "arm64-v8a": return "aarch64";
-                case "armeabi-v7a": return "arm";
-                case "x86_64": return "x86_64";
-                case "x86": return "i686";
-            }
-        }
-        throw new RuntimeException("Unable to determine arch from Build.SUPPORTED_ABIS =  " +
-            Arrays.toString(Build.SUPPORTED_ABIS));
-    }
+    public static native byte[] getZip();
 
     /** Delete a folder and all its content or throw. Don't follow symlinks. */
     static void deleteFolder(File fileOrDirectory) throws IOException {
