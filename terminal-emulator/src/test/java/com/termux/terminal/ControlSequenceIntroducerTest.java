@@ -46,4 +46,20 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
         withTerminalSized(5, 2).enterString("abcde\033[2G\033[2b\n").assertLinesAre("aeede", "     ");
     }
 
+    /** CSI 3 J  Clear scrollback (xterm, libvte; non-standard). */
+    public void testCsi3J() {
+        withTerminalSized(3, 2).enterString("a\r\nb\r\nc\r\nd");
+        assertEquals("a\nb\nc\nd", mTerminal.getScreen().getTranscriptText());
+        enterString("\033[3J");
+        assertEquals("c\nd", mTerminal.getScreen().getTranscriptText());
+
+        withTerminalSized(3, 2).enterString("Lorem_ipsum");
+        assertEquals("Lorem_ipsum", mTerminal.getScreen().getTranscriptText());
+        enterString("\033[3J");
+        assertEquals("ipsum", mTerminal.getScreen().getTranscriptText());
+
+        withTerminalSized(3, 2).enterString("w\r\nx\r\ny\r\nz\033[?1049h\033[3J\033[?1049l");
+        assertEquals("y\nz", mTerminal.getScreen().getTranscriptText());
+    }
+
 }

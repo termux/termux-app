@@ -4,8 +4,9 @@ android {
     compileSdkVersion 28
 
     dependencies {
-        implementation "com.android.support:support-annotations:28.0.0"
-        implementation "com.android.support:support-core-ui:28.0.0"
+        implementation "androidx.annotation:annotation:1.0.1"
+        implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation "androidx.drawerlayout:drawerlayout:1.0.0"
         implementation project(":terminal-view")
     }
 
@@ -13,8 +14,17 @@ android {
         applicationId "pl.sviete.dom"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 65
-        versionName "0.65"
+        versionCode 75
+        versionName "0.75"
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('dev_keystore.jks')
+            keyAlias 'alias'
+            storePassword 'xrj45yWGLbsO7W0v'
+            keyPassword 'xrj45yWGLbsO7W0v'
+        }
     }
 
     buildTypes {
@@ -22,6 +32,10 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -42,4 +56,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.koushikdutta.async:androidasync:2.1.9'
     implementation 'com.google.android.exoplayer:exoplayer-core:2.9.1'
+}
+
+task versionName {
+  doLast {
+    print android.defaultConfig.versionName
+  }
 }

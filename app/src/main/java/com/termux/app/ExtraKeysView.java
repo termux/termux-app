@@ -2,6 +2,7 @@ package com.termux.app;
 
 import android.content.Context;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.AttributeSet;
 
 import java.util.concurrent.Executors;
@@ -73,6 +74,18 @@ public final class ExtraKeysView extends GridLayout {
         put("RIGHT", KeyEvent.KEYCODE_DPAD_RIGHT);
         put("DOWN", KeyEvent.KEYCODE_DPAD_DOWN);
         put("ENTER", KeyEvent.KEYCODE_ENTER);
+        put("F1", KeyEvent.KEYCODE_F1);
+        put("F2", KeyEvent.KEYCODE_F2);
+        put("F3", KeyEvent.KEYCODE_F3);
+        put("F4", KeyEvent.KEYCODE_F4);
+        put("F5", KeyEvent.KEYCODE_F5);
+        put("F6", KeyEvent.KEYCODE_F6);
+        put("F7", KeyEvent.KEYCODE_F7);
+        put("F8", KeyEvent.KEYCODE_F8);
+        put("F9", KeyEvent.KEYCODE_F9);
+        put("F10", KeyEvent.KEYCODE_F10);
+        put("F11", KeyEvent.KEYCODE_F11);
+        put("F12", KeyEvent.KEYCODE_F12);
     }};
     
     static void sendKey(View view, String keyName) {
@@ -84,7 +97,7 @@ public final class ExtraKeysView extends GridLayout {
         } else {
             // not a control char
             TerminalSession session = terminalView.getCurrentSession();
-            if (session != null)
+            if (session != null && keyName.length() > 0)
                 session.write(keyName);
         }
     }
@@ -108,16 +121,6 @@ public final class ExtraKeysView extends GridLayout {
     private PopupWindow popupWindow;
     private int longPressCount;
     
-    /** @deprecated call readSpecialButton(SpecialButton.CTRL); */
-    public boolean readControlButton() {
-        return readSpecialButton(SpecialButton.CTRL);
-    }
-    
-    /** @deprecated call readSpecialButton(SpecialButton.ALT); */
-    public boolean readAltButton() {
-        return readSpecialButton(SpecialButton.ALT);
-    }
-    
     public boolean readSpecialButton(SpecialButton name) {
         SpecialButtonState state = specialButtons.get(name);
         if (state == null)
@@ -125,10 +128,14 @@ public final class ExtraKeysView extends GridLayout {
         
         if (! state.isOn)
             return false;
-        
+
+        if (state.button == null) {
+            return false;
+        }
+
         if (state.button.isPressed())
             return true;
-        
+
         if (! state.button.isChecked())
             return false;
 
@@ -344,7 +351,15 @@ public final class ExtraKeysView extends GridLayout {
 
                 final Button finalButton = button;
                 button.setOnClickListener(v -> {
-                    finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                    if (Settings.System.getInt(getContext().getContentResolver(),
+                        Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0) {
+
+                        // Depending on DnD settings, value can be >1 but 0 means "disabled".
+                        if (Settings.Global.getInt(getContext().getContentResolver(), "zen_mode", 0) < 1) {
+                            finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                        }
+                    }
+
                     View root = getRootView();
                     if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
                         ToggleButton self = (ToggleButton) finalButton;

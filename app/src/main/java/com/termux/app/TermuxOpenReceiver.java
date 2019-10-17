@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -20,6 +19,8 @@ import com.termux.terminal.EmulatorDebug;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import androidx.annotation.NonNull;
 
 public class TermuxOpenReceiver extends BroadcastReceiver {
 
@@ -77,7 +78,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         if (contentTypeExtra == null) {
             String fileName = fileToShare.getName();
             int lastDotIndex = fileName.lastIndexOf('.');
-            String fileExtension = fileName.substring(lastDotIndex + 1, fileName.length());
+            String fileExtension = fileName.substring(lastDotIndex + 1);
             MimeTypeMap mimeTypes = MimeTypeMap.getSingleton();
             // Lower casing makes it work with e.g. "JPG":
             contentTypeToUse = mimeTypes.getMimeTypeFromExtension(fileExtension.toLowerCase());
@@ -86,7 +87,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             contentTypeToUse = contentTypeExtra;
         }
 
-        Uri uriToShare = Uri.withAppendedPath(Uri.parse("content://com.termux.files/"), filePath);
+        Uri uriToShare = Uri.parse("content://com.termux.files" + fileToShare.getAbsolutePath());
 
         if (Intent.ACTION_SEND.equals(intentAction)) {
             sendIntent.putExtra(Intent.EXTRA_STREAM, uriToShare);

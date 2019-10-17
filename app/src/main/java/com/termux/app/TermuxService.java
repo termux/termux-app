@@ -6,6 +6,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -16,6 +17,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -112,6 +114,22 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, EmulatorDebug.LOG_TAG);
                 mWifiLock.acquire();
 
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    String packageName = getPackageName();
+                    if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                        Intent whitelist = new Intent();
+                        whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                        whitelist.setData(Uri.parse("package:" + packageName));
+                        whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                        try {
+                            startActivity(whitelist);
+                        } catch (ActivityNotFoundException e) {
+                            Log.e(EmulatorDebug.LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
+                        }
+                    }
+                }
+
                 updateNotification();
             }
         } else if (ACTION_UNLOCK_WAKE.equals(action)) {
@@ -136,7 +154,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 mBackgroundTasks.add(task);
                 updateNotification();
             } else {
-                TerminalSession newSession = createTermSession(executablePath, arguments, cwd, false);
+                boolean failsafe = intent.getBooleanExtra(TermuxActivity.TERMUX_FAILSAFE_SESSION_ACTION, false);
+                TerminalSession newSession = createTermSession(executablePath, arguments, cwd, failsafe);
 
                 // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
                 if (executablePath != null) {
@@ -214,7 +233,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         builder.setShowWhen(false);
 
         // Background color for small notification icon:
-        builder.setColor(0xFF000000);
+        builder.setColor(0xFF607D8B);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             builder.setChannelId(NOTIFICATION_CHANNEL_ID);
@@ -237,6 +256,18 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onDestroy() {
+        File termuxTmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
+
+        if (termuxTmpDir.exists()) {
+            try {
+                TermuxInstaller.deleteFolder(termuxTmpDir.getCanonicalFile());
+            } catch (Exception e) {
+                Log.e(EmulatorDebug.LOG_TAG, "Error while removing file at " + termuxTmpDir.getAbsolutePath(), e);
+            }
+
+            termuxTmpDir.mkdirs();
+        }
+
         if (mWakeLock != null) mWakeLock.release();
         if (mWifiLock != null) mWifiLock.release();
 
@@ -250,14 +281,6 @@ public final class TermuxService extends Service implements SessionChangedCallba
         return mTerminalSessions;
     }
 
-    public boolean isWakelockEnabled() {
-        if (mWakeLock == null) {
-            return false;
-        } else {
-            return mWakeLock.isHeld();
-        }
-    }
-
     TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
         new File(HOME_PATH).mkdirs();
 
@@ -267,11 +290,13 @@ public final class TermuxService extends Service implements SessionChangedCallba
         boolean isLoginShell = false;
 
         if (executablePath == null) {
-            for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
-                File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
-                if (shellFile.canExecute()) {
-                    executablePath = shellFile.getAbsolutePath();
-                    break;
+            if (!failSafe) {
+                for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
+                    File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
+                    if (shellFile.canExecute()) {
+                        executablePath = shellFile.getAbsolutePath();
+                        break;
+                    }
                 }
             }
 
@@ -295,6 +320,12 @@ public final class TermuxService extends Service implements SessionChangedCallba
         TerminalSession session = new TerminalSession(executablePath, cwd, args, env, this);
         mTerminalSessions.add(session);
         updateNotification();
+
+        // Make sure that terminal styling is always applied.
+        Intent stylingIntent = new Intent("com.termux.app.reload_style");
+        stylingIntent.putExtra("com.termux.app.reload_style", "styling");
+        sendBroadcast(stylingIntent);
+
         return session;
     }
 

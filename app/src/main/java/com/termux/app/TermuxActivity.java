@@ -24,13 +24,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Vibrator;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -72,6 +65,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 /**
  * A terminal emulator activity.
  * <p/>
@@ -84,6 +83,8 @@ import java.util.regex.Pattern;
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
 
+    public static final String TERMUX_FAILSAFE_SESSION_ACTION = "com.termux.app.failsafe_session";
+
     private static final int CONTEXTMENU_SELECT_URL_ID = 0;
     private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 1;
     private static final int CONTEXTMENU_PASTE_ID = 3;
@@ -91,6 +92,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private static final int CONTEXTMENU_RESET_TERMINAL_ID = 5;
     private static final int CONTEXTMENU_STYLING_ID = 6;
     private static final int CONTEXTMENU_HELP_ID = 8;
+    private static final int CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON = 9;
 
     private static final int MAX_SESSIONS = 8;
 
@@ -143,6 +145,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 }
                 checkForFontAndColors();
                 mSettings.reloadFromProperties(TermuxActivity.this);
+
+                if (mExtraKeysView != null) {
+                    mExtraKeysView.reload(mSettings.mExtraKeys, ExtraKeysView.defaultCharDisplay);
+                }
             }
         }
     };
@@ -207,12 +213,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mTerminalView.setOnKeyListener(new TermuxViewClient(this));
 
         mTerminalView.setTextSize(mSettings.getFontSize());
+        mTerminalView.setKeepScreenOn(mSettings.isScreenAlwaysOn());
         mTerminalView.requestFocus();
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
-        if (mSettings.isShowExtraKeys()) viewPager.setVisibility(View.VISIBLE);
-        
-        
+        if (mSettings.mShowExtraKeys) viewPager.setVisibility(View.VISIBLE);
+
+
         ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
         layoutParams.height = layoutParams.height * mSettings.mExtraKeys.length;
         viewPager.setLayoutParams(layoutParams);
@@ -244,7 +251,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         if (session != null) {
                             if (session.isRunning()) {
                                 String textToSend = editText.getText().toString();
-                                if (textToSend.length() == 0) textToSend = "\n";
+                                if (textToSend.length() == 0) textToSend = "\r";
                                 session.write(textToSend);
                             } else {
                                 removeFinishedSession(session);
@@ -383,8 +390,18 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         showToast(toToastTitle(finishedSession) + " - exited", true);
                 }
 
-                if (mTermService.getSessions().size() > 1) {
-                    removeFinishedSession(finishedSession);
+                if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+                    // On Android TV devices we need to use older behaviour because we may
+                    // not be able to have multiple launcher icons.
+                    if (mTermService.getSessions().size() > 1) {
+                        removeFinishedSession(finishedSession);
+                    }
+                } else {
+                    // Once we have a separate launcher icon for the failsafe session, it
+                    // should be safe to auto-close session on exit code '0' or '130'.
+                    if (finishedSession.getExitStatus() == 0 || finishedSession.getExitStatus() == 130) {
+                        removeFinishedSession(finishedSession);
+                    }
                 }
 
                 mListViewAdapter.notifyDataSetChanged();
@@ -406,7 +423,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
                         break;
                     case TermuxPreferences.BELL_VIBRATE:
-                        ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(50);
+                        BellUtil.getInstance(TermuxActivity.this).doBell();
                         break;
                     case TermuxPreferences.BELL_IGNORE:
                         // Ignore the bell character.
@@ -481,7 +498,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 TermuxInstaller.setupIfNeeded(TermuxActivity.this, () -> {
                     if (mTermService == null) return; // Activity might have been destroyed.
                     try {
-                        addNewSession(false, null);
+                        Bundle bundle = getIntent().getExtras();
+                        boolean launchFailsafe = false;
+                        if (bundle != null) {
+                            launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                        }
+                        addNewSession(launchFailsafe, null);
                     } catch (WindowManager.BadTokenException e) {
                         // Activity finished - ignore.
                     }
@@ -494,7 +516,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             Intent i = getIntent();
             if (i != null && Intent.ACTION_RUN.equals(i.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
-                addNewSession(false, null);
+                boolean failSafe = i.getBooleanExtra(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                addNewSession(failSafe, null);
             } else {
                 switchToSession(getStoredCurrentSessionOrLast());
             }
@@ -588,20 +611,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             new AlertDialog.Builder(this).setTitle(R.string.max_terminals_reached_title).setMessage(R.string.max_terminals_reached_message)
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
-            if (mTermService.getSessions().size() == 0 && !mTermService.isWakelockEnabled()) {
-                File termuxTmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
-                if (termuxTmpDir.exists()) {
-                    try {
-                        TermuxInstaller.deleteFolder(termuxTmpDir);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    termuxTmpDir.mkdirs();
-                }
-            }
-            String executablePath = (failSafe ? "/system/bin/sh" : null);
-            TerminalSession newSession = mTermService.createTermSession(executablePath, null, null, failSafe);
+            TerminalSession newSession = mTermService.createTermSession(null, null, null, failSafe);
             if (sessionName != null) {
                 newSession.mSessionName = sessionName;
             }
@@ -654,6 +664,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXTMENU_RESET_TERMINAL_ID, Menu.NONE, R.string.reset_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.kill_process, getCurrentTermSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXTMENU_STYLING_ID, Menu.NONE, R.string.style_terminal);
+        menu.add(Menu.NONE, CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.toggle_keep_screen_on).setCheckable(true).setChecked(mSettings.isScreenAlwaysOn());
         menu.add(Menu.NONE, CONTEXTMENU_HELP_ID, Menu.NONE, R.string.help);
     }
 
@@ -665,19 +676,86 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     static LinkedHashSet<CharSequence> extractUrls(String text) {
-        // Pattern for recognizing a URL, based off RFC 3986
-        // http://stackoverflow.com/questions/5713558/detect-and-extract-url-from-a-string
+
+        StringBuilder regex_sb = new StringBuilder();
+
+        regex_sb.append("(");                       // Begin first matching group.
+        regex_sb.append("(?:");                     // Begin scheme group.
+        regex_sb.append("dav|");                    // The DAV proto.
+        regex_sb.append("dict|");                   // The DICT proto.
+        regex_sb.append("dns|");                    // The DNS proto.
+        regex_sb.append("file|");                   // File path.
+        regex_sb.append("finger|");                 // The Finger proto.
+        regex_sb.append("ftp(?:s?)|");              // The FTP proto.
+        regex_sb.append("git|");                    // The Git proto.
+        regex_sb.append("gopher|");                 // The Gopher proto.
+        regex_sb.append("http(?:s?)|");             // The HTTP proto.
+        regex_sb.append("imap(?:s?)|");             // The IMAP proto.
+        regex_sb.append("irc(?:[6s]?)|");           // The IRC proto.
+        regex_sb.append("ip[fn]s|");                // The IPFS proto.
+        regex_sb.append("ldap(?:s?)|");             // The LDAP proto.
+        regex_sb.append("pop3(?:s?)|");             // The POP3 proto.
+        regex_sb.append("redis(?:s?)|");            // The Redis proto.
+        regex_sb.append("rsync|");                  // The Rsync proto.
+        regex_sb.append("rtsp(?:[su]?)|");          // The RTSP proto.
+        regex_sb.append("sftp|");                   // The SFTP proto.
+        regex_sb.append("smb(?:s?)|");              // The SAMBA proto.
+        regex_sb.append("smtp(?:s?)|");             // The SMTP proto.
+        regex_sb.append("svn(?:(?:\\+ssh)?)|");     // The Subversion proto.
+        regex_sb.append("tcp|");                    // The TCP proto.
+        regex_sb.append("telnet|");                 // The Telnet proto.
+        regex_sb.append("tftp|");                   // The TFTP proto.
+        regex_sb.append("udp|");                    // The UDP proto.
+        regex_sb.append("vnc|");                    // The VNC proto.
+        regex_sb.append("ws(?:s?)");                // The Websocket proto.
+        regex_sb.append(")://");                    // End scheme group.
+        regex_sb.append(")");                       // End first matching group.
+
+
+        // Begin second matching group.
+        regex_sb.append("(");
+
+        // User name and/or password in format 'user:pass@'.
+        regex_sb.append("(?:\\S+(?::\\S*)?@)?");
+
+        // Begin host group.
+        regex_sb.append("(?:");
+
+        // IP address (from http://www.regular-expressions.info/examples.html).
+        regex_sb.append("(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|");
+
+        // Host name or domain.
+        regex_sb.append("(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))?|");
+
+        // Just path. Used in case of 'file://' scheme.
+        regex_sb.append("/(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)");
+
+        // End host group.
+        regex_sb.append(")");
+
+        // Port number.
+        regex_sb.append("(?::\\d{1,5})?");
+
+        // Resource path with optional query string.
+        regex_sb.append("(?:/[a-zA-Z0-9:@%\\-._~!$&()*+,;=?/]*)?");
+
+        // End second matching group.
+        regex_sb.append(")");
+
         final Pattern urlPattern = Pattern.compile(
-            "(?:^|[\\W])((ht|f)tp(s?)://|www\\.)" + "(([\\w\\-]+\\.)+?([\\w\\-.~]+/?)*" + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+            regex_sb.toString(),
             Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+
         LinkedHashSet<CharSequence> urlSet = new LinkedHashSet<>();
         Matcher matcher = urlPattern.matcher(text);
+
         while (matcher.find()) {
             int matchStart = matcher.start(1);
             int matchEnd = matcher.end();
             String url = text.substring(matchStart, matchEnd);
             urlSet.add(url);
         }
+
         return urlSet;
     }
 
@@ -732,7 +810,18 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 if (session != null) {
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.setType("text/plain");
-                    intent.putExtra(Intent.EXTRA_TEXT, session.getEmulator().getScreen().getTranscriptText().trim());
+                    String transcriptText = session.getEmulator().getScreen().getTranscriptTextWithoutJoinedLines().trim();
+                    // See https://github.com/termux/termux-app/issues/1166.
+                    final int MAX_LENGTH = 100_000;
+                    if (transcriptText.length() > MAX_LENGTH) {
+                        int cutOffIndex = transcriptText.length() - MAX_LENGTH;
+                        int nextNewlineIndex = transcriptText.indexOf('\n', cutOffIndex);
+                        if (nextNewlineIndex != -1 && nextNewlineIndex != transcriptText.length() - 1) {
+                            cutOffIndex = nextNewlineIndex + 1;
+                        }
+                        transcriptText = transcriptText.substring(cutOffIndex).trim();
+                    }
+                    intent.putExtra(Intent.EXTRA_TEXT, transcriptText);
                     intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_transcript_title));
                     startActivity(Intent.createChooser(intent, getString(R.string.share_transcript_chooser_title)));
                 }
@@ -774,6 +863,16 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             case CONTEXTMENU_HELP_ID:
                 startActivity(new Intent(this, TermuxHelpActivity.class));
                 return true;
+            case CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON: {
+                if(mTerminalView.getKeepScreenOn()) {
+                    mTerminalView.setKeepScreenOn(false);
+                    mSettings.setScreenAlwaysOn(this, false);
+                } else {
+                    mTerminalView.setKeepScreenOn(true);
+                    mSettings.setScreenAlwaysOn(this, true);
+                }
+                return true;
+            }
             default:
                 return super.onContextItemSelected(item);
         }
