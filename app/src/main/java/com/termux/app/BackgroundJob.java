@@ -93,32 +93,60 @@ public final class BackgroundJob {
         };
     }
 
-    public static String[] buildEnvironment(boolean failSafe, String cwd) {
+    private static void addToEnvIfPresent(List<String> environment, String name) {
+        String value = System.getenv(name);
+        if (value != null) {
+            environment.add(name + "=" + value);
+        }
+    }
+
+    static String[] buildEnvironment(boolean failSafe, String cwd) {
         new File(TermuxService.HOME_PATH).mkdirs();
 
         if (cwd == null) cwd = TermuxService.HOME_PATH;
 
-        final String termEnv = "TERM=xterm-256color";
-        final String homeEnv = "HOME=" + TermuxService.HOME_PATH;
-        final String prefixEnv = "PREFIX=" + TermuxService.PREFIX_PATH;
-        final String androidRootEnv = "ANDROID_ROOT=" + System.getenv("ANDROID_ROOT");
-        final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
+        List<String> environment = new ArrayList<>();
+
+        environment.add("TERM=xterm-256color");
+        environment.add("HOME=" + TermuxService.HOME_PATH);
+        environment.add("PREFIX=" + TermuxService.PREFIX_PATH);
+        environment.add("BOOTCLASSPATH" + System.getenv("BOOTCLASSPATH"));
+        environment.add("ANDROID_ROOT=" + System.getenv("ANDROID_ROOT"));
+        environment.add("ANDROID_DATA=" + System.getenv("ANDROID_DATA"));
         // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
         // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
-        final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
+        environment.add("EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE"));
+        // ANDROID_RUNTIME_ROOT and ANDROID_TZDATA_ROOT are required for `am` to run on Android Q
+        addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
+        addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
         if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
-            final String pathEnv = "PATH=" + System.getenv("PATH");
-            return new String[]{termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv, externalStorageEnv};
+            environment.add("PATH= " + System.getenv("PATH"));
         } else {
-            final String ldEnv = "LD_LIBRARY_PATH=" + TermuxService.PREFIX_PATH + "/lib";
-            final String langEnv = "LANG=en_US.UTF-8";
-            final String pathEnv = "PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets";
-            final String pwdEnv = "PWD=" + cwd;
-            final String tmpdirEnv = "TMPDIR=" + TermuxService.PREFIX_PATH + "/tmp";
-
-            return new String[]{termEnv, homeEnv, prefixEnv, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv, tmpdirEnv};
+            if (shouldAddLdLibraryPath()) {
+                environment.add("LD_LIBRARY_PATH=" + TermuxService.PREFIX_PATH + "/lib");
+            }
+            environment.add("LANG=en_US.UTF-8");
+            environment.add("PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets");
+            environment.add("PWD=" + cwd);
+            environment.add("TMPDIR=" + TermuxService.PREFIX_PATH + "/tmp");
         }
+
+        return environment.toArray(new String[0]);
+    }
+
+    private static boolean shouldAddLdLibraryPath() {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(TermuxService.PREFIX_PATH + "/etc/apt/sources.list")))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (!line.startsWith("#") && line.contains("https://dl.bintray.com/termux/termux-packages-24")) {
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error trying to read sources.list", e);
+        }
+        return true;
     }
 
     public static int getPid(Process p) {

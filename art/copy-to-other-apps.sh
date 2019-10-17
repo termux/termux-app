@@ -1,20 +1,13 @@
 #!/bin/sh
+set -e -u
 
-for DENSITY in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-	FOLDER=../app/src/main/res/mipmap-$DENSITY
-
-	for FILE in ic_launcher ic_launcher_round; do
-		PNG=$FOLDER/$FILE.png
-
-		# Update other apps:
-		for APP in api boot styling tasker widget; do
-			APPDIR=../../termux-$APP
-			if [ -d $APPDIR ]; then
-				APP_FOLDER=$APPDIR/app/src/main/res/mipmap-$DENSITY
-				mkdir -p $APP_FOLDER
-				cp $PNG $APP_FOLDER/$FILE.png
-			fi
-		done
+for APP in api boot styling tasker widget; do
+	APPDIR=../../termux-$APP
+	for file in ic_foreground ic_launcher; do
+		cp ../app/src/main/res/drawable/$file.xml \
+			$APPDIR/app/src/main/res/drawable/$file.xml
 	done
 
+	cp ../app/src/main/res/drawable-anydpi-v26/ic_launcher.xml \
+		$APPDIR/app/src/main/res/drawable-anydpi-v26/$file.xml
 done

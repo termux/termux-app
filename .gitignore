@@ -7,6 +7,7 @@ build/
 *.apk
 *.so
 .externalNativeBuild
+.cxx
 
 # Crashlytics configuations
 com_crashlytics_export_strings.xml
@@ -30,5 +31,6 @@ local.properties
 ._*
 .Spotlight-V100
 .Trashes
+.swp
 ehthumbs.db
 Thumbs.db
