@@ -18,8 +18,7 @@
 
     <application
         android:extractNativeLibs="true"
-        android:allowBackup="true"
-        android:fullBackupContent="@xml/backupscheme"
+        android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:banner="@drawable/banner"
         android:label="@string/application_name"
