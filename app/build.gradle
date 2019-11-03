@@ -16,8 +16,8 @@ android {
         applicationId "com.termux"
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 78
-        versionName "0.78"
+        versionCode 80
+        versionName "0.80"
 
         externalNativeBuild {
             ndkBuild {
@@ -135,7 +135,7 @@ task downloadBootstraps(){
 
 afterEvaluate {
   android.applicationVariants.all { variant ->
-    variant.javaCompiler.dependsOn(downloadBootstraps)
+    variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
   }
 }
 
