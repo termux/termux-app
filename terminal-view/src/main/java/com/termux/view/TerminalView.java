@@ -518,8 +518,7 @@ public final class TerminalView extends View {
                         mSelY2 = tmpY1;
                     }
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                        mActionMode.invalidateContentRect();
+                    mActionMode.invalidateContentRect();
                     invalidate();
                     break;
                 default:
@@ -875,41 +874,36 @@ public final class TerminalView extends View {
 
             };
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mActionMode = startActionMode(new ActionMode.Callback2() {
-                    @Override
-                    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                        return callback.onCreateActionMode(mode, menu);
-                    }
+            mActionMode = startActionMode(new ActionMode.Callback2() {
+                @Override
+                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                    return callback.onCreateActionMode(mode, menu);
+                }
 
-                    @Override
-                    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                        return false;
-                    }
+                @Override
+                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                    return false;
+                }
 
-                    @Override
-                    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                        return callback.onActionItemClicked(mode, item);
-                    }
+                @Override
+                public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                    return callback.onActionItemClicked(mode, item);
+                }
 
-                    @Override
-                    public void onDestroyActionMode(ActionMode mode) {
-                        // Ignore.
-                    }
+                @Override
+                public void onDestroyActionMode(ActionMode mode) {
+                    // Ignore.
+                }
 
-                    @Override
-                    public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-                        int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
-                        int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
-                        int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
-                        int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
-                        outRect.set(Math.min(x1, x2), y1, Math.max(x1, x2), y2);
-                    }
-                }, ActionMode.TYPE_FLOATING);
-            } else {
-                mActionMode = startActionMode(callback);
-            }
-
+                @Override
+                public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+                    int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
+                    int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
+                    int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
+                    int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
+                    outRect.set(Math.min(x1, x2), y1, Math.max(x1, x2), y2);
+                }
+            }, ActionMode.TYPE_FLOATING);
 
             invalidate();
         } else {
