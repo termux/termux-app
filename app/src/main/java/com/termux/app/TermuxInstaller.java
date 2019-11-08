@@ -47,12 +47,26 @@ import java.util.zip.ZipInputStream;
  * (5.2) For every other zip entry, extract it into $STAGING_PREFIX and set execute permissions if
  * necessary.
  */
-final class TermuxInstaller {
+public final class TermuxInstaller {
+    private static final String TAG = "TermuxInstaller";
+    private static TermuxInstaller sInstaller;
+
+    private TermuxInstaller() {
+    }
+
+    public final static TermuxInstaller getInstaller() {
+        synchronized (TermuxInstaller.class) {
+            if (sInstaller == null) {
+                sInstaller = new TermuxInstaller();
+            }
+        }
+        return sInstaller;
+    }
 
     /**
      * Performs setup if necessary.
      */
-    static void setupIfNeeded(final Activity activity, final Runnable whenDone) {
+    public void setupIfNeeded(final Activity activity, final Runnable whenDone) {
         final File PREFIX_FILE = new File(TermuxConfig.PREFIX_PATH);
         if (PREFIX_FILE.isDirectory()) {
             whenDone.run();
@@ -134,7 +148,7 @@ final class TermuxInstaller {
                                     activity.finish();
                                 }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
                                 dialog.dismiss();
-                                TermuxInstaller.setupIfNeeded(activity, whenDone);
+                                TermuxInstaller.getInstaller().setupIfNeeded(activity, whenDone);
                             }).show();
                         } catch (WindowManager.BadTokenException e1) {
                             // Activity already dismissed - ignore.
@@ -170,7 +184,7 @@ final class TermuxInstaller {
     /**
      * Delete a folder and all its content or throw. Don't follow symlinks.
      */
-    static void deleteFolder(File fileOrDirectory) throws IOException {
+    public void deleteFolder(File fileOrDirectory) throws IOException {
         if (fileOrDirectory.getCanonicalPath().equals(fileOrDirectory.getAbsolutePath()) && fileOrDirectory.isDirectory()) {
             File[] children = fileOrDirectory.listFiles();
 
@@ -186,7 +200,7 @@ final class TermuxInstaller {
         }
     }
 
-    static void setupStorageSymlinks(final Context context) {
+    public void setupStorageSymlinks(final Context context) {
         final String LOG_TAG = "termux-storage";
         new Thread() {
             public void run() {
@@ -240,5 +254,4 @@ final class TermuxInstaller {
             }
         }.start();
     }
-
 }

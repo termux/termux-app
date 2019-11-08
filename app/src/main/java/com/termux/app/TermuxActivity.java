@@ -140,7 +140,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 String whatToReload = intent.getStringExtra(RELOAD_STYLE_ACTION);
                 if ("storage".equals(whatToReload)) {
                     if (ensureStoragePermissionGranted())
-                        TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
+                        TermuxInstaller.getInstaller().setupStorageSymlinks(TermuxActivity.this);
                     return;
                 }
                 checkForFontAndColors();
@@ -495,7 +495,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         .setOnDismissListener(dialog -> System.exit(0)).setPositiveButton(android.R.string.ok, null).show();
                     return;
                 }
-                TermuxInstaller.setupIfNeeded(TermuxActivity.this, () -> {
+                TermuxInstaller.getInstaller().setupIfNeeded(TermuxActivity.this, () -> {
                     if (mTermService == null) return; // Activity might have been destroyed.
                     try {
                         Bundle bundle = getIntent().getExtras();
@@ -881,7 +881,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (requestCode == REQUESTCODE_PERMISSION_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            TermuxInstaller.setupStorageSymlinks(this);
+            TermuxInstaller.getInstaller().setupStorageSymlinks(this);
         }
     }
 
