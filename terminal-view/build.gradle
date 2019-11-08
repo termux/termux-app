@@ -4,6 +4,9 @@ plugins {
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 ext {
     bintrayName = 'terminal-view'
@@ -18,7 +21,7 @@ ext {
 
 android {
     compileSdkVersion 28
-
+    buildToolsVersion '29.0.2'
     dependencies {
         implementation "androidx.annotation:annotation:1.0.1"
         api project(":terminal-emulator")
@@ -41,10 +44,22 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    androidExtensions {
+        experimental = true
+    }
 }
 
 dependencies {
     testImplementation 'junit:junit:4.12'
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 }
 
 apply from: '../scripts/bintray-publish.gradle'

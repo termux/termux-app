@@ -1,10 +1,11 @@
-plugins {
-  id "com.android.application"
-}
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 28
-
+    buildToolsVersion '29.0.2'
     dependencies {
         implementation "androidx.annotation:annotation:1.0.1"
         implementation "androidx.viewpager:viewpager:1.0.0"
@@ -28,7 +29,6 @@ android {
         ndk {
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
-
     }
 
     signingConfigs {
@@ -62,16 +62,29 @@ android {
             path "src/main/cpp/Android.mk"
         }
     }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    androidExtensions {
+        experimental = true
+    }
 }
 
 dependencies {
     testImplementation 'junit:junit:4.12'
+
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 }
 
 task versionName {
-  doLast {
-    print android.defaultConfig.versionName
-  }
+    doLast {
+        print android.defaultConfig.versionName
+    }
 }
 
 def downloadBootstrap(String arch, String expectedChecksum, int version) {
@@ -123,19 +136,19 @@ clean {
     }
 }
 
-task downloadBootstraps(){
+task downloadBootstraps() {
     doLast {
         def version = 18
         downloadBootstrap("aarch64", "1a4c08a696d452b58f69102428239ec0c07521c0ca9f48b23ef70ae0e5e3d4f8", version)
-        downloadBootstrap("arm",     "bff11f2c7e9c1055a22fc5f20bb7507b75f6034e0f5d591ec6725b3407981b85", version)
-        downloadBootstrap("i686",    "6fb93020db2807337d82a1537e24612400cacbd10cf4bccaeb0714d51e653da1", version)
-        downloadBootstrap("x86_64",  "a6067e5decc486dcad190c1ed9e15366c798e5e7d9b9b9ee6b4b8231290524c3", version)
+        downloadBootstrap("arm", "bff11f2c7e9c1055a22fc5f20bb7507b75f6034e0f5d591ec6725b3407981b85", version)
+        downloadBootstrap("i686", "6fb93020db2807337d82a1537e24612400cacbd10cf4bccaeb0714d51e653da1", version)
+        downloadBootstrap("x86_64", "a6067e5decc486dcad190c1ed9e15366c798e5e7d9b9b9ee6b4b8231290524c3", version)
     }
 }
 
 afterEvaluate {
-  android.applicationVariants.all { variant ->
-    variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
-  }
+    android.applicationVariants.all { variant ->
+        variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
+    }
 }
 
