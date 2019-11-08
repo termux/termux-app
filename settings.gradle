@@ -1,1 +1,4 @@
-include ':app', ':terminal-emulator', ':terminal-view'
+include ':app'
+include ':terminal-service'
+include ':terminal-emulator'
+include ':terminal-view'

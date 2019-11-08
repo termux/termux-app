@@ -1,9 +1,8 @@
-package com.termux.app;
+package com.termux.service;
 
 import android.util.Log;
 
-import com.termux.service.TermuxConfig;
-import com.termux.service.TermuxEnvironment;
+import com.termux.app.TermuxService;
 
 import java.io.BufferedReader;
 import java.io.File;

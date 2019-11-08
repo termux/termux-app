@@ -1,4 +1,4 @@
-package com.termux.app;
+package com.termux.service;
 
 import android.content.Context;
 import android.os.Environment;
@@ -7,7 +7,6 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
 
-import com.termux.service.TermuxConfig;
 import com.termux.terminal.EmulatorDebug;
 
 import java.io.BufferedReader;
