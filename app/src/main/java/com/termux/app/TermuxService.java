@@ -23,6 +23,7 @@ import android.widget.ArrayAdapter;
 
 import com.termux.R;
 import com.termux.service.TermuxConfig;
+import com.termux.service.TermuxEnvironment;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
@@ -292,7 +293,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
         if (cwd == null) cwd = TermuxConfig.HOME_PATH;
 
-        String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
+        String[] env = TermuxEnvironment.getBuildEnvironment(failSafe, cwd);
         boolean isLoginShell = false;
 
         if (executablePath == null) {
@@ -313,7 +314,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
             isLoginShell = true;
         }
 
-        String[] processArgs = BackgroundJob.setupProcessArgs(executablePath, arguments);
+        String[] processArgs = TermuxEnvironment.getSetupProcessArgs(executablePath, arguments);
         executablePath = processArgs[0];
         int lastSlashIndex = executablePath.lastIndexOf('/');
         String processName = (isLoginShell ? "-" : "") +

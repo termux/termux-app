@@ -12,7 +12,9 @@ android {
         implementation "androidx.drawerlayout:drawerlayout:1.0.0"
         implementation project(":terminal-view")
     }
-
+    lintOptions {
+        abortOnError false
+    }
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion 24
