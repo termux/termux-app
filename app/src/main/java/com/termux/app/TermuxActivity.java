@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -28,6 +29,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -66,6 +68,7 @@ import java.util.regex.Pattern;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
@@ -80,7 +83,7 @@ import androidx.viewpager.widget.ViewPager;
  * about memory leaks.
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
-
+    private static final String TAG = "TermuxActivity";
     public static final String TERMUX_FAILSAFE_SESSION_ACTION = "com.termux.app.failsafe_session";
 
     private static final int CONTEXTMENU_SELECT_URL_ID = 0;
@@ -96,9 +99,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
 
+    private Observer<SparseBooleanArray> mInfosObserver;
+    private TermuxInstaller mInstaller;
+
     private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
 
-    /** The main view of the activity showing the terminal. Initialized in onCreate(). */
+    /**
+     * The main view of the activity showing the terminal. Initialized in onCreate().
+     */
     @SuppressWarnings("NullableProblems")
     @NonNull
     TerminalView mTerminalView;
@@ -108,21 +116,27 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     TermuxPreferences mSettings;
 
     /**
-     * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
-     * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
+     * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a
+     * call to {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
      * {@link #onServiceConnected(ComponentName, IBinder)}.
      */
     TermuxService mTermService;
 
-    /** Initialized in {@link #onServiceConnected(ComponentName, IBinder)}. */
+    /**
+     * Initialized in {@link #onServiceConnected(ComponentName, IBinder)}.
+     */
     ArrayAdapter<TerminalSession> mListViewAdapter;
 
-    /** The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}. */
+    /**
+     * The last toast shown, used cancel current toast before showing new in {@link
+     * #showToast(String, boolean)}.
+     */
     Toast mLastToast;
 
     /**
-     * If between onResume() and onStop(). Note that only one session is in the foreground of the terminal view at the
-     * time, so if the session causing a change is not in the foreground it should probably be treated as background.
+     * If between onResume() and onStop(). Note that only one session is in the foreground of the
+     * terminal view at the time, so if the session causing a change is not in the foreground it
+     * should probably be treated as background.
      */
     boolean mIsVisible;
 
@@ -186,7 +200,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    /** For processes to access shared internal storage (/sdcard) we need this permission. */
+    /**
+     * For processes to access shared internal storage (/sdcard) we need this permission.
+     */
     public boolean ensureStoragePermissionGranted() {
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             return true;
@@ -311,6 +327,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         });
 
         registerForContextMenu(mTerminalView);
+        mInfosObserver = new Observer<SparseBooleanArray>() {
+            @Override
+            public void onChanged(@Nullable SparseBooleanArray notifyinfos) {
+//                Log.e(TAG, "Show  get  Area info change " + notifyinfos);
+            }
+        };
 
         Intent serviceIntent = new Intent(this, TermuxService.class);
         // Start the service and make it run regardless of who is bound to it:
@@ -334,9 +356,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     /**
-     * Part of the {@link ServiceConnection} interface. The service is bound with
-     * {@link #bindService(Intent, ServiceConnection, int)} in {@link #onCreate(Bundle)} which will cause a call to this
-     * callback method.
+     * Part of the {@link ServiceConnection} interface. The service is bound with {@link
+     * #bindService(Intent, ServiceConnection, int)} in {@link #onCreate(Bundle)} which will cause a
+     * call to this callback method.
      */
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -488,26 +510,85 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             if (mIsVisible) {
                 // Termux can only be run as the primary user (device owner) since only that
                 // account has the expected file system paths. Verify that:
-                UserManager um = (UserManager) this.getSystemService(Context.USER_SERVICE);
-                boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
+                final UserManager um = (UserManager) this.getSystemService(Context.USER_SERVICE);
+                final boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
                 if (!isPrimaryUser) {
                     new AlertDialog.Builder(this).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_not_primary_user_message)
                         .setOnDismissListener(dialog -> System.exit(0)).setPositiveButton(android.R.string.ok, null).show();
                     return;
                 }
-                TermuxInstaller.getInstaller().setupIfNeeded(TermuxActivity.this, () -> {
-                    if (mTermService == null) return; // Activity might have been destroyed.
-                    try {
-                        Bundle bundle = getIntent().getExtras();
-                        boolean launchFailsafe = false;
-                        if (bundle != null) {
-                            launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                mInstaller = TermuxInstaller.getInstaller();
+                final ProgressDialog progress = new ProgressDialog(TermuxActivity.this);
+                progress.setTitle(null);
+                progress.setMessage(TermuxActivity.this.getString(R.string.bootstrap_installer_body));
+                progress.setIndeterminate(true);
+                progress.setCancelable(false);
+                progress.setOnCancelListener(null);
+                mInfosObserver = new Observer<SparseBooleanArray>() {
+                    @Override
+                    public void onChanged(SparseBooleanArray it) {
+                        final int size = it.size();
+                        if (size == 1 && it.indexOfKey(TermuxInstaller.STEP_INIT) >= 0) {
+                            if (!it.get(TermuxInstaller.STEP_INIT)) {
+                                if (mTermService == null) {
+                                    return; // Activity might have been destroyed.
+                                }
+                                try {
+                                    Bundle bundle = getIntent().getExtras();
+                                    boolean launchFailsafe = false;
+                                    if (bundle != null) {
+                                        launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                                    }
+                                    addNewSession(launchFailsafe, null);
+                                } catch (WindowManager.BadTokenException e) {
+                                    // Activity finished - ignore.
+                                }
+                            }
+                        } else if (size == 2 && it.get(TermuxInstaller.STEP_INIT)) {
+                            if (progress != null) {
+                                progress.show();
+                            }
+                        } else if (size == 5 && it.get(TermuxInstaller.STEP_DONE)) {
+                            if (progress != null) {
+                                progress.dismiss();
+                            }
+                            mInstaller.mInstallerInfoObserver.removeObserver(mInfosObserver);
+                            if (mTermService == null) {
+                                return; // Activity might have been destroyed.
+                            }
+                            try {
+                                Bundle bundle = getIntent().getExtras();
+                                boolean launchFailsafe = false;
+                                if (bundle != null) {
+                                    launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                                }
+                                addNewSession(launchFailsafe, null);
+                            } catch (WindowManager.BadTokenException e) {
+                                // Activity finished - ignore.
+                            }
+                        } else if (it.indexOfKey(TermuxInstaller.STEP_DONE) > 0) {
+                            if (progress != null) {
+                                progress.dismiss();
+                            }
+                            if (!it.get(TermuxInstaller.STEP_DONE)) {
+                                try {
+                                    new AlertDialog.Builder(TermuxActivity.this).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
+                                        .setNegativeButton(R.string.bootstrap_error_abort, (dialog, which) -> {
+                                            dialog.dismiss();
+                                            TermuxActivity.this.finish();
+                                        }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
+                                        dialog.dismiss();
+                                        mInstaller.setupIfNeeded();
+                                    }).show();
+                                } catch (WindowManager.BadTokenException e1) {
+                                    // Activity already dismissed - ignore.
+                                }
+                            }
                         }
-                        addNewSession(launchFailsafe, null);
-                    } catch (WindowManager.BadTokenException e) {
-                        // Activity finished - ignore.
                     }
-                });
+                };
+                mInstaller.mInstallerInfoObserver.observeForever(mInfosObserver);
+                mInstaller.setupIfNeeded();
             } else {
                 // The service connected while not in foreground - just bail out.
                 finish();
@@ -620,7 +701,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    /** Try switching to session and note about it, but do nothing if already displaying the session. */
+    /**
+     * Try switching to session and note about it, but do nothing if already displaying the
+     * session.
+     */
     void switchToSession(TerminalSession session) {
         if (mTerminalView.attachSession(session)) {
             noteSessionInfo();
@@ -668,7 +752,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXTMENU_HELP_ID, Menu.NONE, R.string.help);
     }
 
-    /** Hook system menu to show context menu instead. */
+    /**
+     * Hook system menu to show context menu instead.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mTerminalView.showContextMenu();
@@ -864,7 +950,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 startActivity(new Intent(this, TermuxHelpActivity.class));
                 return true;
             case CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON: {
-                if(mTerminalView.getKeepScreenOn()) {
+                if (mTerminalView.getKeepScreenOn()) {
                     mTerminalView.setKeepScreenOn(false);
                     mSettings.setScreenAlwaysOn(this, false);
                 } else {
@@ -899,7 +985,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             getCurrentTermSession().getEmulator().paste(paste.toString());
     }
 
-    /** The current session as stored or the last one if that does not exist. */
+    /**
+     * The current session as stored or the last one if that does not exist.
+     */
     public TerminalSession getStoredCurrentSessionOrLast() {
         TerminalSession stored = TermuxPreferences.getCurrentSession(this);
         if (stored != null) return stored;
@@ -907,7 +995,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
     }
 
-    /** Show a toast and dismiss the last one if still visible. */
+    /**
+     * Show a toast and dismiss the last one if still visible.
+     */
     void showToast(String text, boolean longDuration) {
         if (mLastToast != null) mLastToast.cancel();
         mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);

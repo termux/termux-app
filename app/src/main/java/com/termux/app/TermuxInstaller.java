@@ -1,16 +1,12 @@
 package com.termux.app;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Environment;
 import android.system.Os;
 import android.util.Log;
 import android.util.Pair;
-import android.view.WindowManager;
+import android.util.SparseBooleanArray;
 
-import com.termux.R;
 import com.termux.service.TermuxConfig;
 import com.termux.terminal.EmulatorDebug;
 
@@ -20,10 +16,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import androidx.annotation.IntDef;
+import androidx.lifecycle.MutableLiveData;
 
 /**
  * Install the Termux bootstrap packages if necessary by following the below steps:
@@ -51,7 +52,25 @@ public final class TermuxInstaller {
     private static final String TAG = "TermuxInstaller";
     private static TermuxInstaller sInstaller;
 
+    @IntDef(value = {
+        STEP_INIT, STEP_CHECK_DIRECTORY, STEP_CHECK_STAGING_DIRECTORY, STEP_GET_BOOTSTRAP_FILE, STEP_UNZIP_BOOTSTRAP_FILE, STEP_SYMLINK_BOOTSTRAP_FILE, STEP_RENAME_FOLDER, STEP_DONE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface InstallStep {
+    }
+
+    public static final int STEP_INIT = 0;
+    public static final int STEP_CHECK_DIRECTORY = 1;
+    public static final int STEP_CHECK_STAGING_DIRECTORY = 2;
+    public static final int STEP_GET_BOOTSTRAP_FILE = 3;
+    public static final int STEP_UNZIP_BOOTSTRAP_FILE = 4;
+    public static final int STEP_SYMLINK_BOOTSTRAP_FILE = 5;
+    public static final int STEP_RENAME_FOLDER = 6;
+    public static final int STEP_DONE = 7;
+    public final MutableLiveData<SparseBooleanArray> mInstallerInfoObserver;
+
     private TermuxInstaller() {
+        mInstallerInfoObserver = new MutableLiveData<>();
     }
 
     public final static TermuxInstaller getInstaller() {
@@ -66,14 +85,17 @@ public final class TermuxInstaller {
     /**
      * Performs setup if necessary.
      */
-    public void setupIfNeeded(final Activity activity, final Runnable whenDone) {
+    public void setupIfNeeded() {
+        final SparseBooleanArray step = new SparseBooleanArray();
+        step.put(STEP_INIT, true);
         final File PREFIX_FILE = new File(TermuxConfig.PREFIX_PATH);
         if (PREFIX_FILE.isDirectory()) {
-            whenDone.run();
+            step.put(STEP_INIT, false);
+            mInstallerInfoObserver.postValue(step);
             return;
         }
+        mInstallerInfoObserver.postValue(step);
 
-        final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
         new Thread() {
             @Override
             public void run() {
@@ -84,7 +106,8 @@ public final class TermuxInstaller {
                     if (STAGING_PREFIX_FILE.exists()) {
                         deleteFolder(STAGING_PREFIX_FILE);
                     }
-
+                    step.append(STEP_CHECK_STAGING_DIRECTORY, true);
+                    mInstallerInfoObserver.postValue(step);
                     final byte[] buffer = new byte[8096];
                     final List<Pair<String, String>> symlinks = new ArrayList<>(50);
 
@@ -125,43 +148,36 @@ public final class TermuxInstaller {
                                 }
                             }
                         }
+                        step.append(STEP_UNZIP_BOOTSTRAP_FILE, true);
+                        mInstallerInfoObserver.postValue(step);
                     }
 
-                    if (symlinks.isEmpty())
+                    if (symlinks.isEmpty()) {
+                        step.append(STEP_SYMLINK_BOOTSTRAP_FILE, false);
+                        mInstallerInfoObserver.postValue(step);
                         throw new RuntimeException("No SYMLINKS.txt encountered");
+                    }
+
                     for (Pair<String, String> symlink : symlinks) {
                         Os.symlink(symlink.first, symlink.second);
+                        step.append(STEP_SYMLINK_BOOTSTRAP_FILE, true);
+                        mInstallerInfoObserver.postValue(step);
                     }
 
                     if (!STAGING_PREFIX_FILE.renameTo(PREFIX_FILE)) {
+                        step.append(STEP_RENAME_FOLDER, false);
+                        mInstallerInfoObserver.postValue(step);
                         throw new RuntimeException("Unable to rename staging folder");
                     }
-
-                    activity.runOnUiThread(whenDone);
+                    step.append(STEP_DONE, true);
+                    mInstallerInfoObserver.postValue(step);
                 } catch (final Exception e) {
                     Log.e(EmulatorDebug.LOG_TAG, "Bootstrap error", e);
-                    activity.runOnUiThread(() -> {
-                        try {
-                            new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
-                                .setNegativeButton(R.string.bootstrap_error_abort, (dialog, which) -> {
-                                    dialog.dismiss();
-                                    activity.finish();
-                                }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
-                                dialog.dismiss();
-                                TermuxInstaller.getInstaller().setupIfNeeded(activity, whenDone);
-                            }).show();
-                        } catch (WindowManager.BadTokenException e1) {
-                            // Activity already dismissed - ignore.
-                        }
-                    });
+                    step.put(STEP_DONE, false);
+                    mInstallerInfoObserver.postValue(step);
                 } finally {
-                    activity.runOnUiThread(() -> {
-                        try {
-                            progress.dismiss();
-                        } catch (RuntimeException e) {
-                            // Activity already dismissed - ignore.
-                        }
-                    });
+                    step.append(STEP_DONE, true);
+                    mInstallerInfoObserver.postValue(step);
                 }
             }
         }.start();
