@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.Build;
 import android.os.Environment;
-import android.os.UserManager;
 import android.system.Os;
 import android.util.Log;
 import android.util.Pair;
@@ -21,10 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -32,36 +27,31 @@ import java.util.zip.ZipInputStream;
 /**
  * Install the Termux bootstrap packages if necessary by following the below steps:
  * <p/>
- * (1) If $PREFIX already exist, assume that it is correct and be done. Note that this relies on that we do not create a
- * broken $PREFIX folder below.
+ * (1) If $PREFIX already exist, assume that it is correct and be done. Note that this relies on
+ * that we do not create a broken $PREFIX folder below.
  * <p/>
  * (2) A progress dialog is shown with "Installing..." message and a spinner.
  * <p/>
- * (3) A staging folder, $STAGING_PREFIX, is {@link #deleteFolder(File)} if left over from broken installation below.
+ * (3) A staging folder, $STAGING_PREFIX, is {@link #deleteFolder(File)} if left over from broken
+ * installation below.
  * <p/>
  * (4) The zip file is loaded from a shared library.
  * <p/>
- * (5) The zip, containing entries relative to the $PREFIX, is is downloaded and extracted by a zip input stream
- * continuously encountering zip file entries:
+ * (5) The zip, containing entries relative to the $PREFIX, is is downloaded and extracted by a zip
+ * input stream continuously encountering zip file entries:
  * <p/>
- * (5.1) If the zip entry encountered is SYMLINKS.txt, go through it and remember all symlinks to setup.
+ * (5.1) If the zip entry encountered is SYMLINKS.txt, go through it and remember all symlinks to
+ * setup.
  * <p/>
- * (5.2) For every other zip entry, extract it into $STAGING_PREFIX and set execute permissions if necessary.
+ * (5.2) For every other zip entry, extract it into $STAGING_PREFIX and set execute permissions if
+ * necessary.
  */
 final class TermuxInstaller {
 
-    /** Performs setup if necessary. */
+    /**
+     * Performs setup if necessary.
+     */
     static void setupIfNeeded(final Activity activity, final Runnable whenDone) {
-        // Termux can only be run as the primary user (device owner) since only that
-        // account has the expected file system paths. Verify that:
-        UserManager um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
-        boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
-        if (!isPrimaryUser) {
-            new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_not_primary_user_message)
-                .setOnDismissListener(dialog -> System.exit(0)).setPositiveButton(android.R.string.ok, null).show();
-            return;
-        }
-
         final File PREFIX_FILE = new File(TermuxService.PREFIX_PATH);
         if (PREFIX_FILE.isDirectory()) {
             whenDone.run();
@@ -142,9 +132,9 @@ final class TermuxInstaller {
                                     dialog.dismiss();
                                     activity.finish();
                                 }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
-                                    dialog.dismiss();
-                                    TermuxInstaller.setupIfNeeded(activity, whenDone);
-                                }).show();
+                                dialog.dismiss();
+                                TermuxInstaller.setupIfNeeded(activity, whenDone);
+                            }).show();
                         } catch (WindowManager.BadTokenException e1) {
                             // Activity already dismissed - ignore.
                         }
@@ -176,7 +166,9 @@ final class TermuxInstaller {
 
     public static native byte[] getZip();
 
-    /** Delete a folder and all its content or throw. Don't follow symlinks. */
+    /**
+     * Delete a folder and all its content or throw. Don't follow symlinks.
+     */
     static void deleteFolder(File fileOrDirectory) throws IOException {
         if (fileOrDirectory.getCanonicalPath().equals(fileOrDirectory.getAbsolutePath()) && fileOrDirectory.isDirectory()) {
             File[] children = fileOrDirectory.listFiles();

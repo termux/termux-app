@@ -2,7 +2,6 @@ package com.termux.app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -21,9 +20,9 @@ import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.UserManager;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -487,6 +486,15 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         if (mTermService.getSessions().isEmpty()) {
             if (mIsVisible) {
+                // Termux can only be run as the primary user (device owner) since only that
+                // account has the expected file system paths. Verify that:
+                UserManager um = (UserManager) this.getSystemService(Context.USER_SERVICE);
+                boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
+                if (!isPrimaryUser) {
+                    new AlertDialog.Builder(this).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_not_primary_user_message)
+                        .setOnDismissListener(dialog -> System.exit(0)).setPositiveButton(android.R.string.ok, null).show();
+                    return;
+                }
                 TermuxInstaller.setupIfNeeded(TermuxActivity.this, () -> {
                     if (mTermService == null) return; // Activity might have been destroyed.
                     try {
