@@ -12,6 +12,7 @@ import android.util.Patterns;
 import com.termux.R;
 import com.termux.app.DialogUtils;
 import com.termux.app.TermuxService;
+import com.termux.service.TermuxConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -24,9 +25,9 @@ import java.nio.charset.StandardCharsets;
 
 public class TermuxFileReceiverActivity extends Activity {
 
-    static final String TERMUX_RECEIVEDIR = TermuxService.FILES_PATH + "/home/downloads";
-    static final String EDITOR_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-file-editor";
-    static final String URL_OPENER_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-url-opener";
+    static final String TERMUX_RECEIVEDIR = TermuxConfig.FILES_PATH + "/home/downloads";
+    static final String EDITOR_PROGRAM = TermuxConfig.HOME_PATH + "/bin/termux-file-editor";
+    static final String URL_OPENER_PROGRAM = TermuxConfig.HOME_PATH + "/bin/termux-url-opener";
 
     /**
      * If the activity should be finished when the name input dialog is dismissed. This is disabled

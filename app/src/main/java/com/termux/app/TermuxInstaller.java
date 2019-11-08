@@ -11,6 +11,7 @@ import android.util.Pair;
 import android.view.WindowManager;
 
 import com.termux.R;
+import com.termux.service.TermuxConfig;
 import com.termux.terminal.EmulatorDebug;
 
 import java.io.BufferedReader;
@@ -52,7 +53,7 @@ final class TermuxInstaller {
      * Performs setup if necessary.
      */
     static void setupIfNeeded(final Activity activity, final Runnable whenDone) {
-        final File PREFIX_FILE = new File(TermuxService.PREFIX_PATH);
+        final File PREFIX_FILE = new File(TermuxConfig.PREFIX_PATH);
         if (PREFIX_FILE.isDirectory()) {
             whenDone.run();
             return;
@@ -63,7 +64,7 @@ final class TermuxInstaller {
             @Override
             public void run() {
                 try {
-                    final String STAGING_PREFIX_PATH = TermuxService.FILES_PATH + "/usr-staging";
+                    final String STAGING_PREFIX_PATH = TermuxConfig.FILES_PATH + "/usr-staging";
                     final File STAGING_PREFIX_FILE = new File(STAGING_PREFIX_PATH);
 
                     if (STAGING_PREFIX_FILE.exists()) {
@@ -190,7 +191,7 @@ final class TermuxInstaller {
         new Thread() {
             public void run() {
                 try {
-                    File storageDir = new File(TermuxService.HOME_PATH, "storage");
+                    File storageDir = new File(TermuxConfig.HOME_PATH, "storage");
 
                     if (storageDir.exists()) {
                         try {

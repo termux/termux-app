@@ -6,7 +6,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
+
+import com.termux.service.TermuxConfig;
 import com.termux.terminal.TerminalSession;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -150,9 +153,9 @@ final class TermuxPreferences {
     }
     
     void reloadFromProperties(Context context) {
-        File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
+        File propsFile = new File(TermuxConfig.HOME_PATH + "/.termux/termux.properties");
         if (!propsFile.exists())
-            propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
+            propsFile = new File(TermuxConfig.HOME_PATH + "/.config/termux/termux.properties");
 
         Properties props = new Properties();
         try {

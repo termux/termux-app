@@ -14,6 +14,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import com.termux.service.TermuxConfig;
 import com.termux.terminal.EmulatorDebug;
 
 import java.io.File;
@@ -178,7 +179,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 String path = file.getCanonicalPath();
                 String storagePath = Environment.getExternalStorageDirectory().getCanonicalPath();
                 // See https://support.google.com/faqs/answer/7496913:
-                if (!(path.startsWith(TermuxService.FILES_PATH) || path.startsWith(storagePath))) {
+                if (!(path.startsWith(TermuxConfig.FILES_PATH) || path.startsWith(storagePath))) {
                     throw new IllegalArgumentException("Invalid path: " + path);
                 }
             } catch (IOException e) {
