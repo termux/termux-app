@@ -11,12 +11,7 @@ apply plugin: 'kotlin-kapt'
 android {
     compileSdkVersion 29
     buildToolsVersion '29.0.2'
-    dependencies {
 
-        implementation "androidx.viewpager:viewpager:1.0.0"
-        implementation "androidx.drawerlayout:drawerlayout:1.0.0"
-        implementation project(":terminal-view")
-    }
     lintOptions {
         abortOnError false
     }
