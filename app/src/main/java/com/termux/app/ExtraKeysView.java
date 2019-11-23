@@ -401,8 +401,14 @@ public final class ExtraKeysView extends GridLayout {
                             }
                             return true;
 
-                        case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
+                            v.setBackgroundColor(BUTTON_COLOR);
+                            if (scheduledExecutor != null) {
+                                scheduledExecutor.shutdownNow();
+                                scheduledExecutor = null;
+                            }
+                            return true;
+                        case MotionEvent.ACTION_UP:
                             v.setBackgroundColor(BUTTON_COLOR);
                             if (scheduledExecutor != null) {
                                 scheduledExecutor.shutdownNow();
