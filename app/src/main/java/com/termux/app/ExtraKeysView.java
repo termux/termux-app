@@ -354,9 +354,13 @@ public final class ExtraKeysView extends GridLayout {
                     if (Settings.System.getInt(getContext().getContentResolver(),
                         Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0) {
 
-                        // Depending on DnD settings, value can be >1 but 0 means "disabled".
-                        if (Settings.Global.getInt(getContext().getContentResolver(), "zen_mode", 0) < 1) {
+                        if (Build.VERSION.SDK_INT >= 28) {
                             finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                        } else {
+                            // Perform haptic feedback only if no total silence mode enabled.
+                            if (Settings.Global.getInt(getContext().getContentResolver(), "zen_mode", 0) != 2) {
+                                finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                            }
                         }
                     }
 
