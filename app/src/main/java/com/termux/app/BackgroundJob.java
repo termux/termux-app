@@ -90,7 +90,7 @@ public final class BackgroundJob {
                     // Ignore.
                 }
             }
-        };
+        }.start();
     }
 
     private static void addToEnvIfPresent(List<String> environment, String name) {
