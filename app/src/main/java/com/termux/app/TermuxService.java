@@ -148,7 +148,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
             String cwd = intent.getStringExtra(EXTRA_CURRENT_WORKING_DIRECTORY);
 
             if (intent.getBooleanExtra(EXTRA_EXECUTE_IN_BACKGROUND, false)) {
-                BackgroundJob task = new BackgroundJob(cwd, executablePath, arguments, this);
+                BackgroundJob task = new BackgroundJob(cwd, executablePath, arguments, this, intent.getParcelableExtra("pendingIntent"));
                 mBackgroundTasks.add(task);
                 updateNotification();
             } else {
