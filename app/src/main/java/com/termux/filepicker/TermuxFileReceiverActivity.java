@@ -50,7 +50,7 @@ public class TermuxFileReceiverActivity extends Activity {
             final Uri sharedUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
 
             if (sharedText != null) {
-                if (Patterns.WEB_URL.matcher(sharedText).matches()) {
+                if (Patterns.WEB_URL.matcher(sharedText).matches() || Patterns.WEB_URL.matches("magnet:\\?xt=urn:btih:.*?", sharedText)) {
                     handleUrlAndFinish(sharedText);
                 } else {
                     String subject = intent.getStringExtra(Intent.EXTRA_SUBJECT);
