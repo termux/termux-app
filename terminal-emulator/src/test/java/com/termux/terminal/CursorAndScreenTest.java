@@ -133,8 +133,6 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		withTerminalSized(3, 3).enterString("ABCDEFG\033[2AH").assertLinesAre("AHC", "DEF", "G  ");
 		// If an attempt is made to move the cursor above the top margin, the cursor stops at the top margin:
 		withTerminalSized(3, 3).enterString("ABCDEFG\033[44AH").assertLinesAre("AHC", "DEF", "G  ");
-		// Set top margin and validate that cursor does not go above it:
-		withTerminalSized(3, 3).enterString("\033[2rABCDEFG\033[44AH").assertLinesAre("ABC", "DHF", "G  ");
 	}
 
 	public void testCursorDown() {
@@ -143,8 +141,6 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		withTerminalSized(3, 3).enterString("AB\033[2BC").assertLinesAre("AB ", "   ", "  C");
 		// If an attempt is made to move the cursor below the bottom margin, the cursor stops at the bottom margin:
 		withTerminalSized(3, 3).enterString("AB\033[44BC").assertLinesAre("AB ", "   ", "  C");
-		// Set bottom margin and validate that cursor does not go above it:
-		withTerminalSized(3, 3).enterString("\033[1;2rAB\033[44BC").assertLinesAre("AB ", "  C", "   ");
 	}
 
 	public void testReportCursorPosition() {

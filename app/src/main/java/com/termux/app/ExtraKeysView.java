@@ -354,9 +354,13 @@ public final class ExtraKeysView extends GridLayout {
                     if (Settings.System.getInt(getContext().getContentResolver(),
                         Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0) {
 
-                        // Depending on DnD settings, value can be >1 but 0 means "disabled".
-                        if (Settings.Global.getInt(getContext().getContentResolver(), "zen_mode", 0) < 1) {
+                        if (Build.VERSION.SDK_INT >= 28) {
                             finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                        } else {
+                            // Perform haptic feedback only if no total silence mode enabled.
+                            if (Settings.Global.getInt(getContext().getContentResolver(), "zen_mode", 0) != 2) {
+                                finalButton.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                            }
                         }
                     }
 
@@ -401,8 +405,14 @@ public final class ExtraKeysView extends GridLayout {
                             }
                             return true;
 
-                        case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
+                            v.setBackgroundColor(BUTTON_COLOR);
+                            if (scheduledExecutor != null) {
+                                scheduledExecutor.shutdownNow();
+                                scheduledExecutor = null;
+                            }
+                            return true;
+                        case MotionEvent.ACTION_UP:
                             v.setBackgroundColor(BUTTON_COLOR);
                             if (scheduledExecutor != null) {
                                 scheduledExecutor.shutdownNow();
@@ -427,11 +437,7 @@ public final class ExtraKeysView extends GridLayout {
 
                 LayoutParams param = new GridLayout.LayoutParams();
                 param.width = 0;
-                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) { // special handle api 21
-                    param.height = (int)(37.5 * getResources().getDisplayMetrics().density + 0.5); // 37.5 equal to R.id.viewpager layout_height / rows in DP
-                } else {
-                    param.height = 0;
-                }
+                param.height = 0;
                 param.setMargins(0, 0, 0, 0);
                 param.columnSpec = GridLayout.spec(col, GridLayout.FILL, 1.f);
                 param.rowSpec = GridLayout.spec(row, GridLayout.FILL, 1.f);

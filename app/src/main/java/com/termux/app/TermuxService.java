@@ -114,19 +114,17 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, EmulatorDebug.LOG_TAG);
                 mWifiLock.acquire();
 
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    String packageName = getPackageName();
-                    if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                        Intent whitelist = new Intent();
-                        whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                        whitelist.setData(Uri.parse("package:" + packageName));
-                        whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                String packageName = getPackageName();
+                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                    Intent whitelist = new Intent();
+                    whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    whitelist.setData(Uri.parse("package:" + packageName));
+                    whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                        try {
-                            startActivity(whitelist);
-                        } catch (ActivityNotFoundException e) {
-                            Log.e(EmulatorDebug.LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
-                        }
+                    try {
+                        startActivity(whitelist);
+                    } catch (ActivityNotFoundException e) {
+                        Log.e(EmulatorDebug.LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
                     }
                 }
 
