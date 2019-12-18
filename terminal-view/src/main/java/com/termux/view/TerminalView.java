@@ -42,6 +42,7 @@ import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
+import com.termux.terminal.WcWidth;
 
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
@@ -986,6 +987,9 @@ public final class TerminalView extends View {
         }
 
         private void checkChangedOrientation() {
+            if (!mIsDragging) {
+                return;
+            }
             long millis = SystemClock.currentThreadTimeMillis();
             if (millis - mLastTime < 50) {
                 return;
@@ -1283,30 +1287,26 @@ public final class TerminalView extends View {
             return mIsShowing;
         }
 
+
         public void updatePosition(HandleView handle, int x, int y) {
-            final int scrollRows = mEmulator.getScreen().getActiveRows() - mEmulator.mRows;
-            if (y < mRenderer.mFontLineSpacing) {//up
-                mTopRow--;
-                if (mTopRow < -scrollRows) {
-                    mTopRow = -scrollRows;
-                }
-            } else if (y + 2 * mRenderer.mFontLineSpacing > TerminalView.this.getHeight()) {//down
-                mTopRow++;
-                if (mTopRow > 0) {
-                    mTopRow = 0;
-                }
-            }
+
+            TerminalBuffer screen = mEmulator.getScreen();
+            final int scrollRows = screen.getActiveRows() - mEmulator.mRows;
             if (handle == mStartHandle) {
                 mSelX1 = getCursorX(x);
                 mSelY1 = getCursorY(y);
                 if (mSelX1 < 0) {
                     mSelX1 = 0;
                 }
+
                 if (mSelY1 < -scrollRows) {
                     mSelY1 = -scrollRows;
+
                 } else if (mSelY1 > mEmulator.mRows - 1) {
                     mSelY1 = mEmulator.mRows - 1;
+
                 }
+
 
                 if (mSelY1 > mSelY2) {
                     mSelY1 = mSelY2;
@@ -1314,12 +1314,32 @@ public final class TerminalView extends View {
                 if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
                     mSelX1 = mSelX2;
                 }
+
+                if (!mEmulator.isAlternateBufferActive()) {
+                    if (mSelY1 <= mTopRow) {
+                        mTopRow--;
+                        if (mTopRow < -scrollRows) {
+                            mTopRow = -scrollRows;
+                        }
+                    } else if (mSelY1 >= mTopRow + mEmulator.mRows) {
+                        mTopRow++;
+                        if (mTopRow > 0) {
+                            mTopRow = 0;
+                        }
+                    }
+                }
+
+
+                mSelX1 = getValidCurX(screen, mSelY1, mSelX1);
+
             } else {
                 mSelX2 = getCursorX(x);
                 mSelY2 = getCursorY(y);
                 if (mSelX2 < 0) {
                     mSelX2 = 0;
                 }
+
+
                 if (mSelY2 < -scrollRows) {
                     mSelY2 = -scrollRows;
                 } else if (mSelY2 > mEmulator.mRows - 1) {
@@ -1332,9 +1352,58 @@ public final class TerminalView extends View {
                 if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
                     mSelX2 = mSelX1;
                 }
+
+                if (!mEmulator.isAlternateBufferActive()) {
+                    if (mSelY2 <= mTopRow) {
+                        mTopRow--;
+                        if (mTopRow < -scrollRows) {
+                            mTopRow = -scrollRows;
+                        }
+                    } else if (mSelY2 >= mTopRow + mEmulator.mRows) {
+                        mTopRow++;
+                        if (mTopRow > 0) {
+                            mTopRow = 0;
+                        }
+                    }
+                }
+
+                mSelX2 = getValidCurX(screen, mSelY2, mSelX2);
             }
 
             invalidate();
+        }
+
+
+        private int getValidCurX(TerminalBuffer screen, int cy, int cx) {
+            String line = screen.getSelectedText(0, cy, cx, cy);
+            if (!TextUtils.isEmpty(line)) {
+                int col = 0;
+                for (int i = 0, len = line.length(); i < len; i++) {
+                    char ch1 = line.charAt(i);
+                    if (ch1 == 0) {
+                        break;
+                    }
+
+
+                    int wc;
+                    if (Character.isHighSurrogate(ch1) && i + 1 < len) {
+                        char ch2 = line.charAt(++i);
+                        wc = WcWidth.width(Character.toCodePoint(ch1, ch2));
+                    } else {
+                        wc = WcWidth.width(ch1);
+                    }
+
+                    final int cend = col + wc;
+                    if (cx > col && cx < cend) {
+                        return cend;
+                    }
+                    if (cend == col) {
+                        return col;
+                    }
+                    col = cend;
+                }
+            }
+            return cx;
         }
 
         public void updatePosition() {
@@ -1344,7 +1413,7 @@ public final class TerminalView extends View {
 
             mStartHandle.positionAtCursor(mSelX1, mSelY1);
 
-            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2);
+            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2); //bug
 
             if (mActionMode != null) {
                 mActionMode.invalidate();
