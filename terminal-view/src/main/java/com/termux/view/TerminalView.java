@@ -892,9 +892,7 @@ public final class TerminalView extends View {
                 android.R.attr.textSelectHandleWindowStyle);
             mContainer.setSplitTouchEnabled(true);
             mContainer.setClippingEnabled(false);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mContainer.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
-            }
+            mContainer.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
             mContainer.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
             mContainer.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
 
@@ -908,15 +906,8 @@ public final class TerminalView extends View {
             switch (orientation) {
                 case LEFT: {
                     if (mSelectHandleLeft == null) {
-
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            mSelectHandleLeft = getContext().getDrawable(
-                                R.drawable.text_select_handle_left_material);
-                        } else {
-                            mSelectHandleLeft = getContext().getResources().getDrawable(
-                                R.drawable.text_select_handle_left_material);
-
-                        }
+                        mSelectHandleLeft = getContext().getDrawable(
+                            R.drawable.text_select_handle_left_material);
                     }
                     //
                     mDrawable = mSelectHandleLeft;
@@ -927,13 +918,8 @@ public final class TerminalView extends View {
 
                 case RIGHT: {
                     if (mSelectHandleRight == null) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            mSelectHandleRight = getContext().getDrawable(
-                                R.drawable.text_select_handle_right_material);
-                        } else {
-                            mSelectHandleRight = getContext().getResources().getDrawable(
-                                R.drawable.text_select_handle_right_material);
-                        }
+                        mSelectHandleRight = getContext().getDrawable(
+                            R.drawable.text_select_handle_right_material);
                     }
                     mDrawable = mSelectHandleRight;
                     handleWidth = mDrawable.getIntrinsicWidth();
@@ -1224,48 +1210,45 @@ public final class TerminalView extends View {
                 }
 
             };
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mActionMode = startActionMode(new ActionMode.Callback2() {
-                    @Override
-                    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                        return callback.onCreateActionMode(mode, menu);
+
+            mActionMode = startActionMode(new ActionMode.Callback2() {
+                @Override
+                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                    return callback.onCreateActionMode(mode, menu);
+                }
+
+                @Override
+                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                    return false;
+                }
+
+                @Override
+                public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                    return callback.onActionItemClicked(mode, item);
+                }
+
+                @Override
+                public void onDestroyActionMode(ActionMode mode) {
+                    // Ignore.
+                }
+
+                @Override
+                public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+                    int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
+                    int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
+                    int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
+                    int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
+
+
+                    if (x1 > x2) {
+                        int tmp = x1;
+                        x1 = x2;
+                        x2 = tmp;
                     }
 
-                    @Override
-                    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                        return callback.onActionItemClicked(mode, item);
-                    }
-
-                    @Override
-                    public void onDestroyActionMode(ActionMode mode) {
-                        // Ignore.
-                    }
-
-                    @Override
-                    public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-                        int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
-                        int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
-                        int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
-                        int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
-
-
-                        if (x1 > x2) {
-                            int tmp = x1;
-                            x1 = x2;
-                            x2 = tmp;
-                        }
-
-                        outRect.set(x1, y1 + mHandleHeight, x2, y2 + mHandleHeight);
-                    }
-                }, ActionMode.TYPE_FLOATING);
-            } else {
-                mActionMode = startActionMode(callback);
-            }
+                    outRect.set(x1, y1 + mHandleHeight, x2, y2 + mHandleHeight);
+                }
+            }, ActionMode.TYPE_FLOATING);
         }
 
         public void hide() {
@@ -1431,9 +1414,7 @@ public final class TerminalView extends View {
         @Override
         public void run() {
             if (mActionMode != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    mActionMode.hide(0);  // hide off.
-                }
+                mActionMode.hide(0);  // hide off.
             }
         }
     };
@@ -1441,9 +1422,7 @@ public final class TerminalView extends View {
     void hideFloatingToolbar(int duration) {
         if (mActionMode != null) {
             removeCallbacks(mShowFloatingToolbar);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mActionMode.hide(duration);
-            }
+            mActionMode.hide(duration);
         }
     }
 
