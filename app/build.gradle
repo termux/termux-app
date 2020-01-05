@@ -6,7 +6,7 @@ android {
     compileSdkVersion 28
 
     dependencies {
-        implementation "androidx.annotation:annotation:1.0.1"
+        implementation "androidx.annotation:annotation:1.1.0"
         implementation "androidx.viewpager:viewpager:1.0.0"
         implementation "androidx.drawerlayout:drawerlayout:1.0.0"
         implementation project(":terminal-view")
@@ -62,10 +62,17 @@ android {
             path "src/main/cpp/Android.mk"
         }
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
+    testImplementation 'org.robolectric:robolectric:4.3'
 }
 
 task versionName {

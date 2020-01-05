@@ -60,7 +60,7 @@ tasks.withType(Test) {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
 }
 
 apply from: '../scripts/bintray-publish.gradle'

@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 public class TermuxFileReceiverActivity extends Activity {
 
@@ -36,6 +37,11 @@ public class TermuxFileReceiverActivity extends Activity {
      */
     boolean mFinishOnDismissNameDialog = true;
 
+    static boolean isSharedTextAnUrl(String sharedText) {
+        return Patterns.WEB_URL.matcher(sharedText).matches()
+            || Pattern.matches("magnet:\\?xt=urn:btih:.*?", sharedText);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -50,7 +56,7 @@ public class TermuxFileReceiverActivity extends Activity {
             final Uri sharedUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
 
             if (sharedText != null) {
-                if (Patterns.WEB_URL.matcher(sharedText).matches()) {
+                if (isSharedTextAnUrl(sharedText)) {
                     handleUrlAndFinish(sharedText);
                 } else {
                     String subject = intent.getStringExtra(Intent.EXTRA_SUBJECT);
