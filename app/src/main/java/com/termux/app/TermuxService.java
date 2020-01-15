@@ -9,6 +9,7 @@ import android.app.Service;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -93,6 +94,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     /** If the user has executed the {@link #ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
+
+    private final TermuxPackageInstaller packageInstaller = new TermuxPackageInstaller();
 
     @SuppressLint("Wakelock")
     @Override
@@ -185,8 +188,16 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onCreate() {
+        TermuxPackageInstaller.setupAllInstalledPackages(this);
         setupNotificationChannel();
         startForeground(NOTIFICATION_ID, buildNotification());
+
+        IntentFilter addedFilter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
+        addedFilter.addDataScheme("package");
+        IntentFilter removedFilter = new IntentFilter(Intent.ACTION_PACKAGE_REMOVED);
+        removedFilter.addDataScheme("package");
+        this.registerReceiver(packageInstaller, addedFilter);
+        this.registerReceiver(packageInstaller, removedFilter);
     }
 
     /** Update the shown foreground service notification after making any changes that affect it. */
@@ -254,6 +265,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onDestroy() {
+        unregisterReceiver(packageInstaller);
+
         File termuxTmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
 
         if (termuxTmpDir.exists()) {
