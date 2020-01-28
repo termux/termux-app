@@ -32,15 +32,52 @@ import com.termux.view.TerminalView;
  */
 public final class ExtraKeysView extends GridLayout {
 
-    private static final int TEXT_COLOR = 0xFFFFFFFF;
+    private static int TEXT_COLOR;
     private static final int BUTTON_COLOR = 0x00000000;
-    private static final int INTERESTING_COLOR = 0xFF80DEEA;
-    private static final int BUTTON_PRESSED_COLOR = 0x7FFFFFFF;
+    private static int INTERESTING_COLOR;
+    private static int BUTTON_PRESSED_COLOR;
 
     public ExtraKeysView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        super(context, attrs); 
+        setButtonColor();
     }
-    
+    /* 
+     * Get color values set by user in termux.properties.
+     * Set TEXT_COLOR, INTERESTING_COLOR, and BUTTON_PRESSED_COLOR based on user values,
+     * or fallback values, if not present.
+     */
+    public void setButtonColor() {
+		InputStream fileInputStream;
+		boolean caught = false;
+		int color = Color.WHITE;
+		String[] keys = new String [] {"extra-key-color", "extra-key-checked-color", "extra-key-pressed-color"};
+		for ( String key : keys) {
+			try	{
+				String path = "/data/data/com.termux/files/home/.termux/termux.properties";
+				File file = new File(path);
+				Properties properties = new Properties();
+				fileInputStream = new FileInputStream(file);
+				properties.load(fileInputStream);
+				fileInputStream.close();
+				color = Color.parseColor(properties.getProperty(key));
+				}
+				catch (Throwable th) {
+					caught = true;
+				}
+				int position = Arrays.asList(keys).indexOf(key);
+				switch(position) {
+					case 0:
+						TEXT_COLOR = caught ? 0xFFFFFF : color;
+						break;
+					case 1:
+						INTERESTING_COLOR = caught ? 0xFF80DEEA : color;
+						break;
+					case 2:
+						BUTTON_PRESSED_COLOR = caught ? 0x7FFFFFFF : color;
+						break;
+				}
+	    }		
+	}
     /**
      * HashMap that implements Python dict.get(key, default) function.
      * Default java.util .get(key) is then the same as .get(key, null);
