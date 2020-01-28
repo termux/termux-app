@@ -14,13 +14,14 @@ import java.util.HashMap;
 import java.io.File;
 import java.util.Arrays; 
 import java.util.Properties; 
-import java.util.io.InputStream;
-import java.util.io.FileInputStream;
+import java.io.InputStream;
+import java.io.FileInputStream;
 
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
+import android.view.View; 
+import android.graphics.Color;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.PopupWindow;
