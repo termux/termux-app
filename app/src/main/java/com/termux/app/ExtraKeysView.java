@@ -12,7 +12,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.Map;
 import java.util.HashMap; 
 import java.io.File;
-import java.util.Arrays;
+import java.util.Arrays; 
+import java.util.Properties; 
+import java.util.io.InputStream;
+import java.util.io.FileInputStream;
 
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
