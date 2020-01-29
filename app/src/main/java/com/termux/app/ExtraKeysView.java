@@ -57,6 +57,7 @@ public final class ExtraKeysView extends GridLayout {
 		int color = Color.WHITE;
 		String[] keys = new String [] {"extra-key-color", "extra-key-checked-color", "extra-key-pressed-color"};
 		for ( String key : keys) {
+          caught = false;
 			try	{
 				String path = "/data/data/com.termux/files/home/.termux/termux.properties";
 				File file = new File(path);
