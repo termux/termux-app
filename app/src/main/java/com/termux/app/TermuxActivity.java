@@ -45,6 +45,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.termux.BuildConfig;
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
@@ -496,9 +497,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         if (bundle != null) {
                             launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
                         }
-                        Uri executableUri = intent.getData();
-                        String executablePath = (executableUri == null ? null : executableUri.getPath());
-                        addNewSessionWithCommand(launchFailsafe, executablePath, null);
+                        if (BuildConfig.DEBUG) {
+                            Uri executableUri = intent.getData();
+                            String executablePath = (executableUri == null ? null : executableUri.getPath());
+                            addNewSessionWithCommand(launchFailsafe, executablePath, null);
+                        }
+                        else {
+                            addNewSession(launchFailsafe, null);
+                        }
                     } catch (WindowManager.BadTokenException e) {
                         // Activity finished - ignore.
                     }
