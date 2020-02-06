@@ -118,6 +118,29 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
     }
 
     @Override
+    public String createDocument(String parentDocumentId, String mimeType, String displayName) throws FileNotFoundException {
+        File newFile = new File(parentDocumentId, displayName);
+        int noConflictId = 2;
+        while (newFile.exists()) {
+            newFile = new File(parentDocumentId, displayName + " (" + noConflictId++ + ")");
+        }
+        try {
+            boolean succeeded;
+            if (Document.MIME_TYPE_DIR.equals(mimeType)) {
+                succeeded = newFile.mkdir();
+            } else {
+                succeeded = newFile.createNewFile();
+            }
+            if (!succeeded) {
+                throw new FileNotFoundException("Failed to create document with id " + newFile.getPath());
+            }
+        } catch (IOException e) {
+            throw new FileNotFoundException("Failed to create document with id " + newFile.getPath());
+        }
+        return newFile.getPath();
+    }
+
+    @Override
     public void deleteDocument(String documentId) throws FileNotFoundException {
         File file = getFileForDocId(documentId);
         if (!file.delete()) {
