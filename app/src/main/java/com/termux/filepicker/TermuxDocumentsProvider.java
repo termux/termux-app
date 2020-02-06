@@ -248,10 +248,11 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
         int flags = 0;
         if (file.isDirectory()) {
-            if (file.isDirectory() && file.canWrite()) flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
+            if (file.canWrite()) flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
         } else if (file.canWrite()) {
-            flags |= Document.FLAG_SUPPORTS_WRITE | Document.FLAG_SUPPORTS_DELETE;
+            flags |= Document.FLAG_SUPPORTS_WRITE;
         }
+        if (file.getParentFile().canWrite()) flags |= Document.FLAG_SUPPORTS_DELETE;
 
         final String displayName = file.getName();
         final String mimeType = getMimeType(file);
