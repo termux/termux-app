@@ -3,7 +3,7 @@ name: Unit tests
 on: push
 
 jobs:
-  build:
+  testing:
     runs-on: ubuntu-latest
     steps:
     - name: Clone repository
