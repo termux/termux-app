@@ -1,4 +1,4 @@
-name: Terminal unit tests
+name: Unit tests
 
 on: push
 

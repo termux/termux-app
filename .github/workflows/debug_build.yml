@@ -1,4 +1,4 @@
-name: Termux application debug build
+name: Build
 
 on: push
 
