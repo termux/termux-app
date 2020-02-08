@@ -132,11 +132,11 @@ clean {
 
 task downloadBootstraps(){
     doLast {
-        def version = 18
-        downloadBootstrap("aarch64", "1a4c08a696d452b58f69102428239ec0c07521c0ca9f48b23ef70ae0e5e3d4f8", version)
-        downloadBootstrap("arm",     "bff11f2c7e9c1055a22fc5f20bb7507b75f6034e0f5d591ec6725b3407981b85", version)
-        downloadBootstrap("i686",    "6fb93020db2807337d82a1537e24612400cacbd10cf4bccaeb0714d51e653da1", version)
-        downloadBootstrap("x86_64",  "a6067e5decc486dcad190c1ed9e15366c798e5e7d9b9b9ee6b4b8231290524c3", version)
+        def version = 19
+        downloadBootstrap("aarch64", "b3ed0c7e1744f3fb3e80c13bda14b7b489f2fd835f9c968325cf94bd5143699b", version)
+        downloadBootstrap("arm",     "1e41f06e8e8f66f5cfa79831c0376af5fc6c06344521345195842aea59d64112", version)
+        downloadBootstrap("i686",    "354194fc83444acebc0cf1819937e076476c9799e1bc78f1a92b3b7eae926f33", version)
+        downloadBootstrap("x86_64",  "8bfda3fe8d6e77d2772d459fc1bb182ab662a64670bc7a76de06effde439f5fb", version)
     }
 }
 
@@ -145,4 +145,3 @@ afterEvaluate {
     variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
   }
 }
-
