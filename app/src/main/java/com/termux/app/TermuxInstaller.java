@@ -8,41 +8,16 @@ import android.os.Environment;
 import android.os.UserManager;
 import android.system.Os;
 import android.util.Log;
-import android.util.Pair;
 import android.view.WindowManager;
 
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
- * Install the Termux bootstrap packages if necessary by following the below steps:
- * <p/>
- * (1) If $PREFIX already exist, assume that it is correct and be done. Note that this relies on that we do not create a
- * broken $PREFIX folder below.
- * <p/>
- * (2) A progress dialog is shown with "Installing..." message and a spinner.
- * <p/>
- * (3) A staging folder, $STAGING_PREFIX, is {@link #deleteFolder(File)} if left over from broken installation below.
- * <p/>
- * (4) The zip file is loaded from a shared library.
- * <p/>
- * (5) The zip, containing entries relative to the $PREFIX, is is downloaded and extracted by a zip input stream
- * continuously encountering zip file entries:
- * <p/>
- * (5.1) If the zip entry encountered is SYMLINKS.txt, go through it and remember all symlinks to setup.
- * <p/>
- * (5.2) For every other zip entry, extract it into $STAGING_PREFIX and set execute permissions if necessary.
+ * Install the Termux bootstrap packages if necessary.
  */
 final class TermuxInstaller {
 
@@ -69,65 +44,7 @@ final class TermuxInstaller {
             @Override
             public void run() {
                 try {
-                    final String STAGING_PREFIX_PATH = TermuxService.FILES_PATH + "/usr-staging";
-                    final File STAGING_PREFIX_FILE = new File(STAGING_PREFIX_PATH);
-
-                    if (STAGING_PREFIX_FILE.exists()) {
-                        deleteFolder(STAGING_PREFIX_FILE);
-                    }
-
-                    final byte[] buffer = new byte[8096];
-                    final List<Pair<String, String>> symlinks = new ArrayList<>(50);
-
-                    final byte[] zipBytes = loadZipBytes();
-                    try (ZipInputStream zipInput = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
-                        ZipEntry zipEntry;
-                        while ((zipEntry = zipInput.getNextEntry()) != null) {
-                            if (zipEntry.getName().equals("SYMLINKS.txt")) {
-                                BufferedReader symlinksReader = new BufferedReader(new InputStreamReader(zipInput));
-                                String line;
-                                while ((line = symlinksReader.readLine()) != null) {
-                                    String[] parts = line.split("←");
-                                    if (parts.length != 2)
-                                        throw new RuntimeException("Malformed symlink line: " + line);
-                                    String oldPath = parts[0];
-                                    String newPath = STAGING_PREFIX_PATH + "/" + parts[1];
-                                    symlinks.add(Pair.create(oldPath, newPath));
-
-                                    ensureDirectoryExists(new File(newPath).getParentFile());
-                                }
-                            } else {
-                                String zipEntryName = zipEntry.getName();
-                                File targetFile = new File(STAGING_PREFIX_PATH, zipEntryName);
-                                boolean isDirectory = zipEntry.isDirectory();
-
-                                ensureDirectoryExists(isDirectory ? targetFile : targetFile.getParentFile());
-
-                                if (!isDirectory) {
-                                    try (FileOutputStream outStream = new FileOutputStream(targetFile)) {
-                                        int readBytes;
-                                        while ((readBytes = zipInput.read(buffer)) != -1)
-                                            outStream.write(buffer, 0, readBytes);
-                                    }
-                                    if (zipEntryName.startsWith("bin/") || zipEntryName.startsWith("libexec") || zipEntryName.startsWith("lib/apt/methods")) {
-                                        //noinspection OctalInteger
-                                        Os.chmod(targetFile.getAbsolutePath(), 0700);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (symlinks.isEmpty())
-                        throw new RuntimeException("No SYMLINKS.txt encountered");
-                    for (Pair<String, String> symlink : symlinks) {
-                        Os.symlink(symlink.first, symlink.second);
-                    }
-
-                    if (!STAGING_PREFIX_FILE.renameTo(PREFIX_FILE)) {
-                        throw new RuntimeException("Unable to rename staging folder");
-                    }
-
+                    TermuxPackageInstaller.installPackage(activity.getApplicationInfo());
                     activity.runOnUiThread(whenDone);
                 } catch (final Exception e) {
                     Log.e(EmulatorDebug.LOG_TAG, "Bootstrap error", e);

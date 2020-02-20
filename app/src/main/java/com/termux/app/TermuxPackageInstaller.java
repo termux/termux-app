@@ -42,7 +42,7 @@ public class TermuxPackageInstaller extends BroadcastReceiver {
         }
     }
 
-    private static void installPackage(ApplicationInfo info) throws Exception {
+    static void installPackage(ApplicationInfo info) throws Exception {
         File filesMappingFile = new File(info.nativeLibraryDir, "files.so");
         if (!filesMappingFile.exists()) {
             Log.e("termux", "No file mapping at " + filesMappingFile.getAbsolutePath());
@@ -103,7 +103,11 @@ public class TermuxPackageInstaller extends BroadcastReceiver {
     }
 
     private static void removeBrokenSymlinks(File parentDir) throws IOException {
-        for (File child : parentDir.listFiles()) {
+        File[] children = parentDir.listFiles();
+        if (children == null) {
+            return;
+        }
+        for (File child : children) {
             if (!child.exists()) {
                 Log.e("termux", "Removing broken symlink: " + child.getAbsolutePath());
                 child.delete();

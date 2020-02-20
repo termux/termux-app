@@ -19,17 +19,6 @@ android {
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
         versionCode 98
         versionName "0.98"
-
-        externalNativeBuild {
-            ndkBuild {
-                cFlags "-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
-            }
-        }
-
-        ndk {
-            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-        }
-
     }
 
     signingConfigs {
@@ -58,12 +47,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    externalNativeBuild {
-        ndkBuild {
-            path "src/main/cpp/Android.mk"
-        }
-    }
-
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -82,67 +65,100 @@ task versionName {
   }
 }
 
-def downloadBootstrap(String arch, String expectedChecksum, int version) {
+def setupBootstrap(String arch, String expectedChecksum, int version) {
     def digest = java.security.MessageDigest.getInstance("SHA-256")
 
-    def localUrl = "src/main/cpp/bootstrap-" + arch + ".zip"
-    def file = new File(projectDir, localUrl)
-    if (file.exists()) {
+    def zipDownloadFile = new File(project.buildDir, "./gradle/bootstrap-" + arch + ".zip")
+
+    if (zipDownloadFile.exists()) {
         def buffer = new byte[8192]
-        def input = new FileInputStream(file)
+        def input = new FileInputStream(zipDownloadFile)
         while (true) {
             def readBytes = input.read(buffer)
             if (readBytes < 0) break
             digest.update(buffer, 0, readBytes)
         }
         def checksum = new BigInteger(1, digest.digest()).toString(16)
-        if (checksum == expectedChecksum) {
-            return
-        } else {
-            logger.quiet("Deleting old local file with wrong hash: " + localUrl)
-            file.delete()
+        if (checksum != expectedChecksum) {
+            logger.quiet("Deleting old local file with wrong hash: " + zipDownloadFile.getAbsolutePath())
+            zipDownloadFile.delete()
         }
     }
 
-    def remoteUrl = "https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-" + arch + "-v" + version + ".zip"
-    logger.quiet("Downloading " + remoteUrl + " ...")
+    if (!zipDownloadFile.exists()) {
+        def remoteUrl = "https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-" + arch + "-v" + version + ".zip"
+        logger.quiet("Downloading " + remoteUrl + " ...")
 
-    file.parentFile.mkdirs()
-    def out = new BufferedOutputStream(new FileOutputStream(file))
+        zipDownloadFile.parentFile.mkdirs()
+        def out = new BufferedOutputStream(new FileOutputStream(zipDownloadFile))
 
-    def connection = new URL(remoteUrl).openConnection()
-    connection.setInstanceFollowRedirects(true)
-    def digestStream = new java.security.DigestInputStream(connection.inputStream, digest)
-    out << digestStream
-    out.close()
+        def connection = new URL(remoteUrl).openConnection()
+        connection.setInstanceFollowRedirects(true)
+        def digestStream = new java.security.DigestInputStream(connection.inputStream, digest)
+        out << digestStream
+        out.close()
 
-    def checksum = new BigInteger(1, digest.digest()).toString(16)
-    if (checksum != expectedChecksum) {
-        file.delete()
-        throw new GradleException("Wrong checksum for " + remoteUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
+        def checksum = new BigInteger(1, digest.digest()).toString(16)
+        if (checksum != expectedChecksum) {
+            zipDownloadFile.delete()
+            throw new GradleException("Wrong checksum for " + remoteUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
+        }
     }
+
+    def doneMarkerFile = new File(zipDownloadFile.getAbsolutePath() + ".done")
+
+    if (doneMarkerFile.exists()) return
+
+    def archDirName
+    if (arch == "aarch64") archDirName = "arm64-v8a";
+    if (arch == "arm") archDirName = "armeabi-v7a";
+    if (arch == "i686") archDirName = "x86";
+    if (arch == "x86_64") archDirName = "x86_64";
+
+    def outputPath = project.getRootDir().getAbsolutePath() + "/app/src/main/jniLibs/" + archDirName + "/"
+    def outputDir = new File(outputPath).getAbsoluteFile()
+    if (!outputDir.exists()) outputDir.mkdirs()
+
+    def symlinksFile = new File(outputDir, "symlinks.so").getAbsoluteFile()
+    if (symlinksFile.exists()) symlinksFile.delete();
+
+    def mappingsFile = new File(outputDir, "files.so").getAbsoluteFile()
+    if (mappingsFile.exists()) mappingsFile.delete()
+    mappingsFile.createNewFile()
+    def mappingsFileWriter = new BufferedWriter(new FileWriter(mappingsFile))
+
+    def counter = 100
+    new java.util.zip.ZipInputStream(new FileInputStream(zipDownloadFile)).withCloseable { zipInput ->
+        java.util.zip.ZipEntry zipEntry
+        while ((zipEntry = zipInput.getNextEntry()) != null) {
+            if (zipEntry.getName() == "SYMLINKS.txt") {
+                zipInput.transferTo(new FileOutputStream(symlinksFile))
+            } else if (!zipEntry.isDirectory()) {
+                def soName = counter + ".so"
+                def targetFile = new File(outputDir, soName).getAbsoluteFile()
+
+                zipInput.transferTo(new FileOutputStream(targetFile))
+                mappingsFileWriter.writeLine(soName + "←" + zipEntry.getName())
+                counter++
+            }
+        }
+    }
+
+    doneMarkerFile.createNewFile()
 }
 
-clean {
+task setupBootstraps(){
     doLast {
-        def tree = fileTree(new File(projectDir, 'src/main/cpp'))
-        tree.include 'bootstrap-*.zip'
-        tree.each { it.delete() }
-    }
-}
-
-task downloadBootstraps(){
-    doLast {
-        def version = 27
-        downloadBootstrap("aarch64", "517fb3aa215f7b96961f9377822d7f1b5e86c831efb4ab096ed65d0b1cdf02e9", version)
-        downloadBootstrap("arm",     "94d17183afdd017cf8ab885b9103a370b16bec1d3cb641884511d545ee009b90", version)
-        downloadBootstrap("i686",    "7f27723d2f0afbe7e90f203b3ca2e80871a8dfa08b136229476aa5e7ba3e988f", version)
-        downloadBootstrap("x86_64",  "b19b2721bae5fb3a3fb0754c49611ce4721221e1e7997e7fd98940776ad88c3d", version)
+        def version = 20
+        setupBootstrap("aarch64", "2ea6aaff12d8316223e5c1f22719d20633fae669d6461a6802b67b4adbe796de", version)
+        setupBootstrap("arm",     "8a3a7e8adeff8eb769b03cad947f81b8c42b7c4c8edeea37c71a9d7abd9de99c", version)
+        setupBootstrap("i686",    "b3e1f8e3ccb695d6fab7714c62b2028fbc37187ccfaff0a9f6bd64f738bc5adc", version)
+        setupBootstrap("x86_64",  "2a9f6adbfb6f5e7c0bd03e022856a140768fa25ada850384d635c25c8e966ea3", version)
     }
 }
 
 afterEvaluate {
   android.applicationVariants.all { variant ->
-    variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
+    variant.javaCompileProvider.get().dependsOn(setupBootstraps)
   }
 }
