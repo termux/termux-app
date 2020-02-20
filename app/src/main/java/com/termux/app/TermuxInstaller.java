@@ -1,17 +1,9 @@
 package com.termux.app;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Environment;
-import android.os.UserManager;
 import android.system.Os;
 import android.util.Log;
-import android.view.WindowManager;
-
-import com.termux.R;
-import com.termux.terminal.EmulatorDebug;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,73 +13,11 @@ import java.io.IOException;
  */
 final class TermuxInstaller {
 
-    /** Performs setup if necessary. */
-    static void setupIfNeeded(final Activity activity, final Runnable whenDone) {
-        // Termux can only be run as the primary user (device owner) since only that
-        // account has the expected file system paths. Verify that:
-        UserManager um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
-        boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
-        if (!isPrimaryUser) {
-            new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_not_primary_user_message)
-                .setOnDismissListener(dialog -> System.exit(0)).setPositiveButton(android.R.string.ok, null).show();
-            return;
-        }
-
-        final File PREFIX_FILE = new File(TermuxService.PREFIX_PATH);
-        if (PREFIX_FILE.isDirectory()) {
-            whenDone.run();
-            return;
-        }
-
-        final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    TermuxPackageInstaller.installPackage(activity.getApplicationInfo());
-                    activity.runOnUiThread(whenDone);
-                } catch (final Exception e) {
-                    Log.e(EmulatorDebug.LOG_TAG, "Bootstrap error", e);
-                    activity.runOnUiThread(() -> {
-                        try {
-                            new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
-                                .setNegativeButton(R.string.bootstrap_error_abort, (dialog, which) -> {
-                                    dialog.dismiss();
-                                    activity.finish();
-                                }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
-                                    dialog.dismiss();
-                                    TermuxInstaller.setupIfNeeded(activity, whenDone);
-                                }).show();
-                        } catch (WindowManager.BadTokenException e1) {
-                            // Activity already dismissed - ignore.
-                        }
-                    });
-                } finally {
-                    activity.runOnUiThread(() -> {
-                        try {
-                            progress.dismiss();
-                        } catch (RuntimeException e) {
-                            // Activity already dismissed - ignore.
-                        }
-                    });
-                }
-            }
-        }.start();
-    }
-
     static void ensureDirectoryExists(File directory) {
         if (!directory.isDirectory() && !directory.mkdirs()) {
             throw new RuntimeException("Unable to create directory: " + directory.getAbsolutePath());
         }
     }
-
-    public static byte[] loadZipBytes() {
-        // Only load the shared library when necessary to save memory usage.
-        System.loadLibrary("termux-bootstrap");
-        return getZip();
-    }
-
-    public static native byte[] getZip();
 
     /** Delete a folder and all its content or throw. Don't follow symlinks. */
     static void deleteFolder(File fileOrDirectory) throws IOException {

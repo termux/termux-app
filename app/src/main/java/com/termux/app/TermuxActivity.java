@@ -487,19 +487,17 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         if (mTermService.getSessions().isEmpty()) {
             if (mIsVisible) {
-                TermuxInstaller.setupIfNeeded(TermuxActivity.this, () -> {
-                    if (mTermService == null) return; // Activity might have been destroyed.
-                    try {
-                        Bundle bundle = getIntent().getExtras();
-                        boolean launchFailsafe = false;
-                        if (bundle != null) {
-                            launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
-                        }
-                        addNewSession(launchFailsafe, null);
-                    } catch (WindowManager.BadTokenException e) {
-                        // Activity finished - ignore.
+                if (mTermService == null) return; // Activity might have been destroyed.
+                try {
+                    Bundle bundle = getIntent().getExtras();
+                    boolean launchFailsafe = false;
+                    if (bundle != null) {
+                        launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
                     }
-                });
+                    addNewSession(launchFailsafe, null);
+                } catch (WindowManager.BadTokenException e) {
+                    // Activity finished - ignore.
+                }
             } else {
                 // The service connected while not in foreground - just bail out.
                 finish();
