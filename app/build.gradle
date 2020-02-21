@@ -86,7 +86,7 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
     }
 
     if (!zipDownloadFile.exists()) {
-        def remoteUrl = "https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-" + arch + "-v" + version + ".zip"
+        def remoteUrl = "https://bintray.com/termux/bootstrap/download_file?file_path=android10-v" + version + "-bootstrap-" + arch + ".zip"
         logger.quiet("Downloading " + remoteUrl + " ...")
 
         zipDownloadFile.parentFile.mkdirs()
@@ -149,11 +149,11 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
 
 task setupBootstraps(){
     doLast {
-        def version = 20
-        setupBootstrap("aarch64", "2ea6aaff12d8316223e5c1f22719d20633fae669d6461a6802b67b4adbe796de", version)
-        setupBootstrap("arm",     "8a3a7e8adeff8eb769b03cad947f81b8c42b7c4c8edeea37c71a9d7abd9de99c", version)
-        setupBootstrap("i686",    "b3e1f8e3ccb695d6fab7714c62b2028fbc37187ccfaff0a9f6bd64f738bc5adc", version)
-        setupBootstrap("x86_64",  "2a9f6adbfb6f5e7c0bd03e022856a140768fa25ada850384d635c25c8e966ea3", version)
+        def version = 2
+        setupBootstrap("aarch64", "cfaef5659b09d8302fd1e4812c1a23f5c65291073b0c288a8e8e271fcecae59c", version)
+        setupBootstrap("arm",     "954207862a91139a81d56eb8c5634049fd0cbb7427c250efa574c338792b667", version)
+        setupBootstrap("i686",    "f25698d110a79c0ff3610df2b68c914033182793385e61f161a849c6663061e4", version)
+        setupBootstrap("x86_64",  "91d8d6bd9228ec7046d41cd4558908055d6cde8d9034ffb754191bb7cb06f076", version)
     }
 }
 
