@@ -17,7 +17,7 @@ jobs:
     - name: Setup java
       uses: actions/setup-java@v1
       with:
-        java-version: 9
+        java-version: 11
     - name: Execute tests
       run: |
         ./gradlew test
