@@ -105,7 +105,7 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
         }
     }
 
-    def doneMarkerFile = new File(zipDownloadFile.getAbsolutePath() + ".done")
+    def doneMarkerFile = new File(zipDownloadFile.getAbsolutePath() + "." + expectedChecksum + ".done")
 
     if (doneMarkerFile.exists()) return
 
@@ -144,16 +144,17 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
         }
     }
 
+    mappingsFileWriter.close()
     doneMarkerFile.createNewFile()
 }
 
 task setupBootstraps(){
     doLast {
-        def version = 2
-        setupBootstrap("aarch64", "cfaef5659b09d8302fd1e4812c1a23f5c65291073b0c288a8e8e271fcecae59c", version)
-        setupBootstrap("arm",     "954207862a91139a81d56eb8c5634049fd0cbb7427c250efa574c338792b667", version)
-        setupBootstrap("i686",    "f25698d110a79c0ff3610df2b68c914033182793385e61f161a849c6663061e4", version)
-        setupBootstrap("x86_64",  "91d8d6bd9228ec7046d41cd4558908055d6cde8d9034ffb754191bb7cb06f076", version)
+        def version = 7
+        setupBootstrap("aarch64", "1ceb4782eb18d14c624a383f19aaaf7a47b104e8e8154d43641e10a624cc7fa7", version)
+        setupBootstrap("arm",     "59f0b2e6d95e3d675f6d9e145ba098a138133fa95c268dffe5bd118f9ad07c27", version)
+        setupBootstrap("i686",    "cd01cfbbeba18131c8fa5d13f7cfae4481ed4ad2bbf1f45b043a6cf704a86ad", version)
+        setupBootstrap("x86_64",  "d6386a997b9d2257f7a69557528cd3df1c1f285aa332a1e33d8aedaa5427eca5", version)
     }
 }
 
