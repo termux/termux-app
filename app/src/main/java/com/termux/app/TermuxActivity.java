@@ -754,7 +754,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     void showUrlSelection() {
-        String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptText();
+        String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
         LinkedHashSet<CharSequence> urlSet = extractUrls(text);
         if (urlSet.isEmpty()) {
             new AlertDialog.Builder(this).setMessage(R.string.select_url_no_found).show();
