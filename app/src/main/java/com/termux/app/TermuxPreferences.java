@@ -70,6 +70,7 @@ final class TermuxPreferences {
     boolean mShowExtraKeys;
 
     String[][][] mExtraKeys;
+    String mExtraKeysStyle;
 
     final List<KeyboardShortcut> shortcuts = new ArrayList<>();
 
@@ -209,6 +210,7 @@ final class TermuxPreferences {
 
         mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
         mDisableVolumeVirtualKeys = "volume".equals(props.getProperty("volume-keys", "virtual"));
+        mExtraKeysStyle = props.getProperty("extra-keys-style", "default");
 
         shortcuts.clear();
         parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);

@@ -302,6 +302,21 @@ public final class ExtraKeysView extends GridLayout {
         return m;
     }
 
+    private CharDisplayMap getStyle(String style) {
+        switch (style) {
+            case "arrows-only":
+                return arrowsOnlyCharDisplay;
+            case "arrows-all":
+                return lotsOfArrowsCharDisplay;
+            case "all":
+                return fullIsoCharDisplay;
+            case "none":
+                return new CharDisplayMap();
+            default:
+                return defaultCharDisplay;
+        }
+    }
+
     /**
      * Reload the view given parameters in termux.properties
      *
@@ -317,11 +332,13 @@ public final class ExtraKeysView extends GridLayout {
      * "−" will input a "−" character
      * "-_-" will input the string "-_-"
      */
-    void reload(String[][][] buttons, CharDisplayMap charDisplayMap) {
+    void reload(String[][][] buttons, String style) {
         for(SpecialButtonState state : specialButtons.values())
             state.button = null;
 
         removeAllViews();
+
+        CharDisplayMap charDisplayMap = getStyle(style);
 
         replaceAliases(buttons); // modifies the array
 
