@@ -89,16 +89,23 @@ public final class ExtraKeysView extends GridLayout {
         put("F12", KeyEvent.KEYCODE_F12);
     }};
 
-    static void sendKey(View view, String keyName) {
+    static void sendKey(View view, String keyName, boolean forceCtrlDown, boolean forceLeftAltDown) {
         TerminalView terminalView = view.findViewById(R.id.terminal_view);
         if (keyCodesForString.containsKey(keyName)) {
             int keyCode = keyCodesForString.get(keyName);
-            terminalView.onKeyDown(keyCode, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
-            // view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+            int metaState = 0;
+            if (forceCtrlDown) {
+                metaState |= KeyEvent.META_CTRL_ON | KeyEvent.META_CTRL_LEFT_ON;
+            }
+            if (forceLeftAltDown) {
+                metaState |= KeyEvent.META_ALT_ON | KeyEvent.META_ALT_LEFT_ON;
+            }
+            KeyEvent keyEvent = new KeyEvent(0, 0, KeyEvent.ACTION_UP, keyCode, 0, metaState);
+            terminalView.onKeyDown(keyCode, keyEvent);
         } else {
             // not a control char
             keyName.codePoints().forEach(codePoint -> {
-                terminalView.inputCodePoint(codePoint, false, false);
+                terminalView.inputCodePoint(codePoint, forceCtrlDown, forceLeftAltDown);
             });
         }
     }
@@ -106,11 +113,21 @@ public final class ExtraKeysView extends GridLayout {
     static void sendKey(View view, String keyName, Map<String, String> keyMap) {
         if (keyMap.containsKey(keyName)) {
             String[] keys = keyMap.get(keyName).split(" ");
-                for (String key : keys) {
-                    sendKey(view, key);
+            boolean ctrlDown = false;
+            boolean altDown = false;
+            for (String key : keys) {
+                if ("CTRL".equals(key)) {
+                    ctrlDown = true;
+                } else if ("ALT".equals(key)) {
+                    altDown = true;
+                } else {
+                    sendKey(view, key, ctrlDown, altDown);
+                    ctrlDown = false;
+                    altDown = false;
                 }
+            }
         } else {
-            sendKey(view, keyName);
+            sendKey(view, keyName, false, false);
         }
     }
 
