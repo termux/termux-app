@@ -2,6 +2,7 @@ package com.termux.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
@@ -58,7 +59,7 @@ final class TermuxPreferences {
     private static final String CURRENT_SESSION_KEY = "current_session";
     private static final String SCREEN_ALWAYS_ON_KEY = "screen_always_on";
 
-    private String mUseDarkUI;
+    private boolean mUseDarkUI;
     private boolean mScreenAlwaysOn;
     private int mFontSize;
 
@@ -129,7 +130,7 @@ final class TermuxPreferences {
     }
 
     boolean isUsingBlackUI() {
-        return mUseDarkUI.toLowerCase().equals("true");
+        return mUseDarkUI;
     }
 
     void setScreenAlwaysOn(Context context, boolean newValue) {
@@ -179,7 +180,17 @@ final class TermuxPreferences {
                 break;
         }
 
-        mUseDarkUI = props.getProperty("use-black-ui", "false");
+        switch (props.getProperty("use-black-ui", "").toLowerCase()) {
+            case "true":
+                mUseDarkUI = true;
+                break;
+            case "false":
+                mUseDarkUI = false;
+                break;
+            default:
+                int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+                mUseDarkUI = nightMode == Configuration.UI_MODE_NIGHT_YES;
+        }
 
         try {
             JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', '-', 'DOWN', 'UP']]"));
