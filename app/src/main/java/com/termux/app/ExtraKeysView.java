@@ -40,7 +40,7 @@ public final class ExtraKeysView extends GridLayout {
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-    
+
     /**
      * HashMap that implements Python dict.get(key, default) function.
      * Default java.util .get(key) is then the same as .get(key, null);
@@ -53,9 +53,9 @@ public final class ExtraKeysView extends GridLayout {
                 return defaultValue;
         }
     }
-    
+
     static class CharDisplayMap extends CleverMap<String, String> {}
-    
+
     /**
      * Keys are displayed in a natural looking way, like "→" for "RIGHT"
      */
@@ -87,7 +87,7 @@ public final class ExtraKeysView extends GridLayout {
         put("F11", KeyEvent.KEYCODE_F11);
         put("F12", KeyEvent.KEYCODE_F12);
     }};
-    
+
     static void sendKey(View view, String keyName) {
         TerminalView terminalView = view.findViewById(R.id.terminal_view);
         if (keyCodesForString.containsKey(keyName)) {
@@ -101,31 +101,31 @@ public final class ExtraKeysView extends GridLayout {
                 session.write(keyName);
         }
     }
-    
+
     public enum SpecialButton {
         CTRL, ALT, FN
     }
-    
+
     private static class SpecialButtonState {
         boolean isOn = false;
         ToggleButton button = null;
     }
-    
+
     private Map<SpecialButton, SpecialButtonState> specialButtons = new HashMap<SpecialButton, SpecialButtonState>() {{
         put(SpecialButton.CTRL, new SpecialButtonState());
         put(SpecialButton.ALT, new SpecialButtonState());
         put(SpecialButton.FN, new SpecialButtonState());
     }};
-    
+
     private ScheduledExecutorService scheduledExecutor;
     private PopupWindow popupWindow;
     private int longPressCount;
-    
+
     public boolean readSpecialButton(SpecialButton name) {
         SpecialButtonState state = specialButtons.get(name);
         if (state == null)
             throw new RuntimeException("Must be a valid special button (see source)");
-        
+
         if (! state.isOn)
             return false;
 
@@ -166,7 +166,7 @@ public final class ExtraKeysView extends GridLayout {
         popupWindow.setFocusable(false);
         popupWindow.showAsDropDown(view, 0, -2 * height);
     }
-    
+
     static final CharDisplayMap classicArrowsDisplay = new CharDisplayMap() {{
         // classic arrow keys (for ◀ ▶ ▲ ▼ @see arrowVariationDisplay) 
         put("LEFT", "←"); // U+2190 ← LEFTWARDS ARROW
@@ -191,7 +191,7 @@ public final class ExtraKeysView extends GridLayout {
         put("PGUP", "⇑"); // no ISO character exists, U+21D1 ⇑ UPWARDS DOUBLE ARROW will do the trick
         put("PGDN", "⇓"); // no ISO character exists, U+21D3 ⇓ DOWNWARDS DOUBLE ARROW will do the trick
     }};
-    
+
     static final CharDisplayMap arrowTriangleVariationDisplay = new CharDisplayMap() {{
         // alternative to classic arrow keys 
         put("LEFT", "◀"); // U+25C0 ◀ BLACK LEFT-POINTING TRIANGLE
@@ -199,7 +199,7 @@ public final class ExtraKeysView extends GridLayout {
         put("UP", "▲"); // U+25B2 ▲ BLACK UP-POINTING TRIANGLE
         put("DOWN", "▼"); // U+25BC ▼ BLACK DOWN-POINTING TRIANGLE
     }};
-    
+
     static final CharDisplayMap notKnownIsoCharacters = new CharDisplayMap() {{
         // Control chars that are more clear as text // https://en.wikipedia.org/wiki/{Function_key, Alt_key, Control_key, Esc_key}
         // put("FN", "FN"); // no ISO character exists
@@ -207,12 +207,12 @@ public final class ExtraKeysView extends GridLayout {
         put("ALT", "⎇"); // ISO character "U+2387 ⎇ ALTERNATIVE KEY SYMBOL'" is unknown to people and only printed as the Option key "⌥" on Mac computer
         put("ESC", "⎋"); // ISO character "U+238B ⎋ BROKEN CIRCLE WITH NORTHWEST ARROW" is unknown to people and not often printed on computers 
     }};
-    
+
     static final CharDisplayMap nicerLookingDisplay = new CharDisplayMap() {{
         // nicer looking for most cases
         put("-", "―"); // U+2015 ― HORIZONTAL BAR
     }};
-    
+
     /**
      * Keys are displayed in a natural looking way, like "→" for "RIGHT" or "↲" for ENTER
      */
@@ -222,21 +222,21 @@ public final class ExtraKeysView extends GridLayout {
         putAll(nicerLookingDisplay);
         // all other characters are displayed as themselves
     }};
-    
+
     public static final CharDisplayMap lotsOfArrowsCharDisplay = new CharDisplayMap() {{
         putAll(classicArrowsDisplay);
         putAll(wellKnownCharactersDisplay);
         putAll(lessKnownCharactersDisplay); // NEW
         putAll(nicerLookingDisplay);
     }};
-    
+
     public static final CharDisplayMap arrowsOnlyCharDisplay = new CharDisplayMap() {{
         putAll(classicArrowsDisplay);
         // putAll(wellKnownCharactersDisplay); // REMOVED
         // putAll(lessKnownCharactersDisplay); // REMOVED
         putAll(nicerLookingDisplay);
     }};
-    
+
     public static final CharDisplayMap fullIsoCharDisplay = new CharDisplayMap() {{
         putAll(classicArrowsDisplay);
         putAll(wellKnownCharactersDisplay);
@@ -244,7 +244,7 @@ public final class ExtraKeysView extends GridLayout {
         putAll(nicerLookingDisplay);
         putAll(notKnownIsoCharacters); // NEW
     }};
-    
+
     /**
      * Some people might call our keys differently
      */
@@ -254,53 +254,54 @@ public final class ExtraKeysView extends GridLayout {
         put("RETURN", "ENTER"); // Technically different keys, but most applications won't see the difference
         put("FUNCTION", "FN");
         // no alias for ALT
-        
+
         // Directions are sometimes written as first and last letter for brevety
         put("LT", "LEFT"); 
         put("RT", "RIGHT");
         put("DN", "DOWN");
         // put("UP", "UP"); well, "UP" is already two letters
-        
+
         put("PAGEUP", "PGUP");
         put("PAGE_UP", "PGUP");
         put("PAGE UP", "PGUP");
         put("PAGE-UP", "PGUP");
-        
+
         // no alias for HOME
         // no alias for END
-        
+
         put("PAGEDOWN", "PGDN");
         put("PAGE_DOWN", "PGDN");
         put("PAGE-DOWN", "PGDN");
-        
+
         put("DELETE", "DEL");
         put("BACKSPACE", "BKSP");
-        
+
         // easier for writing in termux.properties
         put("BACKSLASH", "\\");
         put("QUOTE", "\"");
         put("APOSTROPHE", "'");
     }};
-    
+
     /**
      * Applies the 'controlCharsAliases' mapping to all the strings in *buttons*
      * Modifies the array, doesn't return a new one.
      */
-    void replaceAliases(String[][] buttons) {
+    void replaceAliases(String[][][] buttons) {
         for(int i = 0; i < buttons.length; i++)
             for(int j = 0; j < buttons[i].length; j++)
-                buttons[i][j] = controlCharsAliases.get(buttons[i][j], buttons[i][j]);
+              for(int k = 0; k < buttons[i][j].length; k++)
+                  buttons[i][j][k] = controlCharsAliases.get(buttons[i][j][k], buttons[i][j][k]);
     }
-    
+
     /**
      * General util function to compute the longest column length in a matrix.
      */
-    static int maximumLength(String[][] matrix) {
+    static int maximumLength(String[][][] matrix) {
         int m = 0;
-        for (String[] aMatrix : matrix) m = Math.max(m, aMatrix.length);
+        for (String[][] aMatrix : matrix) m = Math.max(m, aMatrix.length);
         return m;
     }
-    
+
     /**
      * Reload the view given parameters in termux.properties
      *
@@ -316,12 +317,12 @@ public final class ExtraKeysView extends GridLayout {
      * "−" will input a "−" character
      * "-_-" will input the string "-_-"
      */
-    void reload(String[][] buttons, CharDisplayMap charDisplayMap) {
+    void reload(String[][][] buttons, CharDisplayMap charDisplayMap) {
         for(SpecialButtonState state : specialButtons.values())
             state.button = null;
-            
+
         removeAllViews();
-        
+
         replaceAliases(buttons); // modifies the array
 
         final int rows = buttons.length;
@@ -332,8 +333,15 @@ public final class ExtraKeysView extends GridLayout {
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < buttons[row].length; col++) {
-                final String buttonText = buttons[row][col];
-                
+                String[] buttonKeys = buttons[row][col];
+                final String buttonText = buttonKeys[0];
+                final String extraButtonText;
+                if (buttonKeys.length > 1) {
+                    extraButtonText = buttonKeys[1];
+                } else {
+                    extraButtonText = null;
+                }
+
                 Button button;
                 if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
                     SpecialButtonState state = specialButtons.get(SpecialButton.valueOf(buttonText)); // for valueOf: https://stackoverflow.com/a/604426/1980630
@@ -343,7 +351,7 @@ public final class ExtraKeysView extends GridLayout {
                 } else {
                     button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
                 }
-                
+
                 final String displayedText = charDisplayMap.get(buttonText, buttonText);
                 button.setText(displayedText);
                 button.setTextColor(TEXT_COLOR);
@@ -390,12 +398,11 @@ public final class ExtraKeysView extends GridLayout {
                             return true;
 
                         case MotionEvent.ACTION_MOVE:
-                            // These two keys have a Move-Up button appearing
-                            if (Arrays.asList("/", "-").contains(buttonText)) {
+                            if (extraButtonText != null) {
                                 if (popupWindow == null && event.getY() < 0) {
                                     v.setBackgroundColor(BUTTON_COLOR);
-                                    String text = "-".equals(buttonText) ? "|" : "\\";
-                                    popup(v, text);
+                                    String extraButtonDisplayedText = charDisplayMap.get(extraButtonText, extraButtonText);
+                                    popup(v, extraButtonDisplayedText);
                                 }
                                 if (popupWindow != null && event.getY() > 0) {
                                     v.setBackgroundColor(BUTTON_PRESSED_COLOR);
@@ -419,11 +426,11 @@ public final class ExtraKeysView extends GridLayout {
                                 scheduledExecutor = null;
                             }
                             if (longPressCount == 0) {
-                                if (popupWindow != null && Arrays.asList("/", "-").contains(buttonText)) {
+                                if (popupWindow != null && extraButtonText != null) {
                                     popupWindow.setContentView(null);
                                     popupWindow.dismiss();
                                     popupWindow = null;
-                                    sendKey(root, "-".equals(buttonText) ? "|" : "\\");
+                                    sendKey(root, extraButtonText);
                                 } else {
                                     v.performClick();
                                 }

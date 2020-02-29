@@ -69,7 +69,7 @@ final class TermuxPreferences {
     boolean mDisableVolumeVirtualKeys;
     boolean mShowExtraKeys;
 
-    String[][] mExtraKeys;
+    String[][][] mExtraKeys;
 
     final List<KeyboardShortcut> shortcuts = new ArrayList<>();
 
@@ -182,20 +182,29 @@ final class TermuxPreferences {
         mUseDarkUI = props.getProperty("use-black-ui", "false");
 
         try {
-            JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', '-', 'DOWN', 'UP']]"));
+            JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', ['-', '|'], 'DOWN', 'UP']]"));
 
-            mExtraKeys = new String[arr.length()][];
+            mExtraKeys = new String[arr.length()][][];
             for (int i = 0; i < arr.length(); i++) {
                 JSONArray line = arr.getJSONArray(i);
-                mExtraKeys[i] = new String[line.length()];
+                mExtraKeys[i] = new String[line.length()][];
                 for (int j = 0; j < line.length(); j++) {
-                    mExtraKeys[i][j] = line.getString(j);
+                    JSONArray key = line.optJSONArray(j);
+                    if (key != null && key.length() > 0) {
+                        mExtraKeys[i][j] = new String[key.length()];
+                        for (int k = 0; k < key.length(); k++) {
+                            mExtraKeys[i][j][k] = key.getString(k);
+                        }
+                    } else {
+                        mExtraKeys[i][j] = new String[]{line.getString(j)};
+                    }
                 }
             }
+
         } catch (JSONException e) {
             Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
-            mExtraKeys = new String[0][];
+            mExtraKeys = new String[0][][];
         }
 
         mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
