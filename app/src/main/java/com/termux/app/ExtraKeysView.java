@@ -60,6 +60,7 @@ public final class ExtraKeysView extends GridLayout {
      * Keys are displayed in a natural looking way, like "→" for "RIGHT"
      */
     static final Map<String, Integer> keyCodesForString = new HashMap<String, Integer>() {{
+        put("SPACE", KeyEvent.KEYCODE_SPACE);
         put("ESC", KeyEvent.KEYCODE_ESCAPE);
         put("TAB", KeyEvent.KEYCODE_TAB);
         put("HOME", KeyEvent.KEYCODE_MOVE_HOME);
@@ -99,6 +100,17 @@ public final class ExtraKeysView extends GridLayout {
             keyName.codePoints().forEach(codePoint -> {
                 terminalView.inputCodePoint(codePoint, false, false);
             });
+        }
+    }
+
+    static void sendKey(View view, String keyName, Map<String, String> keyMap) {
+        if (keyMap.containsKey(keyName)) {
+            String[] keys = keyMap.get(keyName).split(" ");
+                for (String key : keys) {
+                    sendKey(view, key);
+                }
+        } else {
+            sendKey(view, keyName);
         }
     }
 
@@ -332,7 +344,7 @@ public final class ExtraKeysView extends GridLayout {
      * "−" will input a "−" character
      * "-_-" will input the string "-_-"
      */
-    void reload(String[][][] buttons, String style) {
+    void reload(String[][][] buttons, String style, Map<String, String> keyMap) {
         for(SpecialButtonState state : specialButtons.values())
             state.button = null;
 
@@ -395,7 +407,7 @@ public final class ExtraKeysView extends GridLayout {
                         self.setChecked(self.isChecked());
                         self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
                     } else {
-                        sendKey(root, buttonText);
+                        sendKey(root, buttonText, keyMap);
                     }
                 });
 
@@ -409,7 +421,7 @@ public final class ExtraKeysView extends GridLayout {
                                 scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
                                 scheduledExecutor.scheduleWithFixedDelay(() -> {
                                     longPressCount++;
-                                    sendKey(root, buttonText);
+                                    sendKey(root, buttonText, keyMap);
                                 }, 400, 80, TimeUnit.MILLISECONDS);
                             }
                             return true;
@@ -452,7 +464,7 @@ public final class ExtraKeysView extends GridLayout {
                                     popupWindow.dismiss();
                                     popupWindow = null;
                                     if (extraButtonText != null) {
-                                        sendKey(root, extraButtonText);
+                                        sendKey(root, extraButtonText, keyMap);
                                     }
                                 } else {
                                     v.performClick();

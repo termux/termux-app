@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.termux.terminal.TerminalSession;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,7 +19,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import androidx.annotation.IntDef;
@@ -71,6 +75,7 @@ final class TermuxPreferences {
 
     String[][][] mExtraKeys;
     String mExtraKeysStyle;
+    Map<String, String> mExtraKeysMap;
 
     final List<KeyboardShortcut> shortcuts = new ArrayList<>();
 
@@ -206,6 +211,19 @@ final class TermuxPreferences {
             Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
             mExtraKeys = new String[0][][];
+        }
+
+        mExtraKeysMap = new HashMap<>();
+        try {
+            JSONObject obj = new JSONObject(props.getProperty("extra-keys-map", "{}"));
+            Iterator<String> keys = obj.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                mExtraKeysMap.put(key, obj.getString(key));
+            }
+        } catch (JSONException e) {
+            Toast.makeText(context, "Could not load the extra-keys-map property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
+            Log.e("termux", "Error loading props", e);
         }
 
         mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
