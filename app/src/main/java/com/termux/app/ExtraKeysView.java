@@ -96,9 +96,9 @@ public final class ExtraKeysView extends GridLayout {
             // view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
         } else {
             // not a control char
-            TerminalSession session = terminalView.getCurrentSession();
-            if (session != null && keyName.length() > 0)
-                session.write(keyName);
+            keyName.codePoints().forEach(codePoint -> {
+                terminalView.inputCodePoint(codePoint, false, false);
+            });
         }
     }
 
