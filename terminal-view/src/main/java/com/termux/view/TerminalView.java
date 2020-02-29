@@ -558,13 +558,13 @@ public final class TerminalView extends View {
         }
 
         final int metaState = event.getMetaState();
-        final boolean controlDownFromEvent = event.isCtrlPressed();
-        final boolean leftAltDownFromEvent = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0;
+        final boolean controlDown = event.isCtrlPressed() || mClient.readControlKey();
+        final boolean leftAltDown = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0 || mClient.readAltKey();
         final boolean rightAltDownFromEvent = (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
 
         int keyMod = 0;
-        if (controlDownFromEvent) keyMod |= KeyHandler.KEYMOD_CTRL;
-        if (event.isAltPressed()) keyMod |= KeyHandler.KEYMOD_ALT;
+        if (controlDown) keyMod |= KeyHandler.KEYMOD_CTRL;
+        if (event.isAltPressed() || leftAltDown) keyMod |= KeyHandler.KEYMOD_ALT;
         if (event.isShiftPressed()) keyMod |= KeyHandler.KEYMOD_SHIFT;
         if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod)) {
             if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "handleKeyCode() took key event");
@@ -592,7 +592,7 @@ public final class TerminalView extends View {
         if ((result & KeyCharacterMap.COMBINING_ACCENT) != 0) {
             // If entered combining accent previously, write it out:
             if (mCombiningAccent != 0)
-                inputCodePoint(mCombiningAccent, controlDownFromEvent, leftAltDownFromEvent);
+                inputCodePoint(mCombiningAccent, controlDown, leftAltDown);
             mCombiningAccent = result & KeyCharacterMap.COMBINING_ACCENT_MASK;
         } else {
             if (mCombiningAccent != 0) {
@@ -600,7 +600,7 @@ public final class TerminalView extends View {
                 if (combinedChar > 0) result = combinedChar;
                 mCombiningAccent = 0;
             }
-            inputCodePoint(result, controlDownFromEvent, leftAltDownFromEvent);
+            inputCodePoint(result, controlDown, leftAltDown);
         }
 
         if (mCombiningAccent != oldCombiningAccent) invalidate();
