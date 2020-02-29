@@ -1,33 +1,40 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:height="48dp"
-    android:width="48dp"
-    android:viewportWidth="48"
-    android:viewportHeight="48">
+    android:height="108dp"
+    android:width="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
     <!--
         https://material.google.com/style/icons.html
     -->
 
-    <!-- Screen border. -->
-    <path android:fillColor="#00000000"
-          android:strokeColor="#FFF"
-          android:strokeWidth="3"
-          android:pathData="M7,4
-                            l34,0
-                            q3 0,3 3
-                            l0,34
-                            q0 3, -3 3
-                            l-34,0
-                            q-3 0, -3-3
-                            l0 -34
-                            q0 -3, 3 -3"
-          />
+    <!-- A circle as the icon border. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFF"
+        android:strokeWidth="3"
+        android:pathData="M18,54
+                          A36,36 0 1,1 90,54
+                          A36,36 0 1,1 18,54 Z" />
 
-    <!-- Block cursor. -->
-    <path android:fillColor="#FFF"
-          android:pathData="M14,14
-                            l5,0
-                            l0,10
-                            l-5,0"
+    <!-- Keep in sync with ic_foreground.xml: -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,38
+                          h6
+                          l12,16
+                          l-12,16
+                          h-6
+                          l12,-16
+                          "
+        />
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,66
+                          h18
+                          v4
+                          h-18
+                          "
         />
 
 </vector>
