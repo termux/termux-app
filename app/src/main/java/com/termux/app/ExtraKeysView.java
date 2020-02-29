@@ -400,6 +400,10 @@ public final class ExtraKeysView extends GridLayout {
                         case MotionEvent.ACTION_MOVE:
                             if (extraButtonText != null) {
                                 if (popupWindow == null && event.getY() < 0) {
+                                    if (scheduledExecutor != null) {
+                                        scheduledExecutor.shutdownNow();
+                                        scheduledExecutor = null;
+                                    }
                                     v.setBackgroundColor(BUTTON_COLOR);
                                     String extraButtonDisplayedText = charDisplayMap.get(extraButtonText, extraButtonText);
                                     popup(v, extraButtonDisplayedText);
@@ -425,12 +429,14 @@ public final class ExtraKeysView extends GridLayout {
                                 scheduledExecutor.shutdownNow();
                                 scheduledExecutor = null;
                             }
-                            if (longPressCount == 0) {
-                                if (popupWindow != null && extraButtonText != null) {
+                            if (longPressCount == 0 || popupWindow != null) {
+                                if (popupWindow != null) {
                                     popupWindow.setContentView(null);
                                     popupWindow.dismiss();
                                     popupWindow = null;
-                                    sendKey(root, extraButtonText);
+                                    if (extraButtonText != null) {
+                                        sendKey(root, extraButtonText);
+                                    }
                                 } else {
                                     v.performClick();
                                 }
