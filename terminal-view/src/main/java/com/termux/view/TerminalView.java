@@ -973,7 +973,7 @@ public final class TerminalView extends View {
             return mContainer.isShowing();
         }
 
-        private void checkChangedOrientation() {
+        private void checkChangedOrientation(int posX) {
             if (!mIsDragging) {
                 return;
             }
@@ -1003,10 +1003,7 @@ public final class TerminalView extends View {
                 return;
             }
 
-            final int[] coords = mTempCoords;
-            hostView.getLocationInWindow(coords);
-            final int posX = coords[0] + mPointX;
-            if (posX < clip.left) {
+            if (posX - mHandleWidth < clip.left) {
                 changeOrientation(RIGHT);
             } else if (posX + mHandleWidth > clip.right) {
                 changeOrientation(LEFT);
@@ -1051,9 +1048,9 @@ public final class TerminalView extends View {
         }
 
         private void moveTo(int x, int y) {
-            mPointX = x;
+            mPointX = (int) (x - mHotspotX);
             mPointY = y;
-            checkChangedOrientation();
+            checkChangedOrientation(x);
             if (isPositionVisible()) {
                 int[] coords = null;
                 if (mContainer.isShowing()) {
@@ -1139,7 +1136,7 @@ public final class TerminalView extends View {
         }
 
         void positionAtCursor(final int cx, final int cy) {
-            int left = (int) (getPointX(cx) - mHotspotX);
+            int left = getPointX(cx);
             int bottom = getPointY(cy + 1);
             moveTo(left, bottom);
         }
