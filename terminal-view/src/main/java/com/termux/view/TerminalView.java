@@ -1240,7 +1240,7 @@ public final class TerminalView extends View {
                 public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
                     int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
                     int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
-                    int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
+                    int y1 = Math.round((mSelY1 - 1 - mTopRow) * mRenderer.mFontLineSpacing);
                     int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
 
 
