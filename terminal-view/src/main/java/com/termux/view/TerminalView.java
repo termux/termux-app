@@ -973,12 +973,12 @@ public final class TerminalView extends View {
             return mContainer.isShowing();
         }
 
-        private void checkChangedOrientation(int posX) {
-            if (!mIsDragging) {
+        private void checkChangedOrientation(int posX, boolean force) {
+            if (!mIsDragging && !force) {
                 return;
             }
             long millis = SystemClock.currentThreadTimeMillis();
-            if (millis - mLastTime < 50) {
+            if (millis - mLastTime < 50 && !force) {
                 return;
             }
             mLastTime = millis;
@@ -1047,13 +1047,14 @@ public final class TerminalView extends View {
                 posY >= clip.top && posY <= clip.bottom;
         }
 
-        private void moveTo(int x, int y) {
-            mPointX = (int) (x - mHotspotX);
+        private void moveTo(int x, int y, boolean forceOrientationCheck) {
+            float oldHotspotX = mHotspotX;
+            checkChangedOrientation(x, forceOrientationCheck);
+            mPointX = (int) (x - (isShowing() ? oldHotspotX : mHotspotX));
             mPointY = y;
-            checkChangedOrientation(x);
             if (isPositionVisible()) {
                 int[] coords = null;
-                if (mContainer.isShowing()) {
+                if (isShowing()) {
                     coords = mTempCoords;
                     TerminalView.this.getLocationInWindow(coords);
                     int x1 = coords[0] + mPointX;
@@ -1135,10 +1136,10 @@ public final class TerminalView extends View {
             return mIsDragging;
         }
 
-        void positionAtCursor(final int cx, final int cy) {
+        void positionAtCursor(final int cx, final int cy, boolean forceOrientationCheck) {
             int left = getPointX(cx);
             int bottom = getPointY(cy + 1);
-            moveTo(left, bottom);
+            moveTo(left, bottom, forceOrientationCheck);
         }
     }
 
@@ -1159,9 +1160,8 @@ public final class TerminalView extends View {
 
         public void show() {
             mIsShowing = true;
-            updatePosition();
-            mStartHandle.show();
-            mEndHandle.show();
+            mStartHandle.positionAtCursor(mSelX1, mSelY1, true);
+            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, true);
 
             final ActionMode.Callback callback = new ActionMode.Callback() {
                 @Override
@@ -1392,9 +1392,9 @@ public final class TerminalView extends View {
                 return;
             }
 
-            mStartHandle.positionAtCursor(mSelX1, mSelY1);
+            mStartHandle.positionAtCursor(mSelX1, mSelY1, false);
 
-            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2); //bug
+            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, false);
 
             if (mActionMode != null) {
                 mActionMode.invalidate();
