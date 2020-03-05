@@ -6,7 +6,7 @@ env:
   - ANDROID_API=28
   - ANDROID_BUILD_API=28.0.3
   - NDK_API=21.0.6113669
-  - REPO=t-e-l/tel/
+  - REPO=t-e-l/tel
   - APK_NAME=TEL[Beta]
 android:
   components:
@@ -52,3 +52,5 @@ deploy:
     secure: ${github_oauth}
   file: ${APK_NAME}.apk
   skip_cleanup: true
+  on:
+    repo: ${REPO}
