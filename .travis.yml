@@ -32,6 +32,7 @@ cache:
 script:
 - "./gradlew :app:assembleRelease"
 before_install:
+- openssl aes-256-cbc -K $encrypted_c80f59e584b7_key -iv $encrypted_c80f59e584b7_iv -in keystore.jks.enc -out keystore.jks -d
 - mkdir -p $ANDROID_HOME/licenses
 - echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
 - echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_HOME/licenses/android-sdk-license
