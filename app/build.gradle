@@ -103,7 +103,7 @@ def downloadBootstrap(String arch, String expectedChecksum, int version) {
         }
     }
 
-    def remoteUrl = "https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-" + arch + "-v" + version + ".zip"
+    def remoteUrl = "https://github.com/t-e-l/tel/raw/master/bootstrap/bootstrap-" + arch + ".zip"
     logger.quiet("Downloading " + remoteUrl + " ...")
 
     file.parentFile.mkdirs()
