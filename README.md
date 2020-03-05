@@ -6,7 +6,7 @@ I will merge usable features, but do not expect a stable release!
 
 ### Build Status:
 
-![Unit tests](https://github.com/tui-expert/tui-expert2/workflows/Unit%20tests/badge.svg) ![build](https://api.travis-ci.com/tui-expert/tui-expert2.svg?branch=master) 
+![Unit tests](https://github.com/t-e-l/tel/workflows/Unit%20tests/badge.svg) ![build](https://api.travis-ci.com/t-e-l/tel.svg?branch=master) 
 
   
 
