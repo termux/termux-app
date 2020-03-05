@@ -3,6 +3,7 @@
 Here are my personal beta builds while T-UI 2 is in work.
 I will merge usable features, but do not expect a stable release!
 
+All addon updates get merged and build automatically.
 
 ### Build Status:
 
@@ -10,7 +11,10 @@ I will merge usable features, but do not expect a stable release!
 
   
 
-### Download from [releases](https://github.com/tui-expert/tui-expert2/releases/latest)
+### Downloads:
+- [TEL(Termux Expert Launcher)](https://github.com/t-e-l/tel/releases/latest)
+- [Styling Addon](https://github.com/t-e-l/termux-styling/releases/latest)
+- [API Addon](https://github.com/t-e-l/termux-api/releases/latest)
 ### Bugs & Issues:
 Feel free to add issues or pull requests, but keep in mind that the important things go first.
 
