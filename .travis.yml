@@ -1,0 +1,55 @@
+os: linux
+language: android
+jdk: oraclejdk8
+env:
+  global:
+  - ANDROID_API=28
+  - ANDROID_BUILD_API=28.0.3
+  - NDK_API=21.0.6113669
+  - REPO=t-e-l/tel/
+  - APK_NAME=TEL[Beta]
+android:
+  components:
+  - tools
+  - tools
+  - platform-tools
+  - build-tools-${ANDROID_BUILD_API}
+  - android-${ANDROID_API}
+  - extra-android-m2repository
+  - extra
+  - extra-google-m2repository
+  licenses:
+  - android-sdk-license-.+
+  - android-ndk-license-.+
+  - android-sdk-preview-license-.+
+  - google-gdk-license-.+
+before_cache: "-rm -f $HOME/.gradle/caches/modules-2/modules-2.lock -rm -fr $HOME/.gradle/caches/*/plugin-resolution/"
+cache:
+  directories:
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+  - "$HOME/.android/build-cache"
+script:
+- "./gradlew :app:assembleRelease"
+before_install:
+- mkdir -p $ANDROID_HOME/licenses
+- echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
+- echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_HOME/licenses/android-sdk-license
+- echo y | sdkmanager "platforms;android-${ANDROID_API}"
+- echo y | sdkmanager "ndk-bundle"
+- echo y | sdkmanager "ndk;${NDK_API}"
+before_deploy:
+- find $ANDROID_HOME -name 'zipalign'
+- mv ./app/build/outputs/apk/release/app-release.apk app-release.apk
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore.jks -storepass
+  $keystore_password -keypass $keystore_alias_password app-release.apk $keystore_alias
+- jarsigner -verify app-release.apk
+- "${ANDROID_HOME}build-tools/${ANDROID_BUILD_API}/zipalign -v 4 app-release.apk ${APK_NAME}.apk"
+deploy:
+  provider: releases
+  token:
+    secure: ${github_oauth}
+  file: ${APK_NAME}.apk
+  skip_cleanup: true
+  on:
+    repo: ${REPO}
