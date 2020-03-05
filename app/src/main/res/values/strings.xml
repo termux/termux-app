@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="application_name">Termux</string>
-    <string name="shared_user_label">Termux user</string>
+    <string name="application_name">TEL</string>
+    <string name="shared_user_label">TEL user</string>
     <string name="new_session">New session</string>
     <string name="new_session_failsafe">Failsafe</string>
     <string name="toggle_soft_keyboard">Keyboard</string>
@@ -13,10 +13,10 @@
 
     <string name="bootstrap_installer_body">Installing…</string>
     <string name="bootstrap_error_title">Unable to install</string>
-    <string name="bootstrap_error_body">Termux was unable to install the bootstrap packages.\n\nCheck your network connection and try again.</string>
+    <string name="bootstrap_error_body">TEL was unable to install the bootstrap packages.\n\nCheck your network connection and try again.</string>
     <string name="bootstrap_error_abort">Abort</string>
     <string name="bootstrap_error_try_again">Try again</string>
-    <string name="bootstrap_error_not_primary_user_message">Termux can only be installed on the primary user account.</string>
+    <string name="bootstrap_error_not_primary_user_message">TEL can only be installed on the primary user account.</string>
 
     <string name="max_terminals_reached_title">Max terminals reached</string>
     <string name="max_terminals_reached_message">Close down existing ones before creating new.</string>
@@ -38,7 +38,7 @@
     <string name="session_new_named_title">New named session</string>
     <string name="session_new_named_positive_button">Create</string>
 
-    <string name="styling_not_installed">The Termux:Style add-on is not installed.</string>
+    <string name="styling_not_installed">The TEL:Style add-on is not installed.</string>
     <string name="styling_install">Install</string>
 
     <string name="notification_action_exit">Exit</string>
@@ -48,4 +48,5 @@
     <string name="file_received_title">Save file in ~/downloads/</string>
     <string name="file_received_edit_button">Edit</string>
     <string name="file_received_open_folder_button">Open folder</string>
+    <string name="termux_permission_description">Allows application to execute arbitrary shell command within TEL.</string>
 </resources>
