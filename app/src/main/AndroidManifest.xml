@@ -4,6 +4,12 @@
     android:installLocation="internalOnly"
     android:sharedUserId="com.termux"
     android:sharedUserLabel="@string/shared_user_label" >
+    
+    <permission android:name="com.termux.permission.TERMUX_SERVICE"
+        android:label="@string/termux_permission_label"
+        android:description="@string/termux_permission_description"
+        android:icon="@drawable/ic_launcher"
+        android:protectionLevel="dangerous"/>  
 
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -51,7 +57,7 @@
             android:name="com.termux.app.TermuxHelpActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Material.Light.DarkActionBar"
-            android:parentActivityName=".app.TermuxActivity"
+            android:parentActivityName="com.termux.app.TermuxActivity"
             android:resizeableActivity="true"
             android:label="@string/application_name" />
 
@@ -95,11 +101,12 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.IOT_LAUNCHER"/>
                 <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.HOME" />
             </intent-filter>
         </activity-alias>
 
         <provider
-            android:name=".filepicker.TermuxDocumentsProvider"
+            android:name="com.termux.filepicker.TermuxDocumentsProvider"
             android:authorities="com.termux.documents"
             android:grantUriPermissions="true"
             android:exported="true"
@@ -111,9 +118,14 @@
 
         <service
             android:name="com.termux.app.TermuxService"
-            android:exported="false" />
+            android:exported="true"
+            android:permission="com.termux.permission.TERMUX_SERVICE">
+            <intent-filter>
+                <action android:name="com.termux.service_execute" />
+            </intent-filter>
+        </service>
 
-        <receiver android:name=".app.TermuxOpenReceiver" />
+        <receiver android:name="com.termux.app.TermuxOpenReceiver" />
 
         <provider android:authorities="com.termux.files"
                   android:readPermission="android.permission.permRead"
