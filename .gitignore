@@ -8,7 +8,7 @@ build/
 *.so
 .externalNativeBuild
 .cxx
-*.zip
+#*.zip
 
 # Crashlytics configuations
 com_crashlytics_export_strings.xml
