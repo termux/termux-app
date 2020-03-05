@@ -52,5 +52,3 @@ deploy:
     secure: ${github_oauth}
   file: ${APK_NAME}.apk
   skip_cleanup: true
-  on:
-    repo: ${REPO}
