@@ -49,4 +49,5 @@
     <string name="file_received_edit_button">Edit</string>
     <string name="file_received_open_folder_button">Open folder</string>
     <string name="termux_permission_description">Allows application to execute arbitrary shell command within TEL.</string>
+    <string name="termux_permission_label">TEL Service Permission</string>
 </resources>
