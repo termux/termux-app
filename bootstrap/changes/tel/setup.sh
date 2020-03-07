@@ -1,9 +1,9 @@
 echo "[TEL]: finishing TEL setup"
 
 echo "[TEL]: moving files"
-mv -r ~/../usr/tel/.byobu ~/
-mv -r ~/../usr/tel/.termux ~/
-mv -r ~/../usr/tel/.tel ~/
+mv ~/../usr/tel/.byobu ~/
+mv ~/../usr/tel/.termux ~/
+mv ~/../usr/tel/.tel ~/
 
 chmod +x .tel/status.sh
 
@@ -13,6 +13,7 @@ pkg install fzf byobu tmux zsh ncurses-utils git make -y
 byobu-enable
 
 echo "[TEL]: installing app launcher:"
+mkdir -p ~/.local/share/termux-launcher-app-cache
 git clone https://github.com/Neo-Oli/termux-app-launcher
 cd termux-app-launcher
 make install
@@ -23,9 +24,10 @@ app -u
 echo "[TEL]: installing OhMyTermux:"
 git clone https://github.com/anorebel/OhMyTermux.git
 cd OhMyTermux
-./install.sh
+bash install.sh
 cd ~
 rm -rf OhMyTermux
-mv ~/../etc/motd_finished ~/../etc/motd
-echo "cat ~/../etc/motd" >> .zshrc
+mv ~/../usr/etc/motd_finished ~/../etc/motd
+echo "cat ~/../usr/etc/motd" >> .zshrc
+sed -i 's/robbyrussell/avit/g' .zshrc
 echo "[TEL]: installation finished! Please restart the app!"
