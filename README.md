@@ -11,10 +11,8 @@ All addon updates get merged and build automatically.
 
   
 
-### Downloads:
-- [TEL(Termux Expert Launcher)](https://github.com/t-e-l/tel/releases/latest)
-- [Styling Addon](https://github.com/t-e-l/termux-styling/releases/latest)
-- [API Addon](https://github.com/t-e-l/termux-api/releases/latest)
+### [Downloads](https://t-e-l.github.io/)
+
 ### Bugs & Issues:
 Feel free to add issues or pull requests, but keep in mind that the important things go first.
 
