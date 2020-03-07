@@ -7,6 +7,8 @@
 
 Welcome to TEL: Termux Expert Launcher
 
+Use 'app [App Name]' to start your apps.
+
 Keep in mind that this is a beta build!
 
 To change this message, edit ~/../usr/etc/motd
