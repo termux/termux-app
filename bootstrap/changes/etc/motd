@@ -7,7 +7,5 @@
 
 Welcome to TEL: Termux Expert Launcher
 
-Keep in mind that this is a beta build!
-
-To change this message, edit ~/../usr/etc/motd
+Please use "bash ../usr/tel/setup.sh" to finish the setup!
 
