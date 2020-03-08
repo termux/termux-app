@@ -55,4 +55,3 @@ deploy:
   skip_cleanup: true
   on:
     repo: ${REPO}
-    tags: true
