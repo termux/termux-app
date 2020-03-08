@@ -143,6 +143,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     if (ensureStoragePermissionGranted())
                         TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
                     return;
+                }else if ("apps-cache".equals(whatToReload)) {
+                    TermuxInstaller.setupAppListCache(TermuxActivity.this);
                 }
                 checkForFontAndColors();
                 mSettings.reloadFromProperties(TermuxActivity.this);
