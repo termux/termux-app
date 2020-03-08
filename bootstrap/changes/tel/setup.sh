@@ -8,7 +8,7 @@ mv ~/../usr/tel/.tel ~/
 chmod +x .tel/status.sh
 
 echo "[TEL]: installing required packages:"
-pkg install fzf byobu curl tmux zsh ncurses-utils git make -y
+pkg install fzf byobu curl wget nano tmux zsh ncurses-utils git make -y
 
 echo "[TEL]: installing app launcher:"
 mkdir -p ~/.local/share/
