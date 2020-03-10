@@ -1,13 +1,28 @@
 #!/data/data/com.termux/files/usr/bin/sh
-
+error() {
+	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${RED}" "${1}"
+}
+error_exit(){
+	error "setup failed. please retry!"
+	exit 1
+}
 if [ "$#" != "0" ]; then
 	echo 'usage: tel-setup'
 	exit
 fi
 
-pkg install wget unzip -y
+if [ ! -f "~/.tel/.installed" ]; then
+	pkg install wget unzip -y
+	if [ ! $? -eq 0 ]; then
+		error_exit 
+	fi
+fi
+
 cd ~/../usr/
 wget https://github.com/t-e-l/tel/raw/master/bootstrap/changes.zip
+if [ ! $? -eq 0 ]; then
+	error_exit 
+fi
 unzip -o changes.zip
 rm -f changes.zip
 bash tel/setup.sh

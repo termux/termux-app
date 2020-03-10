@@ -7,7 +7,7 @@ env:
   - ANDROID_BUILD_API=28.0.3
   - NDK_API=21.0.6113669
   - REPO=t-e-l/tel
-  - APK_NAME=TEL[Beta]
+  - APK_NAME=TEL[Beta]-${TRAVIS_JOB_NUMBER}
 android:
   components:
   - tools
@@ -46,7 +46,9 @@ before_deploy:
   $keystore_password -keypass $keystore_alias_password app-release.apk $keystore_alias
 - jarsigner -verify app-release.apk
 - "${ANDROID_HOME}build-tools/${ANDROID_BUILD_API}/zipalign -v 4 app-release.apk ${APK_NAME}.apk"
-
+- git config --local user.name "v1nc"
+- git config --local user.email "github@reckendrees.systems"
+- git tag "TEL-${TRAVIS_JOB_NUMBER}"
 deploy:
   provider: releases
   api_key:
