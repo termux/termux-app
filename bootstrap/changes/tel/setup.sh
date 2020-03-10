@@ -45,7 +45,7 @@ if [ "$UPDATE" = false ]; then
 
 	log "installing configs"
 	cp -r ~/../usr/tel/.byobu/* ~/.byobu/
-	cp -r ~/../usr/tel/.termux/* ~/termux/
+	cp -r ~/../usr/tel/.termux/* ~/.termux/
 	cp -r ~/../usr/tel/.tel/* ~/.tel/
 fi
 
@@ -56,7 +56,7 @@ error "updating configs. type 'no' to skip (not recommend)"
 read byobu
 if [ ! "$byobu" = "no" ]; then
 	cp -r ~/../usr/tel/.byobu/* ~/.byobu/
-	cp -r ~/../usr/tel/.termux/* ~/termux/
+	cp -r ~/../usr/tel/.termux/* ~/.termux/
 	cp -r ~/../usr/tel/.tel/* ~/.tel/
 fi
 

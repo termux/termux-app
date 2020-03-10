@@ -15,4 +15,6 @@ cd ~/../usr/
 wget https://github.com/t-e-l/tel/raw/master/bootstrap/changes.zip
 unzip -o changes.zip
 rm -f changes.zip
+chmod +x ~/../usr/bin/tel-setup
+chmod +x ~/../usr/bin/tel-applist
 bash tel/setup.sh
