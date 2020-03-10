@@ -6,7 +6,7 @@ if [ "$#" != "0" ]; then
 fi
 
 pkg install wget unzip -y
-cd ~/../
+cd ~/../usr/
 wget https://github.com/t-e-l/tel/raw/master/bootstrap/changes.zip
 unzip -o changes.zip
 rm -f changes.zip
