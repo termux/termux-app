@@ -18,7 +18,6 @@ else
 	log "finishing TEL setup"
 	log "installing required packages"
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils git make -y
-	if [ ! $? -eq 0 ]; then
 		error_exit 
 	fi
 	log "installing app launcher"
@@ -62,16 +61,12 @@ fi
 cd ~
 log "updating configs"
 
-error "updating byobu config. type 'no' to skip (not recommend)"
+error "updating configs. type 'no' to skip (not recommend)"
 read byobu
 if [ ! "$byobu" = "no" ]; then
-	mv ~/../usr/tel/.byobu/* ~/
-fi
-
-error "updating .tel files. type 'no' to skip (not recommend)"
-read telfiles
-if [ ! "$telfiles" = "no" ]; then
-	mv ~/../usr/tel/.tel/* ~/
+	mv ~/../usr/tel/.byobu/* ~/.byobu/
+	mv ~/../usr/tel/.termux/* ~/termux/
+	mv ~/../usr/tel/.tel/* ~/.tel/
 fi
 
 log "updating permissions"
