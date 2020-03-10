@@ -44,9 +44,9 @@ if [ "$UPDATE" = false ]; then
 	echo "cat ~/../usr/etc/motd" >> ~/.zshrc
 
 	log "installing configs"
-	mv ~/../usr/tel/.byobu/* ~/.byobu/
-	mv ~/../usr/tel/.termux/* ~/termux/
-	mv ~/../usr/tel/.tel/* ~/.tel/
+	cp -r ~/../usr/tel/.byobu/* ~/.byobu/
+	cp -r ~/../usr/tel/.termux/* ~/termux/
+	cp -r ~/../usr/tel/.tel/* ~/.tel/
 fi
 
 cd ~
@@ -55,9 +55,9 @@ log "updating configs"
 error "updating configs. type 'no' to skip (not recommend)"
 read byobu
 if [ ! "$byobu" = "no" ]; then
-	mv ~/../usr/tel/.byobu/* ~/.byobu/
-	mv ~/../usr/tel/.termux/* ~/termux/
-	mv ~/../usr/tel/.tel/* ~/.tel/
+	cp -r ~/../usr/tel/.byobu/* ~/.byobu/
+	cp -r ~/../usr/tel/.termux/* ~/termux/
+	cp -r ~/../usr/tel/.tel/* ~/.tel/
 fi
 
 log "updating permissions"
