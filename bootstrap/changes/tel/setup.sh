@@ -6,10 +6,6 @@ log() {
 error() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${RED}" "${1}"
 }
-error_exit(){
-	error "setup failed. please retry!"
-	exit 1
-}
 if [ -f "~/.tel/.installed" ]; then
     UPDATE=true
     log "updating TEL setup"
@@ -18,16 +14,11 @@ else
 	log "finishing TEL setup"
 	log "installing required packages"
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils git make -y
-		error_exit 
-	fi
 	log "installing app launcher"
 fi
 
 cd ~
 git clone https://github.com/t-e-l/tel-app-launcher
-if [ ! $? -eq 0 ]; then
-	error_exit 
-fi
 cd tel-app-launcher
 make install
 cd ~
