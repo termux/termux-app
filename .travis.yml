@@ -7,7 +7,7 @@ env:
   - ANDROID_BUILD_API=28.0.3
   - NDK_API=21.0.6113669
   - REPO=t-e-l/tel
-  - APK_NAME=TEL[Beta]-${TRAVIS_JOB_NUMBER}
+  - APK_NAME=TEL-${TRAVIS_JOB_NUMBER}
 android:
   components:
   - tools
