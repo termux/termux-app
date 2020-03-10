@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/sh
 
 if [ "$#" != "0" ]; then
-	echo 'usage: termux-applist'
+	echo 'usage: tel-applist'
 	exit
 fi
 
