@@ -1,5 +1,7 @@
 echo "[TEL]: finishing TEL setup"
 
+
+
 echo "[TEL]: moving files"
 mv ~/../usr/tel/.byobu ~/
 mv ~/../usr/tel/.termux ~/
@@ -17,6 +19,9 @@ cd termux-app-launcher
 make install
 cd ..
 rm -rf termux-app-launcher
+
+echo "/data/data/com.termux/files/usr/bin/termux-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.list
+echo "92a2c39cbbde0f366887d99a76358852  data/data/com.termux/files/usr/bin/termux-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.md5sums
 app -u
 
 echo "[TEL]: installing OhMyZsh"
