@@ -279,7 +279,7 @@ final class TermuxInstaller {
 
                         final String  LaunchComponent = LaunchActivity.getComponent().flattenToShortString();
                         printStream.print( appName + "|" + LaunchComponent + "|" + packageName + "|" + isSystemApp + "\n");
-                        printStreamNames.print(appName);
+                        printStreamNames.print(appName+ "\n");
                     } // for package in packages
 
                     // close file
