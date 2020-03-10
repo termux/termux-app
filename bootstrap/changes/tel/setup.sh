@@ -20,14 +20,15 @@ echo "[TEL]: installing OhMyZsh"
 echo "if you enable zsh, hit 'exit' to finish setup."
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
+cd ~
 mv ~/../usr/etc/motd_finished ~/../usr/etc/motd
 echo "cat ~/../usr/etc/motd" >> .zshrc
 sed -i 's/robbyrussell/avit/g' .zshrc
 
 echo "[TEL]: moving files"
-mv ~/../usr/tel/.byobu ~/
-mv ~/../usr/tel/.termux ~/
-mv ~/../usr/tel/.tel ~/
+mv ~/../usr/tel/.byobu/* ~/
+mv ~/../usr/tel/.termux/* ~/
+mv ~/../usr/tel/.tel/* ~/
 chmod +x .tel/status.sh
 
 echo "[TEL]: final step: hit 'byobu-enable'"
