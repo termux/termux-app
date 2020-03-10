@@ -37,14 +37,14 @@ rm -rf bootstrap-arm
 rm -rf bootstrap-i686
 rm -rf bootstrap-x86_64
 
-sum=$(sha256sum bootstrap-aarch64.zip | cut -d " " -f1)
+sum=$(sha256sum bootstrap-aarch64.zip | cut -d " " -f1 | sed 's/^0*//')
 sed -i 's#downloadBootstrap("aarch64", ".*", version)#downloadBootstrap("aarch64", "'$sum'", version)#' ../app/build.gradle 
 
-sum=$(sha256sum bootstrap-arm.zip | cut -d " " -f1)
+sum=$(sha256sum bootstrap-arm.zip | cut -d " " -f1 | sed 's/^0*//')
 sed -i 's#downloadBootstrap("arm",     ".*", version)#downloadBootstrap("arm",     "'$sum'", version)#' ../app/build.gradle 
 
-sum=$(sha256sum bootstrap-i686.zip | cut -d " " -f1)
+sum=$(sha256sum bootstrap-i686.zip | cut -d " " -f1 | sed 's/^0*//')
 sed -i 's#downloadBootstrap("i686",    ".*", version)#downloadBootstrap("i686",    "'$sum'", version)#' ../app/build.gradle 
 
-sum=$(sha256sum bootstrap-x86_64.zip | cut -d " " -f1)
+sum=$(sha256sum bootstrap-x86_64.zip | cut -d " " -f1 | sed 's/^0*//')
 sed -i 's#downloadBootstrap("x86_64",  ".*", version)#downloadBootstrap("x86_64",  "'$sum'", version)#' ../app/build.gradle 
