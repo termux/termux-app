@@ -1,5 +1,7 @@
 UPDATE=false
-
+WHITE=${1:-"38;5;07"}
+GREEN=${1:-"38;5;02"}
+RED=${1:-"38;5;01"}
 log() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "${1}"
 }
