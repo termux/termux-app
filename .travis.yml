@@ -48,7 +48,7 @@ before_deploy:
 - "${ANDROID_HOME}build-tools/${ANDROID_BUILD_API}/zipalign -v 4 app-release.apk ${APK_NAME}.apk"
 - git config --local user.name "v1nc"
 - git config --local user.email "github@reckendrees.systems"
-- git tag "TEL-${TRAVIS_JOB_NUMBER}"
+- git tag "TEL-${TRAVIS_BUILD_NUMBER}"
 deploy:
   provider: releases
   api_key:
