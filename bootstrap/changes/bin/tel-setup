@@ -1,0 +1,13 @@
+#!/data/data/com.termux/files/usr/bin/sh
+
+if [ "$#" != "0" ]; then
+	echo 'usage: tel-setup'
+	exit
+fi
+
+pkg install wget unzip -y
+cd ~/../
+wget https://github.com/t-e-l/tel/raw/master/bootstrap/changes.zip
+unzip -o changes.zip
+rm -f changes.zip
+bash tel/setup.sh

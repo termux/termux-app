@@ -20,8 +20,9 @@ make install
 cd ..
 rm -rf termux-app-launcher
 
-echo "/data/data/com.termux/files/usr/bin/termux-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.list
-echo "92a2c39cbbde0f366887d99a76358852  data/data/com.termux/files/usr/bin/termux-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.md5sums
+#echo "/data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.list
+#echo "92a2c39cbbde0f366887d99a76358852  data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.md5sums
+#idk if this is necessary
 app -u
 
 echo "[TEL]: installing OhMyZsh"

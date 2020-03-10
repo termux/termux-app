@@ -2,7 +2,7 @@ rm -f bootstrap-aarch64.zip
 rm -f bootstrap-arm.zip
 rm -f bootstrap-i686.zip
 rm -f bootstrap-x86_64.zip
-
+rm -f changes.zip
 wget https://termux.net/bootstrap/bootstrap-aarch64.zip
 wget https://termux.net/bootstrap/bootstrap-arm.zip
 wget https://termux.net/bootstrap/bootstrap-i686.zip
