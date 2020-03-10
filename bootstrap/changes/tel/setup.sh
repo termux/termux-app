@@ -14,11 +14,11 @@ pkg install fzf byobu curl wget nano tmux zsh ncurses-utils git make -y
 
 echo "[TEL]: installing app launcher:"
 mkdir -p ~/.local/share/
-git clone https://github.com/Neo-Oli/termux-app-launcher
-cd termux-app-launcher
+git clone https://github.com/t-e-l/tel-app-launcher
+cd tel-app-launcher
 make install
 cd ..
-rm -rf termux-app-launcher
+rm -rf tel-app-launcher
 
 #echo "/data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.list
 #echo "92a2c39cbbde0f366887d99a76358852  data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.md5sums
