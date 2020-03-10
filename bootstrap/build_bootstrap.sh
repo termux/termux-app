@@ -30,6 +30,9 @@ zip -r ../bootstrap-i686.zip *
 cd ../bootstrap-x86_64
 zip -r ../bootstrap-x86_64.zip *
 
+cd ../changes
+zip -r ../changes.zip *
+
 cd ../
 
 rm -rf bootstrap-aarch64
