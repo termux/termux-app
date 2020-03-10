@@ -42,7 +42,7 @@ mkdir -p ~/.byobu
 mkdir -p ~/.termux
 mkdir -p ~/.tel
 
-if [ "$UPDATE" = false]; then
+if [ "$UPDATE" = false ]; then
 
 	log "installing OhMyZsh"
 	error "if you enable zsh, type 'exit' to finish setup."
