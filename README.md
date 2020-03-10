@@ -9,9 +9,10 @@ I will merge usable features, but do not expect a stable release!
 All addon updates get merged and build automatically.
 
 
-
+### Read the [FAQ](https://github.com/t-e-l/tel/wiki/FAQ)!
 
 ### [Downloads](https://t-e-l.github.io/)
+
 
 ### Bugs & Issues:
 Feel free to add issues or pull requests, but keep in mind that the important things go first.
