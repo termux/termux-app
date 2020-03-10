@@ -324,6 +324,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         checkForFontAndColors();
 
         mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
+        // Update app cache
+        TermuxInstaller.setupAppListCache(TermuxActivity.this);
     }
 
     void toggleShowExtraKeys() {
