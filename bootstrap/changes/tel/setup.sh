@@ -26,6 +26,10 @@ echo "cat ~/../usr/etc/motd" >> .zshrc
 sed -i 's/robbyrussell/avit/g' .zshrc
 
 echo "[TEL]: moving files"
+mkdir -p ~/.byobu
+mkdir -p ~/.termux
+mkdir -p ~/.tel
+
 mv ~/../usr/tel/.byobu/* ~/
 mv ~/../usr/tel/.termux/* ~/
 mv ~/../usr/tel/.tel/* ~/
