@@ -18,7 +18,7 @@ error() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${RED}" "${1}"
 }
 
-if [ -f "~/.tel/.installed" ]; then #set update var if finished installation was detected
+if [ -f ~/.tel/.installed ]; then #set update var if finished installation was detected
     UPDATE=true
     log "updating TEL setup"
     log "updating app launcher"
@@ -69,19 +69,19 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	cp -rf ~/../usr/tel/.termux/* ~/.termux/
 	cp -rf ~/../usr/tel/.tel/* ~/.tel/
 	cp -rf ~/../usr/tel/.byobu/.tmux.conf ~/.byobu/
-fi
-log "updating configs"
-error "hit ENTER to continue, type no to skip(not recommended)"
-read update_configs
-if [ ! "$update_configs" = "no" ]; then
-	cp -rf ~/../usr/tel/.byobu/* ~/.byobu/
-	cp -rf ~/../usr/tel/.termux/* ~/.termux/
-	cp -rf ~/../usr/tel/.byobu/.tmux.conf ~/.byobu/
+else
+	log "updating configs"
+	error "hit ENTER to continue, type no to skip(not recommended)"
+	read update_configs
+	if [ ! "$update_configs" = "no" ]; then
+		cp -rf ~/../usr/tel/.byobu/* ~/.byobu/
+		cp -rf ~/../usr/tel/.termux/* ~/.termux/
+		cp -rf ~/../usr/tel/.byobu/.tmux.conf ~/.byobu/
+	fi
+
+	cp -rf ~/../usr/tel/.tel/* ~/.tel/
 fi
 
-cp -rf ~/../usr/tel/.tel/* ~/.tel/
-
-cd ~
 
 log "updating permissions"
 
@@ -90,7 +90,7 @@ chmod +x ~/.tel/status.sh
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
 
-if [ -f "~/../usr/etc/motd_finished" ]; then
+if [ -f ~/../usr/etc/motd_finished ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
 fi
 
