@@ -21,7 +21,7 @@ do
 		fi
 		if [ $STATUS_COLOR = true ];
 		then
-			echo "${output}" | lolcat
+			echo "${output}" | lolcat -p "${STATUS_COLOR_SPREAD}"
 		else
 			echo "${output}"
 		fi
