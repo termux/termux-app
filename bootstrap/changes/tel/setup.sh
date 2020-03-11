@@ -94,8 +94,11 @@ if [ -f ~/../usr/etc/motd_finished ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
 fi
 
-touch ~/.tel/.installed #mark setup finished
-
-log "final step: hit 'byobu-enable'"
-log "after that, hit 'exit' and restart the app!"
-log "if the layout is still missing, hit 'byobu-enable' and 'exit' again!"
+if [ "$UPDATE" = false ]; then 
+	touch ~/.tel/.installed #mark setup finished
+	log "final step: hit 'byobu-enable'"
+	log "after that, hit 'exit' and restart the app!"
+	error "if the layout is still missing, hit 'byobu-enable' and 'exit' again!"
+else
+	log "update finished. please reastart TEL!"
+fi
