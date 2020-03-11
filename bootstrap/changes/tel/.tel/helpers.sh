@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/data/data/com.termux/files/usr/bin/sh
+
+#TEL helper functions
 
 # Function "center_text": center the text with a surrounding border
 
 # first argument: text to center
 # second argument: glyph which forms the border
 # third argument: width of the padding
-
 center_text()
 {
 
@@ -50,3 +51,4 @@ center_text()
     # displays the text in the center of the screen, surrounded by borders.
     printf "${left_border}${spacing}${text}${spacing}${right_border}\n"
 }
+

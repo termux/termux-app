@@ -1,13 +1,25 @@
-#! /bin/bash
+#!/data/data/com.termux/files/usr/bin/sh
 
+#TEL status script, gets executed by byobu in the top panel
+#prints the output of all scripts stored in ~/.tel/status_scripts/active, sorted by their filenames
+#todo: add color options
+. ~/.tel/config.sh #load config 
+. ~/.tel/helpers.sh #load helper functions
+SCRIPT_DIR=~/.tel/status_scripts/active/* #define script dir
 
-. ~/.tel/config.sh
-. ~/.tel/helpers.sh
-while [ true ]
+while [ true ] #run forever
 do
-center_text " 3.1 / 7.33 GB (42.02%%)" " "
-center_text " 34.2 / 109.34 GB (31.27%%)" " "
-center_text " 192.168.0.420" " "
-sleep 10m
-clear
+	
+	for script in $SCRIPT_DIR #iterate over all scripts in script dir
+	do
+		if [ $STATUS_CENTER = true ]; 
+		then
+			center_text "$(. $script)" "${STATUS_SPACING_CHAR}" #print the text centered if enabled in the config, use the given spacing char
+		else
+			echo "$(. $script)" #print the text on the left
+		fi
+		#todo: add setting for printing on the right
+	done
+sleep $STATUS_RELOAD #sleep for the configured time
+clear #clear the screen before reloading
 done
