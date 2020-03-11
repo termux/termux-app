@@ -62,7 +62,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 	sed -i 's/robbyrussell/avit/g' ~/.zshrc #set avit zsh theme
-	echo "cat ~/../usr/etc/motd" >> ~/.zshrc #set motd message for zsh
+	echo "cat ~/../usr/etc/motd | lolcat" >> ~/.zshrc #set motd message for zsh
 
 	log "installing configs" #todo: optimize this
 	cp -r ~/../usr/tel/.byobu/{.,}* ~/.byobu/
