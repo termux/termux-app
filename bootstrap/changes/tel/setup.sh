@@ -25,9 +25,12 @@ if [ -f "~/.tel/.installed" ]; then #set update var if finished installation was
 else #download required packages if first start detected
 	log "finishing TEL setup"
 	log "installing required packages"
-	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils git make -y
+	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils git make ruby -y
 	log "installing app launcher"
 fi
+
+#install lolcat for colors
+gem install lolcat
 
 #install app launcher via git
 cd ~

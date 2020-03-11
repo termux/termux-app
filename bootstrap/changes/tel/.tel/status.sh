@@ -12,11 +12,18 @@ do
 	
 	for script in $SCRIPT_DIR #iterate over all scripts in script dir
 	do
+		output=""
 		if [ $STATUS_CENTER = true ]; 
 		then
-			center_text "$(. $script)" "${STATUS_SPACING_CHAR}" #print the text centered if enabled in the config, use the given spacing char
+			output=$(center_text "$(. $script)" "${STATUS_SPACING_CHAR}") #print the text centered if enabled in the config, use the given spacing char
 		else
-			echo "$(. $script)" #print the text on the left
+			output="$(. $script)" #print the text on the left
+		fi
+		if [ $STATUS_COLOR = true ];
+		then
+			echo "${output}" | lolcat
+		else
+			echo "${output}"
 		fi
 		#todo: add setting for printing on the right
 	done

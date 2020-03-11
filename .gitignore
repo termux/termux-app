@@ -2,6 +2,7 @@
 # with the addition of the /captures below.
 /captures
 app/src/main/cpp/bootstrap-*.zip
+bootstrap/org
 # Built application files
 build/
 *.apk
