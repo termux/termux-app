@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/sh
+#!/data/data/com.termux/files/usr/bin/bash
 
 #TEL status script, gets executed by byobu in the top panel
 #prints the output of all scripts stored in ~/.tel/status_scripts/active, sorted by their filenames
