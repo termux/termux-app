@@ -46,9 +46,9 @@ if [ "$UPDATE" = false ]; then
 	echo "cat ~/../usr/etc/motd" >> ~/.zshrc
 
 	log "installing configs"
-	cp -r ~/../usr/tel/.byobu/* ~/.byobu/
-	cp -r ~/../usr/tel/.termux/* ~/.termux/
-	cp -r ~/../usr/tel/.tel/* ~/.tel/
+	cp -r ~/../usr/tel/.byobu/{.,}* ~/.byobu/
+	cp -r ~/../usr/tel/.termux/{.,}* ~/.termux/
+	cp -r ~/../usr/tel/.tel/{.,}* ~/.tel/
 fi
 
 cd ~
