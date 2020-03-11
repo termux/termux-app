@@ -68,8 +68,10 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	#cp -r ~/../usr/tel/.termux/{.,}* ~/.termux/
 	#cp -r ~/../usr/tel/.tel/{.,}* ~/.tel/
 fi
-cp -r ~/../usr/tel/{.,}* ~/
 
+cp -rf ~/../usr/tel/.byobu/{.,}* ~/.byobu/
+cp -rf ~/../usr/tel/.termux/{.,}* ~/.termux/
+cp -rf ~/../usr/tel/.tel/{.,}* ~/.tel/
 cd ~
 
 log "updating permissions"
