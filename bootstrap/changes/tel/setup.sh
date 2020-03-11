@@ -65,22 +65,12 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	echo "cat ~/../usr/etc/motd | lolcat" >> ~/.zshrc #set motd message for zsh
 
 	log "installing configs" #todo: optimize this
-	cp -r ~/../usr/tel/.byobu/{.,}* ~/.byobu/
-	cp -r ~/../usr/tel/.termux/{.,}* ~/.termux/
-	cp -r ~/../usr/tel/.tel/{.,}* ~/.tel/
+	#cp -r ~/../usr/tel/.termux/{.,}* ~/.termux/
+	#cp -r ~/../usr/tel/.tel/{.,}* ~/.tel/
 fi
+cp -r ~/../usr/tel/{.,}* ~/
 
 cd ~
-log "updating configs"
-
-error "updating configs. hit ENTER! type 'no' to skip (not recommend)"
-read byobu
-if [ ! "$byobu" = "no" ]; then #only update configs and colors if user want to
-	cp -r ~/../usr/tel/.byobu/* ~/.byobu/
-	cp -r ~/../usr/tel/.termux/* ~/.termux/
-fi
-
-cp -r ~/../usr/tel/.tel/* ~/.tel/
 
 log "updating permissions"
 
