@@ -1267,6 +1267,7 @@ public final class TerminalEmulator {
                 break;
             case 'c': // RIS - Reset to Initial State (http://vt100.net/docs/vt510-rm/RIS).
                 reset();
+                mMainBuffer.clearTranscript();
                 blockClear(0, 0, mColumns, mRows);
                 setCursorPosition(0, 0);
                 break;
@@ -1376,10 +1377,10 @@ public final class TerminalEmulator {
             }
             break;
             case 'A': // "CSI${n}A" - Cursor up (CUU) ${n} rows.
-                setCursorRow(Math.max(mTopMargin, mCursorRow - getArg0(1)));
+                setCursorRow(Math.max(0, mCursorRow - getArg0(1)));
                 break;
             case 'B': // "CSI${n}B" - Cursor down (CUD) ${n} rows.
-                setCursorRow(Math.min(mBottomMargin - 1, mCursorRow + getArg0(1)));
+                setCursorRow(Math.min(mRows - 1, mCursorRow + getArg0(1)));
                 break;
             case 'C': // "CSI${n}C" - Cursor forward (CUF).
             case 'a': // "CSI${n}a" - Horizontal position relative (HPR). From ISO-6428/ECMA-48.
@@ -1404,7 +1405,7 @@ public final class TerminalEmulator {
             case 'I': // Cursor Horizontal Forward Tabulation (CHT). Move the active position n tabs forward.
                 setCursorCol(nextTabStop(getArg0(1)));
                 break;
-            case 'J': // "${CSI}${0,1,2}J" - Erase in Display (ED)
+            case 'J': // "${CSI}${0,1,2,3}J" - Erase in Display (ED)
                 // ED ignores the scrolling margins.
                 switch (getArg0(0)) {
                     case 0: // Erase from the active position to the end of the screen, inclusive (default).
@@ -1418,6 +1419,9 @@ public final class TerminalEmulator {
                     case 2: // Erase all of the display - all lines are erased, changed to single-width, and the cursor does not
                         // move..
                         blockClear(0, 0, mColumns, mRows);
+                        break;
+                    case 3: // Delete all lines saved in the scrollback buffer (xterm etc)
+                        mMainBuffer.clearTranscript();
                         break;
                     default:
                         unknownSequence(b);
@@ -2338,6 +2342,9 @@ public final class TerminalEmulator {
     public void paste(String text) {
         // First: Always remove escape key and C1 control characters [0x80,0x9F]:
         text = text.replaceAll("(\u001B|[\u0080-\u009F])", "");
+        // Second: Replace all newlines (\n) or CRLF (\r\n) with carriage returns (\r).
+        text = text.replaceAll("\r?\n", "\r");
+
         // Then: Implement bracketed paste mode if enabled:
         boolean bracketed = isDecsetInternalBitSet(DECSET_BIT_BRACKETED_PASTE_MODE);
         if (bracketed) mSession.write("\033[200~");

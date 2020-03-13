@@ -58,10 +58,6 @@ public class WcWidthTest extends TestCase {
         assertWidthIs(0, 0x2060);
 	}
 
-	public void testWatch() {
-
-	}
-
 	public void testSofthyphen() {
 		// http://osdir.com/ml/internationalization.linux/2003-05/msg00006.html:
 		// "Existing implementation practice in terminals is that the SOFT HYPHEN is

@@ -1,0 +1,13 @@
+name: Unit tests
+
+on: push
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
+    - name: Execute tests
+      run: |
+        ./gradlew test

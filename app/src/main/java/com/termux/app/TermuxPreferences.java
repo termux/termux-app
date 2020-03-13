@@ -3,27 +3,48 @@ package com.termux.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.IntDef;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
-
 import com.termux.terminal.TerminalSession;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import androidx.annotation.IntDef;
 
 final class TermuxPreferences {
 
     @IntDef({BELL_VIBRATE, BELL_BEEP, BELL_IGNORE})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface AsciiBellBehaviour {
+    @interface AsciiBellBehaviour {
     }
+
+    final static class KeyboardShortcut {
+
+        KeyboardShortcut(int codePoint, int shortcutAction) {
+            this.codePoint = codePoint;
+            this.shortcutAction = shortcutAction;
+        }
+
+        final int codePoint;
+        final int shortcutAction;
+    }
+
+    static final int SHORTCUT_ACTION_CREATE_SESSION = 1;
+    static final int SHORTCUT_ACTION_NEXT_SESSION = 2;
+    static final int SHORTCUT_ACTION_PREVIOUS_SESSION = 3;
+    static final int SHORTCUT_ACTION_RENAME_SESSION = 4;
 
     static final int BELL_VIBRATE = 1;
     static final int BELL_BEEP = 2;
@@ -35,14 +56,29 @@ final class TermuxPreferences {
     private static final String SHOW_EXTRA_KEYS_KEY = "show_extra_keys";
     private static final String FONTSIZE_KEY = "fontsize";
     private static final String CURRENT_SESSION_KEY = "current_session";
+    private static final String SCREEN_ALWAYS_ON_KEY = "screen_always_on";
 
+    private String mUseDarkUI;
+    private boolean mScreenAlwaysOn;
     private int mFontSize;
 
     @AsciiBellBehaviour
     int mBellBehaviour = BELL_VIBRATE;
 
     boolean mBackIsEscape;
+    boolean mDisableVolumeVirtualKeys;
     boolean mShowExtraKeys;
+
+    String[][] mExtraKeys;
+
+    final List<KeyboardShortcut> shortcuts = new ArrayList<>();
+
+    /**
+     * If value is not in the range [min, max], set it to either min or max.
+     */
+    static int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
+    }
 
     TermuxPreferences(Context context) {
         reloadFromProperties(context);
@@ -54,7 +90,8 @@ final class TermuxPreferences {
         // to prevent invisible text due to zoom be mistake:
         MIN_FONTSIZE = (int) (4f * dipInPixels);
 
-        mShowExtraKeys = prefs.getBoolean(SHOW_EXTRA_KEYS_KEY, false);
+        mShowExtraKeys = prefs.getBoolean(SHOW_EXTRA_KEYS_KEY, true);
+        mScreenAlwaysOn = prefs.getBoolean(SCREEN_ALWAYS_ON_KEY, false);
 
         // http://www.google.com/design/spec/style/typography.html#typography-line-height
         int defaultFontSize = Math.round(12 * dipInPixels);
@@ -66,11 +103,7 @@ final class TermuxPreferences {
         } catch (NumberFormatException | ClassCastException e) {
             mFontSize = defaultFontSize;
         }
-        mFontSize = Math.max(MIN_FONTSIZE, Math.min(mFontSize, MAX_FONTSIZE));
-    }
-
-    boolean isShowExtraKeys() {
-        return mShowExtraKeys;
+        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE); 
     }
 
     boolean toggleShowExtraKeys(Context context) {
@@ -91,6 +124,19 @@ final class TermuxPreferences {
         prefs.edit().putString(FONTSIZE_KEY, Integer.toString(mFontSize)).apply();
     }
 
+    boolean isScreenAlwaysOn() {
+        return mScreenAlwaysOn;
+    }
+
+    boolean isUsingBlackUI() {
+        return mUseDarkUI.toLowerCase().equals("true");
+    }
+
+    void setScreenAlwaysOn(Context context, boolean newValue) {
+        mScreenAlwaysOn = newValue;
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SCREEN_ALWAYS_ON_KEY, newValue).apply();
+    }
+
     static void storeCurrentSession(Context context, TerminalSession session) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString(TermuxPreferences.CURRENT_SESSION_KEY, session.mHandle).apply();
     }
@@ -103,62 +149,64 @@ final class TermuxPreferences {
         }
         return null;
     }
+    
+    void reloadFromProperties(Context context) {
+        File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
+        if (!propsFile.exists())
+            propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
 
-    public void reloadFromProperties(Context context) {
+        Properties props = new Properties();
         try {
-            File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
-            if (!propsFile.exists())
-                propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
-
-            Properties props = new Properties();
             if (propsFile.isFile() && propsFile.canRead()) {
                 try (FileInputStream in = new FileInputStream(propsFile)) {
-                    props.load(in);
+                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
                 }
             }
-
-            switch (props.getProperty("bell-character", "vibrate")) {
-                case "beep":
-                    mBellBehaviour = BELL_BEEP;
-                    break;
-                case "ignore":
-                    mBellBehaviour = BELL_IGNORE;
-                    break;
-                default: // "vibrate".
-                    mBellBehaviour = BELL_VIBRATE;
-                    break;
-            }
-
-            mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
-
-            shortcuts.clear();
-            parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
-            parseAction("shortcut.next-session", SHORTCUT_ACTION_NEXT_SESSION, props);
-            parseAction("shortcut.previous-session", SHORTCUT_ACTION_PREVIOUS_SESSION, props);
-            parseAction("shortcut.rename-session", SHORTCUT_ACTION_RENAME_SESSION, props);
-        } catch (Exception e) {
-            Toast.makeText(context, "Error loading properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            Toast.makeText(context, "Could not open properties file termux.properties.", Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
         }
-    }
 
-    public static final int SHORTCUT_ACTION_CREATE_SESSION = 1;
-    public static final int SHORTCUT_ACTION_NEXT_SESSION = 2;
-    public static final int SHORTCUT_ACTION_PREVIOUS_SESSION = 3;
-    public static final int SHORTCUT_ACTION_RENAME_SESSION = 4;
-
-    public final static class KeyboardShortcut {
-
-        public KeyboardShortcut(int codePoint, int shortcutAction) {
-            this.codePoint = codePoint;
-            this.shortcutAction = shortcutAction;
+        switch (props.getProperty("bell-character", "vibrate")) {
+            case "beep":
+                mBellBehaviour = BELL_BEEP;
+                break;
+            case "ignore":
+                mBellBehaviour = BELL_IGNORE;
+                break;
+            default: // "vibrate".
+                mBellBehaviour = BELL_VIBRATE;
+                break;
         }
 
-        final int codePoint;
-        final int shortcutAction;
-    }
+        mUseDarkUI = props.getProperty("use-black-ui", "false");
 
-    final List<KeyboardShortcut> shortcuts = new ArrayList<>();
+        try {
+            JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', '-', 'DOWN', 'UP']]"));
+
+            mExtraKeys = new String[arr.length()][];
+            for (int i = 0; i < arr.length(); i++) {
+                JSONArray line = arr.getJSONArray(i);
+                mExtraKeys[i] = new String[line.length()];
+                for (int j = 0; j < line.length(); j++) {
+                    mExtraKeys[i][j] = line.getString(j);
+                }
+            }
+        } catch (JSONException e) {
+            Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
+            Log.e("termux", "Error loading props", e);
+            mExtraKeys = new String[0][];
+        }
+
+        mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
+        mDisableVolumeVirtualKeys = "volume".equals(props.getProperty("volume-keys", "virtual"));
+
+        shortcuts.clear();
+        parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
+        parseAction("shortcut.next-session", SHORTCUT_ACTION_NEXT_SESSION, props);
+        parseAction("shortcut.previous-session", SHORTCUT_ACTION_PREVIOUS_SESSION, props);
+        parseAction("shortcut.rename-session", SHORTCUT_ACTION_RENAME_SESSION, props);
+    }
 
     private void parseAction(String name, int shortcutAction, Properties props) {
         String value = props.getProperty(name);

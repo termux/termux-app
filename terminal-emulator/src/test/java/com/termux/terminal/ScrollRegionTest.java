@@ -107,4 +107,24 @@ public class ScrollRegionTest extends TerminalTestCase {
 		assertLinesAre("1 ", "2 ", "3 ", "QQ", "YY");
 	}
 
+    /** See https://github.com/termux/termux-app/issues/1340 */
+    public void testScrollRegionDoesNotLimitCursorMovement() {
+        withTerminalSized(6, 4)
+            .enterString("\033[4;7r\033[3;1Haaa\033[Axxx")
+            .assertLinesAre(
+                "      ",
+                "   xxx",
+                "aaa   ",
+                "      "
+            );
+
+        withTerminalSized(6, 4)
+            .enterString("\033[1;3r\033[3;1Haaa\033[Bxxx")
+            .assertLinesAre(
+                "      ",
+                "      ",
+                "aaa   ",
+                "   xxx"
+            );
+    }
 }

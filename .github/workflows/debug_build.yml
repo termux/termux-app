@@ -1,0 +1,18 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
+    - name: Build
+      run: |
+        ./gradlew assembleDebug
+    - name: Store generated APK file
+      uses: actions/upload-artifact@v1
+      with:
+        name: termux-app
+        path: ./app/build/outputs/apk/debug/app-debug.apk

@@ -8,6 +8,7 @@ import android.system.Os;
 import android.system.OsConstants;
 import android.util.Log;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -338,5 +339,27 @@ public final class TerminalSession extends TerminalOutput {
     public int getPid() {
         return mShellPid;
     }
+
+    /** Returns the shell's working directory or null if it was unavailable. */
+    public String getCwd() {
+        if (mShellPid < 1) {
+            return null;
+        }
+        try {
+            final String cwdSymlink = String.format("/proc/%s/cwd/", mShellPid);
+            String outputPath = new File(cwdSymlink).getCanonicalPath();
+            String outputPathWithTrailingSlash = outputPath;
+            if (!outputPath.endsWith("/")) {
+                outputPathWithTrailingSlash += '/';
+            }
+            if (!cwdSymlink.equals(outputPathWithTrailingSlash)) {
+                return outputPath;
+            }
+        } catch (IOException | SecurityException e) {
+            Log.e(EmulatorDebug.LOG_TAG, "Error getting current directory", e);
+        }
+        return null;
+    }
+
 
 }

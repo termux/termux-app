@@ -21,6 +21,8 @@ public final class TerminalRow {
     boolean mLineWrap;
     /** The style bits of each cell in the row. See {@link TextStyle}. */
     final long[] mStyle;
+    /** If this row might contain chars with width != 1, used for deactivating fast path */
+    boolean mHasNonOneWidthOrSurrogateChars;
 
     /** Construct a blank row (containing only whitespace, ' ') with a specified style. */
     public TerminalRow(int columns, long style) {
@@ -32,6 +34,7 @@ public final class TerminalRow {
 
     /** NOTE: The sourceX2 is exclusive. */
     public void copyInterval(TerminalRow line, int sourceX1, int sourceX2, int destinationX) {
+        mHasNonOneWidthOrSurrogateChars |= line.mHasNonOneWidthOrSurrogateChars;
         final int x1 = line.findStartOfColumn(sourceX1);
         final int x2 = line.findStartOfColumn(sourceX2);
         boolean startingFromSecondHalfOfWideChar = (sourceX1 > 0 && line.wideDisplayCharacterStartingAt(sourceX1 - 1));
@@ -116,6 +119,7 @@ public final class TerminalRow {
         Arrays.fill(mText, ' ');
         Arrays.fill(mStyle, style);
         mSpaceUsed = (short) mColumns;
+        mHasNonOneWidthOrSurrogateChars = false;
     }
 
     // https://github.com/steven676/Android-Terminal-Emulator/commit/9a47042620bec87617f0b4f5d50568535668fe26
@@ -123,6 +127,17 @@ public final class TerminalRow {
         mStyle[columnToSet] = style;
 
         final int newCodePointDisplayWidth = WcWidth.width(codePoint);
+
+        // Fast path when we don't have any chars with width != 1
+        if (!mHasNonOneWidthOrSurrogateChars) {
+            if (codePoint >= Character.MIN_SUPPLEMENTARY_CODE_POINT || newCodePointDisplayWidth != 1) {
+                mHasNonOneWidthOrSurrogateChars = true;
+            } else {
+                mText[columnToSet] = (char) codePoint;
+                return;
+            }
+        }
+
         final boolean newIsCombining = newCodePointDisplayWidth <= 0;
 
         boolean wasExtraColForWideChar = (columnToSet > 0) && wideDisplayCharacterStartingAt(columnToSet - 1);

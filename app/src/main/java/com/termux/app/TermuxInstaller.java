@@ -4,10 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.DialogInterface.OnDismissListener;
-import android.os.Build;
 import android.os.Environment;
 import android.os.UserManager;
 import android.system.Os;
@@ -19,13 +15,12 @@ import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -40,7 +35,7 @@ import java.util.zip.ZipInputStream;
  * <p/>
  * (3) A staging folder, $STAGING_PREFIX, is {@link #deleteFolder(File)} if left over from broken installation below.
  * <p/>
- * (4) The architecture is determined and an appropriate bootstrap zip url is determined in {@link #determineZipUrl()}.
+ * (4) The zip file is loaded from a shared library.
  * <p/>
  * (5) The zip, containing entries relative to the $PREFIX, is is downloaded and extracted by a zip input stream
  * continuously encountering zip file entries:
@@ -59,12 +54,7 @@ final class TermuxInstaller {
         boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
         if (!isPrimaryUser) {
             new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_not_primary_user_message)
-                .setOnDismissListener(new OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        System.exit(0);
-                    }
-                }).setPositiveButton(android.R.string.ok, null).show();
+                .setOnDismissListener(dialog -> System.exit(0)).setPositiveButton(android.R.string.ok, null).show();
             return;
         }
 
@@ -89,8 +79,8 @@ final class TermuxInstaller {
                     final byte[] buffer = new byte[8096];
                     final List<Pair<String, String>> symlinks = new ArrayList<>(50);
 
-                    final URL zipUrl = determineZipUrl();
-                    try (ZipInputStream zipInput = new ZipInputStream(zipUrl.openStream())) {
+                    final byte[] zipBytes = loadZipBytes();
+                    try (ZipInputStream zipInput = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
                         ZipEntry zipEntry;
                         while ((zipEntry = zipInput.getNextEntry()) != null) {
                             if (zipEntry.getName().equals("SYMLINKS.txt")) {
@@ -103,14 +93,17 @@ final class TermuxInstaller {
                                     String oldPath = parts[0];
                                     String newPath = STAGING_PREFIX_PATH + "/" + parts[1];
                                     symlinks.add(Pair.create(oldPath, newPath));
+
+                                    ensureDirectoryExists(new File(newPath).getParentFile());
                                 }
                             } else {
                                 String zipEntryName = zipEntry.getName();
                                 File targetFile = new File(STAGING_PREFIX_PATH, zipEntryName);
-                                if (zipEntry.isDirectory()) {
-                                    if (!targetFile.mkdirs())
-                                        throw new RuntimeException("Failed to create directory: " + targetFile.getAbsolutePath());
-                                } else {
+                                boolean isDirectory = zipEntry.isDirectory();
+
+                                ensureDirectoryExists(isDirectory ? targetFile : targetFile.getParentFile());
+
+                                if (!isDirectory) {
                                     try (FileOutputStream outStream = new FileOutputStream(targetFile)) {
                                         int readBytes;
                                         while ((readBytes = zipInput.read(buffer)) != -1)
@@ -135,46 +128,29 @@ final class TermuxInstaller {
                         throw new RuntimeException("Unable to rename staging folder");
                     }
 
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            whenDone.run();
-                        }
-                    });
+                    activity.runOnUiThread(whenDone);
                 } catch (final Exception e) {
                     Log.e(EmulatorDebug.LOG_TAG, "Bootstrap error", e);
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
-                                    .setNegativeButton(R.string.bootstrap_error_abort, new OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                            activity.finish();
-                                        }
-                                    }).setPositiveButton(R.string.bootstrap_error_try_again, new OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                        TermuxInstaller.setupIfNeeded(activity, whenDone);
-                                    }
+                    activity.runOnUiThread(() -> {
+                        try {
+                            new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
+                                .setNegativeButton(R.string.bootstrap_error_abort, (dialog, which) -> {
+                                    dialog.dismiss();
+                                    activity.finish();
+                                }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
+                                    dialog.dismiss();
+                                    TermuxInstaller.setupIfNeeded(activity, whenDone);
                                 }).show();
-                            } catch (WindowManager.BadTokenException e) {
-                                // Activity already dismissed - ignore.
-                            }
+                        } catch (WindowManager.BadTokenException e1) {
+                            // Activity already dismissed - ignore.
                         }
                     });
                 } finally {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                progress.dismiss();
-                            } catch (RuntimeException e) {
-                                // Activity already dismissed - ignore.
-                            }
+                    activity.runOnUiThread(() -> {
+                        try {
+                            progress.dismiss();
+                        } catch (RuntimeException e) {
+                            // Activity already dismissed - ignore.
                         }
                     });
                 }
@@ -182,55 +158,51 @@ final class TermuxInstaller {
         }.start();
     }
 
-    /** Get bootstrap zip url for this systems cpu architecture. */
-    static URL determineZipUrl() throws MalformedURLException {
-        String archName = determineTermuxArchName();
-        return new URL("https://termux.net/bootstrap/bootstrap-" + archName + ".zip");
+    private static void ensureDirectoryExists(File directory) {
+        if (!directory.isDirectory() && !directory.mkdirs()) {
+            throw new RuntimeException("Unable to create directory: " + directory.getAbsolutePath());
+        }
     }
 
-    private static String determineTermuxArchName() {
-        // Note that we cannot use System.getProperty("os.arch") since that may give e.g. "aarch64"
-        // while a 64-bit runtime may not be installed (like on the Samsung Galaxy S5 Neo).
-        // Instead we search through the supported abi:s on the device, see:
-        // http://developer.android.com/ndk/guides/abis.html
-        // Note that we search for abi:s in preferred order (the ordering of the
-        // Build.SUPPORTED_ABIS list) to avoid e.g. installing arm on an x86 system where arm
-        // emulation is available.
-        for (String androidArch : Build.SUPPORTED_ABIS) {
-            switch (androidArch) {
-                case "arm64-v8a": return "aarch64";
-                case "armeabi-v7a": return "arm";
-                case "x86_64": return "x86_64";
-                case "x86": return "i686";
-            }
-        }
-        throw new RuntimeException("Unable to determine arch from Build.SUPPORTED_ABIS =  " +
-            Arrays.toString(Build.SUPPORTED_ABIS));
+    public static byte[] loadZipBytes() {
+        // Only load the shared library when necessary to save memory usage.
+        System.loadLibrary("termux-bootstrap");
+        return getZip();
     }
 
-    /** Delete a folder and all its content or throw. */
-    static void deleteFolder(File fileOrDirectory) {
-        File[] children = fileOrDirectory.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                deleteFolder(child);
+    public static native byte[] getZip();
+
+    /** Delete a folder and all its content or throw. Don't follow symlinks. */
+    static void deleteFolder(File fileOrDirectory) throws IOException {
+        if (fileOrDirectory.getCanonicalPath().equals(fileOrDirectory.getAbsolutePath()) && fileOrDirectory.isDirectory()) {
+            File[] children = fileOrDirectory.listFiles();
+
+            if (children != null) {
+                for (File child : children) {
+                    deleteFolder(child);
+                }
             }
         }
+
         if (!fileOrDirectory.delete()) {
             throw new RuntimeException("Unable to delete " + (fileOrDirectory.isDirectory() ? "directory " : "file ") + fileOrDirectory.getAbsolutePath());
         }
     }
 
-    public static void setupStorageSymlinks(final Context context) {
+    static void setupStorageSymlinks(final Context context) {
         final String LOG_TAG = "termux-storage";
         new Thread() {
             public void run() {
                 try {
                     File storageDir = new File(TermuxService.HOME_PATH, "storage");
 
-                    if (storageDir.exists() && !storageDir.delete()) {
-                        Log.e(LOG_TAG, "Could not delete old $HOME/storage");
-                        return;
+                    if (storageDir.exists()) {
+                        try {
+                            deleteFolder(storageDir);
+                        } catch (IOException e) {
+                            Log.e(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage());
+                            return;
+                        }
                     }
 
                     if (!storageDir.mkdirs()) {

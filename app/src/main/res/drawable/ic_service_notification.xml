@@ -9,7 +9,7 @@
 
     <!-- Screen border. -->
     <path android:fillColor="#00000000"
-          android:strokeColor="#000"
+          android:strokeColor="#FFF"
           android:strokeWidth="3"
           android:pathData="M7,4
                             l34,0
@@ -23,7 +23,7 @@
           />
 
     <!-- Block cursor. -->
-    <path android:fillColor="#000"
+    <path android:fillColor="#FFF"
           android:pathData="M14,14
                             l5,0
                             l0,10

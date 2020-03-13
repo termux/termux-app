@@ -1,5 +1,9 @@
 package com.termux.app;
 
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -24,7 +28,11 @@ public final class BackgroundJob {
 
     final Process mProcess;
 
-    public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service) {
+    public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service){
+        this(cwd, fileToExecute, args, service, null);
+    }
+
+    public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service, PendingIntent pendingIntent) {
         String[] env = buildEnvironment(false, cwd);
         if (cwd == null) cwd = TermuxService.HOME_PATH;
 
@@ -43,6 +51,28 @@ public final class BackgroundJob {
 
         mProcess = process;
         final int pid = getPid(mProcess);
+        final Bundle result = new Bundle();
+        final StringBuilder outResult = new StringBuilder();
+        final StringBuilder errResult = new StringBuilder();
+
+        Thread errThread = new Thread() {
+            @Override
+            public void run() {
+                InputStream stderr = mProcess.getErrorStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stderr, StandardCharsets.UTF_8));
+                String line;
+                try {
+                    // FIXME: Long lines.
+                    while ((line = reader.readLine()) != null) {
+                        errResult.append(line).append('\n');
+                        Log.i(LOG_TAG, "[" + pid + "] stderr: " + line);
+                    }
+                } catch (IOException e) {
+                    // Ignore.
+                }
+            }
+        };
+        errThread.start();
 
         new Thread() {
             @Override
@@ -50,11 +80,13 @@ public final class BackgroundJob {
                 Log.i(LOG_TAG, "[" + pid + "] starting: " + processDescription);
                 InputStream stdout = mProcess.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stdout, StandardCharsets.UTF_8));
+
                 String line;
                 try {
                     // FIXME: Long lines.
                     while ((line = reader.readLine()) != null) {
                         Log.i(LOG_TAG, "[" + pid + "] stdout: " + line);
+                        outResult.append(line).append('\n');
                     }
                 } catch (IOException e) {
                     Log.e(LOG_TAG, "Error reading output", e);
@@ -68,58 +100,84 @@ public final class BackgroundJob {
                     } else {
                         Log.w(LOG_TAG, "[" + pid + "] exited with code: " + exitCode);
                     }
+
+                    result.putString("stdout", outResult.toString());
+                    result.putInt("exitCode", exitCode);
+
+                    errThread.join();
+                    result.putString("stderr", errResult.toString());
+
+                    Intent data = new Intent();
+                    data.putExtra("result", result);
+
+                    if(pendingIntent != null) {
+                        try {
+                            pendingIntent.send(service.getApplicationContext(), Activity.RESULT_OK, data);
+                        } catch (PendingIntent.CanceledException e) {
+                            // The caller doesn't want the result? That's fine, just ignore
+                        }
+                    }
                 } catch (InterruptedException e) {
-                    // Ignore.
+                    // Ignore
                 }
             }
         }.start();
-
-
-        new Thread() {
-            @Override
-            public void run() {
-                InputStream stderr = mProcess.getErrorStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(stderr, StandardCharsets.UTF_8));
-                String line;
-                try {
-                    // FIXME: Long lines.
-                    while ((line = reader.readLine()) != null) {
-                        Log.i(LOG_TAG, "[" + pid + "] stderr: " + line);
-                    }
-                } catch (IOException e) {
-                    // Ignore.
-                }
-            }
-        };
     }
 
-    public static String[] buildEnvironment(boolean failSafe, String cwd) {
+    private static void addToEnvIfPresent(List<String> environment, String name) {
+        String value = System.getenv(name);
+        if (value != null) {
+            environment.add(name + "=" + value);
+        }
+    }
+
+    static String[] buildEnvironment(boolean failSafe, String cwd) {
         new File(TermuxService.HOME_PATH).mkdirs();
 
         if (cwd == null) cwd = TermuxService.HOME_PATH;
 
-        final String termEnv = "TERM=xterm-256color";
-        final String homeEnv = "HOME=" + TermuxService.HOME_PATH;
-        final String prefixEnv = "PREFIX=" + TermuxService.PREFIX_PATH;
-        final String androidRootEnv = "ANDROID_ROOT=" + System.getenv("ANDROID_ROOT");
-        final String androidDataEnv = "ANDROID_DATA=" + System.getenv("ANDROID_DATA");
+        List<String> environment = new ArrayList<>();
+
+        environment.add("TERM=xterm-256color");
+        environment.add("HOME=" + TermuxService.HOME_PATH);
+        environment.add("PREFIX=" + TermuxService.PREFIX_PATH);
+        environment.add("BOOTCLASSPATH=" + System.getenv("BOOTCLASSPATH"));
+        environment.add("ANDROID_ROOT=" + System.getenv("ANDROID_ROOT"));
+        environment.add("ANDROID_DATA=" + System.getenv("ANDROID_DATA"));
         // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
         // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
-        final String externalStorageEnv = "EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE");
+        environment.add("EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE"));
+        // ANDROID_RUNTIME_ROOT and ANDROID_TZDATA_ROOT are required for `am` to run on Android Q
+        addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
+        addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
         if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
-            final String pathEnv = "PATH=" + System.getenv("PATH");
-            return new String[]{termEnv, homeEnv, prefixEnv, androidRootEnv, androidDataEnv, pathEnv, externalStorageEnv};
+            environment.add("PATH= " + System.getenv("PATH"));
         } else {
-            final String ps1Env = "PS1=$ ";
-            final String ldEnv = "LD_LIBRARY_PATH=" + TermuxService.PREFIX_PATH + "/lib";
-            final String langEnv = "LANG=en_US.UTF-8";
-            final String pathEnv = "PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets";
-            final String pwdEnv = "PWD=" + cwd;
-            final String tmpdirEnv = "TMPDIR=" + TermuxService.PREFIX_PATH + "/tmp";
-
-            return new String[]{termEnv, homeEnv, prefixEnv, ps1Env, ldEnv, langEnv, pathEnv, pwdEnv, androidRootEnv, androidDataEnv, externalStorageEnv, tmpdirEnv};
+            if (shouldAddLdLibraryPath()) {
+                environment.add("LD_LIBRARY_PATH=" + TermuxService.PREFIX_PATH + "/lib");
+            }
+            environment.add("LANG=en_US.UTF-8");
+            environment.add("PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets");
+            environment.add("PWD=" + cwd);
+            environment.add("TMPDIR=" + TermuxService.PREFIX_PATH + "/tmp");
         }
+
+        return environment.toArray(new String[0]);
+    }
+
+    private static boolean shouldAddLdLibraryPath() {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(TermuxService.PREFIX_PATH + "/etc/apt/sources.list")))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (!line.startsWith("#") && line.contains("//termux.net stable")) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error trying to read sources.list", e);
+        }
+        return false;
     }
 
     public static int getPid(Process p) {
@@ -187,7 +245,7 @@ public final class BackgroundJob {
         if (interpreter != null) result.add(interpreter);
         result.add(fileToExecute);
         if (args != null) Collections.addAll(result, args);
-        return result.toArray(new String[result.size()]);
+        return result.toArray(new String[0]);
     }
 
 }

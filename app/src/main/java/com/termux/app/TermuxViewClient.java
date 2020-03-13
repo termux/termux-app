@@ -2,7 +2,6 @@ package com.termux.app;
 
 import android.content.Context;
 import android.media.AudioManager;
-import android.support.v4.widget.DrawerLayout;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -15,6 +14,8 @@ import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalViewClient;
 
 import java.util.List;
+
+import androidx.drawerlayout.widget.DrawerLayout;
 
 public final class TermuxViewClient implements TerminalViewClient {
 
@@ -112,12 +113,12 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     @Override
     public boolean readControlKey() {
-        return (mActivity.mExtraKeysView != null && mActivity.mExtraKeysView.readControlButton()) || mVirtualControlKeyDown;
+        return (mActivity.mExtraKeysView != null && mActivity.mExtraKeysView.readSpecialButton(ExtraKeysView.SpecialButton.CTRL)) || mVirtualControlKeyDown;
     }
 
     @Override
     public boolean readAltKey() {
-        return (mActivity.mExtraKeysView != null && mActivity.mExtraKeysView.readAltButton());
+        return (mActivity.mExtraKeysView != null && mActivity.mExtraKeysView.readSpecialButton(ExtraKeysView.SpecialButton.ALT));
     }
 
     @Override
@@ -209,6 +210,7 @@ public final class TermuxViewClient implements TerminalViewClient {
 
                 // Writing mode:
                 case 'q':
+                case 'k':
                     mActivity.toggleShowExtraKeys();
                     break;
             }
@@ -262,7 +264,9 @@ public final class TermuxViewClient implements TerminalViewClient {
     /** Handle dedicated volume buttons as virtual keys if applicable. */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
         InputDevice inputDevice = event.getDevice();
-        if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
+        if (mActivity.mSettings.mDisableVolumeVirtualKeys) {
+            return false;
+        } else if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
             // Do not steal dedicated buttons from a full external keyboard.
             return false;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {

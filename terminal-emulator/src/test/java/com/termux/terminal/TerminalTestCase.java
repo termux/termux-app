@@ -4,7 +4,6 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,14 +26,10 @@ public abstract class TerminalTestCase extends TestCase {
 		}
 
 		public String getOutputAndClear() {
-			try {
-				String result = new String(baos.toByteArray(), "UTF-8");
-				baos.reset();
-				return result;
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException(e);
-			}
-		}
+            String result = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+            baos.reset();
+            return result;
+        }
 
 		@Override
 		public void titleChanged(String oldTitle, String newTitle) {
