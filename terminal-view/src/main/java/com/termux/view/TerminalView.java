@@ -1479,7 +1479,6 @@ public final class TerminalView extends View {
         }
     }
 
-    public String getText() { return mTermSession.getEmulator().getScreen().getTranscriptText(); }
 
     private final Runnable mShowFloatingToolbar = new Runnable() {
         @Override
