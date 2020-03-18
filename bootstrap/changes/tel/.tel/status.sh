@@ -6,7 +6,7 @@
 . ~/.tel/config.sh #load config 
 . ~/.tel/helpers.sh #load helper functions
 SCRIPT_DIR=~/.tel/status_scripts/active/* #define script dir
-
+clear #clear the screen before reloading, do first to avoid latency on loading scripts
 while [ true ] #run forever
 do
 	
@@ -28,5 +28,4 @@ do
 		#todo: add setting for printing on the right
 	done
 sleep $STATUS_RELOAD #sleep for the configured time
-clear #clear the screen before reloading
 done
