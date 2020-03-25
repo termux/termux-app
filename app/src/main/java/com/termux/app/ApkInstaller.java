@@ -3,7 +3,6 @@ package com.termux.app;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Environment;
 import android.util.Log;
 
 import com.termux.terminal.EmulatorDebug;
@@ -22,7 +21,7 @@ public class ApkInstaller {
                 try {
                     String urlString = "https://termux.net/apks/" + packageName + ".apk";
                     Log.e(EmulatorDebug.LOG_TAG, "Installing " + packageName + ", url is " + urlString);
-                    File downloadFile = new File(Environment.getExternalStorageDirectory(), "tmp.apk");
+                    File downloadFile = new File(TermuxService.FILES_PATH, "tmp.apk");
                     URL url = new URL(urlString);
                     try (FileOutputStream out = new FileOutputStream(downloadFile)) {
                         try (InputStream in = url.openStream()) {
