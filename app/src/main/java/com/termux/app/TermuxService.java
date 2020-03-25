@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -28,6 +29,9 @@ import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +60,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     private static final int NOTIFICATION_ID = 1337;
 
     private static final String ACTION_STOP_SERVICE = "com.termux.service_stop";
+    private static final String ACTION_INSTALL_PACKAGES = "com.termux.install_packages";
     private static final String ACTION_LOCK_WAKE = "com.termux.service_wake_lock";
     private static final String ACTION_UNLOCK_WAKE = "com.termux.service_wake_unlock";
     /** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
@@ -106,6 +111,15 @@ public final class TermuxService extends Service implements SessionChangedCallba
             for (int i = 0; i < mTerminalSessions.size(); i++)
                 mTerminalSessions.get(i).finishIfRunning();
             stopSelf();
+        } else if (ACTION_INSTALL_PACKAGES.equals(action)) {
+            String[] packages = intent.getStringArrayExtra("packages");
+            if (packages == null || packages.length == 0) {
+                Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without packages");
+            } else {
+                for (String pkg : packages) {
+                    ApkInstaller.installPackageApk(pkg, this);
+                }
+            }
         } else if (ACTION_LOCK_WAKE.equals(action)) {
             if (mWakeLock == null) {
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);

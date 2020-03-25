@@ -68,7 +68,7 @@ task versionName {
 def setupBootstrap(String arch, String expectedChecksum, int version) {
     def digest = java.security.MessageDigest.getInstance("SHA-256")
 
-    def zipDownloadFile = new File(project.buildDir, "./gradle/bootstrap-" + arch + ".zip")
+    def zipDownloadFile = new File(project.buildDir, "./gradle/bootstrap-" + arch + "-" + version + ".zip")
 
     if (zipDownloadFile.exists()) {
         def buffer = new byte[8192]
@@ -138,6 +138,12 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
                 def targetFile = new File(outputDir, soName).getAbsoluteFile()
 
                 zipInput.transferTo(new FileOutputStream(targetFile))
+
+                if (zipEntry.getName().endsWith("/pkg")) {
+                  def pkgScript = new FileInputStream(project.getRootDir().getAbsolutePath() + "/pkg.sh")
+                  pkgScript.transferTo(new FileOutputStream(targetFile))
+                }
+
                 mappingsFileWriter.writeLine(soName + "←" + zipEntry.getName())
                 counter++
             }
@@ -150,11 +156,11 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
 
 task setupBootstraps(){
     doLast {
-        def version = 7
-        setupBootstrap("aarch64", "1ceb4782eb18d14c624a383f19aaaf7a47b104e8e8154d43641e10a624cc7fa7", version)
-        setupBootstrap("arm",     "59f0b2e6d95e3d675f6d9e145ba098a138133fa95c268dffe5bd118f9ad07c27", version)
-        setupBootstrap("i686",    "cd01cfbbeba18131c8fa5d13f7cfae4481ed4ad2bbf1f45b043a6cf704a86ad", version)
-        setupBootstrap("x86_64",  "d6386a997b9d2257f7a69557528cd3df1c1f285aa332a1e33d8aedaa5427eca5", version)
+        def version = 10
+        setupBootstrap("aarch64", "72495386c8ff4f20fdb4450e06f2a99769ddd61ebc342cb76e9eb7927ebaf0dc", version)
+        setupBootstrap("arm",     "280b9062abc722fc28bf881b54470fe94db4cd8c39b66e89c4c1d305ee826735", version)
+        setupBootstrap("i686",    "ffea63ee5b33edcad9a979ce41d704ab2deb1fb2049e3fef6acdfef7384cc8d9", version)
+        setupBootstrap("x86_64",  "816eb2c1af85284f375f956c9958d77c7d0fc0a3589cf1377c646c534fb262a0", version)
     }
 }
 
