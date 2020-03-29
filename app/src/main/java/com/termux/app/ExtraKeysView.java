@@ -17,6 +17,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.PopupWindow;
@@ -210,6 +211,7 @@ public final class ExtraKeysView extends GridLayout {
         put("TAB", "↹"); // U+21B9 ↹ LEFTWARDS ARROW TO BAR OVER RIGHTWARDS ARROW TO BAR
         put("BKSP", "⌫"); // U+232B ⌫ ERASE TO THE LEFT sometimes seen and easy to understand
         put("DEL", "⌦"); // U+2326 ⌦ ERASE TO THE RIGHT not well known but easy to understand
+        put("KEYBOARD", "⌨"); // U+2328 ⌨ KEYBOARD not well known but easy to understand
     }};
 
     static final CharDisplayMap lessKnownCharactersDisplay = new CharDisplayMap() {{
@@ -419,10 +421,13 @@ public final class ExtraKeysView extends GridLayout {
                     }
 
                     View root = getRootView();
-                    if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
+                    if (Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
                         ToggleButton self = (ToggleButton) finalButton;
                         self.setChecked(self.isChecked());
                         self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
+                    } else if ("KEYBOARD".equals(buttonText)) {
+                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.toggleSoftInput(0, 0);
                     } else {
                         sendKey(root, buttonText, keyMap);
                     }
