@@ -79,6 +79,7 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/*" />
+                <data android:mimeType="application/*log*" />
                 <data android:mimeType="application/json" />
                 <data android:mimeType="application/*xml*" />
                 <data android:mimeType="application/*latex*" />
