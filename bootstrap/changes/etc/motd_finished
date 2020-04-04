@@ -9,7 +9,9 @@ Welcome to TEL: Termux Expert Launcher
 
 Use 'app [App Name]' to start your apps.
 
-Keep in mind that this is a beta build!
+Use 'tel-help' or 'tel-tutorial' to find out more.
 
 To change this message, edit ~/../usr/etc/motd
+
+To remove this message, edit ~/.zshrc
 

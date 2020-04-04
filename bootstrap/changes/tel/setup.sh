@@ -70,6 +70,9 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	cp -rf ~/../usr/tel/.termux/* ~/.termux/
 	cp -rf ~/../usr/tel/.tel/* ~/.tel/
 	cp -rf ~/../usr/tel/.byobu/.tmux.conf ~/.byobu/
+	cp -rf ~/../usr/tel/.aliases ~/
+	cp -rf ~/../usr/tel/.envvar ~/
+
 else
 	log "updating configs"
 	error "hit ENTER to continue, type no to skip(not recommended)"
@@ -87,7 +90,9 @@ fi
 log "updating permissions"
 
 #set permissions again(probably duplicate within tel-setup)
-chmod +x ~/.tel/status.sh
+chmod +x ~/.tel/.status/*
+chmod +x ~/.tel/status_scripts/active/*
+chmod +x ~/.tel/utils/*
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
 
