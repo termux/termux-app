@@ -1,12 +1,21 @@
+#todo: use for loop
 rm -f bootstrap-aarch64.zip
 rm -f bootstrap-arm.zip
 rm -f bootstrap-i686.zip
 rm -f bootstrap-x86_64.zip
 rm -f changes.zip
-wget https://termux.net/bootstrap/bootstrap-aarch64.zip
-wget https://termux.net/bootstrap/bootstrap-arm.zip
-wget https://termux.net/bootstrap/bootstrap-i686.zip
-wget https://termux.net/bootstrap/bootstrap-x86_64.zip
+
+if [ -f "org/bootstrap-aarch64.zip" ]; then
+	cp org/bootstrap-aarch64.zip .
+	cp org/bootstrap-arm.zip .
+	cp org/bootstrap-i686.zip .
+	cp org/bootstrap-x86_64.zip .
+else
+	wget https://termux.net/bootstrap/bootstrap-aarch64.zip
+	wget https://termux.net/bootstrap/bootstrap-arm.zip
+	wget https://termux.net/bootstrap/bootstrap-i686.zip
+	wget https://termux.net/bootstrap/bootstrap-x86_64.zip
+fi
 
 unzip bootstrap-aarch64.zip -d bootstrap-aarch64
 unzip bootstrap-arm.zip -d bootstrap-arm
