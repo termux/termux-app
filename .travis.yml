@@ -68,7 +68,7 @@ deploy:
     file: ${APK_NAME}.apk
     name: ${DEV_NAME}
     tag_name: ${DEV_NAME}
-    body: ${DEV_BODY}.apk
+    body: ${DEV_BODY}
     skip_cleanup: true
     prerelease: true
     on:
