@@ -5,6 +5,8 @@ rm -f bootstrap-i686.zip
 rm -f bootstrap-x86_64.zip
 rm -f changes.zip
 
+mkdir org
+
 if [ -f "org/bootstrap-aarch64.zip" ]; then
 	cp org/bootstrap-aarch64.zip .
 	cp org/bootstrap-arm.zip .
@@ -28,16 +30,16 @@ cp -r changes/* bootstrap-i686
 cp -r changes/* bootstrap-x86_64
 
 cd bootstrap-aarch64
-zip -r ../bootstrap-aarch64.zip *
+zip -r ../../app/src/main/cpp/bootstrap-aarch64.zip *
 
 cd ../bootstrap-arm
-zip -r ../bootstrap-arm.zip *
+zip -r ../../app/src/main/cpp/bootstrap-arm.zip *
 
 cd ../bootstrap-i686
-zip -r ../bootstrap-i686.zip *
+zip -r ../../app/src/main/cpp/bootstrap-i686.zip *
 
 cd ../bootstrap-x86_64
-zip -r ../bootstrap-x86_64.zip *
+zip -r ../../app/src/main/cpp/bootstrap-x86_64.zip *
 
 cd ../changes
 zip -r ../changes.zip *
