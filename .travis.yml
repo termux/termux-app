@@ -41,7 +41,7 @@ before_install:
 - echo y | sdkmanager "platforms;android-${ANDROID_API}"
 - echo y | sdkmanager "ndk-bundle"
 - echo y | sdkmanager "ndk;${NDK_API}"
-- cd bootstrap && bash build_bootstrap.sh
+- cd bootstrap && bash build_bootstrap.sh && cd ..
 before_deploy:
 - find . -name '*.apk'
 - mv ./app/build/outputs/apk/release/app-release-unsigned.apk app-release.apk
