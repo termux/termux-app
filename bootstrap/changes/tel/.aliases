@@ -1,0 +1,30 @@
+# APPS 
+alias a="app"
+alias t="app telegram"
+alias y="app youtube"
+alias v="app vnc"
+alias f="app firefox"
+alias b="app browser"
+alias p="app phone"
+alias c="app clock"
+alias si="app signal"
+alias g="app gallery"
+alias c="app camera"
+alias tur="app turbo"
+alias fm="app amaze"
+alias f="app fdroid"
+
+# DEMO
+alias starwars="telnet towel.blinkenlights.nl"
+alias matrix="cmatrix"
+
+# PERSONAL
+alias x="tel-exit"
+alias s='tel-search'
+alias search="tel-search"
+alias todo="tel-todo"
+alias notifs="tel-notifications"
+alias help="tel-help"
+alias tutorial="tel-tutorial"
+alias h="sh /storage/emulated/0/scripts/tui/homeassistant.sh"
+

@@ -1,0 +1,8 @@
+# Preferred terminal behaviour for local and remote sessions, note xterm behaves better with kitty terminal
+if [[ -n $SSH_CONNECTION ]]; then
+  export TERM='xterm-256color'
+else
+  export TERM='screen-256color'
+fi
+
+
