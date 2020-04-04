@@ -1,0 +1,14 @@
+apps:
+termux-api
+
+
+pip:
+colored
+lolcat
+
+
+pkgs:
+jq
+python
+pip
+pv

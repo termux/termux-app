@@ -1,0 +1,11 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# show notifications for TEL
+# by @SealyJ
+# v0.1 - 03/04/2020
+if [ -z $1 ]; then
+	echo -e " Notifications:"
+	cat ~/.tel/usr/.notifs
+else
+echo "TEL notification manager usage:
+	'$> notifs'            = show notifications"
+fi

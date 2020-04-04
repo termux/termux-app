@@ -3,15 +3,17 @@
 #TEL status script, gets executed by byobu in the top panel
 #prints the output of all scripts stored in ~/.tel/status_scripts/active, sorted by their filenames
 #todo: add color options
-. ~/.tel/config.sh #load config 
-. ~/.tel/helpers.sh #load helper functions
+. ~/.tel/config/status #load status config 
+. ~/.tel/.dev/helpers.sh #load helper function
+
+# this script is called by status_window
+
 SCRIPT_DIR=~/.tel/status_scripts/active/* #define script dir
-clear #clear the screen before reloading, do first to avoid latency on loading scripts
-while [ true ] #run forever
-do
+
+#loop now handled by ~/.tel/.status/status_manager
 	
-	for script in $SCRIPT_DIR #iterate over all scripts in script dir
-	do
+for script in $SCRIPT_DIR #iterate over all scripts in script dir
+do
 		output=""
 		if [ $STATUS_CENTER = true ]; 
 		then
@@ -21,11 +23,14 @@ do
 		fi
 		if [ $STATUS_COLOR = true ];
 		then
+			#[[ "$oldoutput" != "$output" ]] && 
 			echo "${output}" | lolcat -p "${STATUS_COLOR_SPREAD}"
+			oldoutput="$output"
 		else
+		#	[[ "$oldoutput" != "$output" ]] && 
 			echo "${output}"
+			#oldoutput="$output > status.txt"
+		#11	echo "$output >> $HOME/status.txt"
 		fi
 		#todo: add setting for printing on the right
-	done
-sleep $STATUS_RELOAD #sleep for the configured time
 done

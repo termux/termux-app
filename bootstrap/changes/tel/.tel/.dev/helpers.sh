@@ -49,6 +49,6 @@ center_text()
     done
 
     # displays the text in the center of the screen, surrounded by borders.
-    printf "${left_border}${spacing}${text}${spacing}${right_border}\n"
+    echo "${left_border}${spacing}${text}${spacing}${right_border}"
 }
 

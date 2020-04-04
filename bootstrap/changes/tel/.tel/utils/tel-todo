@@ -1,0 +1,53 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# to-do list manager for TEL
+# by @SealyJ
+# v0.1 - 30/03/2020
+source ~/.tel/.dev/colors.sh
+RED='\033[0;31m'
+NC='\033[0m' # No Col
+BOLD=$(tput bold)
+NORMAL=$(tput sgr0)
+todolist=~/.tel/usr/.todo
+option="${1}" 
+[[ -e $todolist ]] || touch ${todolist}  #if no list make a new one
+#echo "${@}"
+if [ -z "$1" ] ; then
+	echo -e "${BOLD}${RED} To Do List:${NC}${NORMAL}"
+	cat -n $todolist
+else
+
+case ${option} in 
+	-h)
+	echo "TEL To-Do manager usage:
+	'$> todo'            = show to-do list
+	'$> todo buy apples' = add buy apples to to-do list
+	'$> todo -h'         = show this help menu
+	'$> todo -e'         = open list in EDITOR
+	'$> todo -c'         = clear list
+	'$> todo -r'         = remove the most recent line
+	'$> todo -r 3'       = remove line number 3"
+	;; 
+	-c)
+	> $todolist && echo "cleared the To-Do list"
+	;;
+        -r)
+	if [ -z $2 ] ; then
+		echo "Removed the most recent line from To-Do list"
+		sed -i '$d' $todolist
+		exit 0
+	else	
+		sed -i "${2}d" $todolist && echo "removed line $2 from To-Do list"
+	fi
+	;;
+        -e)
+	source ~/.tel/config.sh
+	echo "Opening in $EDITOR"
+	$EDITOR $todolist
+	;; 
+	*)  
+	echo $@ >> $todolist
+	echo "Added $@ to your To-Do list"
+	exit 1 
+	;;
+esac 
+fi

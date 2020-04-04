@@ -1,0 +1,37 @@
+#!/data/data/com.termux/files/usr/bin/bash
+. ~/.tel/.dev/helpers.sh
+
+clear && sleep 0.5
+center_text "Welcome to TEL: termux environment launcher."
+sleep 2 && clear 
+echo "TEL aims to be a fully customisable interface to a linux style command line system"
+printf '\n' ; read -n 1 -p "Press any key to continue...." ; clear
+echo "If you have previous experience with linux you may notice TEL uses some popular and familiar programs like:
+
+z shell with oh-my-zsh
+
+tmux with byobu"
+printf '\n' ; read -n 1 -p "Press any key to continue...." ; clear
+echo "they are configurable in exactly the same way, try adding:
+'echo GUIs are pui' 
+to the end of your ~/.zshrc file"
+
+echo "supplied with TEL are various additional tools to compliment the interface and make TEL immediately useful"
+printf '\n' ; read -n 1 -p "Press any key to continue...." ; clear
+echo "command 'app' will open an interactive app picker
+'todo' provides a simple notes list
+'search' provides a quick way to search with bangs.
+'notifs' provides a list of notifications.
+tel-help and tel-exit are fairly self explanitory"
+printf '\n' ; read -n 1 -p "Press any key to continue...." ; clear
+echo "the status pane / top window attempts to display useful information at a glance"
+printf '\n' ; read -n 1 -p "Press any key to continue...." ; clear
+echo "it can be customised via its config file at ~/.tel/config/status or by adding, renaming or removing scripts from the folder '~/.tel/status_scripts/active'"
+printf '\n' ; read -n 1 -p "Press any key to continue...." ; clear
+echo "We recommend you read the existing aliases ~/.tel/.tel_aliases file if you wish to aquaint yourself and add your own to ~/.aliases"
+printf '\n' ; read -n 1 -p "Press any key to continue...." ; clear
+center_text "We hope you enjoy using TEL"
+sleep 4 && clear
+
+
+
