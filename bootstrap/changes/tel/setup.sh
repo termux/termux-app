@@ -8,14 +8,15 @@ log() {
 error() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${RED}" "${1}"
 }
-if [ -f "~/.tel/.installed" ]; then
+if [ -f "$HOME/.tel/.installed" ]; then
     UPDATE=true
     log "updating TEL setup"
     log "updating app launcher"
 else
 	log "finishing TEL setup"
 	log "installing required packages"
-	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils git make -y
+	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq pip neofetch git make -y
+	pip install colored lolcat
 	log "installing app launcher"
 fi
 
@@ -43,7 +44,7 @@ if [ "$UPDATE" = false ]; then
 	read blazeit
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 	sed -i 's/robbyrussell/avit/g' ~/.zshrc
-	echo "cat ~/../usr/etc/motd" >> ~/.zshrc
+	echo "\n\n\n### TEL STUFF ###\n set -K # disables ! events in zsh to allow for bangs in Duckduckgo searches\nsource ~/.tel/.dev/.tel_aliases\nsource ~/.envvar # User custom ENV vars\nsource ~/.aliases # User custom Aliases\n\n\n# Example Startup Scripts\n#tel-fetch --source ~/.tel/usr/asciiart.txt\ncat ~/../usr/etc/motd\n#cmatrix -s\n#neofetch -L | lolcat -a -p 40 -s 200\n#clear" >> ~/.zshrc
 
 	log "installing configs"
 	cp -r ~/../usr/tel/.byobu/* ~/.byobu/
@@ -68,7 +69,7 @@ chmod +x ~/.tel/status.sh
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
 
-if [ -f "~/../usr/etc/motd_finished" ]; then
+if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd
 fi
 
