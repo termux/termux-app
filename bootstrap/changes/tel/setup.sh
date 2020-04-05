@@ -25,11 +25,11 @@ if [ -f ~/.tel/.installed ]; then #set update var if finished installation was d
 else #download required packages if first start detected
 	log "finishing TEL setup"
 	log "installing required packages"
-	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make -y
-	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-        python get-pip.py
-        rm -f get-pip.py
-        pip install colored lolcat
+	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make -y > /dev/null 2>&1
+	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py > /dev/null 2>&1
+    python get-pip.py > /dev/null 2>&1
+    rm -f get-pip.py
+    pip install colored lolcat > /dev/null 2>&1
 	log "installing app launcher"
 fi
 
@@ -38,9 +38,9 @@ fi
 
 #install app launcher via git
 cd ~
-git clone https://github.com/t-e-l/tel-app-launcher
+git clone https://github.com/t-e-l/tel-app-launcher > /dev/null 2>&1
 cd tel-app-launcher
-make install
+make install > /dev/null 2>&1
 cd ~
 rm -rf tel-app-launcher
 
@@ -66,8 +66,6 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 	
   sed -i 's/robbyrussell/avit/g' ~/.zshrc
-	echo "\n\n\n### TEL STUFF ###\n set -K # disables ! events in zsh to allow for bangs in Duckduckgo searches\nsource ~/.tel/.dev/.tel_aliases\nsource ~/.envvar # User custom ENV vars\nsource ~/.aliases # User custom Aliases\n\n\n# Example Startup Scripts\n#tel-fetch --source ~/.tel/usr/asciiart.txt\ncat ~/../usr/etc/motd\n#cmatrix -s\n#neofetch -L | lolcat -a -p 40 -s 200\n#clear" >> ~/.zshrc
-
 	log "installing configs" #todo: optimize this
 	cp -rf ~/../usr/tel/.byobu/* ~/.byobu/
 	cp -rf ~/../usr/tel/.termux/* ~/.termux/
