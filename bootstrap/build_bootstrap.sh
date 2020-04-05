@@ -1,52 +1,32 @@
-#todo: use for loop
-rm -f bootstrap-aarch64.zip
-rm -f bootstrap-arm.zip
-rm -f bootstrap-i686.zip
-rm -f bootstrap-x86_64.zip
-rm -f changes.zip
+#!/bin/bash
+# Download official bootstrap packages, merge changes and pack zips
+ARCHS="aarch64 arm i686 x86_64"
 
-mkdir org
+# Iterate the string variable using for loop
+BOOTSTRAP_URL="https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-"
+BOOTSTRAP_URL_SUFFIX="-v21.zip"
+mkdir org > /dev/null 2>&1
+for ARCH in $ARCHS; do
+    URL=$BOOTSTRAP_URL$ARCH$BOOTSTRAP_URL_SUFFIX
+    echo "working on $ARCH"
+    rm -f bootstrap-$ARCH.zip
+    if [ -f "org/bootstrap-$ARCH.zip" ]; then
+    	echo "using existing orginal bootstrap from org/"
+		cp org/bootstrap-$ARCH.zip .
+	else
+		echo "downloading orginal bootstrap from $URL"
+		wget -O bootstrap-$ARCH.zip $URL > /dev/null 2>&1
+	fi
+	unzip bootstrap-$ARCH.zip -d bootstrap-$ARCH > /dev/null 2>&1
+	cp -r changes/* bootstrap-$ARCH 
+	cd bootstrap-$ARCH
+	echo "zipping package"
+	zip -r ../../app/src/main/cpp/bootstrap-$ARCH.zip * > /dev/null 2>&1
+	cd ..
+	rm -rf bootstrap-$ARCH
+done
 
-if [ -f "org/bootstrap-aarch64.zip" ]; then
-	cp org/bootstrap-aarch64.zip .
-	cp org/bootstrap-arm.zip .
-	cp org/bootstrap-i686.zip .
-	cp org/bootstrap-x86_64.zip .
-else
-	wget https://termux.net/bootstrap/bootstrap-aarch64.zip
-	wget https://termux.net/bootstrap/bootstrap-arm.zip
-	wget https://termux.net/bootstrap/bootstrap-i686.zip
-	wget https://termux.net/bootstrap/bootstrap-x86_64.zip
-fi
-
-unzip bootstrap-aarch64.zip -d bootstrap-aarch64
-unzip bootstrap-arm.zip -d bootstrap-arm
-unzip bootstrap-i686.zip -d bootstrap-i686
-unzip bootstrap-x86_64.zip -d bootstrap-x86_64
-
-cp -r changes/* bootstrap-aarch64
-cp -r changes/* bootstrap-arm
-cp -r changes/* bootstrap-i686
-cp -r changes/* bootstrap-x86_64
-
-cd bootstrap-aarch64
-zip -r ../../app/src/main/cpp/bootstrap-aarch64.zip *
-
-cd ../bootstrap-arm
-zip -r ../../app/src/main/cpp/bootstrap-arm.zip *
-
-cd ../bootstrap-i686
-zip -r ../../app/src/main/cpp/bootstrap-i686.zip *
-
-cd ../bootstrap-x86_64
-zip -r ../../app/src/main/cpp/bootstrap-x86_64.zip *
-
-cd ../changes
-zip -r ../changes.zip *
-
-cd ../
-
-rm -rf bootstrap-aarch64
-rm -rf bootstrap-arm
-rm -rf bootstrap-i686
-rm -rf bootstrap-x86_64
+echo "zipping changes"
+cd changes
+zip -r ../changes.zip * > /dev/null 2>&1
+cd ..
