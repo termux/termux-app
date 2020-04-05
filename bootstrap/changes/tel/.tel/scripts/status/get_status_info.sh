@@ -1,16 +1,16 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 #TEL status script, gets executed by byobu in the top panel
-#prints the output of all scripts stored in ~/.tel/status_scripts/active, sorted by their filenames
+#prints the output of all scripts stored in ~/.tel/scripts/status/scripts, sorted by their filenames
 #todo: add color options
-. ~/.tel/config/status #load status config 
-. ~/.tel/dev/helpers.sh #load helper function
+. ~/.tel/configs/status.sh #load status config 
+. ~/.tel/scripts/helpers.sh #load helper function
 
 # this script is called by status_window
 
-SCRIPT_DIR=~/.tel/status_scripts/active/* #define script dir
+SCRIPT_DIR=~/.tel/scripts/status/scripts/* #define script dir
 
-#loop now handled by ~/.tel/status/status_manager
+#loop now handled by ~/.tel/scripts/status/status_manager.sh
 	
 for script in $SCRIPT_DIR #iterate over all scripts in script dir
 do

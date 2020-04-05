@@ -4,7 +4,7 @@
 # v0.1 - 03/04/2020
 if [ -z $1 ]; then
 	echo -e " Notifications:"
-	cat ~/.tel/usr/.notifs
+	cat ~/.tel/data/notifications
 else
 echo "TEL notification manager usage:
 	'$> notifs'            = show notifications"

@@ -3,7 +3,7 @@
 # For TEL 
 # made by sealyj
 width=$(tput cols)
-newest=$(tail -n1 ~/.tel/usr/.notifs)
+newest=$(tail -n1 ~/.tel/data/notifications)
 if [ "$newest" == '' ] ; then
 	echo -e " No notifications availible - check termux-api permissions" 
 else

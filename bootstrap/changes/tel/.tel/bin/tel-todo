@@ -2,12 +2,12 @@
 # to-do list manager for TEL
 # by @SealyJ
 # v0.1 - 30/03/2020
-source ~/.tel/.dev/colors.sh
+source ~/.tel/configs/colors.sh
 RED='\033[0;31m'
 NC='\033[0m' # No Col
 BOLD=$(tput bold)
 NORMAL=$(tput sgr0)
-todolist=~/.tel/usr/.todo
+todolist=~/.tel/data/todo
 option="${1}" 
 [[ -e $todolist ]] || touch ${todolist}  #if no list make a new one
 #echo "${@}"

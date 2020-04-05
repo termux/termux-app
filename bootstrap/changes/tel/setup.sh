@@ -23,6 +23,7 @@ if [ -f ~/.tel/.installed ]; then #set update var if finished installation was d
     log "updating TEL setup"
     log "updating app launcher"
 else #download required packages if first start detected
+	echo "export PATH=$PATH:~/.tel/bin" #add tel bins to path
 	log "finishing TEL setup"
 	log "installing required packages"
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet -y > /dev/null 2>&1
@@ -79,22 +80,17 @@ else
 	log "updating configs"
 	error "hit ENTER to continue, type no to skip(not recommended)"
 	read update_configs
-	if [ ! "$update_configs" = "no" ]; then
-		cp -rf ~/../usr/tel/.byobu/* ~/.byobu/
-		cp -rf ~/../usr/tel/.termux/* ~/.termux/
-		cp -rf ~/../usr/tel/.byobu/.tmux.conf ~/.byobu/
-	fi
-
-	cp -rf ~/../usr/tel/.tel/* ~/.tel/
+	cp -rTf ~/../usr/tel/.byobu/* ~/.byobu/
+	cp -rTf ~/../usr/tel/.tel/* ~/.tel/
 fi
 
 
 log "updating permissions"
 
 #set permissions again(probably duplicate within tel-setup)
-chmod +x ~/.tel/status/*
-chmod +x ~/.tel/status_scripts/active/*
-chmod +x ~/.tel/utils/*
+chmod +x ~/.tel/scripts/status/*
+chmod +x ~/.tel/scripts/status/scripts/*
+chmod +x ~/.tel/bin/*
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
 

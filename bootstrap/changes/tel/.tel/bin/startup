@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-source ~/.tel/helpers.sh 
+source ~/.tel/scripts/helpers.sh 
 logo="$(echo '
               * *    
            *    *  *
@@ -11,7 +11,7 @@ logo="$(echo '
   *     "#.  #: #" *     .
     " * *."#. ##"    , .
            "###            Termux
-             "##           Environment
+             "##           Expert
               ##.          Launcher
               .##:
               :###

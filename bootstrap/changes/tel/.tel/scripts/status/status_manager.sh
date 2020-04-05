@@ -5,20 +5,20 @@
 
 
 # import tel stuff
-source ~/.tel/config/status
-source ~/.tel/dev/helpers.sh #need wraptext function
-source ~/.tel/dev/colors.sh #currently unused
+source ~/.tel/configs/status.sh
+source ~/.tel/scripts/helpers.sh #need wraptext function
+source ~/.tel/configs/colors.sh #currently unused
  
 # run the welcome / startup animation script
-~/.tel/status/welcome
+~/.tel/scripts/status/welcome.sh
 
 # does user want status pane?
 [[ "$STATUS_ENABLED" == "false" ]] && exit 0
 
 
-notif_path=~/.tel/usr/.notifs
+notif_path=~/.tel/data/notifications
 
-status_rows=$(("$(ls ~/.tel/status_scripts/active | wc -w)" + 1))
+status_rows=$(("$(ls  ~/.tel/scripts/status/scripts| wc -w)" + 1))
 
 if [ $NOTIFICATIONS == true ] ; then
 	oldnotifs=""
@@ -28,7 +28,7 @@ fi
 while [ 1 ]
 do
 	tmux resizep -t 0 -y $status_rows
-#	status=$(timeout $STATUS_RELOAD $HOME/.tel/status/get_status_info)
+#	status=$(timeout $STATUS_RELOAD $HOME/.tel/scripts/status/get_status_info)
 #	printf "\033c" #clear screen
 	if [ "$NOTIFICATIONS" == true ] ; then
 		notifs=$(cat $notif_path)
@@ -36,7 +36,7 @@ do
 			rows="$(tput lines)"
 			#notif lines text shpuld be wrapped first for proper resize and delay
 			notif_lines="$(wc -l $notif_path | cut -d' ' -f1)"
-			status_rows=$(("$(ls ~/.tel/status_scripts/active | wc -w)" + 1))
+			status_rows=$(("$(ls  ~/.tel/scripts/status/scripts| wc -w)" + 1))
 			if [ "$notif_lines" -gt "$rows" ]; then
 				tmux resizep -t 0 -y $notif_lines
 			fi
@@ -47,14 +47,14 @@ do
 			sleep $notif_lines
 			sleep 1
 		else
-                	status=$(timeout $STATUS_RELOAD $HOME/.tel/status/get_status_info)
+                	status=$(timeout $STATUS_RELOAD $HOME/.tel/scripts/status/get_status_info.sh)
 	                printf "\033c" #clear screen
 			echo "${status}"
 			tmux clearhist -t 0
 			sleep $STATUS_RELOAD
 		fi
 	else
-                status=$(timeout $STATUS_RELOAD $HOME/.tel/status/get_status_info)
+                status=$(timeout $STATUS_RELOAD $HOME/.tel/scripts/status/get_status_info.sh)
 		printf "\033c" #clear screen
 		echo "${status}"
 		tmux clearhist -t 0

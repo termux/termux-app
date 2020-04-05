@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-. ~/.tel/.dev/helpers.sh
+. ~/.tel/scripts/helpers.sh
 
 clear && sleep 0.5
 center_text "Welcome to TEL: termux environment launcher."
