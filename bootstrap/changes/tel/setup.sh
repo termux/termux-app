@@ -26,7 +26,7 @@ else #download required packages if first start detected
 	log "finishing TEL setup"
 	log "installing required packages"
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y > /dev/null 2>&1
-	byobu-launcher-enable
+	byobu-launcher-install
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py > /dev/null 2>&1
     python get-pip.py > /dev/null 2>&1
     rm -f get-pip.py
@@ -102,9 +102,6 @@ fi
 
 if [ "$UPDATE" = false ]; then 
 	touch ~/.tel/.installed #mark setup finished
-	log "final step: hit 'byobu-enable'"
-	log "after that, hit 'exit' and restart the app!"
-	error "if the layout is still missing, hit 'byobu-enable' and 'exit' again!"
-else
-	log "update finished. please reastart TEL!"
 fi
+log "update finished, app will restart in 5 seconds"
+sleep 5
