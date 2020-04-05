@@ -23,7 +23,6 @@ if [ -f ~/.tel/.installed ]; then #set update var if finished installation was d
     log "updating TEL setup"
     log "updating app launcher"
 else #download required packages if first start detected
-	echo "export PATH=$PATH:~/.tel/bin" #add tel bins to path
 	log "finishing TEL setup"
 	log "installing required packages"
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y > /dev/null 2>&1
@@ -65,9 +64,10 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	#log "hit ENTER to continue"
 	#read blazeit
 	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-  	chsh -s $(which zsh) #set zsh default shell
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  2>&1
+  	chsh -s zsh #set zsh default shell
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
+  	echo "export PATH=$PATH:~/.tel/bin" >> ~/.zshrc #add tel bins to path
 	log "installing configs" #todo: optimize this
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
