@@ -24,7 +24,7 @@ ignoredNotifications = ["‎‏", "Telegram: Updating"] #string as part of list 
 
 #setup output path
 homedir = os.path.expanduser("~")
-text_path = homedir + "/.tel/usr/.notifs"
+text_path = homedir + "/.tel/data/notifications"
 
 debug_mode = False
 if debug_mode is True:
