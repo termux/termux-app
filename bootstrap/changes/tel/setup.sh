@@ -26,7 +26,7 @@ else #download required packages if first start detected
 	echo "export PATH=$PATH:~/.tel/bin" #add tel bins to path
 	log "finishing TEL setup"
 	log "installing required packages"
-	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet -y > /dev/null 2>&1
+	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y > /dev/null 2>&1
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py > /dev/null 2>&1
     python get-pip.py > /dev/null 2>&1
     rm -f get-pip.py
