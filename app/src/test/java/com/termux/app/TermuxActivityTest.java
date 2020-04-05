@@ -22,6 +22,9 @@ public class TermuxActivityTest {
 
         assertUrlsAre("hello http://example.com world and http://more.example.com with secure https://more.example.com",
             "http://example.com", "http://more.example.com", "https://more.example.com");
+
+        assertUrlsAre("hello https://example.com/#bar https://example.com/foo#bar",
+            "https://example.com/#bar", "https://example.com/foo#bar");
     }
 
 }
