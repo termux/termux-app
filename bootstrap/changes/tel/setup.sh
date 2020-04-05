@@ -60,11 +60,11 @@ if [ "$UPDATE" = false ]; then #if first start detected
 
 	#install OhMyZsh
 	log "installing OhMyZsh"
-	error "if you enable zsh, type 'exit' to finish setup."
-	log "hit ENTER to continue"
-	read blazeit
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-	
+	#error "if you enable zsh, type 'exit' to finish setup."
+	#log "hit ENTER to continue"
+	#read blazeit
+	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
 	log "installing configs" #todo: optimize this
 
