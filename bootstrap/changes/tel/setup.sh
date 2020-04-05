@@ -26,6 +26,7 @@ else #download required packages if first start detected
 	log "finishing TEL setup"
 	log "installing required packages"
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y > /dev/null 2>&1
+	byobu-launcher-enable
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py > /dev/null 2>&1
     python get-pip.py > /dev/null 2>&1
     rm -f get-pip.py
@@ -59,7 +60,7 @@ mkdir -p ~/.tel
 if [ "$UPDATE" = false ]; then #if first start detected
 
 	#install OhMyZsh
-	log "installing OhMyZsh"
+	#log "installing OhMyZsh"
 	#error "if you enable zsh, type 'exit' to finish setup."
 	#log "hit ENTER to continue"
 	#read blazeit
