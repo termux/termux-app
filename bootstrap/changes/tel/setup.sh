@@ -29,12 +29,12 @@ else #download required packages if first start detected
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
         python get-pip.py
         rm -f get-pip.py
-        pip install colored lolcat -y
+        pip install colored lolcat
 	log "installing app launcher"
 fi
 
 #install lolcat for colors
-gem install lolcat
+#gem install lolcat
 
 #install app launcher via git
 cd ~
