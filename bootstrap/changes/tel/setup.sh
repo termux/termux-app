@@ -25,8 +25,11 @@ if [ -f ~/.tel/.installed ]; then #set update var if finished installation was d
 else #download required packages if first start detected
 	log "finishing TEL setup"
 	log "installing required packages"
-	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq pip neofetch git make -y
-	pip install colored lolcat
+	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make -y
+	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+        python get-pip.py
+        rm -f get-pip.py
+        pip install colored lolcat -y
 	log "installing app launcher"
 fi
 
