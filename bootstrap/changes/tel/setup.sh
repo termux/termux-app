@@ -26,7 +26,6 @@ else #download required packages if first start detected
 	log "finishing TEL setup"
 	log "installing required packages"
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y > /dev/null 2>&1
-	byobu-launcher-install
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py > /dev/null 2>&1
     python get-pip.py > /dev/null 2>&1
     rm -f get-pip.py
@@ -68,7 +67,8 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  2>&1
   	chsh -s zsh #set zsh default shell
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
-  	echo "export PATH=$PATH:~/.tel/bin" >> ~/.zshrc #add tel bins to path
+  	echo "_byobu_sourced=1 . /data/data/com.termux/files/usr/bin/byobu-launch 2>/dev/null || true" >> ~/.zprofile
+        echo "export PATH=$PATH:~/.tel/bin" >> ~/.zshrc #add tel bins to path
 	log "installing configs" #todo: optimize this
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
