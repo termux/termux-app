@@ -9,7 +9,6 @@ env:
   - REPO=t-e-l/tel
   - APK_NAME=TEL-${TRAVIS_BUILD_NUMBER}
   - DEV_NAME=DEV-BUILD-${TRAVIS_BUILD_NUMBER}
-  - DEV_BODY="This is a dev build! Dont use it! Dont ask anybody about it!"
 android:
   components:
   - tools
@@ -68,7 +67,7 @@ deploy:
     file: ${APK_NAME}.apk
     name: ${DEV_NAME}
     tag_name: ${DEV_NAME}
-    body: ${DEV_BODY}
+    body: "This is a dev build!/nDont use it!/nDont ask anybody about it!"
     skip_cleanup: true
     prerelease: true
     on:
