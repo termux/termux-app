@@ -65,12 +65,13 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	read blazeit
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 	
-  sed -i 's/robbyrussell/avit/g' ~/.zshrc
+  	sed -i 's/robbyrussell/avit/g' ~/.zshrc
 	log "installing configs" #todo: optimize this
-	cp -rf ~/../usr/tel/.byobu/* ~/.byobu/
-	cp -rf ~/../usr/tel/.termux/* ~/.termux/
-	cp -rf ~/../usr/tel/.tel/* ~/.tel/
-	cp -rf ~/../usr/tel/.byobu/.tmux.conf ~/.byobu/
+	
+	cp -rTf ~/../usr/tel/.tel ~/.tel
+	cp -rTf ~/../usr/tel/.byobu ~/.byobu
+	cp -rTf ~/../usr/tel/.termux ~/.termux
+
 	cp -rf ~/../usr/tel/.aliases ~/
 	cp -rf ~/../usr/tel/.envvar ~/
 

@@ -2,6 +2,7 @@
 #tel network status script
 #v0.2 02/04/20
 # updated by sealyj
+#look into battery comment
 
 wifiicon="" #text before the ip
 dataicon=""  #" #

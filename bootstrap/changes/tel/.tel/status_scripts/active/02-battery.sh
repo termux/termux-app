@@ -4,6 +4,12 @@
 # Tested on android 9, lineage OS
 # Contact: github.com/sealedjoy, Telegram @SealyJ
 
+
+#please keep credits out of official status files
+#if the system works with custom repos, you can move it there and do what you want, but in tel everything is from tel :D
+#thats why we use github and teams, its redundant to maintain written credits for every file
+
+
 ######## USER CONFIG #######
 CHARGEICON=
 DISCHARGEICON=

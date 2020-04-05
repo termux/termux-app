@@ -4,13 +4,13 @@
 #prints the output of all scripts stored in ~/.tel/status_scripts/active, sorted by their filenames
 #todo: add color options
 . ~/.tel/config/status #load status config 
-. ~/.tel/.dev/helpers.sh #load helper function
+. ~/.tel/dev/helpers.sh #load helper function
 
 # this script is called by status_window
 
 SCRIPT_DIR=~/.tel/status_scripts/active/* #define script dir
 
-#loop now handled by ~/.tel/.status/status_manager
+#loop now handled by ~/.tel/status/status_manager
 	
 for script in $SCRIPT_DIR #iterate over all scripts in script dir
 do

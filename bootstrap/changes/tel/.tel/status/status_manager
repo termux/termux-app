@@ -6,11 +6,11 @@
 
 # import tel stuff
 source ~/.tel/config/status
-source ~/.tel/.dev/helpers.sh #need wraptext function
-source ~/.tel/.dev/colors.sh #currently unused
+source ~/.tel/dev/helpers.sh #need wraptext function
+source ~/.tel/dev/colors.sh #currently unused
  
 # run the welcome / startup animation script
-~/.tel/.status/welcome
+~/.tel/status/welcome
 
 # does user want status pane?
 [[ "$STATUS_ENABLED" == "false" ]] && exit 0
@@ -22,13 +22,13 @@ status_rows=$(("$(ls ~/.tel/status_scripts/active | wc -w)" + 1))
 
 if [ $NOTIFICATIONS == true ] ; then
 	oldnotifs=""
-	python ~/.tel/.status/get_notifications & # start notification listener as child
+	python ~/.tel/status/get_notifications & # start notification listener as child
 fi
 
 while [ 1 ]
 do
 	tmux resizep -t 0 -y $status_rows
-#	status=$(timeout $STATUS_RELOAD $HOME/.tel/.status/get_status_info)
+#	status=$(timeout $STATUS_RELOAD $HOME/.tel/status/get_status_info)
 #	printf "\033c" #clear screen
 	if [ "$NOTIFICATIONS" == true ] ; then
 		notifs=$(cat $notif_path)
@@ -47,14 +47,14 @@ do
 			sleep $notif_lines
 			sleep 1
 		else
-                	status=$(timeout $STATUS_RELOAD $HOME/.tel/.status/get_status_info)
+                	status=$(timeout $STATUS_RELOAD $HOME/.tel/status/get_status_info)
 	                printf "\033c" #clear screen
 			echo "${status}"
 			tmux clearhist -t 0
 			sleep $STATUS_RELOAD
 		fi
 	else
-                status=$(timeout $STATUS_RELOAD $HOME/.tel/.status/get_status_info)
+                status=$(timeout $STATUS_RELOAD $HOME/.tel/status/get_status_info)
 		printf "\033c" #clear screen
 		echo "${status}"
 		tmux clearhist -t 0
