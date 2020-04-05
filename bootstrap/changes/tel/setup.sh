@@ -67,7 +67,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
 	log "installing configs" #todo: optimize this
-	
+
 	cp -rTf ~/../usr/tel/.tel ~/.tel
 	cp -rTf ~/../usr/tel/.byobu ~/.byobu
 	cp -rTf ~/../usr/tel/.termux ~/.termux
@@ -92,7 +92,7 @@ fi
 log "updating permissions"
 
 #set permissions again(probably duplicate within tel-setup)
-chmod +x ~/.tel/.status/*
+chmod +x ~/.tel/status/*
 chmod +x ~/.tel/status_scripts/active/*
 chmod +x ~/.tel/utils/*
 chmod +x ~/../usr/bin/tel-applist
