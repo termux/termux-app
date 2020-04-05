@@ -66,6 +66,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	#read blazeit
 	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  	chsh -s $(which zsh) #set zsh default shell
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
 	log "installing configs" #todo: optimize this
 
@@ -78,8 +79,6 @@ if [ "$UPDATE" = false ]; then #if first start detected
 
 else
 	log "updating configs"
-	error "hit ENTER to continue, type no to skip(not recommended)"
-	read update_configs
 	cp -rTf ~/../usr/tel/.byobu/* ~/.byobu/
 	cp -rTf ~/../usr/tel/.tel/* ~/.tel/
 fi
