@@ -69,7 +69,8 @@ if [ "$UPDATE" = false ]; then #if first start detected
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
   	echo "_byobu_sourced=1 . /data/data/com.termux/files/usr/bin/byobu-launch 2>/dev/null || true" >> ~/.zprofile
         echo "export PATH=$PATH:~/.tel/bin" >> ~/.zshrc #add tel bins to path
-	log "installing configs" #todo: optimize this
+	echo "source ~/.aliases" >> ~/.zshrc
+        log "installing configs" #todo: optimize this
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
 	cp -rTf ~/../usr/tel/.byobu ~/.byobu
