@@ -108,7 +108,6 @@ else
         log "update finished"
 fi
 
-error "app will restart in 5 seconds!"
-
-sleep 5
+error "app will restart in 3 seconds!"
+sleep 3
 tel-restart
