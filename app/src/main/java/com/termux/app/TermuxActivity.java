@@ -45,6 +45,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jakewharton.processphoenix.ProcessPhoenix;
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
@@ -146,7 +147,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 }else if ("apps-cache".equals(whatToReload)) {
                     TermuxInstaller.setupAppListCache(TermuxActivity.this);
                 }else if ("restart".equals(whatToReload)){
-                    TermuxInstaller.doRestart(TermuxActivity.this);
+                    ProcessPhoenix.triggerRebirth(TermuxActivity.this);
                 }
                 checkForFontAndColors();
                 mSettings.reloadFromProperties(TermuxActivity.this);
