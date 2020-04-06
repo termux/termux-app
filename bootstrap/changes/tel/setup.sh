@@ -103,10 +103,12 @@ fi
 
 if [ "$UPDATE" = false ]; then 
 	touch ~/.tel/.installed #mark setup finished
-        log "installation finished, app will restart in 5 seconds"
+        log "installation finished"
 else
-        log "update finished, app will restart in 5 seconds"
+        log "update finished"
 fi
+
+error "app will restart in 5 seconds!"
 
 sleep 5
 tel-restart
