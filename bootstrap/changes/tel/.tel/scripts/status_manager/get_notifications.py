@@ -4,7 +4,7 @@
 # Written by SealyJ
 # github.com/sealedjoy
 # Telegram @SealyJ
-# version 0.1
+# version 0.11
 # required pip pkgs: colored
 import json
 import os
@@ -28,11 +28,7 @@ text_path = homedir + "/.tel/data/notifications"
 
 debug_mode = False
 if debug_mode is True:
-    print(""" !!!!!          DEBUG MODE IS ENABLED    !!!!!
-
-
-
-            """)
+    print(""" !!!!!       DEBUG MODE IS ENABLED    !!!!!  """)
 
 outputList = []
 oldNotifs = []

@@ -8,18 +8,18 @@
 
 # this script is called by status_window
 
-SCRIPT_DIR=~/.tel/scripts/status/scripts/* #define script dir
+SCRIPT_DIR=~/.tel/status/*.* #define script dir
 
-#loop now handled by ~/.tel/scripts/status/status_manager.sh
+#loop now handled by ~/.tel/scripts/status_manager/status_manager.sh
 	
 for script in $SCRIPT_DIR #iterate over all scripts in script dir
 do
 		output=""
 		if [ $STATUS_CENTER = true ]; 
 		then
-			output=$(center_text "$(. $script)" "${STATUS_SPACING_CHAR}") #print the text centered if enabled in the config, use the given spacing char
+			output=$(center_text "$(timeout $STATUS_TIMEOUT $script)" "${STATUS_SPACING_CHAR}") #print the text centered if enabled in the config, use the given spacing char
 		else
-			output="$(. $script)" #print the text on the left
+			output="$(timeout $STATUS_TIMEOUT $script)" #print the text on the left
 		fi
 		if [ $STATUS_COLOR = true ];
 		then
