@@ -48,14 +48,14 @@ do
 			sleep $notif_lines
 			sleep 1
 		else
-                	status=$(timeout $STATUS_TIMEOUT $getstatusinfopath)
+                	status=$(. $getstatusinfopath)
 	                printf "\033c" #clear screen
 			echo "${status}"
 			tmux clearhist -t 0
 			sleep $STATUS_RELOAD
 		fi
 	else
-                status=$(timeout $STATUS_TIMEOUT $getstatusinfopath)
+                status=$(. $getstatusinfopath)
 		printf "\033c" #clear screen
 		echo "${status}"
 		tmux clearhist -t 0
