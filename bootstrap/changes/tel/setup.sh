@@ -89,8 +89,8 @@ fi
 log "updating permissions"
 
 #set permissions again(probably duplicate within tel-setup)
-chmod +x ~/.tel/scripts/status/*
-chmod +x ~/.tel/scripts/status/scripts/*
+chmod +x ~/.tel/status/*
+chmod +x ~/.tel/scripts/status_manager/*
 chmod +x ~/.tel/bin/*
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
