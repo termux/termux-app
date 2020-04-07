@@ -1,4 +1,4 @@
-#!/system/bin/bash
+#!/data/data/com.termux/files/usr/bin/bash
 # Script to display todo list in statusbar 
 # For TEL 
 # made by sealyj
