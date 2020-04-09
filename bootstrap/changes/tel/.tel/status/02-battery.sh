@@ -33,7 +33,7 @@ elif [ $status == 'DISCHARGING' ]
   then
   status="Discharging"
   SELECTEDBATTICON=$DISCHARGEICON
-  if [ $BATCAP -lt 25 ] ; then
+  if [ $capacity -lt 25 ] ; then
     COL1=$RED
   else
     COL1=$NC
