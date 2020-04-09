@@ -26,12 +26,12 @@ if [ $status == 'CHARGING' ]
    then
    # CHARGESPEED=$(cat /sys/class/power_supply/battery/charge_type) 
    # CHARGESPEED="$CHARGESPEED "
-    $status="Charging"
+    status="Charging"
     SELECTEDBATTICON=$CHARGEICON
     COL1=$NC
 elif [ $status == 'DISCHARGING' ]
   then
-  $status="Discharging"
+  status="Discharging"
   SELECTEDBATTICON=$DISCHARGEICON
   if [ $BATCAP -lt 25 ] ; then
     COL1=$RED
