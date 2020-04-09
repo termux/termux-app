@@ -1,30 +1,32 @@
-# APPS 
-alias a="app"
-alias t="app telegram"
-alias y="app youtube"
-alias v="app vnc"
-alias f="app firefox"
-alias b="app browser"
-alias p="app phone"
-alias c="app clock"
-alias si="app signal"
-alias g="app gallery"
-alias c="app camera"
-alias tur="app turbo"
-alias fm="app amaze"
-alias f="app fdroid"
-
-# DEMO
-alias starwars="telnet towel.blinkenlights.nl"
-alias matrix="cmatrix"
-
-# PERSONAL
+# TEL shortened
+alias r="tel-restart"
 alias x="tel-exit"
-alias s='tel-search'
+alias s="tel-search"
 alias search="tel-search"
 alias todo="tel-todo"
 alias notifs="tel-notifications"
 alias help="tel-help"
 alias tutorial="tel-tutorial"
-alias h="sh /storage/emulated/0/scripts/tui/homeassistant.sh"
 
+# APPS
+alias a="app"
+alias p="app phone"
+alias m="app messages"
+alias c="app camera"
+alias cl="app clock"
+alias g="app gallery"
+alias fm="app amaze"
+alias t="app telegram"
+alias f="app firefox"
+alias y="app youtube"
+alias vpn="app openvnc"
+alias v="app vnc"
+alias b="app browser"
+alias si="app signal"
+alias tur="app turbo"
+alias fdroid="app fdroid"
+
+# DEMO
+alias starwars="telnet towel.blinkenlights.nl"
+alias matrix="cmatrix"
+alias tel-fetch="neofetch --source ~/.tel/data/asciiart.txt"
