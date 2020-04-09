@@ -97,11 +97,6 @@ chmod +x ~/.tel/bin/*
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
 
-log "setting up user storage"
-termux-vibrate
-#symlink android storage to ~/storage
-termux-setup-storage || log "Storage access is required to read and write with TEL into android home dir, it mounts the users folder to ~/storage" ; sleep 6 ; termux-setup-storage || log "Failed to setup storage" ; log "run command termux-setup-storage if you wish to enable this later" ; sleep 3
-
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
 
