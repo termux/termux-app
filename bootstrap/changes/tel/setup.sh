@@ -24,7 +24,8 @@ if [ -f ~/.tel/.installed ]; then #set update var if finished installation was d
     log "updating app launcher"
 else #download required packages if first start detected
 	log "finishing TEL setup"
-	log "installing required packages.. This may take a while.."
+	log "installing required packages.."
+	log "This may take a while"
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y > /dev/null 2>&1
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py > /dev/null 2>&1
     python get-pip.py > /dev/null 2>&1
@@ -97,9 +98,9 @@ chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
 
 log "setting up user storage"
+termux-vibrate
 #symlink android storage to ~/storage
-termux-setup-storage
-
+termux-setup-storage || log "Storage access is required to read and write with TEL into android home dir, it mounts the users folder to ~/storage" ; sleep 6 ; termux-setup-storage || log "Failed to setup storage" ; log "run command termux-setup-storage if you wish to enable this later" ; sleep 3
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
