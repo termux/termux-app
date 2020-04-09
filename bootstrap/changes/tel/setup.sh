@@ -24,7 +24,7 @@ if [ -f ~/.tel/.installed ]; then #set update var if finished installation was d
     log "updating app launcher"
 else #download required packages if first start detected
 	log "finishing TEL setup"
-	log "installing required packages"
+	log "installing required packages.. This may take a while.."
 	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y > /dev/null 2>&1
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py > /dev/null 2>&1
     python get-pip.py > /dev/null 2>&1
@@ -70,7 +70,8 @@ if [ "$UPDATE" = false ]; then #if first start detected
   	echo "_byobu_sourced=1 . /data/data/com.termux/files/usr/bin/byobu-launch 2>/dev/null || true" >> ~/.zprofile
         echo "export PATH=$PATH:~/.tel/bin" >> ~/.zshrc #add tel bins to path
 	echo "source ~/.aliases" >> ~/.zshrc
-        log "installing configs" #todo: optimize this
+        echo "set -K # disables ! events in zsh to allow for bangs in tel-search" >> ~/.zshrc
+	log "installing configs" #todo: optimize this
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
 	cp -rTf ~/../usr/tel/.byobu ~/.byobu
@@ -94,6 +95,10 @@ chmod +x ~/.tel/scripts/status_manager/*
 chmod +x ~/.tel/bin/*
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
+
+log "setting up user storage"
+#symlink android storage to ~/storage
+termux-setup-storage
 
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
