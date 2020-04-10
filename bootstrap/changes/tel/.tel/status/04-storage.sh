@@ -1,13 +1,13 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # Basic Storage script for TEL
 
-errormsg="~/storage not found, please run termux-setup-storage."
-cmd=$(df -h ~/storage || echo $errormsg)
-if [ "$cmd" == "$errormsg" ]; then
-       	echo "$errormsg"
+errormsg="~/storage not setup, run 'termux-setup-storage'"
+if [ -e ~/storage ]; then
+	cmd=$(df -h ~/storage)
+	#drive=$(echo $cmd | grep G | rev | cut -d " " -f1 | rev)
+	#percused=$(echo cmd | grep data/media | rev | cut -d " " -f2 | rev)
+	intfree=$(echo $cmd | grep G | rev | cut -d " " -f4 | rev)
+	echo " $intfree free on ~/storage"
 else
-intfree=$(echo $cmd | grep G | rev | cut -d " " -f4 | rev)
-#drive=$(echo $cmd | grep G | rev | cut -d " " -f1 | rev)
-#percused=$(echo cmd | grep data/media | rev | cut -d " " -f2 | rev)
-echo " $intfree free on ~/storage"
+       	echo "$errormsg"
 fi
