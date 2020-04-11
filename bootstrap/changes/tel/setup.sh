@@ -114,6 +114,7 @@ chmod +x ~/.tel/scripts/status_manager/*
 chmod +x ~/.tel/bin/*
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
+chmod +x ~/../usr/bin/tel-restart
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
