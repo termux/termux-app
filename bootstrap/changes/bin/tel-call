@@ -1,0 +1,392 @@
+#!/usr/bin/env bash
+# 
+#  ______   ______   __        
+# /\__  _\ /\__  _\ /\ \       
+# \/_/\ \/ \/_/\ \/ \ \ \____  
+#    \ \_\    \ \_\  \ \_____\ 
+#     \/_/     \/_/   \/_____/
+#
+# Termux TUI Launcher
+
+setup_terminal() {
+    # Setup the terminal for the TUI.
+    # '\e[?1049h': Use alternative screen buffer.
+    # '\e[?7l':    Disable line wrapping.
+    # '\e[?25l':   Hide the cursor.
+    # '\e[2J':     Clear the screen.
+    # '\e[1;Nr':   Limit scrolling to scrolling area.
+    #              Also sets cursor to (0,0).
+    printf '\e[?1049h\e[?7l\e[?25l\e[2J\e[1;%sr' "$max_items"
+
+    # Hide echoing of user input
+    stty -echo
+}
+
+reset_terminal() {
+    # Reset the terminal to a useable state (undo all changes).
+    # '\e[?7h':   Re-enable line wrapping.
+    # '\e[?25h':  Unhide the cursor.
+    # '\e[2J':    Clear the terminal.
+    # '\e[;r':    Set the scroll region to its default value.
+    #             Also sets cursor to (0,0).
+    # '\e[?1049l: Restore main screen buffer.
+    printf '\e[?7h\e[?25h\e[2J\e[;r\e[?1049l'
+
+    # Show user input.
+    stty echo
+}
+
+clear_screen() {
+    # Only clear the scrolling window (dir item list).
+    # '\e[%sH':    Move cursor to bottom of scroll area.
+    # '\e[9999C':  Move cursor to right edge of the terminal.
+    # '\e[1J':     Clear screen to top left corner (from cursor up).
+    # '\e[2J':     Clear screen fully (if using tmux) (fixes clear issues).
+    # '\e[1;%sr':  Clearing the screen resets the scroll region(?). Re-set it.
+    #              Also sets cursor to (0,0).
+    printf '\e[%sH\e[9999C\e[1J%b\e[1;%sr' \
+           "$((LINES-2))" "${TMUX:+\e[2J}" "$max_items"
+}
+
+get_term_size() {
+    # Get terminal size ('stty' is POSIX and always available).
+    # This can't be done reliably across all bash versions in pure bash.
+    read -r LINES COLUMNS < <(stty size)
+
+    # Max list items that fit in the scroll area.
+    ((max_items=LINES-1))
+}
+
+status_line() {
+    local COUNTER="($((scroll+1))/$((list_total+1)))"
+
+    # '\e7':       Save cursor position.
+    #              This is more widely supported than '\e[s'.
+    # '\e[%sH':    Move cursor to bottom of the terminal.
+    # '\e[30;41m': Set foreground and background colors.
+    # '%*s':       Insert enough spaces to fill the screen width.
+    #              This sets the background color to the whole line
+    #              and fixes issues in 'screen' where '\e[K' doesn't work.
+    # '\r':        Move cursor back to column 0 (was at EOL due to above).
+    # '\e[m':      Reset text formatting.
+    # '\e8':       Restore cursor position.
+    #              This is more widely supported than '\e[u'.
+    printf '\e7\e[%sH\e[3%s;4%sm%*s\r%s\e[m\e8' \
+        "$LINES" \
+        "${TTL_COL5:-0}" \
+        "${TTL_COL2:-1}" \
+        "$COLUMNS" "" \
+        "$COUNTER"
+}
+
+
+#  _____          __           __    
+# / ___/__  ___  / /____ _____/ /____
+#/ /__/ _ \/ _ \/ __/ _ `/ __/ __(_-<
+#\___/\___/_//_/\__/\_,_/\__/\__/___/
+#
+contacts_update_cache(){
+    command -v termux-contact-list >/dev/null 2>&1 || { 
+        echo "termux-contact-list command not available.";
+        #exit 1;
+    }
+
+    termux-contact-list > "$contactsfile"_temp
+
+    while IFS=$'\n' read -r line; do
+        [[ ${line} == "  {" ]] && {
+            read -r line
+            name=${line:9:-2}
+            read -r line
+            number=${line:11:-1}
+            echo "$name | $number" >> "$contactsfile"
+        }
+    done < "$contactsfile"_temp
+
+    rm "$contactsfile"_temp
+
+}
+
+contacts_obj_list_gen() {
+    local contact_list
+
+    while read -r line; do
+        contact_list+=("$line")
+    done < "$contactsfile"
+
+    obj_list=("${contact_list[@]}")
+
+    # Indicate that the app list is empty.
+    [[ -z ${obj_list[0]} ]] &&
+        obj_list[0]=empty
+
+    ((list_total=${#obj_list[@]}-1))
+
+}
+
+contacts_open(){
+    number=$(echo "$1" | cut -d "|" -f2)
+
+    #kills the program if termux-telephony-call command is not available
+    command -v termux-telephony-call >/dev/null 2>&1 || { 
+        status_line "termux-telephony-call not available"
+    }
+
+    termux-telephony-call "$number"
+}
+
+## Panel Display Functions
+
+print_obj() {
+    local obj=${obj_list[$1]##*/}
+
+    # If the list item doesn't exist, end here.
+    if [[ -z ${obj_list[$1]} ]]; then
+        return
+
+    else
+        format+="\\e[0m"
+    fi
+
+    # If the list item is under the cursor.
+    (($1 == scroll)) &&
+        format+="\\e[1;3${FFF_COL4:-6};7m"
+
+    # Escape the directory string.
+    # Remove all non-printable characters.
+    obj=${obj//[^[:print:]]/^[}
+
+    printf '\r%b%*s\r%s\e[m\r' \
+        "${format}" \
+        "$COLUMNS" ""\
+        "${obj}"
+}
+
+draw_obj_list() {
+    # Print the max directory items that fit in the scroll area.
+    local scroll_start=$scroll
+    local scroll_new_pos
+    local scroll_end
+
+    # If current obj is near the top of the list, keep scroll position.
+    if ((list_total < max_items || scroll < max_items/2)); then
+        ((scroll_start=0))
+        ((scroll_end=max_items))
+        ((scroll_new_pos=scroll+1))
+
+    # If curent obj is near the end of the list, keep scroll position.
+    elif ((list_total - scroll < max_items/2)); then
+        ((scroll_start=list_total-max_items+1))
+        ((scroll_new_pos=max_items-(list_total-scroll)))
+        ((scroll_end=list_total+1))
+
+    # If current obj is somewhere in the middle, center scroll position.
+    else
+        ((scroll_start=scroll-max_items/2))
+        ((scroll_end=scroll_start+max_items))
+        ((scroll_new_pos=max_items/2+1))
+    fi
+
+    # Reset cursor position.
+    printf '\e[H'
+
+    for ((i=scroll_start;i<scroll_end;i++)); {
+        # Don't print one too many newlines.
+        ((i > scroll_start)) &&
+            printf '\n'
+        print_obj "$i"
+    }
+
+    # Move the cursor to its new position if it changed.
+    # If the variable 'scroll_new_pos' is empty, the cursor
+    # is moved to line '0'.
+    printf '\e[%sH' "$scroll_new_pos"
+    ((y=scroll_new_pos))
+}
+
+redraw() {
+    # Redraw the current window.
+    # If 'full' is passed, re-fetch the directory list.
+    #
+    [[ $1 == full ]] && {
+        contacts_obj_list_gen
+        scroll=0
+    }
+
+    clear_screen
+    draw_obj_list
+    status_line
+}
+
+
+key() {
+    # Handle special key presses.
+    [[ $1 == $'\e' ]] && {
+        read "${read_flags[@]}" -rsn 2
+
+        # Handle a normal escape key press.
+        [[ ${1}${REPLY} == $'\e\e['* ]] &&
+            read "${read_flags[@]}" -rsn 1 _
+
+        local special_key=${1}${REPLY}
+    }
+
+    case ${special_key:-$1} in
+
+        # Go to the next panel
+        # 'C' is what bash sees when the right arrow is pressed
+        # ('\e[C' or '\eOC').
+
+        # Open list item.
+        # '' is what bash sees when the enter/return key is pressed.
+        ${SELECT_ITEM1:=""}|\
+        ${SELECT_ITEM2:=$'\e[C'}|\
+        ${SELECT_ITEM3:=$'\eOC'})
+            contacts_open "${obj_list[scroll]}"
+        ;;
+
+        # Scroll down.
+        # 'B' is what bash sees when the down arrow is pressed
+        # ('\e[B' or '\eOB').
+        ${SCROLL_DOWN1:=j}|\
+        ${SCROLL_DOWN2:=$'\e[B'}|\
+        ${SCROLL_DOWN3:=$'\eOB'})
+            ((scroll < list_total)) && {
+                ((scroll++))
+                ((y < max_items)) && ((y++))
+
+                print_obj "$((scroll-1))"
+                printf '\n'
+                print_obj "$scroll"
+                status_line
+            }
+        ;;
+
+        # Scroll up.
+        # 'A' is what bash sees when the up arrow is pressed
+        # ('\e[A' or '\eOA').
+        ${SCROLL_UP1:=k}|\
+        ${SCROLL_UP2:=$'\e[A'}|\
+        ${SCROLL_UP3:=$'\eOA'})
+            # '\e[1L': Insert a line above the cursor.
+            # '\e[A':  Move cursor up a line.
+            ((scroll > 0)) && {
+                ((scroll--))
+
+                print_obj "$((scroll+1))"
+
+                if ((y < 2)); then
+                    printf '\e[1L'
+                else
+                    printf '\e[A'
+                    ((y--))
+                fi
+
+                print_obj "$scroll"
+                status_line
+            }
+        ;;
+
+        # Go to top.
+        ${FFF_KEY_TO_TOP:=g})
+            ((scroll != 0)) && {
+                scroll=0
+                redraw
+            }
+        ;;
+
+        # Go to bottom.
+        ${FFF_KEY_TO_BOTTOM:=G})
+            ((scroll != list_total)) && {
+                ((scroll=list_total))
+                redraw
+            }
+        ;;
+
+        # Spawn a shell.
+        ${OPEN_SHELL:=!})
+            reset_terminal
+
+            # Make fff aware of how many times it is nested.
+            export TTL_LEVEL
+            ((TTL_LEVEL++))
+
+            cd "$PWD" && "$SHELL"
+            setup_terminal
+            redraw full
+        ;;
+
+
+        # Refresh current dir.
+        ${REFRESH_PANEL_CONTENTS:=u})
+            contacts_update_cache
+            setup_terminal
+            redraw full
+        ;;
+
+        # Quit and store current directory in a file for CD on exit.
+        # Don't allow user to redefine 'q' so a bad keybinding doesn't
+        # remove the option to quit.
+        q)
+            exit
+        ;;
+    esac
+}
+
+main() {
+    # Handle a directory as the first argument.
+    # 'cd' is a cheap way of finding the full path to a directory.
+    # It updates the '$PWD' variable on successful execution.
+    # It handles relative paths as well as '../../../'.
+    #
+    # '||:': Do nothing if 'cd' fails. We don't care.
+    #cd "${2:-$1}" &>/dev/null ||:
+
+    [[ $1 == -v ]] && {
+        printf '%s\n' "TTL 0.1"
+        exit
+    }
+
+    # bash 5 and some versions of bash 4 don't allow SIGWINCH to interrupt
+    # a 'read' command and instead wait for it to complete. In this case it
+    # causes the window to not redraw on resize until the user has pressed
+    # a key (causing the read to finish). This sets a read timeout on the
+    # affected versions of bash.
+    # NOTE: This shouldn't affect idle performance as the loop doesn't do
+    # anything until a key is pressed.
+    # SEE: https://github.com/dylanaraps/fff/issues/48
+    ((BASH_VERSINFO[0] > 3)) &&
+        read_flags=(-t 0.05)
+    
+    contactsfile="$HOME/.contacts"
+
+    [[ ! -a "$contactsfile" ]] && {
+        contacts_update_cache
+        sleep 1
+    }
+
+    # 'nocaseglob': Glob case insensitively (Used for case insensitive search).
+    # 'nullglob':   Don't expand non-matching globs to themselves.
+    #shopt -s nocaseglob nullglob
+
+    # Trap the exit signal (we need to reset the terminal to a useable state.)
+    trap 'reset_terminal' EXIT
+
+    # Trap the window resize signal (handle window resize events).
+    trap 'get_term_size; redraw' WINCH
+
+    #get_os
+    get_term_size
+    setup_terminal
+    redraw full
+
+    # Vintage infinite loop.
+    for ((;;)); {
+        read "${read_flags[@]}" -srn 1 && key "$REPLY"
+
+        # Exit if there is no longer a terminal attached.
+        [[ -t 1 ]] || exit 1
+    }
+}
+
+main "$@"

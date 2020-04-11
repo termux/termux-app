@@ -45,6 +45,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jakewharton.processphoenix.ProcessPhoenix;
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
@@ -145,6 +146,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     return;
                 }else if ("apps-cache".equals(whatToReload)) {
                     TermuxInstaller.setupAppListCache(TermuxActivity.this);
+                }else if ("restart".equals(whatToReload)){
+                    ProcessPhoenix.triggerRebirth(TermuxActivity.this);
                 }
                 checkForFontAndColors();
                 mSettings.reloadFromProperties(TermuxActivity.this);
@@ -736,6 +739,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         // Resource path with optional query string.
         regex_sb.append("(?:/[a-zA-Z0-9:@%\\-._~!$&()*+,;=?/]*)?");
+
+        // Fragment.
+        regex_sb.append("(?:#[a-zA-Z0-9:@%\\-._~!$&()*+,;=?/]*)?");
 
         // End second matching group.
         regex_sb.append(")");

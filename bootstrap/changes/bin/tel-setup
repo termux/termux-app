@@ -8,12 +8,12 @@ if [ "$#" != "0" ]; then
 fi
 
 if [ ! -f "~/.tel/.installed" ]; then
-	pkg install wget unzip -y
+	pkg install wget unzip -y 2>&1
 fi
 
 cd ~/../usr/
-wget https://github.com/t-e-l/tel/raw/master/bootstrap/changes.zip
-unzip -o changes.zip
+wget https://github.com/t-e-l/tel/raw/master/bootstrap/changes.zip 2>&1
+unzip -o changes.zip 2>&1
 rm -f changes.zip
 chmod +x ~/../usr/bin/tel-setup
 chmod +x ~/../usr/bin/tel-applist

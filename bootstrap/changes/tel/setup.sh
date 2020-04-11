@@ -11,6 +11,22 @@ RED=${1:-"38;5;01"}
 
 #set helper functions
 #todo:move them to helpers file and use them
+catch(){
+if [ $?  -ne 0 ]
+then
+        logf "${1}"
+        error "${1}"
+	error "please try again"
+        exit 0
+else
+	logf "done"
+fi
+}
+
+
+logf(){
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')]: ${1}" >> ~/.tel_log
+}
 log() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "${1}"
 }
@@ -22,21 +38,28 @@ if [ -f ~/.tel/.installed ]; then #set update var if finished installation was d
     UPDATE=true
     log "updating TEL setup"
     log "updating app launcher"
+    logf "starting update"
 else #download required packages if first start detected
 	log "finishing TEL setup"
-	log "installing required packages"
-	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils git make ruby -y
-	log "installing app launcher"
+	log "installing required packages.."
+	log "this may take a while"
+        logf "starting installation"
+	catch "$(pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y 2>&1)"
+	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
+        catch "$(python get-pip.py 2>&1)"
+        rm -f get-pip.py
+        catch "$(pip install colored lolcat 2>&1)"
+        log "installing app launcher"
 fi
 
 #install lolcat for colors
-gem install lolcat
+#gem install lolcat
 
 #install app launcher via git
 cd ~
-git clone https://github.com/t-e-l/tel-app-launcher
+catch "$(git clone https://github.com/t-e-l/tel-app-launcher 2>&1)"
 cd tel-app-launcher
-make install
+catch "$(make install 2>&1)"
 cd ~
 rm -rf tel-app-launcher
 
@@ -55,50 +78,55 @@ mkdir -p ~/.tel
 if [ "$UPDATE" = false ]; then #if first start detected
 
 	#install OhMyZsh
-	log "installing OhMyZsh"
-	error "if you enable zsh, type 'exit' to finish setup."
-	log "hit ENTER to continue"
-	read blazeit
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-	sed -i 's/robbyrussell/avit/g' ~/.zshrc #set avit zsh theme
-	echo "cat ~/../usr/etc/motd | lolcat" >> ~/.zshrc #set motd message for zsh
-
+	#log "installing OhMyZsh"
+	#error "if you enable zsh, type 'exit' to finish setup."
+	#log "hit ENTER to continue"
+	#read blazeit
+	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  2>&1
+  	chsh -s zsh #set zsh default shell
+  	sed -i 's/robbyrussell/avit/g' ~/.zshrc
+  	echo "_byobu_sourced=1 . /data/data/com.termux/files/usr/bin/byobu-launch 2>/dev/null || true" >> ~/.zprofile
+        echo "export PATH=$PATH:~/.tel/bin" >> ~/.zshrc #add tel bins to path
+	echo "source ~/.aliases" >> ~/.zshrc
+        echo "set -K # disables ! events in zsh to allow for bangs in tel-search" >> ~/.zshrc
 	log "installing configs" #todo: optimize this
-	cp -rf ~/../usr/tel/.byobu/* ~/.byobu/
-	cp -rf ~/../usr/tel/.termux/* ~/.termux/
-	cp -rf ~/../usr/tel/.tel/* ~/.tel/
-	cp -rf ~/../usr/tel/.byobu/.tmux.conf ~/.byobu/
+
+	cp -rTf ~/../usr/tel/.tel ~/.tel
+	cp -rTf ~/../usr/tel/.byobu ~/.byobu
+	cp -rTf ~/../usr/tel/.termux ~/.termux
+
+	cp -rf ~/../usr/tel/.aliases ~/
+	cp -rf ~/../usr/tel/.envvar ~/
+
 else
 	log "updating configs"
-	error "hit ENTER to continue, type no to skip(not recommended)"
-	read update_configs
-	if [ ! "$update_configs" = "no" ]; then
-		cp -rf ~/../usr/tel/.byobu/* ~/.byobu/
-		cp -rf ~/../usr/tel/.termux/* ~/.termux/
-		cp -rf ~/../usr/tel/.byobu/.tmux.conf ~/.byobu/
-	fi
-
-	cp -rf ~/../usr/tel/.tel/* ~/.tel/
+	cp -rTf ~/../usr/tel/.byobu ~/.byobu
+	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 fi
 
 
 log "updating permissions"
 
 #set permissions again(probably duplicate within tel-setup)
-chmod +x ~/.tel/status.sh
+chmod +x ~/.tel/status/*
+chmod +x ~/.tel/scripts/status_manager/*
+chmod +x ~/.tel/bin/*
 chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
 
-if [ -f ~/../usr/etc/motd_finished ]; then
+if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
+
 fi
 
 if [ "$UPDATE" = false ]; then 
 	touch ~/.tel/.installed #mark setup finished
-	log "final step: hit 'byobu-enable'"
-	log "after that, hit 'exit' and restart the app!"
-	error "if the layout is still missing, hit 'byobu-enable' and 'exit' again!"
+        log "installation finished"
 else
-	log "update finished. please reastart TEL!"
+        log "update finished"
 fi
+logf "finished"
+error "app will restart in 3 seconds!"
+sleep 3
+tel-restart

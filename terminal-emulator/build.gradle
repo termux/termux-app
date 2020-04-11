@@ -18,6 +18,7 @@ ext {
 
 android {
     compileSdkVersion 28
+    ndkVersion '21.0.6113669'
 
     defaultConfig {
         minSdkVersion 21

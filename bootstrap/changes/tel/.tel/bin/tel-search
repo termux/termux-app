@@ -1,0 +1,21 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# search command for TEL
+# sealyj
+# todo: extract bg and fg color from ~/.termux.color... and add in ddg url
+RED='\033[0;31m'
+NC='\033[0m' # No Col
+BOLD=$(tput bold)
+NORMAL=$(tput sgr0)
+
+if [ -z $1 ] || [ $1 == "-h" ] ; then
+	echo -e "${BOLD}${RED}Usage: tel-search [-h] [search term] ${NC}${NORMAL}
+	'$> s -h'        = show this help menu
+	'$> s !gh TEL'   = search github for TEL
+	'$> s !w ducks'  = search wiki for ducks"
+elif [ $# != 0 ] ; then
+        echo "Searching for $@"
+	input="$@"
+        text=${input// /%20} #replace spaces with strings
+	termux-open-url "https://duckduckgo.com/?q=$text&kp=-1&kl=us-en&ia=web"
+fi
+exit 0

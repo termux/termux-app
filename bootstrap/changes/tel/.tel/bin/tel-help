@@ -1,0 +1,42 @@
+
+echo "
+General Info:
+TEL as the name suggests is a derivative of
+the linux terminal environment app Termux. 
+The main difference being that TEL is designed and configured as a launcher / homescreen replacement.
+Use of TEL is not recommended for those without prior knowledge of the linux or termux environment.
+more information can be found at the TEL github / Wiki page @ https://t-e-l.github.io
+
+For further discussion, help and info join the TEL Telegram community page @ https://t.me/tui_expert/4649
+
+Useful info:
+add your own aliases into ~/.aliases
+if you want to remove status pane, using ctrl + c with the status pane selected will close down pane and also notification listener. A better idea might be to customise your bar by moving scripts in or out of ~/.tel/status_scripts/active or editing the config file ~/.tel/config.sh
+
+
+Useful shortcuts:
+ctrl + f2 = new split pane
+F2        = new window
+F3	  = toggle active window
+F6        = immediately quit all (no warning!) 
+
+Useful commands:
+x         = killall windows and exit tel
+a         = app launcher
+s         = search duckduckgo
+todo      = to-do list manager
+p         = app dialer
+t         = app telegram
+
+Trouble-shooting:
+We encourage reporting of errors through github although support maybe quicker through telegram. 
+
+Only use TEL plugins from the offical github, any termux plugins from elsewhere are likely to cause issues.
+Make sure you have the TEL API addon downloaded from TEL git page.
+The TEL API is slightly different from the Termux API although it will appear under "Termux API" in installed apps list.
+If your experiencing issues you	can try changing settings in the ~/.tel/config folder. Issues may vary upon how your device vendor handles battery saving behavior, if you think this is causing issues you can temporarily disable power saving settings \ optimisation for TEL and API, in the android app settings. You are unlikely to need to grant TEL extra permissions but it is a good thing to check if experiencing issues. Don't forget to restart by exiting fully to see changes.
+
+If you wish to start completely fresh (WARNING: will remove user files also) clear TEL app cache and storage via android settings, then uninstall TEL App and all TEL/Termux plugin apps. Make sure ALL Termux related apps and plugins are completely removed before redownloading the latest version of TEL app, opening and running tel-setup.
+
+
+" | less
