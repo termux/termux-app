@@ -44,7 +44,7 @@ else #download required packages if first start detected
 	log "installing required packages.."
 	log "this may take a while"
         logf "starting installation"
-	catch "$(apt-get install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y 2>&1)"
+	catch "$(pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y 2>&1)"
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
         rm -f get-pip.py
