@@ -11,6 +11,22 @@ RED=${1:-"38;5;01"}
 
 #set helper functions
 #todo:move them to helpers file and use them
+catch(){
+if [ $?  -ne 0 ]
+then
+        logf "${1}"
+        error "${1}"
+	error "please try again"
+        exit 0
+else
+	logf "done"
+fi
+}
+
+
+logf(){
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')]: ${1}" >> ~/.tel_log
+}
 log() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "${1}"
 }
@@ -22,16 +38,18 @@ if [ -f ~/.tel/.installed ]; then #set update var if finished installation was d
     UPDATE=true
     log "updating TEL setup"
     log "updating app launcher"
+    logf "starting update"
 else #download required packages if first start detected
 	log "finishing TEL setup"
 	log "installing required packages.."
-	log "This may take a while"
-	pkg install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y > /dev/null 2>&1
-	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py > /dev/null 2>&1
-    python get-pip.py > /dev/null 2>&1
-    rm -f get-pip.py
-    pip install colored lolcat > /dev/null 2>&1
-	log "installing app launcher"
+	log "this may take a while"
+        logf "starting installation"
+	catch "$(apt-get install fzf byobu curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y 2>&1)"
+	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
+        catch "$(python get-pip.py 2>&1)"
+        rm -f get-pip.py
+        catch "$(pip install colored lolcat 2>&1)"
+        log "installing app launcher"
 fi
 
 #install lolcat for colors
@@ -39,9 +57,9 @@ fi
 
 #install app launcher via git
 cd ~
-git clone https://github.com/t-e-l/tel-app-launcher > /dev/null 2>&1
+catch "$(git clone https://github.com/t-e-l/tel-app-launcher 2>&1)"
 cd tel-app-launcher
-make install > /dev/null 2>&1
+catch "$(make install 2>&1)"
 cd ~
 rm -rf tel-app-launcher
 
@@ -83,8 +101,8 @@ if [ "$UPDATE" = false ]; then #if first start detected
 
 else
 	log "updating configs"
-	cp -rTf ~/../usr/tel/.byobu/* ~/.byobu/
-	cp -rTf ~/../usr/tel/.tel/* ~/.tel/
+	cp -rTf ~/../usr/tel/.byobu ~/.byobu
+	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 fi
 
 
@@ -108,7 +126,7 @@ if [ "$UPDATE" = false ]; then
 else
         log "update finished"
 fi
-
+logf "finished"
 error "app will restart in 3 seconds!"
 sleep 3
 tel-restart
