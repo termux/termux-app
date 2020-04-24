@@ -156,6 +156,27 @@ final class TermuxPreferences {
         return null;
     }
     
+    private static String[][][] parseExtraKeysFromString(String string) throws JSONException {
+        JSONArray arr = new JSONArray(string);
+        String[][][] matrix = new String[arr.length()][][];
+        for (int i = 0; i < arr.length(); i++) {
+            JSONArray line = arr.getJSONArray(i);
+            matrix[i] = new String[line.length()][];
+            for (int j = 0; j < line.length(); j++) {
+                JSONArray key = line.optJSONArray(j);
+                if (key != null && key.length() > 0) {
+                    matrix[i][j] = new String[key.length()];
+                    for (int k = 0; k < key.length(); k++) {
+                        matrix[i][j][k] = key.getString(k);
+                    }
+                } else {
+                    matrix[i][j] = new String[]{line.getString(j)};
+                }
+            }
+        }
+        return matrix;
+    }
+
     void reloadFromProperties(Context context) {
         File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
         if (!propsFile.exists())
@@ -187,30 +208,19 @@ final class TermuxPreferences {
 
         mUseDarkUI = props.getProperty("use-black-ui", "false");
 
-        try {
-            JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', ['-', '|'], 'DOWN', 'UP']]"));
+        final String[][][] defaultExtraKeys = {{{"ESC"}, {"TAB"}, {"CTRL"}, {"ALT"}, {"-", "|"}, {"DOWN"}, {"UP"}}};
 
-            mExtraKeys = new String[arr.length()][][];
-            for (int i = 0; i < arr.length(); i++) {
-                JSONArray line = arr.getJSONArray(i);
-                mExtraKeys[i] = new String[line.length()][];
-                for (int j = 0; j < line.length(); j++) {
-                    JSONArray key = line.optJSONArray(j);
-                    if (key != null && key.length() > 0) {
-                        mExtraKeys[i][j] = new String[key.length()];
-                        for (int k = 0; k < key.length(); k++) {
-                            mExtraKeys[i][j][k] = key.getString(k);
-                        }
-                    } else {
-                        mExtraKeys[i][j] = new String[]{line.getString(j)};
-                    }
-                }
+        mExtraKeys = defaultExtraKeys;
+
+        String prop = props.getProperty("extra-keys");
+        if (prop != null) {
+            try {
+                mExtraKeys = parseExtraKeysFromString(prop);
+            } catch (JSONException e) {
+                Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
+                Log.e("termux", "Error loading props", e);
+                // the default will be used
             }
-
-        } catch (JSONException e) {
-            Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
-            Log.e("termux", "Error loading props", e);
-            mExtraKeys = new String[0][][];
         }
 
         mExtraKeysMap = new HashMap<>();
