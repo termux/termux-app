@@ -211,6 +211,9 @@ public final class ExtraKeysView extends GridLayout {
      */
     @SuppressLint("ClickableViewAccessibility")
     void reload(ExtraKeysInfos infos) {
+        if(infos == null)
+            return;
+
         for(SpecialButtonState state : specialButtons.values())
             state.button = null;
 
