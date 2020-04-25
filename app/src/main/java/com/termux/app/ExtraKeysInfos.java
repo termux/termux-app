@@ -2,6 +2,9 @@ package com.termux.app;
 
 import androidx.annotation.Nullable;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +13,7 @@ public class ExtraKeysInfos {
     /**
      * Matrix of buttons displayed
      */
-    private String [][][] buttons;
+    private ExtraKeyButton[][] buttons;
 
     /**
      * This corresponds to one of the CharMapDisplay below
@@ -22,10 +25,40 @@ public class ExtraKeysInfos {
      */
     private Map<String, String> keyMap;
 
-    public ExtraKeysInfos(String[][][] buttons, Map<String, String> keyMap, String style) {
+    public ExtraKeysInfos(String[][][] buttons, Map<String, String> keyMap, String style) throws Exception {
         this.style = style;
         this.keyMap = keyMap;
-        this.buttons = buttons;
+        this.buttons = new ExtraKeyButton[buttons.length][];
+        for (int i = 0; i < buttons.length; i++) {
+            this.buttons[i] = new ExtraKeyButton[buttons[i].length];
+            for (int j = 0; j < buttons[i].length; j++) {
+                String[] keys = buttons[i][j];
+
+                ExtraKeyButton button;
+
+                if(keys.length == 0) {
+                    throw new Exception("Cannot have empty array.");
+                } else if(keys.length == 1) {
+                    // no popup
+                    button = new ExtraKeyButton(this, keys[0]);
+                } else if(keys.length == 2){
+                    // a popup
+                    button = new ExtraKeyButton(this, keys[0], new ExtraKeyButton(this, keys[1]));
+                } else {
+                    throw new Exception("Too much informations for key.");
+                }
+
+                this.buttons[i][j] = button;
+            }
+        }
+    }
+
+    public ExtraKeyButton[][] getMatrix() {
+        return buttons;
+    }
+
+    public Map<String, String> getKeyMap() {
+        return keyMap;
     }
 
     /**
@@ -94,30 +127,44 @@ public class ExtraKeysInfos {
     }};
 
     /**
-     * Keys are displayed in a natural looking way, like "→" for "RIGHT" or "↲" for ENTER
+     * Multiple maps are available to quickly change
+     * the style of the keys.
      */
-    public static final CharDisplayMap defaultCharDisplay = new CharDisplayMap() {{
+
+    /**
+     * Some classic symbols everybody knows
+     */
+    private static final CharDisplayMap defaultCharDisplay = new CharDisplayMap() {{
         putAll(classicArrowsDisplay);
         putAll(wellKnownCharactersDisplay);
         putAll(nicerLookingDisplay);
         // all other characters are displayed as themselves
     }};
 
-    public static final CharDisplayMap lotsOfArrowsCharDisplay = new CharDisplayMap() {{
+    /**
+     * Classic symbols and less known symbols
+     */
+    private static final CharDisplayMap lotsOfArrowsCharDisplay = new CharDisplayMap() {{
         putAll(classicArrowsDisplay);
         putAll(wellKnownCharactersDisplay);
         putAll(lessKnownCharactersDisplay); // NEW
         putAll(nicerLookingDisplay);
     }};
 
-    public static final CharDisplayMap arrowsOnlyCharDisplay = new CharDisplayMap() {{
+    /**
+     * Only arrows
+     */
+    private static final CharDisplayMap arrowsOnlyCharDisplay = new CharDisplayMap() {{
         putAll(classicArrowsDisplay);
         // putAll(wellKnownCharactersDisplay); // REMOVED
         // putAll(lessKnownCharactersDisplay); // REMOVED
         putAll(nicerLookingDisplay);
     }};
 
-    public static final CharDisplayMap fullIsoCharDisplay = new CharDisplayMap() {{
+    /**
+     * Full Iso
+     */
+    private static final CharDisplayMap fullIsoCharDisplay = new CharDisplayMap() {{
         putAll(classicArrowsDisplay);
         putAll(wellKnownCharactersDisplay);
         putAll(lessKnownCharactersDisplay); // NEW
@@ -128,7 +175,7 @@ public class ExtraKeysInfos {
     /**
      * Some people might call our keys differently
      */
-    static final CharDisplayMap controlCharsAliases = new CharDisplayMap() {{
+    static private final CharDisplayMap controlCharsAliases = new CharDisplayMap() {{
         put("ESCAPE", "ESC");
         put("CONTROL", "CTRL");
         put("RETURN", "ENTER"); // Technically different keys, but most applications won't see the difference
@@ -181,10 +228,55 @@ public class ExtraKeysInfos {
      * Applies the 'controlCharsAliases' mapping to all the strings in *buttons*
      * Modifies the array, doesn't return a new one.
      */
-    public static void replaceAliases(String[][][] buttons) {
-        for(int i = 0; i < buttons.length; i++)
-            for(int j = 0; j < buttons[i].length; j++)
-                for(int k = 0; k < buttons[i][j].length; k++)
-                    buttons[i][j][k] = controlCharsAliases.get(buttons[i][j][k], buttons[i][j][k]);
+    public static String replaceAlias(String key) {
+        return controlCharsAliases.get(key, key);
+    }
+}
+
+class ExtraKeyButton {
+
+    /**
+     * The key that will be sent to the terminal, either a control character
+     * defined in ExtraKeysView.keyCodesForString (LEFT, RIGHT, PGUP...) or
+     * some text.
+     */
+    private String key;
+
+    /**
+     * The information of the popup (triggered by swipe up).
+     */
+    @Nullable
+    private ExtraKeyButton popup = null;
+
+    /**
+     * The ExtraKeysInfos it belongs to.
+     */
+    private ExtraKeysInfos parent;
+
+    public ExtraKeyButton(ExtraKeysInfos parent, String key) {
+        this(parent, key, null);
+    }
+
+    public ExtraKeyButton(ExtraKeysInfos parent, String key, ExtraKeyButton popup) {
+        this.key = ExtraKeysInfos.replaceAlias(key);
+        this.popup = popup;
+        this.parent = parent;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    @Nullable
+    public ExtraKeyButton getPopup() {
+        return popup;
+    }
+
+    public String getDisplayedText() {
+        return parent.getSelectedCharMap().get(getKey(), getKey());
+    }
+
+    public ExtraKeysInfos getParent() {
+        return parent;
     }
 }

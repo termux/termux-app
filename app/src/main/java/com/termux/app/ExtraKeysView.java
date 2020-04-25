@@ -93,8 +93,12 @@ public final class ExtraKeysView extends GridLayout {
         }
     }
 
-    static void sendKey(View view, String keyName, Map<String, String> keyMap) {
+    static void sendKey(View view, ExtraKeyButton buttonInfo) {
+        Map<String, String> keyMap = buttonInfo.getParent().getKeyMap();
+        String keyName = buttonInfo.getKey();
+
         if (keyMap.containsKey(keyName)) {
+            // it's a macro
             String[] keys = keyMap.get(keyName).split(" ");
             boolean ctrlDown = false;
             boolean altDown = false;
@@ -110,6 +114,7 @@ public final class ExtraKeysView extends GridLayout {
                 }
             }
         } else {
+            // it's a single key
             sendKey(view, keyName, false, false);
         }
     }
@@ -182,16 +187,17 @@ public final class ExtraKeysView extends GridLayout {
     /**
      * General util function to compute the longest column length in a matrix.
      */
-    static int maximumLength(String[][][] matrix) {
+    static int maximumLength(Object[][] matrix) {
         int m = 0;
-        for (String[][] aMatrix : matrix) m = Math.max(m, aMatrix.length);
+        for (Object[] row : matrix)
+            m = Math.max(m, row.length);
         return m;
     }
 
     /**
      * Reload the view given parameters in termux.properties
      *
-     * @param buttons matrix of String as defined in termux.properties extrakeys
+     * @param infos matrix as defined in termux.properties extrakeys
      * Can Contain The Strings CTRL ALT TAB FN ENTER LEFT RIGHT UP DOWN or normal strings
      * Some aliases are possible like RETURN for ENTER, LT for LEFT and more (@see controlCharsAliases for the whole list).
      * Any string of length > 1 in total Uppercase will print a warning
@@ -204,37 +210,24 @@ public final class ExtraKeysView extends GridLayout {
      * "-_-" will input the string "-_-"
      */
     @SuppressLint("ClickableViewAccessibility")
-    void reload(String[][][] buttons, String style, Map<String, String> keyMap) {
+    void reload(ExtraKeysInfos infos) {
         for(SpecialButtonState state : specialButtons.values())
             state.button = null;
 
         removeAllViews();
 
-        ExtraKeysInfos infos = new ExtraKeysInfos(buttons, keyMap, style);
-        ExtraKeysInfos.CharDisplayMap charDisplayMap = infos.getSelectedCharMap();
+        ExtraKeyButton[][] buttons = infos.getMatrix();
 
-        infos.replaceAliases(buttons); // modifies the array
+        setRowCount(buttons.length);
+        setColumnCount(maximumLength(buttons));
 
-        final int rows = buttons.length;
-        final int cols = maximumLength(buttons);
-
-        setRowCount(rows);
-        setColumnCount(cols);
-
-        for (int row = 0; row < rows; row++) {
+        for (int row = 0; row < buttons.length; row++) {
             for (int col = 0; col < buttons[row].length; col++) {
-                String[] buttonKeys = buttons[row][col];
-                final String buttonText = buttonKeys[0];
-                final String extraButtonText;
-                if (buttonKeys.length > 1) {
-                    extraButtonText = buttonKeys[1];
-                } else {
-                    extraButtonText = null;
-                }
+                final ExtraKeyButton buttonInfo = buttons[row][col];
 
                 Button button;
-                if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
-                    SpecialButtonState state = specialButtons.get(SpecialButton.valueOf(buttonText)); // for valueOf: https://stackoverflow.com/a/604426/1980630
+                if(Arrays.asList("CTRL", "ALT", "FN").contains(buttonInfo.getKey())) {
+                    SpecialButtonState state = specialButtons.get(SpecialButton.valueOf(buttonInfo.getKey())); // for valueOf: https://stackoverflow.com/a/604426/1980630
                     state.isOn = true;
                     button = state.button = new ToggleButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
                     button.setClickable(true);
@@ -242,8 +235,7 @@ public final class ExtraKeysView extends GridLayout {
                     button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
                 }
 
-                final String displayedText = charDisplayMap.get(buttonText, buttonText);
-                button.setText(displayedText);
+                button.setText(buttonInfo.getDisplayedText());
                 button.setTextColor(TEXT_COLOR);
                 button.setPadding(0, 0, 0, 0);
 
@@ -263,15 +255,15 @@ public final class ExtraKeysView extends GridLayout {
                     }
 
                     View root = getRootView();
-                    if (Arrays.asList("CTRL", "ALT", "FN").contains(buttonText)) {
+                    if (Arrays.asList("CTRL", "ALT", "FN").contains(buttonInfo.getKey())) {
                         ToggleButton self = (ToggleButton) finalButton;
                         self.setChecked(self.isChecked());
                         self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
-                    } else if ("KEYBOARD".equals(buttonText)) {
+                    } else if ("KEYBOARD".equals(buttonInfo.getKey())) {
                         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.toggleSoftInput(0, 0);
                     } else {
-                        sendKey(root, buttonText, keyMap);
+                        sendKey(root, buttonInfo);
                     }
                 });
 
@@ -281,24 +273,24 @@ public final class ExtraKeysView extends GridLayout {
                         case MotionEvent.ACTION_DOWN:
                             longPressCount = 0;
                             v.setBackgroundColor(BUTTON_PRESSED_COLOR);
-                            if (Arrays.asList("UP", "DOWN", "LEFT", "RIGHT").contains(buttonText)) {
+                            if (Arrays.asList("UP", "DOWN", "LEFT", "RIGHT").contains(buttonInfo.getKey())) {
                                 scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
                                 scheduledExecutor.scheduleWithFixedDelay(() -> {
                                     longPressCount++;
-                                    sendKey(root, buttonText, keyMap);
+                                    sendKey(root, buttonInfo);
                                 }, 400, 80, TimeUnit.MILLISECONDS);
                             }
                             return true;
 
                         case MotionEvent.ACTION_MOVE:
-                            if (extraButtonText != null) {
+                            if (buttonInfo.getPopup() != null) {
                                 if (popupWindow == null && event.getY() < 0) {
                                     if (scheduledExecutor != null) {
                                         scheduledExecutor.shutdownNow();
                                         scheduledExecutor = null;
                                     }
                                     v.setBackgroundColor(BUTTON_COLOR);
-                                    String extraButtonDisplayedText = charDisplayMap.get(extraButtonText, extraButtonText);
+                                    String extraButtonDisplayedText = buttonInfo.getPopup().getDisplayedText();
                                     popup(v, extraButtonDisplayedText);
                                 }
                                 if (popupWindow != null && event.getY() > 0) {
@@ -327,8 +319,8 @@ public final class ExtraKeysView extends GridLayout {
                                     popupWindow.setContentView(null);
                                     popupWindow.dismiss();
                                     popupWindow = null;
-                                    if (extraButtonText != null) {
-                                        sendKey(root, extraButtonText, keyMap);
+                                    if (buttonInfo.getPopup() != null) {
+                                        sendKey(root, buttonInfo.getPopup());
                                     }
                                 } else {
                                     v.performClick();

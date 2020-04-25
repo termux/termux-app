@@ -73,9 +73,7 @@ final class TermuxPreferences {
     boolean mDisableVolumeVirtualKeys;
     boolean mShowExtraKeys;
 
-    String[][][] mExtraKeys;
-    String mExtraKeysStyle;
-    Map<String, String> mExtraKeysMap;
+    ExtraKeysInfos mExtraKeys;
 
     final List<KeyboardShortcut> shortcuts = new ArrayList<>();
 
@@ -210,12 +208,12 @@ final class TermuxPreferences {
 
         final String[][][] defaultExtraKeys = {{{"ESC"}, {"TAB"}, {"CTRL"}, {"ALT"}, {"-", "|"}, {"DOWN"}, {"UP"}}};
 
-        mExtraKeys = defaultExtraKeys;
+        String[][][] extraKeysMatrix = defaultExtraKeys;
 
         String prop = props.getProperty("extra-keys");
         if (prop != null) {
             try {
-                mExtraKeys = parseExtraKeysFromString(prop);
+                extraKeysMatrix = parseExtraKeysFromString(prop);
             } catch (JSONException e) {
                 Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
                 Log.e("termux", "Error loading props", e);
@@ -223,22 +221,38 @@ final class TermuxPreferences {
             }
         }
 
-        mExtraKeysMap = new HashMap<>();
+        Map<String, String> extraKeysMap = new HashMap<>();
         try {
             JSONObject obj = new JSONObject(props.getProperty("extra-keys-map", "{}"));
             Iterator<String> keys = obj.keys();
             while (keys.hasNext()) {
                 String key = keys.next();
-                mExtraKeysMap.put(key, obj.getString(key));
+                extraKeysMap.put(key, obj.getString(key));
             }
         } catch (JSONException e) {
             Toast.makeText(context, "Could not load the extra-keys-map property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
         }
 
+        String extraKeysStyle = props.getProperty("extra-keys-style", "default");
+
+        try {
+            mExtraKeys = new ExtraKeysInfos(extraKeysMatrix, extraKeysMap, extraKeysStyle);
+        } catch (Exception e) {
+            Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
+            Log.e("termux", "Error loading props", e);
+
+            try {
+                mExtraKeys = new ExtraKeysInfos(defaultExtraKeys, new HashMap<>(), "default");
+            } catch (Exception e2) {
+                e2.printStackTrace();
+                Toast.makeText(context, "Can't create default keyMap", Toast.LENGTH_LONG).show();
+                mExtraKeys = null;
+            }
+        }
+
         mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
         mDisableVolumeVirtualKeys = "volume".equals(props.getProperty("volume-keys", "virtual"));
-        mExtraKeysStyle = props.getProperty("extra-keys-style", "default");
 
         shortcuts.clear();
         parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
