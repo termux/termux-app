@@ -6,8 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ExtraKeysInfos {
 
@@ -285,23 +287,32 @@ class ExtraKeyButton {
     public ExtraKeyButton(ExtraKeysInfos.CharDisplayMap charDisplayMap, JSONObject config, ExtraKeyButton popup) throws JSONException {
         String keyFromConfig = config.optString("key", null);
         String macroFromConfig = config.optString("macro", null);
+        String[] keys;
         if (keyFromConfig != null && macroFromConfig != null) {
             throw new JSONException("Both key and macro can't be set for the same key");
         } else if (keyFromConfig != null) {
-            this.key = ExtraKeysInfos.replaceAlias(keyFromConfig);
+            keys = new String[]{keyFromConfig};
             this.macro = false;
         } else if (macroFromConfig != null) {
-            this.key = macroFromConfig;
+            keys = macroFromConfig.split(" ");
             this.macro = true;
         } else {
             throw new JSONException("All keys have to specify either key or macro");
         }
 
+        for (int i = 0; i < keys.length; i++) {
+            keys[i] = ExtraKeysInfos.replaceAlias(keys[i]);
+        }
+
+        this.key = String.join(" ", keys);
+
         String displayFromConfig = config.optString("display", null);
         if (displayFromConfig != null) {
             this.display = displayFromConfig;
         } else {
-            this.display = charDisplayMap.get(this.key, this.key);
+            this.display = Arrays.stream(keys)
+                .map(key -> charDisplayMap.get(key, key))
+                .collect(Collectors.joining(" "));
         }
 
         this.popup = popup;
