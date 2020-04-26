@@ -21,14 +21,8 @@ public class ExtraKeysInfos {
      */
     private String style = "default";
 
-    /**
-     * This is the keyMap defined in termux.properties
-     */
-    private Map<String, String> keyMap;
-
-    public ExtraKeysInfos(String propertiesInfo, Map<String, String> keyMap, String style) throws JSONException {
+    public ExtraKeysInfos(String propertiesInfo, String style) throws JSONException {
         this.style = style;
-        this.keyMap = keyMap;
 
         // Convert String propertiesInfo to Array of Arrays
         JSONArray arr = new JSONArray(propertiesInfo);
@@ -84,10 +78,6 @@ public class ExtraKeysInfos {
 
     public ExtraKeyButton[][] getMatrix() {
         return buttons;
-    }
-
-    public Map<String, String> getKeyMap() {
-        return keyMap;
     }
 
     /**
@@ -336,9 +326,5 @@ class ExtraKeyButton {
             return this.displayedTextFromConfig;
         else
             return parent.getSelectedCharMap().get(key, key);
-    }
-
-    public ExtraKeysInfos getParent() {
-        return parent;
     }
 }

@@ -189,27 +189,17 @@ final class TermuxPreferences {
 
         try {
             String extrakeyProp = props.getProperty("extra-keys", defaultExtraKeys);
-
-            Map<String, String> extraKeysMap = new HashMap<>();
-            JSONObject obj = new JSONObject(props.getProperty("extra-keys-map", "{}"));
-            Iterator<String> keys = obj.keys();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                extraKeysMap.put(key, obj.getString(key));
-            }
-
             String extraKeysStyle = props.getProperty("extra-keys-style", "default");
-
-            mExtraKeys = new ExtraKeysInfos(extrakeyProp, extraKeysMap, extraKeysStyle);
+            mExtraKeys = new ExtraKeysInfos(extrakeyProp, extraKeysStyle);
         } catch (JSONException e) {
             Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
 
             try {
-                mExtraKeys = new ExtraKeysInfos(defaultExtraKeys, new HashMap<>(), "default");
+                mExtraKeys = new ExtraKeysInfos(defaultExtraKeys, "default");
             } catch (JSONException e2) {
                 e2.printStackTrace();
-                Toast.makeText(context, "Can't create default keyMap", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Can't create default extra keys", Toast.LENGTH_LONG).show();
                 mExtraKeys = null;
             }
         }

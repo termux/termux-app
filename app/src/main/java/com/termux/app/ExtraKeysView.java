@@ -94,17 +94,8 @@ public final class ExtraKeysView extends GridLayout {
     }
 
     static void sendKey(View view, ExtraKeyButton buttonInfo) {
-        Map<String, String> keyMap = buttonInfo.getParent().getKeyMap();
-        String keyName = buttonInfo.getKey();
-        boolean isMacro = buttonInfo.isMacro();
-
-        if (keyMap.containsKey(keyName)) {
-            keyName = keyMap.get(keyName);
-            isMacro = true;
-        }
-
-        if (isMacro) {
-            String[] keys = keyName.split(" ");
+        if (buttonInfo.isMacro()) {
+            String[] keys = buttonInfo.getKey().split(" ");
             boolean ctrlDown = false;
             boolean altDown = false;
             for (String key : keys) {
@@ -119,7 +110,7 @@ public final class ExtraKeysView extends GridLayout {
                 }
             }
         } else {
-            sendKey(view, keyName, false, false);
+            sendKey(view, buttonInfo.getKey(), false, false);
         }
     }
 
