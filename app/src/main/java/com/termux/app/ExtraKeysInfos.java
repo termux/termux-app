@@ -48,11 +48,12 @@ public class ExtraKeysInfos {
 
                 if(! jobject.has("popup")) {
                     // no popup
-                    button = new ExtraKeyButton(this, jobject);
+                    button = new ExtraKeyButton(getSelectedCharMap(), jobject);
                 } else {
                     // a popup
                     JSONObject popupJobject = normalizeKeyConfig(jobject.get("popup"));
-                    button = new ExtraKeyButton(this, jobject, new ExtraKeyButton(this, popupJobject));
+                    ExtraKeyButton popup = new ExtraKeyButton(getSelectedCharMap(), popupJobject);
+                    button = new ExtraKeyButton(getSelectedCharMap(), jobject, popup);
                 }
 
                 this.buttons[i][j] = button;
@@ -267,28 +268,21 @@ class ExtraKeyButton {
     private boolean macro;
 
     /**
+     * The text that will be shown on the button.
+     */
+    private String display;
+
+    /**
      * The information of the popup (triggered by swipe up).
      */
     @Nullable
     private ExtraKeyButton popup = null;
 
-    /**
-     * The text that will be shown on the button,
-     * if provided by the config.
-     */
-    @Nullable
-    private String displayedTextFromConfig = null;
-
-    /**
-     * The ExtraKeysInfos it belongs to.
-     */
-    private ExtraKeysInfos parent;
-
-    public ExtraKeyButton(ExtraKeysInfos parent, JSONObject config) throws JSONException {
-        this(parent, config, null);
+    public ExtraKeyButton(ExtraKeysInfos.CharDisplayMap charDisplayMap, JSONObject config) throws JSONException {
+        this(charDisplayMap, config, null);
     }
 
-    public ExtraKeyButton(ExtraKeysInfos parent, JSONObject config, ExtraKeyButton popup) throws JSONException {
+    public ExtraKeyButton(ExtraKeysInfos.CharDisplayMap charDisplayMap, JSONObject config, ExtraKeyButton popup) throws JSONException {
         String keyFromConfig = config.optString("key", null);
         String macroFromConfig = config.optString("macro", null);
         if (keyFromConfig != null && macroFromConfig != null) {
@@ -303,8 +297,13 @@ class ExtraKeyButton {
             throw new JSONException("All keys have to specify either key or macro");
         }
 
-        this.displayedTextFromConfig = config.optString("display", null);
-        this.parent = parent;
+        String displayFromConfig = config.optString("display", null);
+        if (displayFromConfig != null) {
+            this.display = displayFromConfig;
+        } else {
+            this.display = charDisplayMap.get(this.key, this.key);
+        }
+
         this.popup = popup;
     }
 
@@ -316,15 +315,12 @@ class ExtraKeyButton {
         return macro;
     }
 
+    public String getDisplay() {
+        return display;
+    }
+
     @Nullable
     public ExtraKeyButton getPopup() {
         return popup;
-    }
-
-    public String getDisplayedText() {
-        if(this.displayedTextFromConfig != null)
-            return this.displayedTextFromConfig;
-        else
-            return parent.getSelectedCharMap().get(key, key);
     }
 }

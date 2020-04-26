@@ -233,7 +233,7 @@ public final class ExtraKeysView extends GridLayout {
                     button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
                 }
 
-                button.setText(buttonInfo.getDisplayedText());
+                button.setText(buttonInfo.getDisplay());
                 button.setTextColor(TEXT_COLOR);
                 button.setPadding(0, 0, 0, 0);
 
@@ -289,7 +289,7 @@ public final class ExtraKeysView extends GridLayout {
                                         scheduledExecutor = null;
                                     }
                                     v.setBackgroundColor(BUTTON_COLOR);
-                                    String extraButtonDisplayedText = buttonInfo.getPopup().getDisplayedText();
+                                    String extraButtonDisplayedText = buttonInfo.getPopup().getDisplay();
                                     popup(v, extraButtonDisplayedText);
                                 }
                                 if (popupWindow != null && event.getY() > 0) {
