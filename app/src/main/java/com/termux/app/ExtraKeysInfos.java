@@ -272,6 +272,11 @@ class ExtraKeyButton {
     private String key;
 
     /**
+     * If the key is a macro, i.e. a sequence of keys separated by space.
+     */
+    private boolean macro;
+
+    /**
      * The information of the popup (triggered by swipe up).
      */
     @Nullable
@@ -294,15 +299,31 @@ class ExtraKeyButton {
     }
 
     public ExtraKeyButton(ExtraKeysInfos parent, JSONObject config, ExtraKeyButton popup) throws JSONException {
-        String keyFromConfig = config.getString("key");
+        String keyFromConfig = config.optString("key", null);
+        String macroFromConfig = config.optString("macro", null);
+        if (keyFromConfig != null && macroFromConfig != null) {
+            throw new JSONException("Both key and macro can't be set for the same key");
+        } else if (keyFromConfig != null) {
+            this.key = ExtraKeysInfos.replaceAlias(keyFromConfig);
+            this.macro = false;
+        } else if (macroFromConfig != null) {
+            this.key = macroFromConfig;
+            this.macro = true;
+        } else {
+            throw new JSONException("All keys have to specify either key or macro");
+        }
+
         this.displayedTextFromConfig = config.optString("display", null);
-        this.key = ExtraKeysInfos.replaceAlias(keyFromConfig);
         this.parent = parent;
         this.popup = popup;
     }
 
     public String getKey() {
         return key;
+    }
+
+    public boolean isMacro() {
+        return macro;
     }
 
     @Nullable

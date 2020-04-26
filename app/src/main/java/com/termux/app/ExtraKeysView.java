@@ -96,10 +96,15 @@ public final class ExtraKeysView extends GridLayout {
     static void sendKey(View view, ExtraKeyButton buttonInfo) {
         Map<String, String> keyMap = buttonInfo.getParent().getKeyMap();
         String keyName = buttonInfo.getKey();
+        boolean isMacro = buttonInfo.isMacro();
 
         if (keyMap.containsKey(keyName)) {
-            // it's a macro
-            String[] keys = keyMap.get(keyName).split(" ");
+            keyName = keyMap.get(keyName);
+            isMacro = true;
+        }
+
+        if (isMacro) {
+            String[] keys = keyName.split(" ");
             boolean ctrlDown = false;
             boolean altDown = false;
             for (String key : keys) {
@@ -114,7 +119,6 @@ public final class ExtraKeysView extends GridLayout {
                 }
             }
         } else {
-            // it's a single key
             sendKey(view, keyName, false, false);
         }
     }
