@@ -72,9 +72,12 @@ public final class ExtraKeysView extends GridLayout {
         put("F12", KeyEvent.KEYCODE_F12);
     }};
 
-    static void sendKey(View view, String keyName, boolean forceCtrlDown, boolean forceLeftAltDown) {
+    private void sendKey(View view, String keyName, boolean forceCtrlDown, boolean forceLeftAltDown) {
         TerminalView terminalView = view.findViewById(R.id.terminal_view);
-        if (keyCodesForString.containsKey(keyName)) {
+        if ("KEYBOARD".equals(keyName)) {
+            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(0, 0);
+        } else if (keyCodesForString.containsKey(keyName)) {
             int keyCode = keyCodesForString.get(keyName);
             int metaState = 0;
             if (forceCtrlDown) {
@@ -93,7 +96,7 @@ public final class ExtraKeysView extends GridLayout {
         }
     }
 
-    static void sendKey(View view, ExtraKeyButton buttonInfo) {
+    private void sendKey(View view, ExtraKeyButton buttonInfo) {
         if (buttonInfo.isMacro()) {
             String[] keys = buttonInfo.getKey().split(" ");
             boolean ctrlDown = false;
@@ -257,9 +260,6 @@ public final class ExtraKeysView extends GridLayout {
                         ToggleButton self = (ToggleButton) finalButton;
                         self.setChecked(self.isChecked());
                         self.setTextColor(self.isChecked() ? INTERESTING_COLOR : TEXT_COLOR);
-                    } else if ("KEYBOARD".equals(buttonInfo.getKey())) {
-                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.toggleSoftInput(0, 0);
                     } else {
                         sendKey(root, buttonInfo);
                     }
