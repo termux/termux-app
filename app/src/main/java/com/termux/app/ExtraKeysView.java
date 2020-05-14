@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 
+import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -26,6 +27,8 @@ import android.widget.ToggleButton;
 
 import com.termux.R;
 import com.termux.view.TerminalView;
+
+import androidx.drawerlayout.widget.DrawerLayout;
 
 /**
  * A view showing extra keys (such as Escape, Ctrl, Alt) not normally available on an Android soft
@@ -77,6 +80,9 @@ public final class ExtraKeysView extends GridLayout {
         if ("KEYBOARD".equals(keyName)) {
             InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.toggleSoftInput(0, 0);
+        } else if ("DRAWER".equals(keyName)) {
+            DrawerLayout drawer = view.findViewById(R.id.drawer_layout);
+            drawer.openDrawer(Gravity.LEFT);
         } else if (keyCodesForString.containsKey(keyName)) {
             int keyCode = keyCodesForString.get(keyName);
             int metaState = 0;
