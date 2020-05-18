@@ -50,8 +50,8 @@ public class TermuxTest {
 
     @Test
     public void changeText_sameActivity() {
-        // wait during 15 seconds for a view
-        onView(isRoot()).perform(waitId(R.id.terminal_view, TimeUnit.SECONDS.toMillis(15)));
+        // wait for a view
+        onView(isRoot()).perform(waitId(R.id.terminal_view, TimeUnit.SECONDS.toMillis(300)));
 
         // Type text
         onView(withId(R.id.terminal_view)).perform(typeText(mStringToBetyped), closeSoftKeyboard());
