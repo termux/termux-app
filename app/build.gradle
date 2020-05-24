@@ -4,7 +4,7 @@ plugins {
 
 android {
     compileSdkVersion 28
-    ndkVersion "21.1.6352462"
+    ndkVersion '21.1.6352462'
 
     dependencies {
         implementation "androidx.annotation:annotation:1.1.0"
