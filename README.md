@@ -6,8 +6,12 @@
 [![Join the Termux discord server](https://img.shields.io/discord/641256914684084234.svg?label=&logo=discord&logoColor=ffffff&color=5865F2)](https://discord.gg/HXpF69X)
 [![Termux library releases at Jitpack](https://jitpack.io/v/termux/termux-app.svg)](https://jitpack.io/#termux/termux-app)
 
+# Termux Launcher
 
 [Termux](https://termux.com) is an Android terminal application and Linux environment.
+This fork is being regularly updated and developed by chedim as keyboard-driven launcher with android application autocompletion.
+
+This fork was inspired by Thewisenerd's [termux-setup-apps patch](https://github.com/thewisenerd/termux-app/commit/b877a81b999179af2d702b8929b6d20e29dde054)
 
 Note that this repository is for the app itself (the user interface and the terminal emulation). For the packages installable inside the app, see [termux/termux-packages](https://github.com/termux/termux-packages).
 
