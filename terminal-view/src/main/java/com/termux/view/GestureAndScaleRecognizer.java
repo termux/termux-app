@@ -88,21 +88,23 @@ final class GestureAndScaleRecognizer {
         mScaleDetector.setQuickScaleEnabled(false);
     }
 
-    public void onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         mGestureDetector.onTouchEvent(event);
         mScaleDetector.onTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 isAfterLongPress = false;
-                break;
+                return true;
             case MotionEvent.ACTION_UP:
                 if (!isAfterLongPress) {
                     // This behaviour is desired when in e.g. vim with mouse events, where we do not
                     // want to move the cursor when lifting finger after a long press.
                     mListener.onUp(event);
+                    return true;
                 }
                 break;
         }
+        return false;
     }
 
     public boolean isInProgress() {

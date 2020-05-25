@@ -40,8 +40,12 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     @Override
     public void onSingleTapUp(MotionEvent e) {
+        showKeyboard();
+    }
+
+    public void showKeyboard() {
         InputMethodManager mgr = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.showSoftInput(mActivity.mTerminalView, InputMethodManager.SHOW_IMPLICIT);
+        mgr.showSoftInput(mActivity.mTerminalView, InputMethodManager.SHOW_FORCED);
     }
 
     @Override

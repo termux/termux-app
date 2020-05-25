@@ -1,10 +1,9 @@
-# Termux application
-
-[![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
-[![Testing status](https://github.com/termux/termux-app/workflows/Unit%20tests/badge.svg)](https://github.com/termux/termux-app/actions)
-[![Join the chat at https://gitter.im/termux/termux](https://badges.gitter.im/termux/termux.svg)](https://gitter.im/termux/termux)
+# Termux Launcher
 
 [Termux](https://termux.com) is an Android terminal application and Linux environment.
+This fork is being regularly updated and developed by chedim as keyboard-driven launcher with android application autocompletion.
+
+This fork was inspired by Thewisenerd's [termux-setup-apps patch](https://github.com/thewisenerd/termux-app/commit/b877a81b999179af2d702b8929b6d20e29dde054)
 
 - [Termux Reddit community](https://reddit.com/r/termux)
 - [Termux Wiki](https://wiki.termux.com/wiki/)

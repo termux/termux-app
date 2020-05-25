@@ -107,6 +107,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     ExtraKeysView mExtraKeysView;
 
     TermuxPreferences mSettings;
+    TermuxViewClient mTermuxClient;
 
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -220,7 +221,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
 
         mTerminalView = findViewById(R.id.terminal_view);
-        mTerminalView.setOnKeyListener(new TermuxViewClient(this));
+        mTermuxClient = new TermuxViewClient(this);
+        mTerminalView.setOnKeyListener(mTermuxClient);
 
         mTerminalView.setTextSize(mSettings.getFontSize());
         mTerminalView.setKeepScreenOn(mSettings.isScreenAlwaysOn());
@@ -564,6 +566,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal:
         mTerminalView.onScreenUpdated();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mTermuxClient != null) {
+            mTermuxClient.showKeyboard();
+        }
     }
 
     @Override

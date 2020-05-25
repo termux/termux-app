@@ -117,12 +117,12 @@ public final class TerminalView extends View {
                     return true;
                 }
                 requestFocus();
-                if (!mEmulator.isMouseTrackingActive()) {
+                //if (!mEmulator.isMouseTrackingActive()) {
                     if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
                         mClient.onSingleTapUp(e);
                         return true;
                     }
-                }
+                //}
                 return false;
             }
 
@@ -515,8 +515,7 @@ public final class TerminalView extends View {
             }
         }
 
-        mGestureRecognizer.onTouchEvent(ev);
-        return true;
+        return mGestureRecognizer.onTouchEvent(ev);
     }
 
     @Override
