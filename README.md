@@ -3,6 +3,9 @@
 [Termux](https://termux.com) is an Android terminal application and Linux environment.
 This fork is being daily driven, regularly updated and developed by chedim as keyboard-driven launcher with android application autocompletion.
 
+This fork was inspired by Thewisenerd's [termux-setup-apps patch](https://github.com/thewisenerd/termux-app/commit/b877a81b999179af2d702b8929b6d20e29dde054)
+This fork is being regularly updated and developed by chedim as keyboard-driven launcher with android application autocompletion.
+
 Android application names can be entered directly as bash commands or as arguments to `termux-launch`:
 ![termux-launcher](https://user-images.githubusercontent.com/807041/195166525-f2c1097a-2369-49eb-a8d5-ce43c3f83883.jpeg)
 
