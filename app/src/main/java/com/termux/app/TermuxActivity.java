@@ -95,6 +95,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private static final int MAX_SESSIONS = 8;
 
+    private static final int CONTEXTMENU_TEST = 10;
+
     private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
 
     private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
@@ -660,6 +662,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXTMENU_STYLING_ID, Menu.NONE, R.string.style_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.toggle_keep_screen_on).setCheckable(true).setChecked(mSettings.isScreenAlwaysOn());
         menu.add(Menu.NONE, CONTEXTMENU_HELP_ID, Menu.NONE, R.string.help);
+        menu.add(Menu.NONE, CONTEXTMENU_TEST, Menu.NONE, "测试");
+
     }
 
     /** Hook system menu to show context menu instead. */
@@ -857,6 +861,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 }
                 return true;
             }
+            case CONTEXTMENU_TEST:
+                showToast('test',true)
+                return true;
             case CONTEXTMENU_HELP_ID:
                 startActivity(new Intent(this, TermuxHelpActivity.class));
                 return true;
