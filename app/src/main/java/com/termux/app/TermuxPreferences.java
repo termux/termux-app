@@ -182,7 +182,7 @@ final class TermuxPreferences {
         mUseDarkUI = props.getProperty("use-black-ui", "false");
 
         try {
-            JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', '-', 'DOWN', 'UP']]"));
+            JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC','/','-','HOME','UP','END','PGUP'],['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN']]"));
 
             mExtraKeys = new String[arr.length()][];
             for (int i = 0; i < arr.length(); i++) {
