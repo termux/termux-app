@@ -53,6 +53,14 @@
             android:theme="@android:style/Theme.Material.Light.DarkActionBar"
             android:parentActivityName=".app.TermuxActivity"
             android:resizeableActivity="true"
+		android:label="@string/application_name" />
+
+<activity
+            android:name="com.termux.app.TermuxFunctionActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.Light.DarkActionBar"
+            android:parentActivityName=".app.TermuxActivity"
+            android:resizeableActivity="true"
             android:label="@string/application_name" />
 
         <activity

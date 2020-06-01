@@ -1,6 +1,7 @@
 import android.app.Activity;
 import android.os.Bundle;
 
+import com.termux.R;
 
 public final class TermuxFunctionActivity extends Activity {
     @Override
