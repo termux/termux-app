@@ -862,7 +862,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 return true;
             }
             case CONTEXTMENU_TEST:
-                showToast("test", true);
+                startActivity(new Intent(this, TermuxFunctionActivity.class))
                 return true;
             case CONTEXTMENU_HELP_ID:
                 startActivity(new Intent(this, TermuxHelpActivity.class));
