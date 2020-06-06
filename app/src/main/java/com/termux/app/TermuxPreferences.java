@@ -162,8 +162,8 @@ final class TermuxPreferences {
                     props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
                 }
             }
-        } catch (IOException e) {
-            Toast.makeText(context, "Could not open properties file termux.properties.", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(context, "Could not open properties file termux.properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
         }
 
