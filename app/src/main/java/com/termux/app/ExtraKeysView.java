@@ -39,7 +39,7 @@ public final class ExtraKeysView extends GridLayout {
     private static final int TEXT_COLOR = 0xFFFFFFFF;
     private static final int BUTTON_COLOR = 0x00000000;
     private static final int INTERESTING_COLOR = 0xFF80DEEA;
-    private static final int BUTTON_PRESSED_COLOR = 0x7FFFFFFF;
+    private static final int BUTTON_PRESSED_COLOR = 0xFF7F7F7F;
 
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
