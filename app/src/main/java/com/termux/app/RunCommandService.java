@@ -18,17 +18,15 @@ import java.util.Properties;
  * When allow-external-apps property is set to "true", Termux is able to process execute intents
  * sent by third-party applications.
  *
- * Third-party program must declare com.termux.permission.RUN_COMMAND permission.
+ * Third-party program must declare com.termux.permission.RUN_COMMAND permission and it should be
+ * granted by user.
  *
- * Intent expects following configuration:
- *
- * Action: com.termux.RUN_COMMAND
- * Program/script path (string): com.termux.RUN_COMMAND_PATH
- * Program/script arguments (string): com.termux.RUN_COMMAND_ARGUMENTS
- * Session working directory (string): com.termux.RUN_COMMAND_WORKDIR
- *
- * Sample intent for launching program "top" in equivalent of ADB command:
- * am startservice -a com.termux.RUN_COMMAND --es com.termux.RUN_COMMAND_PATH /data/data/com.termux/files/usr/bin/top
+ * Sample code to run command "top":
+ *   Intent intent = new Intent();
+ *   intent.setClassName("com.termux", "com.termux.app.RunCommandService");
+ *   intent.setAction("com.termux.RUN_COMMAND");
+ *   intent.putExtra("com.termux.RUN_COMMAND_PATH", "/data/data/com.termux/files/usr/bin/top");
+ *   startService(intent);
  */
 public class RunCommandService extends Service {
 
