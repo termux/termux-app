@@ -121,7 +121,7 @@
             android:exported="false" />
 
         <service
-            android:name=".app.RunCommand"
+            android:name=".app.RunCommandService"
             android:exported="true"
             android:permission="com.termux.permission.RUN_COMMAND" >
             <intent-filter>

@@ -30,7 +30,7 @@ import java.util.Properties;
  * Sample intent for launching program "top" in equivalent of ADB command:
  * am startservice -a com.termux.RUN_COMMAND --es com.termux.RUN_COMMAND_PATH /data/data/com.termux/files/usr/bin/top
  */
-public class RunCommand extends Service {
+public class RunCommandService extends Service {
 
     public static final String RUN_COMMAND_ACTION = "com.termux.RUN_COMMAND";
     public static final String RUN_COMMAND_PATH = "com.termux.RUN_COMMAND_PATH";
@@ -38,10 +38,10 @@ public class RunCommand extends Service {
     public static final String RUN_COMMAND_WORKDIR = "com.termux.RUN_COMMAND_WORKDIR";
 
     class LocalBinder extends Binder {
-        public final RunCommand service = RunCommand.this;
+        public final RunCommandService service = RunCommandService.this;
     }
 
-    private final IBinder mBinder = new RunCommand.LocalBinder();
+    private final IBinder mBinder = new RunCommandService.LocalBinder();
 
     @Override
     public IBinder onBind(Intent intent) {
