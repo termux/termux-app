@@ -8,6 +8,12 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
 
+    <permission android:name="com.termux.permission.RUN_COMMAND"
+        android:label="@string/run_command_permission_label"
+        android:description="@string/run_command_permission_description"
+        android:icon="@drawable/ic_launcher"
+        android:protectionLevel="dangerous" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -113,6 +119,15 @@
         <service
             android:name="com.termux.app.TermuxService"
             android:exported="false" />
+
+        <service
+            android:name=".app.RunCommand"
+            android:exported="true"
+            android:permission="com.termux.permission.RUN_COMMAND" >
+            <intent-filter>
+                <action android:name="com.termux.RUN_COMMAND" />
+            </intent-filter>
+        </service>
 
         <receiver android:name=".app.TermuxOpenReceiver" />
 
