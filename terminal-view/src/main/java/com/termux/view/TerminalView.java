@@ -973,12 +973,12 @@ public final class TerminalView extends View {
             return mContainer.isShowing();
         }
 
-        private void checkChangedOrientation() {
-            if (!mIsDragging) {
+        private void checkChangedOrientation(int posX, boolean force) {
+            if (!mIsDragging && !force) {
                 return;
             }
             long millis = SystemClock.currentThreadTimeMillis();
-            if (millis - mLastTime < 50) {
+            if (millis - mLastTime < 50 && !force) {
                 return;
             }
             mLastTime = millis;
@@ -1003,10 +1003,7 @@ public final class TerminalView extends View {
                 return;
             }
 
-            final int[] coords = mTempCoords;
-            hostView.getLocationInWindow(coords);
-            final int posX = coords[0] + mPointX;
-            if (posX < clip.left) {
+            if (posX - mHandleWidth < clip.left) {
                 changeOrientation(RIGHT);
             } else if (posX + mHandleWidth > clip.right) {
                 changeOrientation(LEFT);
@@ -1050,13 +1047,14 @@ public final class TerminalView extends View {
                 posY >= clip.top && posY <= clip.bottom;
         }
 
-        private void moveTo(int x, int y) {
-            mPointX = x;
+        private void moveTo(int x, int y, boolean forceOrientationCheck) {
+            float oldHotspotX = mHotspotX;
+            checkChangedOrientation(x, forceOrientationCheck);
+            mPointX = (int) (x - (isShowing() ? oldHotspotX : mHotspotX));
             mPointY = y;
-            checkChangedOrientation();
             if (isPositionVisible()) {
                 int[] coords = null;
-                if (mContainer.isShowing()) {
+                if (isShowing()) {
                     coords = mTempCoords;
                     TerminalView.this.getLocationInWindow(coords);
                     int x1 = coords[0] + mPointX;
@@ -1138,10 +1136,10 @@ public final class TerminalView extends View {
             return mIsDragging;
         }
 
-        void positionAtCursor(final int cx, final int cy) {
-            int left = (int) (getPointX(cx) - mHotspotX);
+        void positionAtCursor(final int cx, final int cy, boolean forceOrientationCheck) {
+            int left = getPointX(cx);
             int bottom = getPointY(cy + 1);
-            moveTo(left, bottom);
+            moveTo(left, bottom, forceOrientationCheck);
         }
     }
 
@@ -1162,9 +1160,8 @@ public final class TerminalView extends View {
 
         public void show() {
             mIsShowing = true;
-            updatePosition();
-            mStartHandle.show();
-            mEndHandle.show();
+            mStartHandle.positionAtCursor(mSelX1, mSelY1, true);
+            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, true);
 
             final ActionMode.Callback callback = new ActionMode.Callback() {
                 @Override
@@ -1240,7 +1237,7 @@ public final class TerminalView extends View {
                 public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
                     int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
                     int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
-                    int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
+                    int y1 = Math.round((mSelY1 - 1 - mTopRow) * mRenderer.mFontLineSpacing);
                     int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
 
 
@@ -1395,9 +1392,9 @@ public final class TerminalView extends View {
                 return;
             }
 
-            mStartHandle.positionAtCursor(mSelX1, mSelY1);
+            mStartHandle.positionAtCursor(mSelX1, mSelY1, false);
 
-            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2); //bug
+            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, false);
 
             if (mActionMode != null) {
                 mActionMode.invalidate();
