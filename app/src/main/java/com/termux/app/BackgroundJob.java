@@ -150,6 +150,7 @@ public final class BackgroundJob {
 
         // These variables are needed if running on Android 10 and higher.
         addToEnvIfPresent(environment, "ANDROID_ART_ROOT");
+        addToEnvIfPresent(environment, "DEX2OATBOOTCLASSPATH");
         addToEnvIfPresent(environment, "ANDROID_I18N_ROOT");
         addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
         addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
