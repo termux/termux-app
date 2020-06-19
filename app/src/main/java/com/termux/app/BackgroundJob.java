@@ -148,6 +148,8 @@ public final class BackgroundJob {
         // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
         environment.add("EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE"));
         // ANDROID_RUNTIME_ROOT and ANDROID_TZDATA_ROOT are required for `am` to run on Android Q
+        addToEnvIfPresent(environment, "ANDROID_ART_ROOT");
+        addToEnvIfPresent(environment, "ANDROID_I18N_ROOT");
         addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
         addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
         if (failSafe) {
