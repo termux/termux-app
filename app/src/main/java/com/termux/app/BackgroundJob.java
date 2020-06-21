@@ -139,6 +139,7 @@ public final class BackgroundJob {
         List<String> environment = new ArrayList<>();
 
         environment.add("TERM=xterm-256color");
+        environment.add("COLORTERM=truecolor");
         environment.add("HOME=" + TermuxService.HOME_PATH);
         environment.add("PREFIX=" + TermuxService.PREFIX_PATH);
         environment.add("BOOTCLASSPATH=" + System.getenv("BOOTCLASSPATH"));
