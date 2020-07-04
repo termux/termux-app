@@ -117,11 +117,10 @@ public final class TerminalRenderer {
                     } else {
                         final int columnWidthSinceLastRun = column - lastRunStartColumn;
                         final int charsSinceLastRun = currentCharIndex - lastRunStartIndex;
-                        int cursorColor = (lastRunInsideCursor || lastRunInsideSelection) ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
-                        int cursorStyle = lastRunInsideSelection ? TerminalEmulator.CURSOR_STYLE_BLOCK : cursorShape;
+                        int cursorColor = lastRunInsideCursor ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
                         drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun,
                             lastRunStartIndex, charsSinceLastRun, measuredWidthForRun,
-                            cursorColor, cursorStyle, lastRunStyle, reverseVideo);
+                            cursorColor, cursorShape, lastRunStyle, reverseVideo || lastRunInsideSelection);
                     }
                     measuredWidthForRun = 0.f;
                     lastRunStyle = style;
@@ -143,10 +142,9 @@ public final class TerminalRenderer {
 
             final int columnWidthSinceLastRun = columns - lastRunStartColumn;
             final int charsSinceLastRun = currentCharIndex - lastRunStartIndex;
-            int cursorColor = (lastRunInsideCursor || lastRunInsideSelection) ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
-            int cursorStyle = lastRunInsideSelection ? TerminalEmulator.CURSOR_STYLE_BLOCK : cursorShape;
+            int cursorColor = lastRunInsideCursor ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
             drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun, lastRunStartIndex, charsSinceLastRun,
-                measuredWidthForRun, cursorColor, cursorStyle, lastRunStyle, reverseVideo);
+                measuredWidthForRun, cursorColor, cursorShape, lastRunStyle, reverseVideo || lastRunInsideSelection);
         }
     }
 
