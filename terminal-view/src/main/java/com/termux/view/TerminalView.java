@@ -539,6 +539,8 @@ public final class TerminalView extends View {
 
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
+        Properties props = getProperties();
+
         if (LOG_KEY_EVENTS)
             Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -554,6 +556,11 @@ public final class TerminalView extends View {
                         return onKeyUp(keyCode, event);
                 }
             }
+        } else if (props.getProperty("ctrl-space-workaround", "false").equals("true") &&
+                   keyCode == KeyEvent.KEYCODE_SPACE && event.isCtrlPressed()) {
+            /* ctrl + space does not work on some ROMs without this workaround.
+               However, this breaks it on devices where it works out of the box. */
+            return onKeyDown(keyCode, event);
         }
         return super.onKeyPreIme(keyCode, event);
     }
