@@ -63,7 +63,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
 
     public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
-    private static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
+    public static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
 
     /** This service is only bound from inside the same process and never uses IPC. */
     class LocalBinder extends Binder {
