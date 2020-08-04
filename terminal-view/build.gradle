@@ -17,7 +17,7 @@ ext {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
 
     dependencies {
         implementation "androidx.annotation:annotation:1.1.0"
@@ -25,8 +25,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
