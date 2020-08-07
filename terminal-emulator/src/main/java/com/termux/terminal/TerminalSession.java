@@ -110,13 +110,13 @@ public final class TerminalSession extends TerminalOutput {
 
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == MSG_NEW_INPUT && isRunning()) {
-                int bytesRead = mProcessToTerminalIOQueue.read(mReceiveBuffer, false);
-                if (bytesRead > 0) {
-                    mEmulator.append(mReceiveBuffer, bytesRead);
-                    notifyScreenUpdate();
-                }
-            } else if (msg.what == MSG_PROCESS_EXITED) {
+            int bytesRead = mProcessToTerminalIOQueue.read(mReceiveBuffer, false);
+            if (bytesRead > 0) {
+                mEmulator.append(mReceiveBuffer, bytesRead);
+                notifyScreenUpdate();
+            }
+
+            if (msg.what == MSG_PROCESS_EXITED) {
                 int exitCode = (Integer) msg.obj;
                 cleanupResources(exitCode);
                 mChangeCallback.onSessionFinished(TerminalSession.this);
