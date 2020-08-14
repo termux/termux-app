@@ -1,5 +1,7 @@
 package com.termux.app;
 
+import android.text.TextUtils;
+
 import androidx.annotation.Nullable;
 
 import org.json.JSONArray;
@@ -305,7 +307,7 @@ class ExtraKeyButton {
             keys[i] = ExtraKeysInfos.replaceAlias(keys[i]);
         }
 
-        this.key = String.join(" ", keys);
+        this.key = TextUtils.join(" ", keys);
 
         String displayFromConfig = config.optString("display", null);
         if (displayFromConfig != null) {
