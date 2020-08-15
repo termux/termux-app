@@ -15,7 +15,6 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -29,9 +28,6 @@ import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +47,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
 
-    /** Note that this is a symlink on the Android M preview. */
+    /**
+     * Note that this is a symlink on the Android M preview.
+     */
     @SuppressLint("SdCardPath")
     public static final String FILES_PATH = "/data/data/com.termux/files";
     public static final String PREFIX_PATH = FILES_PATH + "/usr";
@@ -63,7 +61,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
     private static final String ACTION_INSTALL_PACKAGES = "com.termux.install_packages";
     private static final String ACTION_LOCK_WAKE = "com.termux.service_wake_lock";
     private static final String ACTION_UNLOCK_WAKE = "com.termux.service_wake_unlock";
-    /** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
+    /**
+     * Intent action to launch a new terminal session. Executed from TermuxWidgetProvider.
+     */
     public static final String ACTION_EXECUTE = "com.termux.service_execute";
 
     public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
@@ -71,7 +71,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
     public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
     public static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
 
-    /** This service is only bound from inside the same process and never uses IPC. */
+    /**
+     * This service is only bound from inside the same process and never uses IPC.
+     */
     class LocalBinder extends Binder {
         public final TermuxService service = TermuxService.this;
     }
@@ -90,14 +92,23 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     final List<BackgroundJob> mBackgroundTasks = new ArrayList<>();
 
-    /** Note that the service may often outlive the activity, so need to clear this reference. */
+    /**
+     * Note that the service may often outlive the activity, so need to clear this reference.
+     */
     SessionChangedCallback mSessionChangeCallback;
 
-    /** The wake lock and wifi lock are always acquired and released together. */
+    /**
+     * The wake lock and wifi lock are always acquired and released together.
+     */
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
 
-    /** If the user has executed the {@link #ACTION_STOP_SERVICE} intent. */
+    /* APK Utility */
+    private ApkUtils apkUtils = new ApkUtils(this);
+
+    /**
+     * If the user has executed the {@link #ACTION_STOP_SERVICE} intent.
+     */
     boolean mWantsToStop = false;
 
     private final TermuxPackageInstaller packageInstaller = new TermuxPackageInstaller();
@@ -116,9 +127,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
             if (packages == null || packages.length == 0) {
                 Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without packages");
             } else {
-                for (String pkg : packages) {
-                    ApkInstaller.installPackageApk(pkg, this);
-                }
+                apkUtils.downloadAPK(this, packages);
             }
         } else if (ACTION_LOCK_WAKE.equals(action)) {
             if (mWakeLock == null) {
@@ -214,7 +223,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
         this.registerReceiver(packageInstaller, removedFilter);
     }
 
-    /** Update the shown foreground service notification after making any changes that affect it. */
+    /**
+     * Update the shown foreground service notification after making any changes that affect it.
+     */
     void updateNotification() {
         if (mWakeLock == null && mTerminalSessions.isEmpty() && mBackgroundTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
@@ -340,7 +351,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
         String[] args = new String[processArgs.length];
         args[0] = processName;
-        if (processArgs.length > 1) System.arraycopy(processArgs, 1, args, 1, processArgs.length - 1);
+        if (processArgs.length > 1)
+            System.arraycopy(processArgs, 1, args, 1, processArgs.length - 1);
 
         TerminalSession session = new TerminalSession(executablePath, cwd, args, env, this);
         mTerminalSessions.add(session);
@@ -412,7 +424,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         String channelDescription = "Notifications from Termux";
         int importance = NotificationManager.IMPORTANCE_LOW;
 
-        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName,importance);
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);
         channel.setDescription(channelDescription);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.createNotificationChannel(channel);
