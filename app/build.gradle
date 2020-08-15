@@ -156,11 +156,11 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
 
 task setupBootstraps(){
     doLast {
-        def version = 11
-        setupBootstrap("aarch64", "577a464c41fbcc902b18c298f7af7fef7cfc205614628466a7fc6bc2433862e1", version)
-        setupBootstrap("arm",     "b57dfc060f99e8a551561a7ba3874f2b704d34faf668e48932851e1f7fa819b3", version)
-        setupBootstrap("i686",    "389c13918ff06f1c420b3ffcd8852fedb0240915042c86143dc0c2ff0e455f5f", version)
-        setupBootstrap("x86_64",  "a9c2ae3a0a073f4cfd63e8143cabdc8199b2f80cf656f387697859bcfdffcf7c", version)
+        def version = 12
+        setupBootstrap("aarch64", "5e07239cad78050f56a28f9f88a0b485cead45864c6c00e1a654c728152b0244", version)
+        setupBootstrap("arm",     "fc72279c480c1eea46b6f0fcf78dc57599116c16dcf3b2b970a9ef828f0ec30b", version)
+        setupBootstrap("i686",    "895680fc967aecfa4ed77b9dc03aab95d86345be69df48402c63bfc0178337f6", version)
+        setupBootstrap("x86_64",  "8714ab8a5ff4e1f5f3ec01e7d0294776bfcffb187c84fa95270ec67ede8f682e", version)
     }
 }
 
