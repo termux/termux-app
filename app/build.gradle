@@ -155,7 +155,7 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
                 println "target file path is ${targetFile}"
 
                 try {
-                    zipInput.(new FileOutputStream(targetFile))
+                    zipInput.transferTo(new FileOutputStream(targetFile))
                 } catch (Exception e) {
                     println "Error ${e}"
                 }
