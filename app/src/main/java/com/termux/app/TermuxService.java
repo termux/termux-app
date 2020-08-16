@@ -58,7 +58,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     private static final int NOTIFICATION_ID = 1337;
 
     private static final String ACTION_STOP_SERVICE = "com.termux.service_stop";
-    private static final String ACTION_INSTALL_PACKAGES = "com.termux.install_packages";
+
     private static final String ACTION_LOCK_WAKE = "com.termux.service_wake_lock";
     private static final String ACTION_UNLOCK_WAKE = "com.termux.service_wake_unlock";
     /**
@@ -70,6 +70,14 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
     public static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
+
+    /*
+     * APK service intents
+     * */
+
+    private static final String ACTION_INSTALL_PACKAGES = "com.termux.install_packages";
+    private static final String ACTION_LIST_PACKAGES = "com.termux.list_packages";
+    private static final String ACTION_UNINSTALL_PACKAGES = "com.termux.uninstall_packages";
 
     /**
      * This service is only bound from inside the same process and never uses IPC.
@@ -127,7 +135,16 @@ public final class TermuxService extends Service implements SessionChangedCallba
             if (packages == null || packages.length == 0) {
                 Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without packages");
             } else {
-                apkUtils.downloadAPK(this, packages);
+                apkUtils.installPackage(packages);
+            }
+        } else if (ACTION_LIST_PACKAGES.equals(action)) {
+            apkUtils.getInstalledPackages();
+        } else if (ACTION_UNINSTALL_PACKAGES.equals(action)) {
+            String[] packages = intent.getStringArrayExtra("packages");
+            if (packages == null || packages.length == 0) {
+                Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without packages");
+            } else {
+                apkUtils.uninstallPackage(packages);
             }
         } else if (ACTION_LOCK_WAKE.equals(action)) {
             if (mWakeLock == null) {

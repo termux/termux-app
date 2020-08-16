@@ -30,7 +30,7 @@ open class ApkUtils(val context: Context) : OnStartOrResumeListener, OnCancelLis
     private val downloadHashMap: HashMap<String, PackageDownloadData> = hashMapOf()
     private var totalPackages = 0
 
-    fun downloadAPK(context: Context, packages: Array<String>) {
+    fun installPackage(packages: Array<String>) {
         val config = PRDownloaderConfig.newBuilder()
             .setReadTimeout(50_000)
             .build()
@@ -142,7 +142,7 @@ open class ApkUtils(val context: Context) : OnStartOrResumeListener, OnCancelLis
         }
     }
 
-    fun getInstalledPackages(): ArrayList<String> {
+    fun getInstalledPackages() {
         val installedTermuxPackageList = arrayListOf<String>()
         val pm: PackageManager = context.packageManager
         val installedPackages = pm.getInstalledApplications(PackageManager.GET_META_DATA)
@@ -153,16 +153,26 @@ open class ApkUtils(val context: Context) : OnStartOrResumeListener, OnCancelLis
                 installedTermuxPackageList.add(appInfo.packageName.replace(TERMUX_APK_SUFFIX, ""))
             }
         }
-        return installedTermuxPackageList
+
+        /*
+        * This array list can be use to return the packages together instead of printing them individually
+        * */
+        installedTermuxPackageList.forEach { Log.i(EmulatorDebug.LOG_TAG, it) }
+
     }
 
-    fun uninstallAPK(pkg: String) {
-        val intent = Intent(Intent.ACTION_DELETE)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        intent.data = Uri.parse("package:${TERMUX_APK_SUFFIX}${pkg}")
-        context.startActivity(intent)
+    fun uninstallPackage(packages: Array<String>) {
+        /*
+        *Takes in termux package name eg. openssh, vim
+        * */
+        packages.forEach { packageName ->
+            val intent = Intent(Intent.ACTION_DELETE)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            intent.data = Uri.parse("package:${TERMUX_APK_SUFFIX}${packageName}")
+            context.startActivity(intent)
 
-        //todo maybe register for a package delete broadcast as a call back
+            //todo maybe register for a package delete broadcast as a call back
+        }
     }
 
     data class PackageDownloadData(var downloadID: Int, var isSuccessful: Boolean?)
