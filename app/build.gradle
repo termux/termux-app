@@ -134,10 +134,10 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
     def outputDir = new File(outputPath).getAbsoluteFile()
     if (!outputDir.exists()) outputDir.mkdirs()
 
-    def symlinksFile = new File(outputDir, "symlinks.so").getAbsoluteFile()
+    def symlinksFile = new File(outputDir, "libsymlinks.so").getAbsoluteFile()
     if (symlinksFile.exists()) symlinksFile.delete();
 
-    def mappingsFile = new File(outputDir, "files.so").getAbsoluteFile()
+    def mappingsFile = new File(outputDir, "libfiles.so").getAbsoluteFile()
     if (mappingsFile.exists()) mappingsFile.delete()
     mappingsFile.createNewFile()
     def mappingsFileWriter = new BufferedWriter(new FileWriter(mappingsFile))
@@ -149,7 +149,7 @@ def setupBootstrap(String arch, String expectedChecksum, int version) {
             if (zipEntry.getName() == "SYMLINKS.txt") {
                 zipInput.transferTo(new FileOutputStream(symlinksFile))
             } else if (!zipEntry.isDirectory()) {
-                def soName = counter + ".so"
+                def soName = "lib" + counter + ".so"
                 def targetFile = new File(outputDir, soName).getAbsoluteFile()
 
                 println "target file path is ${targetFile}"

@@ -43,7 +43,7 @@ public class TermuxPackageInstaller extends BroadcastReceiver {
     }
 
     static void installPackage(ApplicationInfo info) throws Exception {
-        File filesMappingFile = new File(info.nativeLibraryDir, "files.so");
+        File filesMappingFile = new File(info.nativeLibraryDir, "libfiles.so");
         if (!filesMappingFile.exists()) {
             Log.e("termux", "No file mapping at " + filesMappingFile.getAbsolutePath());
             return;
@@ -69,7 +69,7 @@ public class TermuxPackageInstaller extends BroadcastReceiver {
             Os.symlink(oldPath, newPath);
         }
 
-        File symlinksFile = new File(info.nativeLibraryDir, "symlinks.so");
+        File symlinksFile = new File(info.nativeLibraryDir, "libsymlinks.so");
         if (!symlinksFile.exists()) {
             Log.e("termux", "No symlinks mapping at " + symlinksFile.getAbsolutePath());
         }
