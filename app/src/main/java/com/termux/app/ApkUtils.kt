@@ -44,7 +44,7 @@ open class ApkUtils(val context: Context) : OnStartOrResumeListener, OnCancelLis
             packages.forEach { packageName ->
 
                 val path = "${TermuxService.FILES_PATH}/"
-                val url = "https://termux.net/apks/$packageName.apk"
+                val url = "https://staging.termux-mirror.ml/android-10/$packageName.apk"
 
                 val downloadId = PRDownloader.download(url, path, "$packageName.apk")
                     .build()
