@@ -58,9 +58,9 @@ list_packages() {
 
 case "$CMD" in
 	help) show_help;;
-	add) install_packages "$@";;
-	remove) uninstall_packages "$@";;
-	list) list_packages;;
+	install) install_packages "$@";;
+	uninstall) uninstall_packages "$@";;
+	list-installed) list_packages;;
 	*)
 		echo "Unknown command: '$CMD' (run 'pkg help' for usage information)"
 		exit 1
