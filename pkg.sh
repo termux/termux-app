@@ -12,9 +12,9 @@ show_help() {
 	echo
 	echo 'A tool for managing packages. Commands:'
 	echo
-	echo '  add    <packages>   - Install specified packages'
-	echo '  remove <packages>   - Uninstall specified packages'
-	echo '  list                - List installed packages'
+	echo '  install    <packages>   - Install specified packages'
+	echo '  uninstall  <packages>   - Uninstall specified packages'
+	echo '  list-installed          - List installed packages'
 	echo
 }
 
