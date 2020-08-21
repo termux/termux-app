@@ -16,7 +16,7 @@ terminal emulation). For the packages installable inside the app, see
 
 ## Installation
 
-Termux:Widget application can be obtained from:
+Termux application can be obtained from:
 
 - [Google Play](https://play.google.com/store/apps/details?id=com.termux)
 - [F-Droid](https://f-droid.org/en/packages/com.termux/)
