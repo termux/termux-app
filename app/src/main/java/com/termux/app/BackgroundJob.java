@@ -138,6 +138,7 @@ public final class BackgroundJob {
 
         List<String> environment = new ArrayList<>();
 
+        environment.add("TERMUX_ANDROID10=1");
         environment.add("TERM=xterm-256color");
         environment.add("COLORTERM=truecolor");
         environment.add("HOME=" + TermuxService.HOME_PATH);
