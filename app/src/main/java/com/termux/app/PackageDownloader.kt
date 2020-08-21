@@ -214,7 +214,7 @@ class PackageDownloader(val context: Context) {
         val availableBlocks: Long
         blockSize = stat.blockSizeLong
         availableBlocks = stat.availableBlocksLong
-        return ((availableBlocks * blockSize) * 0.001).toLong()
+        return availableBlocks * blockSize
     }
 
     private fun deleteFileIfExists(downloadFile: File) {
