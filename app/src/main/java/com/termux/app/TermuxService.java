@@ -111,8 +111,6 @@ public final class TermuxService extends Service implements SessionChangedCallba
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
 
-    /* APK Utility */
-    private ApkUtils apkUtils = new ApkUtils(this);
 
     /**
      * If the user has executed the {@link #ACTION_STOP_SERVICE} intent.
@@ -135,16 +133,19 @@ public final class TermuxService extends Service implements SessionChangedCallba
             if (packages == null || packages.length == 0) {
                 Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without packages");
             } else {
-                apkUtils.installPackage(packages);
+                PackageInstaller downloaderTest = new PackageInstaller(this);
+                downloaderTest.initDownloader(packages);
             }
         } else if (ACTION_LIST_PACKAGES.equals(action)) {
-            apkUtils.getInstalledPackages();
+            PackageLister packageLister = new PackageLister(this);
+            packageLister.listPackages();
         } else if (ACTION_UNINSTALL_PACKAGES.equals(action)) {
             String[] packages = intent.getStringArrayExtra("packages");
             if (packages == null || packages.length == 0) {
                 Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without packages");
             } else {
-                apkUtils.uninstallPackage(packages);
+                PackageUninstaller packageUninstaller = new PackageUninstaller(this);
+                packageUninstaller.uninstallPackages(packages);
             }
         } else if (ACTION_LOCK_WAKE.equals(action)) {
             if (mWakeLock == null) {
