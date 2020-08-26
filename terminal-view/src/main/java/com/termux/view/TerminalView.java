@@ -44,6 +44,12 @@ import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.WcWidth;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
+
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
 
@@ -246,14 +252,36 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
-        //
-        // Previous keyboard issues:
-        // https://github.com/termux/termux-packages/issues/25
-        // https://github.com/termux/termux-app/issues/87.
-        // https://github.com/termux/termux-app/issues/126.
-        // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
-        outAttrs.inputType = InputType.TYPE_NULL;
+        File propsFile = new File(getContext().getFilesDir() + "/home/.termux/termux.properties");
+        if (!propsFile.exists())
+            propsFile = new File(getContext().getFilesDir() + "/home/.config/termux/termux.properties");
+
+        Properties props = new Properties();
+        try {
+            if (propsFile.isFile() && propsFile.canRead()) {
+                try (FileInputStream in = new FileInputStream(propsFile)) {
+                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception e) {
+            Log.e("termux", "Error loading props", e);
+        }
+
+        if (props.getProperty("enforce-char-based-input", "false").equals("true")) {
+            // Some keyboards seems do not reset the internal state on TYPE_NULL.
+            // Affects mostly Samsung stock keyboards.
+            // https://github.com/termux/termux-app/issues/686
+            outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        } else {
+            // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
+            //
+            // Previous keyboard issues:
+            // https://github.com/termux/termux-packages/issues/25
+            // https://github.com/termux/termux-app/issues/87.
+            // https://github.com/termux/termux-app/issues/126.
+            // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
+            outAttrs.inputType = InputType.TYPE_NULL;
+        }
 
         // Note that IME_ACTION_NONE cannot be used as that makes it impossible to input newlines using the on-screen
         // keyboard on Android TV (see https://github.com/termux/termux-app/issues/221).
