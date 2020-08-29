@@ -8,61 +8,62 @@ set -e -u
 # adb shell am startservice --user 0 -a com.termux.list_packages com.termux/com.termux.app.TermuxService
 
 show_help() {
-	echo 'Usage: pkg command [arguments]'
-	echo
-	echo 'A tool for managing packages. Commands:'
-	echo
-	echo '  add    <packages>   - Install specified packages'
-	echo '  remove <packages>   - Uninstall specified packages'
-	echo '  list                - List installed packages'
-	echo
+    echo 'Usage: pkg command [arguments]'
+    echo
+    echo 'A tool for managing packages. Commands:'
+    echo
+    echo '  add    <packages>   - Install specified packages'
+    echo '  remove <packages>   - Uninstall specified packages'
+    echo '  list                - List installed packages'
+    echo
 }
 
 if [ $# = 0 ]; then
-	show_help
-	exit 1
+    show_help
+    exit 1
 fi
 
 CMD="$1"
 shift 1
 
 install_packages() {
-	local all_packages="$*"
+    local all_packages="$*"
 
-	am startservice \
-		--user 0 \
-		--esa packages "${all_packages// /,}" \
-		-a com.termux.install_packages \
-		com.termux/com.termux.app.TermuxService \
-		>/dev/null
+    am startservice \
+        --user 0 \
+        --es source play-store \
+        --esa packages "${all_packages// /,}" \
+        -a com.termux.install_packages \
+        com.termux/com.termux.app.TermuxService \
+        >/dev/null
 }
 
 uninstall_packages() {
-	local all_packages="$*"
+    local all_packages="$*"
 
-	am startservice \
-		--user 0 \
-		--esa packages "${all_packages// /,}" \
-		-a com.termux.uninstall_packages \
-		com.termux/com.termux.app.TermuxService \
-		>/dev/null
+    am startservice \
+        --user 0 \
+        --esa packages "${all_packages// /,}" \
+        -a com.termux.uninstall_packages \
+        com.termux/com.termux.app.TermuxService \
+        >/dev/null
 }
 
 list_packages() {
-	am startservice \
-		--user 0 \
-		-a com.termux.list_packages \
-		com.termux/com.termux.app.TermuxService \
-		>/dev/null
+    am startservice \
+        --user 0 \
+        -a com.termux.list_packages \
+        com.termux/com.termux.app.TermuxService \
+        >/dev/null
 }
 
 case "$CMD" in
-	help) show_help;;
-	install) install_packages "$@";;
-	uninstall) uninstall_packages "$@";;
-	list-installed) list_packages;;
-	*)
-		echo "Unknown command: '$CMD' (run 'pkg help' for usage information)"
-		exit 1
-		;;
+help) show_help ;;
+install) install_packages "$@" ;;
+uninstall) uninstall_packages "$@" ;;
+list-installed) list_packages ;;
+*)
+    echo "Unknown command: '$CMD' (run 'pkg help' for usage information)"
+    exit 1
+    ;;
 esac

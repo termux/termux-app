@@ -130,11 +130,18 @@ public final class TermuxService extends Service implements SessionChangedCallba
             stopSelf();
         } else if (ACTION_INSTALL_PACKAGES.equals(action)) {
             String[] packages = intent.getStringArrayExtra("packages");
+            System.out.println(intent.getExtras());
+            String source = intent.getStringExtra("source");
+            System.out.println("Source " + source);
             if (packages == null || packages.length == 0) {
                 Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without packages");
             } else {
-                PackageInstaller downloaderTest = new PackageInstaller(this);
-                downloaderTest.initDownloader(packages);
+                PackageInstaller packageInstaller = new PackageInstaller(this);
+                if (source == null || source.isEmpty()) {
+                    packageInstaller.initDownloader(packages);
+                } else {
+                    packageInstaller.downloadFromPlayStore(packages);
+                }
             }
         } else if (ACTION_LIST_PACKAGES.equals(action)) {
             PackageLister packageLister = new PackageLister(this);

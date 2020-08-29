@@ -1,10 +1,7 @@
 package com.termux.app
 
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
@@ -20,6 +17,7 @@ import java.io.IOException
 import java.io.OutputStream
 
 const val PACKAGE_INSTALLED_ACTION = "com.termux.SESSION_API_PACKAGE_INSTALLED"
+const val TERMUX_CACHE_PKG_DIRECTORY = "/data/data/com.termux/cache/pkg"
 
 class PackageInstaller(val context: Context) : PackageDownloader.ErrorListener, PackageDownloader.ProgressListener, PackageDownloader.StartListener, PackageDownloader.CompleteListener {
 
@@ -140,7 +138,7 @@ class PackageInstaller(val context: Context) : PackageDownloader.ErrorListener, 
 
     private fun addApkToInstallSession(session: PackageInstaller.Session,
                                        packageName: String) {
-        val file = File("${TermuxService.FILES_PATH}/$packageName.apk")
+        val file = File("${TERMUX_CACHE_PKG_DIRECTORY}/$packageName.apk")
         val packageInSession: OutputStream = session.openWrite(packageName, 0, -1)
         val inputStream = FileInputStream(file)
         try {
@@ -225,7 +223,7 @@ class PackageInstaller(val context: Context) : PackageDownloader.ErrorListener, 
         downloadHashMap.forEach { (packageName) ->
             //Setting up a default response
             installationResponseHashMap[packageName] = "the request package was either not downloaded or just doesn't exist!"
-            val apkFileToBeInstalled = File("${TermuxService.FILES_PATH}/$packageName.apk")
+            val apkFileToBeInstalled = File("${TERMUX_CACHE_PKG_DIRECTORY}/$packageName.apk")
             if (apkFileToBeInstalled.exists()) {
                 packagesToInstall.add(packageName)
             }
@@ -269,8 +267,24 @@ class PackageInstaller(val context: Context) : PackageDownloader.ErrorListener, 
         }
     }
 
+    /*--------------------------------------- Play Store Download -----------------------------------------*/
 
+    fun downloadFromPlayStore(packageList: Array<String>) {
+
+        /*Opening multiple package links at once in Google Play will be anything but user-friendly. There's no way to prevent this but to just start a transparent
+        * activity and monitor the lifecycle, but that's not a great idea in itself. */
+
+        fun openStoreLink(packageName: String) {
+            try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=net.termux.$packageName")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            } catch (e: ActivityNotFoundException) {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=net.termux.$packageName")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+        }
+        packageList.forEachIndexed { _, packageName ->
+            openStoreLink(packageName)
+        }
+    }
 }
-
 
 data class LocalDownloadData(var packageName: String, var isDownloaded: Boolean?, var extraLogs: String = "")

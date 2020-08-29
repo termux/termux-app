@@ -4,7 +4,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Handler
 import android.os.StatFs
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.termux.R
 import com.termux.app.PackageInstaller.Companion.log
@@ -15,10 +14,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
-import java.net.ConnectException
-import java.net.URL
-import java.net.URLConnection
-import java.net.UnknownHostException
+import java.net.*
 
 
 // Download status constants
@@ -70,6 +66,11 @@ class PackageDownloader(val context: Context) {
         notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         builder = NotificationCompat.Builder(context, "termux_notification_channel").setChannelId(NOTIFICATION_CHANNEL_ID)
 
+        File(TERMUX_CACHE_PKG_DIRECTORY).let {
+            if (!it.exists()) {
+                it.mkdir()
+            }
+        }
 
         var isStartNotified = false
 
@@ -78,15 +79,15 @@ class PackageDownloader(val context: Context) {
         var percent60 = false
         var percent80 = false
 
-        //val fileUrl = "https://termux.net/apks/$packageName.apk"
+        // val fileUrl = "https://termux.net/apks/$packageName.apk"
         val fileUrl = "https://staging.termux-mirror.ml/android-10/$packageName.apk"
         "URL -> $fileUrl".log()
         try {
             downloadingJob = GlobalScope.launch(Dispatchers.IO) {
+                val downloadData = DownloadData(packageName, 0, 0, 0, ENTERED)
                 try {
-                    val downloadData = DownloadData(packageName, 0, 0, 0, ENTERED)
                     showNotification(downloadData)
-                    val downloadFile = File("${TermuxService.FILES_PATH}/${packageName}.apk")
+                    val downloadFile = File("${TERMUX_CACHE_PKG_DIRECTORY}/${packageName}.apk")
                     deleteFileIfExists(downloadFile)
                     "Fetching the file size...".log()
                     val url = URL(fileUrl)
@@ -122,23 +123,20 @@ class PackageDownloader(val context: Context) {
                                         downloadData.progressPercent = percent
                                         progressListener.onProgress(downloadData)
                                     }
+                                    updateNotification(downloadData)
                                     if (percent % 20 == 0 && total != lengthOfFile) {
                                         // Can be simplified
                                         percent.let {
                                             if (it == 20 && !percent20) {
-                                                updateNotification(downloadData)
                                                 percent20 = true
                                                 updateProgress(it)
                                             } else if (it == 40 && !percent40) {
-                                                updateNotification(downloadData)
                                                 percent40 = true
                                                 updateProgress(it)
                                             } else if (it == 60 && !percent60) {
-                                                updateNotification(downloadData)
                                                 percent60 = true
                                                 updateProgress(it)
                                             } else if (it == 80 && !percent80) {
-                                                updateNotification(downloadData)
                                                 percent80 = true
                                                 updateProgress(it)
                                             }
@@ -159,53 +157,42 @@ class PackageDownloader(val context: Context) {
                     }
 
                 } catch (e: FileNotFoundException) {
-                    packageName.clearThingsUp()
-                    errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = "Package $packageName does not exists!"))
+                    val errorData = ErrorData(packageName = packageName, Status = ERROR, error = "Package $packageName does not exists!", notificationID = downloadData.notificationID)
+                    packageName.clearThingsUp(errorData)
+                    errorListener.onError(errorData)
                 } catch (e: UnknownHostException) {
-                    packageName.clearThingsUp()
-                    errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = "Cannot connect to internet or server unavailable. Aborting the installation."))
+                    val errorData = ErrorData(packageName = packageName, Status = ERROR, error = "Cannot connect to internet or server unavailable. Aborting the installation.", notificationID = downloadData.notificationID)
+                    packageName.clearThingsUp(errorData)
+                    errorListener.onError(errorData)
+                } catch (e: SocketException) {
+                    val errorData = ErrorData(packageName = packageName, Status = ERROR, error = "Cannot connect to internet or server unavailable. Aborting the installation.", notificationID = downloadData.notificationID)
+                    packageName.clearThingsUp(errorData)
+                    errorListener.onError(errorData)
                 } catch (e: ConnectException) {
-                    packageName.clearThingsUp()
-                    errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = "Cannot connect to internet or server unavailable. Aborting the installation."))
+                    val errorData = ErrorData(packageName = packageName, Status = ERROR, error = "Cannot connect to internet or server unavailable. Aborting the installation.", notificationID = downloadData.notificationID)
+                    packageName.clearThingsUp(errorData)
+                    errorListener.onError(errorData)
                 } catch (e: InsufficientStorageException) {
-                    packageName.clearThingsUp()
-                    errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = "Insufficient Storage. Please clear some data before installing."))
+                    val errorData = ErrorData(packageName = packageName, Status = ERROR, error = "Insufficient Storage. Please clear some data before installing.", notificationID = downloadData.notificationID)
+                    errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = ""))
+                    packageName.clearThingsUp(errorData)
+                    errorListener.onError(errorData)
                 } catch (e: Exception) {
-                    packageName.clearThingsUp()
-                    Log.e("termux", "Error installing $packageName", e)
-                    if (this@PackageDownloader::downloadingJob.isInitialized) {
-                        if (downloadingJob.isActive) {
-                            downloadingJob.cancel()
-                        }
-                    }
-                    errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = e.toString()))
+                    "Error installing $packageName $e".log()
+                    val errorData = ErrorData(packageName = packageName, Status = ERROR, error = e.toString(), notificationID = downloadData.notificationID)
+                    packageName.clearThingsUp(errorData)
+                    errorListener.onError(errorData)
                 }
             }
 
-        } catch (e: FileNotFoundException) {
-            packageName.clearThingsUp()
-            errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = "Package $packageName does not exists!"))
-        } catch (e: ConnectException) {
-            packageName.clearThingsUp()
-            errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = "Cannot connect to internet or server unavailable. Aborting the installation."))
-
-        } catch (e: UnknownHostException) {
-            packageName.clearThingsUp()
-            errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = "Cannot connect to internet. Aborting the installation."))
-        } catch (e: InsufficientStorageException) {
-            packageName.clearThingsUp()
-            errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = "Insufficient Storage. Please clear some data before installing."))
         } catch (e: Exception) {
-            packageName.clearThingsUp()
-            Log.e("termux", "Error installing $packageName", e)
-            if (this::downloadingJob.isInitialized) {
-                if (downloadingJob.isActive) {
-                    downloadingJob.cancel()
-                }
-            }
-            errorListener.onError(ErrorData(packageName = packageName, Status = ERROR, error = e.toString()))
+            "Error installing $packageName $e".log()
+            val errorData = ErrorData(packageName = packageName, Status = ERROR, error = e.toString())
+            packageName.clearThingsUp(errorData)
+            errorListener.onError(errorData)
         }
     }
+
 
     private fun getFreeSpace(): Long {
         val path = context.dataDir
@@ -228,10 +215,17 @@ class PackageDownloader(val context: Context) {
         return (this * 0.001).toLong()
     }
 
-    private fun String.clearThingsUp() {
-        val downloadFile = File("${TermuxService.FILES_PATH}/${this}.apk")
+    private fun String.clearThingsUp(errorData: ErrorData) {
+        if (this@PackageDownloader::downloadingJob.isInitialized) {
+            if (downloadingJob.isActive) {
+                downloadingJob.cancel()
+            }
+        }
+        val downloadFile = File("${TERMUX_CACHE_PKG_DIRECTORY}/${this}.apk")
         deleteFileIfExists(downloadFile)
-        notificationManager.cancelAll()
+        if (errorData.notificationID != 0) {
+            notificationManager.cancel(errorData.notificationID)
+        }
     }
 
     /*
@@ -294,4 +288,4 @@ data class DownloadData(
 )
 
 class InsufficientStorageException(message: String) : Exception(message)
-data class ErrorData(var packageName: String, var error: String, var extraLogs: String = "", var Status: Int)
+data class ErrorData(var packageName: String, var error: String, var extraLogs: String = "", var Status: Int, var notificationID: Int = 0)
