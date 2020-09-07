@@ -12,9 +12,9 @@ show_help() {
 	echo
 	echo 'A tool for managing packages. Commands:'
 	echo
-	echo '  install    <packages>   - Install specified packages'
-	echo '  uninstall  <packages>   - Uninstall specified packages'
-	echo '  list-installed          - List installed packages'
+	echo '  install    <packages>  - Install specified packages.'
+	echo '  uninstall  <packages>  - Uninstall specified packages.'
+	echo '  list                   - List installed packages.'
 	echo
 }
 
@@ -31,6 +31,7 @@ install_packages() {
 
 	am startservice \
 		--user 0 \
+		--es source play-store \
 		--esa packages "${all_packages// /,}" \
 		-a com.termux.install_packages \
 		com.termux/com.termux.app.TermuxService \
@@ -57,10 +58,10 @@ list_packages() {
 }
 
 case "$CMD" in
-	help) show_help;;
-	install) install_packages "$@";;
-	uninstall) uninstall_packages "$@";;
-	list-installed) list_packages;;
+	help) show_help ;;
+	install) install_packages "$@" ;;
+	uninstall) uninstall_packages "$@" ;;
+	list-installed) list_packages ;;
 	*)
 		echo "Unknown command: '$CMD' (run 'pkg help' for usage information)"
 		exit 1
