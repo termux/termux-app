@@ -1,12 +1,18 @@
 package com.termux.app;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+
+import com.termux.R;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,6 +56,9 @@ public class RunCommandService extends Service {
     public static final String RUN_COMMAND_WORKDIR = "com.termux.RUN_COMMAND_WORKDIR";
     public static final String RUN_COMMAND_BACKGROUND = "com.termux.RUN_COMMAND_BACKGROUND";
 
+    private static final String NOTIFICATION_CHANNEL_ID = "termux_run_command_notification_channel";
+    private static final int NOTIFICATION_ID = 1338;
+
     class LocalBinder extends Binder {
         public final RunCommandService service = RunCommandService.this;
     }
@@ -61,7 +70,15 @@ public class RunCommandService extends Service {
         return mBinder;
     }
 
+    @Override
+    public void onCreate() {
+        runStartForeground();
+    }
+
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // Run again in case service is already started and onCreate() is not called
+        runStartForeground();
+
         if (allowExternalApps() && RUN_COMMAND_ACTION.equals(intent.getAction())) {
             Uri programUri = new Uri.Builder().scheme("com.termux.file").path(intent.getStringExtra(RUN_COMMAND_PATH)).build();
 
@@ -78,7 +95,54 @@ public class RunCommandService extends Service {
             }
         }
 
+        runStopForeground();
+
         return Service.START_NOT_STICKY;
+    }
+
+    private void runStartForeground() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            setupNotificationChannel();
+            startForeground(NOTIFICATION_ID, buildNotification());
+        }
+    }
+
+    private void runStopForeground() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            stopForeground(true);
+        }
+    }
+
+    private Notification buildNotification() {
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setContentTitle(getText(R.string.application_name) + " Run Command");
+        builder.setSmallIcon(R.drawable.ic_service_notification);
+
+        // Use a low priority:
+        builder.setPriority(Notification.PRIORITY_LOW);
+
+        // No need to show a timestamp:
+        builder.setShowWhen(false);
+
+        // Background color for small notification icon:
+        builder.setColor(0xFF607D8B);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder.setChannelId(NOTIFICATION_CHANNEL_ID);
+        }
+
+        return builder.build();
+    }
+
+    private void setupNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+
+        String channelName = "Termux Run Command";
+        int importance = NotificationManager.IMPORTANCE_LOW;
+
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.createNotificationChannel(channel);
     }
 
     private boolean allowExternalApps() {
