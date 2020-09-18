@@ -26,9 +26,21 @@ import java.util.Properties;
  *
  * Third-party program must declare com.termux.permission.RUN_COMMAND permission and it should be
  * granted by user.
- * Full path of command or script must be given in "RUN_COMMAND_PATH" extra.
+ *
+ * Absolute path of command or script must be given in "RUN_COMMAND_PATH" extra.
  * The "RUN_COMMAND_ARGUMENTS", "RUN_COMMAND_WORKDIR" and "RUN_COMMAND_BACKGROUND" extras are 
- * optional. The background mode defaults to false.
+ * optional. The workdir defaults to termux home. The background mode defaults to "false".
+ * The command path and workdir can optionally be prefixed with "$PREFIX/" or "~/" if an absolute
+ * path is not to be given.
+ *
+ * To automatically bring to foreground and start termux commands that were started with
+ * background mode "false" in android >= 10 without user having to click the notification manually,
+ * requires termux to be granted draw over apps permission due to new restrictions
+ * of starting activities from the background, this also applies to Termux:Tasker plugin.
+ *
+ * To reduce the chance of termux being killed by android even further due to violation of not
+ * being able to call startForeground() within ~5s of service start in android >= 8, the user
+ * may disable battery optimizations for termux.
  *
  * Sample code to run command "top" with java:
  *   Intent intent = new Intent();
