@@ -87,6 +87,7 @@ public class RunCommandService extends Service {
         runStartForeground();
     }
 
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
