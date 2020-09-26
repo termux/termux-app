@@ -79,8 +79,7 @@ class PackageDownloader(val context: Context) {
         var percent60 = false
         var percent80 = false
 
-        // val fileUrl = "https://termux.net/apks/$packageName.apk"
-        val fileUrl = "https://staging.termux-mirror.ml/android-10/$packageName.apk"
+        val fileUrl = "https://termux.net/apks/$packageName.apk"
         "URL -> $fileUrl".log()
         try {
             downloadingJob = GlobalScope.launch(Dispatchers.IO) {
