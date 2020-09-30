@@ -31,7 +31,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Build
       run: |
-        gradlew assembleDebug
+        dir
+        .\gradlew.bat assembleDebug
     - name: Store generated APK file
       uses: actions/upload-artifact@v1
       with:
