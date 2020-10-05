@@ -23,6 +23,9 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
+import com.termux.app.packagemanager.PackageInstaller;
+import com.termux.app.packagemanager.PackageLister;
+import com.termux.app.packagemanager.PackageUninstaller;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
@@ -137,11 +140,14 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without packages");
             } else {
                 PackageInstaller packageInstaller = new PackageInstaller(this);
-                if (source == null || source.isEmpty()) {
-                    packageInstaller.initDownloader(packages);
-                } else {
-                    packageInstaller.downloadFromPlayStore(packages);
-                }
+                if (source != null) {
+                    if (source.equals("external")) {
+                        packageInstaller.initDownloader(packages);
+                    } else if (source.equals("play-store")) {
+                        packageInstaller.downloadFromPlayStore(packages);
+                    }
+                } else
+                    Log.e(EmulatorDebug.LOG_TAG, ACTION_INSTALL_PACKAGES + " called without the download source!");
             }
         } else if (ACTION_LIST_PACKAGES.equals(action)) {
             PackageLister packageLister = new PackageLister(this);
