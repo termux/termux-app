@@ -1,8 +1,8 @@
-package com.termux.app
+package com.termux.app.packagemanager
 
 import android.content.Context
 import android.content.pm.PackageManager
-import com.termux.app.PackageInstaller.Companion.log
+import com.termux.app.packagemanager.PackageInstaller.Companion.log
 
 
 class PackageLister(val context: Context) {

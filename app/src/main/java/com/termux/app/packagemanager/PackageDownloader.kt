@@ -1,4 +1,4 @@
-package com.termux.app
+package com.termux.app.packagemanager
 
 import android.app.NotificationManager
 import android.content.Context
@@ -6,7 +6,8 @@ import android.os.Handler
 import android.os.StatFs
 import androidx.core.app.NotificationCompat
 import com.termux.R
-import com.termux.app.PackageInstaller.Companion.log
+import com.termux.app.packagemanager.Constants.Companion.APK_REPO_URL
+import com.termux.app.packagemanager.PackageInstaller.Companion.log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -29,7 +30,10 @@ const val NOTIFICATION_CHANNEL_ID = "termux_notification_channel"
 
 class PackageDownloader(val context: Context) {
 
-    private lateinit var notificationManager: NotificationManager
+    private val TERMUX_CACHE_DIRECTORY = "${context.cacheDir}${Constants.TERMUX_CACHE_PKG_DIRECTORY_SUBFOLDER}"
+
+    private lateinit
+    var notificationManager: NotificationManager
     private lateinit var builder: NotificationCompat.Builder
 
     interface ProgressListener {
@@ -66,9 +70,9 @@ class PackageDownloader(val context: Context) {
         notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         builder = NotificationCompat.Builder(context, "termux_notification_channel").setChannelId(NOTIFICATION_CHANNEL_ID)
 
-        File(TERMUX_CACHE_PKG_DIRECTORY).let {
-            if (!it.exists()) {
-                it.mkdir()
+        File(TERMUX_CACHE_DIRECTORY).let { file ->
+            if (!file.exists()) {
+                file.mkdir()
             }
         }
 
@@ -79,14 +83,14 @@ class PackageDownloader(val context: Context) {
         var percent60 = false
         var percent80 = false
 
-        val fileUrl = "https://termux.net/apks/$packageName.apk"
+        val fileUrl = "$APK_REPO_URL$packageName.apk"
         "URL -> $fileUrl".log()
         try {
             downloadingJob = GlobalScope.launch(Dispatchers.IO) {
                 val downloadData = DownloadData(packageName, 0, 0, 0, ENTERED)
                 try {
                     showNotification(downloadData)
-                    val downloadFile = File("${TERMUX_CACHE_PKG_DIRECTORY}/${packageName}.apk")
+                    val downloadFile = File("$TERMUX_CACHE_DIRECTORY/${packageName}.apk")
                     deleteFileIfExists(downloadFile)
                     "Fetching the file size...".log()
                     val url = URL(fileUrl)
@@ -220,7 +224,7 @@ class PackageDownloader(val context: Context) {
                 downloadingJob.cancel()
             }
         }
-        val downloadFile = File("${TERMUX_CACHE_PKG_DIRECTORY}/${this}.apk")
+        val downloadFile = File("$TERMUX_CACHE_DIRECTORY/${this}.apk")
         deleteFileIfExists(downloadFile)
         if (errorData.notificationID != 0) {
             notificationManager.cancel(errorData.notificationID)

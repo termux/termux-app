@@ -73,7 +73,10 @@
             android:resizeableActivity="true"
             android:theme="@android:style/Theme.Material.Light.DarkActionBar" />
 
-
+        <activity
+            android:name=".app.packagemanager.GooglePlayTransparentActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+        </activity>
         <activity
             android:name="com.termux.filepicker.TermuxFileReceiverActivity"
             android:excludeFromRecents="true"

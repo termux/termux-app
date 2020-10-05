@@ -68,7 +68,7 @@ dependencies {
     testImplementation 'org.robolectric:robolectric:4.3.1'
 
     //kotlin
-    implementation "androidx.core:core-ktx:1.3.1"
+    implementation "androidx.core:core-ktx:1.3.2"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.8'
@@ -181,9 +181,9 @@ task setupBootstraps() {
     doLast {
         def version = 12
         setupBootstrap("aarch64", "5e07239cad78050f56a28f9f88a0b485cead45864c6c00e1a654c728152b0244", version)
-        setupBootstrap("arm",     "fc72279c480c1eea46b6f0fcf78dc57599116c16dcf3b2b970a9ef828f0ec30b", version)
-        setupBootstrap("i686",    "895680fc967aecfa4ed77b9dc03aab95d86345be69df48402c63bfc0178337f6", version)
-        setupBootstrap("x86_64",  "8714ab8a5ff4e1f5f3ec01e7d0294776bfcffb187c84fa95270ec67ede8f682e", version)
+        setupBootstrap("arm", "fc72279c480c1eea46b6f0fcf78dc57599116c16dcf3b2b970a9ef828f0ec30b", version)
+        setupBootstrap("i686", "895680fc967aecfa4ed77b9dc03aab95d86345be69df48402c63bfc0178337f6", version)
+        setupBootstrap("x86_64", "8714ab8a5ff4e1f5f3ec01e7d0294776bfcffb187c84fa95270ec67ede8f682e", version)
     }
 }
 
