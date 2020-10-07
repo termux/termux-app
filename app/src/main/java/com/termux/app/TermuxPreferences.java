@@ -196,7 +196,7 @@ final class TermuxPreferences {
                 mUseDarkUI = nightMode == Configuration.UI_MODE_NIGHT_YES;
         }
 
-        String defaultExtraKeys = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";
+        String defaultExtraKeys = "[[{key: '~',popup: '='}, {key: '\/', popup: 'BACKSLASH'}, {key: ':', popup: ';'}, {key: '!', popup: ''}, {key: '-', popup: '_'}, {key: 'UP', popup: 'PGUP'}, {key: 'KEYBOARD', popup: ''}],[{key: 'ESC', popup: ''}, {key: 'TAB', popup: ''}, {key: 'CTRL', popup: ''}, {key: 'ALT', popup: ''}, {key: 'LEFT', popup: 'HOME'}, {key: 'DOWN', popup: 'PGDN'}, {key: 'RIGHT', popup: 'END'}]]";
 
         try {
             String extrakeyProp = props.getProperty("extra-keys", defaultExtraKeys);
