@@ -122,7 +122,6 @@ final class TermuxPreferences {
     boolean toggleBuiltInKeyboardMode(Context context){
         isBuiltInKeyboardMode=!isBuiltInKeyboardMode;
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(IS_BUILTIN_KEYBOARD_MODE,isBuiltInKeyboardMode).apply();
-        Toast.makeText(context, "mode: "+isBuiltInKeyboardMode, Toast.LENGTH_SHORT).show();
         return isBuiltInKeyboardMode;
     }
     boolean getIsBuiltinKeyboardMode(Context context){
