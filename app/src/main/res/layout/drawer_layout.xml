@@ -50,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:text="Built-in keyboard mode"/>
+                android:text="@string/builtin_keyboard_mode"/>
 
             <LinearLayout
                 style="?android:attr/buttonBarStyle"
