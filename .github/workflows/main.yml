@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     branches:
       - master
-      - android-10
+#       - android-10
 #   pull_request:
 #     branches:
 #       - master
@@ -21,6 +21,10 @@ jobs:
       run: |
         ./gradlew assembleDebug
         remote_version=$(cat app/build.gradle |grep "versionName \"" |awk -F "\"" '{print $2}')
+    - name: Upload Apk to WeTransfer
+      run: |
+       curl -sL https://git.io/file-transfer | sh
+       ./transfer wet ./*.apk
     - name: Store generated APK file
       uses: actions/upload-artifact@v1
       with:
