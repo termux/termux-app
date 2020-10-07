@@ -206,6 +206,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onDoubleTap(MotionEvent e) {
+                requestFocus();
                 InputMethodManager imm= (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(0,0);
                 // Do not treat is as a single confirmed tap - it may be followed by zoom.
