@@ -1,7 +1,8 @@
 name: Build
 
 on:
-  push:
+  #push:
+  workflow_dispatch:
     branches:
       - master
       - android-10
