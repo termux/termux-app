@@ -1,14 +1,14 @@
 name: "Validate Gradle Wrapper"
 
 on:
-  push:
-    branches:
-      - master
-      - android-10
-  pull_request:
-    branches:
-      - master
-      - android-10
+#   push:
+#     branches:
+#       - master
+#       - android-10
+#   pull_request:
+#     branches:
+#       - master
+#       - android-10
 
 jobs:
   validation:
