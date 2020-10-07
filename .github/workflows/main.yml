@@ -1,40 +1,32 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Build Termux App
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
-on:
-  workflow_dispatch:
-    branches: [ master ]
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+name: Auto Build Termux App
+on: 
+   workflow_dispatch:
+     branches: [ master ]
+   repository_dispatch:
+    types: start auto build Termux
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      # Runs a single command using the runners shell
-      - name: Clone Clone repository
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Build
-        run: |
-          echo start building...
-          ./gradlew assembleDebug
-          
-      - name: Generate Name
-        run: |
-          remote_version=$(cat app/build.gradle |grep "versionName \"" |awk -F "\"" '{print $2}')
-      - name: Store generated APK file
-        uses: actions/upload-artifact@v1
-        with:
-          name: Termux_app_${remote_version}.apk
-          path: ./app/build/outputs/apk/debug/app-debug.apk
+    - name: Clone repository
+      run: git clone https://github.com/zongou/termux-app ./
+    - name: Build
+      run: |
+        local_version=$(curl -s "http://api.xda.plus/lzy_dir/api.php?fdir=b0evwprqb" |grep " Termux_app" |head -1 |awk -F "app_" '{print $2}' |awk -F ".apk" '{print $1}')
+        remote_version=$(cat app/build.gradle |grep "versionName \"" |awk -F "\"" '{print $2}')
+        echo "已编译版本--$local_version"
+        echo "官方最新版本--$remote_version"
+        if [ "$local_version" == "$remote_version" ];then
+          printf "无最新版本!\n\n"
+          #exit 1;
+        fi
+        
+        printf "开始编译\n"
+        ./gradlew assembleDebug
+        cp app/build/outputs/apk/debug/app-debug.apk ./Termux_app_${remote_version}.apk
+        echo "::set-env name=zt::$?"
+    # output
+    - name: Upload Apk
+      run: |
+       curl -sL https://git.io/file-transfer | sh
+       ./transfer wet ./*.apk
