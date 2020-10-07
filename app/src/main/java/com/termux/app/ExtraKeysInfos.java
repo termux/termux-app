@@ -132,10 +132,10 @@ public class ExtraKeysInfos {
 
     static final CharDisplayMap arrowTriangleVariationDisplay = new CharDisplayMap() {{
         // alternative to classic arrow keys
-        put("LEFT", "◀"); // U+25C0 ◀ BLACK LEFT-POINTING TRIANGLE
-        put("RIGHT", "▶"); // U+25B6 ▶ BLACK RIGHT-POINTING TRIANGLE
-        put("UP", "▲"); // U+25B2 ▲ BLACK UP-POINTING TRIANGLE
-        put("DOWN", "▼"); // U+25BC ▼ BLACK DOWN-POINTING TRIANGLE
+        put("LEFT", "◁"); // U+25C0 ◀ BLACK LEFT-POINTING TRIANGLE
+        put("RIGHT", "▷"); // U+25B6 ▶ BLACK RIGHT-POINTING TRIANGLE
+        put("UP", "△"); // U+25B2 ▲ BLACK UP-POINTING TRIANGLE
+        put("DOWN", "▽"); // U+25BC ▼ BLACK DOWN-POINTING TRIANGLE
     }};
 
     static final CharDisplayMap notKnownIsoCharacters = new CharDisplayMap() {{
@@ -163,6 +163,8 @@ public class ExtraKeysInfos {
         putAll(classicArrowsDisplay);
         putAll(wellKnownCharactersDisplay);
         putAll(nicerLookingDisplay);
+        putAll(lessKnownCharactersDisplay);
+        putAll(arrowTriangleVariationDisplay);
         // all other characters are displayed as themselves
     }};
 
