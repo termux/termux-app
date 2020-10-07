@@ -1,31 +1,27 @@
-# This is a basic workflow to help you get started with Actions
+name: Build Termux App
 
-name: Auto Build Termux App
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
+#   push:
   workflow_dispatch:
-    branches: [ master ]
+    branches:
+      - master
+      - android-10
+#   pull_request:
+#     branches:
+#       - master
+#       - android-10
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-      # Runs a single command using the runners shell
     steps:
     - name: Clone repository
-    - uses: actions/checkout@v2
-
-    # Runs a set of commands using the runners shell
+      uses: actions/checkout@v2
     - name: Build
       run: |
         ./gradlew assembleDebug
-        remote_version=$(cat app/build.gradle |grep "versionName \"" |awk -F "\"" '{print $2}')
     - name: Store generated APK file
       uses: actions/upload-artifact@v1
       with:
-        name: Termux_app_${remote_version}.apk
+        name: termux-app
         path: ./app/build/outputs/apk/debug/app-debug.apk
