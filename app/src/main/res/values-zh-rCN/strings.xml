@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="application_name">Termux</string>
+    <string name="toggle_keep_screen_on">保持屏幕常亮</string>
+    <string name="styling_install">安装</string>
+    <string name="session_rename_positive_button">设置</string>
+    <string name="session_new_named_positive_button">创建</string>
+    <string name="session_new_named_title">新命名会话</string>
+    <string name="session_rename_title">设置会话名</string>
+    <string name="styling_not_installed">未安装 Termux:Style 插件.</string>
+    <string name="toggle_soft_keyboard">键盘</string>
+    <string name="new_session">新建会话</string>
+    <string name="reset_terminal">重置</string>
+    <string name="share_transcript_chooser_title">发送文本到:</string>
+    <string name="notification_action_wake_lock">开启唤醒锁</string>
+    <string name="notification_action_wake_unlock">关闭唤醒锁</string>
+    <string name="max_terminals_reached_message">在创建新的之前关闭现有的.</string>
+    <string name="reset_toast_notification">终端重置.</string>
+    <string name="notification_action_exit">编辑</string>
+    <string name="bootstrap_installer_body">安装中…</string>
+    <string name="confirm_kill_process">确定杀死这个会话吗?</string>
+    <string name="max_terminals_reached_title">终端已到达最大数量</string>
+    <string name="select_url">选择 URL</string>
+    <string name="select_url_copied_to_clipboard">URL 已复制到剪贴板</string>
+    <string name="file_received_edit_button">编辑</string>
+    <string name="file_received_open_folder_button">打开文件夹</string>
+    <string name="file_received_title">保存文件到 ~/downloads/</string>
+    <string name="bootstrap_error_body">Termux 无法安装引导程序包.</string>
+    <string name="bootstrap_error_title">无法安装</string>
+    <string name="help">帮助</string>
+    <string name="kill_process">杀死会话 (%d)</string>
+    <string name="bootstrap_error_try_again">再试一次</string>
+    <string name="bootstrap_error_abort">中止</string>
+    <string name="style_terminal">样式</string>
+    <string name="share_transcript_title">终端记录</string>
+    <string name="select_all_and_share">分享终端记录</string>
+    <string name="select_url_no_found">在终端中没有找到 URL</string>
+    <string name="new_session_failsafe">故障安全</string>
+    <string name="autofill_password">自动填充密码</string>
+    <string name="bootstrap_error_not_primary_user_message">Termux 只能安装在主账户中.</string>
+    <string name="select_url_dialog_title">点击链接复制或长按打开</string>
+    <string name="run_command_permission_label">在Termux 环境中运行命令</string>
+    <string name="shared_user_label">Termux 用户</string>
+    <string name="run_command_permission_description">在 Termux 环境中运行任意命令</string>
+    <string name="builtin_keyboard_mode">内置键盘模式</string>
+</resources>
