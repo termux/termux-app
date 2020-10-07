@@ -1,11 +1,11 @@
 name: Build
 
 on:
-  #push:
+#   push:
   workflow_dispatch:
     branches:
       - master
-#       - android-10
+      - android-10
 #   pull_request:
 #     branches:
 #       - master
