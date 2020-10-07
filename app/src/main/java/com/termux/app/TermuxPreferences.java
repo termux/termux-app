@@ -62,10 +62,12 @@ final class TermuxPreferences {
     private static final String FONTSIZE_KEY = "fontsize";
     private static final String CURRENT_SESSION_KEY = "current_session";
     private static final String SCREEN_ALWAYS_ON_KEY = "screen_always_on";
+    private static final String IS_BUILTIN_KEYBOARD_MODE="is_built-in_keyboard_mode";
 
     private boolean mUseDarkUI;
     private boolean mScreenAlwaysOn;
     private int mFontSize;
+    private  boolean isBuiltInKeyboardMode;
 
     @AsciiBellBehaviour
     int mBellBehaviour = BELL_VIBRATE;
@@ -97,6 +99,7 @@ final class TermuxPreferences {
 
         mShowExtraKeys = prefs.getBoolean(SHOW_EXTRA_KEYS_KEY, true);
         mScreenAlwaysOn = prefs.getBoolean(SCREEN_ALWAYS_ON_KEY, false);
+        isBuiltInKeyboardMode= prefs.getBoolean(IS_BUILTIN_KEYBOARD_MODE,false);
 
         // http://www.google.com/design/spec/style/typography.html#typography-line-height
         int defaultFontSize = Math.round(12 * dipInPixels);
@@ -115,6 +118,15 @@ final class TermuxPreferences {
         mShowExtraKeys = !mShowExtraKeys;
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SHOW_EXTRA_KEYS_KEY, mShowExtraKeys).apply();
         return mShowExtraKeys;
+    }
+    boolean toggleBuiltInKeyboardMode(Context context){
+        isBuiltInKeyboardMode=!isBuiltInKeyboardMode;
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(IS_BUILTIN_KEYBOARD_MODE,isBuiltInKeyboardMode).apply();
+        Toast.makeText(context, "mode: "+isBuiltInKeyboardMode, Toast.LENGTH_SHORT).show();
+        return isBuiltInKeyboardMode;
+    }
+    boolean getIsBuiltinKeyboardMode(Context context){
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(IS_BUILTIN_KEYBOARD_MODE,false);
     }
 
     int getFontSize() {
