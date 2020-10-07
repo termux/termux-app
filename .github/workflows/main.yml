@@ -20,8 +20,9 @@ jobs:
     - name: Build
       run: |
         ./gradlew assembleDebug
+        remote_version=$(cat app/build.gradle |grep "versionName \"" |awk -F "\"" '{print $2}')
     - name: Store generated APK file
       uses: actions/upload-artifact@v1
       with:
-        name: termux-app
+        name: Termux_app_${remote_version}.apk
         path: ./app/build/outputs/apk/debug/app-debug.apk
