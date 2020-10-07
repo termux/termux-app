@@ -43,6 +43,14 @@
                 android:layout_weight="1"
                 android:choiceMode="singleChoice"
                 android:longClickable="true" />
+            
+            <Switch
+                android:id="@+id/toggle_built_in_keyboard_mode"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="Built-in keyboard mode"/>
 
             <LinearLayout
                 style="?android:attr/buttonBarStyle"
