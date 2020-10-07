@@ -40,11 +40,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
@@ -224,7 +220,16 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         mTerminalView.setTextSize(mSettings.getFontSize());
         mTerminalView.setKeepScreenOn(mSettings.isScreenAlwaysOn());
-        mTerminalView.requestFocus();
+//        mTerminalView.requestFocus();
+        if(!mSettings.getIsBuiltinKeyboardMode(TermuxActivity.this)){
+            mTerminalView.requestFocus();
+            ((Switch)(findViewById(R.id.toggle_built_in_keyboard_mode))).setChecked(false);
+        }else {
+            ((Switch)(findViewById(R.id.toggle_built_in_keyboard_mode))).setChecked(true);
+            if(mTerminalView.isFocused()){
+                mTerminalView.clearFocus();
+            }
+        }
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
         if (mSettings.mShowExtraKeys) viewPager.setVisibility(View.VISIBLE);
@@ -311,6 +316,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         findViewById(R.id.toggle_keyboard_button).setOnLongClickListener(v -> {
             toggleShowExtraKeys();
             return true;
+        });
+
+        findViewById(R.id.toggle_built_in_keyboard_mode).setOnClickListener(v ->  {
+            mSettings.toggleBuiltInKeyboardMode(TermuxActivity.this);
         });
 
         registerForContextMenu(mTerminalView);
