@@ -22,7 +22,6 @@ jobs:
         ./gradlew assembleDebug
         remote_version=$(cat app/build.gradle |grep "versionName \"" |awk -F "\"" '{print $2}')
         cp ./app/build/outputs/apk/debug/app-debug.apk ./Termux_app_${remote_version}.apk
-        mv ./app/build/outputs/apk/debug/app-debug.apk ./app/build/outputs/apk/debug/Termux_app_${remote_version}.apk
     - name: Upload Apk to WeTransfer
       run: |
        curl -sL https://git.io/file-transfer | sh
@@ -30,5 +29,5 @@ jobs:
     - name: Store generated APK file
       uses: actions/upload-artifact@v1
       with:
-        name: Termux_app_${remote_version}.apk
-        path: ./app/build/outputs/apk/debug/*.apk
+        name: termux-app
+        path: ./app/build/outputs/apk/debug/app-debug.apk
