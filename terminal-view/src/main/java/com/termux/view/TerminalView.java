@@ -206,7 +206,7 @@ public final class TerminalView extends View {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
                 // Do not treat is as a single confirmed tap - it may be followed by zoom.
-                return false;
+                return mClient.onDoubleTap(e);
             }
 
             @Override
