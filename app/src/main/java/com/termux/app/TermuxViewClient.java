@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.InputMethodManager;
 
+import android.widget.Toast;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -260,6 +261,17 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     @Override
     public boolean onLongPress(MotionEvent event) {
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent event) {
+        if(mActivity.mSettings.getIsBuiltinKeyboardMode(mActivity)){
+            mActivity.toggleShowExtraKeys();
+        }else {
+            InputMethodManager imm= (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(0,0);
+        }
         return false;
     }
 
