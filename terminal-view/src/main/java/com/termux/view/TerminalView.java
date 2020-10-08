@@ -35,7 +35,6 @@ import android.view.autofill.AutofillValue;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupWindow;
 import android.widget.Scroller;
 
@@ -206,9 +205,6 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                requestFocus();
-                InputMethodManager imm= (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.toggleSoftInput(0,0);
                 // Do not treat is as a single confirmed tap - it may be followed by zoom.
                 return false;
             }
