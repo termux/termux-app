@@ -269,6 +269,7 @@ public final class TermuxViewClient implements TerminalViewClient {
         if(mActivity.mSettings.getIsBuiltinKeyboardMode(mActivity)){
             mActivity.toggleShowExtraKeys();
         }else {
+            mActivity.mTerminalView.requestFocus();
             InputMethodManager imm= (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.toggleSoftInput(0,0);
         }
