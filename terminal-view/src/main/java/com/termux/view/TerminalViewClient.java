@@ -38,5 +38,7 @@ public interface TerminalViewClient {
     boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session);
 
     boolean onLongPress(MotionEvent event);
+    
+    boolean onDoubleTap(MotionEvent event);
 
 }
