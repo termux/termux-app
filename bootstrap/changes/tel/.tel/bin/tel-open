@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+#cd ~/../ 
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+bookmarks_file=~/.tel/data/bookmarks 
+global_url=$2
+show_help(){
+    printf  "%s\n"\
+            "Opens a file or link in external app"\
+            "tel-open [OPTIONS] [PATTERN]"\
+            "__________________________"\                                              "OPTIONS"\
+            "  -h   display this help message"\
+            "  -u https://www.github.com  Open github in android browser"\
+            "  -u   Open url picker"
+}
+open_url(){
+   	if [ -n "$global_url" ]; then
+		url=$global_url
+	else
+		url=$(cat $bookmarks_file | fzf -e --layout=reverse --cycle --color=16 --info=inline --prompt=" Pick a URL to open with an android app:" --select-1)
+	fi
+	if [ ! -z $url ] ; then
+	termux-open-url $url
+	printf "\e[38;5;2m Opening\e[m%s URL: $url" 
+	else
+		exit 1
+	fi
+
+
+	}
+
+if [ -z $1 ] ; then
+	selected_file=$(fzf --layout=reverse --cycle --color=16 --info=inline --prompt=" Open in app: ")
+else
+	case "$1" in
+		
+		-u) #open url in app instead of file
+		open_url
+		exit 0
+		;;
+		# Display the help message
+		-h)                                                                        show_help
+		exit 0
+		;;
+ 	esac
+
+	file_search="$@"
+	selected_file=$(fzf-tmux -e --layout=reverse --cycle --color=16 --query="$file_search" --info=inline --prompt=" Open in app: " --select-1)
+fi
+
+if [ -z $selected_file ] ; then
+#	echo 'No file chosen - Exiting...'
+	exit 1
+else
+	curr_dir=$(pwd)
+	printf "\e[38;5;2m Opening\e[m%s file: $curr_dir/$selected_file"
+	termux-open "$selected_file" || echo "Couldn't open $selected_file"
+fi
+

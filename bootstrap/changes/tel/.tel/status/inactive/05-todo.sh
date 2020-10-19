@@ -2,7 +2,7 @@
 # Script to display todo list in statusbar 
 # For TEL 
 # made by sealyj
-width=$(tput cols)
+#width=$(tput cols)
 COL='\033[0;35m'
 NC='\033[0m' # No Col
 
@@ -12,6 +12,8 @@ line1=$(head -n1 ~/.tel/data/todo)
 if [ "$line1" == '' ] ; then
 	echo -e " To-do list is empty" 
 else
-	echo -e " ${line1:0:$width}"
+	#echo -e " ${line1:0:$width}"
+	echo -e " ${line1}"
 fi
-
+sleep 2
+exit 0

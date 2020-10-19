@@ -1,0 +1,3 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# file is ran when url is shared with TEL
+youtube-dl -f 'bestvideo[ext=mp4][height<=720]+bestaudio' --restrict-filenames -o '~/storage/downloads/%(title)s-%(id)s.%(ext)s' $1

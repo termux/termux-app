@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+from time import sleep
+import random
+import sys
+import os
+import subprocess
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-k", "--keypress", default='', help="Simulate a Keypress or mouse event. Examples of possible values: Escape, Tab, DC, BSpace, Enter, Up, Down, Left, Right, C-c, M-a")
+parser.add_argument("-i", "--input", default='', help="String to type out in humanized fashion")
+parser.add_argument("-t", "--target", default='', help="tmux pane target, can be numbers or vars or positional, eg right, top-right, bottom etc")
+args = parser.parse_args()
+
+def randomdelay():
+    delaytime = random.uniform(0.02,0.4)
+    return delaytime
+
+def humanize_with_typo(target_pane):
+    chance = int(random.uniform(0,10))
+    possible = "abcdefghijklmnopqrstuvxyz"
+    if chance == 1:
+        if target_pane:
+            os.system("tmux send-keys " + target_pane + ' ' + possible[int(random.uniform(0,24))])
+            sleep(randomdelay())
+            os.system("tmux send-keys " + target_pane + " " + "BSpace")
+            sleep(randomdelay())
+        else:
+            os.system("tmux send-keys " + possible[int(random.uniform(0,24))])
+            sleep(randomdelay())
+            os.system("tmux send-keys BSpace")
+            sleep(randomdelay())
+
+def main():
+    if args.target:
+        target_pane = "-t " + args.target.strip()
+    else:
+        target_pane = ''
+    if args.input:
+        try:
+            character = 0
+            for character in range(0,len(args.input)):
+                if args.input[character] == ' ':
+                    if target_pane:
+                        os.system("tmux send-keys " + target_pane + ' ' + "Space")
+                    else:
+                        os.system("tmux send-keys " + "Space")
+                        continue
+                    sleep(randomdelay())
+                else:
+                    humanize_with_typo(target_pane)
+                    if target_pane:
+                        os.system("tmux send-keys " + target_pane + ' ' + args.input[character])
+                    else:
+                        os.system("tmux send-keys " + args.input[character])
+                    sleep(randomdelay())
+            if args.keypress:
+                    if target_pane:
+                        os.system("tmux send-keys " + target_pane + ' ' + args.keypress)
+                    else:
+                        os.system("tmux send-keys " + args.keypress)
+        except:
+            print('except')
+    else:
+        if target_pane:
+            os.system("tmux send-keys " + target_pane + ' ' + args.keypress)
+        else:
+            os.system("tmux send-keys " + args.keypress)
+
+if __name__ == "__main__":
+    main()
+

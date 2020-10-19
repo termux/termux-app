@@ -1,21 +1,85 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# search command for TEL
-# sealyj
-# todo: extract bg and fg color from ~/.termux.color... and add in ddg url
-RED='\033[0;31m'
-NC='\033[0m' # No Col
-BOLD=$(tput bold)
-NORMAL=$(tput sgr0)
+#!/usr/bin/env bash
+# search app for TEL 
+# v3 - by SealyJ
+zsh -c 'set -K' # disables ! events in zsh to allow for bangs in tel-search
+instance_urls_file=~/.tel/configs/search/trusted.txt
+provider_bangs_file=~/.tel/configs/search/provider_bangs.txt
+searx_url='list_empty'
 
-if [ -z $1 ] || [ $1 == "-h" ] ; then
-	echo -e "${BOLD}${RED}Usage: tel-search [-h] [search term] ${NC}${NORMAL}
-	'$> s -h'        = show this help menu
-	'$> s !gh TEL'   = search github for TEL
-	'$> s !w ducks'  = search wiki for ducks"
-elif [ $# != 0 ] ; then
-        echo "Searching for $@"
-	input="$@"
-        text=${input// /%20} #replace spaces with strings
-	termux-open-url "https://duckduckgo.com/?q=$text&kp=-1&kl=us-en&ia=web"
+function rand_searx_instance () {
+	n=0
+	lines_searx_urls=()
+	while read line; 
+	do
+		#add to array then select
+		n=$(( $n + 1 ))
+		lines_searx_urls+=($line)
+	done < $instance_urls_file
+	#searx_selection=$((1 + RANDOM % $n))
+	searx_selection=$((RANDOM % $n))
+#	echo "num is: $searx_selection selection is : ${lines_searx_urls[$searx_selection]}" #DEBUG
+	searx_url=${lines_searx_urls[$searx_selection]}
+}
+
+if [ "$1" == "-h" ] ; then
+	echo -e "${BOLD}${RED}Usage: tel-search [options] [search term] ${NC}${NORMAL}
+	tel-search			= interactive search prompt
+	tel-search -h			= show this help menu
+	tel-search -yt Monkeys		= search in youtube app for Monkeys
+	tel-search -t goats		= search in terminal browser for goats
+
+	tel-search what are bangs?	= search for what are bangs?
+	tel-search '!!gh TEL'		= search github for TEL
+	tel-search '!!man echo'		= search manpage for echo command info
+	tel-search '!!w sea otters'	= search wiki for sea otters
+	tel-search '!!yt goats'		= search youtube for trebuchet
+	
+	note - 'set -K' must be in .zshrc to use search bangs without quotes, if using bash 'bangs' (for example: !!w ) must be quoted.
+	"
+	exit 0	
+
+elif [ "$1" == "-yt" ] ; then
+	user_query=${@:2}
+	printf "\e[38;5;2m Search \e[m%sYouTube for: $user_query"
+	text=${user_query// /+} #replace spaces with strings
+	yt_url="https://m.youtube.com/results?search_query=$text"
+	am start -a android.intent.action.MAIN -n 'com.google.android.youtube/com.google.android.apps.youtube.app.application.Shell$UrlActivity' "$yt_url" > /dev/null 2>&1  
+	exit 0
+elif [ "$1" == "-t" ] ; then
+	input=${@:2}
+	text=${input// /%20} #replace spaces with strings
+	#w3m "https://duckduckgo.com/?q=$text&kp=-1&kl=us-en&ia=web"
+	w3m "https://searx.be/?q=$text&category_general=on&time_range=&language=en-GB"
+	clear
+	exit 0
+
+elif [ -z $1 ] ; then
+	provider=$(cat $provider_bangs_file | fzf -e --layout=reverse --cycle --color=16 --info=inline --prompt=" Search site: " --select-1)
+	if [ -z "$provider" ]; then
+	#	echo 'Nothing selected; exiting...'
+		exit 1
+	elif [ "$provider" == "Skip" ]; then	
+		printf "\e[38;5;2m Search \e[m%sfor: "
+		read user_query
+		input="$user_query"
+	elif [ "$provider" == "YouTube (in App)" ]; then	
+		printf "\e[38;5;2m Search \e[m%sYouTube for: "
+		read user_query
+		text=${user_query// /+} #replace spaces with strings
+		yt_url="https://m.youtube.com/results?search_query=$text"
+		am start -a android.intent.action.MAIN -n 'com.google.android.youtube/com.google.android.apps.youtube.app.application.Shell$UrlActivity' "$yt_url" > /dev/null 2>&1 
+		exit 0
+	elif [ "$provider" != "Skip" ]; then
+		printf "\e[38;5;2m Search \e[m%s$provider for: "
+		read user_query
+		provider="!!$provider"
+		input="$provider $user_query"
+	fi
+elif [ "$#" != 0 ] ; then
+input="$@"
+	printf "\e[38;5;2m Search \e[mfor: $input"
 fi
+text=${input// /%20} #replace spaces with strings
+rand_searx_instance
+termux-open-url "${searx_url}?q=${text}&category_general=on&time_range=&language=$SEARCH_LANG"
 exit 0

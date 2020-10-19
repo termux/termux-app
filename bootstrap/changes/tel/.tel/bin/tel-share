@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#cd ~/../ 
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+if [ -z $1 ] ; then
+	selected_file=$(fzf --layout=reverse --cycle --color=16 --info=inline --prompt=" Share: ")
+else
+	file_search="$@"
+	selected_file=$(fzf -e --layout=reverse --cycle --color=16 --query="$file_search" --info=inline --prompt=" File to share: " --select-1)
+fi
+
+if [ -z $selected_file ] ; then
+#	echo 'No file chosen - Exiting...'
+	exit 1
+else
+	curr_dir=$(pwd)
+	printf "\e[38;5;2m Sharing\e[m%s file: $curr_dir/$selected_file"
+	
+	termux-share -a send "$selected_file" || echo "Couldn't share $selected_file"
+
+fi
+

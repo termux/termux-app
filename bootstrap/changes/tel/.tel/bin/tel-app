@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+#
+# TEL app launcher
+#_______________________________________________________________________
+
+# Usage
+# app [OPTIONS] [PATTERN]
+# app -h
+# app -u
+# app Fdroid
+# app Chro     > Laucnhes Chrome
+# app Ytube    > Laucnhes Youtube
+
+print_ERR_and_die(){
+    # Error printing function
+    printf "\e[38;5;1m[!]%s\n\e[m"\
+           "$*" 1>&2
+    exit 1
+}
+
+show_help(){
+    printf  "%s\n"\
+            "app [OPTIONS] [PATTERN]"\
+            "__________________________"\
+            "OPTIONS"\
+            "  -h   display this help message"\
+            "  -u   update app cache"
+}
+
+update_cache(){
+    # Android Black Magic
+    am broadcast --user 0 \
+         --es com.termux.app.reload_style apps-cache \
+         -a com.termux.app.reload_style com.termux > /dev/null
+}
+
+main(){
+    cachefile="$HOME/.apps"
+    app_namefile="$HOME/.app_names"
+    
+    case "$1" in
+        # Update the app list
+        # Incase a new app has been installed
+        -u)
+            update_cache
+            exit 0
+        ;;
+
+        # Display the help message
+        -h)
+            show_help
+            exit 0
+        ;;
+    esac
+
+    [[ ! -a "$cachefile" || ! -s "$cachefile" ]] &&\
+       print_ERR_and_die "App cache is empty."\
+                         "Run \`app -u\`"
+    
+    
+    # fuzzy search in $app_namefile to get the app code and app 
+    # name in this format 
+    # app_code | app_name
+    app_data=$( fzf -e --layout=reverse --cycle\
+                --info=inline --prompt=" Launch app: "\
+                --query="$*" --color=16 --select-1 -0 < "$app_namefile")
+    case "$?" in
+        	# No app found
+        "1"  )
+    		printf  "\e[38;5;2m Launcher\e[m: \e[38;5;1mApp not found%s\n\e[m"
+		exit 1
+        ;;
+
+        # If Ctrl+C is used 
+        "130")
+            return 1
+        ;;
+esac
+
+    # get the app code
+    app_code=$( echo "$app_data" | cut -d "|" -f1) 
+    # get the app name
+    app_name=$( echo "$app_data" | cut -d "|" -f2) 
+    
+    # No app name recieved
+    [[ -z "$app_code" ]] && exit 1
+
+    # get the activity name
+    activity=$( grep "$app_code" "$cachefile" | cut -d "|" -f2 )
+    printf  "\e[38;5;2m Launching\e[m %s\n"\
+            "$app_name - $activity"
+
+    # Laucnh the app
+    am start -n "$activity" --user 0 > /dev/null 2>&1
+
+}
+
+main "$@"

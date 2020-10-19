@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+CHECK_MARK="\033[0;32m\xE2\x9C\x94\033[0m"
+if [ "$#" == 0 ]; then
+	echo -ne "\e[38;5;2m? Wifi\e[m: Checking state     " $'\r'
+	using_wlan=$(ifconfig wlan0 | grep "RUNNING")
+#	not_using_wlan=$(ip link | grep -A1 wlan0 | grep "state DOWN")iA
+
+	#echo " "
+	#echo "output is $using_wlan"
+	if [ -z "$using_wlan" ]; then
+		wifi_enabled='false'
+    	else
+		#reports wifi is down but could just be disconnected
+		termux-wifi-enable true > /dev/null 2>&1
+		wifi_enabled='true'
+	fi
+else
+	wifi_enabled='unknown'
+fi
+	
+if [ "$wifi_enabled" == "true" ] || [ "$1" == 'off' ] || [ "$1" == 'false' ] ; then
+	echo -ne "\e[38;5;2m睊 Wifi\e[m: Disabling             " $'\r'
+	timeout 7 termux-wifi-enable false > /dev/null 2>&1 && echo -ne "\e[38;5;2m睊 Wifi\e[m: Disabled ${CHECK_MARK}             " # $'\r'
+elif [ "$wifi_enabled" == "false" ] || [ "$1" == 'on' ] || [ "$1" == 'true' ] ; then
+	echo -ne "\e[38;5;2m直 Wifi\e[m: Enabling              " $'\r'
+	timeout 7 termux-wifi-enable true > /dev/null 2>&1 && echo -ne "\e[38;5;2m直 Wifi\e[m: Enabled ${CHECK_MARK}               " # $'\r' 
+else
+	echo "wifi [option]:
+	wifi off	= turn wifi off
+	wifi on		= turn wifi on
+	wifi		= toggle current state"	
+fi
+sleep 1
+exit 0

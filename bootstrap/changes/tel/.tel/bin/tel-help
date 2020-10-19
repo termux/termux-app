@@ -1,40 +1,97 @@
 
 echo "
-General Info:
-TEL as the name suggests is a derivative of
-the linux terminal environment app Termux. 
-The main difference being that TEL is designed and configured as a launcher / homescreen replacement.
-Use of TEL is not recommended for those without prior knowledge of the linux or termux environment.
-more information can be found at the TEL github / Wiki page @ https://t-e-l.github.io
+-> Intro:
+TEL is derived of the linux terminal environment app Termux.
+The main difference is: TEL is designed and configured as a launcher / homescreen replacement and is bundled with custom applets and scripts to make it more useful as such.
 
-For further discussion, help and info join the TEL Telegram community page @ https://t.me/tui_expert/4649
+Use of TEL is not recommended for those without prior knowledge of the linux terminal or termux app.
+More information can be found at the TEL github / Wiki page @ https://t-e-l.github.io
 
-Useful info:
-add your own aliases into ~/.aliases
-if you want to remove status pane, using ctrl + c with the status pane selected will close down pane and also notification listener. A better idea might be to customise your bar by moving scripts in or out of ~/.tel/status_scripts/active or editing the config file ~/.tel/config.sh
+For further discussion, help and questions; join the TEL Telegram community page @ https://t.me/termux_expert_launcher/4649
+
+-> Useful info:
+termux-setup-storage command should be ran to link your phones memory with TEL's storage. It is not required but is used by several features.
+
+If you want to hide the status bar, use key combo 'ALT + i' to toggle it on/off.
+
+You can read the existing alias file at: ~/.aliases
 
 
-Useful shortcuts:
-ctrl + f2 = new split pane
-F2        = new window
-F3	  = toggle active window
-F6        = immediately quit all (no warning!) 
+-> Customisation:
+TEL user settings are availible in ~/.tel/configs/
 
-Useful commands:
-x         = killall windows and exit tel
-a         = app launcher
-s         = search duckduckgo
-todo      = to-do list manager
-p         = app dialer
-t         = app telegram
+With the TEL : styling addon you can longpress the screen, select more > Style to change fonts and colorschemes easily
 
-Trouble-shooting:
-We encourage reporting of errors through github although support maybe quicker through telegram. 
+You can customise your status bar by adding / removing / editing the scripts in ~/.tel/status
+Change status bar behaviour by editing the config file ~/.tel/configs/status.sh
+
+You can edit motd (startup message) at ~/../usr/etc/motd
+
+add your own aliases and functions into ~/storage/shared/tel/tel_personal.sh, this file will persist across updates / wipes of tel app.
+
+add your own startup script calls into ~/storage/shared/tel/tel_startup.sh, this file will persist across updates / wipes of tel app.
+
+You can add your own keybindings in ~/.tmux.conf
+
+
+-> Useful shortcuts:
+Alt + i  		= Toggle the status manager
+Alt + q  		= Close pane
+Alt + f			= Toggle fullscreen pane
+Alt + l			= Change pane layout
+Alt + r			= Rotate pane order
+Alt + enter 		= split pane horizontally
+Alt,Shift + enter  	= split pane vertically
+Alt,Shift + arrowkey 	= resize pane
+
+Ctrl + n 		= new window
+Ctrl + arrowkey 	= Switch active window
+Alt + a 		= tel-app
+Alt + p			= tel-dialer
+Alt + e			= tel-edit
+Alt + o			= tel-open
+Alt + s 		= tel-search
+Alt + w			= tel-wifi
+Alt + b			= Open bookmarks list
+Alt + t			= Start telegram app
+
+-> Copymode (scrollback history mode):
+Swipe down will scroll up the term history and enter copymode, here you can use these shortcuts: 
+v 			= start a selection
+r 			= start a rectangular selection
+y			= copy selection to buffer
+Ctrl + p		= paste buffer
+
+TMUX prefix key (aka escape shortcut) is Ctrl + t 
+
+-> Useful shorthand commands:
+a         = tel-app
+c	  = tel-calculator
+n	  = tel-notifications
+p         = tel-dialer
+s         = tel-search
+e	  = tel-edit
+o	  = tel-open - file in external app
+td        = tel-todo - notes / todo list
+share	  = tel-share - share a file to external app
+u	  = open a url in browser
+w	  = toggle wifi
+y	  = open or search the youtube app
+x	  = exit
+pg	  = ping google
+ton	  = torch on
+tof	  = torch off
+weather	  = get a detailed forecast for your location
+
+
+-> Troubleshooting:
+We encourage reporting of errors through github, however please confirm the issue is not of user origin. Time spent advising user error is time that could be spent furthering the project!
 
 Only use TEL plugins from the offical github, any termux plugins from elsewhere are likely to cause issues.
 Make sure you have the TEL API addon downloaded from TEL git page.
+
 The TEL API is slightly different from the Termux API although it will appear under "Termux API" in installed apps list.
-If your experiencing issues you	can try changing settings in the ~/.tel/config folder. Issues may vary upon how your device vendor handles battery saving behavior, if you think this is causing issues you can temporarily disable power saving settings \ optimisation for TEL and API, in the android app settings. You are unlikely to need to grant TEL extra permissions but it is a good thing to check if experiencing issues. Don't forget to restart by exiting fully to see changes.
+If your experiencing issues you	can try changing settings in the ~/.tel/configs/ folder. Issues may vary upon how your device vendor handles battery saving behavior, if you think this is causing issues you can temporarily disable power saving settings \ optimisation for TEL and API, in the android app settings. You are unlikely to need to grant TEL extra permissions but it is a good thing to check if experiencing issues. Don't forget to use 'tel-restart' fully to see changes.
 
 If you wish to start completely fresh (WARNING: will remove user files also) clear TEL app cache and storage via android settings, then uninstall TEL App and all TEL/Termux plugin apps. Make sure ALL Termux related apps and plugins are completely removed before redownloading the latest version of TEL app, opening and running tel-setup.
 

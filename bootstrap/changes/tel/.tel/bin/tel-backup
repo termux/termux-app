@@ -1,0 +1,51 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# SealyJ
+# version 0.1
+backup_location=/storage/emulated/0/tel/backup
+backup_name='home_dir.tar.gz'
+
+figlet -f shadow 'TEL Backup'
+if [ ! -d /storage/emulated/0 ] ; then
+	echo "Error - No access to phone storage"
+	echo "backups are made to /storage/emulated/0/tel, (this path is also accessible to TEL through ~/storage/shared/tel) if TEL hasn't been granted storage permissions, this will likely fail. Run termux-setup-storage to grant access"
+	echo program will exit.. && exit
+fi
+
+
+while true
+do
+	echo ''
+	echo 'This utility will create a gzip backup of everything in your home directory ('~')' 
+	echo 'How backups will be restored is left up to the user'
+	echo ' '
+	read -p "This will overwrite any existing backup, are you sure you wish to continue? Y/N : " answer
+case $answer in
+	[yY]* ) 
+		clear
+		prevdir=$(pwd)
+		cd ~
+		echo "Backing up TEL home directory..."
+		mkdir -p $backup_location
+		tar czf $backup_name ~ >&/dev/null && clear && echo 'Backup completed successfully' &
+		PID=$!
+		i=1
+		sp="/-\|"
+		echo -n ' '
+		while [ -d /proc/$PID ]
+		do
+			  printf "\b${sp:i++%${#sp}:1}"
+			  sleep 0.1
+		done
+		sleep 1.5
+		clear
+		mv $backup_name $backup_location && echo "Moved backup to $backup_location"
+		cd $prevdir
+		echo "Finished"
+		break;;
+
+	[nN]* ) exit;;
+	* )     echo "Enter Y or N...";;
+esac
+done
+
+

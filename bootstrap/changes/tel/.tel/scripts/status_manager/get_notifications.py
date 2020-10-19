@@ -1,29 +1,44 @@
-#!/data/data/com.termux/files/usr/bin/python3.8
-# Script to format and display android notifications from termux api.
-# run with ./.notifications & disown
-# Written by SealyJ
-# github.com/sealedjoy
-# Telegram @SealyJ
-# version 0.11
-# required pip pkgs: colored
+#!/usr/bin/env python
+# Script to format and display android notifications from the termux api.
+# version 0.12 - SealyJ
+# required pip pkgs: blessed
 import json
+import string
 import os
 import subprocess
 import sys
 import re
 import time
-import colored
-
-# Todo: 
-# ignored notification list partial string matching for telegram new messages etc
-# read env vars
-#user config
-refresh = 3 #number of seconds between new notifs check
-color_output = False # disabled until supported by helpers.sh 
-ignoredNotifications = ["‎‏", "Telegram: Updating"] #string as part of list will ignore a specific static string notification 
-
-#setup output path
+from blessed import Terminal
+term = Terminal(force_styling=True) #force required if output not a tty
 homedir = os.path.expanduser("~")
+#user config
+ignored_strings = []
+ignored_strings_file = homedir + "/.tel/configs/notifications/ignored_strings"  
+with open(ignored_strings_file) as igstrings:
+    ignored_strings = igstrings.read().splitlines()
+print(ignored_strings)
+
+ignored_pkgs = []
+ignored_pkgs_file = homedir + "/.tel/configs/notifications/ignored_pkgs"
+with open(ignored_pkgs_file) as igpkg:
+    ignored_pkgs = str(igpkg.read().splitlines())
+color_output = True
+
+#import env vars
+refresh = int(os.environ['NOTIFICATIONS_CHECK_DELAY'])
+ #number of seconds between new notifs check
+color_output = os.environ['COLOR_APP_TITLES']
+if color_output == 'true':
+    color_output = True
+else:
+    color_output = False
+notifications_enabled = os.environ['NOTIFICATIONS_ENABLED']
+if notifications_enabled != 'true':
+    print("Notifications are disabled in user config, exiting..")
+    exit()
+
+#output path
 text_path = homedir + "/.tel/data/notifications"
 
 debug_mode = False
@@ -31,73 +46,63 @@ if debug_mode is True:
     print(""" !!!!!       DEBUG MODE IS ENABLED    !!!!!  """)
 
 outputList = []
-oldNotifs = []
-
-# list of package names to display notifications from
-pkgs = ("com.twitter.android", "com.instagram.android", "org.telegram.messenger", "com.spotify.music", "com.whatsapp", "com.snapchat.android", "ch.gridvision.ppam.androidautomagic")
 
 #define color for each package
+#see https://blessed.readthedocs.io/en/latest/colors.html for color definitions
+# or use the color picker tool in ~/.tel/scripts
+
 def pickColor(num,notifications):
     if notifications[num]["packageName"] == "com.twitter.android":
-        return colored.fg(5)
+        return term.aqua
+    elif notifications[num]["packageName"] == "com.android.systemui":
+        return term.orange
+    elif notifications[num]["packageName"] == "org.thoughtcrime.securesms":
+        return term.blue
+    elif notifications[num]["packageName"] == "com.android.dialer":
+        return term.green
     elif notifications[num]["packageName"] == "com.instagram.android":
-        return colored.fg("magenta")
+        return term.darkmagenta
     elif notifications[num]["packageName"] == "org.telegram.messenger":
-        return colored.fg("blue")
+        return term.turquoise2
     elif notifications[num]["packageName"] == "com.spotify.music":
-        return colored.fg("green")
+        return term.springgreen
     elif notifications[num]["packageName"] == "com.whatsapp":
-        return colored.fg("green")
+        return term.limegreen
     elif notifications[num]["packageName"] == "com.snapchat.android":
-        return colored.fg("yellow")
+        return term.yellow2
+    elif notifications[num]["packageName"] == "com.google.android.gm":
+        return term.red2
+    elif notifications[num]["packageName"] == "ch.gridvision.ppam.androidautomagic":
+        return term.purple
+    elif notifications[num]["packageName"] == "com.google.android.youtube":
+        return term.red
+    elif notifications[num]["packageName"] == "org.schabi.newpipe":
+        return term.red
+    elif notifications[num]["packageName"] == "in.dc297.mqttclpro":
+        return term.mediumorchid4
+    elif notifications[num]["packageName"] == "com.paypal.android.p2pmobile":
+        return term.blue
+
     else:
-        reset = colored.attr('reset')
+        reset = term.normal
         return reset
-
-
-def remove_tags(text):
-    newtext = ''.join(ET.fromstring(text).itertext())
-    return newtext
-
-def cleanhtml(raw_html):
-    cleanr = re.compile('<.*?>')
-    cleantext = re.sub(cleanr, '', raw_html)
-    return cleantext
-
-def remove_formatting(inputList):
-    outputList.clear()
-    for notif in inputList:
-      #  clean = cleanhtml(notif)
-        clean = remove_tags(notif)
-        outputList.append(clean)
-    return outputList
-
 def text_wrapper(inputList):
-    #currently not used for wrapping just prints to file
-
-    #width = os.get_terminal_size().columns
-   # if debug_mode is True:
-  #      print("Terminal Width is : " + str(width))
-    #width = width - 4
     cleanedinputList = inputList
- #   cleanedinputList = remove_formatting(inputList)
     outputList.clear()
     for li in range(0,len(cleanedinputList)):
-       # clean_line = cleanhtml(inputList[li])
         outputList.append(cleanedinputList[li])
     #write to file
     if outputList:
         with open(text_path, 'w') as f:
             f.truncate(0)
             for item in outputList:
-                        f.write("%s\n" % item)
+                #item = term.wrap(item)
+                f.write("%s\n"%item)
         return outputList
 
 def printnotifications(newNotifications):
     formattedList = []
     formattedList = text_wrapper(newNotifications) #writes to file
-    #print(newNotifications)
- 
 
 def getnotifications(oldNotifications):
     global notifications
@@ -107,45 +112,57 @@ def getnotifications(oldNotifications):
     notifications = [] #raw json /  nested list
     #get notifs from termux api
     try:
-        termuxapi = subprocess.run("termux-notification-list", stdout=subprocess.PIPE, universal_newlines=True, timeout=25)
+        os.system("pkill -f 'NotificationList'")
+        termuxapi = subprocess.run("termux-notification-list", stdout=subprocess.PIPE, universal_newlines=True, timeout=15)
     except:
         return None
     #convert stdoutput (json) to list (containing dicts for each notif)
-    notifications = json.loads(termuxapi.stdout)
+    try:
+        notifications = json.loads(termuxapi.stdout)
+        print("Success decode json")
+    except:
+        print("Failed to decode json")
     #nothing is regarded as new because we started another loop
     newNotifs = []
-
+    sanitised_notifs = []
     #find notifs from desired packages
     for n in range(0,len(notifications)):
-        if notifications[n]["packageName"] in pkgs and notifications[n]["content"] not in ignoredNotifications:
+        if notifications[n]["packageName"] not in ignored_pkgs and notifications[n] not in oldNotifications:
             # if notif hasnt already been seen in previous loop add to new list
-             if notifications[n] not in oldNotifications and notifications[n]["title"] is not [None, "", " "] and notifications[n]["content"] is not [None, "", " "]:
-                newNotifs += [notifications[n]]
-                if debug_mode is True:
-                    print(notifications[n])
+            if notifications[n] and notifications[n]["title"] is not [None, "", " ", "  "] and notifications[n]["content"] is not [None, "", " ", "  "]:
+                ignore_string_switch = False
+                for item in range(0,len(ignored_strings)):
+                    if ignore_string_switch == False and (notifications[n]["title"].find(ignored_strings[item]) != -1 or notifications[n]["content"].find(ignored_strings[item]) != -1):
+                        ignore_string_switch = True
+                        break
+                        #compared for each item
+                if ignore_string_switch == False and notifications[n] not in newNotifs:
+                    newNotifs += [notifications[n]]
     oldNotifications = notifications
-        #print any new notifs together
     if newNotifs:
         for notif in range(0,len(newNotifs)):
-            if debug_mode is True:
-                content = newNotifs[notif]["content"] + " (debug) KEY: " + newNotifs[notif]["key"]
-            else:
-                content = newNotifs[notif]["content"]
-
+            # feel free to try to fix the crazy strings telegram sometimes puts into notifications in a cleaner way, this works for now 
+            tit = newNotifs[notif]["title"].strip()
+            cont = newNotifs[notif]["content"].strip()
+            cont2 = cont.replace(u'\u200f', '')
+            cont3 = cont2.replace(u'\u200e', '')
+            tit2 = tit.replace(u'\u200e', '')
+            tit3 = tit2.replace(u'\u200f', '')
+            title = tit3.strip()
+            content = cont3.strip()
             if color_output is True:
-                col=pickColor(notif,newNotifs) 
-                col_title =  col + " " + newNotifs[notif]["title"] + ": " + colored.attr('reset')
-                col_title_fixed = col_title.replace("<200e>", "")
-                output = col_title_fixed + content
-            else:
-                title = newNotifs[notif]["title"] + ": "
+                col = pickColor(notif,newNotifs) 
+                title = col + title + term.normal + ": "  
                 output = title + content
-            output_list.append(output)
+                output = output + "\n"
+            else:
+                output = title + content + "\n"
+            if title and content:
+                output_list.append(output)
         return output_list
     else:
         return None
 
- 
 if __name__ == "__main__":
     try:
         oldNotifications = []
@@ -157,8 +174,5 @@ if __name__ == "__main__":
             oldNotifications = notifications
     except KeyboardInterrupt:
         print('User exited Notification script with ctrl + c')
-
-    #except:
-    #    print(colored.fg(1), "!!!---> Exception occured in notification script please report to the TEL telegram group <---¡¡¡", colored.attr("reset"))
     finally:
         print("Exiting notification script")

@@ -1,0 +1,4 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# file is required by TEL to open files that are shared to TEL app
+source ~/.tel/configs/userprefs.sh
+$EDITOR $1

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#todo send dp to bc so handles floats automatically
+if [ -z $1 ] ; then
+	printf  "\e[38;5;2m Calculate\e[m: "
+	read input
+	echo "$input" | bc
+else
+	echo "$@" | bc
+fi

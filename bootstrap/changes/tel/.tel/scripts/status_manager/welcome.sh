@@ -4,6 +4,22 @@
 # github.com/sealedjoy
 # Telegram @SealyJ
 # version 0.1
+word1='Welcome'
+word2='back'
+word3="$NAME"
 
-clear ; figlet -f mini Welcome ; sleep 0.5; clear ; figlet -f mini to ; sleep 0.2; clear ; figlet -f slant TEL | lolcat -a --speed=150 -p 200; sleep 0.3 ; clear
+#clear
+figlet -tc -f shadow "$word1" | lolcat -a --speed=170 -p 200
+figlet -tc -f shadow "$word2" | lolcat -a --speed=190 -p 200
+#figlet -tc -f shadow "$word3" | lolcat -a --speed=190 -p 200
+#clear
+figlet -tc -f shadow "$word3" | lolcat -a --speed=150 -p 200
+echo ; sleep 0.1 
+echo ; sleep 0.1 
+echo ; sleep 0.1 
+echo ; sleep 0.1 
+echo ; sleep 0.1 
+echo ; sleep 0.1 
+
+clear
 
