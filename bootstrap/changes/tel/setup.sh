@@ -34,11 +34,16 @@ error() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${RED}" "${1}"
 }
 
+log "updating Termux packages..."
+logf "updating Termux packages..."
+catch "$(pkg update -y && pkg upgrade -y 2>&1)"
+log "finished updating Termux packages"
+logf "finished updating Termux packages"
 if [ -f ~/.tel/.installed ]; then #set update var if finished installation was detected
     UPDATE=true
-    log "updating TEL setup"
-    log "updating app launcher"
-    logf "starting update"
+	log "updating TEL setup"
+	#log "updating app launcher"
+	logf "starting update"
 else #download required packages if first start detected
 	log "finishing TEL setup"
 	log "installing required packages.."
