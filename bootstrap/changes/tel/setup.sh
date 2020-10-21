@@ -73,9 +73,9 @@ fi
 #echo "/data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.list
 #echo "92a2c39cbbde0f366887d99a76358852  data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.md5sums
 
-
-tel-app -u #set up app cache
-tel-phone -u
+#do these when app starts up so we can keep applets together
+#tel-app -u #set up app cache
+#tel-phone -u #this can fail so is preferable at app startup
 
 #create required directories
 #todo: optimize this
