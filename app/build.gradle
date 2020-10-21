@@ -3,23 +3,23 @@ plugins {
 }
 
 android {
-    compileSdkVersion 28
-    ndkVersion '21.0.6113669'
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    ndkVersion project.properties.ndkVersion
 
     dependencies {
         implementation "androidx.annotation:annotation:1.1.0"
         implementation "androidx.viewpager:viewpager:1.0.0"
-        implementation "androidx.drawerlayout:drawerlayout:1.0.0"
+        implementation "androidx.drawerlayout:drawerlayout:1.1.0"
         implementation project(":terminal-view")
         implementation 'com.jakewharton:process-phoenix:2.0.0'
     }
 
     defaultConfig {
         applicationId "com.termux"
-        minSdkVersion 24
-        targetSdkVersion 28
-        versionCode 94
-        versionName "0.94"
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        versionCode 102
+        versionName "0.102"
 
         externalNativeBuild {
             ndkBuild {

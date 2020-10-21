@@ -1,33 +1,24 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:height="48dp"
-    android:width="48dp"
-    android:viewportWidth="48"
-    android:viewportHeight="48">
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
     <!--
-        https://material.google.com/style/icons.html
+        Updated notification icon compliant with system icons guidelines
+        https://material.io/design/iconography/system-icons.html
     -->
 
-    <!-- Screen border. -->
-    <path android:fillColor="#00000000"
-          android:strokeColor="#FFF"
-          android:strokeWidth="3"
-          android:pathData="M7,4
-                            l34,0
-                            q3 0,3 3
-                            l0,34
-                            q0 3, -3 3
-                            l-34,0
-                            q-3 0, -3-3
-                            l0 -34
-                            q0 -3, 3 -3"
-          />
+    <group>
+        <clip-path
+            android:pathData="M0,0h24v24h-24z"/>
 
-    <!-- Block cursor. -->
-    <path android:fillColor="#FFF"
-          android:pathData="M14,14
-                            l5,0
-                            l0,10
-                            l-5,0"
-        />
+        <path
+            android:pathData="M5,4H2L8,12L2,20H5L11,12L5,4Z"
+            android:fillColor="#ffffff"/>
 
+        <path
+            android:pathData="M13,18H22V20H13V18Z"
+            android:fillColor="#ffffff"/>
+
+    </group>
 </vector>

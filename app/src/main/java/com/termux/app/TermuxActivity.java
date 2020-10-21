@@ -38,6 +38,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -93,6 +94,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private static final int CONTEXTMENU_STYLING_ID = 6;
     private static final int CONTEXTMENU_HELP_ID = 8;
     private static final int CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON = 9;
+    private static final int CONTEXTMENU_AUTOFILL_ID = 10;
 
     private static final int MAX_SESSIONS = 8;
 
@@ -153,7 +155,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 mSettings.reloadFromProperties(TermuxActivity.this);
 
                 if (mExtraKeysView != null) {
-                    mExtraKeysView.reload(mSettings.mExtraKeys, ExtraKeysView.defaultCharDisplay);
+                    mExtraKeysView.reload(mSettings.mExtraKeys);
                 }
             }
         }
@@ -234,7 +236,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 
         ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
-        layoutParams.height = layoutParams.height * mSettings.mExtraKeys.length;
+        layoutParams.height = layoutParams.height * (mSettings.mExtraKeys == null ? 0 : mSettings.mExtraKeys.getMatrix().length);
         viewPager.setLayoutParams(layoutParams);
 
         viewPager.setAdapter(new PagerAdapter() {
@@ -255,7 +257,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 View layout;
                 if (position == 0) {
                     layout = mExtraKeysView = (ExtraKeysView) inflater.inflate(R.layout.extra_keys_main, collection, false);
-                    mExtraKeysView.reload(mSettings.mExtraKeys, ExtraKeysView.defaultCharDisplay);
+                    mExtraKeysView.reload(mSettings.mExtraKeys);
                 } else {
                     layout = inflater.inflate(R.layout.extra_keys_right, collection, false);
                     final EditText editText = layout.findViewById(R.id.text_input);
@@ -662,6 +664,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         menu.add(Menu.NONE, CONTEXTMENU_SELECT_URL_ID, Menu.NONE, R.string.select_url);
         menu.add(Menu.NONE, CONTEXTMENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.select_all_and_share);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AutofillManager autofillManager = getSystemService(AutofillManager.class);
+            if (autofillManager != null && autofillManager.isEnabled()) {
+                menu.add(Menu.NONE, CONTEXTMENU_AUTOFILL_ID, Menu.NONE, R.string.autofill_password);
+            }
+        }
         menu.add(Menu.NONE, CONTEXTMENU_RESET_TERMINAL_ID, Menu.NONE, R.string.reset_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.kill_process, getCurrentTermSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXTMENU_STYLING_ID, Menu.NONE, R.string.style_terminal);
@@ -764,7 +772,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     void showUrlSelection() {
-        String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptText();
+        String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
         LinkedHashSet<CharSequence> urlSet = extractUrls(text);
         if (urlSet.isEmpty()) {
             new AlertDialog.Builder(this).setMessage(R.string.select_url_no_found).show();
@@ -876,6 +884,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     mSettings.setScreenAlwaysOn(this, true);
                 }
                 return true;
+            }
+            case CONTEXTMENU_AUTOFILL_ID: {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    AutofillManager autofillManager = getSystemService(AutofillManager.class);
+                    if (autofillManager != null && autofillManager.isEnabled()) {
+                        autofillManager.requestAutofill(mTerminalView);
+                    }
+                }
             }
             default:
                 return super.onContextItemSelected(item);

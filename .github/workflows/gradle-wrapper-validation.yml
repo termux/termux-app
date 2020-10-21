@@ -1,4 +1,4 @@
-name: Unit tests
+name: "Validate Gradle Wrapper"
 
 on:
   push:
@@ -11,11 +11,9 @@ on:
       - android-10
 
 jobs:
-  testing:
+  validation:
+    name: "Validation"
     runs-on: ubuntu-latest
     steps:
-    - name: Clone repository
-      uses: actions/checkout@v2
-    - name: Execute tests
-      run: |
-        ./gradlew test
+      - uses: actions/checkout@v2
+      - uses: gradle/wrapper-validation-action@v1

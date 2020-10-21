@@ -19,7 +19,9 @@
             android:layout_marginLeft="3dp"
             android:focusableInTouchMode="true"
             android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
-            android:scrollbars="vertical" />
+            android:scrollbars="vertical"
+            android:importantForAutofill="no"
+            android:autofillHints="password" />
 
         <LinearLayout
             android:id="@+id/left_drawer"

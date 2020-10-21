@@ -17,12 +17,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 28
-    ndkVersion '21.0.6113669'
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    ndkVersion project.properties.ndkVersion
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
 
         externalNativeBuild {
             ndkBuild {

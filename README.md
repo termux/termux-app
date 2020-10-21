@@ -7,7 +7,6 @@ A launcher for Termux experts.
 
 All addon updates get merged and build automatically.
 
-
 ### Read the [FAQ](https://github.com/t-e-l/tel/wiki/FAQ)!
 
 ### [Downloads](https://t-e-l.github.io/)
