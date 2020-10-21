@@ -36,7 +36,7 @@ error() {
 
 log "updating Termux packages..."
 logf "updating Termux packages..."
-catch "$(pkg update -y && pkg upgrade -y 2>&1)"
+catch "$(apt-get update -y && apt-get upgrade -y 2>&1)"
 log "finished updating Termux packages"
 logf "finished updating Termux packages"
 if [ -f ~/.tel/.installed ]; then #set update var if finished installation was detected
@@ -49,11 +49,11 @@ else #download required packages if first start detected
 	log "installing required packages.."
 	log "this may take a while"
         logf "starting installation"
-	catch "$(pkg install fzf nnn sl cowsay openssh tree bc fd curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y 2>&1)"
+	catch "$(pkg install nnn sl cowsay openssh tree bc fd curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api -y 2>&1)"
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
         rm -f get-pip.py
-        catch "$(pip install blessed lolcat powerline-status psutil 2>&1)"
+        catch "$(pip install fzf blessed lolcat powerline-status psutil 2>&1)"
         log "finished packages download and installation"
         logf "finished packages download and installation"
 fi
