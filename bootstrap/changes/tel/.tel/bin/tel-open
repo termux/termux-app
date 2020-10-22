@@ -3,6 +3,7 @@
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 bookmarks_file=~/.tel/data/bookmarks 
 global_url=$2
+[[ -e $bookmarks_file ]] || echo 'https://t-e-l.github.io' > ${bookmarks_file} # create new list if none exists
 show_help(){
     printf  "%s\n"\
             "Opens a file or link in external app"\
@@ -16,7 +17,7 @@ open_url(){
    	if [ -n "$global_url" ]; then
 		url=$global_url
 	else
-		url=$(cat $bookmarks_file | fzf -e --layout=reverse --cycle --color=16 --info=inline --prompt=" Pick a URL to open with an android app:" --select-1)
+		url=$(cat $bookmarks_file | fzf -e --cycle --color=16 --prompt=" Pick a URL to open with an android app:" --select-1)
 	fi
 	if [ ! -z $url ] ; then
 	termux-open-url $url
@@ -24,15 +25,12 @@ open_url(){
 	else
 		exit 1
 	fi
-
-
-	}
+}
 
 if [ -z $1 ] ; then
-	selected_file=$(fzf --layout=reverse --cycle --color=16 --info=inline --prompt=" Open in app: ")
+	selected_file=$(fzf --cycle --color=16 --prompt=" Open in app: ")
 else
 	case "$1" in
-		
 		-u) #open url in app instead of file
 		open_url
 		exit 0
