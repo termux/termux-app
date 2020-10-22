@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/bash
+#!/usr/bin/env bash
 
 #TEL setup file
 #should be executed after the setup and every apk based update
@@ -85,7 +85,6 @@ mkdir -p ~/bin
 
 if [ "$UPDATE" = false ]; then #if first start detected
 
-	#install OhMyZsh
 	#log "installing OhMyZsh"
 	#error "if you enable zsh, type 'exit' to finish setup."
 	#log "hit ENTER to continue"
@@ -96,22 +95,10 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	#install zsh plugins
 	catch "$(git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>&1)"
 	catch "$(git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>&1)"
-
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
 	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting zsh-autosuggestions)/g' ~/.zshrc #fzf maybe needed here
   #	echo "_byobu_sourced=1 . /data/data/com.termux/files/usr/bin/byobu-launch 2>/dev/null || true" >> ~/.zprofile
-        echo "export PATH=/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:~/.tel/bin:/data/data/com.termux/files/home/.local/bin" >> ~/.zshrc # setup PATH
-        echo "set -K # disables ! events in zsh to allow for bangs in tel-search" >> ~/.zshrc
-        echo "POWERLINE_BASH_CONTINUATION=1 # terminal prompt stuff"  >> ~/.zshrc
-        echo "POWERLINE_BASH_SELECT=1 # terminal prompt stuff"  >> ~/.zshrc
-        echo "powerline-daemon -q # start the prompt daemon"  >> ~/.zshrc
-        echo "source /data/data/com.termux/files/usr/lib/python3.8/site-packages/powerline/bindings/zsh/powerline.zsh # terminal prompt stuff"  >> ~/.zshrc
-        echo "PROMPT_EOL_MARK='' # removes the ugly % appended to partial lines"  >> ~/.zshrc
-        echo "source ~/.envvar # open this to see where to add your own environmental variables"  >> ~/.zshrc
-	echo "source ~/.aliases # please open this file to see where to add you own aliases and functions" >> ~/.zshrc
-        echo "$HOME/.tel/scripts/readconfigs.sh # open this to find out about TEL settings"  >> ~/.zshrc
-	echo "export FZF_BASE=/data/data/com.termux/files/usr/bin/fzf"  >> ~/.zshrc
-	echo "[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh # load fzf bindings"  >> ~/.zshrc
+	echo ". ~/.tel/.telrc # Load TEL " >> ~/.zshrc
 	log "installing configs" #todo: optimize this
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
@@ -124,6 +111,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	cp -rf ~/../usr/tel/.tmux.conf ~/
 	cp -rf ~/../usr/tel/.zlogin ~/
 	cp -rf ~/../usr/tel/.vimrc ~/
+	cp -rf ~/../usr/tel/.telrc ~/tel/
 
 else
 	log "updating configs"
