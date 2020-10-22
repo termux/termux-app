@@ -1,0 +1,40 @@
+{
+	"segment_data": {
+		"buffer_name": {
+			"contents": "Location List"
+		}
+	},
+	"segments": {
+		"left": [
+			{
+				"type": "string",
+				"name": "buffer_name",
+				"highlight_groups": ["file_name"]
+			},
+			{
+				"function": "window_title",
+				"draw_soft_divider": false
+			},
+			{
+				"type": "string",
+				"highlight_groups": ["background"],
+				"draw_soft_divider": false,
+				"draw_hard_divider": false,
+				"width": "auto"
+			}
+		],
+		"right": [
+			{
+				"type": "string",
+				"name": "line_current_symbol",
+				"highlight_groups": ["line_current_symbol", "line_current"]
+			},
+			{
+				"function": "line_current",
+				"draw_soft_divider": false,
+				"width": 3,
+				"align": "r"
+			}
+		]
+	}
+}

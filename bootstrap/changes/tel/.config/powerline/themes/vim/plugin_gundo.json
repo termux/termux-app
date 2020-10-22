@@ -1,0 +1,18 @@
+{
+	"segments": {
+		"left": [
+			{
+				"type": "string",
+				"highlight_groups": ["gundo:name", "file_name"],
+				"contents": "Undo tree"
+			},
+			{
+				"type": "string",
+				"highlight_groups": ["gundo:background", "background"],
+				"draw_soft_divider": false,
+				"draw_hard_divider": false,
+				"width": "auto"
+			}
+		]
+	}
+}

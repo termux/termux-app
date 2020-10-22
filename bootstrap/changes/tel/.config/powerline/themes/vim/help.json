@@ -1,0 +1,36 @@
+{
+	"segments": {
+		"left": [
+			{
+				"function": "file_name",
+				"draw_soft_divider": false
+			},
+			{
+				"type": "string",
+				"highlight_groups": ["background"],
+				"draw_soft_divider": false,
+				"draw_hard_divider": false,
+				"width": "auto"
+			}
+		],
+		"right": [
+			{
+				"function": "line_percent",
+				"priority": 30,
+				"width": 4,
+				"align": "r"
+			},
+			{
+				"type": "string",
+				"name": "line_current_symbol",
+				"highlight_groups": ["line_current_symbol", "line_current"]
+			},
+			{
+				"function": "line_current",
+				"draw_soft_divider": false,
+				"width": 3,
+				"align": "r"
+			}
+		]
+	}
+}

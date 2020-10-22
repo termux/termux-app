@@ -1,0 +1,151 @@
+{
+	"dividers": {
+		"left": {
+			"hard": "▌",
+			"soft": "│"
+		},
+		"right": {
+			"hard": "▐",
+			"soft": "│"
+		}
+	},
+	"spaces": 0,
+	"segment_data": {
+		"branch": {
+			"before": "B "
+		},
+		"stash": {
+			"before": "S "
+		},
+		"cwd": {
+			"args": {
+				"use_path_separator": true,
+				"ellipsis": "…"
+			}
+		},
+
+		"line_current_symbol": {
+			"contents": "␤"
+		},
+		"player": {
+			"args": {
+				"state_symbols": {
+					"fallback": "♫",
+					"play":     "▶",
+					"pause":    "▮▮",
+					"stop":     "■"
+				}
+			}
+		},
+
+		"time": {
+			"before": ""
+		},
+
+		"powerline.segments.common.net.network_load": {
+			"args": {
+				"recv_format": "⇓{value:>8}",
+				"sent_format": "⇑{value:>8}"
+			}
+		},
+		"powerline.segments.common.net.hostname": {
+			"before": "⌂"
+		},
+		"powerline.segments.common.bat.battery": {
+			"args": {
+				"full_heart": "♥",
+				"empty_heart": "♥",
+				"online": "⚡︎",
+				"offline": " "
+			}
+		},
+		"powerline.segments.common.sys.uptime": {
+			"before": "↑"
+		},
+		"powerline.segments.common.mail.email_imap_alert": {
+			"before": "M "
+		},
+		"powerline.segments.common.env.virtualenv": {
+			"before": "E "
+		},
+		"powerline.segments.common.wthr.weather": {
+			"args": {
+				"icons": {
+					"day":           "D",
+					"blustery":      "W",
+					"rainy":         "R",
+					"cloudy":        "c",
+					"snowy":         "*",
+					"stormy":        "S",
+					"foggy":         "f",
+					"sunny":         "s",
+					"night":         "N",
+					"windy":         "w",
+					"not_available": "-",
+					"unknown":       "!"
+				}
+			}
+		},
+		"powerline.segments.common.time.fuzzy_time": {
+			"args": {
+				"unicode_text": true
+			}
+		},
+
+		"powerline.segments.vim.mode": {
+			"args": {
+				"override": {
+					"n":  "NML",
+					"no": "NOP",
+					"v":  "VIS",
+					"V":  "VLN",
+					"^V": "VBL",
+					"s":  "SEL",
+					"S":  "SLN",
+					"^S": "SBL",
+					"i":  "INS",
+					"ic": "I-C",
+					"ix": "I^X",
+					"R":  "REP",
+					"Rv": "VRP",
+					"Rc": "R-C",
+					"Rx": "R^X",
+					"c":  "CMD",
+					"cv": "VEX",
+					"ce": " EX",
+					"r":  "PRT",
+					"rm": "MOR",
+					"r?": "CON",
+					"!":  " SH"
+				}
+			}
+		},
+		"powerline.segments.vim.visual_range": {
+			"args": {
+				"CTRL_V_text": "{rows}×{vcols}",
+				"v_text_oneline": "↔{vcols}",
+				"v_text_multiline": "↕{rows}",
+				"V_text": "⇕{rows}"
+			}
+		},
+		"powerline.segments.vim.readonly_indicator": {
+			"args": {
+				"text": "RO"
+			}
+		},
+		"powerline.segments.vim.modified_indicator": {
+			"args": {
+				"text": "+"
+			}
+		},
+
+		"powerline.segments.i3wm.scratchpad": {
+			"args": {
+				"icons": {
+					"fresh": "●",
+					"changed": "○"
+				}
+			}
+		}
+	}
+}

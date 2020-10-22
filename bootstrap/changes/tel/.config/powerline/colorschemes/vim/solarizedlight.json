@@ -1,0 +1,122 @@
+{
+	"name": "Solarized light for vim",
+	"groups": {
+		"information:additional":   { "fg": "solarized:base02", "bg": "solarized:base2", "attrs": [] },
+		"information:unimportant":  { "fg": "solarized:base1", "bg": "solarized:base01", "attrs": [] },
+		"background":               { "fg": "solarized:base03", "bg": "solarized:base01", "attrs": [] },
+		"background:divider":       { "fg": "solarized:base0", "bg": "solarized:base01", "attrs": [] },
+		"mode":                     { "fg": "solarized:base3", "bg": "solarized:green", "attrs": ["bold"] },
+		"visual_range":             { "fg": "solarized:green", "bg": "solarized:base3", "attrs": ["bold"] },
+		"modified_indicator":       { "fg": "solarized:yellow", "bg": "solarized:base2", "attrs": ["bold"] },
+		"paste_indicator":          { "fg": "solarized:red", "bg": "solarized:base2", "attrs": ["bold"] },
+		"readonly_indicator":       { "fg": "solarized:red", "bg": "solarized:base2", "attrs": [] },
+		"branch_dirty":             { "fg": "solarized:yellow", "bg": "solarized:base2", "attrs": [] },
+		"branch:divider":           { "fg": "solarized:base1", "bg": "solarized:base2", "attrs": [] },
+		"stash":                    "branch_dirty",
+		"stash:divider":            "branch:divider",
+		"file_name":                { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": ["bold"] },
+		"window_title":             { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
+		"file_size":                { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
+		"file_name_no_file":        { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": ["bold"] },
+		"file_name_empty":          { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
+		"file_vcs_status":          { "fg": "solarized:red", "bg": "solarized:base2", "attrs": [] },
+		"file_vcs_status_M":        { "fg": "solarized:yellow", "bg": "solarized:base2", "attrs": [] },
+		"file_vcs_status_A":        { "fg": "solarized:green", "bg": "solarized:base2", "attrs": [] },
+		"line_percent":             { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
+		"line_percent_gradient":    { "fg": "green_yellow_orange_red", "bg": "solarized:base2", "attrs": [] },
+		"position":                 { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
+		"position_gradient":        { "fg": "green_yellow_orange_red", "bg": "solarized:base2", "attrs": [] },
+		"line_current":             { "fg": "solarized:base3", "bg": "solarized:base02", "attrs": ["bold"] },
+		"line_current_symbol":      { "fg": "solarized:base3", "bg": "solarized:base02", "attrs": [] },
+		"virtcol_current_gradient": { "fg": "yellow_orange_red", "bg": "solarized:base02", "attrs": [] },
+		"col_current":              { "fg": "solarized:base00", "bg": "solarized:base02", "attrs": [] },
+		"error":                    { "fg": "solarized:base03", "bg": "solarized:red", "attrs": ["bold"] },
+		"warning":                  { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": ["bold"] },
+		"current_tag":              { "fg": "solarized:base03", "bg": "solarized:base01", "attrs": ["bold"] }
+	},
+	"mode_translations": {
+		"nc": {
+			"colors": {
+				"solarized:base2": "solarized:base01",
+				"solarized:base0": "solarized:base01",
+				"solarized:base00": "solarized:base2",
+				"solarized:base1": "solarized:base0",
+				"solarized:base02": "solarized:base00",
+				"solarized:base03": "solarized:base1"
+			}
+		},
+		"i": {
+			"groups": {
+				"background":             { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
+				"background:divider":     { "fg": "solarized:base02", "bg": "solarized:base2", "attrs": [] },
+				"mode":                   { "fg": "solarized:base3", "bg": "solarized:blue", "attrs": ["bold"] },
+				"modified_indicator":     { "fg": "solarized:yellow", "bg": "solarized:base02", "attrs": ["bold"] },
+				"paste_indicator":        { "fg": "solarized:base3", "bg": "solarized:orange", "attrs": ["bold"] },
+				"readonly_indicator":     { "fg": "solarized:red", "bg": "solarized:base02", "attrs": [] },
+				"branch":                 { "fg": "solarized:base2", "bg": "solarized:base02", "attrs": [] },
+				"branch:divider":         { "fg": "solarized:base0", "bg": "solarized:base02", "attrs": [] },
+				"file_directory":         { "fg": "solarized:base2", "bg": "solarized:base02", "attrs": [] },
+				"file_name":              { "fg": "solarized:base01", "bg": "solarized:base02", "attrs": ["bold"] },
+				"file_size":              { "fg": "solarized:base01", "bg": "solarized:base02", "attrs": [] },
+				"file_name_no_file":      { "fg": "solarized:base01", "bg": "solarized:base02", "attrs": ["bold"] },
+				"file_name_empty":        { "fg": "solarized:base01", "bg": "solarized:base02", "attrs": [] },
+				"file_format":            { "fg": "solarized:base02", "bg": "solarized:base2", "attrs": [] },
+				"file_vcs_status":        { "fg": "solarized:red", "bg": "solarized:base02", "attrs": [] },
+				"file_vcs_status_M":      { "fg": "solarized:yellow", "bg": "solarized:base02", "attrs": [] },
+				"file_vcs_status_A":      { "fg": "solarized:green", "bg": "solarized:base02", "attrs": [] },
+				"line_percent":           { "fg": "solarized:base03", "bg": "solarized:base1", "attrs": [] },
+				"line_percent_gradient":  { "fg": "solarized:base03", "bg": "solarized:base1", "attrs": [] },
+				"position":               { "fg": "solarized:base03", "bg": "solarized:base1", "attrs": [] },
+				"position_gradient":      { "fg": "solarized:base03", "bg": "solarized:base1", "attrs": [] },
+				"line_current":           { "fg": "solarized:base3", "bg": "solarized:base03", "attrs": ["bold"] },
+				"line_current_symbol":    { "fg": "solarized:base3", "bg": "solarized:base03", "attrs": [] },
+				"virtcol_current_gradient": { "fg": "yellow_orange_red", "bg": "solarized:base03", "attrs": [] },
+				"col_current":              { "fg": "solarized:base00", "bg": "solarized:base03", "attrs": [] }
+			}
+		},
+		"ic": {
+			"groups": {
+				"background":             { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
+				"background:divider":     { "fg": "solarized:base02", "bg": "solarized:base2", "attrs": [] },
+				"mode":                   { "fg": "solarized:base3", "bg": "solarized:blue", "attrs": ["bold"] }
+			}
+		},
+		"ix": {
+			"groups": {
+				"background":             { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": [] },
+				"background:divider":     { "fg": "solarized:base02", "bg": "solarized:base2", "attrs": [] },
+				"mode":                   { "fg": "solarized:base3", "bg": "solarized:blue", "attrs": ["bold"] }
+			}
+		},
+		"v": {
+			"groups": {
+				"mode": { "fg": "solarized:base3", "bg": "solarized:orange", "attrs": ["bold"] }
+			}
+		},
+		"V": {
+			"groups": {
+				"mode": { "fg": "solarized:base3", "bg": "solarized:orange", "attrs": ["bold"] }
+			}
+		},
+		"^V": {
+			"groups": {
+				"mode": { "fg": "solarized:base3", "bg": "solarized:orange", "attrs": ["bold"] }
+			}
+		},
+		"R": {
+			"groups": {
+				"mode": { "fg": "solarized:base3", "bg": "solarized:red", "attrs": ["bold"] }
+			}
+		},
+		"Rc": {
+			"groups": {
+				"mode": { "fg": "solarized:base3", "bg": "solarized:red", "attrs": ["bold"] }
+			}
+		},
+		"Rx": {
+			"groups": {
+				"mode": { "fg": "solarized:base3", "bg": "solarized:red", "attrs": ["bold"] }
+			}
+		}
+	}
+}

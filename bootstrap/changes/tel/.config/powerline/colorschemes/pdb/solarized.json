@@ -1,0 +1,5 @@
+{
+	"groups": {
+		"stack_depth": { "fg": "solarized:base03", "bg": "solarized:base2", "attrs": ["bold"] }
+	}
+}

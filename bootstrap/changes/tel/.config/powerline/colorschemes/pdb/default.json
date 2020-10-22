@@ -1,0 +1,5 @@
+{
+	"groups": {
+		"stack_depth": { "fg": "gray1", "bg": "gray10", "attrs": ["bold"] }
+	}
+}

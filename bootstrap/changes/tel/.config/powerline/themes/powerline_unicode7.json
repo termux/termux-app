@@ -1,0 +1,165 @@
+{
+	"dividers": {
+		"left": {
+			"hard": " ",
+			"soft": " "
+		},
+		"right": {
+			"hard": " ",
+			"soft": " "
+		}
+	},
+	"spaces": 1,
+	"segment_data": {
+		"branch": {
+			"before": "🔀 "
+		},
+		"stash": {
+			"before": "📝"
+		},
+		"cwd": {
+			"args": {
+				"ellipsis": "⋯"
+			}
+		},
+
+		"line_current_symbol": {
+			"contents": " "
+		},
+		"player": {
+			"args": {
+				"state_symbols": {
+					"fallback": "♫",
+					"play":     "⏵",
+					"pause":    "⏸",
+					"stop":     "⏹"
+				}
+			}
+		},
+
+		"time": {
+			"before": "🕐 "
+		},
+
+		"powerline.segments.common.net.network_load": {
+			"args": {
+				"recv_format": "⬇ {value:>8}",
+				"sent_format": "⬆ {value:>8}"
+			}
+		},
+		"powerline.segments.common.net.hostname": {
+			"before": "🏠 "
+		},
+		"powerline.segments.common.bat.battery": {
+			"args": {
+				"full_heart": "💙",
+				"empty_heart": "💛",
+				"online": "⚡️",
+				"offline": " "
+			}
+		},
+		"powerline.segments.common.sys.uptime": {
+			"before": "⇑ "
+		},
+		"powerline.segments.common.mail.email_imap_alert": {
+			"before": "✉ "
+		},
+		"powerline.segments.common.env.virtualenv": {
+			"before": "🐍 "
+		},
+		"powerline.segments.common.wthr.weather": {
+			"args": {
+				"icons": {
+					"tornado":                 "🌪",
+					"hurricane":               "🌀",
+					"showers":                 "☔",
+					"scattered_showers":       "☔",
+					"thunderstorms":           "🌩",
+					"isolated_thunderstorms":  "🌩",
+					"scattered_thunderstorms": "🌩",
+					"dust":                    "🌫",
+					"fog":                     "🌫",
+					"cold":                    "❄",
+					"partly_cloudy_day":       "🌤",
+					"mostly_cloudy_day":       "🌥",
+					"sun":                     "🌣",
+					"hot":                     "♨",
+					"day":                     "☀",
+					"blustery":                "⚑",
+					"rainy":                   "☂",
+					"cloudy":                  "☁",
+					"snowy":                   "☃",
+					"stormy":                  "☈",
+					"foggy":                   "🌁",
+					"sunny":                   "🌣",
+					"night":                   "☾",
+					"windy":                   "☴",
+					"not_available":           "�",
+					"unknown":                 "⚠"
+				}
+			}
+		},
+		"powerline.segments.common.time.fuzzy_time": {
+			"args": {
+				"unicode_text": true
+			}
+		},
+
+		"powerline.segments.vim.mode": {
+			"args": {
+				"override": {
+					"n":  "NORMAL",
+					"no": "N·OPER",
+					"v":  "VISUAL",
+					"V":  "V·LINE",
+					"^V": "V·BLCK",
+					"s":  "SELECT",
+					"S":  "S·LINE",
+					"^S": "S·BLCK",
+					"i":  "INSERT",
+					"ic": "I·COMP",
+					"ix": "I·C-X ",
+					"R":  "RPLACE",
+					"Rv": "V·RPLC",
+					"Rc": "R·COMP",
+					"Rx": "R·C-X ",
+					"c":  "COMMND",
+					"cv": "VIM·EX",
+					"ce": "NRM·EX",
+					"r":  "PROMPT",
+					"rm": "-MORE-",
+					"r?": "CNFIRM",
+					"!":  "!SHELL",
+					"t":  "TERM  "
+				}
+			}
+		},
+		"powerline.segments.vim.visual_range": {
+			"args": {
+				"CTRL_V_text": "↕{rows} ↔{vcols}",
+				"v_text_oneline": "↔{vcols}",
+				"v_text_multiline": "↕{rows}",
+				"V_text": "⇕{rows}"
+			}
+		},
+		"powerline.segments.vim.readonly_indicator": {
+			"args": {
+				"text": "🔏"
+			}
+		},
+		"powerline.segments.vim.modified_indicator": {
+			"args": {
+				"text": "🖫⃥"
+			}
+		},
+
+		"powerline.segments.i3wm.scratchpad": {
+			"args": {
+				"icons": {
+					"fresh": "●",
+					"changed": "○"
+				}
+			}
+		}
+	}
+}

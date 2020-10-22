@@ -1,0 +1,14 @@
+{
+	"groups": {
+		"active_window_status": { "fg": "solarized:blue",   "bg": "solarized:base02", "attrs": [] },
+		"window_status":        { "fg": "solarized:base1",  "bg": "solarized:base02", "attrs": [] },
+		"activity_status":      { "fg": "solarized:yellow", "bg": "solarized:base02", "attrs": [] },
+		"bell_status":          { "fg": "solarized:red",    "bg": "solarized:base02", "attrs": [] },
+		"window":               { "fg": "solarized:base1",  "bg": "solarized:base02", "attrs": [] },
+		"window:divider":       { "fg": "solarized:base01", "bg": "solarized:base02", "attrs": [] },
+		"window:current":       { "fg": "solarized:base3",  "bg": "solarized:base03", "attrs": [] },
+		"window_name":          { "fg": "solarized:base3",  "bg": "solarized:base03", "attrs": ["bold"] },
+		"session":              { "fg": "solarized:base3",  "bg": "solarized:base03", "attrs": [] },
+		"session:prefix":       { "fg": "solarized:base01", "bg": "solarized:base3",  "attrs": [] }
+	}
+}

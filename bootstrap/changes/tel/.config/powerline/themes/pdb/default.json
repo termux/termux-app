@@ -1,0 +1,27 @@
+{
+	"default_module": "powerline.segments.pdb",
+	"segments": {
+		"left": [
+			{
+				"function": "stack_depth"
+			},
+			{
+				"type": "segment_list",
+				"function": "powerline.listers.pdb.frame_lister",
+				"segments": [
+					{
+						"function": "current_file",
+						"after": ":"
+					},
+					{
+						"function": "current_line",
+						"after": " "
+					},
+					{
+						"function": "current_code_name"
+					}
+				]
+			}
+		]
+	}
+}
