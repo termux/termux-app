@@ -54,7 +54,7 @@ elif [ "$1" == "-t" ] ; then
 	exit 0
 
 elif [ -z $1 ] ; then
-	provider=$(cat $provider_bangs_file | fzf -e --layout=reverse --cycle --color=16 --info=inline --prompt=" Search site: " --select-1)
+	provider=$(cat $provider_bangs_file | fzf -e --cycle --color=16 --prompt=" Search site: " --select-1)
 	if [ -z "$provider" ]; then
 	#	echo 'Nothing selected; exiting...'
 		exit 1

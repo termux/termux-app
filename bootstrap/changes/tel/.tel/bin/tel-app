@@ -61,9 +61,7 @@ main(){
     # fuzzy search in $app_namefile to get the app code and app 
     # name in this format 
     # app_code | app_name
-    app_data=$( fzf -e --layout=reverse --cycle\
-                --info=inline --prompt=" Launch app: "\
-                --query="$*" --color=16 --select-1 -0 < "$app_namefile")
+    app_data=$( fzf -e --cycle --prompt=" Launch app: " --query="$*" --color=16 --select-1 -0 < "$app_namefile")
     case "$?" in
         	# No app found
         "1"  )

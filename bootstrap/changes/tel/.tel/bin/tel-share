@@ -2,10 +2,10 @@
 #cd ~/../ 
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 if [ -z $1 ] ; then
-	selected_file=$(fzf --layout=reverse --cycle --color=16 --info=inline --prompt=" Share: ")
+	selected_file=$(fzf --cycle --color=16 --prompt=" Share: ")
 else
 	file_search="$@"
-	selected_file=$(fzf -e --layout=reverse --cycle --color=16 --query="$file_search" --info=inline --prompt=" File to share: " --select-1)
+	selected_file=$(fzf -e --cycle --color=16 --query="$file_search" --prompt=" File to share: " --select-1)
 fi
 
 if [ -z $selected_file ] ; then

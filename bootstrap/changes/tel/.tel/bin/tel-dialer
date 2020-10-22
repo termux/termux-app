@@ -70,9 +70,7 @@ main() {
     # fuzzy search in $contactsfile to get the number and
     # name in the format
     # Name | Number
-    contact=$(fzf -e --layout=reverse --cycle --color=16 \
-            --info=inline --prompt=" Call: " --query="$*" \
-            --select-1 -0 < "$contactsfile")
+    contact=$(fzf -e --cycle --color=16 --prompt=" Call: " --query="$*" --select-1 -0 < "$contactsfile")
     case "$?" in
         	# No app found
         "1"  )
