@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 #cd ~/../ 
 #export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+[[ -z "$EDITOR" ]] && echo 'Please set a default $EDITOR' && exit 1
 if [ -z $1 ] ; then
-	selected_file=$(fzf --cycle --color=16 --prompt="  Edit: ")
+	selected_file=$(fzf --cycle --color=16 --prompt="  Edit with $EDITOR: ")
 else
 	file_search=$(echo "$@")
-	selected_file=$(fzf -e --cycle --color=16 --query="$file_search" --prompt="  Edit: " --select-1)
+	selected_file=$(fzf -e --cycle --color=16 --query="$file_search" --prompt="  Edit with $EDITOR: " --select-1)
 fi
 
-if [ -z $selected_file ] ; then
-#	echo 'No file chosen - Exiting...'
+if [ -z "$selected_file" ] ; then
+	# no file selected or cancel fzf selection, this is preferable as it allows user to correct typos in fzf prompt rather than giving 'file not found error' 
+	# printf "\e[38;5;2m Edit\e[m%s: Error - file not found "
 	exit 1
 else
 	curr_dir=$(pwd)
 	printf "\e[38;5;2m Editing\e[m%s file: $curr_dir/$selected_file"
-	$EDITOR $selected_file
-	echo "$editor_output"
+	$EDITOR "$selected_file"
 fi
 
