@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Download official bootstrap packages, merge changes and pack zips
 ARCHS="aarch64 arm i686 x86_64"
 
