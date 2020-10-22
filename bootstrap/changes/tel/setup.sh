@@ -93,8 +93,12 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  2>&1
   	chsh -s zsh #set zsh default shell
+	#install zsh plugins
+	catch "$(git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>&1)"
+	catch "$(git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>&1)"
+
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
-	sed -i 's/plugins=(git)/plugins=(git catimg colorize fancy-ctrl-z zsh-syntax-highlighting zsh-autosuggestions)/g' ~/.zshrc #fzf maybe needed here
+	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting zsh-autosuggestions)/g' ~/.zshrc #fzf maybe needed here
   #	echo "_byobu_sourced=1 . /data/data/com.termux/files/usr/bin/byobu-launch 2>/dev/null || true" >> ~/.zprofile
         echo "export PATH=/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:~/.tel/bin:/data/data/com.termux/files/home/.local/bin" >> ~/.zshrc # setup PATH
         echo "set -K # disables ! events in zsh to allow for bangs in tel-search" >> ~/.zshrc
@@ -136,8 +140,9 @@ chmod +x ~/.tel/scripts/*
 chmod +x ~/.tel/scripts/status_manager/*
 chmod +x ~/.tel/bin/*
 chmod +x ~/bin/* # scripts that receive files and urls shared to TEL
-chmod +x ~/../usr/bin/tel-applist
+#chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
+chmod +x ~/../usr/bin/tel-restart
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
