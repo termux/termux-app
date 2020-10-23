@@ -34,6 +34,13 @@ error() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${RED}" "${1}"
 }
 
+if [ "$1" == "--reset" ] ; then
+	log 'cleaning items for fresh install'
+	rm -f ~/.tel/.installed
+	rm -rf ~/.oh-my-zsh
+fi
+
+
 log "updating Termux packages..."
 logf "updating Termux packages..."
 apt-get update -y && apt-get upgrade -y #print to screen as hotfix
@@ -119,7 +126,6 @@ fi
 
 
 log "updating permissions"
-
 #set permissions again(probably duplicate within tel-setup)
 chmod +x ~/.tel/status/*
 chmod +x ~/.tel/scripts/*
