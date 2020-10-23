@@ -103,7 +103,6 @@ if [ "$UPDATE" = false ]; then #if first start detected
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
 	cp -rTf ~/../usr/tel/.termux ~/.termux
-	cp -rTf ~/../usr/tel/.config/powerline ~/.config/powerline
 	cp -rf ~/../usr/tel/termux-file-editor ~/bin
 	cp -rf ~/../usr/tel/termux-url-opener ~/bin
 	cp -rf ~/../usr/tel/.aliases ~/
@@ -115,7 +114,6 @@ if [ "$UPDATE" = false ]; then #if first start detected
 
 else
 	log "updating configs"
-#	cp -rTf ~/../usr/tel/.byobu ~/.byobu
 	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 fi
 
