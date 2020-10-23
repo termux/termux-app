@@ -128,7 +128,12 @@ final class TermuxInstaller {
                     if (symlinks.isEmpty())
                         throw new RuntimeException("No SYMLINKS.txt encountered");
                     for (Pair<String, String> symlink : symlinks) {
-                        Os.symlink(symlink.first, symlink.second);
+                        Log.e(EmulatorDebug.LOG_TAG,symlink.first +"###"+ symlink.second);
+                        try{
+                            Os.symlink(symlink.first, symlink.second);
+                        }catch(final android.system.ErrnoException e){
+                            Log.e(EmulatorDebug.LOG_TAG,"symlink exists:"+symlink.first);
+                        }
                     }
 
                     if (!STAGING_PREFIX_FILE.renameTo(PREFIX_FILE)) {
