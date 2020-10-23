@@ -1,9 +1,9 @@
 # From https://gist.github.com/iainconnor/8605514
 # with the addition of the /captures below.
 /captures
-#app/src/main/cpp/bootstrap-*.zip
+app/src/main/cpp/bootstrap-aarch64.zip
 bootstrap/org
-bootstrap/*.zip
+bootstrap/bootstrap-*.zip
 # Built application files
 build/
 *.apk
