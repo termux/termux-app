@@ -24,8 +24,8 @@ status_enabled = os.environ['STATUS_WINDOW_ENABLED']
 user_sleeptime = float(os.environ['STATUS_MANAGER_SLEEP'])
 #center_output = os.environ['CENTER_STATUS']
 notifications_enabled = os.environ['NOTIFICATIONS_ENABLED']
-tel_version = os.environ['TEL_VERSION']
-status_manager_version = os.environ['STATUS_MANAGER_VERSION']
+#tel_version = os.environ['TEL_VERSION']
+#status_manager_version = os.environ['STATUS_MANAGER_VERSION']
 
 # set window name for target resizing
 os.system("tmux rename-window 'Status_Manager")
