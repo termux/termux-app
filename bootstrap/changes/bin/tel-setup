@@ -14,7 +14,7 @@ echo 'usage: tel-setup [OPTION]
 fi
 
 if [ ! -f "~/.tel/.installed" ]; then
-	pkg install wget unzip -y 2>&1
+	pkg install wget unzip coreutils -y 2>&1
 fi
 
 cd ~/../usr/
