@@ -102,7 +102,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	log "installing configs" #todo: optimize this
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
-	cp -rf ~/../usr/tel/.config ~/.config
+	cp -rf ~/../usr/tel/.config ~/
 	cp -rTf ~/../usr/tel/.termux ~/.termux
 	cp -rf ~/../usr/tel/termux-file-editor ~/bin
 	cp -rf ~/../usr/tel/termux-url-opener ~/bin
