@@ -2,7 +2,6 @@ package com.termux.app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -53,6 +52,7 @@ import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
 import com.termux.terminal.TextStyle;
+import com.termux.view.SuggestionBarCallback;
 import com.termux.view.TerminalView;
 
 import java.io.File;
@@ -82,7 +82,7 @@ import androidx.viewpager.widget.ViewPager;
  * </ul>
  * about memory leaks.
  */
-public final class TermuxActivity extends Activity implements ServiceConnection {
+public final class TermuxActivity extends Activity implements ServiceConnection, SuggestionBarCallback {
 
     public static final String TERMUX_FAILSAFE_SESSION_ACTION = "com.termux.app.failsafe_session";
 
@@ -108,6 +108,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     TerminalView mTerminalView;
 
     ExtraKeysView mExtraKeysView;
+
+    SuggestionBarView mSuggestionBarView;
 
     TermuxPreferences mSettings;
 
@@ -137,6 +139,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
     int mBellSoundId;
 
+    public void reloadSuggestionBar(String input){
+        mSuggestionBarView.reloadWithInput(input,mTerminalView);
+    }
     private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -156,6 +161,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
                 if (mExtraKeysView != null) {
                     mExtraKeysView.reload(mSettings.mExtraKeys);
+                }
+                if (mSuggestionBarView != null) {
+                    mSuggestionBarView.reload(mSettings);
                 }
             }
         }
@@ -231,7 +239,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mTerminalView.setKeepScreenOn(mSettings.isScreenAlwaysOn());
         mTerminalView.requestFocus();
 
+        mTerminalView.setSplitChar(mSettings.getInputChar());
+
         final ViewPager viewPager = findViewById(R.id.viewpager);
+
         if (mSettings.mShowExtraKeys) viewPager.setVisibility(View.VISIBLE);
 
 
@@ -258,6 +269,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 if (position == 0) {
                     layout = mExtraKeysView = (ExtraKeysView) inflater.inflate(R.layout.extra_keys_main, collection, false);
                     mExtraKeysView.reload(mSettings.mExtraKeys);
+
                 } else {
                     layout = inflater.inflate(R.layout.extra_keys_right, collection, false);
                     final EditText editText = layout.findViewById(R.id.text_input);
@@ -297,6 +309,52 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 }
             }
         });
+
+        final ViewPager viewPager2 = findViewById(R.id.viewpager2);
+        ViewGroup.LayoutParams layoutParams2 = viewPager2.getLayoutParams();
+        layoutParams2.height = Math.round(layoutParams2.height * mSettings.getBarHeight());
+        viewPager2.setLayoutParams(layoutParams2);
+        final SuggestionBarCallback suggestionBarCallback = this;
+        viewPager2.setAdapter(new PagerAdapter() {
+            @Override
+            public int getCount() {
+                return 1;//count of pages to scroll through
+            }
+
+            @Override
+            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+                return view == object;
+            }
+
+            @NonNull
+            @Override
+            public Object instantiateItem(@NonNull ViewGroup collection, int position) {
+                LayoutInflater inflater = LayoutInflater.from(TermuxActivity.this);
+                View layout;
+                layout = mSuggestionBarView = (SuggestionBarView) inflater.inflate(R.layout.suggestion_bar, collection, false);
+                mSuggestionBarView.reload(mSettings);
+
+
+                mTerminalView.setSuggestionBarCallback(suggestionBarCallback);
+                collection.addView(layout);
+                return layout;
+            }
+
+            @Override
+            public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
+                collection.removeView((View) view);
+            }
+        });
+
+        viewPager2.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                mTerminalView.requestFocus();
+            }
+        });
+
+
+
 
         View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> addNewSession(false, null));

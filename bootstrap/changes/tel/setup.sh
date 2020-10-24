@@ -92,10 +92,11 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  2>&1
   	chsh -s zsh #set zsh default shell
 	#install zsh plugins
-	catch "$(git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>&1)"
+	#disabled because interferences with suggestion bar
+	#catch "$(git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>&1)"
 	catch "$(git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>&1)"
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
-	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting zsh-autosuggestions)/g' ~/.zshrc #fzf maybe needed here
+	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting)/g' ~/.zshrc #fzf maybe needed here
 	echo ". ~/.tel/.telrc # Load TEL " >> ~/.zshrc
 	# # # # #
 
@@ -112,6 +113,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	cp -rf ~/../usr/tel/.zlogin ~/
 	cp -rf ~/../usr/tel/.vimrc ~/
 	cp -rf ~/../usr/tel/.telrc ~/.tel/
+	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 
 else
 	log "updating configs"

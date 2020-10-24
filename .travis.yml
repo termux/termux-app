@@ -9,6 +9,7 @@ env:
   - REPO=t-e-l/tel
   - APK_NAME=TEL-${TRAVIS_BUILD_NUMBER}
   - DEV_NAME=DEV-BUILD-${TRAVIS_BUILD_NUMBER}
+  - BAR_NAME=DEV-BAR-BUILD-${TRAVIS_BUILD_NUMBER}
 android:
   components:
   - tools
@@ -77,3 +78,19 @@ deploy:
     on:
       repo: ${REPO}
       branch: dev
+  - provider: releases
+    api_key:
+      secure: BiJyG4KWJNgtPa7C5cEHcj2LMhBvUp6yyXAFNrfPJ2ZdSewyoDlJHJmyPk3htRtwmYPdiXDWEOj9LV10851MZCKB+c/cyQY9m5/5Zlr15qYtfIIWvX/0RPHt3qUMRw+8b6UNE8xNenq4jzLMDTnkvs3RkrXBbpTR4Iiu/POCWvBUMiOcB0MeLXosVkgoNrPol2ovQXL6yw8QihzbfdfquirObdF4MdES10LDZBJfiw8A+6+IzwqBSLONbbtM9scxN1FnIG1PGcxHKPugD6TbtUmUoqjWFzxrU/Hrb1dK7zZYaEzX8kESV8R7F/I+cvKj+kcAb1/FOMCdAafB6axyZ/Bl1YoW9EyK7OAV4EUdAhATXymRbBbzYI99uce5cniJlmgahWx+mI89I7VKmmpwKppiLnF3ZrrXOESxYomy8g9CtoHBIjeicc/hwmU03BkzQjSu48EVmU5o+FjpkOCJ249qLikNVX+MsBPKjDanx2uuSjZDv/skLyMv4sSY1rEUVrAxTxkhT6x8BywJ9QO/I+kyo4rl/d70iElKW6JapiGDr8mOMgOYxBVtENTdEzDy845WB2wZopZ6bOKkm9hD/1sKvIP/bgMhEYli3FyY5NMz8fsWUVu+uW+AO6Aecve/PkLzbVerZWXmoYzKoMB7k9kwEnwO3NSiA6+UxteiGeo=
+    file: ${APK_NAME}.apk
+    name: ${BAR_NAME}
+    tag_name: ${BAR_NAME}
+    body: |
+      DEV-${BAR_NAME}
+      This is a dev build!
+      Dont use it!
+      Dont ask anybody about it!
+    skip_cleanup: true
+    prerelease: true
+    on:
+      repo: ${REPO}
+      branch: suggestion_bar

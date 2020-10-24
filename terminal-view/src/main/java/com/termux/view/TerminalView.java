@@ -46,7 +46,6 @@ import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.WcWidth;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -80,6 +79,7 @@ public final class TerminalView extends View {
     Rect mTempRect;
     private SelectionModifierCursorController mSelectionModifierCursorController;
 
+    private SuggestionBarCallback suggestionBarCallback;
     float mScaleFactor = 1.f;
     final GestureAndScaleRecognizer mGestureRecognizer;
 
@@ -98,6 +98,7 @@ public final class TerminalView extends View {
 
     private boolean mAccessibilityEnabled;
 
+    private char splitChar = ' ';
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
         super(context, attributes);
         mGestureRecognizer = new GestureAndScaleRecognizer(context, new GestureAndScaleRecognizer.Listener() {
@@ -399,6 +400,10 @@ public final class TerminalView extends View {
     }
 
     public void onScreenUpdated() {
+        if(suggestionBarCallback!= null){
+            suggestionBarCallback.reloadSuggestionBar(getCurrentInput());
+        }
+
         if (mEmulator == null) return;
 
         int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
@@ -571,6 +576,9 @@ public final class TerminalView extends View {
         return super.onKeyPreIme(keyCode, event);
     }
 
+    public void setSuggestionBarCallback(SuggestionBarCallback suggestionBarCallback){
+        this.suggestionBarCallback = suggestionBarCallback;
+    }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (LOG_KEY_EVENTS)
@@ -705,7 +713,25 @@ public final class TerminalView extends View {
         mTermSession.write(code);
         return true;
     }
-
+    
+    public void setSplitChar(char splitChar){
+        this.splitChar = splitChar;
+    }
+    public String getCurrentInput(){
+        int row = mEmulator.getCursorRow();
+        String text = mEmulator.getScreen().getSelectedText(0,row,99,row);
+        if(text.indexOf(splitChar) >=0){
+            return text.substring(text.indexOf(splitChar)+1);
+        }
+        return "";
+        /*does only read input from the line of the cursor
+        String[] cmds = mTermSession.getEmulator().getScreen().getTranscriptText().split("\n");*/
+    }
+    public void clearInputLine(){
+        KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
+        int width = getCurrentInput().length()+10;
+        for (int i = 0; i < width; i++) onKeyDown(KeyEvent.KEYCODE_DEL,deleteKey);
+    }
     /**
      * Called when a key is released in the view.
      *
