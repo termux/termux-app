@@ -12,8 +12,8 @@ remove_data(){
 
 if [ "$1" == '-h' ] ; then
 echo 'usage: tel-setup [OPTION]
-	--reset 	deletes all TEL data and installs most decent updates
-	--dev 		deletes all TEL data and downloads most decent dev updates'
+	--reset 	deletes all TEL data and installs most recent updates
+	--dev 		deletes all TEL data and downloads most recent developer version'
 	exit 0
 elif [ "$1" == '--dev' ] ; then
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Dev version"
