@@ -1,46 +1,42 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# TEL Startup file 
-# these commands are ran only once when tel starts
-# add your own commands that you wish to keep between updates to /storage/emulated/0/tel_startup.sh  aka ~/storage/shared/tel_startup.sh
+#!/usr/bin/env bash
+# TEL Startup file
+# these commands are ran only once when a session starts
+# this file will be replaced with each update so modifications are not recommended here
 clear
 export NOTIFICATION_SCROLL=0
 CHECK_MARK="\033[0;32m\xE2\x9C\x94\033[0m"
-#CHECK_MARK=":D "
 echo -n "\e[4mLoading Things\e[0m" $'\r'
-
-
 
 sleep 0.1
 echo -n "reading user configs..                            " $'\r'
-source <(cat ~/.tel/configs/*.*)
-source ~/.tel/configs/*.*
+source ~/.tel/scripts/readconfigs.sh
 echo -ne "all configs sourced ${CHECK_MARK}                " $'\r'
-sleep 0.2
+sleep 0.1
 
+if [ -z $PY_SITE_PKGS ] ; then
+	export PY_SITE_PKGS=$(python -m site --user-site)
+fi
 
 if [ $SSH_SERVER == "true" ] ; then
 	echo -n "launching ssh server - SECURITY WARNING!  " $'\r'
 	sleep 0.2
-	sshd 
+	sshd
 	echo -ne "launched ssh server ${CHECK_MARK}         " $'\r'
-	sleep 0.2
+	sleep 2.2
 fi
 
 if [ "$NOTIFICATIONS_ENABLED" == "true" ] ; then
 	echo -n "launching notification daemon              " $'\r'
-	nohup ~/.tel/scripts/status_manager/get_notifications.py > /dev/null 2>&1 & 
+	nohup ~/.tel/scripts/status_manager/get_notifications.py > /dev/null 2>&1 &
 	echo -ne "launched notification daemon ${CHECK_MARK}" $'\r'
 	sleep 0.2
 fi
 
 if [ "$STARTUP_ANIMATION_ENABLED" == "true" ] ; then
 	echo -n 'launching animation                         ' $'\r'
-	#tmux select-window -t 'startup'
-#	tmux resize-pane -Z   
 	sleep 0.1
 	tmux new-window -n 'Animation' 'python ~/.tel/scripts/animation.py'
 	echo -ne "launched python animation ${CHECK_MARK}    " $'\r'
-#	tmux resize-pane -Z
 fi
 
 if [ "$STATUS_WINDOW_ENABLED" == "true" ] ; then
@@ -65,8 +61,5 @@ fi
 sh /storage/emulated/0/tel/tel_startup.sh
 
 echo -ne "Ready!      ${CHECK_MARK}                " $'\r'
-#echo "startup completed"
 sleep 0.2
-#echo -n '          ' 
-#clear
 exit 0
