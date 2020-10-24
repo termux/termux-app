@@ -1,9 +1,0 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# script to gracefully exit tel 
-# SealyJ
-# version 0.1
-clear
-echo "Now Exiting.."
-termux-toast "Thanks for using TEL" 
-su -c killall com.termux || echo "This script is meant for root users.. Now killing multiplexer, type exit to exit final shell." ; sleep 2; kill $(ps aux | grep 'tmux' | awk '{print $2}')
-exit 0
