@@ -96,14 +96,13 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	catch "$(git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>&1)"
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
 	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting zsh-autosuggestions)/g' ~/.zshrc #fzf maybe needed here
-  #	echo "_byobu_sourced=1 . /data/data/com.termux/files/usr/bin/byobu-launch 2>/dev/null || true" >> ~/.zprofile
 	echo ". ~/.tel/.telrc # Load TEL " >> ~/.zshrc
 	# # # # #
 
 	log "installing configs" #todo: optimize this
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
-	cp -rTf ~/../usr/tel/.config ~/.config
+	cp -rf ~/../usr/tel/.config ~/.config
 	cp -rTf ~/../usr/tel/.termux ~/.termux
 	cp -rf ~/../usr/tel/termux-file-editor ~/bin
 	cp -rf ~/../usr/tel/termux-url-opener ~/bin
@@ -121,7 +120,6 @@ fi
 
 
 log "updating permissions"
-#set permissions again(probably duplicate within tel-setup)
 chmod +x ~/.tel/status/*
 chmod +x ~/.tel/scripts/*
 chmod +x ~/.tel/scripts/status_manager/*
@@ -133,7 +131,6 @@ chmod +x ~/../usr/bin/tel-restart
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
-
 fi
 
 if [ "$UPDATE" = false ]; then
