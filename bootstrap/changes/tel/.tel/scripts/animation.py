@@ -1,8 +1,5 @@
-# todo
-# random shapes
-#random emoji sprinkles?
-# randomise y printing
-
+#!/usr/bin/env python
+# text based animation - sealyj
 from blessed import Terminal
 from time import sleep
 import os
@@ -12,6 +9,7 @@ term = Terminal()
 words = ["hausTELlum", "TELeologist", "TELeonomy", "aTELectasis", "disTELfink", "protosTELe", "scuTELlate", "TELiospore", "chaTELaine", "taranTELla","paTELliform", "inTELlections", "viTELlogenesis","consTELations", "sTELlar", "TELstar", "intersTELlar","TELephone", "TELepathy", "TELekineses", "TELemetry", "TELevision", "TELecaster", "TELnet","torTELlini", "tagliaTELle", "absoluTELy","accuraTELy","inTELlect","wasTELands","ultimaTELy","sTELlite","TELescope","TELomeres","TELophase","anTELope","plaTELet","remoTELy","TELecom","pasTELs","saTELlites","infiniTELy","casTELlated", "inTELechies", "consTELlate","inTELligent","immorTELles","foreTELler","exquisiTELy","TELeporting","tasTELess","canisTELs","clienTELle","staTELless", "TELephoto","TELevisual","TELler", "carTEL", "hoTEL", "inTEL"]
 emoji = "🐙🐛🐬🐳🐟🐍🦎🐢🐉🐊🦉🦆🐥🐧🐦🦃🐔🦅🐓🐇🦇🐀🐘🐑🐏🐄🐖🐪🐫🐆🐅🐒🐕🐩🐠🐡🦈🦀🦐🦑🐌🐞🦋🦆"
 #wrongletters = '殺12475940382829596060392918288475859403020294958585858587229202'
+
 wrongletters = 'abcdefghijklmnopqrsthuvxyz'
 randomwords = True
 fill_chars = ''
