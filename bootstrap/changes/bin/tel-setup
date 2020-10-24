@@ -17,9 +17,9 @@ echo 'usage: tel-setup [OPTION]
 	exit 0
 elif [ "$1" == '--dev' ] ; then
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Dev version"
-	if [ -f "~/.tel/.installed" ]; then
-		remove_data
-	fi
+	#if [ -f "~/.tel/.installed" ]; then
+	remove_data
+	#fi
 		branch='dev'
 elif [ "$1" == '--reset' ] ; then
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Resetting & getting latest version"
