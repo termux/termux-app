@@ -6,11 +6,6 @@ clear
 export NOTIFICATION_SCROLL=0
 CHECK_MARK="\033[0;32m\xE2\x9C\x94\033[0m"
 echo -n "\e[4mLoading Things\e[0m" $'\r'
-
-pipkgs="$(python -m site --user-site)"
-echo "$pipkgs" > ~/.tel/data/.py_site_pkgs || echo 'Error getting python install path' #set python packages path
-
-
 sleep 0.1
 echo -n "reading user configs..                            " $'\r'
 source ~/.tel/scripts/readconfigs.sh

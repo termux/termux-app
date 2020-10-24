@@ -14,7 +14,7 @@
 
 # PATH setup
 export PATH=/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:~/.tel/bin:/data/data/com.termux/files/home/.local/bin
-export PY_SITE_PKGS="$(cat ~/.tel/data/.py_site_pkgs)"
+export PY_SITE_PKGS="$(python -m site --user-site)"
 
 # ZSH Customisations
 set -K # disables ! events in zsh to allow for bangs in tel-search, eg 's !!wiki myceleium'
