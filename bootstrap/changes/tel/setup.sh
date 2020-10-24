@@ -53,7 +53,7 @@ else #download required packages if first start detected
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
         rm -f get-pip.py
-        catch "$(pip install blessed lolcat powerline-status 2>&1)" #removed psutil
+        catch "$(pip install --user blessed lolcat powerline-status 2>&1)" #removed psutil
         log "finished packages download and installation"
         logf "finished packages download and installation"
 fi
