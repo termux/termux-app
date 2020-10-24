@@ -14,12 +14,14 @@
 
 # PATH setup
 export PATH=/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:~/.tel/bin:/data/data/com.termux/files/home/.local/bin
+export PY_SITE_PKGS="$(cat ~/.tel/data/.py_site_pkgs)"
 
 # ZSH Customisations
 set -K # disables ! events in zsh to allow for bangs in tel-search, eg 's !!wiki myceleium'
 PROMPT_EOL_MARK='' # appended to partial lines in zsh
 
 # FZF Customisations
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git' # allow finding of dot files
 export FZF_BASE=/data/data/com.termux/files/usr/bin/fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh # load fzf bindings
 

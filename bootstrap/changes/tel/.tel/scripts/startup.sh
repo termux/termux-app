@@ -13,9 +13,7 @@ source ~/.tel/scripts/readconfigs.sh
 echo -ne "all configs sourced ${CHECK_MARK}                " $'\r'
 sleep 0.1
 
-if [ -z $PY_SITE_PKGS ] ; then
-	export PY_SITE_PKGS=$(python -m site --user-site)
-fi
+python -m site --user-site > ~/.tel/data/.py_site_pkgs # set python packages path
 
 if [ $SSH_SERVER == "true" ] ; then
 	echo -n "launching ssh server - SECURITY WARNING!  " $'\r'

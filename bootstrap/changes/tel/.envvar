@@ -4,4 +4,3 @@ if [[ -n $SSH_CONNECTION ]]; then
 fi
 export TERM=xterm-256color
 export TERMINFO='~/../usr/share/terminfo/'
-export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
