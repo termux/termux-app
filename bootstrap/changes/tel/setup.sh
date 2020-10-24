@@ -34,13 +34,6 @@ error() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${RED}" "${1}"
 }
 
-if [ "$1" == "--reset" ] ; then
-	log 'cleaning items for fresh install'
-	rm -f ~/.tel/.installed
-	rm -rf ~/.oh-my-zsh
-fi
-
-
 log "updating Termux packages..."
 logf "updating Termux packages..."
 apt-get update -y && apt-get upgrade -y #print to screen as hotfix
@@ -65,9 +58,6 @@ else #download required packages if first start detected
         logf "finished packages download and installation"
 fi
 
-#install lolcat for colors
-#gem install lolcat
-
 #install app launcher via git
 #cd ~
 #catch "$(git clone https://github.com/t-e-l/tel-app-launcher 2>&1)"
@@ -88,11 +78,13 @@ fi
 #todo: optimize this
 mkdir -p ~/.termux
 mkdir -p ~/.tel
+mkdir -p ~/.config
 mkdir -p ~/bin
 
 if [ "$UPDATE" = false ]; then #if first start detected
 
-	#log "installing OhMyZsh"
+	# # # # ZSH setup # # # 
+	log "installing OhMyZsh"
 	#error "if you enable zsh, type 'exit' to finish setup."
 	#log "hit ENTER to continue"
 	#read blazeit
@@ -106,9 +98,12 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting zsh-autosuggestions)/g' ~/.zshrc #fzf maybe needed here
   #	echo "_byobu_sourced=1 . /data/data/com.termux/files/usr/bin/byobu-launch 2>/dev/null || true" >> ~/.zprofile
 	echo ". ~/.tel/.telrc # Load TEL " >> ~/.zshrc
+	# # # # #
+
 	log "installing configs" #todo: optimize this
 
 	cp -rTf ~/../usr/tel/.tel ~/.tel
+	cp -rTf ~/../usr/tel/.config ~/.config
 	cp -rTf ~/../usr/tel/.termux ~/.termux
 	cp -rf ~/../usr/tel/termux-file-editor ~/bin
 	cp -rf ~/../usr/tel/termux-url-opener ~/bin
