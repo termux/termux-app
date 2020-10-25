@@ -36,32 +36,41 @@ public final class SuggestionBarView extends GridLayout {
     }
 
 
-    private List<SuggestionBarButton> searchButtons(List<SuggestionBarButton> list, String input, int buttonCount){
+    private List<SuggestionBarButton> searchButtons(List<SuggestionBarButton> list, String input, int buttonCount, boolean fuzzy){
         List<SuggestionBarButton> newList = new ArrayList<>();
         int tolerance = settings.getSearchTolerance();
         input = input.toLowerCase();
         for(int i=0;i<list.size();i++){
             SuggestionBarButton currentButton = list.get(i);
-            int ratio = FuzzySearch.partialRatio(input,currentButton.getText().toLowerCase());
-            if(ratio >=tolerance){
-                currentButton.setRatio(ratio);
-                newList.add(currentButton);
-            }
-        }
-        Collections.sort(newList, new Comparator<SuggestionBarButton>() {
-            @Override
-            public int compare(SuggestionBarButton suggestionBarButton, SuggestionBarButton t1) {
-                int r1 = suggestionBarButton.getRatio();
-                int r2 = t1.getRatio();
-                if (r1 >r2){
-                    return -1;
-                }else if(r1< r2){
-                    return 1;
-                }else{
-                    return 0;
+            if(fuzzy){
+                int ratio = FuzzySearch.partialRatio(input,currentButton.getText().toLowerCase());
+                if(ratio >=tolerance){
+                    currentButton.setRatio(ratio);
+                    newList.add(currentButton);
                 }
+            }else if(currentButton.getText().toLowerCase().startsWith(input)){
+                newList.add(currentButton);
+                return newList;
             }
-        });
+
+        }
+        if(fuzzy){
+            Collections.sort(newList, new Comparator<SuggestionBarButton>() {
+                @Override
+                public int compare(SuggestionBarButton suggestionBarButton, SuggestionBarButton t1) {
+                    int r1 = suggestionBarButton.getRatio();
+                    int r2 = t1.getRatio();
+                    if (r1 >r2){
+                        return -1;
+                    }else if(r1< r2){
+                        return 1;
+                    }else{
+                        return 0;
+                    }
+                }
+            });
+        }
+
         return newList;
 
     }
@@ -74,7 +83,7 @@ public final class SuggestionBarView extends GridLayout {
         int buttonCount = settings.getButtonCount();
         if(input.length()> 0 && !input.equals(" ")){
             List<SuggestionBarButton> oldList = suggestionButtons;
-            suggestionButtons = searchButtons(suggestionButtons,input, buttonCount);
+            suggestionButtons = searchButtons(suggestionButtons,input, buttonCount,true);
             for(int i=0;suggestionButtons.size()<buttonCount && i<oldList.size();i++){
                 boolean found = false;
                 SuggestionBarButton newButton = oldList.get(i);
@@ -92,7 +101,7 @@ public final class SuggestionBarView extends GridLayout {
             ArrayList<String> defaultButtons = settings.getDefaultButtons();
             Collections.reverse(defaultButtons);
             for(int i=0;i<defaultButtons.size();i++){
-                List<SuggestionBarButton> currentButtons = searchButtons(suggestionButtons,defaultButtons.get(i),1);
+                List<SuggestionBarButton> currentButtons = searchButtons(suggestionButtons,defaultButtons.get(i),1,false);
                 if(currentButtons.size() > 0){
                     SuggestionBarButton currentButton = currentButtons.get(0);
                     if(suggestionButtons.indexOf(currentButton) >= 0){
