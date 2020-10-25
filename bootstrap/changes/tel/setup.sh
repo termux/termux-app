@@ -89,7 +89,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	#log "hit ENTER to continue"
 	#read blazeit
 	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  2>&1
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  > /dev/null 2>&1
   	chsh -s zsh #set zsh default shell
 	#install zsh plugins
 	#disabled because interferences with suggestion bar
@@ -100,13 +100,14 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	echo ". ~/.tel/.telrc # Load TEL " >> ~/.zshrc
 	# # # # #
 
-	log "installing configs" #todo: optimize this
+	log "installing files" #todo: optimize this
+	logf "installing files" #todo: optimize this
 
+	cp -rf ~/../usr/tel/termux-file-editor ~/bin
+	cp -rf ~/../usr/tel/termux-url-opener ~/bin
 	cp -rTf ~/../usr/tel/.tel ~/.tel
 	cp -rf ~/../usr/tel/.config ~/
 	cp -rTf ~/../usr/tel/.termux ~/.termux
-	cp -rf ~/../usr/tel/termux-file-editor ~/bin
-	cp -rf ~/../usr/tel/termux-url-opener ~/bin
 	cp -rf ~/../usr/tel/.aliases ~/
 	cp -rf ~/../usr/tel/.envvar ~/
 	cp -rf ~/../usr/tel/.tmux.conf ~/
@@ -114,8 +115,14 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	cp -rf ~/../usr/tel/.vimrc ~/
 
 else
-	log "updating configs"
-	cp -rTf ~/../usr/tel/.tel ~/.tel
+	log "updating files"
+	logf "updating files" 
+	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
+	cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
+	cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs
+	cp -rTf ~/../usr/tel/.tel/status ~/.tel/status 
+	cp -rTf ~/../usr/tel/.tel/resources ~/.tel/resources
+	cp -rTf ~/../usr/tel/.tel/tutorials ~/.tel/tutorials
 fi
 
 
@@ -123,6 +130,7 @@ log "updating permissions"
 chmod +x ~/.tel/status/*
 chmod +x ~/.tel/scripts/*
 chmod +x ~/.tel/scripts/status_manager/*
+chmod +x ~/.tel/tutorials/*
 chmod +x ~/.tel/bin/*
 chmod +x ~/bin/* # scripts that receive files and urls shared to TEL
 #chmod +x ~/../usr/bin/tel-applist
@@ -142,4 +150,4 @@ fi
 logf "finished"
 error "app will restart in 3 seconds!"
 sleep 3
-tel-restart
+tel-restart || echo 'please run "tel-restart"'
