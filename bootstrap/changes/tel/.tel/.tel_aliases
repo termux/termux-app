@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# This file will be overwritten with updates
+
+# TEL applets shorthand
+alias a='tel-app'
+alias app='tel-app'
+alias launch='tel-app'
+alias r="tel-restart"
+alias restart="tel-restart"
+alias s="tel-search"
+alias search="tel-search"
+alias e='tel-edit'
+alias edit='tel-edit'
+alias o='tel-open'
+alias open='tel-open'
+alias share='tel-share'
+alias n="tel-notifications"
+alias notifs="tel-notifications"
+alias notifications="tel-notifications"
+alias p="tel-dialer"
+alias phone="tel-dialer"
+alias call="tel-dialer"
+alias dial="tel-dialer"
+alias dialer="tel-dialer"
+alias td="tel-todo"
+alias todo="tel-todo"
+alias notes="tel-todo"
+alias help="tel-help"
+alias tutorial="tel-tutorial"
+alias calc="tel-calculator"
+alias c="tel-calculator"
+alias tt="tel-typewriter"
+alias say="tel-say"
+alias b="tel-open -u"
+alias bm="tel-open -u"
+alias url='tel-open -u'
+alias u='tel-open -u'
+alias bookmarks="tel-open -u"
+alias y="~/.tel/scripts/youtube.sh" # launch or search
+alias yt="~/.tel/scripts/youtube.sh"
+

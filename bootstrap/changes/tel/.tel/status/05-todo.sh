@@ -12,8 +12,6 @@ line1=$(head -n1 ~/.tel/data/todo)
 if [ "$line1" == '' ] ; then
 	echo -e " To-do list is empty" 
 else
-	#echo -e " ${line1:0:$width}"
 	echo -e " ${line1}"
 fi
-sleep 2
 exit 0

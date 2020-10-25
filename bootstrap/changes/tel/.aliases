@@ -1,46 +1,13 @@
 #!/bin/bash
-# TEL applets shorthand
-alias a='tel-app'
-alias app='tel-app'
-alias launch='tel-app'
-alias r="tel-restart"
-alias restart="tel-restart"
-alias s="tel-search"
-alias search="tel-search"
-alias yt="tel-search -yt"
-alias e='tel-edit'
-alias edit='tel-edit'
-alias o='tel-open'
-alias open='tel-open'
-alias share='tel-share'
-alias n="tel-notifications"
-alias notifs="tel-notifications"
-alias notifications="tel-notifications"
-alias p="tel-dialer"
-alias phone="tel-dialer"
-alias call="tel-dialer"
-alias dial="tel-dialer"
-alias dialer="tel-dialer"
-alias td="tel-todo"
-alias todo="tel-todo"
-alias notes="tel-todo"
-alias help="tel-help"
-alias tutorial="tel-tutorial"
-alias calc="tel-calculator"
-alias c="tel-calculator"
-alias tt="tel-typewriter"
-alias say="tel-say"
-alias b="tel-open -u"
-alias bm="tel-open -u"
-alias url='tel-open -u'
-alias u='tel-open -u'
-alias bookmarks="tel-open -u"
-alias router="tel-open -u http://192.168.1.1"
-alias y="~/.tel/scripts/youtube.sh" # launch or search
+
+# Websites
+alias router="tel-open -u http://192.168.1.1" # example router address
+alias tel-wiki="tel-open -u https://https://github.com/t-e-l/tel/wiki/FAQ"
+
 
 # SHELL
 alias lst='ls -R | grep ":$" | sed -e '"'"'s/:$//'"'"' -e '"'"'s/[^-][^\/]*\//--/g'"'"' -e '"'"'s/^/ /'"'"' -e '"'"'s/-/|/'"'"''
-alias pg='ping -c 5 8.8.8.8'
+alias pg='ping -c 5 8.8.8.8' # quick check if online
 
 # Device specific
 alias x='exit'
@@ -56,6 +23,14 @@ alias app-uninstall='su -c pm uninstall'
 alias htop='su -c htop'
 alias dmesg='su -c dmesg'
 
+# DEMO
+alias weather="curl v2.wttr.in/$LOCATION"
+alias tron="ssh sshtron.zachlatta.com"
+alias starwars="telnet towel.blinkenlights.nl"
+alias matrix="cmatrix"
+alias tel-fetch="neofetch --source ~/.tel/data/asciiart.txt"
+alias crossword='cursewords'
+
 # APPS
 alias cam="app camera"
 alias cl="app clock"
@@ -66,23 +41,4 @@ alias sig="app signal"
 alias tur="app turbo"
 alias fdroid="app fdroid"
 
-# DEMO
-alias weather="curl v2.wttr.in/$LOCATION"
-alias tron="ssh sshtron.zachlatta.com"
-alias starwars="telnet towel.blinkenlights.nl"
-alias matrix="cmatrix"
-alias tel-fetch="neofetch --source ~/.tel/data/asciiart.txt"
-alias crossword='cursewords'
 
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# YOUR PERSONAL ALIASES -requires termux-setup-storage (does ~/storage/ exist?) add your own to this file: ~/storage/shared/tel/tel_personal.sh
-#  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ## # #
-# adding to this file means you can update / remove app and your personally added aliases will remain after reinstall.
-if [ -z ~/storage ] ; then
-echo
-else
-[[ -z ~/storage/shared/tel_personal.sh ]] && cp ~/.tel/resources/tel_personal.sh ~/storage/shared/tel/ #if doesnt exist create default template
-. ~/storage/shared/tel/tel_personal.sh #add your aliases and functions here
-fi
