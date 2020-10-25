@@ -50,6 +50,6 @@ try:
         else:
             print(nodataicon + ' Disconnected')
 except:
-    #print(nodataicon + ' Loading data')
-    exit() #show last data instead of useless error msg
+    print(nodataicon + ' Loading data')
+    #exit() #show last data instead of useless error msg
 exit()
