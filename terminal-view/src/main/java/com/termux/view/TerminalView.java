@@ -717,11 +717,12 @@ public final class TerminalView extends View {
     public void setSplitChar(char splitChar){
         this.splitChar = splitChar;
     }
+
     public String getCurrentInput(){
         int row = mEmulator.getCursorRow();
         String text = mEmulator.getScreen().getSelectedText(0,row,99,row);
         if(text.indexOf(splitChar) >=0){
-            return text.substring(text.indexOf(splitChar)+1);
+            return text.substring(text.indexOf(splitChar)+1).trim();
         }
         return "";
         /*does only read input from the line of the cursor
