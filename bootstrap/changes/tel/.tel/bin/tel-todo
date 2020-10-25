@@ -2,7 +2,6 @@
 # to-do list manager for TEL
 # by @SealyJ
 # v0.1 - 30/03/2020
-source ~/.tel/scripts/colors.sh
 RED='\033[0;31m'
 NC='\033[0m' # No Col
 BOLD=$(tput bold)
