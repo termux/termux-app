@@ -12,17 +12,28 @@ remove_data(){
 	rm -f ~/.envvar
 }
 
-if [ "$1" == '-h' ] ; then
+if [ "$1" == '-h' ] || [ "$1" == '--help' ] ; then
 echo 'usage: tel-setup [OPTION]
 	--reset 	deletes all TEL data and installs most recent updates
-	--dev 		deletes all TEL data and downloads most recent developer version'
+	--dev 		deletes all TEL data and downloads most recent developer version
+	--custom	deletes all TEL data and prompts for a custom branch name'
 	exit 0
 elif [ "$1" == '--dev' ] ; then
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Dev version"
-	#if [ -f "~/.tel/.installed" ]; then
 	remove_data
-	#fi
-		branch='dev'
+	branch='dev'
+elif [ "$1" == '--custom' ] ; then
+	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${ORANGE}" "Warning: You may lose TEL data setting up custom branch"
+	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${ORANGE}" "Are you sure you wish to continue?"
+	read -r user_reponse
+	if [ "$user_reponse" != 'Y' ] ; then
+		error "Exiting setup..."
+		exit 1
+	else
+		printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Which branch do you want to setup?"
+		read -r branch
+		remove_data
+	fi
 elif [ "$1" == '--reset' ] ; then
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Resetting & getting latest version"
 	remove_data
@@ -31,14 +42,14 @@ else
 	branch='master'
 fi
 
-if [ ! -f "~/.tel/.installed" ]; then
+if [ ! -f "$HOME/.tel/.installed" ]; then
 	pkg install wget unzip coreutils -y 2>&1 || error 'failed to fetch required setup utils'
 fi
 
-cd ~/../usr/
+cd ~/../usr/ || return
 wget https://github.com/t-e-l/tel/raw/$branch/bootstrap/changes.zip 2>&1 || error "failed to download update from $branch"
 unzip -o changes.zip 2>&1
 rm -f changes.zip
 chmod +x ~/../usr/bin/tel-setup
 chmod +x ~/../usr/bin/tel-applist
-bash tel/setup.sh
+./tel/setup.sh
