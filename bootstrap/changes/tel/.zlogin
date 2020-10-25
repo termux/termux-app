@@ -1,1 +1,1 @@
-~/.tel/.tel_login
+. ~/.tel/.tel_login

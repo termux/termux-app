@@ -8,6 +8,8 @@ remove_data(){
 	rm -rf ~/.tel
 	rm -rf ~/.oh-my-zsh
 	rm -f ~/.zshrc
+	rm -f ~/.zlogin
+	rm -f ~/.envvar
 }
 
 if [ "$1" == '-h' ] ; then

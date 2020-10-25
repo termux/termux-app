@@ -112,11 +112,10 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	cp -rf ~/../usr/tel/.tmux.conf ~/
 	cp -rf ~/../usr/tel/.zlogin ~/
 	cp -rf ~/../usr/tel/.vimrc ~/
-	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 
 else
 	log "updating configs"
-	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
+	cp -rTf ~/../usr/tel/.tel ~/.tel
 fi
 
 
