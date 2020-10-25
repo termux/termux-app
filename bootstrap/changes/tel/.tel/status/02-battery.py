@@ -65,6 +65,6 @@ try:
         else:
             print(battery_str)
 except:
-    exit() #sometimes api doesnt work, therefor exit to keep last known value instead of useless error message
-#   print(dischargeicon + " loading data")
+#    exit() #sometimes api doesnt work, therefor exit to keep last known value instead of useless error message
+    print(dischargeicon + " loading data")
 exit()
