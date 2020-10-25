@@ -120,7 +120,7 @@ else
 	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 	cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
 	cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs
-	cp -rTf ~/../usr/tel/.tel/status ~/.tel/status 
+	cp -rTf ~/../usr/tel/.tel/status ~/.tel/status
 	cp -rTf ~/../usr/tel/.tel/resources ~/.tel/resources
 	cp -rTf ~/../usr/tel/.tel/tutorials ~/.tel/tutorials
 fi
