@@ -72,7 +72,7 @@ public final class SuggestionBarView extends GridLayout {
         setColumnCount(suggestionButtons.size());
         removeAllViews();
         int buttonCount = settings.getButtonCount();
-        if(input.length()> 0){
+        if(input.length()> 0 && !input.equals(" ")){
             List<SuggestionBarButton> oldList = suggestionButtons;
             suggestionButtons = searchButtons(suggestionButtons,input, buttonCount);
             for(int i=0;suggestionButtons.size()<buttonCount && i<oldList.size();i++){
@@ -131,6 +131,7 @@ public final class SuggestionBarView extends GridLayout {
                     currentButton.click();
                     if(terminalView != null){
                         terminalView.clearInputLine();
+                        reloadWithInput("",terminalView);
                     }
                 });
                 addView(imageButton);
@@ -145,6 +146,7 @@ public final class SuggestionBarView extends GridLayout {
                     currentButton.click();
                     if(terminalView != null){
                         terminalView.clearInputLine();
+                        reloadWithInput("",terminalView);
                     }
                 });
                 addView(button);

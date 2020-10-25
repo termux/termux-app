@@ -78,8 +78,6 @@ public final class TerminalView extends View {
     final int[] mTempCoords = new int[2];
     Rect mTempRect;
     private SelectionModifierCursorController mSelectionModifierCursorController;
-
-    private SuggestionBarCallback suggestionBarCallback;
     float mScaleFactor = 1.f;
     final GestureAndScaleRecognizer mGestureRecognizer;
 
@@ -400,9 +398,6 @@ public final class TerminalView extends View {
     }
 
     public void onScreenUpdated() {
-        if(suggestionBarCallback!= null){
-            suggestionBarCallback.reloadSuggestionBar(getCurrentInput());
-        }
 
         if (mEmulator == null) return;
 
@@ -519,6 +514,7 @@ public final class TerminalView extends View {
     @Override
     @TargetApi(23)
     public boolean onTouchEvent(MotionEvent ev) {
+
         if (mEmulator == null) return true;
         final int action = ev.getAction();
 
@@ -555,6 +551,7 @@ public final class TerminalView extends View {
         return true;
     }
 
+
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
         if (LOG_KEY_EVENTS)
@@ -576,9 +573,6 @@ public final class TerminalView extends View {
         return super.onKeyPreIme(keyCode, event);
     }
 
-    public void setSuggestionBarCallback(SuggestionBarCallback suggestionBarCallback){
-        this.suggestionBarCallback = suggestionBarCallback;
-    }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (LOG_KEY_EVENTS)
@@ -728,6 +722,7 @@ public final class TerminalView extends View {
         /*does only read input from the line of the cursor
         String[] cmds = mTermSession.getEmulator().getScreen().getTranscriptText().split("\n");*/
     }
+
     public void clearInputLine(){
         KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
         int width = getCurrentInput().length()+10;

@@ -52,7 +52,6 @@ import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
 import com.termux.terminal.TextStyle;
-import com.termux.view.SuggestionBarCallback;
 import com.termux.view.TerminalView;
 
 import java.io.File;
@@ -107,6 +106,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     @NonNull
     TerminalView mTerminalView;
 
+    TermuxViewClient mTermuxViewClient;
+
     ExtraKeysView mExtraKeysView;
 
     SuggestionBarView mSuggestionBarView;
@@ -139,7 +140,16 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
     int mBellSoundId;
 
-    public void reloadSuggestionBar(String input){
+    public void reloadSuggestionBar(char inputChar){
+        String input = mTerminalView.getCurrentInput();
+        input+=inputChar;
+        mSuggestionBarView.reloadWithInput(input,mTerminalView);
+    }
+    public void reloadSuggestionBar(boolean delete){
+        String input = mTerminalView.getCurrentInput();
+        if(delete && input.length() > 0){
+            input = input.substring(0,input.length()-1);
+        }
         mSuggestionBarView.reloadWithInput(input,mTerminalView);
     }
     private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
@@ -233,14 +243,16 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         }
 
         mTerminalView = findViewById(R.id.terminal_view);
-        mTerminalView.setOnKeyListener(new TermuxViewClient(this));
+
+        mTermuxViewClient = new TermuxViewClient(this);
+        mTerminalView.setOnKeyListener(mTermuxViewClient);
 
         mTerminalView.setTextSize(mSettings.getFontSize());
         mTerminalView.setKeepScreenOn(mSettings.isScreenAlwaysOn());
         mTerminalView.requestFocus();
 
         mTerminalView.setSplitChar(mSettings.getInputChar());
-
+        mTermuxViewClient.setSuggestionBarCallback(this);
         final ViewPager viewPager = findViewById(R.id.viewpager);
 
         if (mSettings.mShowExtraKeys) viewPager.setVisibility(View.VISIBLE);
@@ -333,9 +345,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                 View layout;
                 layout = mSuggestionBarView = (SuggestionBarView) inflater.inflate(R.layout.suggestion_bar, collection, false);
                 mSuggestionBarView.reload(mSettings);
-
-
-                mTerminalView.setSuggestionBarCallback(suggestionBarCallback);
+                mTermuxViewClient.setSuggestionBarCallback(suggestionBarCallback);
                 collection.addView(layout);
                 return layout;
             }
