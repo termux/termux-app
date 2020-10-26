@@ -44,21 +44,14 @@ if [ $notifswasrunning == "true" ] || [ $wasrunning == "true" ] ; then
 	"
 	$POWER_SAVER_DISPLAY_COMMAND
 	#use a tmux wait / set-hook onresize here
-#	tmux set-hook client-resized 'run-shell "~/.tel/scripts/lockscreen2.sh"'
-	#register a hook here
-	#tmux resize-pane -Z -t 1.1
-	#tmux clock-mode -t 1.1
 	tput cup $(tput lines) 0
 	read -n 1 -s -r -p " [ Swipe up or Press any key to exit ]"
-	#remove hook here
 	tmux display-message ' [ Resuming TEL...]'
-#	tmux set-hook -u client-resized
 fi
 
 if [ "$notifswasrunning" == "true" ] ; then
-	nohup ~/.tel/scripts/status_manager/get_notifications.py > /dev/null 2>&1 & 
+	nohup ~/.tel/scripts/get_notifications.py > /dev/null 2>&1 & 
 fi
-
 
 if [ "$wasrunning" == "true" ] ; then
 	tmux splitw -d -b -t 1.1 ~/.tel/scripts/status_manager/toggle_ui.sh

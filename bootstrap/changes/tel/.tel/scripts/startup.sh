@@ -3,7 +3,6 @@
 # these commands are ran only once when a session starts
 # this file will be replaced with each update so modifications are not recommended here
 clear
-export NOTIFICATION_SCROLL=0
 CHECK_MARK="\033[0;32m\xE2\x9C\x94\033[0m"
 echo -n "\e[4mLoading Things\e[0m" $'\r'
 sleep 0.1 # sleeps so line updates are actually visible to user
@@ -28,7 +27,7 @@ fi
 
 if [ "$NOTIFICATIONS_ENABLED" == "true" ] ; then
 	echo -n "launching notification daemon              " $'\r'
-	nohup ~/.tel/scripts/status_manager/get_notifications.py > /dev/null 2>&1 &
+	nohup ~/.tel/scripts/get_notifications.py > /dev/null 2>&1 &
 	echo -ne "launched notification daemon ${CHECK_MARK}" $'\r'
 	sleep 0.2
 fi
