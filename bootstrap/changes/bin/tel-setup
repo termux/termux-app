@@ -6,7 +6,7 @@ rm_tel_data(){
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${ORANGE}" " ! Warning ! this action will remove all TEL data from your device"
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${ORANGE}" "Are you sure you wish to continue? Y/N"
 	read -r user_reponse
-	if [ "$user_reponse" != 'y' ] || [ "$user_reponse" != 'Y' ]; then
+	if [ "$user_reponse" != 'y' ] && [ "$user_reponse" != 'Y' ]; then
 		error "User cancelled setup..." ; sleep 1 ; exit 1
 	fi
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Wiping data..."
@@ -53,7 +53,6 @@ elif [ "$1" == '--custom' ] ; then
 	read -r branch
 	remove_tel_data='true'
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Getting $branch"
-	read -r branch
 elif [ "$1" == '--reset' ] ; then
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Resetting & getting latest version"
 	remove_tel_data='true'
@@ -68,15 +67,15 @@ else
 fi
 
 if [ ! -f "$HOME/.tel/.installed" ]; then
-	pkg install wget unzip coreutils -y 2>&1 || error 'failed to fetch required setup utils'
+	pkg install wget unzip coreutils -y 2>&1 || (error 'failed to download required setup utils' && exit 1)
 fi
 
-cd ~/../usr/ || return
-wget https://github.com/t-e-l/tel/raw/$branch/bootstrap/changes.zip 2>&1 || error "failed to download update from $branch" && exit 1
+cd ~/../usr/ || (error 'fatal error path does not exist: ~/../usr/' && exit 1)
+wget https://github.com/t-e-l/tel/raw/$branch/bootstrap/changes.zip 2>&1 || (error "failed to download update from $branch" && exit 1)
 [[ "$remove_tel_data" == "true" ]] && rm_tel_data
 [[ "$remove_user_data" == "true" ]] && rm_user_data
 unzip -o changes.zip 2>&1
 rm -f changes.zip
 chmod +x ~/../usr/bin/tel-setup
 chmod +x ~/../usr/bin/tel-applist
-./tel/setup.sh
+./tel/setup.sh || error 'experienced error whilst running setup'
