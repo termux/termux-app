@@ -2,7 +2,7 @@
 #tel notification status script
 #v0.5 sealyj 17/10/20
 import os
-import time
+#import time
 import json
 import blessed
 import subprocess
