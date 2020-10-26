@@ -716,7 +716,10 @@ public final class TerminalView extends View {
         int row = mEmulator.getCursorRow();
         String text = mEmulator.getScreen().getSelectedText(0,row,99,row);
         if(text.indexOf(splitChar) >=0){
-            return text.substring(text.indexOf(splitChar)+1).trim();
+            text = text.substring(text.indexOf(splitChar)+1);
+            text = text.replaceAll("[^a-zA-Z ]", "");
+            text = text.replaceAll(" {2,}", " ");
+            return text.trim();
         }
         return "";
         /*does only read input from the line of the cursor

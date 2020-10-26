@@ -50,7 +50,6 @@ public final class SuggestionBarView extends GridLayout {
                 }
             }else if(currentButton.getText().toLowerCase().startsWith(input)){
                 newList.add(currentButton);
-                return newList;
             }
 
         }
@@ -75,7 +74,6 @@ public final class SuggestionBarView extends GridLayout {
 
     }
     void reloadWithInput(String input, final TerminalView terminalView){
-        input = input.trim();
         List<SuggestionBarButton> suggestionButtons = getInstalledAppButtons();
         setRowCount(suggestionButtons.size());
         setColumnCount(suggestionButtons.size());
@@ -83,7 +81,11 @@ public final class SuggestionBarView extends GridLayout {
         int buttonCount = settings.getButtonCount();
         if(input.length()> 0 && !input.equals(" ")){
             List<SuggestionBarButton> oldList = suggestionButtons;
-            suggestionButtons = searchButtons(suggestionButtons,input, buttonCount,true);
+            if(input.length()>2){
+            }else{
+            }
+            suggestionButtons = searchButtons(suggestionButtons,input, buttonCount,input.length() >2);
+
             for(int i=0;suggestionButtons.size()<buttonCount && i<oldList.size();i++){
                 boolean found = false;
                 SuggestionBarButton newButton = oldList.get(i);
