@@ -36,9 +36,7 @@ error() {
 
 log "updating Termux packages..."
 logf "updating Termux packages..."
-apt-get update -y && apt-get upgrade -y #print to screen as hotfix
-log "finished updating Termux packages"
-logf "finished updating Termux packages"
+apt-get update -y && apt-get upgrade -y && logf "finished updating Termux packages" #print to screen as hotfix
 if [ -f ~/.tel/.installed ]; then #set update var if finished installation was detected
     UPDATE=true
 	log "updating TEL setup"
@@ -49,12 +47,11 @@ else #download required packages if first start detected
 	log "installing required packages.."
 	log "this may take a while"
         logf "starting installation"
-	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh python neofetch git make figlet termux-api sed util-linux -y 2>&1)"
+	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh python neofetch git make figlet ncurses-utils termux-api sed util-linux -y 2>&1)" #removed jq
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
         rm -f get-pip.py
         catch "$(pip install --user blessed lolcat powerline-status 2>&1)" #removed psutil
-        log "finished packages download and installation"
         logf "finished packages download and installation"
 fi
 
@@ -71,8 +68,8 @@ fi
 #echo "92a2c39cbbde0f366887d99a76358852  data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.md5sums
 
 #do these when app starts up so we can keep applets together
-#tel-app -u #set up app cache
-#tel-phone -u #this can fail so is preferable at app startup
+tel-app -u #set up app cache
+tel-phone -u #this can fail so is preferable at app startup
 
 #create required directories
 #todo: optimize this
@@ -86,18 +83,15 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	# # # # ZSH setup # # #
 	log "installing OhMyZsh"
 	logf "installing OhMyZsh"
-	#error "if you enable zsh, type 'exit' to finish setup."
-	#log "hit ENTER to continue"
-	#read blazeit
-	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  > /dev/null 2>&1 && logf "finished installing OhMyZsh"
   	chsh -s zsh #set zsh default shell
 	#install zsh plugins
 	#disabled because interferences with suggestion bar
-	#catch "$(git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>&1)"
+	catch "$(git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>&1)"
 	catch "$(git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>&1)"
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
-	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting)/g' ~/.zshrc #fzf maybe needed here
+	sed -i 's/plugins=(git)/plugins=(git fzf catimg fancy-ctrl-z zsh-syntax-highlighting)/g' ~/.zshrc #fzf maybe needed here
+
 	echo -e "	\n#|||||||||||||||#\n. ~/.tel/.telrc\n#|||||||||||||||#\n	" >> ~/.zshrc
 
 	log "installing files" #todo: optimize this
@@ -150,4 +144,5 @@ fi
 logf "finished"
 error "app will restart in 3 seconds!"
 sleep 3
-tel-restart || error 'Restart cannot be performed automatically when the TEL app is not active, Please run the command "tel-restart" manually'
+tel-restart
+error 'Restart cannot be performed automatically when the TEL app is not active, Please run the command "tel-restart" manually'

@@ -78,4 +78,5 @@ unzip -o changes.zip 2>&1
 rm -f changes.zip
 chmod +x ~/../usr/bin/tel-setup
 chmod +x ~/../usr/bin/tel-applist
+chmod +x ~/../usr/tel/setup.sh
 ./tel/setup.sh || error 'experienced error whilst running setup'
