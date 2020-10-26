@@ -31,7 +31,8 @@ public final class SuggestionBarView extends GridLayout {
 
     private static final int TEXT_COLOR = 0xFFC0B18B;
     private TermuxPreferences settings;
-
+    private List<SuggestionBarButton> allSuggestionButtons;
+    private List<SuggestionBarButton> defaultButtons;
     public SuggestionBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -75,18 +76,17 @@ public final class SuggestionBarView extends GridLayout {
 
     }
     void reloadWithInput(String input, final TerminalView terminalView){
-        List<SuggestionBarButton> suggestionButtons = getInstalledAppButtons();
+        if(allSuggestionButtons == null){
+            allSuggestionButtons = getInstalledAppButtons();
+        }
+        List<SuggestionBarButton> suggestionButtons = new ArrayList<>(allSuggestionButtons);
         setRowCount(suggestionButtons.size());
         setColumnCount(suggestionButtons.size());
         removeAllViews();
         int buttonCount = settings.getButtonCount();
         if(input.length()> 0 && !input.equals(" ")){
-            List<SuggestionBarButton> oldList = suggestionButtons;
-            if(input.length()>2){
-            }else{
-            }
+            //List<SuggestionBarButton> oldList = suggestionButtons;
             suggestionButtons = searchButtons(suggestionButtons,input, buttonCount,input.length() >2);
-
             /*for(int i=0;suggestionButtons.size()<buttonCount && i<oldList.size();i++){
                 boolean found = false;
                 SuggestionBarButton newButton = oldList.get(i);
@@ -101,20 +101,33 @@ public final class SuggestionBarView extends GridLayout {
                 }
             }*/
         }else{
-            ArrayList<String> defaultButtons = settings.getDefaultButtons();
-            Collections.reverse(defaultButtons);
-            for(int i=0;i<defaultButtons.size();i++){
-                List<SuggestionBarButton> currentButtons = searchButtons(suggestionButtons,defaultButtons.get(i),1,false);
-                if(currentButtons.size() > 0){
-                    SuggestionBarButton currentButton = currentButtons.get(0);
-                    if(suggestionButtons.indexOf(currentButton) >= 0){
+            if(defaultButtons == null) {
+                defaultButtons = new ArrayList<SuggestionBarButton>();
+                ArrayList<String> defaultButtonStrings = settings.getDefaultButtons();
+                Collections.reverse(defaultButtonStrings);
+                for (int i = 0; i < defaultButtonStrings.size(); i++) {
+                    List<SuggestionBarButton> currentButtons = searchButtons(suggestionButtons, defaultButtonStrings.get(i), 1, false);
+                    if (currentButtons.size() > 0) {
+                        SuggestionBarButton currentButton = currentButtons.get(0);
+                        if (suggestionButtons.indexOf(currentButton) >= 0) {
+                            suggestionButtons.remove(suggestionButtons.indexOf(currentButton));
+                        }
+                        suggestionButtons.add(0, currentButton);
+                        defaultButtons.add(currentButton);
+                    }
+
+                }
+                Collections.reverse(defaultButtonStrings);
+            }else{
+                for(int i=0; i<defaultButtons.size();i++){
+                    SuggestionBarButton currentButton = defaultButtons.get(i);
+                    if (suggestionButtons.indexOf(currentButton) >= 0) {
                         suggestionButtons.remove(suggestionButtons.indexOf(currentButton));
                     }
-                    suggestionButtons.add(0,currentButton);
+                    suggestionButtons.add(0, currentButton);
                 }
-
             }
-            Collections.reverse(defaultButtons);
+
         }
         for (int col = 0; col < suggestionButtons.size() && col <buttonCount; col++) {
             final SuggestionBarButton currentButton = suggestionButtons.get(col);
