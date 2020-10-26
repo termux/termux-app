@@ -6,11 +6,18 @@ clear
 export NOTIFICATION_SCROLL=0
 CHECK_MARK="\033[0;32m\xE2\x9C\x94\033[0m"
 echo -n "\e[4mLoading Things\e[0m" $'\r'
-sleep 0.1
+sleep 0.1 # sleeps so line updates are actually visible to user
 echo -n "reading user configs..                            " $'\r'
-source ~/.tel/scripts/readconfigs.sh
-echo -ne "all configs sourced ${CHECK_MARK}                " $'\r'
+source ~/.tel/scripts/readconfigs.sh && echo -ne "all configs sourced ${CHECK_MARK}                " $'\r'
 sleep 0.1
+
+if  [ $MOTD_HINTS == "true" ] ; then # backup user motd and restore if hints disabled
+	[[ ! -f ~/../usr/etc/.motd.bak ]] && cp -f ~/../usr/etc/motd ~/../usr/etc/.motd.bak && echo -ne "backed up and enabled motd hints system ${CHECK_MARK}         " $'\r' && sleep 1
+	cp -f ~/../usr/etc/motd_hints ~/../usr/etc/motd && ~/.tel/scripts/hints.sh
+else
+	[[ -f ~/../usr/etc/.motd.bak ]] && mv -f ~/../usr/etc/.motd.bak ~/../usr/etc/motd && echo -ne "restored user motd ${CHECK_MARK}         " $'\r' && sleep 1
+fi
+
 if [ $SSH_SERVER == "true" ] ; then
 	echo -n "launching ssh server - SECURITY WARNING!  " $'\r'
 	sleep 0.2

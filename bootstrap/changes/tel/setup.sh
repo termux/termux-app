@@ -49,7 +49,7 @@ else #download required packages if first start detected
 	log "installing required packages.."
 	log "this may take a while"
         logf "starting installation"
-	catch "$(pkg install fzf nnn sl cowsay openssh tree bc fd curl wget nano tmux zsh ncurses-utils python jq neofetch git make figlet termux-api sed util-linux -y 2>&1)"
+	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh python neofetch git make figlet termux-api sed util-linux -y 2>&1)"
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
         rm -f get-pip.py
@@ -58,7 +58,7 @@ else #download required packages if first start detected
         logf "finished packages download and installation"
 fi
 
-#install app launcher via git
+#install app launcher via git #simpler to install with rest of tel bins
 #cd ~
 #catch "$(git clone https://github.com/t-e-l/tel-app-launcher 2>&1)"
 #cd tel-app-launcher
@@ -83,13 +83,14 @@ mkdir -p ~/bin
 
 if [ "$UPDATE" = false ]; then #if first start detected
 
-	# # # # ZSH setup # # # 
+	# # # # ZSH setup # # #
 	log "installing OhMyZsh"
+	logf "installing OhMyZsh"
 	#error "if you enable zsh, type 'exit' to finish setup."
 	#log "hit ENTER to continue"
 	#read blazeit
 	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  > /dev/null 2>&1
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  > /dev/null 2>&1 && logf "finished installing OhMyZsh"
   	chsh -s zsh #set zsh default shell
 	#install zsh plugins
 	#disabled because interferences with suggestion bar
@@ -97,11 +98,10 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	catch "$(git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>&1)"
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
 	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting)/g' ~/.zshrc #fzf maybe needed here
-	echo ". ~/.tel/.telrc # Load TEL " >> ~/.zshrc
-	# # # # #
+	echo -e "	\n#|||||||||||||||#\n. ~/.tel/.telrc\n#|||||||||||||||#\n	" >> ~/.zshrc
 
 	log "installing files" #todo: optimize this
-	logf "installing files" #todo: optimize this
+	logf "installing files"
 
 	cp -rf ~/../usr/tel/termux-file-editor ~/bin
 	cp -rf ~/../usr/tel/termux-url-opener ~/bin
@@ -116,7 +116,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 
 else
 	log "updating files"
-	logf "updating files" 
+	logf "updating files"
 	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 	cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
 	cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs
@@ -150,4 +150,4 @@ fi
 logf "finished"
 error "app will restart in 3 seconds!"
 sleep 3
-tel-restart || echo 'please run "tel-restart"'
+tel-restart || error 'Restart cannot be performed automatically when the TEL app is not active, Please run the command "tel-restart" manually'
