@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import android.util.Log;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
@@ -86,7 +87,7 @@ public final class SuggestionBarView extends GridLayout {
             }
             suggestionButtons = searchButtons(suggestionButtons,input, buttonCount,input.length() >2);
 
-            for(int i=0;suggestionButtons.size()<buttonCount && i<oldList.size();i++){
+            /*for(int i=0;suggestionButtons.size()<buttonCount && i<oldList.size();i++){
                 boolean found = false;
                 SuggestionBarButton newButton = oldList.get(i);
                 for(int j = 0;j<suggestionButtons.size();j++){
@@ -98,7 +99,7 @@ public final class SuggestionBarView extends GridLayout {
                 if(!found){
                     suggestionButtons.add(newButton);
                 }
-            }
+            }*/
         }else{
             ArrayList<String> defaultButtons = settings.getDefaultButtons();
             Collections.reverse(defaultButtons);
