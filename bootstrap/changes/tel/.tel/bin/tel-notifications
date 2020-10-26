@@ -33,7 +33,7 @@ else
 		;; 
 		-r)
 		killall -q -e 'get_notifications.py'
-		nohup ~/.tel/scripts/status_manager/get_notifications.py > /dev/null 2>&1 &
+		nohup ~/.tel/scripts/get_notifications.py > /dev/null 2>&1 &
 		if [ "$NOTIFICATIONS_ENABLED" != 'true' ] ; then
 			echo " Notifications are currently disabled in your user config, daemon will not start unless set to true"
 		else
