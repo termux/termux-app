@@ -61,7 +61,7 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession currentSession) {
-        suggestionBarCallback.reloadSuggestionBar(keyCode == KeyEvent.KEYCODE_DEL);
+        suggestionBarCallback.reloadSuggestionBar(keyCode == KeyEvent.KEYCODE_DEL,keyCode == KeyEvent.KEYCODE_ENTER);
 
         if (handleVirtualKeys(keyCode, e, true)) return true;
 

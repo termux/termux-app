@@ -76,6 +76,7 @@ public final class SuggestionBarView extends GridLayout {
 
     }
     void reloadWithInput(String input, final TerminalView terminalView){
+        Log.e("DEBUG",input);
         if(allSuggestionButtons == null){
             allSuggestionButtons = getInstalledAppButtons();
         }

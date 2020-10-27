@@ -145,12 +145,17 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         input+=inputChar;
         mSuggestionBarView.reloadWithInput(input,mTerminalView);
     }
-    public void reloadSuggestionBar(boolean delete){
-        String input = mTerminalView.getCurrentInput();
-        if(delete && input.length() > 0){
-            input = input.substring(0,input.length()-1);
+    public void reloadSuggestionBar(boolean delete, boolean enter){
+        if(enter){
+            mSuggestionBarView.reloadWithInput("",mTerminalView);
+        }else{
+            String input = mTerminalView.getCurrentInput();
+            if(delete && input.length() > 0){
+                input = input.substring(0,input.length()-1);
+            }
+            mSuggestionBarView.reloadWithInput(input,mTerminalView);
         }
-        mSuggestionBarView.reloadWithInput(input,mTerminalView);
+
     }
     private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
         @Override
