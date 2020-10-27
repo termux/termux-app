@@ -57,6 +57,13 @@ elif [ "$1" == '--reset' ] ; then
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Resetting & getting latest version"
 	remove_tel_data='true'
 	branch='master'
+elif [ "$1" == '--extras' ] ; then
+	if [ ! -f "$HOME/.tel/.installed" ]; then
+		error 'Extras can only be installed after TEL has been setup'
+	fi
+	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "launching extras installer..."
+	~/.tel/extras/setup.sh
+	exit 0
 elif [ -n "$1" ] ; then #user picked non option
 	error "Unrecognised input option..."
 	error "try 'tel-setup --help' to see availible options"
