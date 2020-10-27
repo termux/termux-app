@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/python
 #tel network status script
 #v0.5 27/08/20
-from time import sleep
+#from time import sleep
 import os
 import shutil
 import json
@@ -60,4 +60,3 @@ try:
         print(col + " " + term.normal + str(get_size(internal.free)) + " availible @ ~/storage/")
 except:
     print(' storage error, check perms')
-    sleep(2)
