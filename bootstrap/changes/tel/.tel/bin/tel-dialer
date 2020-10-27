@@ -30,6 +30,7 @@ show_help() {
                 "  -u   Update contact list"
         exit 0
 }
+
 update_contacts() {
     # Empty contacts file
     :> "$contactsfile"
@@ -63,7 +64,7 @@ main() {
     }
 
     [[ ! -a "$contactsfile" || "$1" == '-u' ]] && {
-        update_contacts
+	    (update_contacts && echo 'Generating contact list...')  # if contactsfile missing generate one
         [[ "$1" == '-u' ]] && exit 0
     }
 

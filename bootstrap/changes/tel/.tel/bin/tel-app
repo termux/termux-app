@@ -37,7 +37,6 @@ update_cache(){
 main(){
     cachefile="$HOME/.apps"
     app_namefile="$HOME/.app_names"
-    
     case "$1" in
         # Update the app list
         # Incase a new app has been installed
@@ -53,9 +52,7 @@ main(){
         ;;
     esac
 
-    [[ ! -a "$cachefile" || ! -s "$cachefile" ]] &&\
-       print_ERR_and_die "App cache is empty."\
-                         "Run \`app -u\`"
+    [[ ! -a "$cachefile" || ! -s "$cachefile" ]] && (echo "updating cache" && update_cache)
     
     
     # fuzzy search in $app_namefile to get the app code and app 
