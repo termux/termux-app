@@ -46,27 +46,18 @@ else #download required packages if first start detected
 	log "this may take a while..."
         logf "starting installation"
 	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh python neofetch git make figlet ncurses-utils termux-api sed util-linux -y 2>&1)" #removed jq
+	log "installing python package manager"
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
         rm -f get-pip.py
+	log "installing python packages"
         catch "$(pip install --user blessed lolcat powerline-status 2>&1)" #removed psutil
         logf "finished packages download and installation"
 fi
 
-#install app launcher via git #simpler to install with rest of tel bins
-#cd ~
-#catch "$(git clone https://github.com/t-e-l/tel-app-launcher 2>&1)"
-#cd tel-app-launcher
-#catch "$(make install 2>&1)"
-#cd ~
-#rm -rf tel-app-launcher
-
 #other termux tools are listed in these files, idk if its necessary to maintain them
 #echo "/data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.list
 #echo "92a2c39cbbde0f366887d99a76358852  data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.md5sums
-
-tel-app -u #set up app cache
-tel-phone -u #this can fail so is preferable at app startup
 
 #create required directories
 #todo: optimize this
@@ -110,7 +101,7 @@ else
 	logf "updating files"
 	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 	cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
-	cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs
+	cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs #this should be compared with a diff tool
 	cp -rTf ~/../usr/tel/.tel/status ~/.tel/status
 	cp -rTf ~/../usr/tel/.tel/resources ~/.tel/resources
 	cp -rTf ~/../usr/tel/.tel/tutorials ~/.tel/tutorials
@@ -118,14 +109,13 @@ fi
 
 
 log "updating permissions"
-chmod +x ~/.tel/extra/*
+chmod +x ~/.tel/extras/*
 chmod +x ~/.tel/status/*
 chmod +x ~/.tel/scripts/*
 chmod +x ~/.tel/scripts/status_manager/*
 chmod +x ~/.tel/tutorials/*
 chmod +x ~/.tel/bin/*
 chmod +x ~/bin/* # scripts that receive files and urls shared to TEL
-#chmod +x ~/../usr/bin/tel-applist
 chmod +x ~/../usr/bin/tel-setup
 chmod +x ~/../usr/bin/tel-restart
 
@@ -143,4 +133,6 @@ logf "finished"
 error "app will restart in 3 seconds!"
 sleep 3
 tel-restart
-error 'Restart cannot be performed automatically when the TEL app is not active, Please run the command "tel-restart" manually'
+error 'Restart cannot be performed automatically when app is not active'
+error 'Please run the command "tel-restart" manually'
+exit 0
