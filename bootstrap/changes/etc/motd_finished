@@ -7,8 +7,6 @@
 
 Welcome to TEL: Termux Expert Launcher
 
-Use 'app [App Name]' to start your apps.
-
 Use 'help' or 'tutorial' to find out more.
 
 Change this message: '~/../usr/etc/motd' or Enable hints in: '~/.tel/configs/userprefs.sh'

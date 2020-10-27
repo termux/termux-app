@@ -8,8 +8,7 @@
 # app -h
 # app -u
 # app Fdroid
-# app Chro     > Laucnhes Chrome
-# app Ytube    > Laucnhes Youtube
+# app Ytube    > Launches Youtube
 
 print_ERR_and_die(){
     # Error printing function
@@ -29,6 +28,7 @@ show_help(){
 
 update_cache(){
     # Android Black Magic
+    printf  "\e[38;5;2m Launcher\e[m: \e[38;5;1mUpdating app cache...%s\n\e[m"
     am broadcast --user 0 \
          --es com.termux.app.reload_style apps-cache \
          -a com.termux.app.reload_style com.termux > /dev/null
@@ -44,34 +44,30 @@ main(){
             update_cache
             exit 0
         ;;
-
         # Display the help message
         -h)
             show_help
             exit 0
         ;;
     esac
-
-    [[ ! -a "$cachefile" || ! -s "$cachefile" ]] && (echo "updating cache" && update_cache)
-    
-    
+    if [ ! -z "$cachefile" ] || [ ! -z "$cachefile" ] ; then
+	    update_cache
+    fi
     # fuzzy search in $app_namefile to get the app code and app 
     # name in this format 
     # app_code | app_name
-    app_data=$( fzf -e --cycle --prompt=" Launch app: " --query="$*" --color=16 --select-1 -0 < "$app_namefile")
+    app_data=$(fzf -e --cycle --prompt=" Launch app: " --query="$*" --color=16 --select-1 -0 < "$app_namefile")
     case "$?" in
-        	# No app found
+        # No app found
         "1"  )
     		printf  "\e[38;5;2m Launcher\e[m: \e[38;5;1mApp not found%s\n\e[m"
 		exit 1
         ;;
-
         # If Ctrl+C is used 
         "130")
             return 1
         ;;
 esac
-
     # get the app code
     app_code=$( echo "$app_data" | cut -d "|" -f1) 
     # get the app name
@@ -87,7 +83,5 @@ esac
 
     # Laucnh the app
     am start -n "$activity" --user 0 > /dev/null 2>&1
-
 }
-
 main "$@"
