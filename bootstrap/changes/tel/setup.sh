@@ -40,12 +40,10 @@ apt-get update -y && apt-get upgrade -y && logf "finished updating Termux packag
 if [ -f ~/.tel/.installed ]; then #set update var if finished installation was detected
     UPDATE=true
 	log "updating TEL setup"
-	#log "updating app launcher"
 	logf "starting update"
 else #download required packages if first start detected
-	log "finishing TEL setup"
 	log "installing required packages.."
-	log "this may take a while"
+	log "this may take a while..."
         logf "starting installation"
 	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh python neofetch git make figlet ncurses-utils termux-api sed util-linux -y 2>&1)" #removed jq
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
@@ -67,7 +65,6 @@ fi
 #echo "/data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.list
 #echo "92a2c39cbbde0f366887d99a76358852  data/data/com.termux/files/usr/bin/tel-appcache" >> ~/../usr/var/lib/dpkg/info/termux-tools.md5sums
 
-#do these when app starts up so we can keep applets together
 tel-app -u #set up app cache
 tel-phone -u #this can fail so is preferable at app startup
 
