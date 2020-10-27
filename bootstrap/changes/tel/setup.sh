@@ -87,7 +87,7 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	catch "$(git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>&1)"
 	catch "$(git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>&1)"
   	sed -i 's/robbyrussell/avit/g' ~/.zshrc
-	sed -i 's/plugins=(git)/plugins=(git fzf catimg fancy-ctrl-z zsh-syntax-highlighting)/g' ~/.zshrc #fzf maybe needed here
+	sed -i 's/plugins=(git)/plugins=(git catimg fancy-ctrl-z zsh-syntax-highlighting)/g' ~/.zshrc #fzf maybe needed here
 
 	echo -e "	\n#|||||||||||||||#\n. ~/.tel/.telrc\n#|||||||||||||||#\n	" >> ~/.zshrc
 
@@ -118,6 +118,7 @@ fi
 
 
 log "updating permissions"
+chmod +x ~/.tel/extra/*
 chmod +x ~/.tel/status/*
 chmod +x ~/.tel/scripts/*
 chmod +x ~/.tel/scripts/status_manager/*

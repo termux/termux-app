@@ -12,11 +12,11 @@ rm_tel_data(){
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Wiping data..."
 	rm -rf ~/.tel
 	rm -rf ~/.oh-my-zsh
-#	rm -f ~/.zshrc
-#	rm -f ~/.zlogin # these will be all be overwritten by a full install of setup after .installed flag is removed anyway
-#	rm -f ~/.aliases
-#	rm -f ~/.envvar
-#	rm -f ~/../usr/etc/motd
+	rm -f ~/.zshrc
+	rm -f ~/.zlogin # these will be all be overwritten by a full install of setup after .installed flag is removed anyway
+	rm -f ~/.aliases
+	rm -f ~/.envvar
+	rm -f ~/../usr/etc/motd
 }
 rm_user_data(){
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${ORANGE}" "Removing user data..."
