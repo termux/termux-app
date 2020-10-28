@@ -256,7 +256,7 @@ final class TermuxInstaller {
         }.start();
     }
     public static void setupAppListCache(final Context context) {
-        /*final String LOG_TAG = "termux-applist";
+        final String LOG_TAG = "termux-applist";
         final String APPLIST_CACHE_FILE = ".apps";
         final String APPNAME_CACHE_FILE = ".app_names";
         new Thread() {
@@ -305,7 +305,7 @@ final class TermuxInstaller {
                     Log.e(LOG_TAG, "Error setting up applist-cache", e);
                 }
             }
-        }.start();*/
+        }.start();
     }
 
 
