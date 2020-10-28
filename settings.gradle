@@ -1,1 +1,1 @@
-include ':app', ':terminal-emulator', ':terminal-view'
+include ':app', ':terminal-emulator', ':terminal-view', ':native-entrypoint'

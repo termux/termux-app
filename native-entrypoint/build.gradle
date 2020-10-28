@@ -1,0 +1,51 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
+    id "com.github.dcendents.android-maven" version "2.0"
+}
+
+apply plugin: 'com.android.library'
+
+ext {
+    bintrayName = 'native-entrypoint'
+    publishedGroupId = 'com.termux'
+    libraryName = 'NativeEntryPoint'
+    artifact = 'native-entrypoint'
+    libraryDescription = 'The terminal view used in Termux'
+    siteUrl = 'https://github.com/termux/termux'
+    gitUrl = 'https://github.com/termux/termux.git'
+    libraryVersion = '0.50'
+}
+
+android {
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    ndkVersion project.properties.ndkVersion
+
+    dependencies {
+        implementation "androidx.annotation:annotation:1.1.0"
+    }
+
+    defaultConfig {
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/jni/Android.mk"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+apply from: '../scripts/bintray-publish.gradle'
