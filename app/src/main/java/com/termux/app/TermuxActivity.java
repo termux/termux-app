@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.WallpaperManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -142,7 +143,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
 
     public void reloadSuggestionBar(char inputChar){
         String input = mTerminalView.getCurrentInput();
-        input+=inputChar;
+        if(input != null){
+            input+=inputChar;
+        }else{
+            input = "";
+        }
+
         mSuggestionBarView.reloadWithInput(input,mTerminalView);
     }
     public void reloadSuggestionBar(boolean delete, boolean enter){
@@ -150,7 +156,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             mSuggestionBarView.reloadWithInput("",mTerminalView);
         }else{
             String input = mTerminalView.getCurrentInput();
-            if(delete && input.length() > 0){
+            if(input == null){
+                input = "";
+            }
+            else if(delete && input.length() > 0){
                 input = input.substring(0,input.length()-1);
             }
             mSuggestionBarView.reloadWithInput(input,mTerminalView);
@@ -240,7 +249,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         super.onCreate(bundle);
 
         setContentView(R.layout.drawer_layout);
-
         if (mIsUsingBlackUI) {
             findViewById(R.id.left_drawer).setBackgroundColor(
                 getResources().getColor(android.R.color.background_dark)
@@ -248,7 +256,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         }
 
         mTerminalView = findViewById(R.id.terminal_view);
-
+        View view = mTerminalView.getRootView();
         mTermuxViewClient = new TermuxViewClient(this);
         mTerminalView.setOnKeyListener(mTermuxViewClient);
 
@@ -257,6 +265,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         mTerminalView.requestFocus();
 
         mTerminalView.setSplitChar(mSettings.getInputChar());
+        WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+        view.setBackground(wallpaperManager.getDrawable());
+       mTerminalView.setBackgroundColor(Color.parseColor("#00000000"));
         mTermuxViewClient.setSuggestionBarCallback(this);
         final ViewPager viewPager = findViewById(R.id.viewpager);
 

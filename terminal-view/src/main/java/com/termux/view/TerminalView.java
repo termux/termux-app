@@ -721,7 +721,7 @@ public final class TerminalView extends View {
             text = text.replaceAll(" {2,}", " ");
             return text.trim();
         }
-        return "";
+        return null;
         /*does only read input from the line of the cursor
         String[] cmds = mTermSession.getEmulator().getScreen().getTranscriptText().split("\n");*/
     }
