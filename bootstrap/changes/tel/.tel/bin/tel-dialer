@@ -39,8 +39,8 @@ update_contacts() {
     # file descriptor 9
     termux-contact-list > ~/.temp
 
-    # delay for 2 seconds
-    read -rt "2" <> <(:) || :
+    # delay for 2 seconds   #what is this for? 
+    read -rt "2" <> <(:) || :  
 
     while IFS=$'\n' read -sr line; do
         [[ ${line} == "  {" ]] && {
@@ -64,7 +64,8 @@ main() {
     }
 
     [[ ! -a "$contactsfile" || "$1" == '-u' ]] && {
-	    (update_contacts && echo 'Generating contact list...')  # if contactsfile missing generate one
+    	printf  "\e[38;5;2m Dialer\e[m: \e[38;5;1mGenerating contacts list...%s\n\e[m"
+	update_contacts  # if contacts file missing - generate one
         [[ "$1" == '-u' ]] && exit 0
     }
 
@@ -84,25 +85,16 @@ main() {
             return 1
         ;;
 esac
-
-    # No contact found
-    [[ -z "$contact" ]] &&\
-         print_ERR_and_die "Couldn't find the contact"
-
     # get the contact's name
-    contact_name=$(echo "$contact"  | cut -d "|" -f1) 
+    contact_name=$(echo "$contact" | cut -d "|" -f1) 
     # get the contact's number
     contact_number=$(echo "$contact" | cut -d "|" -f2 | tr -d '[:space:]')
-
     printf  "\e[38;5;2m Calling:\e[m %s\n"\
 	    "$contact_name[$contact_number]"
-
     #kills the program if termux-telephony-call command is not available
     ( command -v termux-telephony-call >/dev/null 2>&1 ) || { 
         print_ERR_and_die "termux-telephony-call not available, have you installed termux api?"
     }
-
-    # Call the person
     termux-telephony-call "$contact_number"
 }
 
