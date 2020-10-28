@@ -13,7 +13,7 @@ then
 	error "please try again"
         exit 0
 else
-	logf "done"
+	log "done"
 fi
 }
 
