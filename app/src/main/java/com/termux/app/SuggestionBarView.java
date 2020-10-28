@@ -85,6 +85,7 @@ public final class SuggestionBarView extends GridLayout {
         setColumnCount(suggestionButtons.size());
         removeAllViews();
         int buttonCount = settings.getButtonCount();
+        int addedCount = 0;
         if(input.length()> 0 && !input.equals(" ")){
             //List<SuggestionBarButton> oldList = suggestionButtons;
             suggestionButtons = searchButtons(suggestionButtons,input, buttonCount,input.length() >2);
@@ -177,7 +178,26 @@ public final class SuggestionBarView extends GridLayout {
                 });
                 addView(button);
             }
+            addedCount++;
         }
+        int missing_buttons = buttonCount-addedCount;
+        if(suggestionButtons.size() > 0 && missing_buttons > 0){
+            Drawable filler = suggestionButtons.get(0).getIcon();
+            for(int i=0;i<missing_buttons;i++){
+                LayoutParams param = new GridLayout.LayoutParams();
+                param.width = 0;
+                param.height = 0;
+                param.setMargins(0, 0, 0, 0);
+                param.columnSpec = GridLayout.spec(i+addedCount, GridLayout.FILL, 1.f);
+                param.rowSpec = GridLayout.spec(0, GridLayout.FILL, 1.f);
+                ImageButton imageButton = new ImageButton(getContext(),null,android.R.attr.buttonBarButtonStyle);
+                imageButton.setImageDrawable(filler);
+                imageButton.setLayoutParams(param);
+                imageButton.setVisibility(INVISIBLE);
+                addView(imageButton);
+            }
+        }
+
     }
 
     private List<ResolveInfo> getInstalledApps() {
