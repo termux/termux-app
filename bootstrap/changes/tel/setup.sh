@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 #TEL setup file
 #should be executed after the setup and every apk based update
 
