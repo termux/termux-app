@@ -43,11 +43,11 @@ def check_terminal(prev_status_bar, last_measured):
    # print("term size is : " + str(size)
     if size != last_measured:
         #os.system("clear")
+        print(term.clear + term.home)
         if term.height != len(prev_status_bar) + 1:
             os.system("tmux resizep -t 1.top -y {}".format(len(prev_status_bar) + 1 ))
-        print(term.clear + term.home)
-        for line in prev_status_bar:
-            print(term.center(line))
+            for line in prev_status_bar:
+                print(term.center(line))
     return size
 
 def on_resize(sig, action):
