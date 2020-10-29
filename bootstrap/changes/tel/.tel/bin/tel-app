@@ -49,7 +49,7 @@ main(){
             exit 0
         ;;
     esac
-    if [ -z "$cachefile" ] || [ -z "$app_namefile" ] ; then
+    if [ ! -f $cachefile ] || [ ! -f $app_namefile ] ; then
 	    update_cache
     fi
     # fuzzy search in $app_namefile to get the app code and app 
