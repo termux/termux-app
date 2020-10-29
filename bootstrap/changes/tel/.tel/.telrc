@@ -11,10 +11,12 @@
 . ~/.envvar 				# load default env
 . ~/.tel/scripts/readconfigs.sh 	# get user settings
 . ~/.aliases 				# load user aliases
+[[ -f ~/storage/shared/tel/tel_personal.sh ]] && . ~/storage/shared/tel/tel_personal.sh # add aliases / functions here that will never get overwritten
+
 
 # PATH setup
 export PATH=/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:~/.tel/bin:/data/data/com.termux/files/home/.local/bin
-export PY_SITE_PKGS="$(python -m site --user-site)"
+export PY_SITE_PKGS="$(python -m site --user-site)" #only works in python 3.9+ otherwise this may need to be set manually
 
 # ZSH Customisations
 set -K # disables ! events in zsh to allow for bangs in tel-search, eg 's !!wiki mycelium'
