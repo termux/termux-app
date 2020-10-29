@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#Asynchronous status manager / script loader - sealyj 2020
 import subprocess
 import threading
 import sys
@@ -36,7 +37,7 @@ notifications_enabled = os.environ['NOTIFICATIONS_ENABLED']
 #print(term.center("Status Manager Version: " + str(status_manager_version)))
 #os.system("clear")
 
-#currently unused but may save battery compared to SIGNAL
+#currently used instead of signal
 def check_terminal(prev_status_bar, last_measured):
     size = term.height, term.width
    # print("term size is : " + str(size)
@@ -135,7 +136,7 @@ for script_num in range(0,len(status_scripts)):
     proc_threads[script_num].daemon = True
     proc_threads[script_num].start()
 main_loop = 0
-#last_measured = term.height, term.width
+last_measured = term.height, term.width #initial measurement required to pass to func
 stored_bar = status_bar
 
 for n in range(0,len(status_scripts)):

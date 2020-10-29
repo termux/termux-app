@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# called to start / stop status manager window
 running=$(pgrep -f status_manager.py)
 if [ -z "$running" ] ; then
 	# todo: link pane to display across all windows
