@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/python
+#!/usr/bin/env python
 import subprocess
 import threading
 import sys
@@ -28,20 +28,22 @@ notifications_enabled = os.environ['NOTIFICATIONS_ENABLED']
 #status_manager_version = os.environ['STATUS_MANAGER_VERSION']
 
 # set window name for target resizing
-os.system("tmux rename-window 'Status_Manager")
+#os.system("tmux rename-window 'Status_Manager'")
 # immediately resize
-os.system("tmux resize-pane -t 1.top -y 5")
+#os.system("tmux resize-pane -t 1.top -y 5")
 
 
 #print(term.center("Status Manager Version: " + str(status_manager_version)))
-os.system("clear")
+#os.system("clear")
 
 #currently unused but may save battery compared to SIGNAL
 def check_terminal(prev_status_bar, last_measured):
     size = term.height, term.width
-   # print("term size is : " + str(size))
+   # print("term size is : " + str(size)
     if size != last_measured:
         #os.system("clear")
+        if term.height != len(prev_status_bar) + 1:
+            os.system("tmux resizep -t 1.top -y {}".format(len(prev_status_bar) + 1 ))
         print(term.clear + term.home)
         for line in prev_status_bar:
             print(term.center(line))
@@ -133,7 +135,7 @@ for script_num in range(0,len(status_scripts)):
     proc_threads[script_num].daemon = True
     proc_threads[script_num].start()
 main_loop = 0
-last_measured = term.height, term.width
+#last_measured = term.height, term.width
 stored_bar = status_bar
 
 for n in range(0,len(status_scripts)):
@@ -145,9 +147,9 @@ while True:
     #if window sized changed clear
  #   main_loop = main_loop + 1
  #   if main_loop == 5:
- #       last_measured = check_terminal(prev_status_bar, last_measured)
+    last_measured = check_terminal(prev_status_bar, last_measured)
  #       main_loop = 0
-    signal.signal(signal.SIGWINCH, on_resize)
+    #signal.signal(signal.SIGWINCH, on_resize)
 
     for process in range(0,len(all_procs)):
         all_procs[process].poll()
@@ -167,8 +169,8 @@ while True:
             new_output = new_output.decode('utf-8').rstrip('\r|\n')
             prev_status_bar = print_status_bar(prev_status_bar, process, new_output)
 
-            if term.height != len(status_scripts) + 1:
-                os.system("tmux resizep -t 1.top -y {}".format(len(prev_status_bar) + 1 ))
+        #    if term.height != len(status_scripts) + 1:
+         #       os.system("tmux resizep -t 1.top -y {}".format(len(prev_status_bar) + 1 ))
         except queue.Empty:
             pass
     os.system("tmux copy-mode -q -t 1.top")
