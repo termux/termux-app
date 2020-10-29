@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/python
+#!/usr/bin/env python
 #tel network status script
 #v0.5 27/08/20
 #from time import sleep
@@ -9,7 +9,6 @@ import blessed
 import subprocess
 from blessed import Terminal
 term = Terminal(force_styling=True) #force required if output not a tty
-
 sd_card_path = os.environ['PATH_TO_SD']
 
 def get_size(bytes, suffix="B"):

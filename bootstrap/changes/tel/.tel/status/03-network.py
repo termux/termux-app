@@ -8,7 +8,7 @@ import subprocess
 from blessed import Terminal
 term = Terminal(force_styling=True) #force required if output not a tty
 dataicon = ""  #" #
-wifiicon = "" #/
+wifiicon = ""
 nodataicon = ""
 try:
     os.system("pkill -f 'WifiConnectionInfo'")
@@ -50,6 +50,6 @@ try:
         else:
             print(nodataicon + ' Disconnected')
 except:
-    print(nodataicon + ' Loading data')
+    print(nodataicon + ' getting data...')
     #exit() #show last data instead of useless error msg
 exit()

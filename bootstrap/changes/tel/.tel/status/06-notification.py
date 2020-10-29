@@ -1,8 +1,7 @@
-#!/data/data/com.termux/files/usr/bin/python
+#!/usr/bin/env python
 #tel notification status script
 #v0.5 sealyj 17/10/20
 import os
-#import time
 import json
 import blessed
 import subprocess
@@ -10,12 +9,12 @@ from blessed import Terminal
 term = Terminal(force_styling=True) #force required if output not a tty
 notification_display_type = os.environ['NOTIFICATIONS_DISPLAY_TYPE']
 notificationsicon = " "
-old_notification_list = None
 notification_list = []
+homedir = os.path.expanduser("~")
 try:
     notification_list = []
     if notification_display_type == "scroll":
-        file_name = "/data/data/com.termux/files/home/.tel/data/notifications"
+        file_name = homedir + "/.tel/data/notifications"
         with open(file_name,"r+") as f_in:
             for line in f_in:
                 if len(line.split()) == 0:
@@ -29,10 +28,8 @@ try:
                 for eachline in notification_list[1:]:
                     f_in.write(eachline + "\n")
                 f_in.write(notification_list[0] + "\n")
-               # f_in.writelines("")
-
             elif len(notification_list) < 1:
-                print(notificationsicon + "No new notifications")
+                print(notificationsicon + "no new notifications")
             elif len(notification_list) == 1:
                 print(notificationsicon + notification_list[0])
     else:
@@ -43,4 +40,3 @@ try:
             print(notificationsicon + " No new notifications")
 except:
     print('except')
-
