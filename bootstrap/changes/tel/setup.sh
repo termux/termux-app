@@ -34,25 +34,25 @@ error() {
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${RED}" "${1}"
 }
 
-log "updating Termux packages..."
-logf "updating Termux packages..."
+log "Updating Termux packages..."
+logf "Updating Termux packages..."
 apt-get update -y && apt-get upgrade -y && logf "finished updating Termux packages" #print to screen as hotfix
 if [ -f ~/.tel/.installed ]; then #set update var if finished installation was detected
     UPDATE=true
-	log "updating TEL setup"
-	logf "starting update"
+	log "Updating TEL setup"
+	logf "Starting update"
 else #download required packages if first start detected
-	log "installing required packages.."
-	log "this may take a while..."
-        logf "starting installation"
+	log "Installing required packages.."
+	log "This may take a while..."
+        logf "Starting installation"
 	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh python neofetch git make figlet ncurses-utils termux-api sed util-linux -y 2>&1)" #removed jq
-	log "installing python package manager"
+	log "Installing python package manager"
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
         rm -f get-pip.py
-	log "installing python packages"
+	log "Installing python packages"
         catch "$(pip install --user blessed lolcat powerline-status 2>&1)" #removed psutil
-        logf "finished packages download and installation"
+        logf "Finished packages download and installation"
 fi
 
 #other termux tools are listed in these files, idk if its necessary to maintain them
@@ -66,11 +66,10 @@ mkdir -p ~/.tel
 mkdir -p ~/.config
 mkdir -p ~/bin
 
-if [ "$UPDATE" = false ]; then #if first start detected
-
+if [ "$UPDATE" == false ]; then #if first start detected
 	# # # # ZSH setup # # #
-	log "installing OhMyZsh"
-	logf "installing OhMyZsh"
+	log "Installing ohmyzsh"
+	logf "Installing ohmyzsh"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended  > /dev/null 2>&1 && logf "finished installing OhMyZsh"
   	chsh -s zsh #set zsh default shell
 	#install zsh plugins
@@ -82,8 +81,8 @@ if [ "$UPDATE" = false ]; then #if first start detected
 
 	echo -e "	\n#|||||||||||||||#\n. ~/.tel/.telrc\n#|||||||||||||||#\n	" >> ~/.zshrc
 
-	log "installing files" #todo: optimize this
-	logf "installing files"
+	log "Installing TEL..." #todo: optimize this
+	logf "Installing TEL..."
 
 	cp -rf ~/../usr/tel/termux-file-editor ~/bin
 	cp -rf ~/../usr/tel/termux-url-opener ~/bin
@@ -97,8 +96,8 @@ if [ "$UPDATE" = false ]; then #if first start detected
 	cp -rf ~/../usr/tel/.vimrc ~/
 
 else
-	log "updating files"
-	logf "updating files"
+	log "Updating TEL..."
+	logf "Updating TEL..."
 	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 	cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
 	cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs #this should be compared with a diff tool
@@ -108,7 +107,7 @@ else
 fi
 
 
-log "updating permissions"
+log "Updating permissions..."
 chmod +x ~/.tel/extras/*
 chmod +x ~/.tel/status/*
 chmod +x ~/.tel/scripts/*
