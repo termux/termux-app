@@ -36,26 +36,27 @@ notifications_enabled = os.environ['NOTIFICATIONS_ENABLED']
 
 #print(term.center("Status Manager Version: " + str(status_manager_version)))
 #os.system("clear")
-
+print(term.clear)
 #currently used instead of signal
 def check_terminal(prev_status_bar, last_measured):
-    size = term.height, term.width
+    size = term.height #, term.width
    # print("term size is : " + str(size)
     if size != last_measured:
         #os.system("clear")
-        if term.height != len(prev_status_bar) + 1:
+        if term.height != len(status_scripts):
             os.system("tmux resizep -t 1.top -y {}".format(len(prev_status_bar) + 1 ))
             print(term.clear + term.home)
-            for line in prev_status_bar:
+            for line_num in range(0,len(status_scripts):
                 print(term.home + term.move_y(line_num) + term.clear_eol + term.center(line))
     return size
 
+#currenty unused
 def on_resize(sig, action):
   #  print(f'height={term.height}, width={term.width}')
     resized_status_bar = prev_status_bar
     print(term.home + term.clear)
     for line_num in range(len(prev_status_bar)):
-       print(term.home + term.move_y(line_num) + term.clear_eol + term.center(prev_status_bar[line_num]))
+       print(term.home + term.move_xy(0,line_num) + term.clear_eol + term.center(prev_status_bar[line_num]))
 
 def get_scripts():
     status_scripts_list = []
