@@ -6,5 +6,4 @@ if [ "$#" != "0" ]; then
 fi
 
 am broadcast --user 0 \
-		 --es com.termux.app.reload_style restart \
-		 -a com.termux.app.reload_style com.termux > /dev/null
+		 -a com.termux.app.restart com.termux > /dev/null

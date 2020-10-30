@@ -101,6 +101,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
 
     private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
+    private static final String RESTART_ACTION = "com.termux.app.restart";
+    private static final String APP_CACHE_ACTION = "com.termux.app.app_cache";
+    private static final String API_ACTION = "com.termux.app.api";
+    private static final String API_DATA = "com.termux.app.api_data";
+
 
     /** The main view of the activity showing the terminal. Initialized in onCreate(). */
     @SuppressWarnings("NullableProblems")
@@ -166,7 +171,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         }
 
     }
-    private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
+    private final BroadcastReceiver reloadStyleBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mIsVisible) {
@@ -175,10 +180,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                     if (ensureStoragePermissionGranted())
                         TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
                     return;
-                }else if ("apps-cache".equals(whatToReload)) {
-                    TermuxInstaller.setupAppListCache(TermuxActivity.this);
-                }else if ("restart".equals(whatToReload)){
-                    ProcessPhoenix.triggerRebirth(TermuxActivity.this);
                 }
                 checkForFontAndColors();
                 mSettings.reloadFromProperties(TermuxActivity.this);
@@ -190,6 +191,27 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                     mSuggestionBarView.reload(mSettings);
                 }
             }
+        }
+    };
+
+    private final BroadcastReceiver restartBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ProcessPhoenix.triggerRebirth(TermuxActivity.this);
+        }
+    };
+    private final BroadcastReceiver appCacheBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            TermuxInstaller.setupAppListCache(TermuxActivity.this);
+        }
+    };
+
+    private final BroadcastReceiver apiBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String apiAction = intent.getStringExtra(RELOAD_STYLE_ACTION);
+            String apiData = intent.getStringExtra(API_DATA);
         }
     };
 
@@ -265,9 +287,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         mTerminalView.requestFocus();
 
         mTerminalView.setSplitChar(mSettings.getInputChar());
-        WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+        /*WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
         view.setBackground(wallpaperManager.getDrawable());
-       mTerminalView.setBackgroundColor(Color.parseColor("#00000000"));
+        mTerminalView.setBackgroundColor(Color.parseColor("#00000000"));*/
         mTermuxViewClient.setSuggestionBarCallback(this);
         final ViewPager viewPager = findViewById(R.id.viewpager);
 
@@ -650,8 +672,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             mListViewAdapter.notifyDataSetChanged();
         }
 
-        registerReceiver(mBroadcastReceiever, new IntentFilter(RELOAD_STYLE_ACTION));
-
+        registerReceiver(reloadStyleBroadcastReceiver, new IntentFilter(RELOAD_STYLE_ACTION));
+        registerReceiver(appCacheBroadcastReceiver, new IntentFilter(APP_CACHE_ACTION));
+        registerReceiver(restartBroadcastReceiver, new IntentFilter(RESTART_ACTION));
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal:
         mTerminalView.onScreenUpdated();
@@ -663,7 +686,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         mIsVisible = false;
         TerminalSession currentSession = getCurrentTermSession();
         if (currentSession != null) TermuxPreferences.storeCurrentSession(this, currentSession);
-        unregisterReceiver(mBroadcastReceiever);
+        unregisterReceiver(reloadStyleBroadcastReceiver);
+        unregisterReceiver(appCacheBroadcastReceiver);
+        unregisterReceiver(restartBroadcastReceiver);
         getDrawer().closeDrawers();
     }
 
