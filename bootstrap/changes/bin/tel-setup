@@ -39,7 +39,8 @@ if [ "$1" == '-h' ] || [ "$1" == '--help' ] ; then
 	--update	get latest release updates
 	--reset 	setup release version (destructive)
 	--dev 		setup developer version (destructive)
-	--custom	setup custom version (destructive)'
+	--custom	setup custom version (destructive)
+	--extras	extra scripts'
 	exit 0
 elif [ "$1" == '--update' ] ; then
 	printf "\033[0;%sm%s\033[0m\033[0;%sm%s\033[0m\n" "${WHITE}" "[TEL]: " "${GREEN}" "Getting updates"
