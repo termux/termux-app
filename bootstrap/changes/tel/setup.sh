@@ -64,6 +64,7 @@ mkdir -p ~/.termux
 mkdir -p ~/.tel
 mkdir -p ~/.config
 mkdir -p ~/bin
+touch ~/.zsh_history #start new history if not exist
 
 if [ "$UPDATE" == false ]; then #if first start detected
 	# # # # ZSH setup # # #
