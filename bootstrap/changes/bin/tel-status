@@ -1,0 +1,13 @@
+#!/data/data/com.termux/files/usr/bin/sh
+
+if [ "$#" -lt "2" ]; then
+	echo 'usage: tel-status 0 a b c'
+	exit
+fi
+line="$1"
+shift
+text="$@"
+am broadcast --user 0 \
+		--es text "$text" \
+		--es line $line \
+		-a com.termux.app.status com.termux > /dev/null

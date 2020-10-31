@@ -4,11 +4,20 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
+    <com.termux.app.StatusView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/status_view"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:foregroundGravity="center"
+        android:orientation="vertical" />
+
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_alignParentTop="true"
         android:layout_above="@+id/viewpager"
+        android:layout_below="@+id/status_view"
         android:layout_height="match_parent">
 
         <com.termux.view.TerminalView
@@ -21,6 +30,7 @@
             android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
             android:scrollbars="vertical"
             android:importantForAutofill="no"
+            android:layout_alignParentTop="true"
             android:autofillHints="password" />
 
         <LinearLayout

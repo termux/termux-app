@@ -117,6 +117,8 @@ chmod +x ~/.tel/bin/*
 chmod +x ~/bin/* # scripts that receive files and urls shared to TEL
 chmod +x ~/../usr/bin/tel-setup
 chmod +x ~/../usr/bin/tel-restart
+chmod +x ~/../usr/bin/tel-status
+chmod +x ~/../usr/bin/delete-status
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd

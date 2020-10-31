@@ -105,7 +105,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     private static final String APP_CACHE_ACTION = "com.termux.app.app_cache";
     private static final String API_ACTION = "com.termux.app.api";
     private static final String API_DATA = "com.termux.app.api_data";
-
+    private static final String WRITE_STATUS = "com.termux.app.status";
 
     /** The main view of the activity showing the terminal. Initialized in onCreate(). */
     @SuppressWarnings("NullableProblems")
@@ -117,6 +117,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     ExtraKeysView mExtraKeysView;
 
     SuggestionBarView mSuggestionBarView;
+
+    StatusView mStatusView;
 
     TermuxPreferences mSettings;
 
@@ -207,6 +209,25 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         }
     };
 
+    private final BroadcastReceiver statusBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String text = intent.getStringExtra("text");
+            int line = 0;
+            try{
+                line = Integer.parseInt(intent.getStringExtra("line"));
+            }
+            catch(Exception e){
+            }
+            String delete = intent.getStringExtra("delete");
+            if(delete != null){
+                mStatusView.deleteUntil(line);
+            }else{
+                mStatusView.setLineText(line,text);
+            }
+
+        }
+    };
     private final BroadcastReceiver apiBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -360,6 +381,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             }
         });
 
+        mStatusView = findViewById(R.id.status_view);
         final ViewPager viewPager2 = findViewById(R.id.viewpager2);
         ViewGroup.LayoutParams layoutParams2 = viewPager2.getLayoutParams();
         layoutParams2.height = Math.round(layoutParams2.height * mSettings.getBarHeight());
@@ -675,6 +697,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         registerReceiver(reloadStyleBroadcastReceiver, new IntentFilter(RELOAD_STYLE_ACTION));
         registerReceiver(appCacheBroadcastReceiver, new IntentFilter(APP_CACHE_ACTION));
         registerReceiver(restartBroadcastReceiver, new IntentFilter(RESTART_ACTION));
+        registerReceiver(statusBroadcastReceiver, new IntentFilter(WRITE_STATUS));
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal:
         mTerminalView.onScreenUpdated();
@@ -689,6 +712,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         unregisterReceiver(reloadStyleBroadcastReceiver);
         unregisterReceiver(appCacheBroadcastReceiver);
         unregisterReceiver(restartBroadcastReceiver);
+        unregisterReceiver(statusBroadcastReceiver);
         getDrawer().closeDrawers();
     }
 

@@ -1,0 +1,10 @@
+#!/data/data/com.termux/files/usr/bin/sh
+
+if [ "$#" != "1" ]; then
+	echo 'usage: tel-delete-status 0'
+	exit
+fi
+am broadcast --user 0 \
+		--es delete true \
+		--es line $1 \
+		-a com.termux.app.status com.termux > /dev/null
