@@ -51,15 +51,12 @@ def print_status_bar(prev_status_bar,script_num,new_output):
             if new_output != prev_status_bar[line]:
                #replace
                 status_bar[line] = new_output
-                if len(new_output) > term.width:
-                    if line == len(prev_status_bar):
-                        os.system("tel-status " + str(line) + " " + new_output)
-                    else:
-                        new_output = new_output[:term.width -2]
-                        new_output = new_output + term.normal + '..'
-                        os.system("tel-status " + str(line) + " " + new_output)
+                if len(new_output) > term.width - 6:
+                    new_output = new_output[:term.width -8]
+                    new_output = new_output + term.normal + '..'
+                    os.system("tel-status " + str(line) + " " + str(term.strip_seqs(new_output))
                 else:
-                    os.system("tel-status " + str(line) + " " + new_output)
+                    os.system("tel-status " + str(line) + " " + str(term.strip_seqs(new_output))
     return status_bar
 
 #read output from status script wrappers stdout, when line has been read, puts it into queue
