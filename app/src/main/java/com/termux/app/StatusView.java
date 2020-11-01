@@ -1,12 +1,14 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.GridLayout;
 import android.widget.TextView;
 
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class StatusView extends GridLayout {
@@ -25,6 +27,11 @@ public class StatusView extends GridLayout {
         if(lines.size()<=line){
             for(int i=lines.size();i<=line;i++){
                 TextView textView = new TextView(getContext());
+                File fontFile = new File(TermuxService.HOME_PATH+"/.termux/font.ttf");
+                if(fontFile.exists()){
+                    Typeface font = Typeface.createFromFile(fontFile);
+                    textView.setTypeface(font);
+                }
                 textView.setText("");
                 addView(textView);
                 lines.add(textView);
