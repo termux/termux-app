@@ -44,9 +44,9 @@ def check_terminal(prev_status_bar, last_measured):
     if size != last_measured:
         #os.system("clear")
         if term.height != len(status_scripts):
-            os.system("tmux resizep -t 1.top -y {}".format(len(status_scripts)))
+            os.system("tmux resizep -t 1.top -y {}".format(len(status_scripts + 1)))
             print(term.clear + term.home)
-            for line_num in range(0,len(status_scripts)):
+            for line_num in range(0,len(status_scripts) + 1):
                 print(term.home + term.move_y(line_num) + term.clear_eol + term.center(prev_status_bar[line_num]))
     return size
 
