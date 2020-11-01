@@ -44,7 +44,7 @@ def init_status_bar(status_scripts):
         status_bar.append("Script " + str(n) + " Loading..." )
     return status_bar
 
-def print_status_bar(prev_status_bar,script_num,new_output):
+def draw_status_bar(prev_status_bar,script_num,new_output):
     status_bar = prev_status_bar
     for line in range(0,len(prev_status_bar)):
         if line == script_num:
@@ -67,62 +67,81 @@ def read_output(pipe, q):
 
 #############main starts here############
 
-# get status scripts and init status bar
-status_scripts = get_scripts()
-empty_status_bar = init_status_bar(status_scripts)
-status_bar = empty_status_bar
-all_procs = []
+def setup():
+    # get status scripts and init status bar
+    status_scripts = get_scripts()
+    empty_status_bar = init_status_bar(status_scripts)
+    status_bar = empty_status_bar
+    all_procs = []
 
-# start all scripts as subprocesses
-for script_num in range(0,len(status_scripts)):
-    new_process = subprocess.Popen(["./status_script_wrapper.sh", status_scripts[script_num], str(term.width)], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    all_procs.append(new_process)
-   # print('Loading: ' + str(status_scripts[script_num]))   
+    # start all scripts as subprocesses
+    for script_num in range(0,len(status_scripts)):
+        new_process = subprocess.Popen(["./status_script_wrapper.sh", status_scripts[script_num], str(term.width)], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        all_procs.append(new_process)
+       # print('Loading: ' + str(status_scripts[script_num]))   
 
-proc_queues = []
-# create queue for storing each scripts output
-for script_num in range(0,len(status_scripts)):
-    create_queue = queue.Queue()
-    proc_queues.append(create_queue)
+    proc_queues = []
+    # create queue for storing each scripts output
+    for script_num in range(0,len(status_scripts)):
+        create_queue = queue.Queue()
+        proc_queues.append(create_queue)
 
-proc_threads = []
-# create threads
-for script_num in range(0,len(status_scripts)):
-    create_thread = threading.Thread(target=read_output, args=(all_procs[script_num].stdout, proc_queues[script_num]))
-    proc_threads.append(create_thread)
+    proc_threads = []
+    # create threads
+    for script_num in range(0,len(status_scripts)):
+        create_thread = threading.Thread(target=read_output, args=(all_procs[script_num].stdout, proc_queues[script_num]))
+        proc_threads.append(create_thread)
 
-# start threads to read output from processes
-for script_num in range(0,len(status_scripts)):
-    proc_threads[script_num].daemon = True
-    proc_threads[script_num].start()
-main_loop = 0
-last_measured = term.height, term.width #initial measurement required to pass to func
-stored_bar = status_bar
+    # start threads to read output from processes
+    for script_num in range(0,len(status_scripts)):
+        proc_threads[script_num].daemon = True
+        proc_threads[script_num].start()
+    main_loop = 0
+    last_measured = term.height, term.width #initial measurement required to pass to func
+    stored_bar = status_bar
 
-for n in range(0,len(status_scripts)):
-        new_output = ("Loading.. " + status_scripts[n].split("/status/",1)[1])
-        prev_status_bar = print_status_bar(status_bar, n, new_output)
+    for n in range(0,len(status_scripts)):
+            new_output = ("Loading.. " + status_scripts[n].split("/status/",1)[1]) # show 'Loading.. filename' (remove path from name)
+            prev_status_bar = draw_status_bar(status_bar, n, new_output)
+# End setup()
 
-while True:
 
-    for process in range(0,len(all_procs)):
-        all_procs[process].poll()
-    # check if any subprocess has finished
-    
-    for process in range(0,len(all_procs)):
-        if all_procs[process].returncode is not None:
-        #    print(str(all_procs[process].returncode))
-            break
-    new_output = None
-    prev_status_bar = status_bar
-    for process in range(0,len(proc_queues)):
-        try:
-            new_output = None
-            new_output = proc_queues[process].get(False)
-            #if new_output:
-            new_output = new_output.decode('utf-8').rstrip('\r|\n')
-            prev_status_bar = print_status_bar(prev_status_bar, process, new_output)
+def clean_up():
+    status_bar = []
+    for n in range(0,len(status_scripts)):
+        os.system('tel-delete-status ' + str(n))
 
-        except queue.Empty:
-            pass
-    sleep(user_sleeptime)
+def main_loop():
+    while True:
+        new_output = None
+        prev_status_bar = status_bar
+        
+        for process in range(0,len(all_procs)):
+            all_procs[process].poll()
+        # check if any subprocess has finished
+        
+        for process in range(0,len(all_procs)):
+            if all_procs[process].returncode is not None:
+            #    print(str(all_procs[process].returncode))
+                break
+        for process in range(0,len(proc_queues)):
+            try:
+                new_output = None
+                new_output = proc_queues[process].get(False)
+                #if new_output:
+                new_output = new_output.decode('utf-8').rstrip('\r|\n')
+                prev_status_bar = draw_status_bar(prev_status_bar, process, new_output)
+            except queue.Empty:
+                pass
+        sleep(user_sleeptime)
+# end main_loop
+
+
+try:
+    setup()
+    main_loop()
+except Exception as e:
+    print(e.message, e.args)
+finally:
+    clean_up()
+    exit()
