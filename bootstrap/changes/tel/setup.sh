@@ -44,7 +44,10 @@ else #download required packages if first start detected
 	log "Installing required packages.."
 	log "This may take a while..."
         logf "Starting installation"
-	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh python neofetch git make figlet ncurses-utils termux-api sed util-linux -y 2>&1)" #removed jq
+	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh neofetch git make figlet ncurses-utils termux-api sed util-linux -y 2>&1)" #removed jq
+	log "Installing python"
+	logf "Installing python"
+	catch "$(pkg install python -y 2>&1)" #removed jq
 	log "Installing python package manager"
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
@@ -64,7 +67,6 @@ mkdir -p ~/.termux
 mkdir -p ~/.tel
 mkdir -p ~/.config
 mkdir -p ~/bin
-touch ~/.zsh_history #start new history if not exist
 
 if [ "$UPDATE" == false ]; then #if first start detected
 	# # # # ZSH setup # # #
@@ -118,7 +120,7 @@ chmod +x ~/bin/* # scripts that receive files and urls shared to TEL
 chmod +x ~/../usr/bin/tel-setup
 chmod +x ~/../usr/bin/tel-restart
 chmod +x ~/../usr/bin/tel-status
-chmod +x ~/../usr/bin/delete-status
+chmod +x ~/../usr/bin/tel-delete-status
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
