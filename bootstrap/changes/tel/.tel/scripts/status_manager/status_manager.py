@@ -11,9 +11,8 @@ from time import sleep #for battery saving
 
 
 #globals and definitions
-term = Terminal(force_styling=True) #force required if output not a tty
+term = Terminal(force_styling=False) #force required if output not a tty
 homedir = os.path.expanduser("~")
-#text_path = homedir + "/.tel/data/notifications"
 status_scripts_dir = homedir + "/.tel/status"
 status_scripts = []
 
@@ -27,6 +26,7 @@ user_sleeptime = float(os.environ['STATUS_MANAGER_SLEEP'])
 notifications_enabled = os.environ['NOTIFICATIONS_ENABLED']
 #tel_version = os.environ['TEL_VERSION']
 #status_manager_version = os.environ['STATUS_MANAGER_VERSION']
+
 def get_scripts():
     status_scripts_list = []
     for root, dirs, files in os.walk(status_scripts_dir, topdown=True):
@@ -43,11 +43,6 @@ def init_status_bar(status_scripts):
     for n in range(0,len(status_scripts)):
         status_bar.append("Script " + str(n) + " Loading..." )
     return status_bar
-
-def store_complete_status_bar(prev_status_bar):
-    for item in prev_status_bar:
-        print(item)
-    return prev_status_bar
 
 def print_status_bar(prev_status_bar,script_num,new_output):
     status_bar = prev_status_bar
