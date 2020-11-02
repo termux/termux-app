@@ -18,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_above="@+id/viewpager"
         android:layout_below="@+id/status_view"
+        android:background="@android:color/transparent"
         android:layout_height="match_parent">
 
         <com.termux.view.TerminalView

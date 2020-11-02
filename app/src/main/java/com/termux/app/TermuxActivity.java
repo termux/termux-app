@@ -68,6 +68,7 @@ import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
@@ -290,16 +291,15 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         }
 
         super.onCreate(bundle);
-
-        setContentView(R.layout.drawer_layout);
+        View view = View.inflate(this,R.layout.drawer_layout,null);
+        setContentView(view);
         if (mIsUsingBlackUI) {
             findViewById(R.id.left_drawer).setBackgroundColor(
                 getResources().getColor(android.R.color.background_dark)
             );
         }
-
+        mStatusView = findViewById(R.id.status_view);
         mTerminalView = findViewById(R.id.terminal_view);
-        View view = mTerminalView.getRootView();
         mTermuxViewClient = new TermuxViewClient(this);
         mTerminalView.setOnKeyListener(mTermuxViewClient);
 
@@ -308,9 +308,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         mTerminalView.requestFocus();
 
         mTerminalView.setSplitChar(mSettings.getInputChar());
-        /*WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
-        view.setBackground(wallpaperManager.getDrawable());
-        mTerminalView.setBackgroundColor(Color.parseColor("#00000000"));*/
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+            view.setBackground(wallpaperManager.getDrawable());
+            mTerminalView.setBackgroundColor(Color.parseColor("#00000000"));
+            mStatusView.setBackgroundColor(Color.parseColor("#00000000"));
+        }
+
         mTermuxViewClient.setSuggestionBarCallback(this);
         final ViewPager viewPager = findViewById(R.id.viewpager);
 
@@ -381,7 +386,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             }
         });
 
-        mStatusView = findViewById(R.id.status_view);
         final ViewPager viewPager2 = findViewById(R.id.viewpager2);
         ViewGroup.LayoutParams layoutParams2 = viewPager2.getLayoutParams();
         layoutParams2.height = Math.round(layoutParams2.height * mSettings.getBarHeight());
