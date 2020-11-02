@@ -129,16 +129,14 @@ def main_loop():
 # end main_loop
 
 def clean_up():
-    status_bar = []
     for n in range(0,len(status_scripts)):
         os.system('tel-delete-status ' + str(n))
 
-
-
-try:
-    main_loop()
-except Exception as e:
-    print(e.message, e.args)
-finally:
-    clean_up()
-    exit()
+if __name__ == "__main__":
+    try:
+        main_loop()
+    except Exception as e:
+        print(e.message, e.args)
+    finally:
+        clean_up()
+        exit()
