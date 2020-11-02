@@ -25,6 +25,7 @@ else
 fi
 if [ ! -z "$running" ] ; then
 	wasrunning='true'
+	~/.tel/scripts/status_manager/toggle_ui.sh
 	pkill -f 'status_manager.py'
 	apirunning='true'
 	while [ "$apirunning" = 'true' ] ;
