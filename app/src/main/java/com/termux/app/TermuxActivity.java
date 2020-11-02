@@ -37,6 +37,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
@@ -254,7 +255,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             if (session != null && session.getEmulator() != null) {
                 session.getEmulator().mColors.reset();
             }
-            updateBackgroundColor();
+            //updateBackgroundColor();
 
             final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
             mTerminalView.setTypeface(newTypeface);
@@ -283,13 +284,23 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     @Override
     public void onCreate(Bundle bundle) {
         mSettings = new TermuxPreferences(this);
-        mIsUsingBlackUI = mSettings.isUsingBlackUI();
-        if (mIsUsingBlackUI) {
-            this.setTheme(R.style.Theme_Termux_Black);
-        } else {
-            this.setTheme(R.style.Theme_Termux);
+        int blackTheme = R.style.Theme_Termux_Black;
+        int normalTheme = R.style.Theme_Termux;
+        if(mSettings.isUseSystemWallpaper() && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            blackTheme = R.style.Theme_Wallpaper_Black;
+            normalTheme = R.style.Theme_Wallpaper;
         }
 
+        mIsUsingBlackUI = mSettings.isUsingBlackUI();
+        if (mIsUsingBlackUI) {
+            this.setTheme(blackTheme);
+        } else {
+            this.setTheme(normalTheme);
+        }
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.setStatusBarColor(Color.parseColor(mSettings.getStatusBarColor()));
         super.onCreate(bundle);
         View view = View.inflate(this,R.layout.drawer_layout,null);
         setContentView(view);
@@ -422,16 +433,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             }
         });
 
-        if(mSettings.isUseSystemWallpaper() && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-            WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
-            view.setBackground(wallpaperManager.getDrawable());
-            mTerminalView.setBackgroundColor(Color.parseColor(mSettings.getTerminalBackground()));
-            mStatusView.setBackgroundColor(Color.parseColor(mSettings.getStatusBackground()));
-            int color = Color.parseColor(mSettings.getBarColor());
-            viewPager.setBackgroundColor(color);
-            viewPager2.setBackgroundColor(color);
-        }
-
+        int color = Color.parseColor(mSettings.getBarColor());
+        viewPager.setBackgroundColor(color);
+        viewPager2.setBackgroundColor(color);
+        getWindow().getDecorView().setBackgroundColor(Color.parseColor(mSettings.getBackgroundColor()));
 
 
         View newSessionButton = findViewById(R.id.new_session_button);
@@ -563,10 +568,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                 }
 
             }
-
-            @Override
+             @Override
             public void onColorsChanged(TerminalSession changedSession) {
-                if (getCurrentTermSession() == changedSession) updateBackgroundColor();
+                //if (getCurrentTermSession() == changedSession) updateBackgroundColor();
             }
         };
 
@@ -768,7 +772,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     void switchToSession(TerminalSession session) {
         if (mTerminalView.attachSession(session)) {
             noteSessionInfo();
-            updateBackgroundColor();
+            //updateBackgroundColor();
         }
     }
 

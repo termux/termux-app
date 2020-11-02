@@ -2,7 +2,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Theme.Termux" parent="@android:style/Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">#000000</item>
+        <item name="android:statusBarColor">#991f1f1f</item>
         <item name="android:colorPrimary">#FF000000</item>
         <item name="android:windowBackground">@android:color/black</item>
 
@@ -26,6 +26,20 @@
         <item name="android:colorAccent">#212121</item>
     </style>
 
+    <style name="Theme.Wallpaper" parent="Theme.Termux">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+    <style name="Theme.Wallpaper.Black" parent="Theme.Termux.Black">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
     <!-- See https://developer.android.com/training/material/theme.html for how to customize the Material theme. -->
     <!-- NOTE: Cannot use "Light." since it hides the terminal scrollbar on the default black background. -->
     <style name="Theme.Termux.Black" parent="@android:style/Theme.Material.NoActionBar">

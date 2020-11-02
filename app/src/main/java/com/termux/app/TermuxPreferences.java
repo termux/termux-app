@@ -91,12 +91,12 @@ final class TermuxPreferences {
     private ArrayList<String> defaultButtons;
 
     //ui
-    private String statusBackground;
-    private String terminalBackground;
     private boolean useSystemWallpaper;
     private float statusTextSize;
     private String statusTextColor;
     private String barColor;
+    private String backgroundColor;
+    private String statusBarColor;
     /**
      * If value is not in the range [min, max], set it to either min or max.
      */
@@ -200,12 +200,12 @@ final class TermuxPreferences {
     }
 
 
-    public String getStatusBackground(){return statusBackground;}
-    public String getTerminalBackground(){return terminalBackground;}
     public boolean isUseSystemWallpaper(){return useSystemWallpaper;}
     public float getStatusTextSize(){return statusTextSize;}
     public String getStatusTextColor(){return statusTextColor;}
     public String getBarColor(){return barColor; }
+    public String getBackgroundColor(){return backgroundColor;}
+    public String getStatusBarColor(){return statusBarColor;}
     void reloadFromProperties(Context context) {
 
         //UI Settings:
@@ -221,14 +221,14 @@ final class TermuxPreferences {
             Toast.makeText(context, "Could not open properties file ui.conf: " + e.getMessage(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
         }
-        statusBackground = uiProps.getProperty("status-background","#101f1f1f");
-        terminalBackground = uiProps.getProperty("terminal-background","#101f1f1f");
+        backgroundColor = uiProps.getProperty("background-color","#991f1f1f");
         useSystemWallpaper = "true".equals(uiProps.getProperty("use-system-wallpaper","false"));
         try{
             statusTextSize = Float.parseFloat(uiProps.getProperty("status-text-size","12"));
         }catch(Exception e){}
         statusTextColor = uiProps.getProperty("status-text-color","#c0b18b");
         barColor = uiProps.getProperty("bar-color","#1f1f1f");
+        statusBarColor = uiProps.getProperty("statusbar-color","#991f1f1f");
         //Suggestionbar Settings:
         File suggestionBarFile = new File(TermuxService.HOME_PATH+"/.tel/configs/suggestionbar.conf");
         Properties suggestionProps = new Properties();
