@@ -90,7 +90,7 @@ if [ "$UPDATE" == false ]; then #if first start detected
 	#cp -rf ~/../usr/tel/termux-url-opener ~/bin
 
 	# put thingies in actual location
-	cp -rTf ~/../usr/tel/* ~/
+	cp -rf ~/../usr/tel/. ~/
 	#cp -rTf ~/../usr/tel/.tel ~/.tel
 	#cp -rTf ~/../usr/tel/.termux ~/.termux
 	#cp -rf ~/../usr/tel/.config ~/
@@ -104,7 +104,7 @@ if [ "$UPDATE" == false ]; then #if first start detected
 else
 	log "Updating TEL..."
 	logf "Updating TEL..."
-	cp -rTf ~/../usr/tel/.tel/* ~/.tel
+	cp -rf ~/../usr/tel/.tel/. ~/.tel
 	#cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
 	#cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
 	#cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs #this should be compared with a diff tool
