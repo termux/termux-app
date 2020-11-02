@@ -1,0 +1,39 @@
+syntax "F#" "\.fs$" "\.fsx$"
+
+# Type and Module Definitions
+color brightgreen  "type +[A-Za-z0-9]+ *((:) +[A-Za-z0-9.]+)?"
+color brightgreen  "module +[A-Za-z0-9]+ *((:) +[A-Za-z0-9.]+)?"
+color brightmagenta  "\<(List|Seq|Array|Option|Choice|Map|list|seq|array|option|choice|ref|in|out)\>"
+color brightgreen    "<+[A-Za-z0-9'^]+ *((:) +[A-Za-z0-9'^.]+)?>"
+# Attributes
+color brightmagenta  "[<+[A-Za-z0-9]+ *((:) +[A-Za-z0-9.]+)?>]"
+
+# Annotation
+color magenta   "@[A-Za-z]+"
+
+# Basic Types
+color brightgreen     "\<(bool|byte|sbyte|int16|uint16|int|uint32|int64|uint64|char|decimal|double|float|float32|single|nativeint|IntPtr|unativeint|UIntPtr|object|string)\>"
+
+#  Keywords
+color cyan            "\<(abstract|and|let|as|assert|base|begin|class|default|delegate|do|for|to|in|while|done|downcast|downto|elif|if|then|else|end|exception|extern|false|finally|try|fixed|fun|function|match|global|inherit|inline|interface|internal|lazy|let!|match!|member|module|mutable|namespace|new|not|not struct|null|of|open|or|override|private|public|rec|return|return!|select|static|struct|true|with|type|upcast|use|use!|val|void|when|yield|yield!)\>"
+
+color red "[-+/*=<>?:!~%&|]"
+color blue   "\<([0-9._]+|0x[A-Fa-f0-9_]+|0b[0-1_]+)[FL]?\>"
+color magenta   "\\([btnfr]|'|\"|\\)"
+color magenta   "\\u[A-Fa-f0-9]{4}"
+# String
+color yellow ""(\\.|[^"])*""
+
+# Comments
+color brightblack "(^|[[:space:]])//.*"
+color brightblack start="^\s*/\*" end="\*/"
+color brightblack start="\(\*" end="\*\)"
+color brightwhite,cyan "TODO:?"
+
+color ,green "[[:space:]]+$"
+color ,red "    + +| +  +"
+
+color red "#if .+"
+color red "#endif"
+
+color white start="``" end="``"

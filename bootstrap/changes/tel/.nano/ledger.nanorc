@@ -1,0 +1,10 @@
+syntax "Ledger" "(^|\.|/)ledger|ldgr|beancount|bnct$"
+
+color brightmagenta  "^([0-9]{4}(/|-)[0-9]{2}(/|-)[0-9]{2}|[=~]) .*"
+color blue   "^[0-9]{4}(/|-)[0-9]{2}(/|-)[0-9]{2}"
+color brightyellow "^~ .*"
+color brightblue "^= .*"
+color cyan  "^[[:space:]]+(![[:space:]]+)?\(?[A-Za-z ]+(:[A-Za-z ]+)*\)?"
+color cyan  "^[[:space:]]+(![[:space:]]+)?\(?[A-Za-z_-]+(:[A-Za-z_-]+)*\)?"
+color red "[*!]"
+color brightblack  "^[[:space:]]*;.*"

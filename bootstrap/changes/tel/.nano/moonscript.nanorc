@@ -1,0 +1,54 @@
+#syntax highlighting for MoonScript
+#based on leafo/moonscript-vim
+
+syntax "MoonScript" "\.moon$"
+
+#statement
+color yellow "\<(return|break|continue)\>"
+#conditional
+color yellow "\<(if|else|elseif|then|switch|when|unless)\>"
+#keyword
+color yellow "\<(export|local|import|from|with|in|and|or|not|class|extends|super|using|do)\>"
+#repeat
+color yellow "\<(for|while)\>"
+#identifiers (lua 5.1 functions)
+color green "\<(assert|collectgarbage|dofile|error|next|print|rawget|rawset|tonumber|tostring)\>"
+color green "\<(type|_VERSION|_G|getfenv|getmetatable|ipairs|loadfile|loadstring|pairs)\>"
+color green "\<(pcall|rawequal|require|setfenv|setmetatable|unpack|xpcallload|module|select)\>"
+color green "package\.(cpath|loaded|loadlib|path|preload|seeall)"
+color green "coroutine\.(running|create|resume|status|wrap|yield)"
+color green "string\.(byte|char|dump|find|len|lower|rep|sub|upper|format|gsub|gmatch|match|reverse)"
+color green "table\.(maxn|concat|sort|insert|remove)"
+color green "math\.(abs|acos|asin|atan|atan2|ceil|sin|cos|tan|deg|exp|floor|log|log10|max|min|fmod|modf|cosh|sinh|tanh|pow|rad|sqrt|frexp|ldexp|random|randomseed|pi)"
+color green "io\.(stdin|stdout|stderr|close|flush|input|lines|open|output|popen|read|tmpfile|type|write)"
+color green "os\.(clock|date|difftime|execute|exit|getenv|remove|rename|setlocale|time|tmpname)"
+color green "debug\.(debug|gethook|getinfo|getlocal|getupvalue|setlocal|setupvalue|sethook|traceback|getfenv|getmetatable|getregistry|setfenv|setmetatable)"
+#operator
+color red "[-+=^*.<>&?%#@!:|\/\\]+"
+color red "(and=|or=)"
+#function
+color brightblue "(->|=>|\(|\)|\[|\]|\{|\}|!\s|!$)"
+#boolean
+color brightcyan "\<(true|false)\>"
+#special type
+color brightred "\<(nil)\>"
+#class-like name starting with a capital letter
+color green "\<[A-Z]\w*\>"
+#special variable
+color green "\<(self|self\.\w+)\>"
+color green "\B@@?\w*"
+#constant
+color brightgreen "\<[A-Z0-9_]+\>"
+#integer (incl. leading plus or minus)
+color brightmagenta "\<[-+]?[0-9]+\>"
+#float (incl. leading plus or minus)
+color brightmagenta "\<[-+]?[0-9]+\.[0-9]+\>"
+#hex number
+color brightmagenta "\<0[xX]\x+\>"
+#some common errors
+color green,red "(;$|[[:space:]]+$)"
+#string
+color brightyellow start="\"" end="\""
+color brightyellow start="\'" end="\'"
+#comment
+color blue "--.*"

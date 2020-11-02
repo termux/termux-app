@@ -1,0 +1,18 @@
+syntax "NMAP" "\.nmap$"
+
+color yellow "^Nmap scan report for.*"
+color brightwhite "^Not shown.*"
+color brightwhite "^Host is up.*"
+color brightwhite "^All.*"
+
+color yellow "^[0-9]+/(tcp|udp).*$"
+color cyan "^[0-9]+/(tcp|udp)"
+
+color brightgreen "(Host is )?(open|up)"
+color white "\(([0-9]+\.[0-9]+s latency)\)\."
+color brightyellow "filtered"
+color brightred "(Host is )?(All .* scanned ports on .*)?(^Not shown: [0-9]+ )?(closed|down)( ports)?"
+
+color magenta "^PORT *STATE *SERVICE"
+
+color brightblue "^#.*"

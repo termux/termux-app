@@ -1,0 +1,34 @@
+## Here is an example for Batch file shell script.
+## Author: davidhcefx (https://github.com/davidhcefx), based on Mitch Bumgarner's version.
+## License: MIT License
+
+syntax "batch" "\.(bat|cmd)$"
+header "^@[eE](cho|CHO) (on|off|ON|OFF)"
+comment "::"
+
+# Native commands, symbols, and comparisons.
+icolor green "\<(ASSOC|CALL|CD|CLS|CMDEXTVERSION|COLOR|COPY|DATE|DEL|DIR|ECHO|ENDLOCAL|ERASE|ERRORLEVEL|EXIT|FOR|FTYPE|GOTO|IF|MD|MKLINK|MOVE|PATH|PAUSE|POPD|PROMPT|PUSHD|RD|REM|REN|SET|SETLOCAL|SHIFT|START|TIME|TITLE|TYPE|VER|VERIFY|VOL)\>"
+icolor green "\<(EQU|NEQ|LSS|LEQ|GTR|GEQ|DEFINED|EXIST|NOT)\>"
+color  green "[:|<>=&@\\^]"
+
+# Options.
+color brightmagenta "[[:blank:]]/[A-Za-z]+\>"
+
+# Common commands. (with Sublime and Github highlighting as a reference)
+icolor brightblue "\<(APPEND|ARP|AT|ATTRIB|AUTOFAIL|BACKUP|BCDBOOT|BCDEDIT|BITSADMIN|BREAK|CACLS|CERTREQ|CERTUTIL|CHANGE|CHCP|CHDIR|CHKDSK|CHKNTFS|CHOICE|CIPHER|CleanMgr|CLIP|CMD|CMDKEY|COMP|COMPACT|CONVERT|CSVDE|DEFRAG|DELTREE|DevCon|DIRQUOTA|DISKCOMP|DISKCOPY|DISKPART|DISKSHADOW|DNSCMD|DOSKEY|DriverQuery|DSACLs|DSAdd|DSGet|DSQuery|DSMod|DSMove|DSRM|Dsmgmt|EVENTCREATE|EXPAND|EXPLORER|EXTRACT|FC|FIND|FINDSTR|FORFILES|FORMAT|FREEDISK|FSUTIL|FTP|GETMAC|GPRESULT|GPUPDATE|GRAFTABL|HELP|HOSTNAME|iCACLS|IEXPRESS|IPCONFIG|INUSE|KEYB|LABEL|LODCTR|LOGMAN|LOGOFF|MAKECAB|MKDIR|MODE|MORE|MOUNTVOL|MSG|MSIEXEC|MSINFO32|MSTSC|NET|NETDOM|NETSH|NBTSTAT|NETSTAT|NLTEST|NSLOOKUP|NTBACKUP|NTDSUtil|OPENFILES|PATHPING|PING|POWERCFG|PRINT|PRNCNFG|PRNMNGR|Query|RASDIAL|RASPHONE|RECOVER|REG|REGEDIT|REGSVR32|REGINI|RENAME|REPLACE|Reset|RESTORE|RMDIR|ROBOCOPY|ROUTE|RUNAS|RUNDLL32|SC|SCHTASKS|SetSPN|SETX|SFC|SHUTDOWN|SORT|SSH|SUBINACL|SUBST|SYSTEMINFO|TAKEOWN|TASKLIST|TASKKILL|TELNET|TIMEOUT|TRACERT|TREE|TSDISCON|TSKILL|TypePerf|TZUTIL|VSSADMIN|W32TM|WAITFOR|WBADMIN|WECUTIL|WEVTUTIL|WHERE|WHOAMI|WINRM|WINRS|WMIC|XCACLS|XCOPY)\>"
+
+# Variable names. (spaces not allowed)
+color brightred "%([[:alpha:]`~@#$*(){}:',.?+=_-]|\[|\])([[:alnum:]`~@#$*(){}:',.?+=_-]|\[|\])*%"
+color brightred "!([[:alnum:]`~@#$%*(){}:',.?+=_-]|\[|\])([[:alnum:]`~@#$%*(){}:',.?+=_-]|\[|\])*!"
+
+# Parameter names for arguments and loop.
+color brightred "%(~[[:alpha:]$]*)?[0-9*]\>" "%%(~[[:alpha:]$]*)?[[:alpha:]]\>"
+
+# Comments.
+icolor cyan "^[[:space:]]*(\<rem\>|::).*"
+
+# Strings.
+icolor brightyellow ""(\^.|[^"])*""
+
+# Trailling whitespace
+color ,green "[[:space:]]+$"

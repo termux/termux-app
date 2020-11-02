@@ -1,0 +1,33 @@
+## Cython nanorc, based off of Python nanorc.
+##
+syntax "Cython" "\.pyx$" "\.pxd$" "\.pyi$"
+icolor brightred "def [ 0-9A-Z_]+"
+icolor brightred "cpdef [0-9A-Z_]+\(.*\):"
+icolor brightred "cdef cppclass [ 0-9A-Z_]+\(.*\):"
+
+
+
+# Python Keyword Color
+color green "\<(and|as|assert|class|def|DEF|del|elif|ELIF|else|ELSE|except|exec|finally|for|from|global|if|IF|import|in|is|lambda|map|not|or|pass|print|raise|try|while|with|yield)\>"
+color brightmagenta "\<(continue|break|return)\>"
+
+# Cython Keyword Color
+color green "\<(cdef|cimport|cpdef|cppclass|ctypedef|extern|include|namespace|property|struct)\>"
+color red "\<(bint|char|double|int|public|void|unsigned)\>"
+
+#Operator Color
+color yellow "[.:;,+*|=!\%]" "<" ">" "/" "-" "&"
+
+#Parenthetical Color
+color magenta "[(){}]" "\[" "\]"
+
+#String Color
+color cyan "['][^']*[^\\][']" "[']{3}.*[^\\][']{3}"
+color cyan "["][^"]*[^\\]["]" "["]{3}.*[^\\]["]{3}"
+color cyan start=""""[^"]" end=""""" start="'''[^']" end="'''"
+
+# Comment Color
+color brightblue "#.*$"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

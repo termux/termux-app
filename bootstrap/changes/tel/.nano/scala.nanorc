@@ -1,0 +1,12 @@
+## Here is an example for Scala.
+##
+syntax "Scala" "\.(scala|sc|sbt)$"
+color green "\<(boolean|byte|char|double|float|int|long|new|short|this|transient|void)\>"
+color red "\<(match|val|var|break|case|catch|continue|default|do|else|finally|for|if|return|switch|throw|try|while)\>"
+color cyan "\<(def|object|case|trait|lazy|implicit|abstract|class|extends|final|implements|import|instanceof|interface|native|package|private|protected|public|static|strictfp|super|synchronized|throws|volatile|sealed)\>"
+color red ""[^"]*""
+color yellow "\<(true|false|null)\>"
+color blue "^\s*//.*"
+color blue start="^\s*/\*" end="\*/"
+color brightblue start="/\*\*" end="\*/"
+color ,green "[[:space:]]+$"

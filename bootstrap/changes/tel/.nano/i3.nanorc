@@ -1,0 +1,15 @@
+## Here is an example for i3 Window Manager config
+##
+syntax "i3" "i3/config"
+header "^(.*)i3 config file"
+
+color green "\<(case|do|done|elif|else|esac|exit|fi|for|function|if|in|local|read|return|select|shift|then|time|until|while)\>"
+color green "(\{|\}|\(|\)|\;|\]|\[|`|\\|\$|<|>|!|=|&|\|)"
+color green "-[Ldefgruwx]\>"
+color green "-(eq|ne|gt|lt|ge|le|s|n|z)\>"
+color brightblue "\<(cat|cd|chmod|chown|cp|echo|env|export|grep|install|let|ln|make|mkdir|mv|rm|sed|set|tar|touch|umask|unset)\>"
+icolor brightgreen "^\s+[0-9A-Z_]+\s+\(\)"
+icolor brightred "\$\{?[0-9A-Z_!@#$*?-]+\}?"
+color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"
+color cyan "(^|[[:space:]])#.*$"
+color ,green "[[:space:]]+$"

@@ -1,0 +1,15 @@
+## Here is an example for c-shell scripts.
+##
+syntax "CSH" "\.csh$" "\.tcshrc" "\.cshrc" "\.login" "\.logout" "\.history"
+header "^#!.*/(env +)?(t)?csh( |$)"
+
+color green "\<(break|breaksw|case|continue|default|else|end|endif|endsw|exec|exit|foreach|goto|if|repeat|shift|switch|then|while)\>"
+color green "(\{|\}|\(|\)|\;|\]|\[|`|\\|\$|<|>|!|=|&|\|)"
+color green "-[rfuMZwdgAUxlkebtAGoczpPsS]\>"
+color green "-(A\:|M\:|U\:|G\:)\>"
+color brightblue "\<(alias|bindkey|cat|cd|chmod|chown|complete|cp|echo|env|grep|install|ln|make|mkdir|mv|printenv|rm|sed|set|setenv|tar|touch|umask|unalias|uncomplete|unset|unsetenv)\>"
+icolor brightgreen "^\s+[0-9A-Z_]+\s+\(\)"
+icolor brightred "\$\{?[0-9A-Z_!@#$*?-]+\}?"
+color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"
+color cyan "(^|[[:space:]])#.*$"
+color ,green "[[:space:]]+$"

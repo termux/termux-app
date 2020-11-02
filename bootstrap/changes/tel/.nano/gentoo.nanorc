@@ -1,0 +1,52 @@
+## Here is an example for ebuilds/eclasses
+##
+syntax "Ebuild" "\.e(build|class)$"
+comment "#"
+
+## All the standard portage functions
+color brightgreen "^src_(unpack|compile|install|test)" "^pkg_(config|nofetch|setup|(pre|post)(inst|rm))"
+## Highlight bash related syntax
+color green "\<(case|do|done|elif|else|esac|exit|fi|for|function|if|in|local|read|return|select|shift|then|time|until|while|continue|break)\>"
+color green "(\{|\}|\(|\)|\;|\]|\[|`|\\|\$|<|>|!|=|&|\|)"
+color green "-(e|d|f|r|g|u|w|x|L)\>"
+color green "-(eq|ne|gt|lt|ge|le|s|n|z)\>"
+## Highlight variables ... official portage ones in red, all others in bright red
+color brightred "\$\{?[a-zA-Z_0-9]+\}?"
+color red "\<(ARCH|HOMEPAGE|DESCRIPTION|IUSE|SRC_URI|LICENSE|SLOT|KEYWORDS|FILESDIR|WORKDIR|(P|R)?DEPEND|PROVIDE|DISTDIR|RESTRICT|USERLAND)\>"
+color red "\<(S|D|T|PV|PF|P|PN|A)\>" "\<C(XX)?FLAGS\>" "\<LDFLAGS\>" "\<C(HOST|TARGET|BUILD)\>"
+## Highlight portage commands
+color magenta "\<use(_(with|enable))?\> [!a-zA-Z0-9_+ -]*" "inherit.*"
+color brightblue "\<e(begin|end|conf|install|make|warn|infon?|error|log|patch|new(group|user))\>"
+color brightblue "\<die\>" "\<use(_(with|enable))?\>" "\<inherit\>" "\<has\>" "\<(has|best)_version\>" "\<unpack\>"
+color brightblue "\<(do|new)(ins|s?bin|doc|lib(\.so|\.a)|man|info|exe|initd|confd|envd|pam|menu|icon)\>"
+color brightblue "\<do(python|sed|dir|hard|sym|html|jar|mo)\>" "\<keepdir\>"
+color brightblue "prepall(docs|info|man|strip)" "prep(info|lib|lib\.(so|a)|man|strip)"
+color brightblue "\<(doc|ins|exe)into\>" "\<f(owners|perms)\>" "\<(exe|ins|dir)opts\>"
+## Highlight common commands used in ebuilds
+color blue "\<make\>" "\<(cat|cd|chmod|chown|cp|echo|env|export|grep|let|ln|mkdir|mv|rm|sed|set|tar|touch|unset)\>"
+## Highlight comments (doesnt work that well)
+color yellow "#.*$"
+## Highlight strings (doesnt work that well)
+color brightyellow ""(\\.|[^\"])*"" "'(\\.|[^'])*'"
+## Trailing space is bad!
+color ,green "[[:space:]]+$"
+
+## Here is an example for Portage control files
+##
+syntax "etc-portage" "\.(keywords|mask|unmask|use)$"
+## Base text:
+color green "^.+$"
+## Use flags:
+color brightred "[[:space:]]+\+?[a-zA-Z0-9_-]+"
+color brightblue "[[:space:]]+-[a-zA-Z0-9_-]+"
+## Likely version numbers:
+color magenta "-[[:digit:]].*([[:space:]]|$)"
+## Accepted arches:
+color white "[~-]?\<(alpha|amd64|arm|hppa|ia64|mips|ppc|ppc64|s390|sh|sparc|x86|x86-fbsd)\>"
+color white "[[:space:]][~-]?\*"
+## Categories:
+color cyan "^[[:space:]]*.*/"
+## Masking regulators:
+color brightmagenta "^[[:space:]]*(=|~|<|<=|=<|>|>=|=>)"
+## Comments:
+color yellow "#.*$"

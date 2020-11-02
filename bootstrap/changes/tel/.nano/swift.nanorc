@@ -1,0 +1,64 @@
+##############################################################################
+# Swift syntax highlighting for Nano. v.1.1
+##############################################################################
+
+syntax "Swift" "\.swift$"
+
+# Default
+color white ".+"
+
+# Operators
+color yellow "[.:;,+*|=!?\%]" "<" ">" "/" "-" "&"
+color brightyellow "[!]"
+
+# Statements
+color magenta  "\<(class|import|let|var|struct|enum|func|if|else|switch|case|default|for|in|static|private|public|throws)\>"
+color magenta  "\<(lazy|get|set|self|willSet|didSet|override|super|convenience|weak|strong|mutating|return|guard)\>"
+color magenta  "\<(protocol|typealias|prefix|postfix|operator|extension|internal|external|unowned)\>"
+
+# Keywords
+color cyan "\<(print)\>"
+color magenta "\<(init)\>"
+
+# Attribute
+color red "(@+[a-zA-Z]+)"
+
+# Numbers / Decimal Literal 
+color blue "\<([0-9]+)\>"
+# Unicode Literal "U+"
+color blue "\<(U\++[0-9A-Z]+)\>"
+# Binary Literal "0b"
+color blue "\<(0b+[0-1]+)\>"
+# Octal Literal "0o"
+color blue "\<(0o+[0-7]+)\>"
+# Hexadecimal Literal "0x"
+color blue "\<(0x+[0-9A-Fa-f]+)\>"
+
+# Standard Types
+color brightmagenta "\<((U)?Int(8|16|32|64))\>"
+color brightmagenta "\<(true|false|nil)\>"
+color brightmagenta "\<(UInt|Int|Double|String|Float|Bool|Dictionary|Array|Character|Range|Set|Bit|RawByte|Slice)\>"
+color brightmagenta "\<(UnicodeScalar|UnsafePointer|UnsafeMutablePointer)\>"
+color magenta "\<(AnyObject)\>"
+
+# Standard Type Aliases and Protocols
+color magenta "\<(AnyObject|AnyClass|GeneratorType|AnyGenerator|Element|Optional|Mirror)\>"
+color magenta "\<(UnicodeScalarType|IntMax|UIntMax|Void|Any|Comparable|Equatable|Hashable|SequenceType)\>"
+
+# Standard Libraries
+color cyan "\<(Foundation|Glibc|Darwin|XCTest)\>"
+
+# Text
+color red ""[^"]*""
+
+# Variable in Text
+color white start="\\\(" end="\)"
+
+# Comments
+color green "^\s*//.*"
+color brightgreen "^\s*///.*"
+color green start="/\*\*" end="\*/"
+color green "[/**]"
+
+# Trailing whitespace
+color ,green "[[:space:]]+$"

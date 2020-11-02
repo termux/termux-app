@@ -1,0 +1,23 @@
+syntax "groovy" "\.(groovy|gradle)$"
+
+# Keywords
+color brightblue "\<(boolean|byte|char|double|enum|float|int|long|new|short|super|this|transient)\>"
+color brightblue "\<(as|assert|break|case|catch|continue|default|do|else|finally|for|goto|if|in|return|switch|throw|try|while)\>"
+color brightblue "\<(abstract|class|extends|implements|import|interface|native|package|private|protected|public|static|strictfp|synchronized|throws|trait|void|volatile)\>"
+color brightblue "\<(const|def|final|instanceof)\>"
+color brightblue "\<(true|false|null)\>"
+
+# Strings
+color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"
+
+# Interpolation
+icolor yellow "\$\{[^\}]*}"
+
+# Comments
+color cyan "^//.*"
+color cyan "\s//.*"
+color cyan start="^/\*(\*)?" end="\*/"
+color cyan start="\s/\*(\*)?" end="\*/"
+
+# Trailing whitespace
+color ,green "[[:space:]]+$"

@@ -1,0 +1,8 @@
+syntax "DOT" "\.(dot|gv)$"
+
+color cyan   "\<(digraph|edge|graph|node|subgraph)\>"
+color magenta "\<(arrowhead|arrowsize|arrowtail|bgcolor|center|color|constraint|decorateP|dir|distortion|fillcolor|fontcolor|fontname|fontsize|headclip|headlabel|height|labelangle|labeldistance|labelfontcolor|labelfontname|labelfontsize|label|layers|layer|margin|mclimit|minlen|name|nodesep|nslimit|ordering|orientation|pagedir|page|peripheries|port_label_distance|rankdir|ranksep|rank|ratio|regular|rotate|samehead|sametail|shapefile|shape|sides|size|skew|style|tailclip|taillabel|URL|weight|width)\>"
+color red  "=|->|--"
+color yellow ""(\\.|[^"])*"|'(\\.|[^'])*'"
+color brightblack "(^|[[:space:]])//.*"
+color brightblack start="^\s*/\*" end="\*/"

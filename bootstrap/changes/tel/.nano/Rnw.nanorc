@@ -1,0 +1,39 @@
+## Here is a short example for TeX files.
+##
+syntax "Tex" "\.Rnw$" "bib" "\.bib$" "cls" "\.cls$"
+color yellow "\$(\\\$|[^$])*[^\\]\$"
+color yellow "\$\$(\\\$|[^$])*[^\\]\$\$"
+icolor green "\\.|\\[A-Z]*"
+color magenta "[{}]"
+color red start="<<" end=">>="
+color white start=">>=" end="@"
+
+color brightblue "%.*"
+color brightblue "^[[:space:]]*#.*"
+color brightblue start="\\begin\{comment\}" end="\\end\{comment\}"
+
+color green "(class|extends|goto) ([a-zA-Z0-9_]*)"
+color green "[^a-z0-9_-]{1}(var|class|function|echo|case|break|default|exit|switch|if|else|elseif|endif|foreach|endforeach|@|while|public|private|protected|return|true|false|null|TRUE|FALSE|NULL|const|static|extends|as|array|require|include|require_once|include_once|define|do|continue|declare|goto|print|in|namespace|use)[^a-z0-9_-]{1}"
+
+# Functions
+color blue "([a-zA-Z0-9_\-$\.]*)\("
+
+# Variables
+color magenta "[a-zA-Z_0-9]* <\-"
+# Special Characters
+color yellow "[.,{}();]"
+color yellow "\["
+color yellow "\]"
+color yellow "[=][^>]"
+# Numbers
+color magenta "[+-]*([0-9]\.)*[0-9]+([eE][+-]?([0-9]\.)*[0-9])*"
+color magenta "0x[0-9a-zA-Z]*"
+# Special Variables
+color blue "(\$this|parent::|self::|\$this->)"
+# Bitwise Operations
+color magenta "(\;|\||\^){1}"
+# And/Or/SRO/etc
+color green "(\;\;|\|\||::|=>|->)"
+# STRINGS!
+color red "('[^']*')|(\"[^\"]*\")"
+

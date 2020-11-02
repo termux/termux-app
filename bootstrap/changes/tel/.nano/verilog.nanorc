@@ -1,0 +1,84 @@
+## (System)Verilog syntax highlighting.
+
+# See http://savannah.gnu.org/patch/?9356
+# From bc2635d9c8dcf6a71e834582501546fac6bdbfff Mon Sep 17 00:00:00 2001
+# From: Ben Rosser <rosser.bjr@gmail.com>
+# Date: Tue, 23 May 2017 17:43:15 -0400
+# Subject: [PATCH] Add Verilog nanorc file for syntax highlighting
+
+# This adds a verilog.nanorc file for syntax highlighting of Verilog
+# and SystemVerilog code. It is based off of the nanorc files for
+# Python and C.
+
+# All keywords in both Verilog (*.v, *.vh) and SystemVerilog (*.sv,
+# *.svh) are listed. Compiler directives (commands beginning with a
+# backtick) and builtin functions are also colorized.
+
+# Possibly the color scheme could use some work, but this is at least
+# a starting point. I based verilog.nanorc off of c.nanorc and
+# python.nanorc.
+
+syntax "verilog" "\.(v|vh|sv|svh)$"
+
+# I don't think we want this.
+#color brightred "\<[A-Z_][0-9A-Z_]+\>"
+
+# Module, package, etc. definitions: colorize their names.
+# (I'm not sure if brightred is a good color).
+icolor brightred "(module|package|task|interface|program|class) [0-9A-Z_]+"
+icolor brightred "function [0-9A-Z_]+ [0-9A-Z_]+"
+
+# Verilog keywords, taken from http://svref.renerta.com/sv00003.htm.
+color green "\<(always|and|assign|automatic|begin|buf|bufif0|bufif1|case|casex|casez|cell|class|cmos|config)\>"
+color green "\<(deassign|default|defparam|design|disable|edge|else|end|endcase|endconfig|endfunction|endgenerate)\>"
+color green "\<(endmodule|endprimitive|endspecify|endtable|endtask|event|for|force|forever|fork|function|generate)\>"
+color green "\<(genvar|highz0|highz1|if|iff|ifnone|incdir|include|initial|inout|input|instance|integer|join)\>"
+color green "\<(large|liblist|library|localparam|macromodule|medium|module|nand|negedge|nmos|nor|noshowcancelled)\>"
+color green "\<(not|notif0|notif1|null|or|output|parameter|pmos|posedge|primitive|pull0|pull1|pulldown|pullup)\>"
+color green "\<(pulsestyle_onevent|pulsestyle_ondetect|rcmos|real|realtime|reg|release|repeat|rnmos|rpmos|rtran)\>"
+color green "\<(rtranif0|rtranif1|scalared|showcancelled|signed|small|specify|specparam|strong0|strong1|supply0)\>"
+color green "\<(supply1|table|task|time|tran|tranif0|tranif1|tri|tri0|tri1|triand|trior|trireg|unsigned|use|uwire)\>"
+color green "\<(vectored|wait|wand|weak0|weak1|while|wire|wor|xnor|xor)\>"
+
+# System Verilog keywords, taken from same source.
+color green "\<(alias|always_comb|always_ff|always_latch|assert|assume|before|bind|bins|binsof|bit|break|byte)\>"
+color green "\<(chandle|clocking|const|constraint|context|continue|cover|covergroup|coverpoint|cross|dist|do)\>"
+color green "\<(endclass|endclocking|endgroup|endinterface|endpackage|endprogram|endproperty|endsequence|enum)\>"
+color green "\<(expect|export|extends|extern|final|first_match|foreach|forkjoin|ignore_bins|illegal_bins|import)\>"
+color green "\<(inside|int|interface|intersect|join_any|join_none|local|logic|longint|matches|modport|new|package)\>"
+color green "\<(packed|priority|program|property|protected|pure|rand|randc|randcase|randsequence|ref|return)\>"
+color green "\<(sequence|shortint|shortreal|solve|static|string|struct|super|tagged|this|throughout|timeprecision)\>"
+color green "\<(timeunit|type|typedef|union|unique|var|virtual|void|wait_order|wildcard|with|within)\>"
+
+# We need to go through these and decide if everything should be the same color, and remove extra things from C.
+# I don't think this is wanted.
+#color green "\<((s?size)|((u_?)?int(8|16|32|64|ptr)))_t\>"
+
+# Builtin function names (e.g. $display).
+icolor cyan "\$[0-9A-Z_]+"
+
+# Macros. Here are some of the standard ones, as per http://verilog.renerta.com/source/vrg00008.htm.
+#color cyan "^[[:space:]]*`[[:space:]]*(define|include(_next)?|timescale|(un|ifn?)def|endif|el(sif|se)|if|resetall)"
+#color cyan "^[[:space:]]*`[[:space:]]*(celldefine|endcelldefine|default_nettype|unconnected_drive|nounconnected_drive)"
+# This isn't complete and it may be better to just colorize `(string), like so:
+icolor cyan "^[[:space:]]*`[0-9A-Z_]+"
+
+# I'm not sure what this line does... it was in c.nanorc.
+#color brightmagenta "'([^'\]|(\\["'abfnrtv\\]))'" "'\\(([0-3]?[0-7]{1,2}))'" "'\\x[0-9A-Fa-f]{1,2}'"
+
+# Strings.  In general you will want your strings and comments to come last,
+# because highlighting rules are applied in the order they are read in.
+color brightyellow ""([^"]|\\")*"" "<[^[:blank:]=]*>"
+# Multiline strings.  This regex is VERY resource intensive,
+# and sometimes colours things that shouldn't be coloured.
+###color brightyellow start=""(\\.|[^"])*\\[[:space:]]*$" end="^(\\.|[^"])*""
+
+# Comments.
+color brightblue "^\s*//.*"
+color brightblue start="/\*" end="\*/"
+
+# Reminders.
+color ,yellow "\<(FIXME|TODO|XXX)\>"
+
+# Trailing whitespace.
+color ,green "[[:space:]]+$"

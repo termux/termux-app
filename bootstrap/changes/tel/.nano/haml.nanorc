@@ -1,0 +1,18 @@
+syntax "Haml" "\.haml$"
+
+color cyan   "-|="
+color white "->|=>"
+icolor cyan "([  ]|^)%[0-9A-Z_]+\>"
+icolor magenta ":[0-9A-Z_]+\>"
+icolor yellow "\.[A-Z_]+\>"
+## Double quote & single quote
+color green ""([^"]|(\\"))*"" "%[QW]?\{[^}]*\}" "%[QW]?\([^)]*\)" "%[QW]?<[^>]*>" "%[QW]?\$[^$]*\$" "%[QW]?\^[^^]*\^" "%[QW]?![^!]*!"
+color green "'([^']|(\\'))*'" "%[qw]\{[^}]*\}" "%[qw]\([^)]*\)" "%[qw]<[^>]*>" "%[qw]\[[^]]*\]" "%[qw]\$[^$]*\$" "%[qw]\^[^^]*\^" "%[qw]![^!]*!"
+## Vars
+color brightgreen  "#\{[^}]*\}"
+color brightblue "(@|@@)[0-9A-Z_a-z]+"
+## Comments
+color brightcyan "#[^{].*$" "#$"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

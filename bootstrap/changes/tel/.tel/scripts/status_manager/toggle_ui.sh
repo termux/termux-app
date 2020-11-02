@@ -6,11 +6,20 @@ if [ -z "$running" ] ; then
 	#tmux new-window -n 'StatusManager' 'python ~/.tel/scripts/status_manager/status_manager.py'
 	#tmux new-session -d -s 'status' -n 'StatusManager'
 	#tmux run-shell -t 1 -b 'python ~/.tel/scripts/status_manager/status_manager.py'
-	nohup ~/.tel/scripts/status_manager/status_manager.py > 2>&1 & 
+	nohup ~/.tel/scripts/status_manager/status_manager.py > /dev/null 2>&1 & 
 	#tmux join-pane -d -b -s 'StatusManager' -t 1.top #for each pane trigger joining of status pane
 	#tmux rename-window -t 1 $NAME 			# rename after spawn for uniqueness
 	#tmux select-pane -t $NAME.top -d	#disable input to status manager window
 else
-	kill -QUIT "$(pgrep -f 'status_manager.py')"
+	#dosum=0
+	#count=0
+	#for file in ~/.tel/status/
+	#do
+        #	count=$((count + 1))
+		
+	#done
+	
+	kill "$(pgrep -f 'status_manager.py')"
 	pkill -f 'termux-api' 
+	tel-delete-status -1
 fi

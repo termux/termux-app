@@ -1,0 +1,61 @@
+## PHP Syntax Highlighting
+syntax "PHP" "\.php[2345s~]?$|\.module$"
+magic "PHP script"
+comment "//"
+color white start="<\?(php|=)?" end="\?>"
+# Constructs
+color brightblue "(class|extends|goto) ([a-zA-Z0-9_]*)"
+color brightblue "[^a-z0-9_-]{1}(var|class|function|echo|case|break|default|exit|switch|if|else|elseif|endif|foreach|endforeach|@|while|public|private|protected|return|true|false|null|TRUE|FALSE|NULL|const|static|extends|as|array|require|include|require_once|include_once|define|do|continue|declare|goto|print|in|namespace|use)[^a-z0-9_-]{1}"
+color brightblue "[a-zA-Z0-9_]+:"
+# Variables
+color green "\$[a-zA-Z_0-9$]*|[=!<>]"
+color green "\->[a-zA-Z_0-9$]*|[=!<>]"
+# Functions
+color brightblue "([a-zA-Z0-9_-]*)\("
+# Special values
+color brightmagenta "[^a-z0-9_-]{1}(true|false|null|TRUE|FALSE|NULL)$"
+color brightmagenta "[^a-z0-9_-]{1}(true|false|null|TRUE|FALSE|NULL)[^a-z0-9_-]{1}"
+# Special Characters
+color yellow "[.,{}();]"
+color cyan "\["
+color cyan "\]"
+# Numbers
+color magenta "[+-]*([0-9]\.)*[0-9]+([eE][+-]?([0-9]\.)*[0-9])*"
+color magenta "0x[0-9a-zA-Z]*"
+# Special Variables
+color brightblue "(\$this|parent::|self::|\$this->)"
+color magenta ";"
+# Comparison operators
+color yellow "(<|>)"
+# Assignment operator
+color brightblue "="
+# Bitwise Operations
+color magenta "(&|\||\^)"
+color magenta "(<<|>>)"
+# Comparison operators
+color yellow "(==|===|!=|<>|!==|<=|>=|<=>)"
+# Logical Operators
+color yellow "( and | or | xor |!|&&|\|\|)"
+# And/Or/SRO/etc
+color cyan "(\;\;|\|\||::|=>|->)"
+# Double quoted STRINGS!
+color red "(\"[^\"]*\")"
+# Heredoc (typically ends with a semicolon).
+color red start="<<<['\"]?[A-Z][A-Z0-9_]*['\"]?" end="^[A-Z][A-Z0-9_]*;"
+# Inline Variables
+color white "\{\$[^}]*\}"
+# Single quoted string
+color red "('[^']*')"
+# Online Comments
+color brightyellow "^(#.*|//.*)$"
+color brightyellow "[	| ](#.*|//.*)$"
+# PHP Tags
+color red "(<\?(php)?|\?>)"
+# General HTML
+color red start="\?>" end="<\?(php|=)?"
+# trailing whitespace
+color ,green "[[:space:]]+$"
+# multi-line comments
+color brightyellow start="/\*" end="\*/"
+# Nowdoc
+color red start="<<<'[A-Z][A-Z0-9_]*'" end="^[A-Z][A-Z0-9_]*;"

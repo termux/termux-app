@@ -1,0 +1,35 @@
+## Here is a prolog example.
+
+syntax "prolog" "\.pl"
+comment "%"
+
+# Reset everything
+color normal ".*"
+
+# Integers and floats
+color yellow "(^| |=)[0-9]+\.?[0-9]*"
+
+# Variables
+color red "(^|[[:blank:]]|\(|,)[A-Z]+"
+color red "(^|[[:blank:]]|\(|,)_[0-9a-zA-Z_]+($|[[:blank:]]|,|\))"
+
+# Anonymous variable '_'
+color yellow "(^|[[:blank:]]|\(|,)_($|[[:blank:]]|,|\))"
+
+# Functions
+color cyan "(^|[[:blank:]])\w+\("
+color normal "\(|\)|\[|\]|,|=|\\="
+
+# Atoms
+color green start="\"" end="\""
+color green start="'" end="'"
+
+# Comments
+color white "(^|[[:blank:]])%.*$"
+color white start="^\s*/\*" end="\*/"
+
+# Reminders
+color black,yellow "(BUG|DEBUG|FIXME|IDEA|NOTE|REVIEW|TEMP|TODO|WARNING|XXX)"
+
+# Spaces in front of tabs
+color ,red " +	+"

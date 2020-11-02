@@ -44,7 +44,10 @@ else #download required packages if first start detected
 	log "Installing required packages.."
 	log "This may take a while..."
         logf "Starting installation"
-	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh python neofetch git make figlet ncurses-utils termux-api sed util-linux -y 2>&1)" #removed jq
+	catch "$(pkg install fzf sl cowsay openssh tree bc fd curl wget nano tmux zsh neofetch git make figlet ncurses-utils termux-api sed util-linux -y 2>&1)" #removed jq
+	log "Installing python"
+	logf "Installing python"
+	catch "$(pkg install python -y 2>&1)" #removed jq
 	log "Installing python package manager"
 	catch "$(curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py 2>&1)"
         catch "$(python get-pip.py 2>&1)"
@@ -64,7 +67,6 @@ mkdir -p ~/.termux
 mkdir -p ~/.tel
 mkdir -p ~/.config
 mkdir -p ~/bin
-touch ~/.zsh_history #start new history if not exist
 
 if [ "$UPDATE" == false ]; then #if first start detected
 	# # # # ZSH setup # # #
@@ -84,30 +86,35 @@ if [ "$UPDATE" == false ]; then #if first start detected
 	log "Installing TEL..." #todo: optimize this
 	logf "Installing TEL..."
 
-	cp -rf ~/../usr/tel/termux-file-editor ~/bin
-	cp -rf ~/../usr/tel/termux-url-opener ~/bin
-	cp -rTf ~/../usr/tel/.tel ~/.tel
-	cp -rf ~/../usr/tel/.config ~/
-	cp -rTf ~/../usr/tel/.termux ~/.termux
-	cp -rf ~/../usr/tel/.aliases ~/
-	cp -rf ~/../usr/tel/.envvar ~/
-	cp -rf ~/../usr/tel/.tmux.conf ~/
-	cp -rf ~/../usr/tel/.zlogin ~/
-	cp -rf ~/../usr/tel/.vimrc ~/
+	#cp -rf ~/../usr/tel/termux-file-editor ~/bin
+	#cp -rf ~/../usr/tel/termux-url-opener ~/bin
+
+	# put thingies in actual location
+	cp -rf ~/../usr/tel/. ~/
+	#cp -rTf ~/../usr/tel/.tel ~/.tel
+	#cp -rTf ~/../usr/tel/.termux ~/.termux
+	#cp -rf ~/../usr/tel/.config ~/
+	#cp -rf ~/../usr/tel/.nano ~/
+	#cp -rf ~/../usr/tel/.aliases ~/
+	#cp -rf ~/../usr/tel/.envvar ~/
+	#cp -rf ~/../usr/tel/.tmux.conf ~/
+	#cp -rf ~/../usr/tel/.zlogin ~/
+	#cp -rf ~/../usr/tel/.nanorc ~/
 
 else
 	log "Updating TEL..."
 	logf "Updating TEL..."
-	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
-	cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
-	cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs #this should be compared with a diff tool
-	cp -rTf ~/../usr/tel/.tel/status ~/.tel/status
-	cp -rTf ~/../usr/tel/.tel/resources ~/.tel/resources
-	cp -rTf ~/../usr/tel/.tel/tutorials ~/.tel/tutorials
+	cp -rf ~/../usr/tel/.tel/. ~/.tel
+	#cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
+	#cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
+	#cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs #this should be compared with a diff tool
+	#cp -rf ~/../usr/tel/.tel/status/* ~/.tel/status/
+	#cp -rf ~/../usr/tel/.tel/resources/* ~/.tel/resources/
+	#cp -rTf ~/../usr/tel/.tel/tutorials ~/.tel/tutorials
 fi
 
-
 log "Updating permissions..."
+logf "Updating permissions..."
 chmod +x ~/.tel/extras/*
 chmod +x ~/.tel/status/*
 chmod +x ~/.tel/scripts/*
@@ -115,10 +122,7 @@ chmod +x ~/.tel/scripts/status_manager/*
 chmod +x ~/.tel/tutorials/*
 chmod +x ~/.tel/bin/*
 chmod +x ~/bin/* # scripts that receive files and urls shared to TEL
-chmod +x ~/../usr/bin/tel-setup
-chmod +x ~/../usr/bin/tel-restart
-chmod +x ~/../usr/bin/tel-status
-chmod +x ~/../usr/bin/delete-status
+chmod +x ~/../usr/bin/*
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
@@ -126,12 +130,12 @@ fi
 
 if [ "$UPDATE" = false ]; then
 	touch ~/.tel/.installed #mark setup finished
-        log "installation finished"
+        log "Installation Complete"
 else
-        log "update finished"
+        log "Update Complete"
 fi
-logf "finished"
-error "app will restart in 3 seconds!"
+logf "Complete"
+log "app will restart in 3 seconds!"
 sleep 3
 tel-restart
 error 'Restart cannot be performed automatically when app is not active'

@@ -1,0 +1,21 @@
+## syntax highlighting for gemini:// markup language
+
+syntax gemini "\.(gemini|gmi)$"
+
+# Heading levels
+color brightgreen "^#.*"
+color brightcyan "^##.*"
+color brightmagenta "^###.*"
+
+# Link Text
+color brightred "^=>\s*\S+\s+.*"
+# Link URL
+color green "^=>\s*\S+"
+# Link Prefix
+color yellow "^=>"
+
+# Bullet Lists
+color brightblue "^\*.*"
+
+# Monospaced Blocks
+color white,black start="^```" end="^```"

@@ -1,0 +1,172 @@
+## Sytax highlighting for nano and pico for X11-Basic. (c) Markus Hoffmann 2019
+
+# This file is part of X11-Basic, the basic interpreter for Unix/X
+# ======================================================================
+# X11-Basic is free software and comes with NO WARRANTY - read the file
+# COPYING for details
+
+syntax "x11basic" "\.(bas|xbas|LST|BAS)$"
+
+# Variable names
+
+icolor brightwhite "\<[A-Z_][A-Za-z0-9_]*(|\$|\%|\&|\||\(\))\>"
+
+# system vars
+icolor cyan "\<(CCSAPLID|CCSERR|COLS|CRSCOL|CRSLIN|CTIMER|ERR|FALSE)\>"
+icolor cyan "\<(GPS_ALT|GPS_LAT|GPS_LON|MOUSEK|MOUSES|MOUSEX|MOUSEY)\>"
+icolor cyan "\<(PC|PI|ROWS|SP|STIMER|TIMER|TRUE)\>"
+
+# system string vars
+icolor cyan "\<(DATE|FILEEVENT|INKEY|TERMINALNAME|TIME|TRACE)\$"
+
+#special system vars
+icolor cyan "\<(ANDROID|GPIO|GPS|SENSOR|WIN32|UNIX)\?"
+
+
+# system array vars
+
+# regular functions
+
+icolor green "\<(ABS|ACOS|ACOSH|ADD|AND|ARG|ARRPTR|ASC|ASIN|ASINH|ATAN|ATANH|ATN)\("
+icolor green "\<(BCHG|BCLR|BSET|BTST|BYTE)\("
+icolor green "\<(CALL|CALLD|CARD|CBRT|CEIL|COLOR_RGB|COMBIN|CONJ|COS|COSH|CRC|CVD|CVF|CVI|CVL|CVS)\("
+icolor green "\<(DEG|DET|DEVICE|DIV|DPEEK)\("
+icolor green "\<(EOF|EVAL|EVEN|EXEC|EXIST|EXP|EXPM1)\("
+icolor green "\<(FACT|FIX|FLOOR|FORK|FORM_ALERT|FORM_CENTER|FORM_DIAL|FORM_DO|FRAC|FREEFILE)\("
+icolor green "\<(GAMMA|GASDEV|GCD|GET_COLOR|GLOB|GPIO|GRAY)\("
+icolor green "\<(HYPOT)\("
+icolor green "\<(IMAG|INODE|INP|INSTR|INT|INVERT|IOCTL)\("
+icolor green "\<(JULIAN)\("
+icolor green "\<(LCM|LEN|LGAMMA|LISTSELECT|LN|LOC|LOF|LOG|LOG10|LOG1P|LOGB|LPEEK|LTEXTLEN)\("
+icolor green "\<(MALLOC|MAX|MIN|MOD|MODE|MSHRINK|MUL)\("
+icolor green "\<(NEXTPRIME|NLINK|NOT)\("
+icolor green "\<(OBJC_DRAW|OBJC_FIND|OBJC_OFFSET|ODD|OR)\("
+icolor green "\<(PEEK|POINT|POWM|PRED|PTST)\("
+icolor green "\<(RAD|RAND|RANDOM|REAL|REALLOC|RINSTR|RND|ROL|ROOT|ROR|ROUND|RSRC_GADDR)\("
+icolor green "\<(SENSOR|SGN|SHL|SHM_ATTACH|SHM_MALLOC|SHR|SIN|SINH|SIZE|SQR|SQRT|SRAND|SUB|SUCC|SWAP|SYM_ADR)\("
+icolor green "\<(TALLY|TAN|TANH|TRUNC)\("
+icolor green "\<(UBOUND)\("
+icolor green "\<(VAL|VARIAT|VARPTR|VRFY)\("
+icolor green "\<(WORD|WORT_SEP)\("
+icolor green "\<(XOR)\("
+
+# question functions
+icolor green "\<(DIM|EVENT|INP|TYP|VAL)\?\("
+
+# special functions
+
+icolor green "\<(INP)\%\("
+icolor green "\<(INP)\&\("
+
+
+
+# string functions
+icolor green "\<(ARID|ARIE)\$\("
+icolor green "\<(BIN|BWTD|BWTE)\$\("
+icolor green "\<(CALL|CHR|COMPRESS)\$\("
+icolor green "\<(DECLOSE|DECRYPT|DIR)\$\("
+icolor green "\<(ENCLOSE|ENCRYPT|ENV|ERR)\$\("
+icolor green "\<(FSFIRST|FSNEXT)\$\("
+icolor green "\<(HASH|HEX)\$\("
+icolor green "\<(INLINE|INPUT)\$\("
+icolor green "\<(JULDATE)\$\("
+icolor green "\<(LEFT|LEFTOF|LINEINPUT|LOWER)\$\("
+icolor green "\<(MID|MKA|MKD|MKF|MKI|MKL|MKS|MTFD|MTFE)\$\("
+icolor green "\<(OCT)\$\("
+icolor green "\<(PARAM|PNGDECODE|PNGENCODE|PRG)\$\("
+icolor green "\<(REPLACE|REVERSE|RADIX|RIGHT|RIGHTOF|RLD|RLE)\$\("
+icolor green "\<(SIGN|SPACE|STR|STRING|SYSTEM)\$\("
+icolor green "\<(TERMINALNAME|TRIM)\$\("
+icolor green "\<(UCASE|UNCOMPRESS|UNIXDATE|UNIXTIME|UPPER|USING)\$\("
+icolor green "\<(WORD)\$\("
+icolor green "\<(XTRIM)\$\("
+
+# array functions
+
+icolor green "\<(0|1|CONVOLUT|CVA|FFT|INV|SMUL|SOLVE|TRANS)\("
+
+
+
+# special commands
+
+icolor brightmagenta "(^|^[[:space:]]*)(DIM|LOCAL|LET)\>"
+icolor cyan "(^|^[[:space:]]*)DATA.*$"
+
+icolor red "(^|^[[:space:]]*)ENDFUNCTION\>"
+icolor red "(^|^[[:space:]]*)(RETURN|BREAK|CONTINUE|EXIT\ IF)\>"
+icolor red "(^|^[[:space:]]*)(FUNCTION|PROCEDURE|DEFFN)\>"
+
+icolor blue "(^|^[[:space:]]*)(endselect|select|default|endif|else\ if|else|case|do|loop|next|for|if|while|wend|repeat|until|goto|gosub|spawn|void)\>"
+icolor brightred "(^|^[[:space:]]*)(END|QUIT|STOP|TRON|TROFF|ECHO|EDIT|NEW|RUN)\>"
+
+
+# regular commands
+
+icolor brightgreen "(^|^[[:space:]]*)(ABSOLUTE|ADD|AFTER|ALERT|ARRAYCOPY|ARRAYFILL)\>"
+icolor brightgreen "(^|^[[:space:]]*)(BEEP|BELL|BGET|BLOAD|BMOVE|BOTTOMW|BOUNDARY|BOX|BPUT|BSAVE)\>"
+icolor brightgreen "(^|^[[:space:]]*)(CALL|CHAIN|CHDIR|CHMOD|CIRCLE|CLEAR|CLEARW|CLIP|CLOSE|CLOSEW|CLR|CLS|COLOR|CONNECT|COPYAREA|CURVE)\>"
+icolor brightgreen "(^|^[[:space:]]*)(DEC|DEFFILL|DEFLINE|DEFMARK|DEFMOUSE|DEFTEXT|DELAY|DIV|DPOKE|DRAW|DUMP)\>"
+icolor brightgreen "(^|^[[:space:]]*)(ELLIPSE|ERASE|ERROR|EVAL|EVENT|EVERY|EXEC)\>"
+icolor brightgreen "(^|^[[:space:]]*)(FFT|FILESELECT|FILL|FIT|FIT_LINEAR|FIT_POLY|FLUSH|FREE|FULLW)\>"
+icolor brightgreen "(^|^[[:space:]]*)(GET|GET_GEOMETRY|GET_LOCATION|GET_SCREENSIZE|GPIO|GPRINT|GPS|GRAPHMODE)\>"
+icolor brightgreen "(^|^[[:space:]]*)(HELP|HIDEK|HIDEM|HOME)\>"
+icolor brightgreen "(^|^[[:space:]]*)(INC|INFOW|INPUT)\>"
+icolor brightgreen "(^|^[[:space:]]*)(KEYEVENT|KILL)\>"
+icolor brightgreen "(^|^[[:space:]]*)(LINE|LINEINPUT|LINK|LIST|LOAD|LOCATE|LPOKE|LTEXT)\>"
+icolor brightgreen "(^|^[[:space:]]*)(MEMDUMP|MENU|MENUDEF|MENUKILL|MENUSET|MERGE|MFREE|MKDIR|MOUSE|MOUSEEVENT|MOTIONEVENT|MOVEW|MSYNC|MUL)\>"
+icolor brightgreen "(^|^[[:space:]]*)(NOOP|NOP|NOROOTWINDOW)\>"
+icolor brightgreen "(^|^[[:space:]]*)(OBJC_ADD|OBJC_DELETE|ON|OPEN|OPENW|OUT)\>"
+icolor brightgreen "(^|^[[:space:]]*)(PAUSE|PBOX|PCIRCLE|PELLIPSE|PIPE|PLAYSOUND|PLAYSOUNDFILE|PLIST|PLOT|POKE|POLYFILL|POLYLINE|POLYMARK|PRBOX|PRINT|PUT|PUTBACK|PUT_BITMAP)\>"
+icolor brightgreen "(^|^[[:space:]]*)(RANDOMIZE|RBOX|READ|RECEIVE|RELSEEK|RENAME|RESTORE|RMDIR|ROOTWINDOW|RSRC_FREE|RSRC_LOAD)\>"
+icolor brightgreen "(^|^[[:space:]]*)(SAVE|SAVESCREEN|SAVEWINDOW|SCOPE|SCREEN|SEEK|SEND|SENSOR|SETFONT|SETMOUSE|SGET|SHELL|SHM_DETACH|SHM_FREE|SHOWK|SHOWM|SHOEPAGE|SIZEW|SORT|SOUND|SPEAK|SPLIT|SPUT|SUB|SWAP|SYSTEM)\>"
+icolor brightgreen "(^|^[[:space:]]*)(TEXT|TITLEW|TOPW|TOUCH)\>"
+icolor brightgreen "(^|^[[:space:]]*)(UNLINK|UNMAP|USEWINDOW)\>"
+icolor brightgreen "(^|^[[:space:]]*)(VERSION|VSYNC)\>"
+icolor brightgreen "(^|^[[:space:]]*)(WATCH|WAVE|WORT_SEP)\>"
+icolor brightgreen "(^|^[[:space:]]*)(XLOAD|XRUN)\>"
+
+## commands with a blank in it
+
+icolor brightblue "(^|^[[:space:]]*)(ON\ ERROR\ CONT)"
+icolor brightblue "(^|^[[:space:]]*)(ON\ BREAK\ CONT)"
+icolor brightred "(^|^[[:space:]]*)(ECHO\ (ON|OFF))"
+
+
+## keywords
+icolor brightblue "\<(and|or|not|to|xor|not|then|step|var|tab|using)\>"
+
+## operators
+color white "[+*=\^]" "<" ">" "/" "-"
+color brightred "[@\~]" 
+
+
+## number constants
+icolor brightyellow "\b(([1-9][0-9]+)|0+)\.[0-9]+j?\b" "\b([1-9][0-9]*[Lj]?)\b" "\b0o?[0-7]*L?\b" "\b0x[1-9a-f][0-9a-f]*L?\b" "\b0b[01]+\b"
+icolor brightyellow "[\ ,\(]\#[1-9][0-9]*\b"
+
+## parentheses
+color magenta "[(){}]" "\[" "\]"
+
+# labels
+icolor red "(^|^[[:space:]]*)[^\ ^=.]*:"
+
+# Comments.
+color yellow "(^|^[[:space:]]*)'.*$"
+icolor yellow "(^|^[[:space:]]*)REM.*$"
+color yellow "!.*$"
+
+icolor brightwhite,blue "(^|^[[:space:]]*)PROGRAM.*$"
+
+#shebang line
+icolor brightwhite,green "^\#\!.*$"
+
+
+
+# Strings
+color yellow "<[^= ]*>" ""(\\.|[^"])*""
+
+## trailing spaces
+color ,green "[[:space:]]+$"
+
+## reminders
+color brightwhite,yellow "(FIXME|TODO|XXX)"

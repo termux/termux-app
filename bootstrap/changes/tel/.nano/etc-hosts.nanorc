@@ -1,0 +1,15 @@
+## Make /etc/hosts nicer to read, see `man hosts 5` to see the format
+syntax "/etc/hosts" "hosts"
+
+# IPv4
+color yellow "^[0-9\.]+\s"
+
+# IPv6
+icolor green "^[0-9a-f:]+\s"
+
+# interpunction
+color normal "[.:]"
+
+# comments
+color brightblack "^#.*"
+

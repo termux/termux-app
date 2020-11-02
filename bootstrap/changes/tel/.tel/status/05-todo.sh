@@ -3,8 +3,8 @@
 line1=$(head -n1 ~/.tel/data/todo)
 #line2=$(head -n2 $HOME/todo.txt | tail -n1)
 if [ "$line1" == '' ] ; then
-	echo -e " To-do list is empty" 
+	echo " To-do list is empty" 
 else
-	echo -e " ${line1}"
+	echo " ${line1}"
 fi
 exit 0

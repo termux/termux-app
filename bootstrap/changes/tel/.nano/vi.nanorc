@@ -1,0 +1,10 @@
+syntax "VI" "(^|/|\.)(ex|vim)rc$|\.vim"
+
+color brightblue "[A-Za-z_][A-Za-z0-9_]*[[:space:]]*[()]"
+color cyan  "\<([nvxsoilc]?(nore|un)?map|[nvlx]n|[ico]?no|[cilovx][um]|s?unm)\>"
+color cyan  "\<(snor|nun|nm|set|if|endif|let|unlet)\>"
+color red "[!&=]"
+color yellow ""(\\.|[^"])*"|'(\\.|[^'])*'"
+color brightblack  "(^|[[:space:]])\"[^"]*$"
+color ,green "[[:space:]]+$"
+color ,red "	+ +| +	+"

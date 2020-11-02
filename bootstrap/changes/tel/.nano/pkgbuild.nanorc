@@ -1,0 +1,26 @@
+## Arch PKGBUILD files
+##
+syntax "PKGBUILD" "^.*PKGBUILD$"
+color green start="^." end="$"
+color cyan "^.*(pkgbase|pkgname|epoch|pkgver|pkgrel|pkgdesc|arch|url|license).*=.*$"
+color brightcyan "\<(pkgbase|pkgname|epoch|pkgver|pkgrel|pkgdesc|arch|url|license)\>"
+color brightcyan "(\$|\$\{|\$\()(pkgbase|epoch|pkgname|pkgver|pkgrel|pkgdesc|arch|url|license)(\}|\))"
+color cyan "^.*(depends|makedepends|checkdepends|optdepends|conflicts|provides|replaces).*=.*$"
+color brightcyan "\<(depends|makedepends|checkdepends|optdepends|conflicts|provides|replaces)\>"
+color brightcyan "(\$|\$\{|\$\()(depends|makedepends|checkdepends|optdepends|conflicts|provides|replaces)(\}|\))"
+color cyan "^.*(groups|backup|noextract|options|validpgpkeys|changelog).*=.*$"
+color brightcyan "\<(groups|backup|noextract|options|validpgpkeys|changelog)\>"
+color brightcyan "(\$|\$\{|\$\()(groups|backup|noextract|options|validpgpkeys|changelog)(\}|\))"
+color cyan "^.*(install|source|md5sums|sha1sums|sha224sums|sha256sums|sha384sums|sha512sums).*=.*$"
+color brightcyan "\<(install|source|md5sums|sha1sums|sha224sums|sha256sums|sha384sums|sha512sums)\>"
+color brightcyan "(\$|\$\{|\$\()(install|source|md5sums|sha1sums|sha224sums|sha256sums|sha384sums|sha512sums)(\}|\))"
+color brightcyan "\<(startdir|srcdir|pkgdir)\>"
+color cyan "\.install"
+color brightwhite "=" "'" "\(" "\)" "\"" "#.*$" "\," "\{" "\}"
+color brightred "build\(\)"
+color brightred "package_.*.*$"
+color brightred "\<(configure|make|cmake|scons)\>"
+color red "\<(DESTDIR|PREFIX|prefix|sysconfdir|datadir|libdir|includedir|mandir|infodir)\>"
+
+## Trailing whitespace
+color ,green "[[:space:]]+$"

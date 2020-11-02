@@ -1,0 +1,22 @@
+## Here is an example for Java.
+##
+syntax "Java" "\.java$"
+magic "Java "
+comment "//"
+
+color green "\<(boolean|byte|char|double|float|int|long|new|short|this|transient|void)\>"
+color red "\<(break|case|catch|continue|default|do|else|finally|for|if|return|switch|throw|try|while)\>"
+color cyan "\<(abstract|class|extends|final|implements|import|instanceof|interface|native|package|private|protected|public|static|strictfp|super|synchronized|throws|volatile)\>"
+color red ""[^"]*""
+color yellow "\<(true|false|null)\>"
+icolor yellow "\b(([1-9][0-9]+)|0+)\.[0-9]+\b" "\b[1-9][0-9]*\b" "\b0[0-7]*\b" "\b0x[1-9a-f][0-9a-f]*\b"
+color blue "//.*"
+color blue start="^\s*/\*" end="\*/"
+color brightblue start="/\*\*" end="\*/"
+
+# Highlighting for javadoc stuff
+color magenta "@param [a-zA-Z_][a-z0-9A-Z_]+"
+color magenta "@return"
+color magenta "@author.*"
+
+color ,green "[[:space:]]+$"

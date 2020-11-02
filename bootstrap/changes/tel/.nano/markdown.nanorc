@@ -1,0 +1,51 @@
+syntax "Markdown" "\.(md|mkd|mkdn|markdown)$"
+
+# Tables (Github extension)
+color cyan ".*[ :]\|[ :].*"
+
+# quotes
+color brightblack  start="^>" end="^$"
+color brightblack  "^>.*"
+
+# Emphasis
+color green "(^|[[:space:]])(_[^ ][^_]*_|\*[^ ][^*]*\*)"
+
+# Strong emphasis
+color brightgreen "(^|[[:space:]])(__[^ ][^_]*__|\*\*[^ ][^*]*\*\*)"
+
+# strike-through
+color red "(^|[[:space:]])~~[^ ][^~]*~~"
+
+# horizontal rules
+color brightmagenta "^(---+|===+|___+|\*\*\*+)\s*$"
+
+# headlines
+color brightmagenta  "^#{1,6}.*"
+
+# lists
+color blue   "^[[:space:]]*[\*+-] |^[[:space:]]*[0-9]+\. "
+
+# leading whitespace
+color black    "^[[:space:]]+"
+
+# misc
+color magenta   "\(([CcRr]|[Tt][Mm])\)" "\.{3}" "(^|[[:space:]])\-\-($|[[:space:]])"
+
+# links
+color brightblue "\[[^]]+\]"
+color brightblue "\[([^][]|\[[^]]*\])*\]\([^)]+\)"
+
+# images
+color magenta "!\[[^][]*\](\([^)]+\)|\[[^]]+\])"
+
+# urls
+color brightyellow "https?://[^ )>]+"
+
+# code
+color yellow   "`[^`]*`|^ {4}[^-+*].*"
+# code blocks
+color yellow start="^```[^$]" end="^```$"
+color yellow "^```$"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

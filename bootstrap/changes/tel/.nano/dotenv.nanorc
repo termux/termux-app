@@ -1,0 +1,10 @@
+## Syntax highlight for .env files, eg. https://symfony.com/doc/current/components/dotenv.html
+## 
+## Derived from sh.nanorc
+##
+syntax "dotenv" "\.env" "\.env\..+"
+
+color green "(\(|\)|\$|=)"
+color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"
+color cyan "(^|[[:space:]])#.*$"
+color ,green "[[:space:]]+$"

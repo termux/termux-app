@@ -1,0 +1,32 @@
+## Syntax highlighting for OCaml.
+
+syntax "OCaml" "\.mli?$"
+magic "OCaml"
+comment "(*|*)"
+
+#uid
+color red "\<[A-Z][0-9a-z_]{2,}\>"
+#declarations
+color green "\<(let|val|method|in|and|rec|private|virtual|constraint)\>"
+#structure items
+color red "\<(type|open|class|module|exception|external)\>"
+#patterns
+color blue "\<(fun|function|functor|match|try|with)\>"
+#patterns-modifiers
+color yellow "\<(as|when|of)\>" 
+#conditions
+color cyan "\<(if|then|else)\>"
+#blocs
+color magenta "\<(begin|end|object|struct|sig|for|while|do|done|to|downto)\>"
+#constantes
+color green "\<(true|false)\>"
+#modules/classes
+color green "\<(include|inherit|initializer)\>"
+#expr modifiers
+color yellow "\<(new|ref|mutable|lazy|assert|raise)\>"
+#comments
+color white start="\(\*" end="\*\)"
+#strings (no multiline handling yet)
+color brightblack ""[^\"]*""
+## Trailing spaces
+color ,green "[[:space:]]+$"

@@ -1,0 +1,4 @@
+## Here is an example for quoted emails (under e.g. mutt).
+##
+syntax "Mutt"
+color green "^>.*"

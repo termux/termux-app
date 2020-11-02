@@ -1,0 +1,41 @@
+## HTML syntax highlighting rules for Nano
+
+syntax "HTML" "\.html?(.j2)?(.twig)?$"
+magic "HTML document"
+comment "<!--|-->"
+
+## Emphasis tags
+color brightwhite start="<([biu]|em|strong)[^>]*>" end="</([biu]|em|strong)>"
+
+## Tags
+color cyan start="<" end=">"
+
+## Attributes
+color brightblue "[[:space:]](abbr|accept(-charset)?|accesskey|action|[av]?link|alt|archive|axis|background|(bg)?color|border)="
+color brightblue "[[:space:]](cell(padding|spacing)|char(off|set)?|checked|cite|class(id)?|compact|code(base|tag)?|cols(pan)?)="
+color brightblue "[[:space:]](content(editable)?|contextmenu|coords|data|datetime|declare|defer|dir|enctype)="
+color brightblue "[[:space:]](for|frame(border)?|headers|height|hidden|href(lang)?|hspace|http-equiv|id|ismap)="
+color brightblue "[[:space:]](label|lang|longdesc|margin(height|width)|maxlength|media|method|multiple)="
+color brightblue "[[:space:]](name|nohref|noresize|noshade|object|on(click|focus|load|mouseover|keypress)|profile|readonly|rel|rev)="
+color brightblue "[[:space:]](rows(pan)?|rules|scheme|scope|scrolling|shape|size|span|src|standby|start|style|summary|pattern)="
+color brightblue "[[:space:]](tabindex|target|text|title|type|usemap|v?align|value(type)?|vspace|width|xmlns|xml:space)="
+color brightblue "[[:space:]](required|disabled|selected)[[:space:]=>]"
+
+## Strings
+color yellow ""(\\.|[^"])*""
+
+## Named character references and entities
+color red "&#?[[:alnum:]]*;"
+
+## Template strings (not in the HTML spec, but very commonly used)
+color magenta "\{[^\}]*\}\}?"
+color brightgreen "[[:space:]]((end)?if|(end)?for|in|not|(end)?block)[[:space:]]"
+
+## Comments
+color green start="<!--" end="-->"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"
+
+## Reminders
+color brightwhite,yellow "(FIXME|TODO|XXX)"

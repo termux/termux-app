@@ -1,0 +1,22 @@
+syntax "Creole" "\.creole$"
+
+# Headers
+color magenta "^=.*=$"
+
+# Lists
+color green "^[#*]+\s.*"
+
+# Links and images
+color cyan start="\[\[" end="\]\]"
+color cyan start="\{\{" end="\}\}"
+
+# Emphasis
+color yellow "//.*//"
+color brightyellow "\*\*.*\*\*"
+
+# Pre and tables
+color red start="\{\{\{" end="\}\}\}"
+color red "\|"
+color brightred "\|="
+
+color ,red "\s+$"

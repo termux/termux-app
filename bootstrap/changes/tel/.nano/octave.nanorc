@@ -1,0 +1,24 @@
+# Source: https://wiki.octave.org/Nano
+# Octave syntax colors
+syntax "octave" "\.m$" "\.octaverc$"
+
+# keywords
+color brightyellow "(case|catch|do|else(if)?|for|function|if|otherwise|switch|try|until|unwind_protect(_cleanup)?|vararg(in|out)|while)"
+color brightyellow "end(_try_catch|_unwind_protect|for|function|if|switch|while)?"
+color magenta "(break|continue|return)"
+
+# storage-type
+color green "(global|persistent|static)"
+# data-type
+color green "(cell(str)?|char|double|(u)?int(8|16|32|64)|logical|single|struct)"
+
+# embraced
+# TODO: the next line needs to be fixed to work properly in all cases
+color brightred start="\(" end="\)"
+color blue start="\[|\{" end="\]|\}"
+
+# strings
+color yellow ""(\\.|[^\"])*"|'(\\.|[^\"])*'"
+
+# comments
+color brightblue "#.*|%.*"
