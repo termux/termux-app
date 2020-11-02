@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-###!/data/data/com.termux/files/usr/bin/bash	
+
 if [ $POWER_SAVER_ACTIVE == false ] ; then
 	exit 0
 fi
+
 running=$(pgrep -f status_manager.py)
 notifs_running=$(pgrep -f get_notifications.py)
 
@@ -54,7 +55,7 @@ if [ "$notifswasrunning" == "true" ] ; then
 fi
 
 if [ "$wasrunning" == "true" ] ; then
-	tmux splitw -d -b -t 1.1 ~/.tel/scripts/status_manager/toggle_ui.sh
+	nohup ~/.tel/scripts/status_manager/toggle_ui.sh > /dev/null 2>&1 &
 fi
 
 exit 0
