@@ -6,6 +6,6 @@
 while [ 1 ]
 do
 	output=$(timeout $STATUS_TIMEOUT $1 $2 || echo "$1 timed out")
-	echo "$output"
+	echo "${output}"
 	sleep $STATUS_SCRIPTS_SLEEP
 done
