@@ -86,28 +86,31 @@ if [ "$UPDATE" == false ]; then #if first start detected
 	log "Installing TEL..." #todo: optimize this
 	logf "Installing TEL..."
 
-	cp -rf ~/../usr/tel/termux-file-editor ~/bin
-	cp -rf ~/../usr/tel/termux-url-opener ~/bin
-	cp -rTf ~/../usr/tel/.tel ~/.tel
-	cp -rf ~/../usr/tel/.config ~/
-	cp -rf ~/../usr/tel/.nano ~/
-	cp -rTf ~/../usr/tel/.termux ~/.termux
-	cp -rf ~/../usr/tel/.aliases ~/
-	cp -rf ~/../usr/tel/.envvar ~/
-	cp -rf ~/../usr/tel/.tmux.conf ~/
-	cp -rf ~/../usr/tel/.zlogin ~/
-	cp -rf ~/../usr/tel/.nanorc ~/
-	cp -rf ~/../usr/tel/.vimrc ~/
+	#cp -rf ~/../usr/tel/termux-file-editor ~/bin
+	#cp -rf ~/../usr/tel/termux-url-opener ~/bin
+
+	# put thingies in actual location
+	cp -rTf ~/../usr/tel/* ~/
+	#cp -rTf ~/../usr/tel/.tel ~/.tel
+	#cp -rTf ~/../usr/tel/.termux ~/.termux
+	#cp -rf ~/../usr/tel/.config ~/
+	#cp -rf ~/../usr/tel/.nano ~/
+	#cp -rf ~/../usr/tel/.aliases ~/
+	#cp -rf ~/../usr/tel/.envvar ~/
+	#cp -rf ~/../usr/tel/.tmux.conf ~/
+	#cp -rf ~/../usr/tel/.zlogin ~/
+	#cp -rf ~/../usr/tel/.nanorc ~/
 
 else
 	log "Updating TEL..."
 	logf "Updating TEL..."
-	cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
-	cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
-	cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs #this should be compared with a diff tool
-	cp -rTf ~/../usr/tel/.tel/status ~/.tel/status
-	cp -rTf ~/../usr/tel/.tel/resources ~/.tel/resources
-	cp -rTf ~/../usr/tel/.tel/tutorials ~/.tel/tutorials
+	cp -rTf ~/../usr/tel/.tel/* ~/.tel
+	#cp -rTf ~/../usr/tel/.tel/bin ~/.tel/bin
+	#cp -rTf ~/../usr/tel/.tel/scripts ~/.tel/scripts
+	#cp -rTf ~/../usr/tel/.tel/configs ~/.tel/configs #this should be compared with a diff tool
+	#cp -rf ~/../usr/tel/.tel/status/* ~/.tel/status/
+	#cp -rf ~/../usr/tel/.tel/resources/* ~/.tel/resources/
+	#cp -rTf ~/../usr/tel/.tel/tutorials ~/.tel/tutorials
 fi
 
 log "Updating permissions..."
