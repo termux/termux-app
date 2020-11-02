@@ -47,18 +47,6 @@ if [ "$STATUS_WINDOW_ENABLED" == "true" ] ; then
 	sleep 0.2
 fi
 
-if [ $REBUILD_CACHES_STARTUP == "true" ]; then
-	echo -n "populating app cache..                       " $'\r'
-	timeout 15 ~/.tel/bin/tel-app -u || echo "Failed to build app cache, run 'app -u' to retry"
-	echo -ne "apps generated ${CHECK_MARK}                "  $'\r'
-	sleep 0.2
-
-	echo -n "populating contacts cache..                  " $'\r'
-	timeout 15 ~/.tel/bin/tel-dialer -u || echo "Failed to build contacts cache, run dialer -u to retry"
-	echo -ne "contacts generated ${CHECK_MARK}            " $'\r'
-	sleep 0.2
-fi
-
 echo -ne "Ready!      ${CHECK_MARK}                " $'\r'
 sleep 0.2
 exit 0
