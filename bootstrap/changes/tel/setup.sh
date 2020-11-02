@@ -93,7 +93,8 @@ if [ "$UPDATE" == false ]; then #if first start detected
 
 	# put thingies in actual location
 	cp -rf ~/../usr/tel/. ~/
-	#cp -rTf ~/../usr/tel/.tel ~/.tel
+	rm -rf ~/setup.sh	
+#cp -rTf ~/../usr/tel/.tel ~/.tel
 	#cp -rTf ~/../usr/tel/.termux ~/.termux
 	#cp -rf ~/../usr/tel/.config ~/
 	#cp -rf ~/../usr/tel/.nano ~/
