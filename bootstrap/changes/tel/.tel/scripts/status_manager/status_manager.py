@@ -136,7 +136,6 @@ def clean_up():
 
 
 try:
-    setup()
     main_loop()
 except Exception as e:
     print(e.message, e.args)
