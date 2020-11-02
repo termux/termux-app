@@ -67,7 +67,7 @@ def read_output(pipe, q):
 
 #############main starts here############
 
-def setup():
+def main_loop():
     # get status scripts and init status bar
     status_scripts = get_scripts()
     empty_status_bar = init_status_bar(status_scripts)
@@ -103,15 +103,7 @@ def setup():
     for n in range(0,len(status_scripts)):
             new_output = ("Loading.. " + status_scripts[n].split("/status/",1)[1]) # show 'Loading.. filename' (remove path from name)
             prev_status_bar = draw_status_bar(status_bar, n, new_output)
-# End setup()
 
-
-def clean_up():
-    status_bar = []
-    for n in range(0,len(status_scripts)):
-        os.system('tel-delete-status ' + str(n))
-
-def main_loop():
     while True:
         new_output = None
         prev_status_bar = status_bar
@@ -135,6 +127,12 @@ def main_loop():
                 pass
         sleep(user_sleeptime)
 # end main_loop
+
+def clean_up():
+    status_bar = []
+    for n in range(0,len(status_scripts)):
+        os.system('tel-delete-status ' + str(n))
+
 
 
 try:
