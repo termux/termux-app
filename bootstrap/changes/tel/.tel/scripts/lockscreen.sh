@@ -6,6 +6,7 @@ fi
 
 running=$(pgrep -f status_manager.py)
 notifs_running=$(pgrep -f get_notifications.py)
+powerline_running=$(pgrep -f powerline-daemon)
 
 if [ ! -z "$notifs_running" ] ; then
 	notifswasrunning='true'
@@ -15,6 +16,13 @@ else
 
 fi
 
+if [ ! -z "$powerline_running" ] ; then
+	powerlinewasrunning='true'
+	pkill -f 'powerline-daemon'
+else
+	powerlinewasrunning='false'
+
+fi
 if [ ! -z "$running" ] ; then
 	wasrunning='true'
 	pkill -f 'status_manager.py'
@@ -52,6 +60,10 @@ fi
 
 if [ "$notifswasrunning" == "true" ] ; then
 	nohup ~/.tel/scripts/get_notifications.py > /dev/null 2>&1 & 
+fi
+
+if [ "$powerlinewasrunning" == "true" ] ; then
+	powerline-daemon -q
 fi
 
 if [ "$wasrunning" == "true" ] ; then
