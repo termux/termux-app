@@ -1,1 +1,1 @@
-include $install_path/*.nanorc
+include ~/.nano/*.nanorc
