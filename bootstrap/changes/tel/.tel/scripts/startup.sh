@@ -42,7 +42,7 @@ fi
 if [ "$STATUS_WINDOW_ENABLED" == "true" ] ; then
 	echo -n 'launching status manager                    ' $'\r'
 	#tmux splitw -t 1.1 -d -b '~/.tel/scripts/status_manager/toggle_ui.sh'
-	~/.tel/scripts/status_manager/toggle_ui.sh
+	nohup ~/.tel/scripts/status_manager/toggle_ui.sh > /dev/null 2>&1 &
 	echo -ne "launched status manager ${CHECK_MARK}      " $'\r'
 	sleep 0.2
 fi

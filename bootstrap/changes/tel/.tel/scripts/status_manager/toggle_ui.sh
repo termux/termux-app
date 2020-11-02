@@ -11,6 +11,15 @@ if [ -z "$running" ] ; then
 	#tmux rename-window -t 1 $NAME 			# rename after spawn for uniqueness
 	#tmux select-pane -t $NAME.top -d	#disable input to status manager window
 else
-	kill -QUIT "$(pgrep -f 'status_manager.py')"
+	dosum=0
+	count=0
+	for file in ~/.tel/status/
+	do
+        	count=$((count + 1))
+		
+		tel-delete-status $count
+	done
+	
+	kill "$(pgrep -f 'status_manager.py')"
 	pkill -f 'termux-api' 
 fi
