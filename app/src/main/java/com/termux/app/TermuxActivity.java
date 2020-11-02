@@ -523,8 +523,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                     // Show toast for non-current sessions that exit.
                     int indexOfSession = mTermService.getSessions().indexOf(finishedSession);
                     // Verify that session was not removed before we got told about it finishing:
-                    if (indexOfSession >= 0)
-                        showToast(toToastTitle(finishedSession) + " - exited", true);
+                    /*if (indexOfSession >= 0)
+                        showToast(toToastTitle(finishedSession) + " - exited", true);*/
                 }
 
                 if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
@@ -795,7 +795,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         if (!mIsVisible) return;
         TerminalSession session = getCurrentTermSession();
         final int indexOfSession = mTermService.getSessions().indexOf(session);
-        showToast(toToastTitle(session), false);
+       // showToast(toToastTitle(session), false);
         mListViewAdapter.notifyDataSetChanged();
         final ListView lv = findViewById(R.id.left_drawer_list);
         lv.setItemChecked(indexOfSession, true);
