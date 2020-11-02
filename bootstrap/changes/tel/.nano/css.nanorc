@@ -1,0 +1,13 @@
+## Here is an example for css files.
+##
+
+syntax "CSS" "\.(css|scss|less)$"
+color brightred     "."
+color brightyellow  start="\{" end="\}"
+color brightwhite   start=":" end="[;^\{]"
+color brightblue    ":active|:focus|:hover|:link|:visited|:link|:after|:before|$"
+color brightblue    start="\/\*" end="\*\/"
+color green         ";|:|\{|\}"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

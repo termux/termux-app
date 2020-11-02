@@ -1,0 +1,27 @@
+## For reST
+syntax "RST" "\.rest$" "\.rst$"
+# italics
+#color magenta "\*[^*]\*"
+# bold
+color red "\*\*[^*]+\*\*"
+# code block
+color brightred "::"
+# link reference
+color blue "`[^`]+`_{1,2}"
+# code
+color yellow "``[^`]+``"
+# directives or comments
+color cyan "^\.\. .*$"
+# anon link targets
+color cyan "^__ .*$"
+# h1
+color yellow "^###+$"
+color yellow "^\*\*\*+$"
+# h2
+color magenta "^===+$"
+# h3
+color red "^---+$"
+# h4
+color green "^\^\^\^+$"
+# h5
+color blue "^"""+$"

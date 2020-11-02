@@ -1,0 +1,33 @@
+## Clojure Syntax Highlighting
+##
+
+syntax "clojure" "\.((clj[s|c]?)|edn)"
+
+icolor green "defn? [0-9A-Z_]+"
+
+color brightgreen "[#']"
+color brightgreen "\<fn\>"
+color green "\<(map|reduce|filter|println)\>"
+
+color brightyellow "\<(if(-(let|not))?|condp?|when(-(let|not))?)\>"
+color brightyellow "\<(do(all|run|seq|sync)?|recur|loop)\>"
+color brightyellow "\<(try|catch|finally|throw)\>"
+color yellow "(\:else) "
+
+color brightcyan "\<(require|use|import|ns)\>"
+color cyan "(\:(require|use|import)) "
+
+color brightred "\<(let(fn)?|defn?)\>"
+color brightwhite "\((\/|((not|[<>\=])?\=?))"
+color brightwhite "\((\+|-|\*)'?"
+color brightwhite "\<(and|or|not|mod|quot|rem|inc|dec)\>"
+
+color magenta "[\(\)]"
+color magenta "(\[|\])"
+
+color yellow "\<(true|false|nil)\>"
+color brightyellow "(["][^"]*[^\\]["])|("")"
+
+color brightblue ";.*$"
+
+color ,green "[[:space:]]+$"

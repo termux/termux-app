@@ -1,0 +1,116 @@
+
+## FILENAME:    arduino.nanorc
+##
+## DESCRIPTION: The arduino.nanorc syntax files allows syntax highlighting
+##              for Arduino sketch files in the GNU nano text editor.
+##
+## Maintainer:  Nicholas Wilde
+## Version:     0.1
+## DATE:        06/23/2011
+##
+## HOMEPAGE:    http://code.google.com/p/arduino-nano-editor-syntax/
+##
+## COMMENTS:    -Most of the code was taken from the c.nanorc code found with 
+##               GNU nano 2.2.6.
+##              -Direction was taken from the arduino vim syntax code by johannes
+##               <https://bitbucket.org/johannes/arduino-vim-syntax/>
+##              -Tested on Ubuntu Server 11.04 Natty Narwhal and GNU nano 2.2.6
+##
+## DIRECTIONS:  For Ubuntu Server 11.04 Natty Narwhal:
+##              -Move this file <arduino.nanorc> to the nano directory
+##               /usr/share/nano/
+##              -Add arduino.nanorc reference to the nanorc settings file
+##               /etc/nanorc
+##               ...
+##               ## Arduino
+##               /usr/share/nano/arduino.nanorc
+##               ...
+
+syntax "INO"  "\.?ino$"
+
+## 
+color brightred "\<[A-Z_][0-9A-Z_]+\>" 
+
+## 
+color green "\<((s?size)|((u_?)?int(8|16|32|64|ptr)))_t\>"
+
+## Constants
+icolor green "\<(HIGH|LOW|INPUT|OUTPUT)\>"
+
+## Serial Print
+icolor red "\<(DEC|BIN|HEX|OCT|BYTE)\>"
+
+## PI Constants
+icolor green "\<(PI|HALF_PI|TWO_PI)\>"
+
+## ShiftOut
+icolor green "\<(LSBFIRST|MSBFIRST)\>"
+
+## Attach Interrupt
+icolor green "\<(CHANGE|FALLING|RISING)\>"
+
+## Analog Reference
+icolor green "\<(DEFAULT|EXTERNAL|INTERNAL|INTERNAL1V1|INTERNAL2V56)\>"
+
+## === FUNCTIONS === ##
+
+## Data Types
+color green "\<(boolean|byte|char|float|int|long|word)\>"
+
+## Control Structions
+color brightyellow "\<(case|class|default|do|double|else|false|for|if|new|null|private|protected|public|short|signed|static|String|switch|this|throw|try|true|unsigned|void|while)\>" 
+color magenta "\<(goto|continue|break|return)\>"
+
+## Math
+color brightyellow "\<(abs|acos|asin|atan|atan2|ceil|constrain|cos|degrees|exp|floor|log|map|max|min|radians|random|randomSeed|round|sin|sq|sqrt|tan)\>"
+
+## Bits & Bytes
+color brightyellow "\<(bitRead|bitWrite|bitSet|bitClear|bit|highByte|lowByte)\>"
+
+## Analog I/O
+color brightyellow "\<(analogReference|analogRead|analogWrite)\>"
+
+## External Interrupts
+color brightyellow "\<(attachInterrupt|detachInterrupt)\>"
+
+## Time
+color brightyellow "\<(delay|delayMicroseconds|millis|micros)\>"
+
+## Digital I/O
+color brightyellow "\<(pinMode|digitalWrite|digitalRead)\>"
+
+## Interrupts
+color brightyellow "\<(interrupts|noInterrupts)\>"
+
+## Advanced I/O
+color brightyellow "\<(noTone|pulseIn|shiftIn|shiftOut|tone)\>"
+
+## Serial
+color magenta "\<(Serial|Serial1|Serial2|Serial3|begin|end|peek|read|print|println|available|flush)\>"
+
+## Structure
+color brightyellow "\<(setup|loop)\>"
+
+## 
+color brightcyan "^[[:space:]]*#[[:space:]]*(define|include(_next)?|(un|ifn?)def|endif|el(if|se)|if|warning|error|pragma)"
+
+## 
+color brightmagenta "'([^'\]|(\\["'abfnrtv\\]))'" "'\\(([0-3]?[0-7]{1,2}))'" "'\\x[0-9A-Fa-f]{1,2}'"
+
+## GCC builtins
+color cyan "__attribute__[[:space:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
+
+## String highlighting.  You will in general want your comments and
+## strings to come last, because syntax highlighting rules will be
+## applied in the order they are read in.
+color brightyellow "<[^=    ]*>" ""(\\.|[^"])*""
+
+## This string is VERY resource intensive!
+color brightyellow start=""(\\.|[^"])*\\[[:space:]]*$" end="^(\\.|[^"])*""
+
+## Comments
+color brightblue "^\s*//.*"
+color brightblue start="/\*" end="\*/"
+
+## Trailing whitespace
+color ,green "[[:space:]]+$"

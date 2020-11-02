@@ -1,0 +1,45 @@
+syntax "Jade" "\.jade$"
+# Elements
+color yellow "^\s*([a-z0-9]+)"
+# Main elements
+color red "^\s*(html|head|body)"
+# Includes
+icolor magenta "^\s*(include)"
+# Variables
+color brightblue "^\s*(\-)\s(var)\s([a-z0-9]+)"
+icolor magenta "^\s*-\s(var)$" "^\s*-\s(var)\s"
+# Cases
+color brightblue "^\s*(case)\s(.*)"
+color cyan "^\s*(when)\s(.*)"
+icolor magenta "^\s*(case|when|default)$" "^\s*(case|when|default)\s"
+color brightred "^\s*-\s(break)$" "^\s*-\s(break)\s"
+# Conditionals
+icolor magenta "^\s*(if|else|else if)$" "^\s*(if|else|else if)\s"
+# For loops
+icolor magenta "^\s*-\s(for)"
+# Each
+icolor magenta "^\s*(each)$" "^\s*(each)\s"
+# Parenthesis content
+color blue start="\(" end="\)"
+# Strings
+color cyan "('[^']*')|(\"[^\"]*\")"
+# Parenthesis, commas, equals
+icolor green "\(" "\)" "\," "\="
+# Comments, dashes and spaces
+color blue "\s+(//.*)"
+color blue start="/\*" end="\*/"
+color white "^\s*(\-)"
+color ,green "[[:space:]]+$"
+# Unbuffered comments
+color brightblue "\s+(//-.*)"
+# HTML-style conditional comments
+color brightmagenta start="<!" end="!>"
+color brightmagenta "<!\[endif\]-->"
+# HTML-style elements
+color yellow "<([^!].*)>"
+# Pipes
+color yellow,magenta "\|"
+# Doctype
+color brightblack "^\s*(doctype)(.*)"
+# Links
+icolor brightgreen "https?:\/\/(www\.)?[a-zA-Z0-9@%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)" "_blank"

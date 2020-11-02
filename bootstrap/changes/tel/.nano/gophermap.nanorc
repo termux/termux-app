@@ -1,0 +1,45 @@
+## syntax for gophernicus gophermaps
+
+syntax gophermap "\.(gophermap|gph)$"
+
+
+# Port Numbers
+color yellow "^.[ -~]*.[ -~]*.[ -~]*.[ -~]+"
+
+# Domains
+color red "^.[ -~]*.[ -~]*.[ -~]+"
+
+# Resource Path (no directories)
+color green "^[^1][ -~]*.[ -~]*"
+
+# Directories (w/ Name)
+color brightmagenta "^1[ -~]*.[ -~]*"
+
+# Names
+color brightblue "^[ -~]+."
+
+# Directories (w/o Name)
+color brightyellow "^1[ -~]+.$"
+
+# URLs
+color brightcyan "URL:.*"
+
+
+# Types
+
+# General
+color magenta "^."
+
+# HTML & Interactive Content
+color brightcyan "^(h|7|8)"
+
+# Info Text
+color cyan "^i.*"
+color cyan "^[ -~]*$"
+color blue "^i"
+
+# Special Tags & Characters
+color brightgreen "^(!|-|:|~|%|=|\*|\.).*"
+
+# Comments
+color white,blue "#.*"

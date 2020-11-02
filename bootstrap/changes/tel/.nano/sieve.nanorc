@@ -1,0 +1,187 @@
+#syntax highlighting for the Sieve email filtering language
+#based on:
+#	RFC's		{ 3894,5173,5228,5229,5230,5231,5232,5233
+#			  	  5235,5260,5293,5435,5437,5463,5490,5703
+#			  	  6009,6131,6134,6558,6609,7352,8579,8580 }
+#	vnd.dovecot { debug,execute,report }
+#	Spec Drafts	{ IETF Sieve Regex,Martin Sieve Notify
+#				  Melnikov Sieve IMAPFlags			   }
+
+syntax Sieve "\.(siv|sieve)$"
+
+#-----------------------------#
+
+##control
+			#RFC 5228 (base spec)
+icolor yellow "\<(stop|require)\>"
+			#RFC 5463 (ihave extension)
+icolor yellow "\<(error)\>"
+			#RFC 6609 (include extension)
+icolor yellow "\<(include)\>"
+
+#-----------------------------#
+
+##conditional
+			#RFC 5228 (base spec)
+icolor brightgreen "\<(if|else|elsif)\>"
+			#RFC 5703 (extensions for mime part tests, iteration, extraction, replacement, and enclosure)
+icolor brightgreen "\<(foreverypart)\>"
+
+#-----------------------------#
+
+##test modifiers
+			#RFC 5228 (base spec)
+icolor brightred "\<(allof|anyof|true|false|not)\>"
+
+#-----------------------------#
+
+##tests
+			#RFC 5228 (base spec)
+icolor brightcyan "\<(address|envelope|exists|header|size)\>"
+			#RFC 5173 (body extension)
+icolor brightcyan "\<(body)\>"
+			#RFC 5183 (environment extension)
+icolor brightcyan "\<(environment)\>"
+			#RFC 5232 (imap4flags extension)
+icolor brightcyan "\<(hasflag)\>"
+			#RFC 5235 (spamtest and virustest extensions)
+icolor brightcyan "\<(spamtest|virustest)\>"
+			#RFC 5260 (date and index extensions)
+icolor brightcyan "\<(date|currentdate)\>"
+			#RFC 5437 (notification mechanism for xmpp)
+icolor brightcyan "\<(notify_method_capability)\>"
+			#RFC 5463 (ihave extension)
+icolor brightcyan "\<(ihave)\>"
+			#RFC 5490 (extensions for checking mailbox status and accessing mailbox metadata)
+icolor brightcyan "\<(mailboxexists|metadata|metadataexists)\>"
+icolor brightcyan "\<(servermetadata|servermetadataexists)\>"
+			#RFC 6134 (extension for externally stored lists)
+icolor brightcyan "\<(valid_ext_list)\>"
+			#RFC 7352 (extension for detecting duplicate deliveries)
+icolor brightcyan "\<(duplicate)\>"
+			#RFC 8579 (extension for delivering to special-use mailboxes)
+icolor brightcyan "\<(specialuse_exists)\>"
+
+#-----------------------------#
+
+##comparators
+			#RFC 5228 (base spec)
+icolor cyan "\s:(contains|is|matches|over|under)\>"
+
+#-----------------------------#
+
+##match-types
+			#RFC 5228 (base spec)
+icolor green "\s:(localpart|domain|all)\>"
+			#RFC 5231 (relational extension)
+icolor green "\s:(count|value)\>"
+			#RFC 5233 (subaddress extension)
+icolor green "\s:(user|detail)\>"
+			#RFC 5235 (spamtest and virustest extensions)
+icolor green "\s:(percent)\>"
+			#RFC 5260 (date and index extensions)
+icolor green "\s:(zone|originalzone|index|last)\>"
+			#RFC 6134 (extension for externally stored lists)
+icolor green "\s:(list)\>"
+			#Draft IETF Sieve Regex 01 (regular expression extension)
+icolor green "\s:(regex|quoteregex)\>"
+
+#-----------------------------#
+
+##variables
+			#RFC 5229" (variables extension)
+color red "\$\{.*\}"
+
+#-----------------------------#
+
+##actions
+			#RFC 5228 (base spec)
+icolor brightblue "\<(keep|fileinto|discard|reject|redirect)\>"
+			#RFC 5229 (variables extension)
+icolor brightblue "\<(set)\>"
+			#RFC 5230 (vacation extension)
+icolor brightblue "\<(vacation)\>"
+			#RFC 5232 (imap4flags extension)
+icolor brightblue "\<(setflag|addflag|removeflag)\>"
+			#RFC 5293 (editheader extension)
+icolor brightblue "\<(addheader|deleteheader)\>"
+			#RFC 5429 (reject and ereject extensions)
+icolor brightblue "\<(reject|ereject)\>"
+			#RFC 5435 (extension for notifications)
+icolor brightblue "\<(notify)\>"
+			#RFC 5703 (extensions for mime part tests, iteration, extraction, replacement, and enclosure)
+icolor brightblue "\<(break|replace|enclose|extracttext)\>"
+			#RFC 6558 (extension for converting messages before delivery)
+icolor brightblue "\<(convert)\>"
+			#RFC 6609 (include extension)
+icolor brightblue "\<(return)\>"
+			#vnd.dovecot.debug (extension for logging debug messages)
+icolor brightblue "\<(debug_log)\>"
+			#vnd.dovecot.execute (extension for external programs)
+icolor brightblue "\<(pipe|filter|execute)\>"
+			#vnd.dovecot.report (extension for sending abuse feedback reports)
+icolor brightblue "\<(report)\>"
+			#Draft Martin Sieve Notify 01 (extension for providing instant notifications) [deprecated]
+icolor brightblue "\<(denotify)\>"
+			#Draft Melnikov Sieve IMAPFlags 04 (imap flag extension) [deprecated]
+icolor brightblue "\<(mark|unmark)\>"
+
+#-----------------------------#
+
+##modifiers, parameters, etc.
+			#RFC 5228 (base spec)
+icolor magenta "\s:(comparator)\>"
+			#RFC 3894 (extension for copying without side effects)
+icolor magenta "\s:(copy)\>"
+			#RFC 5173 (body extension)
+icolor magenta "\s:(raw|content|text)\>"
+			#RFC 5229 (variables extension)
+icolor magenta "\s:(length|quotewildcard)\>"
+icolor magenta "\s:(upper|lower|upperfirst|lowerfirst)\>"
+			#RFC 5230 (vacation extension)
+icolor magenta "\s:(days|subject|from|addresses|handle)\>"
+			#RFC 5232 (imap4flags extension)
+icolor magenta "\s:(flags)\>"
+			#RFC 5435 (extension for notifications)
+icolor magenta "\s:(from|importance|options|message)\>"
+			#RFC 5490 (extensions for checking mailbox status and accessing mailbox metadata)
+icolor magenta "\s:(create)\>"
+			#RFC 5703 (extensions for mime part tests, iteration, extraction, replacement, and enclosure)
+icolor magenta "\s:(name|mime|anychild|type|subtype)\>"
+icolor magenta "\s:(contenttype|param|headers|first)\>"
+			#RFC 6009 (dsn and deliver-by extensions)
+icolor magenta "\s:(notify|ret|bymode|bytrace)\>"
+icolor magenta "\s:(bytimerelative|bytimeabsolute)\>"
+			#RFC 6131 (vacation extension seconds parameter)
+icolor magenta "\s:(seconds)\>"
+			#RFC 6609 (include extension)
+icolor magenta "\s:(once|optional|personal|global)\>"
+			#RFC 7352 (extension for detecting duplicate deliveries)
+icolor magenta "\s:(header|uniqueid)\>"
+			#RFC 8579 (extension for delivering to special-use mailboxes)
+icolor magenta "\s:(specialuse)\>"
+			#RFC 8580 (extension for file carbon copy)
+icolor magenta "\s:(fcc)\>"
+			#vnd.dovecot.execute (extension for external programs)
+icolor magenta "\s:(try|pipe|input|output)\>"
+			#Draft Martin Sieve Notify 01 (extension for providing instant notifications) [deprecated]
+icolor magenta "\s:(method|id|low|normal|high)\>"
+			#Draft Melnikov Sieve IMAPFlags 04 (imap flag extension) [deprecated]
+icolor magenta "\s:(globalflags)(_plus|_minus)?\>"
+
+#-----------------------------#
+
+##number (incl. proceeding K, M, or G)
+icolor brightmagenta "\<[0-9]+[KMG]?\>"
+
+#-----------------------------#
+
+##comment
+color blue "\#.*"
+
+#-----------------------------#
+
+##string
+color brightyellow start="\"" end="\""
+color brightyellow start="\/\*" end="\*\/"
+icolor brightyellow start="text\:.*" end="^.$"

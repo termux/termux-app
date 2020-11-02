@@ -1,0 +1,26 @@
+## A HTML+Ruby set for Syntax Highlighting .erb files (Embedded RubyRails Views etc) ERB
+## (c) 2009, Georgios V. Michalakidis - g.michalakidis@computer.org
+## Licensed under the CC (Creative Commons) License.
+##
+## https://github.com/geomic/ERB-And-More-Code-Highlighting-for-nano
+
+syntax "ERB" "\.erb$" "\.rhtml$"
+color blue start="<" end=">"
+color white start="<%" end="%>"
+color red "&[^;[[:space:]]]*;"
+color yellow "\<(BEGIN|END|alias|and|begin|break|case|class|def|defined\?|do|else|elsif|end|ensure|false|for|if|in|module|next|nil|not|or|redo|rescue|retry|return|self|super|then|true|undef|unless|until|when|while|yield)\>"
+color brightblue "(\$|@|@@)?\<[A-Z]+[0-9A-Z_a-z]*"
+icolor magenta "([  ]|^):[0-9A-Z_]+\>"
+color brightyellow "\<(__FILE__|__LINE__)\>"
+color brightmagenta "!/([^/]|(\\/))*/[iomx]*" "%r\{([^}]|(\\}))*\}[iomx]*"
+color brightblue "`[^`]*`" "%x\{[^}]*\}"
+color green ""([^"]|(\\"))*"" "%[QW]?\{[^}]*\}" "%[QW]?\([^)]*\)" "%[QW]?<[^>]*>" "%[QW]?\[[^]]*\]" "%[QW]?\$[^$]*\$" "%[QW]?\^[^^]*\^" "%[QW]?![^!]*!"
+color brightgreen "#\{[^}]*\}"
+color green "'([^']|(\\'))*'" "%[qw]\{[^}]*\}" "%[qw]\([^)]*\)" "%[qw]<[^>]*>" "%[qw]\[[^]]*\]" "%[qw]\$[^$]*\$" "%[qw]\^[^^]*\^" "%[qw]![^!]*!"
+color cyan "#[^{].*$" "#$"
+color brightcyan "##[^{].*$" "##$"
+color green start="<<-?'?EOT'?" end="^EOT"
+color brightcyan "(XXX|TODO|FIXME|\?\?\?)"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

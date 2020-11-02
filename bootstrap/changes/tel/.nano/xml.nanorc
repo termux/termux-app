@@ -1,0 +1,18 @@
+## Here is an example for xml files.
+##
+
+syntax "XML" ".*\.([jrs]?html?|xml|sgml?|rng|vue|mei|musicxml)$"
+header "<\?xml.*version=.*\?>"
+magic "(XML|SGML) (sub)?document"
+comment "<!--|-->"
+
+color white "^.+$"
+color green  start="<" end=">"
+color cyan   "<[^> ]+"
+color cyan   ">"
+color yellow start="<!DOCTYPE" end="[/]?>"
+color yellow start="<!--" end="-->"
+color red    "&[^;]*;"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

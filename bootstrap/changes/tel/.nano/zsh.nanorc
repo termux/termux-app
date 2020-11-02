@@ -1,0 +1,42 @@
+## Syntax highlighting for ZSH scripts (initially copied from sh.nanorc)
+syntax "ZSH" "\.zsh$" "\.?(zshenv|zprofile|zshrc|zlogin|zlogout|zsh-theme)$"
+header "^#!.*/(env +)?zsh( |$)"
+
+## Numbers
+color brightyellow "\b[0-9]+\b"
+
+## Conditionals and control flow
+color green "\<(always|break|bye|case|continue|disown|do|done|elif|else|esac|exit|fi|for|function|if|in|local|read|return|select|shift|then|time|until|while)\>"
+
+color green "(\{|\}|\(|\)|\;|\]|\[|`|\\|\$|<|>|!|=|&|\|)"
+## Conditional flags
+color green "-[Ldefgruwx]\>"
+color green "-(eq|ne|gt|lt|ge|le|s|n|z)\>"
+
+## Bash-inherited
+color brightblue "\<((un)?alias|bindkey|builtin|cd|command|declare|eval|exec|export|jobs|let|popd|pushd|set|source|typeset|umask|unset)\>"
+## ZSH-specific
+color brightblue "\<(add-zsh-hook|autoload|cdr|chdir|compinit|dirs|(dis|en)able|echotc|echoti|emulate|print|printf|prompt(init)?|(un)?setopt|zle|zmodload|zstyle|whence|zargs|zmv)\>"
+
+## Common linux commands
+color brightmagenta "\<((g|ig)?awk|find|diff|\w{0,4}grep|kill|killall|\w{0,4}less|make|pkill|sed|sudo|tar)\>"
+
+## Coreutils commands
+color brightmagenta "\<(base(32|64)|basename|cat|chcon|chgrp|chmod|chown|chroot|cksum|comm|cp|csplit|cut|date|dd|df|dir|dircolors|dirname|du|echo|env|expand|expr|factor|false|fmt|fold|head|hostid|id|install|join|link|ln|logname|ls|md5sum|mkdir|mkfifo|mknod|mktemp|mv|nice|nl|nohup|nproc|numfmt|od|paste|pathchk|pinky|pr|printenv|ptx|pwd|readlink|realpath|rm|rmdir|runcon|seq|(sha1|sha224|sha256|sha384|sha512)sum|shred|shuf|sleep|sort|split|stat|stdbuf|stty|sum|sync|tac|tail|tee|test|timeout|touch|tr|true|truncate|tsort|tty|uname|unexpand|uniq|unlink|users|vdir|wc|who|whoami|yes)\>"
+
+## Function definition
+icolor brightgreen "^\s+(function\s+)[0-9A-Z_]+\s+\(\)"
+
+## Variables
+icolor brightred "\$\{?[0-9A-Z_!@#$*?-]+\}?"
+
+## Strings
+color yellow ""(\\.|[^"])*""
+color yellow "'(\\.|[^'])*'"
+
+## Comments
+color cyan "(^|[[:space:]])#.*$"
+color brightcyan "(^|[[:space:]])##.*$"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

@@ -1,0 +1,26 @@
+syntax "C#" "\.cs$"
+
+# Class
+color brightmagenta  "class +[A-Za-z0-9]+ *((:) +[A-Za-z0-9.]+)?"
+
+# Annotation
+color magenta   "@[A-Za-z]+"
+
+color brightblue "[A-Za-z_][A-Za-z0-9_]*[[:space:]]*[()]"
+color green     "\<(bool|byte|sbyte|char|decimal|double|float|IntPtr|int|uint|long|ulong|object|short|ushort|string|base|this|var|void)\>"
+color cyan  "\<(alias|as|case|catch|checked|default|do|dynamic|else|finally|fixed|for|foreach|goto|if|is|lock|new|null|return|switch|throw|try|unchecked|while)\>"
+color cyan  "\<(abstract|async|class|const|delegate|enum|event|explicit|extern|get|implicit|in|internal|interface|namespace|operator|out|override|params|partial|private|protected|public|readonly|ref|sealed|set|sizeof|stackalloc|static|struct|typeof|unsafe|using|value|virtual|volatile|yield)\>"
+# LINQ-only keywords (ones that cannot be used outside of a LINQ query - lots others can)
+color cyan  "\<(from|where|select|group|info|orderby|join|let|in|on|equals|by|ascending|descending)\>"
+color brightred     "\<(break|continue)\>"
+color brightcyan "\<(true|false)\>"
+color red "[-+/*=<>?:!~%&|]"
+color blue   "\<([0-9._]+|0x[A-Fa-f0-9_]+|0b[0-1_]+)[FL]?\>"
+color yellow ""(\\.|[^"])*"|'(\\.|[^'])*'"
+color magenta   "\\([btnfr]|'|\"|\\)"
+color magenta   "\\u[A-Fa-f0-9]{4}"
+color brightblack "(^|[[:space:]])//.*"
+color brightblack start="^\s*/\*" end="\*/"
+color brightwhite,cyan "TODO:?"
+color ,green "[[:space:]]+$"
+color ,red "	+ +| +	+"

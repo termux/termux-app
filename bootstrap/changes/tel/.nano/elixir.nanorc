@@ -1,0 +1,50 @@
+## Here is an example for Elixir.
+##
+syntax "Elixir" "\.ex$" "\.exs$"
+header "^#!.*/(env +)?elixir( |$)"
+
+## reserved words
+color yellow "\<(case|cond|true|if|false|nil|when|and|or|not|in|fn|do|end|catch|rescue|after|else|with)\>"
+color yellow "def[a-z]*"
+
+## Constants
+color brightblue "@[a-z]+"
+
+## Elixir atoms
+color magenta ":[0-9a-z_]+"
+
+## Elixir Modules
+color magenta "[A-Z][a-zA-Z0-9]*"
+
+## Elixir types
+color red "[A-Z][A-Za-z]+\.t\(\)"
+
+## Some unique things we want to stand out
+color brightyellow "\<(__CALLER__|__DIR__|__ENV__|__MODULE__|__STACKTRACE__)\>"
+color brightyellow "\<(__add__|__aliases__|__build__|__block__|__deriving__|__info__|__protocol__|__struct__|__using__)\>"
+
+## sigils
+color brightmagenta "~[a-z]\/([^\/])*\/[a-z]*" "~[a-z]\|([^\|])*\|[a-z]*" "~[a-z]\"([^\"])*\"[a-z]*" "~[a-z]\'([^\'])*\'[a-z]*" "~[a-z]\(([^\(\)])*\)[a-z]*" "~[a-z]\[([^\[\]])*\][a-z]*" "~[a-z]\{([^\{\}])*\}[a-z]*" "~[a-z]\<([^\<\>])*\>[a-z]*" 
+
+## Strings, double-quoted
+color green ""([^"]|(\\"))*""
+
+## Expression substitution.  These go inside double-quoted strings,
+## "like #{this}".
+color brightgreen "#\{[^}]*\}"
+
+## Strings, single-quoted
+color green "'([^']|(\\'))*'"
+
+## Comments
+color cyan "#.*$" "#$"
+color brightcyan "##.*$" "##$"
+
+## "Here" docs
+color green start="\"\"\"" end="\"\"\""
+
+## Some common markers
+color brightcyan "(XXX|TODO|FIXME|\?\?\?)"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

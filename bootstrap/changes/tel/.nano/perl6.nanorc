@@ -1,0 +1,19 @@
+## Here is an example for perl
+## Hybrid perl5 / perl6 syntax highlighting
+### Found in CPAN - http://cpansearch.perl.org/src/NIGE/Goo-0.09/lib/.gooskel/nanorc
+
+syntax "Perl6" "\.p6$" "\.pl6$" "\.pm6"
+color brightblue "\<(accept|alarm|atan2|bin(d|mode)|c(aller|h(dir|mod|op|own|root)|lose(dir)?|onnect|os|rypt)|d(bm(close|open)|efined|elete|ie|o|ump)|e(ach|of|val|x(ec|ists|it|p))|f(cntl|ileno|lock|ork)|get(c|login|peername|pgrp|ppid|priority|pwnam|(host|net|proto|serv)byname|pwuid|grgid|(host|net)byaddr|protobynumber|servbyport)|([gs]et|end)(pw|gr|host|net|proto|serv)ent|getsock(name|opt)|gmtime|goto|grep|hex|index|int|ioctl|join|keys|kill|last|length|link|listen|local(time)?|log|lstat|m|mkdir|msg(ctl|get|snd|rcv)|next|oct|open(dir)?|ord|pack|pipe|pop|printf?|push|q|qq|qx|rand|re(ad(dir|link)?|cv|do|name|quire|set|turn|verse|winddir)|rindex|rmdir|s|scalar|seek|seekdir|se(lect|mctl|mget|mop|nd|tpgrp|tpriority|tsockopt)|shift|shm(ctl|get|read|write)|shutdown|sin|sleep|socket(pair)?|sort|spli(ce|t)|sprintf|sqrt|srand|stat|study|substr|symlink|sys(call|read|tem|write)|tell(dir)?|time|tr|y|truncate|umask|un(def|link|pack|shift)|utime|values|vec|wait(pid)?|wantarray|warn|write)\>"
+color brightblue "\<(continue|else|elsif|do|for|foreach|if|unless|until|while|eq|ne|lt|gt|le|ge|cmp|x|my|sub|use|package|can|isa)\>"
+
+# Perl 6 words
+color brightcyan "\<(has|is|class|role|given|when|BUILD|multi|returns|method|submethod|slurp|say|sub)\>"
+color brightmagenta start="[$@%]" end="( |\\W|-)"
+color brightred "".*"|qq\|.*\|"
+color white "[sm]/.*/"
+color brightblue start="(^use| = new)" end=";"
+color brightgreen "#.*"
+color brightred start="<<EOSQL" end="EOSQL"
+
+## Trailing spaces
+color ,green "[[:space:]]+$"

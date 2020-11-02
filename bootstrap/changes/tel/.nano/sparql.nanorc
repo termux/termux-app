@@ -1,0 +1,49 @@
+## SPARQL 1.1 and SPARQL 1.1 UPDATE
+#
+syntax "SPARQL" ".*\.(rq|sparql)$"
+
+icolor brightcyan "\<(ADD|AS|ASK)\>"
+icolor brightcyan "\<(BIND|BY)\>"
+icolor brightcyan "\<(CLEAR|CONSTRUCT|CREATE)\>"
+icolor brightcyan "\<(DATA|DEFAULT|DELETE|DESCRIBE|DISTINCT|DROP)\>"
+icolor brightcyan "\<(FILTER|FROM)\>"
+icolor brightcyan "\<(GRAPH|GROUP)\>"
+icolor brightcyan "\<(HAVING)\>"
+icolor brightcyan "\<(INSERT)\>"
+icolor brightcyan "\<(LIMIT|LOAD)\>"
+icolor brightcyan "\<(MINUS|MOVE)\>"
+icolor brightcyan "\<(NAMED|NOT)\>"
+icolor brightcyan "\<(OFFSET|OPTIONAL|ORDER)\>"
+icolor brightcyan "\<(PREFIX)\>"
+icolor brightcyan "\<(REDUCED)\>"
+icolor brightcyan "\<(SELECT|SERVICE|SILENT)\>"
+icolor brightcyan "\<(TO)\>"
+icolor brightcyan "\<(UPDATE|USING)\>"
+icolor brightcyan "\<(VALUES)\>"
+icolor brightcyan "\<(WHERE|WITH)\>"
+
+# functions
+icolor brightmagenta "\<(ABS|AVG)\>"
+icolor brightmagenta "\<(BNODE|BOUND)\>"
+icolor brightmagenta "\<(CEIL|COALESCE|CONCAT|CONTAINS|COUNT)\>"
+icolor brightmagenta "\<(DATATYPE|DAY)\>"
+icolor brightmagenta "\<(ENCODE_FOR_URI|EXISTS)\>"
+icolor brightmagenta "\<(FLOOR)\>"
+icolor brightmagenta "\<(GROUP_CONCAT)\>"
+icolor brightmagenta "\<(HOURS)\>"
+icolor brightmagenta "\<(IF|IN|IRI|ISBLANK|ISIRI|ISLITERAL|ISNUMERIC)\>"
+icolor brightmagenta "\<(LANG|LANGMATCHES|LCASE)\>"
+icolor brightmagenta "\<(MAX|MD5|MIN|MINUTES|MONTH)\>"
+icolor brightmagenta "\<(NOW)\>"
+icolor brightmagenta "\<(RAND|REGEX|REPLACE|ROUND)\>"
+icolor brightmagenta "\<(SAMETERM|SECONDS|SHA1|SHA256|SHA384|SHA512|STR|STRAFTER|STRBEFORE|STRDT|STRLANG|STRLEN|STRSTARTS|STRUUID|SUBSTR|SUM)\>"
+icolor brightmagenta "\<(TIMEZONE|TZ)\>"
+icolor brightmagenta "\<(UCASE|UUID)\>"
+icolor brightmagenta "\<(YEAR)\>"
+
+# variables, IRI
+#
+icolor cyan "\?\w+"
+icolor brightgreen "<.+:[^ >]+>"
+icolor green " \w+:"
+

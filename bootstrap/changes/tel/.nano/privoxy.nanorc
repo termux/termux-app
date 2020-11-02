@@ -1,0 +1,27 @@
+syntax "Privoxy-config" "privoxy/config$"
+
+color cyan "(accept-intercepted-requests|actionsfile|admin-address|allow-cgi-request-crunching|buffer-limit|compression-level|confdir|connection-sharing|debug|default-server-timeout|deny-access|enable-compression|enable-edit-actions|enable-remote-http-toggle|enable-remote-toggle|enforce-blocks|filterfile|forward|forwarded-connect-retries|forward-socks4|forward-socks4a|forward-socks5|handle-as-empty-doc-returns-ok|hostname|keep-alive-timeout|listen-address|logdir|logfile|max-client-connections|permit-access|proxy-info-url|single-threaded|socket-timeout|split-large-forms|templdir|toggle|tolerate-pipelining|trustfile|trust-info-url|user-manual)[[:space:]]"
+color brightblack "(^|[[:space:]])#([^{].*)?$"
+color ,green "[[:space:]]+$"
+color ,red "	+ +| +	+"
+
+syntax "Privoxy-action" "\.action$"
+
+color brightred   "[{[:space:]]\-block([[:space:]{}]|$)"
+color brightgreen "[{[:space:]]\+block([[:space:]{}]|$)"
+
+color brightred   "-(add-header|change-x-forwarded-for|client-header-filter|client-header-tagger|content-type-overwrite|crunch-client-header|crunch-if-none-match|crunch-incoming-cookies|crunch-outgoing-cookies|crunch-server-header|deanimate-gifs|downgrade-http-version|fast-redirects|filter|force-text-mode|forward-override|handle-as-empty-document|handle-as-image|hide-accept-language|hide-content-disposition|hide-from-header|hide-if-modified-since|hide-referrer|hide-user-agent|limit-connect|overwrite-last-modified|prevent-compression|redirect|server-header-filter|server-header-tagger|session-cookies-only|set-image-blocker)"
+color brightgreen "\+(add-header|change-x-forwarded-for|client-header-filter|client-header-tagger|content-type-overwrite|crunch-client-header|crunch-if-none-match|crunch-incoming-cookies|crunch-outgoing-cookies|crunch-server-header|deanimate-gifs|downgrade-http-version|fast-redirects|filter|force-text-mode|forward-override|handle-as-empty-document|handle-as-image|hide-accept-language|hide-content-disposition|hide-from-header|hide-if-modified-since|hide-referrer|hide-user-agent|limit-connect|overwrite-last-modified|prevent-compression|redirect|server-header-filter|server-header-tagger|session-cookies-only|set-image-blocker)"
+color magenta           "\\.?"
+color brightblack "(^|[[:space:]])#([^{].*)?$"
+color ,green "[[:space:]]+$"
+color ,red "	+ +| +	+"
+
+syntax "Privoxy-filter" "\.filter$"
+
+color cyan  "^(FILTER|CLIENT-HEADER-FILTER|CLIENT-HEADER-TAGGER|SERVER-HEADER-FILTER|SERVER-HEADER-TAGGER): [a-z-]+"
+color brightblue "^(FILTER|CLIENT-HEADER-FILTER|CLIENT-HEADER-TAGGER|SERVER-HEADER-FILTER|SERVER-HEADER-TAGGER):"
+color magenta   "\\.?"
+color brightblack "(^|[[:space:]])#([^{].*)?$"
+color ,green "[[:space:]]+$"
+color ,red "	+ +| +	+"

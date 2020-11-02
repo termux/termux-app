@@ -1,0 +1,38 @@
+## Nano syntax highlighting for Puppet.
+##
+syntax "Puppet" "\.pp$"
+
+#This goes first, so the normal builtins will override in some classes
+## Paramerers
+color brightwhite "^[[:space:]]([a-z][a-z0-9_]+)"
+color brightgreen "\$[a-z:][a-z0-9_:]+"
+
+## List of built in types, also catches defines
+color yellow "\<(augeas|computer|cron|exec|file|filebucket|group|host|interface|k5login|macauthorization|mailalias|maillist|mcx|mount|nagios_command|nagios_contact|nagios_contactgroup|nagios_host|nagios_hostdependency|nagios_hostescalation|nagios_hostextinfo|nagios_hostgroup|nagios_service|nagios_servicedependency|nagios_serviceescalation|nagios_serviceextinfo|nagios_servicegroup|nagios_timeperiod|notify|package|resources|router|schedule|scheduled_task|selboolean|selmodule|service|ssh_authorized_key|sshkey|stage|tidy|user|vlan|yumrepo|zfs|zone|zpool|anchor)\>"
+color yellow "\<(class|define|if|else|undef|inherits)\>"
+color red "(=|-|~|>)"
+
+## Constants
+color brightblue "(\$|@|@@)?\<[A-Z]+[0-9A-Z_a-z]*"
+## Ruby "symbols"
+color magenta "([      ]|^):[0-9A-Z_]+\>"
+## Regular expressions
+color brightmagenta "/([^/]|(\\/))*/[iomx]*" "%r\{([^}]|(\\}))*\}[iomx]*"
+## Shell command expansion is in `backticks` or like %x{this}.  These are
+## "double-quotish" (to use a perlism).
+color brightblue "`[^`]*`" "%x\{[^}]*\}"
+## Strings, double-quoted
+color green ""([^"]|(\\"))*"" "%[QW]?\{[^}]*\}" "%[QW]?\([^)]*\)" "%[QW]?<[^>]*>" "%[QW]?\[[^]]*\]" "%[QW]?\$[^$]*\$" "%[QW]?\^[^^]*\^" "%[QW]?![^!]*!"
+## Expression substitution.  These go inside double-quoted strings,
+## "like ${this}".
+color brightgreen "\$\{[^}]*\}"
+## Strings, single-quoted
+color green "'([^']|(\\'))*'" "%[qw]\{[^}]*\}" "%[qw]\([^)]*\)" "%[qw]<[^>]*>" "%[qw]\[[^]]*\]" "%[qw]\$[^$]*\$" "%[qw]\^[^^]*\^" "%[qw]![^!]*!"
+## Comments
+color cyan "#[^{].*$" "#$"
+color brightcyan "##[^{].*$" "##$"
+## Some common markers
+color brightcyan "(XXX|TODO|FIXME|\?\?\?)"
+## Trailing spaces
+color ,green "[[:space:]]+$"
+

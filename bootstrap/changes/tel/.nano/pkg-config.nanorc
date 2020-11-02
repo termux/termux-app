@@ -1,0 +1,8 @@
+syntax "PC" "\.pc$"
+
+color cyan  "^(Name|Description|URL|Version|Conflicts|Cflags):"
+color cyan  "^(Requires|Libs)(\.private)?:"
+color red "="
+color brightyellow "\$\{[A-Za-z_][A-Za-z0-9_]*\}"
+color ,green "[[:space:]]+$"
+color ,red "	+ +| +	+"

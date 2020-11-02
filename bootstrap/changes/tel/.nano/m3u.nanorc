@@ -1,0 +1,22 @@
+syntax "m3u" "\.(m3u|m3u8)$"
+
+# Header text
+color brightcyan "^#EXTINF.*,[^,]*$"
+
+# Header property values
+color brightyellow "^#[^:]*:[^ ,]*"
+color brightyellow "=[^ ,]*"
+color brightyellow "=[\"][^\"]*[\"]"
+
+# Header property keys
+color brightgreen "[a-zA-Z-]*="
+
+# Headers
+color brightred "^#EXT[-A-Z]*:"
+color brightmagenta "^#EXTM3U"
+
+# Separators
+color normal "[,=]"
+
+# URLs
+color normal "^[^#].*"

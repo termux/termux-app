@@ -1,0 +1,2 @@
+All credits for nanorc files due to respective authors the compiled list by scopatz @
+https://github.com/scopatz/nanorc
