@@ -503,12 +503,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             @Override
             public void onTitleChanged(TerminalSession updatedSession) {
                 if (!mIsVisible) return;
-                if (updatedSession != getCurrentTermSession()) {
+                /*if (updatedSession != getCurrentTermSession()) {
                     // Only show toast for other sessions than the current one, since the user
                     // probably consciously caused the title change to change in the current session
                     // and don't want an annoying toast for that.
                     showToast(toToastTitle(updatedSession), false);
-                }
+                }*/
                 mListViewAdapter.notifyDataSetChanged();
             }
 
