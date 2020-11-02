@@ -1,6 +1,7 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -19,11 +20,23 @@ public class StatusView extends GridLayout {
         createStatusArea();
     }
     private ArrayList<TextView> lines;
+    private TermuxPreferences settings;
+
+    public void setSettings(TermuxPreferences settings){
+        this.settings = settings;
+    }
     public void createStatusArea(){
         lines = new ArrayList<>();
     }
 
     public void setLineText(int line, String text){
+        float size = 12;
+        String colorStr = "#c0b18b";
+        if(settings != null){
+            size = settings.getStatusTextSize();
+            colorStr = settings.getStatusTextColor();
+        }
+       int color = Color.parseColor(colorStr);
         if(lines.size()<=line){
             for(int i=lines.size();i<=line;i++){
                 TextView textView = new TextView(getContext());
@@ -33,6 +46,8 @@ public class StatusView extends GridLayout {
                     textView.setTypeface(font);
                 }
                 textView.setText("");
+                textView.setTextColor(color);
+                textView.setTextSize(size);
                 addView(textView);
                 lines.add(textView);
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams(textView.getLayoutParams());

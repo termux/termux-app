@@ -299,6 +299,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             );
         }
         mStatusView = findViewById(R.id.status_view);
+        mStatusView.setSettings(mSettings);
         mTerminalView = findViewById(R.id.terminal_view);
         mTermuxViewClient = new TermuxViewClient(this);
         mTerminalView.setOnKeyListener(mTermuxViewClient);
@@ -309,12 +310,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
 
         mTerminalView.setSplitChar(mSettings.getInputChar());
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-            WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
-            view.setBackground(wallpaperManager.getDrawable());
-            mTerminalView.setBackgroundColor(Color.parseColor("#00000000"));
-            mStatusView.setBackgroundColor(Color.parseColor("#00000000"));
-        }
 
         mTermuxViewClient.setSuggestionBarCallback(this);
         final ViewPager viewPager = findViewById(R.id.viewpager);
@@ -427,6 +422,15 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             }
         });
 
+        if(mSettings.isUseSystemWallpaper() && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+            view.setBackground(wallpaperManager.getDrawable());
+            mTerminalView.setBackgroundColor(Color.parseColor(mSettings.getTerminalBackground()));
+            mStatusView.setBackgroundColor(Color.parseColor(mSettings.getStatusBackground()));
+            int color = Color.parseColor(mSettings.getBarColor());
+            viewPager.setBackgroundColor(color);
+            viewPager2.setBackgroundColor(color);
+        }
 
 
 

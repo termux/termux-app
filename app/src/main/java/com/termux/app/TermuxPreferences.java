@@ -80,7 +80,7 @@ final class TermuxPreferences {
 
     final List<KeyboardShortcut> shortcuts = new ArrayList<>();
 
-
+    //suggestionbar
     private int buttonCount = 5;
     private char inputChar = ' ';
     private boolean bAndW = false;
@@ -89,6 +89,14 @@ final class TermuxPreferences {
     private int textSize = 10;
     private float barHeight = 1;
     private ArrayList<String> defaultButtons;
+
+    //ui
+    private String statusBackground;
+    private String terminalBackground;
+    private boolean useSystemWallpaper;
+    private float statusTextSize;
+    private String statusTextColor;
+    private String barColor;
     /**
      * If value is not in the range [min, max], set it to either min or max.
      */
@@ -190,8 +198,38 @@ final class TermuxPreferences {
     public float getBarHeight(){
         return barHeight;
     }
+
+
+    public String getStatusBackground(){return statusBackground;}
+    public String getTerminalBackground(){return terminalBackground;}
+    public boolean isUseSystemWallpaper(){return useSystemWallpaper;}
+    public float getStatusTextSize(){return statusTextSize;}
+    public String getStatusTextColor(){return statusTextColor;}
+    public String getBarColor(){return barColor; }
     void reloadFromProperties(Context context) {
 
+        //UI Settings:
+        File uiFile = new File(TermuxService.HOME_PATH+"/.tel/configs/ui.conf");
+        Properties uiProps = new Properties();
+        try {
+            if (uiFile.isFile() && uiFile.canRead()) {
+                try (FileInputStream in = new FileInputStream(uiFile)) {
+                    uiProps.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Could not open properties file ui.conf: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("termux", "Error loading props", e);
+        }
+        statusBackground = uiProps.getProperty("status-background","#101f1f1f");
+        terminalBackground = uiProps.getProperty("terminal-background","#101f1f1f");
+        useSystemWallpaper = "true".equals(uiProps.getProperty("use-system-wallpaper","false"));
+        try{
+            statusTextSize = Float.parseFloat(uiProps.getProperty("status-text-size","12"));
+        }catch(Exception e){}
+        statusTextColor = uiProps.getProperty("status-text-color","#c0b18b");
+        barColor = uiProps.getProperty("bar-color","#1f1f1f");
+        //Suggestionbar Settings:
         File suggestionBarFile = new File(TermuxService.HOME_PATH+"/.tel/configs/suggestionbar.conf");
         Properties suggestionProps = new Properties();
         try {
@@ -233,6 +271,8 @@ final class TermuxPreferences {
             barHeight = Float.parseFloat(suggestionProps.getProperty("bar-height","1.5"));
         }catch(Exception e){}
 
+
+        //Termux Settings:
         File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
         if (!propsFile.exists())
             propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
