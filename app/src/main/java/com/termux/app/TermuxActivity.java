@@ -286,7 +286,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         mSettings = new TermuxPreferences(this);
         int blackTheme = R.style.Theme_Termux_Black;
         int normalTheme = R.style.Theme_Termux;
-        if(mSettings.isUseSystemWallpaper() && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+        if(mSettings.isUseSystemWallpaper()){
             blackTheme = R.style.Theme_Wallpaper_Black;
             normalTheme = R.style.Theme_Wallpaper;
         }
