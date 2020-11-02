@@ -90,11 +90,13 @@ if [ "$UPDATE" == false ]; then #if first start detected
 	cp -rf ~/../usr/tel/termux-url-opener ~/bin
 	cp -rTf ~/../usr/tel/.tel ~/.tel
 	cp -rf ~/../usr/tel/.config ~/
+	cp -rf ~/../usr/tel/.nano ~/
 	cp -rTf ~/../usr/tel/.termux ~/.termux
 	cp -rf ~/../usr/tel/.aliases ~/
 	cp -rf ~/../usr/tel/.envvar ~/
 	cp -rf ~/../usr/tel/.tmux.conf ~/
 	cp -rf ~/../usr/tel/.zlogin ~/
+	cp -rf ~/../usr/tel/.nanorc ~/
 	cp -rf ~/../usr/tel/.vimrc ~/
 
 else
@@ -108,8 +110,8 @@ else
 	cp -rTf ~/../usr/tel/.tel/tutorials ~/.tel/tutorials
 fi
 
-
 log "Updating permissions..."
+logf "Updating permissions..."
 chmod +x ~/.tel/extras/*
 chmod +x ~/.tel/status/*
 chmod +x ~/.tel/scripts/*
@@ -117,10 +119,7 @@ chmod +x ~/.tel/scripts/status_manager/*
 chmod +x ~/.tel/tutorials/*
 chmod +x ~/.tel/bin/*
 chmod +x ~/bin/* # scripts that receive files and urls shared to TEL
-chmod +x ~/../usr/bin/tel-setup
-chmod +x ~/../usr/bin/tel-restart
-chmod +x ~/../usr/bin/tel-status
-chmod +x ~/../usr/bin/tel-delete-status
+chmod +x ~/../usr/bin/*
 
 if [ -f "$HOME/../usr/etc/motd_finished" ]; then
 	mv ~/../usr/etc/motd_finished ~/../usr/etc/motd #set final motd
@@ -128,12 +127,12 @@ fi
 
 if [ "$UPDATE" = false ]; then
 	touch ~/.tel/.installed #mark setup finished
-        log "installation finished"
+        log "Installation Complete"
 else
-        log "update finished"
+        log "Update Complete"
 fi
-logf "finished"
-error "app will restart in 3 seconds!"
+logf "Complete"
+log "app will restart in 3 seconds!"
 sleep 3
 tel-restart
 error 'Restart cannot be performed automatically when app is not active'
