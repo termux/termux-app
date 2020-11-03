@@ -12,7 +12,7 @@ dischargeicon=""
 #THERMICON=$(echo $'\ufa0e')
 #HEALTHICON=$(echo $'\uf7df')    
 homedir = os.path.expanduser("~")
-battery_file = homedir + /.tel/data/.batt
+battery_file = homedir + "/.tel/data/.batt"
 os.system("pkill -f 'BatteryStatus'")
 try:
     battery = json.loads(subprocess.check_output(["termux-battery-status"], universal_newlines=True, timeout=5)) 
@@ -69,6 +69,6 @@ try:
                 out_file.write(battery_str)
 except:
     #print(dischargeicon + " loading data")
-    with open(battery_file, 'r') as out_file:
+    with open(battery_file, 'r') as in_file:
         print(in_file.read())
 exit()
