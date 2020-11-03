@@ -11,7 +11,7 @@ chargeicon=""
 dischargeicon=""
 #THERMICON=$(echo $'\ufa0e')
 #HEALTHICON=$(echo $'\uf7df')    
-
+battery_file = ~/.tel/data/.batt
 os.system("pkill -f 'BatteryStatus'")
 try:
     battery = json.loads(subprocess.check_output(["termux-battery-status"], universal_newlines=True, timeout=5)) 
@@ -43,7 +43,7 @@ try:
     else: #if charging
         if current >= 0 and current <= 200:
             strengthcol = term.red
-            status = "Barely Charging"
+            status = "Trickle Charging"
         elif current > 200 and current < 500:
             strengthcol = term.orange
             status = "Slow Charging"
@@ -64,7 +64,10 @@ try:
             print(battery_str + warning)
         else:
             print(battery_str)
+            with open(battery_file, 'w') as out_file:
+                out_file.write(battery_str)
 except:
-#    exit() #sometimes api doesnt work, therefor exit to keep last known value instead of useless error message
-    print(dischargeicon + " loading data")
+    #print(dischargeicon + " loading data")
+    with open(battery_file, 'r') as out_file:
+        print(in_file.read())
 exit()
