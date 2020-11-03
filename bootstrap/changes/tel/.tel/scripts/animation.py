@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# text based animation - sealyj
+# TEL startup - text animation - by sealyj 2020
 from blessed import Terminal
 from time import sleep
 import os

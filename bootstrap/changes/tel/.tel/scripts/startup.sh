@@ -35,7 +35,8 @@ fi
 if [ "$STARTUP_ANIMATION_ENABLED" == "true" ] ; then
 	echo -n 'launching animation                         ' $'\r'
 	sleep 0.1
-	tmux new-window -n 'skip with ctrl c' 'python ~/.tel/scripts/animation.py'
+	#tmux new-window -n '$ANIMATION_WINDOW_NAME' 'python ~/.tel/scripts/animation.py'
+	python ~/.tel/scripts/animation.py
 	echo -ne "launched python animation ${CHECK_MARK}    " $'\r'
 fi
 
