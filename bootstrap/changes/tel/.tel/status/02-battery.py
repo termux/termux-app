@@ -64,11 +64,11 @@ try:
             warning = term.red + "  " + term.normal
             print(battery_str + warning)
         else:
+            with open(battery_file, 'w+') as out_file:
+                out_file.write(battery_str + "\n")
             print(battery_str)
-            with open(battery_file, 'w') as out_file:
-                out_file.write(battery_str)
 except:
     #print(dischargeicon + " loading data")
-    with open(battery_file, 'r') as in_file:
+    with open(battery_file, 'r+') as in_file:
         print(in_file.read())
 exit()

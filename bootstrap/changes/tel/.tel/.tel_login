@@ -3,7 +3,7 @@ if [ -z $TMUX ] ; then # Tmux not running?
 	if [ $? != 0 ]; then
 		tmux -f ~/.tel/.tel_tmux.conf new-session -d -n "$NAME" -s "TEL" 
 		tmux send-keys '~/.tel/scripts/startup.sh' 'C-m' # should remove this from zsh history
- 		sleep 0.7 # wait for tmux startup
+ 		sleep 0.6 # wait for tmux startup
 		tmux attach -t "TEL"
 	else
 		session_number=$(tmux ls | wc -l)
