@@ -42,7 +42,6 @@ def pick_color(perc_free):
 
 # get IO statistics since boot
 homedir = os.path.expanduser("~")
-#text_path = homedir + "/.tel/data/notifications"
 
 try:
     internal = shutil.disk_usage("/storage/emulated/0")
@@ -54,8 +53,8 @@ try:
         percentage_free_ext = size_as_percentage(external.total,external.free)
         col_ext = pick_color(percentage_free_ext)
 
-        print(col + " " + term.normal + str(get_size(internal.free)) + " availible " + str(get_size(external.free)) + col_ext + "ﳚ " + term.normal)
+        print(col + " " + term.normal + str(get_size(internal.free)) + " available " + str(get_size(external.free)) + col_ext + "ﳚ " + term.normal)
     else:
-        print(col + " " + term.normal + str(get_size(internal.free)) + " availible @ '~/storage'")
+        print(col + " " + term.normal + str(get_size(internal.free)) + " available @ '~/storage'")
 except:
-    print(' storage error, check perms')
+    print(' storage error, check permissions')
