@@ -734,9 +734,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     public void onBackPressed() {
         if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
             getDrawer().closeDrawers();
-        } else {
+        } /*else {
             finish();
-        }
+        }*/
     }
 
     @Override
