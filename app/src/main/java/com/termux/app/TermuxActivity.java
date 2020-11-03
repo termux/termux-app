@@ -436,7 +436,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         int color = Color.parseColor(mSettings.getBarColor());
         viewPager.setBackgroundColor(color);
         viewPager2.setBackgroundColor(color);
-        getWindow().getDecorView().setBackgroundColor(Color.parseColor(mSettings.getBackgroundColor()));
+        if(mSettings.isUseSystemWallpaper()){
+            getWindow().getDecorView().setBackgroundColor(Color.parseColor(mSettings.getBackgroundColor()));
+        }
 
 
         View newSessionButton = findViewById(R.id.new_session_button);
