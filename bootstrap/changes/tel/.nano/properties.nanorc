@@ -1,6 +1,0 @@
-syntax "properties" "\.properties$"
-# property key
-icolor green "^[^:=]+[:=]"
-
-# comments
-icolor blue "([[:space:]])*[#!].*$"

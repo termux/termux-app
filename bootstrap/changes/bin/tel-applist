@@ -1,9 +1,0 @@
-#!/data/data/com.termux/files/usr/bin/sh
-
-if [ "$#" != "0" ]; then
-	echo 'usage: tel-applist'
-	exit
-fi
-
-am broadcast --user 0 \
-		 -a com.termux.app.app_cache com.termux > /dev/null

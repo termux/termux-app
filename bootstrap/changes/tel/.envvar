@@ -1,6 +1,0 @@
-# Preferred terminal behaviour for local and remote sessions, note xterm behaves better with alacritty and kitty terminal
-if [[ -n $SSH_CONNECTION ]]; then
-  export TERM=xterm-256color
-fi
-export TERM=xterm-256color
-export TERMINFO='~/../usr/share/terminfo/'

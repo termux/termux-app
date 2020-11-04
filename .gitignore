@@ -4,6 +4,8 @@
 bootstrap/org
 # Built application files
 build/
+bootstrap-changes/
+bootstrap-*
 *.apk
 *.so
 .externalNativeBuild
