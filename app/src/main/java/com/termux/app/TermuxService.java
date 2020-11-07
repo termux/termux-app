@@ -94,6 +94,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     /** If the user has executed the {@link #ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
 
+    private TermuxPreferences settings;
     @SuppressLint("Wakelock")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -185,8 +186,13 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onCreate() {
-        setupNotificationChannel();
-        startForeground(NOTIFICATION_ID, buildNotification());
+        settings = new TermuxPreferences(getApplicationContext());
+
+        if(settings.isRunBackground()){
+            setupNotificationChannel();
+            startForeground(NOTIFICATION_ID, buildNotification());
+        }
+
     }
 
     /** Update the shown foreground service notification after making any changes that affect it. */
@@ -194,7 +200,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         if (mWakeLock == null && mTerminalSessions.isEmpty() && mBackgroundTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             stopSelf();
-        } else {
+        } else if(settings.isRunBackground()){
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
         }
     }
