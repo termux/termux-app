@@ -265,7 +265,7 @@ final class TermuxPreferences {
         }catch(Exception e){}
         statusTextColor = themeProps.getProperty("status-text-color","#c0b18b");
         barColor = themeProps.getProperty("bar-color","#1f1f1f");
-        statusBarColor = themeProps.getProperty("statusbar-color","#991f1f1f");
+        statusBarColor = themeProps.getProperty("statusbar-color","#00000000");
         try{
             textSize = Float.parseFloat(themeProps.getProperty("sb-text-size","10"));
         }catch(Exception e){}
