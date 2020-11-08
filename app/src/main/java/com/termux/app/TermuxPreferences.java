@@ -259,7 +259,7 @@ final class TermuxPreferences {
         }catch(Exception e){}
 
         backgroundColor = themeProps.getProperty("background-color","#991f1f1f");
-        useSystemWallpaper = "true".equals(themeProps.getProperty("use-system-wallpaper","false"));
+        useSystemWallpaper = "true".equals(themeProps.getProperty("use-system-wallpaper","true"));
         try{
             statusTextSize = Float.parseFloat(themeProps.getProperty("status-text-size","12"));
         }catch(Exception e){}
