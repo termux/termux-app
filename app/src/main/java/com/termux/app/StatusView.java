@@ -1,6 +1,7 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -24,11 +25,34 @@ public class StatusView extends GridLayout {
 
     public void setSettings(TermuxPreferences settings){
         this.settings = settings;
+        int line = 0;
+        String content = getLineCache(line);
+        while(!content.equals("[empty]")){
+            setLineText(line,content);
+            line++;
+            content = getLineCache(line);
+        }
     }
     public void createStatusArea(){
         lines = new ArrayList<>();
     }
 
+    private String getLineCache(int line){
+        SharedPreferences sharedPref = getContext().getSharedPreferences("lineCache",Context.MODE_PRIVATE);
+        return sharedPref.getString("lineCache"+line,"[empty]");
+    }
+    private void setLineCache(int line, String content){
+        SharedPreferences sharedPref = getContext().getSharedPreferences("lineCache",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("lineCache"+line, content);
+        editor.apply();
+    }
+    private void deleteLineCache(int line){
+        SharedPreferences sharedPref = getContext().getSharedPreferences("lineCache",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.remove("lineCache"+line);
+        editor.apply();
+    }
     public void setLineText(int line, String text){
         float size = 12;
         String colorStr = "#c0b18b";
@@ -56,12 +80,15 @@ public class StatusView extends GridLayout {
             }
         }
         lines.get(line).setText(text);
+        setLineCache(line,text);
     }
     public void deleteUntil(int line){
         while(lines.size()>line+1){
             TextView toRemove = lines.get(lines.size()-1);
             removeView(toRemove);
+            deleteLineCache(lines.size()-1);
             lines.remove(toRemove);
+
         }
     }
 }

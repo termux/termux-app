@@ -20,3 +20,4 @@ for ARCH in $ARCHS; do
 	cd ..
 	rm -rf bootstrap-$ARCH
 done
+rm -rf bootstrap-changes
