@@ -82,21 +82,21 @@
     </androidx.drawerlayout.widget.DrawerLayout>
 
     <androidx.viewpager.widget.ViewPager
-        android:id="@+id/viewpager2"
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="37.5dp"
         android:layout_alignParentBottom="true"
         android:background="@android:drawable/screen_background_dark_transparent"
-        android:visibility="visible" >
+        android:visibility="gone" >
 
     </androidx.viewpager.widget.ViewPager>
 
     <androidx.viewpager.widget.ViewPager
-        android:id="@+id/viewpager"
+        android:id="@+id/viewpager2"
         android:layout_width="match_parent"
         android:layout_height="37.5dp"
-        android:layout_above="@id/viewpager2"
+        android:layout_above="@id/viewpager"
         android:background="@android:drawable/screen_background_dark_transparent"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
 </RelativeLayout>
