@@ -133,11 +133,11 @@ clean {
 
 task downloadBootstraps(){
     doLast {
-        def version = 32
-        downloadBootstrap("aarch64", "8cce8a916a3a8db38f7d1880b697708662fb9b555b35098c8c3b8ee1639a847b", version)
-        downloadBootstrap("arm",     "f313b819e90c7bedf3b45941d8a64c0cec73e2c2b8030a00565306d3011f25cc", version)
-        downloadBootstrap("i686",    "89ff9d63f9bccfbc1406b70fe1c9a18b124456772ebb3fe0078ecdb2bc21acae", version)
-        downloadBootstrap("x86_64",  "37e07f73592adbab5bfe2a5185f56b29f9e331aa172d13f0d57bdb2c0ef62d69", version)
+        def version = 33
+        downloadBootstrap("aarch64", "e8dbab424774db8d6cb3d85836dd910855aaef15bbd50e6a0fae6dc6587f7e66", version)
+        downloadBootstrap("arm",     "19c496bc9a867d8b6fac536d4bd518ff288dd381fa89544136051710f7651db3", version)
+        downloadBootstrap("i686",    "109fd6ca643a54480233152a7b8f42ed8f9ae5adf6fc4da6db4966632df3a180", version)
+        downloadBootstrap("x86_64",  "e1182fd8d3d423ea351b93baf3bc853a25185df002da42725b9a5e09a30dfda1", version)
     }
 }
 
