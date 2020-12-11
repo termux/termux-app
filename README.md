@@ -16,7 +16,7 @@ terminal emulation). For the packages installable inside the app, see
 
 ***
 
-**@termux is looking for Termux Application maintainer for implementing new features
+**@termux is looking for Termux Application maintainer for implementing new features,
 fixing bugs and reviewing pull requests since current one (@fornwall) is inactive.**
 
 Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
