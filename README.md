@@ -14,15 +14,6 @@ Note that this repository is for the app itself (the user interface and the
 terminal emulation). For the packages installable inside the app, see
 [termux/termux-packages](https://github.com/termux/termux-packages)
 
-***
-
-**@termux is looking for Termux Application maintainer for implementing new features,
-fixing bugs and reviewing pull requests since current one (@fornwall) is inactive.**
-
-Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
-
-***
-
 ## Installation
 
 Termux application can be obtained from:
