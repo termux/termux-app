@@ -255,20 +255,7 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        File propsFile = new File(getContext().getFilesDir() + "/home/.termux/termux.properties");
-        if (!propsFile.exists())
-            propsFile = new File(getContext().getFilesDir() + "/home/.config/termux/termux.properties");
-
-        Properties props = new Properties();
-        try {
-            if (propsFile.isFile() && propsFile.canRead()) {
-                try (FileInputStream in = new FileInputStream(propsFile)) {
-                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-                }
-            }
-        } catch (Exception e) {
-            Log.e("termux", "Error loading props", e);
-        }
+        Properties props = getProperties();
 
         if (props.getProperty("enforce-char-based-input", "false").equals("true")) {
             // Some keyboards seems do not reset the internal state on TYPE_NULL.
@@ -1542,6 +1529,34 @@ public final class TerminalView extends View {
                     showFloatingToolbar();
             }
         }
+    }
+
+    private Properties getProperties() {
+        File propsFile;
+        Properties props = new Properties();
+        String possiblePropLocations[] = {
+            getContext().getFilesDir() + "/home/.termux/termux.properties",
+            getContext().getFilesDir() + "/home/.config/termux/termux.properties"
+        };
+
+        propsFile = new File(possiblePropLocations[0]);
+        int i = 1;
+        while (!propsFile.exists() && i <= possiblePropLocations.length) {
+            propsFile = new File(possiblePropLocations[i]);
+            i += 1;
+        }
+
+        try {
+            if (propsFile.isFile() && propsFile.canRead()) {
+                try (FileInputStream in = new FileInputStream(propsFile)) {
+                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception e) {
+            Log.e("termux", "Error loading props", e);
+        }
+
+        return props;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
