@@ -64,6 +64,10 @@ android {
         }
     }
 
+    lintOptions {
+        disable 'ProtectedPermissions'
+    }
+
     testOptions {
         unitTests {
             includeAndroidResources = true
