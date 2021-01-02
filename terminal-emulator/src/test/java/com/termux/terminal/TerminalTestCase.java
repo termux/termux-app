@@ -18,7 +18,7 @@ public abstract class TerminalTestCase extends TestCase {
 		public final List<ChangedTitle> titleChanges = new ArrayList<>();
 		public final List<String> clipboardPuts = new ArrayList<>();
 		public int bellsRung = 0;
-        public int colorsChanged = 0;
+		public int colorsChanged = 0;
 
 		@Override
 		public void write(byte[] data, int offset, int count) {
@@ -26,10 +26,10 @@ public abstract class TerminalTestCase extends TestCase {
 		}
 
 		public String getOutputAndClear() {
-            String result = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-            baos.reset();
-            return result;
-        }
+			String result = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+			baos.reset();
+			return result;
+		}
 
 		@Override
 		public void titleChanged(String oldTitle, String newTitle) {
@@ -46,11 +46,11 @@ public abstract class TerminalTestCase extends TestCase {
 			bellsRung++;
 		}
 
-        @Override
-        public void onColorsChanged() {
-            colorsChanged++;
-        }
-    }
+		@Override
+		public void onColorsChanged() {
+			colorsChanged++;
+		}
+	}
 
 	public TerminalEmulator mTerminal;
 	public MockTerminalOutput mOutput;

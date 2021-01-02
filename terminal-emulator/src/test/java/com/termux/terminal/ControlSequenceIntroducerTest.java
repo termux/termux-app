@@ -35,31 +35,31 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
 		withTerminalSized(3, 2).enterString("\033[0;38;2;255;255;255;48;2;0;0;0;1;2;3;4;5;7;8;9mabc").assertLinesAre("abc", "   ");
 	}
 
-    /** CSI Ps b  Repeat the preceding graphic character Ps times (REP). */
-    public void testRepeat() {
-        withTerminalSized(3, 2).enterString("a\033[b").assertLinesAre("aa ", "   ");
-        withTerminalSized(3, 2).enterString("a\033[2b").assertLinesAre("aaa", "   ");
-        // When no char has been output we ignore REP:
-        withTerminalSized(3, 2).enterString("\033[b").assertLinesAre("   ", "   ");
-        // This shows that REP outputs the last emitted code point and not the one relative to the
-        // current cursor position:
-        withTerminalSized(5, 2).enterString("abcde\033[2G\033[2b\n").assertLinesAre("aeede", "     ");
-    }
+	/** CSI Ps b  Repeat the preceding graphic character Ps times (REP). */
+	public void testRepeat() {
+		withTerminalSized(3, 2).enterString("a\033[b").assertLinesAre("aa ", "   ");
+		withTerminalSized(3, 2).enterString("a\033[2b").assertLinesAre("aaa", "   ");
+		// When no char has been output we ignore REP:
+		withTerminalSized(3, 2).enterString("\033[b").assertLinesAre("   ", "   ");
+		// This shows that REP outputs the last emitted code point and not the one relative to the
+		// current cursor position:
+		withTerminalSized(5, 2).enterString("abcde\033[2G\033[2b\n").assertLinesAre("aeede", "     ");
+	}
 
-    /** CSI 3 J  Clear scrollback (xterm, libvte; non-standard). */
-    public void testCsi3J() {
-        withTerminalSized(3, 2).enterString("a\r\nb\r\nc\r\nd");
-        assertEquals("a\nb\nc\nd", mTerminal.getScreen().getTranscriptText());
-        enterString("\033[3J");
-        assertEquals("c\nd", mTerminal.getScreen().getTranscriptText());
+	/** CSI 3 J  Clear scrollback (xterm, libvte; non-standard). */
+	public void testCsi3J() {
+		withTerminalSized(3, 2).enterString("a\r\nb\r\nc\r\nd");
+		assertEquals("a\nb\nc\nd", mTerminal.getScreen().getTranscriptText());
+		enterString("\033[3J");
+		assertEquals("c\nd", mTerminal.getScreen().getTranscriptText());
 
-        withTerminalSized(3, 2).enterString("Lorem_ipsum");
-        assertEquals("Lorem_ipsum", mTerminal.getScreen().getTranscriptText());
-        enterString("\033[3J");
-        assertEquals("ipsum", mTerminal.getScreen().getTranscriptText());
+		withTerminalSized(3, 2).enterString("Lorem_ipsum");
+		assertEquals("Lorem_ipsum", mTerminal.getScreen().getTranscriptText());
+		enterString("\033[3J");
+		assertEquals("ipsum", mTerminal.getScreen().getTranscriptText());
 
-        withTerminalSized(3, 2).enterString("w\r\nx\r\ny\r\nz\033[?1049h\033[3J\033[?1049l");
-        assertEquals("y\nz", mTerminal.getScreen().getTranscriptText());
-    }
+		withTerminalSized(3, 2).enterString("w\r\nx\r\ny\r\nz\033[?1049h\033[3J\033[?1049l");
+		assertEquals("y\nz", mTerminal.getScreen().getTranscriptText());
+	}
 
 }
