@@ -729,11 +729,11 @@ public final class TerminalView extends View {
     public void clearInputLine(){
         KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
         String input = getCurrentInput();
-        int width = 99;
         if(input!=null){
-            width = getCurrentInput().length()+10;
+            int width = input.length()+10;
+            for (int i = 0; i < width; i++) onKeyDown(KeyEvent.KEYCODE_DEL,deleteKey);
         }
-        for (int i = 0; i < width; i++) onKeyDown(KeyEvent.KEYCODE_DEL,deleteKey);
+        
     }
     /**
      * Called when a key is released in the view.
