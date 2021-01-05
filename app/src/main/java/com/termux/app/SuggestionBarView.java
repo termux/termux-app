@@ -50,7 +50,7 @@ public final class SuggestionBarView extends GridLayout {
                     currentButton.setRatio(ratio);
                     newList.add(currentButton);
                 }
-            }else if(currentButton.getText().toLowerCase().startsWith(input)){
+            }else if(currentButton.getText().toLowerCase().startsWith(input.toLowerCase())){
                 newList.add(currentButton);
             }
 
