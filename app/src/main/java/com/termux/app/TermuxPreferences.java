@@ -331,7 +331,7 @@ final class TermuxPreferences {
         }
 
         mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
-        mDisableVolumeVirtualKeys = "volume".equals(props.getProperty("volume-keys", "virtual"));
+        mDisableVolumeVirtualKeys = "volume".equals(props.getProperty("volume-keys", "volume"));
 
         shortcuts.clear();
         parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
