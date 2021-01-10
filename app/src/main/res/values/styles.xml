@@ -3,7 +3,7 @@
 
     <style name="Theme.Termux" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#991f1f1f</item>
-        <item name="android:colorPrimary">#FF000000</item>
+        <item name="android:colorPrimary">#FFc0b18b</item>
         <item name="android:windowBackground">@android:color/black</item>
 
         <!-- Seen in buttons on left drawer: -->
