@@ -53,4 +53,13 @@
     <string name="file_received_open_folder_button">Open folder</string>
     <string name="termux_permission_description">Allows application to execute arbitrary shell command within TEL.</string>
     <string name="termux_permission_label">TEL Service Permission</string>
+
+    <string name="intro_1_text">Welcome to Termux Expert Launcher</string>
+    <string name="intro_2_text">TEL allows you to create the perfect command line launcher specifically suited for you.</string>
+    <string name="intro_3_text">Use Telegram to talk with our community: @termux_expert_launcher</string>
+    <string name="intro_4_text">This is a launcher based on Termux, if you do not know it, get familiar with it first!</string>
+    <string name="intro_5_text">Keep in mind that TEL is very young and still under heavy development.\n Do not expect it to be stable until it reaches version 1.0!</string>
+
+    <string name="intro_finish_text">You need a stable wifi connection to finish the setup.\nPlease note that this can take a while!</string>
+    <string name="intro_finish_button">Finish Installation</string>
 </resources>

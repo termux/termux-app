@@ -6,12 +6,14 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Environment;
 import android.os.UserManager;
 import android.system.Os;
 import android.util.Log;
 import android.util.Pair;
 import android.view.WindowManager;
+
 
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
@@ -70,6 +72,9 @@ final class TermuxInstaller {
             whenDone.run();
             return;
         }
+        Intent intent = new Intent(activity, IntroActivity.class);
+        activity.startActivity(intent);
+
 
         final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
         new Thread() {
