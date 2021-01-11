@@ -108,6 +108,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     private static final String API_ACTION = "com.termux.app.api";
     private static final String API_DATA = "com.termux.app.api_data";
     private static final String WRITE_STATUS = "com.termux.app.status";
+    private static final String INTRO_ACTION = "com.termux.app.intro";
 
     /** The main view of the activity showing the terminal. Initialized in onCreate(). */
     @SuppressWarnings("NullableProblems")
@@ -235,6 +236,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         public void onReceive(Context context, Intent intent) {
             String apiAction = intent.getStringExtra(RELOAD_STYLE_ACTION);
             String apiData = intent.getStringExtra(API_DATA);
+        }
+    };
+    private final BroadcastReceiver introBroadcastReceiver =  new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Intent intent2 = new Intent(getApplicationContext(), IntroActivity.class);
+            getApplicationContext().startActivity(intent2);
         }
     };
 
@@ -712,6 +720,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         registerReceiver(appCacheBroadcastReceiver, new IntentFilter(APP_CACHE_ACTION));
         registerReceiver(restartBroadcastReceiver, new IntentFilter(RESTART_ACTION));
         registerReceiver(statusBroadcastReceiver, new IntentFilter(WRITE_STATUS));
+        registerReceiver(introBroadcastReceiver,new IntentFilter(INTRO_ACTION));
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal:
         mTerminalView.onScreenUpdated();
@@ -727,6 +736,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         unregisterReceiver(appCacheBroadcastReceiver);
         unregisterReceiver(restartBroadcastReceiver);
         unregisterReceiver(statusBroadcastReceiver);
+        unregisterReceiver(introBroadcastReceiver);
         getDrawer().closeDrawers();
     }
 
