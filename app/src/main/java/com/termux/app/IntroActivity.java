@@ -25,14 +25,14 @@ public class IntroActivity  extends AhoyOnboarderActivity {
 
         //ahoyOnboarderCard1.setIconLayoutParams(iconWidth, iconHeight, marginTop, marginLeft, marginRight, marginBottom);
         List<AhoyOnboarderCard> pages = new ArrayList<>();
-        AhoyOnboarderCard card1 = createImgCard(" ",getString(R.string.intro_1_text), R.mipmap.ic_launcher);
+        AhoyOnboarderCard card1 = createImgCard(getString(R.string.intro_1_title),getString(R.string.intro_1_text), R.mipmap.ic_launcher);
         card1.setDescriptionTextSize(dpToPixels(8, this));
-        AhoyOnboarderCard card2 = createImgCard(" ",getString(R.string.intro_2_text), R.drawable.ic_baseline_self_improvement_24);
-        AhoyOnboarderCard card3 = createImgCard(" ",getString(R.string.intro_3_text), R.drawable.ic_baseline_emoji_people_24);
-        AhoyOnboarderCard card4 = createImgCard(" ",getString(R.string.intro_4_text), R.drawable.ic_baseline_warning_24);
-        AhoyOnboarderCard card5 = createImgCard(" ",getString(R.string.intro_5_text), R.drawable.ic_baseline_child_friendly_24);
+        AhoyOnboarderCard card2 = createImgCard(getString(R.string.intro_2_title),getString(R.string.intro_2_text), R.drawable.ic_baseline_self_improvement_24);
+        AhoyOnboarderCard card3 = createImgCard(getString(R.string.intro_3_title),getString(R.string.intro_3_text), R.drawable.ic_baseline_emoji_people_24);
+        AhoyOnboarderCard card4 = createImgCard(getString(R.string.intro_4_title),getString(R.string.intro_4_text), R.drawable.ic_baseline_warning_24);
+        AhoyOnboarderCard card5 = createImgCard(getString(R.string.intro_5_title),getString(R.string.intro_5_text), R.drawable.ic_baseline_child_friendly_24);
 
-        AhoyOnboarderCard card6 = createImgCard(" ", getString(R.string.intro_finish_text),R.drawable.ic_baseline_wifi_24);
+        AhoyOnboarderCard card6 = createImgCard(getString(R.string.intro_finish_title), getString(R.string.intro_finish_text),R.drawable.ic_baseline_wifi_24);
         pages.add(card1);
         pages.add(card2);
         pages.add(card3);
