@@ -41,16 +41,15 @@ public class IntroActivity  extends AhoyOnboarderActivity {
         pages.add(card6);
         setOnboardPages(pages);
 
-       /* List<Integer> colorList = new ArrayList<>();
-        colorList.add(R.color.green);
-        colorList.add(R.color.green);
-        colorList.add(R.color.grey);
-        colorList.add(R.color.red);
-        colorList.add(R.color.orange);
-        colorList.add(R.color.brown);
+       List<Integer> colorList = new ArrayList<>();
+        colorList.add(R.color.text_color);
+        colorList.add(R.color.text_color);
+        colorList.add(R.color.text_color);
+        colorList.add(R.color.warning_color);
+        colorList.add(R.color.text_color);
+        colorList.add(R.color.text_color);
         setColorBackground(colorList);
-*/
-        setColorBackground(R.color.text_color);
+        //setColorBackground(R.color.text_color);
         setFinishButtonTitle(getString(R.string.intro_finish_button));
     }
 
