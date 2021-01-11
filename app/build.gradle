@@ -25,8 +25,8 @@ android {
         applicationId "com.termux"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 102
-        versionName "0.102"
+        versionCode 1001
+        versionName "0.1"
 
         externalNativeBuild {
             ndkBuild {
