@@ -39,15 +39,24 @@ public class IntroActivity  extends AhoyOnboarderActivity {
         pages.add(card4);
         pages.add(card5);
         pages.add(card6);
-
         setOnboardPages(pages);
-        setColorBackground(R.color.ic_launcher_background);
+
+       /* List<Integer> colorList = new ArrayList<>();
+        colorList.add(R.color.green);
+        colorList.add(R.color.green);
+        colorList.add(R.color.grey);
+        colorList.add(R.color.red);
+        colorList.add(R.color.orange);
+        colorList.add(R.color.brown);
+        setColorBackground(colorList);
+*/
+        setColorBackground(R.color.text_color);
         setFinishButtonTitle(getString(R.string.intro_finish_button));
     }
 
     private AhoyOnboarderCard createCard(String title, String description){
         AhoyOnboarderCard ahoyOnboarderCard = new AhoyOnboarderCard(title, description);
-        ahoyOnboarderCard.setBackgroundColor(R.color.black_transparent);
+        ahoyOnboarderCard.setBackgroundColor(R.color.ic_launcher_background);
         ahoyOnboarderCard.setTitleColor(R.color.white);
         ahoyOnboarderCard.setDescriptionColor(R.color.grey_200);
         ahoyOnboarderCard.setTitleTextSize(dpToPixels(10, this));
