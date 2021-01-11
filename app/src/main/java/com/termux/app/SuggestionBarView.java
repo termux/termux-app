@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ChangedPackages;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.ColorFilter;
@@ -33,6 +34,7 @@ public final class SuggestionBarView extends GridLayout {
     private TermuxPreferences settings;
     private List<SuggestionBarButton> allSuggestionButtons;
     private List<SuggestionBarButton> defaultButtons;
+    private int applicationSequenceNumber = 0;
     public SuggestionBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -75,9 +77,19 @@ public final class SuggestionBarView extends GridLayout {
         return newList;
 
     }
+
+    void reloadAllApps(){
+            allSuggestionButtons = getInstalledAppButtons();
+    }
     void reloadWithInput(String input, final TerminalView terminalView){
         if(allSuggestionButtons == null){
-            allSuggestionButtons = getInstalledAppButtons();
+            reloadAllApps();
+        }
+        PackageManager packageManager = getContext().getPackageManager();
+        ChangedPackages changedPackages = packageManager.getChangedPackages(applicationSequenceNumber);
+        if(changedPackages != null){
+            applicationSequenceNumber = changedPackages.getSequenceNumber();
+            reloadAllApps();
         }
         List<SuggestionBarButton> suggestionButtons = new ArrayList<>(allSuggestionButtons);
         setRowCount(suggestionButtons.size());
