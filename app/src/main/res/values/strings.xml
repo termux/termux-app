@@ -56,14 +56,14 @@
 
     <string name="intro_1_text">to Termux Expert Launcher</string>
     <string name="intro_1_title">Welcome</string>
-    <string name="intro_2_text">Allows you to create the perfect command line launcher specifically suited for you.</string>
-    <string name="intro_2_title">TEL</string>
+    <string name="intro_2_text">TEL wants to be the perfect command line launcher specifically suited for you. It should be as customizable as possible.</string>
+    <string name="intro_2_title">Inspiration</string>
     <string name="intro_3_text">Use Telegram to talk with our community: @termux_expert_launcher</string>
     <string name="intro_3_title">Community</string>
     <string name="intro_4_text">This launcher is based on Termux, if you do not know it, get familiar with it first!\n If you want a launcher looking like a terminal, please use T-UI!</string>
     <string name="intro_4_title">Warning</string>
-    <string name="intro_5_text">TEL is very young and still under heavy development.\n Do not expect it to be stable until it reaches version 1.0!</string>
-    <string name="intro_5_title">Keep in Mind</string>
+    <string name="intro_5_text">TEL is like a baby, very young and still under heavy development.\n Do not expect it to be stable until it reaches version 1.0!</string>
+    <string name="intro_5_title">It\'s a TEL</string>
 
     <string name="intro_finish_text">You need a stable wifi connection to finish the setup.\nPlease note that this can take a while!</string>
     <string name="intro_finish_title">Let\'s Go</string>
