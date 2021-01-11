@@ -240,6 +240,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         @Override
         public void onReceive(Context context, Intent intent) {
             Intent intent2 = new Intent(getApplicationContext(), IntroActivity.class);
+            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             getApplicationContext().startActivity(intent2);
         }
     };
