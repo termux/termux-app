@@ -712,6 +712,27 @@ public final class TerminalView extends View {
         this.splitChar = splitChar;
     }
 
+    public String getCurrentInput(char currentChar){
+        int row = mEmulator.getCursorRow();
+        int cut = mEmulator.getCursorCol();
+        String originalText = mEmulator.getScreen().getSelectedText(0,row,99,row);
+        if(originalText.indexOf(splitChar) >=0){
+            if(cut >=originalText.length()){
+                originalText = originalText+currentChar;
+            }else if(cut > 0){
+                originalText = originalText.substring(0,cut) + currentChar+originalText.substring(cut);
+            }else if(cut == 0){
+                originalText = originalText+ currentChar;
+            }else{
+                Log.e("TEL_SB","col smaller than zero!");
+            }
+            String text = originalText.substring(originalText.indexOf(splitChar)+1);
+            text = text.replaceAll("[^a-zA-Z ]", "");
+            text = text.replaceAll(" {2,}", " ");
+            return text.trim();
+        }
+        return null;
+    }
     public String getCurrentInput(){
         int row = mEmulator.getCursorRow();
         String text = mEmulator.getScreen().getSelectedText(0,row,99,row);
@@ -725,6 +746,8 @@ public final class TerminalView extends View {
         /*does only read input from the line of the cursor
         String[] cmds = mTermSession.getEmulator().getScreen().getTranscriptText().split("\n");*/
     }
+
+
 
     public void clearInputLine(){
         KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);

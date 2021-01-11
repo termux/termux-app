@@ -152,10 +152,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     int mBellSoundId;
 
     public void reloadSuggestionBar(char inputChar){
-        String input = mTerminalView.getCurrentInput();
-        if(input != null){
-            input+=inputChar;
-        }else{
+        String input = mTerminalView.getCurrentInput(inputChar);
+        if(input == null){
             input = "";
         }
 

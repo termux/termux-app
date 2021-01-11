@@ -223,7 +223,7 @@ final class TermuxPreferences {
             Toast.makeText(context, "Could not open properties file settings.conf: " + e.getMessage(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
         }
-        String inputCharString = uiProps.getProperty("input-char"," ");
+        String inputCharString = uiProps.getProperty("input-char","$");
         if(inputCharString.length()> 0 && !inputCharString.toLowerCase().equals("space")){
             inputChar= inputCharString.charAt(0);
         }else{
