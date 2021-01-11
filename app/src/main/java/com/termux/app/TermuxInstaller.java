@@ -60,9 +60,6 @@ final class TermuxInstaller {
         // Termux can only be run as the primary user (device owner) since only that
         // account has the expected file system paths. Verify that:
 
-        Intent intent = new Intent(activity, IntroActivity.class);
-        activity.startActivity(intent);
-
         UserManager um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
         boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
         if (!isPrimaryUser) {
@@ -76,7 +73,8 @@ final class TermuxInstaller {
             whenDone.run();
             return;
         }
-
+        Intent intent = new Intent(activity, IntroActivity.class);
+        activity.startActivity(intent);
 
 
         final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
