@@ -25,3 +25,4 @@ for ARCH in $ARCHS; do
 	rm -rf bootstrap-$ARCH
 done
 rm -rf bootstrap-changes
+rm -rf bin
