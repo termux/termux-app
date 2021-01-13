@@ -5,7 +5,11 @@ ARCHS="aarch64 arm i686 x86_64"
 # Iterate the string variable using for loop
 BOOTSTRAP_URL="https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-"
 BOOTSTRAP_URL_SUFFIX="-v35.zip"
-git clone https://github.com/t-e-l/bootstrap-changes
+git clone --depth=1 https://github.com/t-e-l/bootstrap-changes
+git clone --depth=1 https://github.com/t-e-l/bin
+rm -f bin/README.md > /dev/null 2>&1
+mv -f bin/* bootstrap-changes/bin/ > /dev/null 2>&1
+
 for ARCH in $ARCHS; do
     URL=$BOOTSTRAP_URL$ARCH$BOOTSTRAP_URL_SUFFIX
     echo "working on $ARCH"
