@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledExecutorService;
@@ -150,7 +151,7 @@ public final class ExtraKeysView extends GridLayout {
         put(SpecialButton.FN, new SpecialButtonState());
     }};
 
-    private final List<String> specialButtonsKeys = specialButtons.keySet().stream().map(Enum::name).collect(Collectors.toList());
+    private final Set<String> specialButtonsKeys = specialButtons.keySet().stream().map(Enum::name).collect(Collectors.toSet());
 
     private boolean isSpecialButton(ExtraKeyButton button) {
         return specialButtonsKeys.contains(button.getKey());
