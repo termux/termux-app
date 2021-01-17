@@ -235,8 +235,11 @@ public final class KeyHandler {
                 // Just do what xterm and gnome-terminal does:
                 return prefix + (((keyMode & KEYMOD_CTRL) == 0) ? "\u007F" : "\u0008");
             case KEYCODE_NUM_LOCK:
-                return "\033OP";
-
+                if (keypadApplication) {
+                    return "\033OP";
+                } else {
+                    return null;
+                }
             case KEYCODE_SPACE:
                 // If ctrl is not down, return null so that it goes through normal input processing (which may e.g. cause a
                 // combining accent to be written):
