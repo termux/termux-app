@@ -1547,8 +1547,8 @@ public final class TerminalView extends View {
         };
 
         propsFile = new File(possiblePropLocations[0]);
-        int i = 1;
-        while (!propsFile.exists() && i <= possiblePropLocations.length) {
+        int i = 0;
+        while (!propsFile.exists() && i < possiblePropLocations.length) {
             propsFile = new File(possiblePropLocations[i]);
             i += 1;
         }
