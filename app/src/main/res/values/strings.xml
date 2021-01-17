@@ -2,6 +2,8 @@
 <resources>
     <string name="application_name">Termux</string>
     <string name="shared_user_label">Termux user</string>
+    <string name="run_command_permission_label">Run commands in Termux environment</string>
+    <string name="run_command_permission_description">execute arbitrary commands within Termux environment</string>
     <string name="new_session">New session</string>
     <string name="new_session_failsafe">Failsafe</string>
     <string name="toggle_soft_keyboard">Keyboard</string>
@@ -10,6 +12,7 @@
     <string name="share_transcript_title">Terminal transcript</string>
     <string name="help">Help</string>
     <string name="toggle_keep_screen_on">Keep screen on</string>
+    <string name="autofill_password">Autofill password</string>
 
     <string name="bootstrap_installer_body">Installing…</string>
     <string name="bootstrap_error_title">Unable to install</string>

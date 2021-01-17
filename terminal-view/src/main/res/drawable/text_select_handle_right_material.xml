@@ -1,4 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-        android:src="@drawable/text_select_handle_right_mtrl_alpha"
-        android:tint="#2196F3" />
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="24dp"
+    android:viewportWidth="132"
+    android:viewportHeight="66">
+  <path
+      android:pathData="M33,20.8c0,23.9 0.7,27.3 7.2,34.7 6.2,7.1 12.4,9.8 23.5,10.3 12.6,0.6 17.8,-1.3 25.8,-9.3 8,-8 9.9,-13.2 9.3,-25.8 -0.5,-11.1 -3.2,-17.3 -10.3,-23.5 -7.4,-6.5 -10.8,-7.2 -34.7,-7.2l-20.8,-0 0,20.8z"
+      android:fillColor="#2196F3"
+      android:strokeColor="#00000000"/>
+</vector>

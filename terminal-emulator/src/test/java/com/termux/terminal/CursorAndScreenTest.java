@@ -18,7 +18,7 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		assertLinesAre("ABCDE", "FGHIJ", "KLMNO", "PQRST", "UVWXY");
 		for (int row = 0; row < 5; row++) {
 			for (int col = 0; col < 5; col++) {
-                long s = getStyleAt(row, col);
+				long s = getStyleAt(row, col);
 				Assert.assertEquals(col, TextStyle.decodeForeColor(s));
 				Assert.assertEquals(row, TextStyle.decodeBackColor(s));
 			}
@@ -43,7 +43,7 @@ public class CursorAndScreenTest extends TerminalTestCase {
 			for (int col = 0; col < 5; col++) {
 				int wantedForeground = (row == 1 || row == 2) ? 98 : col;
 				int wantedBackground = (row == 1 || row == 2) ? 99 : (row == 0 ? 2 : row);
-                long s = getStyleAt(row, col);
+				long s = getStyleAt(row, col);
 				Assert.assertEquals(wantedForeground, TextStyle.decodeForeColor(s));
 				Assert.assertEquals(wantedBackground, TextStyle.decodeBackColor(s));
 			}
@@ -159,11 +159,11 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		}
 	}
 
-    /**
-     * See comments on horizontal tab handling in TerminalEmulator.java.
-     *
-     * We do not want to color already written cells when tabbing over them.
-     */
+	/**
+	 * See comments on horizontal tab handling in TerminalEmulator.java.
+	 * <p/>
+	 * We do not want to color already written cells when tabbing over them.
+	 */
 	public void DISABLED_testHorizontalTabColorsBackground() {
 		withTerminalSized(10, 3).enterString("\033[48;5;15m").enterString("\t");
 		assertCursorAt(0, 8);
@@ -214,14 +214,14 @@ public class CursorAndScreenTest extends TerminalTestCase {
 				"              -");
 	}
 
-    public void testBackspaceAcrossWrappedLines() {
-        // Backspace should not go to previous line if not auto-wrapped:
-        withTerminalSized(3, 3).enterString("hi\r\n\b\byou").assertLinesAre("hi ", "you", "   ");
-        // Backspace should go to previous line if auto-wrapped:
-        withTerminalSized(3, 3).enterString("hi y").assertLinesAre("hi ", "y  ", "   ").enterString("\b\b#").assertLinesAre("hi#", "y  ", "   ");
-        // Initial backspace should do nothing:
-        withTerminalSized(3, 3).enterString("\b\b\b\bhi").assertLinesAre("hi ", "   ", "   ");
-    }
+	public void testBackspaceAcrossWrappedLines() {
+		// Backspace should not go to previous line if not auto-wrapped:
+		withTerminalSized(3, 3).enterString("hi\r\n\b\byou").assertLinesAre("hi ", "you", "   ");
+		// Backspace should go to previous line if auto-wrapped:
+		withTerminalSized(3, 3).enterString("hi y").assertLinesAre("hi ", "y  ", "   ").enterString("\b\b#").assertLinesAre("hi#", "y  ", "   ");
+		// Initial backspace should do nothing:
+		withTerminalSized(3, 3).enterString("\b\b\b\bhi").assertLinesAre("hi ", "   ", "   ");
+	}
 
 	public void testCursorSaveRestoreLocation() {
 		// DEC save/restore

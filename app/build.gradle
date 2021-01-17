@@ -3,22 +3,22 @@ plugins {
 }
 
 android {
-    compileSdkVersion 28
-    ndkVersion '21.0.6113669'
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    ndkVersion project.properties.ndkVersion
 
     dependencies {
         implementation "androidx.annotation:annotation:1.1.0"
         implementation "androidx.viewpager:viewpager:1.0.0"
-        implementation "androidx.drawerlayout:drawerlayout:1.0.0"
+        implementation "androidx.drawerlayout:drawerlayout:1.1.1"
         implementation project(":terminal-view")
     }
 
     defaultConfig {
         applicationId "com.termux"
-        minSdkVersion 24
-        targetSdkVersion 28
-        versionCode 94
-        versionName "0.94"
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        versionCode 105
+        versionName "0.105"
 
         externalNativeBuild {
             ndkBuild {
@@ -64,6 +64,10 @@ android {
         }
     }
 
+    lintOptions {
+        disable 'ProtectedPermissions'
+    }
+
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -72,8 +76,8 @@ android {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13'
-    testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.robolectric:robolectric:4.4'
 }
 
 task versionName {
@@ -133,11 +137,11 @@ clean {
 
 task downloadBootstraps(){
     doLast {
-        def version = 21
-        downloadBootstrap("aarch64", "9d362f1396e3a7d6987f09b8c3886c5aad514ab195ec7874a32000dc3b9cecde", version)
-        downloadBootstrap("arm",     "3c2f2ca9424fc984a4df54a3f9b38db3413b635ba39b89dfd8c753418730f719", version)
-        downloadBootstrap("i686",    "87afbd0fe6ebdc3abd9f2e5bc6136dbbf49991e485c9e9b03c4fe0149543ed7d", version)
-        downloadBootstrap("x86_64",  "bc91e5524d516cbe34b2ef082f6ebda1146457c8fa0373d06f7a1bb0c7be41df", version)
+        def version = 35
+        downloadBootstrap("aarch64", "6707cc641cde13dc2f24e819cd8ca3f1a9a003577523c25beff72690588594f5", version)
+        downloadBootstrap("arm",     "eadc9afb52900dc744fdb39ed0c3dbb87ad8ce6190b27946467df7aeab353fa7", version)
+        downloadBootstrap("i686",    "b674ef43c8388dd19e0d25b024b5792c8532ee0ddcc49f90c0716042724fa905", version)
+        downloadBootstrap("x86_64",  "86043eb76efededbdf5644686a899f4d762703fe18e23fb906a2482d593d7549", version)
     }
 }
 

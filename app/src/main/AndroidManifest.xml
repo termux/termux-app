@@ -8,6 +8,12 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
 
+    <permission android:name="com.termux.permission.RUN_COMMAND"
+        android:label="@string/run_command_permission_label"
+        android:description="@string/run_command_permission_description"
+        android:icon="@drawable/ic_launcher"
+        android:protectionLevel="dangerous" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -15,6 +21,9 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 
     <application
         android:extractNativeLibs="true"
@@ -74,15 +83,15 @@
                 <data android:mimeType="text/*" />
                 <data android:mimeType="video/*" />
             </intent-filter>
-            <!-- Be more restrictive for viewing files, restricting ourselves to text files. -->
+            <!-- Accept multiple file types to let Termux be usable as generic file viewer. -->
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/*" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="image/*" />
                 <data android:mimeType="text/*" />
-                <data android:mimeType="application/json" />
-                <data android:mimeType="application/*xml*" />
-                <data android:mimeType="application/*latex*" />
-                <data android:mimeType="application/javascript" />
+                <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
 
@@ -113,6 +122,15 @@
         <service
             android:name="com.termux.app.TermuxService"
             android:exported="false" />
+
+        <service
+            android:name=".app.RunCommandService"
+            android:exported="true"
+            android:permission="com.termux.permission.RUN_COMMAND" >
+            <intent-filter>
+                <action android:name="com.termux.RUN_COMMAND" />
+            </intent-filter>
+        </service>
 
         <receiver android:name=".app.TermuxOpenReceiver" />
 

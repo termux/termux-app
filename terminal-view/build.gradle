@@ -1,6 +1,6 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.3"
-    id "com.github.dcendents.android-maven" version "2.0"
+    id "com.jfrog.bintray" version "1.8.5"
+    id "com.github.dcendents.android-maven" version "2.1"
 }
 
 apply plugin: 'com.android.library'
@@ -11,13 +11,13 @@ ext {
     libraryName = 'TerminalView'
     artifact = 'terminal-view'
     libraryDescription = 'The terminal view used in Termux'
-    siteUrl = 'https://github.com/termux/termux'
-    gitUrl = 'https://github.com/termux/termux.git'
+    siteUrl = 'https://github.com/termux/termux-app'
+    gitUrl = 'https://github.com/termux/termux-app.git'
     libraryVersion = '0.50'
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
 
     dependencies {
         implementation "androidx.annotation:annotation:1.1.0"
@@ -25,8 +25,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -44,7 +44,7 @@ android {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.1'
 }
 
 apply from: '../scripts/bintray-publish.gradle'
