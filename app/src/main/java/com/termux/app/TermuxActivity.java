@@ -209,9 +209,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         super.onCreate(bundle);
 
-        Intent storageIntent = new Intent("android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION");
-        startActivity(storageIntent, null);
-
         setContentView(R.layout.drawer_layout);
 
         if (mIsUsingBlackUI) {
