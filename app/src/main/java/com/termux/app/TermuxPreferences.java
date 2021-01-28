@@ -28,6 +28,8 @@ import java.util.Properties;
 
 import androidx.annotation.IntDef;
 
+import static com.termux.terminal.EmulatorDebug.LOG_TAG;
+
 final class TermuxPreferences {
 
     @IntDef({BELL_VIBRATE, BELL_BEEP, BELL_IGNORE})
@@ -66,6 +68,10 @@ final class TermuxPreferences {
     private boolean mUseDarkUI;
     private boolean mScreenAlwaysOn;
     private int mFontSize;
+
+    private boolean mUseFullScreen;
+    private boolean mUseFullScreenWorkAround;
+    private int mFullScreenWorkAroundMethod;
 
     @AsciiBellBehaviour
     int mBellBehaviour = BELL_VIBRATE;
@@ -137,6 +143,18 @@ final class TermuxPreferences {
         return mUseDarkUI;
     }
 
+    boolean isUsingFullScreen() {
+        return mUseFullScreen;
+    }
+
+    boolean isUsingFullScreenWorkAround() {
+        return mUseFullScreenWorkAround;
+    }
+
+    int getFullScreenWorkAroundMethod() {
+        return mFullScreenWorkAroundMethod;
+    }
+
     void setScreenAlwaysOn(Context context, boolean newValue) {
         mScreenAlwaysOn = newValue;
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SCREEN_ALWAYS_ON_KEY, newValue).apply();
@@ -194,6 +212,33 @@ final class TermuxPreferences {
             default:
                 int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
                 mUseDarkUI = nightMode == Configuration.UI_MODE_NIGHT_YES;
+        }
+
+        switch (props.getProperty("fullscreen", "").toLowerCase()) {
+            case "true":
+                mUseFullScreen = true;
+                break;
+            case "false":
+            default:
+                mUseFullScreen = false;
+        }
+
+        switch (props.getProperty("use-fullscreen-workaround", "").toLowerCase()) {
+            case "true":
+                mUseFullScreenWorkAround = true;
+                break;
+            case "false":
+            default:
+                mUseFullScreenWorkAround = false;
+        }
+
+        String workAroundMethodStr = props.getProperty("fullscreen-workaround-method", "");
+        if (workAroundMethodStr != null && !workAroundMethodStr.isEmpty()) {
+            try {
+                mFullScreenWorkAroundMethod = Integer.parseInt(workAroundMethodStr);
+            } catch (Exception ex) {
+                Log.e(LOG_TAG, "fullscreen-workaround-method error: " + ex.getMessage());
+            }
         }
 
         String defaultExtraKeys = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";

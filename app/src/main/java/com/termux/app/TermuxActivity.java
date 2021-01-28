@@ -222,6 +222,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             );
         }
 
+        if (mSettings.isUsingFullScreen()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
         mTerminalView = findViewById(R.id.terminal_view);
         mTerminalView.setOnKeyListener(new TermuxViewClient(this));
 
@@ -256,6 +260,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 if (position == 0) {
                     layout = mExtraKeysView = (ExtraKeysView) inflater.inflate(R.layout.extra_keys_main, collection, false);
                     mExtraKeysView.reload(mSettings.mExtraKeys);
+
+                    // apply extra keys fix if enabled in prefs
+                    if (mSettings.isUsingFullScreen() && mSettings.isUsingFullScreenWorkAround()) {
+                        FullScreenWorkAround.apply(TermuxActivity.this, mExtraKeysView, mSettings.getFullScreenWorkAroundMethod());
+                    }
+
                 } else {
                     layout = inflater.inflate(R.layout.extra_keys_right, collection, false);
                     final EditText editText = layout.findViewById(R.id.text_input);
