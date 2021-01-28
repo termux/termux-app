@@ -71,7 +71,6 @@ final class TermuxPreferences {
 
     private boolean mUseFullScreen;
     private boolean mUseFullScreenWorkAround;
-    private int mFullScreenWorkAroundMethod;
 
     @AsciiBellBehaviour
     int mBellBehaviour = BELL_VIBRATE;
@@ -151,10 +150,6 @@ final class TermuxPreferences {
         return mUseFullScreenWorkAround;
     }
 
-    int getFullScreenWorkAroundMethod() {
-        return mFullScreenWorkAroundMethod;
-    }
-
     void setScreenAlwaysOn(Context context, boolean newValue) {
         mScreenAlwaysOn = newValue;
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SCREEN_ALWAYS_ON_KEY, newValue).apply();
@@ -230,15 +225,6 @@ final class TermuxPreferences {
             case "false":
             default:
                 mUseFullScreenWorkAround = false;
-        }
-
-        String workAroundMethodStr = props.getProperty("fullscreen-workaround-method", "");
-        if (workAroundMethodStr != null && !workAroundMethodStr.isEmpty()) {
-            try {
-                mFullScreenWorkAroundMethod = Integer.parseInt(workAroundMethodStr);
-            } catch (Exception ex) {
-                Log.e(LOG_TAG, "fullscreen-workaround-method error: " + ex.getMessage());
-            }
         }
 
         String defaultExtraKeys = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";

@@ -134,6 +134,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     boolean mIsUsingBlackUI;
 
+    int mNavBarHeight;
+
     final SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
         new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
@@ -214,16 +216,23 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         super.onCreate(bundle);
 
+
         setContentView(R.layout.drawer_layout);
+
+        View content = findViewById(android.R.id.content);
+        content.setOnApplyWindowInsetsListener((v, insets) -> {
+            mNavBarHeight = insets.getSystemWindowInsetBottom();
+            return insets;
+        });
+
+        if (mSettings.isUsingFullScreen()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
 
         if (mIsUsingBlackUI) {
             findViewById(R.id.left_drawer).setBackgroundColor(
                 getResources().getColor(android.R.color.background_dark)
             );
-        }
-
-        if (mSettings.isUsingFullScreen()) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
         mTerminalView = findViewById(R.id.terminal_view);
@@ -263,7 +272,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
                     // apply extra keys fix if enabled in prefs
                     if (mSettings.isUsingFullScreen() && mSettings.isUsingFullScreenWorkAround()) {
-                        FullScreenWorkAround.apply(TermuxActivity.this, mExtraKeysView, mSettings.getFullScreenWorkAroundMethod());
+                        FullScreenWorkAround.apply(TermuxActivity.this);
                     }
 
                 } else {
@@ -339,6 +348,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
 
         sendOpenedBroadcast();
+    }
+
+    public int getNavBarHeight() {
+        return mNavBarHeight;
     }
 
     /**
