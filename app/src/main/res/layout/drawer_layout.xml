@@ -4,6 +4,19 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
+    <ImageView
+        android:id="@+id/background"
+        android:adjustViewBounds="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:id="@+id/overlay"
+        android:background="#B2000000"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
@@ -65,6 +78,16 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/new_session" />
+                <ImageView
+                    android:id="@+id/terminal_background"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="5dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/sharp_landscape_white_36dp"
+                    android:onClick="choose_background"
+                    android:text="@string/pick_background_image" />
             </LinearLayout>
         </LinearLayout>
 

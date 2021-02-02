@@ -2,7 +2,6 @@ package com.termux.app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -14,8 +13,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -25,6 +27,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -43,11 +46,19 @@ import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 import com.termux.R;
+import com.termux.filepicker.FilePathFromDevice;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
@@ -57,7 +68,10 @@ import com.termux.view.TerminalView;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -65,12 +79,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
 /**
  * A terminal emulator activity.
@@ -104,7 +112,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private static final String BROADCAST_TERMUX_OPENED = "com.termux.app.OPENED";
 
-    /** The main view of the activity showing the terminal. Initialized in onCreate(). */
+    /**
+     * The main view of the activity showing the terminal. Initialized in onCreate().
+     */
     @SuppressWarnings("NullableProblems")
     @NonNull
     TerminalView mTerminalView;
@@ -113,6 +123,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     TermuxPreferences mSettings;
 
+    private ImageView background;
+    private View overlay;
+    private SharedPreferences prefs;
+    private final String BACKGROUND_FILE_NAME = "terminal_background.jpg";
+
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
      * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
@@ -120,10 +135,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
      */
     TermuxService mTermService;
 
-    /** Initialized in {@link #onServiceConnected(ComponentName, IBinder)}. */
+    /**
+     * Initialized in {@link #onServiceConnected(ComponentName, IBinder)}.
+     */
     ArrayAdapter<TerminalSession> mListViewAdapter;
 
-    /** The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}. */
+    /**
+     * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
+     */
     Toast mLastToast;
 
     /**
@@ -192,7 +211,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    /** For processes to access shared internal storage (/sdcard) we need this permission. */
+    /**
+     * For processes to access shared internal storage (/sdcard) we need this permission.
+     */
     public boolean ensureStoragePermissionGranted() {
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             return true;
@@ -211,16 +232,24 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         } else {
             this.setTheme(R.style.Theme_Termux);
         }
-
         super.onCreate(bundle);
-
         setContentView(R.layout.drawer_layout);
+        prefs = PreferenceManager.getDefaultSharedPreferences(TermuxActivity.this);
 
         if (mIsUsingBlackUI) {
             findViewById(R.id.left_drawer).setBackgroundColor(
                 getResources().getColor(android.R.color.background_dark)
             );
         }
+
+        background = findViewById(R.id.background);
+        overlay = findViewById(R.id.overlay);
+        // Load background on startup also
+        final File back_file = new File(getFilesDir(), BACKGROUND_FILE_NAME);
+        if(back_file.exists()){
+            setImage(back_file.getAbsolutePath());
+        }
+        setOverlay();
 
         mTerminalView = findViewById(R.id.terminal_view);
         mTerminalView.setOnKeyListener(new TermuxViewClient(this));
@@ -332,6 +361,128 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     /**
+     * Choose Terminal background image from Gallery
+     */
+    public void choose_background(View view) {
+
+        new BackgroundOptions_dialog(TermuxActivity.this, new BackgroundOptions_dialog.Callback() {
+            @Override
+            public void onReset() {
+                final File back_file = new File(getFilesDir(), "terminal_background.jpg");
+                if(back_file.exists()){
+                    boolean deleted = back_file.delete();
+                    if(deleted){
+                        background.setVisibility(View.GONE);
+                    }
+                }
+                prefs.edit()
+                    .putString("overlay", "#00000000")
+                    .apply();
+                overlay.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onPick() {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("image/*");
+                startActivityForResult(Intent.createChooser(intent, "Select Terminal Background"), 47);
+            }
+
+            @Override
+            public void onSave(String hex_overlay_color) {
+                if(hex_overlay_color==null || hex_overlay_color.length()<6){
+                    Toast.makeText(TermuxActivity.this, "Not a valid color code", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(!hex_overlay_color.startsWith("#")){
+                    hex_overlay_color = "#"+hex_overlay_color;
+                }
+                try{
+                    overlay.setBackgroundColor(Color.parseColor(hex_overlay_color));
+                    overlay.setVisibility(View.VISIBLE);
+                    prefs.edit()
+                        .putString("overlay", hex_overlay_color)
+                        .apply();
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                    Toast.makeText(TermuxActivity.this, "Oops !"+ex.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }).show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        try {
+            if (resultCode == RESULT_OK) {
+                if (requestCode == 47) {
+                    if (null == data) return;
+                    Uri mImageCaptureUri = data.getData();
+                    background.invalidate();
+                    final File dir = getFilesDir();
+                    if (!dir.exists()) {
+                        dir.mkdirs();
+                    }
+                    final File back_file = new File(dir, BACKGROUND_FILE_NAME);
+                    String selected;
+                    if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                        selected = FilePathFromDevice.loadFromGallery(TermuxActivity.this, mImageCaptureUri, back_file);
+                        setImage(selected);
+                    } else {
+                        selected = FilePathFromDevice.getPath(TermuxActivity.this, mImageCaptureUri);
+                        final File gallery_file = new File(selected);
+                        if (!back_file.exists()) {
+                            boolean created = back_file.createNewFile();
+                        }
+                        copy(gallery_file, back_file);
+                    }
+                    setImage(selected);
+                }
+            }
+        } catch (Exception e) {
+            Log.e("FileSelectorActivity", " " + e.getMessage());
+        }
+    }
+
+    private void setImage(String selected){
+        try{
+            Bitmap bmp = BitmapFactory.decodeFile(selected);
+            background.setImageBitmap(bmp);
+            background.setVisibility(View.VISIBLE);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    private void setOverlay(){
+        try{
+            String overlay_color = prefs.getString("overlay", "#00000000");
+            if(overlay_color!=null){
+                overlay.setBackgroundColor(Color.parseColor(overlay_color));
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void copy(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
+        OutputStream out = new FileOutputStream(dst);
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.flush();
+        out.close();
+    }
+
+
+    /**
      * Send a broadcast notifying Termux app has been opened
      */
     void sendOpenedBroadcast() {
@@ -343,7 +494,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         for (ResolveInfo info : matches) {
             Intent explicitBroadcast = new Intent(broadcast);
             ComponentName cname = new ComponentName(info.activityInfo.applicationInfo.packageName,
-                                                    info.activityInfo.name);
+                info.activityInfo.name);
             explicitBroadcast.setComponent(cname);
             sendBroadcast(explicitBroadcast);
         }
@@ -639,7 +790,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    /** Try switching to session and note about it, but do nothing if already displaying the session. */
+    /**
+     * Try switching to session and note about it, but do nothing if already displaying the session.
+     */
     void switchToSession(TerminalSession session) {
         if (mTerminalView.attachSession(session)) {
             noteSessionInfo();
@@ -693,7 +846,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXTMENU_HELP_ID, Menu.NONE, R.string.help);
     }
 
-    /** Hook system menu to show context menu instead. */
+    /**
+     * Hook system menu to show context menu instead.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mTerminalView.showContextMenu();
@@ -892,7 +1047,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 startActivity(new Intent(this, TermuxHelpActivity.class));
                 return true;
             case CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON: {
-                if(mTerminalView.getKeepScreenOn()) {
+                if (mTerminalView.getKeepScreenOn()) {
                     mTerminalView.setKeepScreenOn(false);
                     mSettings.setScreenAlwaysOn(this, false);
                 } else {
@@ -935,7 +1090,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             getCurrentTermSession().getEmulator().paste(paste.toString());
     }
 
-    /** The current session as stored or the last one if that does not exist. */
+    /**
+     * The current session as stored or the last one if that does not exist.
+     */
     public TerminalSession getStoredCurrentSessionOrLast() {
         TerminalSession stored = TermuxPreferences.getCurrentSession(this);
         if (stored != null) return stored;
@@ -943,7 +1100,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
     }
 
-    /** Show a toast and dismiss the last one if still visible. */
+    /**
+     * Show a toast and dismiss the last one if still visible.
+     */
     void showToast(String text, boolean longDuration) {
         if (mLastToast != null) mLastToast.cancel();
         mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
