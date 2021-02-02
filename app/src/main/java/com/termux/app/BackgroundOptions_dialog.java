@@ -12,7 +12,7 @@ import android.widget.EditText;
 import com.termux.R;
 
 /**
- * Created by crazy_programmer on 9/6/2017.
+ * -- by srb.bans on 2/2/2021.
  */
 public class BackgroundOptions_dialog {
     private final Context context;
@@ -22,7 +22,6 @@ public class BackgroundOptions_dialog {
         context = ctx;
         callback = call;
     }
-
 
     public void show() {
         LayoutInflater layoutInflaterAndroid = LayoutInflater.from(context);

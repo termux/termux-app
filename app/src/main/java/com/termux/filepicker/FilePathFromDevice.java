@@ -23,7 +23,6 @@ import java.io.OutputStream;
  */
 public final class FilePathFromDevice {
 
-
     public static String loadFromGallery(final Context context, final Uri uri, File temp_file) {
         final boolean is10 = Build.VERSION.SDK_INT > Build.VERSION_CODES.P;
         if (is10) {

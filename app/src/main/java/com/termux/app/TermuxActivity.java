@@ -481,7 +481,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         out.close();
     }
 
-
     /**
      * Send a broadcast notifying Termux app has been opened
      */
