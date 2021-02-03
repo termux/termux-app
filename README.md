@@ -25,11 +25,7 @@ Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
 
 ## Installation
 
-Termux application can be obtained from:
-
-- [Google Play](https://play.google.com/store/apps/details?id=com.termux)
-- [F-Droid](https://f-droid.org/en/packages/com.termux/)
-- [Kali Nethunter Store](https://store.nethunter.com/en/packages/com.termux/)
+Termux application can be obtained from [F-Droid](https://f-droid.org/en/packages/com.termux/).
 
 Additionally we provide per-commit debug builds for those who want to try
 out the latest features or test their pull request. This build can be obtained
