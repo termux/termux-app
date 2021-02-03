@@ -395,7 +395,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             public void onSessionFinished(final TerminalSession finishedSession) {
                 if (mTermService.mWantsToStop) {
                     // The service wants to stop as soon as possible.
-                    finish();
                     return;
                 }
                 if (mIsVisible && finishedSession != getCurrentTermSession()) {
