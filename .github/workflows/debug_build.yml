@@ -23,4 +23,8 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: termux-app
-        path: ./app/build/outputs/apk/debug/app-*-debug.apk
+        path: |
+          app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk
+          app/build/outputs/apk/debug/app-x86_64-debug.apk
+          app/build/outputs/apk/debug/app-x86-debug.apk
+          app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
