@@ -78,6 +78,7 @@ final class TermuxPreferences {
     boolean mBackIsEscape;
     boolean mDisableVolumeVirtualKeys;
     boolean mShowExtraKeys;
+    String mDefaultWorkingDir;
 
     ExtraKeysInfos mExtraKeys;
 
@@ -113,7 +114,7 @@ final class TermuxPreferences {
         } catch (NumberFormatException | ClassCastException e) {
             mFontSize = defaultFontSize;
         }
-        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE); 
+        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE);
     }
 
     boolean toggleShowExtraKeys(Context context) {
@@ -225,6 +226,14 @@ final class TermuxPreferences {
             case "false":
             default:
                 mUseFullScreenWorkAround = false;
+        }
+
+        mDefaultWorkingDir = props.getProperty("default-working-directory", TermuxService.HOME_PATH);
+        File workDir = new File(mDefaultWorkingDir);
+        if (!workDir.exists() || !workDir.isDirectory()) {
+            // Fallback to home directory if user configured working directory is not exist
+            // or is a regular file.
+            mDefaultWorkingDir = TermuxService.HOME_PATH;
         }
 
         String defaultExtraKeys = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";

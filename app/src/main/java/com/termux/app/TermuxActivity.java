@@ -652,7 +652,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
             TerminalSession currentSession = getCurrentTermSession();
-            String workingDirectory = (currentSession == null) ? null : currentSession.getCwd();
+
+            String workingDirectory;
+            if (currentSession == null) {
+                workingDirectory = mSettings.mDefaultWorkingDir;
+            } else {
+                workingDirectory = currentSession.getCwd();
+            }
+
             TerminalSession newSession = mTermService.createTermSession(null, null, workingDirectory, failSafe);
             if (sessionName != null) {
                 newSession.mSessionName = sessionName;
