@@ -210,23 +210,8 @@ final class TermuxPreferences {
                 mUseDarkUI = nightMode == Configuration.UI_MODE_NIGHT_YES;
         }
 
-        switch (props.getProperty("fullscreen", "").toLowerCase()) {
-            case "true":
-                mUseFullScreen = true;
-                break;
-            case "false":
-            default:
-                mUseFullScreen = false;
-        }
-
-        switch (props.getProperty("use-fullscreen-workaround", "").toLowerCase()) {
-            case "true":
-                mUseFullScreenWorkAround = true;
-                break;
-            case "false":
-            default:
-                mUseFullScreenWorkAround = false;
-        }
+        mUseFullScreen = "true".equals(props.getProperty("fullscreen", "false").toLowerCase());
+        mUseFullScreenWorkAround = "true".equals(props.getProperty("use-fullscreen-workaround", "false").toLowerCase());
 
         mDefaultWorkingDir = props.getProperty("default-working-directory", TermuxService.HOME_PATH);
         File workDir = new File(mDefaultWorkingDir);
