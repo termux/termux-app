@@ -1,0 +1,25 @@
+name: Publish library packages
+
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - 'terminal-emulator/build.gradle'
+    - 'terminal-view/build.gradle'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
+    - name: Perform release build
+      run: |
+        ./gradlew assembleRelease
+    - name: Publish libraries on Github Packages
+      env:
+        GH_USERNAME: xeffyr
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        ./gradlew publish
