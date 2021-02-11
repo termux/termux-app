@@ -59,7 +59,7 @@ publishing {
         bar(MavenPublication) {
             groupId 'com.termux'
             artifactId 'terminal-emulator'
-            version '0.106'
+            version '0.106.1'
             artifact("$buildDir/outputs/aar/terminal-emulator-release.aar")
         }
     }
