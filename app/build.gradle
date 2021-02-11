@@ -91,7 +91,7 @@ task versionName {
   }
 }
 
-def downloadBootstrap(String arch, String expectedChecksum, int version) {
+def downloadBootstrap(String arch, String expectedChecksum, String version) {
     def digest = java.security.MessageDigest.getInstance("SHA-256")
 
     def localUrl = "src/main/cpp/bootstrap-" + arch + ".zip"
@@ -113,7 +113,7 @@ def downloadBootstrap(String arch, String expectedChecksum, int version) {
         }
     }
 
-    def remoteUrl = "https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-" + arch + "-v" + version + ".zip"
+    def remoteUrl = "https://github.com/termux/termux-packages/releases/download/bootstrap-" + version + "/bootstrap-" + arch + ".zip"
     logger.quiet("Downloading " + remoteUrl + " ...")
 
     file.parentFile.mkdirs()
@@ -142,11 +142,11 @@ clean {
 
 task downloadBootstraps(){
     doLast {
-        def version = 36
-        downloadBootstrap("aarch64", "9b1ee77b3e66bbb5e0ec9d766894aa9c1441f68b2bd4152e3ea54101de3c76d5", version)
-        downloadBootstrap("arm",     "eac7c2b322a1217f28a2b540afe4f994147abee571e9fed330d5430b08d6707b", version)
-        downloadBootstrap("i686",    "990dd1aaf5b6499bee5ed473dd5a0e18ecbc0493646b299238ac0dd0d9963396", version)
-        downloadBootstrap("x86_64",  "a321eba39c4bb0fb2aa35f17ccff57bf8fcf0e973b0a0569f6d24bd02314e4ed", version)
+        def version = "2021.02.11-r1"
+        downloadBootstrap("aarch64", "8913a0f6304b497a8e237a7a38cef17da39a8f39836fd63aa2ff7d9e4ae128a3", version)
+        downloadBootstrap("arm",     "c253fdbe7086ad1ae1826779465c30ca8bda6564536f4d00735b26ea3f6c1b7e", version)
+        downloadBootstrap("i686",    "931dc7ed8d208eae0a7445959356d761dc1644e2cc1ebb1f33688540f8c1c68a", version)
+        downloadBootstrap("x86_64",  "ac7e3809bc919a81b903bb22693e09afcbe126e6604883648cbeda48e6ba9665", version)
     }
 }
 
