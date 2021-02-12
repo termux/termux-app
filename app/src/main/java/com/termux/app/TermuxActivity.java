@@ -23,7 +23,9 @@ import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -95,7 +97,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private static final int MAX_SESSIONS = 8;
 
-    private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
+    private static final int REQUESTCODE_PERMISSION_WRITE_EXTERNAL_STORAGE = 1234;
+    private static final int REQUESTCODE_PERMISSION_MANAGE_EXTERNAL_STORAGE = 4321;
 
     private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
 
@@ -189,11 +192,52 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     /** For processes to access shared internal storage (/sdcard) we need this permission. */
     public boolean ensureStoragePermissionGranted() {
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED ||
+            checkSelfPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUESTCODE_PERMISSION_STORAGE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, REQUESTCODE_PERMISSION_MANAGE_EXTERNAL_STORAGE);
+            } else {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUESTCODE_PERMISSION_WRITE_EXTERNAL_STORAGE);
+            }
             return false;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        verifyPermissions(requestCode);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        verifyPermissions(requestCode);
+    }
+
+    private void verifyPermissions(int requestCode) {
+        boolean storagePermissionGranted = false;
+        switch (requestCode) {
+            case REQUESTCODE_PERMISSION_MANAGE_EXTERNAL_STORAGE:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (Environment.isExternalStorageManager()) {
+                        storagePermissionGranted = true;
+                    }
+                }
+                break;
+            case REQUESTCODE_PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                    storagePermissionGranted = true;
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (storagePermissionGranted) {
+            TermuxInstaller.setupStorageSymlinks(this);
         }
     }
 
@@ -870,13 +914,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
             default:
                 return super.onContextItemSelected(item);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        if (requestCode == REQUESTCODE_PERMISSION_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            TermuxInstaller.setupStorageSymlinks(this);
         }
     }
 
