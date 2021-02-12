@@ -43,7 +43,8 @@
         android:label="@string/application_name"
         android:supportsRtl="false"
         android:theme="@style/Theme.Termux"
-        android:requestLegacyExternalStorage="true">
+        android:requestLegacyExternalStorage="true"
+        android:hasFragileUserData="true">
 
         <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8
              mark the app with "This app is optimized to run in full screen." -->
