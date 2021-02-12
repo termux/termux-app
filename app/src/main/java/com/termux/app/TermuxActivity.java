@@ -192,13 +192,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     /** For processes to access shared internal storage (/sdcard) we need this permission. */
     public boolean ensureStoragePermissionGranted() {
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED ||
-            checkSelfPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, REQUESTCODE_PERMISSION_MANAGE_EXTERNAL_STORAGE);
+                if (!Environment.isExternalStorageManager()) {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName()));
+                    startActivityForResult(intent, REQUESTCODE_PERMISSION_MANAGE_EXTERNAL_STORAGE);
+                }
             } else {
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUESTCODE_PERMISSION_WRITE_EXTERNAL_STORAGE);
             }
