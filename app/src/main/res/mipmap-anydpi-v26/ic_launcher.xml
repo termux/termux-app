@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/ic_launcher_background"/>
+<<<<<<< HEAD
     <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
 </adaptive-icon>
+=======
+    <foreground android:drawable="@drawable/ic_foreground"/>
+</adaptive-icon>
+>>>>>>> 7884cb3bea6fd6f431eecd7df3716ea46e28848a

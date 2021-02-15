@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -110,6 +111,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     private static final String WRITE_STATUS = "com.termux.app.status";
     private static final String INTRO_ACTION = "com.termux.app.intro";
 
+    private static final String BROADCAST_TERMUX_OPENED = "com.termux.app.OPENED";
+
     /** The main view of the activity showing the terminal. Initialized in onCreate(). */
     @SuppressWarnings("NullableProblems")
     @NonNull
@@ -145,6 +148,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
     boolean mIsVisible;
 
     boolean mIsUsingBlackUI;
+
+    int mNavBarHeight;
 
     final SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
         new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -309,8 +314,17 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.setStatusBarColor(Color.parseColor(mSettings.getStatusBarColor()));
         super.onCreate(bundle);
-        View view = View.inflate(this,R.layout.drawer_layout,null);
-        setContentView(view);
+        setContentView(R.layout.drawer_layout);
+
+        View content = findViewById(android.R.id.content);
+        content.setOnApplyWindowInsetsListener((v, insets) -> {
+            mNavBarHeight = insets.getSystemWindowInsetBottom();
+            return insets;
+        });
+
+        if (mSettings.isUsingFullScreen()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         if (mIsUsingBlackUI) {
             findViewById(R.id.left_drawer).setBackgroundColor(
                 getResources().getColor(android.R.color.background_dark)
@@ -358,6 +372,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                 if (position == 0) {
                     layout = mExtraKeysView = (ExtraKeysView) inflater.inflate(R.layout.extra_keys_main, collection, false);
                     mExtraKeysView.reload(mSettings.mExtraKeys);
+
+                    // apply extra keys fix if enabled in prefs
+                    if (mSettings.isUsingFullScreen() && mSettings.isUsingFullScreenWorkAround()) {
+                        FullScreenWorkAround.apply(TermuxActivity.this);
+                    }
 
                 } else {
                     layout = inflater.inflate(R.layout.extra_keys_right, collection, false);
@@ -479,8 +498,31 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         checkForFontAndColors();
 
         mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
-        // Update app cache
         TermuxInstaller.setupAppListCache(TermuxActivity.this);
+
+        sendOpenedBroadcast();
+    }
+
+    public int getNavBarHeight() {
+        return mNavBarHeight;
+    }
+
+    /**
+     * Send a broadcast notifying Termux app has been opened
+     */
+    void sendOpenedBroadcast() {
+        Intent broadcast = new Intent(BROADCAST_TERMUX_OPENED);
+        List<ResolveInfo> matches = getPackageManager().queryBroadcastReceivers(broadcast, 0);
+
+        // send broadcast to registered Termux receivers
+        // this technique is needed to work around broadcast changes that Oreo introduced
+        for (ResolveInfo info : matches) {
+            Intent explicitBroadcast = new Intent(broadcast);
+            ComponentName cname = new ComponentName(info.activityInfo.applicationInfo.packageName,
+                                                    info.activityInfo.name);
+            explicitBroadcast.setComponent(cname);
+            sendBroadcast(explicitBroadcast);
+        }
     }
 
     void toggleShowExtraKeys() {
@@ -769,7 +811,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
             TerminalSession currentSession = getCurrentTermSession();
-            String workingDirectory = (currentSession == null) ? null : currentSession.getCwd();
+
+            String workingDirectory;
+            if (currentSession == null) {
+                workingDirectory = mSettings.mDefaultWorkingDir;
+            } else {
+                workingDirectory = currentSession.getCwd();
+            }
+
             TerminalSession newSession = mTermService.createTermSession(null, null, workingDirectory, failSafe);
             if (sessionName != null) {
                 newSession.mSessionName = sessionName;
@@ -1024,7 +1073,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                     // The startActivity() call is not documented to throw IllegalArgumentException.
                     // However, crash reporting shows that it sometimes does, so catch it here.
                     new AlertDialog.Builder(this).setMessage(R.string.styling_not_installed)
-                        .setPositiveButton(R.string.styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=com.termux.styling")))).setNegativeButton(android.R.string.cancel, null).show();
+                        .setPositiveButton(R.string.styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://f-droid.org/en/packages/com.termux.styling/")))).setNegativeButton(android.R.string.cancel, null).show();
                 }
                 return true;
             }

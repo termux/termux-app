@@ -30,6 +30,8 @@ import java.util.Properties;
 
 import androidx.annotation.IntDef;
 
+import static com.termux.terminal.EmulatorDebug.LOG_TAG;
+
 final class TermuxPreferences {
 
     @IntDef({BELL_VIBRATE, BELL_BEEP, BELL_IGNORE})
@@ -69,12 +71,16 @@ final class TermuxPreferences {
     private boolean mScreenAlwaysOn;
     private int mFontSize;
 
+    private boolean mUseFullScreen;
+    private boolean mUseFullScreenWorkAround;
+
     @AsciiBellBehaviour
     int mBellBehaviour = BELL_VIBRATE;
 
     boolean mBackIsEscape;
     boolean mDisableVolumeVirtualKeys;
     boolean mShowExtraKeys;
+    String mDefaultWorkingDir;
 
     ExtraKeysInfos mExtraKeys;
 
@@ -128,7 +134,7 @@ final class TermuxPreferences {
         } catch (NumberFormatException | ClassCastException e) {
             mFontSize = defaultFontSize;
         }
-        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE); 
+        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE);
     }
 
     boolean toggleShowExtraKeys(Context context) {
@@ -155,6 +161,14 @@ final class TermuxPreferences {
 
     boolean isUsingBlackUI() {
         return mUseDarkUI;
+    }
+
+    boolean isUsingFullScreen() {
+        return mUseFullScreen;
+    }
+
+    boolean isUsingFullScreenWorkAround() {
+        return mUseFullScreenWorkAround;
     }
 
     void setScreenAlwaysOn(Context context, boolean newValue) {
@@ -309,6 +323,17 @@ final class TermuxPreferences {
             default:
                 int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
                 mUseDarkUI = nightMode == Configuration.UI_MODE_NIGHT_YES;
+        }
+
+        mUseFullScreen = "true".equals(props.getProperty("fullscreen", "false").toLowerCase());
+        mUseFullScreenWorkAround = "true".equals(props.getProperty("use-fullscreen-workaround", "false").toLowerCase());
+
+        mDefaultWorkingDir = props.getProperty("default-working-directory", TermuxService.HOME_PATH);
+        File workDir = new File(mDefaultWorkingDir);
+        if (!workDir.exists() || !workDir.isDirectory()) {
+            // Fallback to home directory if user configured working directory is not exist
+            // or is a regular file.
+            mDefaultWorkingDir = TermuxService.HOME_PATH;
         }
 
         String defaultExtraKeys = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";

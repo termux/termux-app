@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.termux.BuildConfig;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -138,6 +140,7 @@ public final class BackgroundJob {
 
         List<String> environment = new ArrayList<>();
 
+        environment.add("TERMUX_VERSION=" + BuildConfig.VERSION_NAME);
         environment.add("TERM=xterm-256color");
         environment.add("COLORTERM=truecolor");
         environment.add("HOME=" + TermuxService.HOME_PATH);
@@ -161,7 +164,7 @@ public final class BackgroundJob {
             environment.add("PATH= " + System.getenv("PATH"));
         } else {
             environment.add("LANG=en_US.UTF-8");
-            environment.add("PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets");
+            environment.add("PATH=" + TermuxService.PREFIX_PATH + "/bin");
             environment.add("PWD=" + cwd);
             environment.add("TMPDIR=" + TermuxService.PREFIX_PATH + "/tmp");
         }

@@ -254,20 +254,7 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        File propsFile = new File(getContext().getFilesDir() + "/home/.termux/termux.properties");
-        if (!propsFile.exists())
-            propsFile = new File(getContext().getFilesDir() + "/home/.config/termux/termux.properties");
-
-        Properties props = new Properties();
-        try {
-            if (propsFile.isFile() && propsFile.canRead()) {
-                try (FileInputStream in = new FileInputStream(propsFile)) {
-                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-                }
-            }
-        } catch (Exception e) {
-            Log.e("termux", "Error loading props", e);
-        }
+        Properties props = getProperties();
 
         if (props.getProperty("enforce-char-based-input", "false").equals("true")) {
             // Some keyboards seems do not reset the internal state on TYPE_NULL.
@@ -554,6 +541,8 @@ public final class TerminalView extends View {
 
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
+        Properties props = getProperties();
+
         if (LOG_KEY_EVENTS)
             Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -569,6 +558,11 @@ public final class TerminalView extends View {
                         return onKeyUp(keyCode, event);
                 }
             }
+        } else if (props.getProperty("ctrl-space-workaround", "false").equals("true") &&
+                   keyCode == KeyEvent.KEYCODE_SPACE && event.isCtrlPressed()) {
+            /* ctrl + space does not work on some ROMs without this workaround.
+               However, this breaks it on devices where it works out of the box. */
+            return onKeyDown(keyCode, event);
         }
         return super.onKeyPreIme(keyCode, event);
     }
@@ -599,6 +593,7 @@ public final class TerminalView extends View {
         if (controlDown) keyMod |= KeyHandler.KEYMOD_CTRL;
         if (event.isAltPressed() || leftAltDown) keyMod |= KeyHandler.KEYMOD_ALT;
         if (event.isShiftPressed()) keyMod |= KeyHandler.KEYMOD_SHIFT;
+        if (event.isNumLockOn()) keyMod |= KeyHandler.KEYMOD_NUM_LOCK;
         if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod)) {
             if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "handleKeyCode() took key event");
             return true;
@@ -1249,7 +1244,7 @@ public final class TerminalView extends View {
             final ActionMode.Callback callback = new ActionMode.Callback() {
                 @Override
                 public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    int show = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
+                    int show = MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
 
                     ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
                     menu.add(Menu.NONE, 1, Menu.NONE, R.string.copy_text).setShowAsAction(show);
@@ -1594,6 +1589,34 @@ public final class TerminalView extends View {
                     showFloatingToolbar();
             }
         }
+    }
+
+    private Properties getProperties() {
+        File propsFile;
+        Properties props = new Properties();
+        String possiblePropLocations[] = {
+            getContext().getFilesDir() + "/home/.termux/termux.properties",
+            getContext().getFilesDir() + "/home/.config/termux/termux.properties"
+        };
+
+        propsFile = new File(possiblePropLocations[0]);
+        int i = 0;
+        while (!propsFile.exists() && i < possiblePropLocations.length) {
+            propsFile = new File(possiblePropLocations[i]);
+            i += 1;
+        }
+
+        try {
+            if (propsFile.isFile() && propsFile.canRead()) {
+                try (FileInputStream in = new FileInputStream(propsFile)) {
+                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception e) {
+            Log.e("termux", "Error loading props", e);
+        }
+
+        return props;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

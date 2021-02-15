@@ -1,20 +1,5 @@
-plugins {
-    id "com.jfrog.bintray" version "1.7.3"
-    id "com.github.dcendents.android-maven" version "2.0"
-}
-
 apply plugin: 'com.android.library'
-
-ext {
-    bintrayName = 'terminal-view'
-    publishedGroupId = 'com.termux'
-    libraryName = 'TerminalView'
-    artifact = 'terminal-view'
-    libraryDescription = 'The terminal view used in Termux'
-    siteUrl = 'https://github.com/termux/termux'
-    gitUrl = 'https://github.com/termux/termux.git'
-    libraryVersion = '0.50'
-}
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
@@ -44,7 +29,28 @@ android {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.1'
 }
 
-apply from: '../scripts/bintray-publish.gradle'
+publishing {
+    publications {
+        bar(MavenPublication) {
+            groupId 'com.termux'
+            artifactId 'terminal-view'
+            version '0.106.1'
+            artifact("$buildDir/outputs/aar/terminal-view-release.aar")
+        }
+    }
+ 
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/termux/termux-app")
+
+            credentials {
+                username = System.getenv("GH_USERNAME")
+                password = System.getenv("GH_TOKEN")
+            }
+        }
+    }
+}

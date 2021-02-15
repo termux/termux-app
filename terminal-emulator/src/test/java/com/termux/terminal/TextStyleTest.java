@@ -22,23 +22,23 @@ public class TextStyleTest extends TestCase {
 		}
 	}
 
-    public void testEncoding24Bit() {
-        int[] values = {255, 240, 127, 1, 0};
-        for (int red : values) {
-            for (int green : values) {
-                for (int blue : values) {
-                    int argb = 0xFF000000 | (red << 16) | (green << 8) | blue;
-                    long encoded = TextStyle.encode(argb, 0, 0);
-                    assertEquals(argb, TextStyle.decodeForeColor(encoded));
-                    encoded = TextStyle.encode(0, argb, 0);
-                    assertEquals(argb, TextStyle.decodeBackColor(encoded));
-                }
-            }
-        }
-    }
+	public void testEncoding24Bit() {
+		int[] values = {255, 240, 127, 1, 0};
+		for (int red : values) {
+			for (int green : values) {
+				for (int blue : values) {
+					int argb = 0xFF000000 | (red << 16) | (green << 8) | blue;
+					long encoded = TextStyle.encode(argb, 0, 0);
+					assertEquals(argb, TextStyle.decodeForeColor(encoded));
+					encoded = TextStyle.encode(0, argb, 0);
+					assertEquals(argb, TextStyle.decodeBackColor(encoded));
+				}
+			}
+		}
+	}
 
 
-    public void testEncodingCombinations() {
+	public void testEncodingCombinations() {
 		for (int f1 : ALL_EFFECTS) {
 			for (int f2 : ALL_EFFECTS) {
 				int combined = f1 | f2;
@@ -54,9 +54,9 @@ public class TextStyleTest extends TestCase {
 	}
 
 	public void testEncodingProtected() {
-        long encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,
+		long encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,
 				TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH);
-        assertEquals(0, (TextStyle.decodeEffect(encoded) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED));
+		assertEquals(0, (TextStyle.decodeEffect(encoded) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED));
 		encoded = TextStyle.encode(TextStyle.COLOR_INDEX_FOREGROUND, TextStyle.COLOR_INDEX_BACKGROUND,
 				TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH | TextStyle.CHARACTER_ATTRIBUTE_PROTECTED);
 		assertTrue((TextStyle.decodeEffect(encoded) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED) != 0);
