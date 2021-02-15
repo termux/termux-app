@@ -44,6 +44,7 @@ before_install:
 - bash build_bootstrap.sh
 before_deploy:
 - find . -name '*.apk'
+- find . -name 'bootstrap-*.zip'
 - mv ./app/build/outputs/apk/release/app-arm64-v8a-release-unsigned.apk app-arm64-release.apk
 - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore.jks -storepass
   $keystore_password -keypass $keystore_alias_password app-arm64-release.apk $keystore_alias
