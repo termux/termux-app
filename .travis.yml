@@ -104,11 +104,6 @@ deploy:
     file: ${APK_NAME}.apk
     name: ${BAR_NAME}
     tag_name: ${BAR_NAME}
-    body: |
-      DEV-${BAR_NAME}
-      This is a dev build!
-      Dont use it!
-      Dont ask anybody about it!
     skip_cleanup: true
     prerelease: true
     on:
