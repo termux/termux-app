@@ -414,7 +414,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             public void onSessionFinished(final TerminalSession finishedSession) {
                 if (mTermService.mWantsToStop) {
                     // The service wants to stop as soon as possible.
-                    finish();
+                    finishActivityIfNotFinishing();
                     return;
                 }
                 if (mIsVisible && finishedSession != getCurrentTermSession()) {
@@ -550,7 +550,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 });
             } else {
                 // The service connected while not in foreground - just bail out.
-                finish();
+                finishActivityIfNotFinishing();
             }
         } else {
             Intent i = getIntent();
@@ -586,7 +586,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         // Respect being stopped from the TermuxService notification action.
-        finish();
+        finishActivityIfNotFinishing();
+    }
+
+    public void finishActivityIfNotFinishing() {
+        // prevent duplicate calls to finish() if called from multiple places
+        if (!TermuxActivity.this.isFinishing()) {
+            finish();
+        }
     }
 
     @Nullable
@@ -627,7 +634,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
             getDrawer().closeDrawers();
         } else {
-            finish();
+            finishActivityIfNotFinishing();
         }
     }
 
@@ -989,7 +996,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mListViewAdapter.notifyDataSetChanged();
         if (mTermService.getSessions().isEmpty()) {
             // There are no sessions to show, so finish the activity.
-            finish();
+            finishActivityIfNotFinishing();
         } else {
             if (index >= service.getSessions().size()) {
                 index = service.getSessions().size() - 1;
