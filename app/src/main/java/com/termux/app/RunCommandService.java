@@ -104,13 +104,17 @@ public class RunCommandService extends Service {
             return Service.START_NOT_STICKY;
         }
 
-         Uri programUri = new Uri.Builder().scheme("com.termux.file").path(getExpandedTermuxPath(intent.getStringExtra(RUN_COMMAND_PATH))).build();
+        Uri programUri = new Uri.Builder().scheme("com.termux.file").path(getExpandedTermuxPath(intent.getStringExtra(RUN_COMMAND_PATH))).build();
 
         Intent execIntent = new Intent(TermuxService.ACTION_EXECUTE, programUri);
         execIntent.setClass(this, TermuxService.class);
         execIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, intent.getStringArrayExtra(RUN_COMMAND_ARGUMENTS));
-        execIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, getExpandedTermuxPath(intent.getStringExtra(RUN_COMMAND_WORKDIR)));
         execIntent.putExtra(TermuxService.EXTRA_EXECUTE_IN_BACKGROUND, intent.getBooleanExtra(RUN_COMMAND_BACKGROUND, false));
+
+        String workingDirectory = intent.getStringExtra(RUN_COMMAND_WORKDIR);
+        if (workingDirectory != null && !workingDirectory.isEmpty()) {
+            execIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, getExpandedTermuxPath(workingDirectory));
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.startForegroundService(execIntent);
