@@ -282,7 +282,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
         new File(HOME_PATH).mkdirs();
 
-        if (cwd == null) cwd = HOME_PATH;
+        if (cwd == null || cwd.isEmpty()) cwd = HOME_PATH;
 
         String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
         boolean isLoginShell = false;

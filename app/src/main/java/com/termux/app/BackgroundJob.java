@@ -36,7 +36,7 @@ public final class BackgroundJob {
 
     public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service, PendingIntent pendingIntent) {
         String[] env = buildEnvironment(false, cwd);
-        if (cwd == null) cwd = TermuxService.HOME_PATH;
+        if (cwd == null || cwd.isEmpty()) cwd = TermuxService.HOME_PATH;
 
         final String[] progArray = setupProcessArgs(fileToExecute, args);
         final String processDescription = Arrays.toString(progArray);
@@ -136,7 +136,7 @@ public final class BackgroundJob {
     static String[] buildEnvironment(boolean failSafe, String cwd) {
         new File(TermuxService.HOME_PATH).mkdirs();
 
-        if (cwd == null) cwd = TermuxService.HOME_PATH;
+        if (cwd == null || cwd.isEmpty()) cwd = TermuxService.HOME_PATH;
 
         List<String> environment = new ArrayList<>();
 
