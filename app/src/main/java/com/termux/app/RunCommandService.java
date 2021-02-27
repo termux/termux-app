@@ -92,20 +92,30 @@ public class RunCommandService extends Service {
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
 
-        if (allowExternalApps() && RUN_COMMAND_ACTION.equals(intent.getAction())) {
-            Uri programUri = new Uri.Builder().scheme("com.termux.file").path(parsePath(intent.getStringExtra(RUN_COMMAND_PATH))).build();
+        // If wrong action passed, then just return
+        if (!RUN_COMMAND_ACTION.equals(intent.getAction())) {
+            Log.e("termux", "Unexpected intent action to RunCommandService: " + intent.getAction());
+            return Service.START_NOT_STICKY;
+        }
 
-            Intent execIntent = new Intent(TermuxService.ACTION_EXECUTE, programUri);
-            execIntent.setClass(this, TermuxService.class);
-            execIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, intent.getStringArrayExtra(RUN_COMMAND_ARGUMENTS));
-            execIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, parsePath(intent.getStringExtra(RUN_COMMAND_WORKDIR)));
-            execIntent.putExtra(TermuxService.EXTRA_EXECUTE_IN_BACKGROUND, intent.getBooleanExtra(RUN_COMMAND_BACKGROUND, false));
+        // If allow-external-apps property to not set to "true"
+        if (!allowExternalApps()) {
+            Log.e("termux", "RunCommandService requires allow-external-apps property to be set to \"true\" in ~/.termux/termux.properties file.");
+            return Service.START_NOT_STICKY;
+        }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                this.startForegroundService(execIntent);
-            } else {
-                this.startService(execIntent);
-            }
+         Uri programUri = new Uri.Builder().scheme("com.termux.file").path(parsePath(intent.getStringExtra(RUN_COMMAND_PATH))).build();
+
+        Intent execIntent = new Intent(TermuxService.ACTION_EXECUTE, programUri);
+        execIntent.setClass(this, TermuxService.class);
+        execIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, intent.getStringArrayExtra(RUN_COMMAND_ARGUMENTS));
+        execIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, parsePath(intent.getStringExtra(RUN_COMMAND_WORKDIR)));
+        execIntent.putExtra(TermuxService.EXTRA_EXECUTE_IN_BACKGROUND, intent.getBooleanExtra(RUN_COMMAND_BACKGROUND, false));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.startForegroundService(execIntent);
+        } else {
+            this.startService(execIntent);
         }
 
         runStopForeground();
