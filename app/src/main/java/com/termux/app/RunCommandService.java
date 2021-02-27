@@ -104,12 +104,12 @@ public class RunCommandService extends Service {
             return Service.START_NOT_STICKY;
         }
 
-         Uri programUri = new Uri.Builder().scheme("com.termux.file").path(parsePath(intent.getStringExtra(RUN_COMMAND_PATH))).build();
+         Uri programUri = new Uri.Builder().scheme("com.termux.file").path(getExpandedTermuxPath(intent.getStringExtra(RUN_COMMAND_PATH))).build();
 
         Intent execIntent = new Intent(TermuxService.ACTION_EXECUTE, programUri);
         execIntent.setClass(this, TermuxService.class);
         execIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, intent.getStringArrayExtra(RUN_COMMAND_ARGUMENTS));
-        execIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, parsePath(intent.getStringExtra(RUN_COMMAND_WORKDIR)));
+        execIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, getExpandedTermuxPath(intent.getStringExtra(RUN_COMMAND_WORKDIR)));
         execIntent.putExtra(TermuxService.EXTRA_EXECUTE_IN_BACKGROUND, intent.getBooleanExtra(RUN_COMMAND_BACKGROUND, false));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -188,10 +188,12 @@ public class RunCommandService extends Service {
     }
 
     /** Replace "$PREFIX/" or "~/" prefix with termux absolute paths */
-    private String parsePath(String path) {
+    public static String getExpandedTermuxPath(String path) {
         if(path != null && !path.isEmpty()) {
-            path = path.replaceAll("^\\$PREFIX\\/", TermuxService.PREFIX_PATH + "/");
-            path = path.replaceAll("^~\\/", TermuxService.HOME_PATH + "/");
+            path = path.replaceAll("^\\$PREFIX$", TermuxService.PREFIX_PATH);
+            path = path.replaceAll("^\\$PREFIX/", TermuxService.PREFIX_PATH + "/");
+            path = path.replaceAll("^~/$", TermuxService.HOME_PATH);
+            path = path.replaceAll("^~/", TermuxService.HOME_PATH + "/");
         }
 
         return path;
