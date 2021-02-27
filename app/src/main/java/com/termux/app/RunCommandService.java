@@ -21,22 +21,31 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
- * When allow-external-apps property is set to "true" in ~/.termux/termux.properties, Termux 
- * is able to process execute intents sent by third-party applications.
+ * Third-party apps that are not part of termux world can run commands in termux context by either
+ * sending an intent to RunCommandService or becoming a plugin host for the termux-tasker plugin
+ * client.
  *
- * Third-party program must declare com.termux.permission.RUN_COMMAND permission and it should be
- * granted by user.
+ * For the RunCommandService intent to work, there are 2 main requirements:
+ * 1. The `allow-external-apps` property must be set to "true" in ~/.termux/termux.properties in
+ * termux app, regardless of if the executable path is inside or outside the `~/.termux/tasker/`
+ * directory.
+ * 2. The intent sender/third-party app must request the `com.termux.permission.RUN_COMMAND`
+ * permission in its `AndroidManifest.xml` and it should be granted by user to the app through the
+ * app's App Info permissions page in android settings, likely under Additional Permissions.
  *
- * Absolute path of command or script must be given in "RUN_COMMAND_PATH" extra.
- * The "RUN_COMMAND_ARGUMENTS", "RUN_COMMAND_WORKDIR" and "RUN_COMMAND_BACKGROUND" extras are 
+ * The absolute path of executable or script must be given in "RUN_COMMAND_PATH" extra.
+ * The "RUN_COMMAND_ARGUMENTS", "RUN_COMMAND_WORKDIR" and "RUN_COMMAND_BACKGROUND" extras are
  * optional. The workdir defaults to termux home. The background mode defaults to "false".
  * The command path and workdir can optionally be prefixed with "$PREFIX/" or "~/" if an absolute
  * path is not to be given.
  *
- * To automatically bring to foreground and start termux commands that were started with
- * background mode "false" in android >= 10 without user having to click the notification manually,
- * requires termux to be granted draw over apps permission due to new restrictions
+ * To automatically bring termux session to foreground and start termux commands that were started
+ * with background mode "false" in android >= 10 without user having to click the notification
+ * manually requires termux to be granted draw over apps permission due to new restrictions
  * of starting activities from the background, this also applies to Termux:Tasker plugin.
+ *
+ * Check https://github.com/termux/termux-tasker for more details on allow-external-apps and draw
+ * over apps and other limitations.
  *
  * To reduce the chance of termux being killed by android even further due to violation of not
  * being able to call startForeground() within ~5s of service start in android >= 8, the user
@@ -53,12 +62,18 @@ import java.util.Properties;
  *   startService(intent);
  *
  * Sample code to run command "top" with "am startservice" command:
- * am startservice --user 0 -n com.termux/com.termux.app.RunCommandService 
- * -a com.termux.RUN_COMMAND 
- * --es com.termux.RUN_COMMAND_PATH '/data/data/com.termux/files/usr/bin/top' 
- * --esa com.termux.RUN_COMMAND_ARGUMENTS '-n,5' 
- * --es com.termux.RUN_COMMAND_WORKDIR '/data/data/com.termux/files/home'
+ * am startservice --user 0 -n com.termux/com.termux.app.RunCommandService \
+ * -a com.termux.RUN_COMMAND \
+ * --es com.termux.RUN_COMMAND_PATH '/data/data/com.termux/files/usr/bin/top' \
+ * --esa com.termux.RUN_COMMAND_ARGUMENTS '-n,5' \
+ * --es com.termux.RUN_COMMAND_WORKDIR '/data/data/com.termux/files/home' \
  * --ez com.termux.RUN_COMMAND_BACKGROUND 'false'
+ *
+ * If your third-party app is targeting sdk 30 (android 11), then it needs to add `com.termux`
+ * package to the `queries` element or request `QUERY_ALL_PACKAGES` permission in its
+ * `AndroidManifest.xml`. Otherwise it will get `PackageSetting{...... com.termux/......} BLOCKED`
+ * errors in logcat and `RUN_COMMAND` won't work.
+ * https://developer.android.com/training/basics/intents/package-visibility#package-name
  */
 public class RunCommandService extends Service {
 
