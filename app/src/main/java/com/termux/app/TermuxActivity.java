@@ -566,7 +566,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         // Respect being stopped from the TermuxService notification action.
-        finish();
     }
 
     @Nullable
@@ -614,8 +613,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public void onBackPressed() {
         if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
             getDrawer().closeDrawers();
-        } else {
-            finish();
         }
     }
 
