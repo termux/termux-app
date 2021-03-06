@@ -212,6 +212,7 @@ public final class TermuxViewClient implements TerminalViewClient {
                 case 'q':
                 case 'k':
                     mActivity.toggleShowExtraKeys();
+                    mVirtualFnKeyDown=false; // force disable fn key down to restore keyboard input into terminal view, fixes termux/termux-app#1420
                     break;
             }
 
