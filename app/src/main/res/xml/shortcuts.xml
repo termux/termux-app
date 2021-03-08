@@ -1,6 +1,14 @@
 <shortcuts xmlns:tools="http://schemas.android.com/tools"
            xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
+        For shortcut.xml:
+        If applicationId in build.gradle is changed from "com.termux", then targetPackage will
+        need to be manually patched since ${applicationId} variable or resource string does not work.
+        If package name in AndroidManifest is changed from "com.termux", then targetClass will
+        need to be manually patched since dot (.) prefix does not work to automatically prefix the
+        package name.
+    -->
     <shortcut
         android:shortcutId="new_session"
         android:enabled="true"

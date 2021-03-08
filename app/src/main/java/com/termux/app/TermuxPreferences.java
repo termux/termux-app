@@ -170,9 +170,9 @@ final class TermuxPreferences {
     }
 
     void reloadFromProperties(Context context) {
-        File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
+        File propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_PATH);
         if (!propsFile.exists())
-            propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
+            propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_SECONDARY_PATH);
 
         Properties props = new Properties();
         try {
@@ -213,12 +213,12 @@ final class TermuxPreferences {
         mUseFullScreen = "true".equals(props.getProperty("fullscreen", "false").toLowerCase());
         mUseFullScreenWorkAround = "true".equals(props.getProperty("use-fullscreen-workaround", "false").toLowerCase());
 
-        mDefaultWorkingDir = props.getProperty("default-working-directory", TermuxService.HOME_PATH);
+        mDefaultWorkingDir = props.getProperty("default-working-directory", TermuxConstants.HOME_PATH);
         File workDir = new File(mDefaultWorkingDir);
         if (!workDir.exists() || !workDir.isDirectory()) {
             // Fallback to home directory if user configured working directory is not exist
             // or is a regular file.
-            mDefaultWorkingDir = TermuxService.HOME_PATH;
+            mDefaultWorkingDir = TermuxConstants.HOME_PATH;
         }
 
         String defaultExtraKeys = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";

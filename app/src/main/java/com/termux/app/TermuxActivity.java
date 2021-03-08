@@ -2,7 +2,6 @@ package com.termux.app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -48,6 +47,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.termux.R;
+import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
@@ -84,8 +84,6 @@ import androidx.viewpager.widget.ViewPager;
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
 
-    public static final String TERMUX_FAILSAFE_SESSION_ACTION = "com.termux.app.failsafe_session";
-
     private static final int CONTEXTMENU_SELECT_URL_ID = 0;
     private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 1;
     private static final int CONTEXTMENU_PASTE_ID = 3;
@@ -100,9 +98,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
 
-    private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
 
-    private static final String BROADCAST_TERMUX_OPENED = "com.termux.app.OPENED";
+    private static final String BROADCAST_TERMUX_OPENED = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.OPENED";
 
     /** The main view of the activity showing the terminal. Initialized in onCreate(). */
     @SuppressWarnings("NullableProblems")
@@ -145,7 +142,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mIsVisible) {
-                String whatToReload = intent.getStringExtra(RELOAD_STYLE_ACTION);
+                String whatToReload = intent.getStringExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE);
                 if ("storage".equals(whatToReload)) {
                     if (ensureStoragePermissionGranted())
                         TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
@@ -163,8 +160,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     void checkForFontAndColors() {
         try {
-            @SuppressLint("SdCardPath") File fontFile = new File("/data/data/com.termux/files/home/.termux/font.ttf");
-            @SuppressLint("SdCardPath") File colorsFile = new File("/data/data/com.termux/files/home/.termux/colors.properties");
+            File colorsFile = new File(TermuxConstants.COLOR_PROPERTIES_PATH);
+            File fontFile = new File(TermuxConstants.FONT_PATH);
 
             final Properties props = new Properties();
             if (colorsFile.isFile()) {
@@ -541,7 +538,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         Bundle bundle = getIntent().getExtras();
                         boolean launchFailsafe = false;
                         if (bundle != null) {
-                            launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                            launchFailsafe = bundle.getBoolean(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
                         }
                         addNewSession(launchFailsafe, null);
                     } catch (WindowManager.BadTokenException e) {
@@ -556,7 +553,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             Intent i = getIntent();
             if (i != null && Intent.ACTION_RUN.equals(i.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
-                boolean failSafe = i.getBooleanExtra(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                boolean failSafe = i.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
                 addNewSession(failSafe, null);
             } else {
                 switchToSession(getStoredCurrentSessionOrLast());
@@ -612,7 +609,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             mListViewAdapter.notifyDataSetChanged();
         }
 
-        registerReceiver(mBroadcastReceiever, new IntentFilter(RELOAD_STYLE_ACTION));
+        registerReceiver(mBroadcastReceiever, new IntentFilter(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE));
 
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal:
@@ -914,14 +911,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
             case CONTEXTMENU_STYLING_ID: {
                 Intent stylingIntent = new Intent();
-                stylingIntent.setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity");
+                stylingIntent.setClassName(TermuxConstants.TERMUX_STYLING_PACKAGE_NAME, TermuxConstants.TERMUX_STYLING.TERMUX_STYLING_ACTIVITY_NAME);
                 try {
                     startActivity(stylingIntent);
                 } catch (ActivityNotFoundException | IllegalArgumentException e) {
                     // The startActivity() call is not documented to throw IllegalArgumentException.
                     // However, crash reporting shows that it sometimes does, so catch it here.
-                    new AlertDialog.Builder(this).setMessage(R.string.styling_not_installed)
-                        .setPositiveButton(R.string.styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://f-droid.org/en/packages/com.termux.styling/")))).setNegativeButton(android.R.string.cancel, null).show();
+                    new AlertDialog.Builder(this).setMessage(getString(R.string.styling_not_installed))
+                        .setPositiveButton(R.string.styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://f-droid.org/en/packages/" + TermuxConstants.TERMUX_STYLING_PACKAGE_NAME + " /")))).setNegativeButton(android.R.string.cancel, null).show();
                 }
                 return true;
             }

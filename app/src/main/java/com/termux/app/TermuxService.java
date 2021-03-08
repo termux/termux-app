@@ -22,6 +22,8 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
+import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
@@ -45,25 +47,7 @@ import java.util.List;
 public final class TermuxService extends Service implements SessionChangedCallback {
 
     private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
-
-    /** Note that this is a symlink on the Android M preview. */
-    @SuppressLint("SdCardPath")
-    public static final String FILES_PATH = "/data/data/com.termux/files";
-    public static final String PREFIX_PATH = FILES_PATH + "/usr";
-    public static final String HOME_PATH = FILES_PATH + "/home";
-
     private static final int NOTIFICATION_ID = 1337;
-
-    private static final String ACTION_STOP_SERVICE = "com.termux.service_stop";
-    private static final String ACTION_LOCK_WAKE = "com.termux.service_wake_lock";
-    private static final String ACTION_UNLOCK_WAKE = "com.termux.service_wake_unlock";
-    /** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
-    public static final String ACTION_EXECUTE = "com.termux.service_execute";
-
-    public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
-
-    public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
-    public static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
 
     /** This service is only bound from inside the same process and never uses IPC. */
     class LocalBinder extends Binder {
@@ -91,19 +75,19 @@ public final class TermuxService extends Service implements SessionChangedCallba
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
 
-    /** If the user has executed the {@link #ACTION_STOP_SERVICE} intent. */
+    /** If the user has executed the {@link TermuxConstants.TERMUX_APP.TERMUX_SERVICE#ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
 
     @SuppressLint("Wakelock")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
-        if (ACTION_STOP_SERVICE.equals(action)) {
+        if (TERMUX_SERVICE.ACTION_STOP_SERVICE.equals(action)) {
             mWantsToStop = true;
             for (int i = 0; i < mTerminalSessions.size(); i++)
                 mTerminalSessions.get(i).finishIfRunning();
             stopSelf();
-        } else if (ACTION_LOCK_WAKE.equals(action)) {
+        } else if (TERMUX_SERVICE.ACTION_WAKE_LOCK.equals(action)) {
             if (mWakeLock == null) {
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
                 mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, EmulatorDebug.LOG_TAG + ":service-wakelock");
@@ -130,7 +114,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
                 updateNotification();
             }
-        } else if (ACTION_UNLOCK_WAKE.equals(action)) {
+        } else if (TERMUX_SERVICE.ACTION_WAKE_UNLOCK.equals(action)) {
             if (mWakeLock != null) {
                 mWakeLock.release();
                 mWakeLock = null;
@@ -140,19 +124,19 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
                 updateNotification();
             }
-        } else if (ACTION_EXECUTE.equals(action)) {
+        } else if (TERMUX_SERVICE.ACTION_SERVICE_EXECUTE.equals(action)) {
             Uri executableUri = intent.getData();
             String executablePath = (executableUri == null ? null : executableUri.getPath());
 
-            String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(EXTRA_ARGUMENTS));
-            String cwd = intent.getStringExtra(EXTRA_CURRENT_WORKING_DIRECTORY);
+            String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS));
+            String cwd = intent.getStringExtra(TERMUX_SERVICE.EXTRA_WORKDIR);
 
-            if (intent.getBooleanExtra(EXTRA_EXECUTE_IN_BACKGROUND, false)) {
+            if (intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false)) {
                 BackgroundJob task = new BackgroundJob(cwd, executablePath, arguments, this, intent.getParcelableExtra("pendingIntent"));
                 mBackgroundTasks.add(task);
                 updateNotification();
             } else {
-                boolean failsafe = intent.getBooleanExtra(TermuxActivity.TERMUX_FAILSAFE_SESSION_ACTION, false);
+                boolean failsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
                 TerminalSession newSession = createTermSession(executablePath, arguments, cwd, failsafe);
 
                 // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
@@ -238,10 +222,10 @@ public final class TermuxService extends Service implements SessionChangedCallba
         }
 
         Resources res = getResources();
-        Intent exitIntent = new Intent(this, TermuxService.class).setAction(ACTION_STOP_SERVICE);
+        Intent exitIntent = new Intent(this, TermuxService.class).setAction(TERMUX_SERVICE.ACTION_STOP_SERVICE);
         builder.addAction(android.R.drawable.ic_delete, res.getString(R.string.notification_action_exit), PendingIntent.getService(this, 0, exitIntent, 0));
 
-        String newWakeAction = wakeLockHeld ? ACTION_UNLOCK_WAKE : ACTION_LOCK_WAKE;
+        String newWakeAction = wakeLockHeld ? TERMUX_SERVICE.ACTION_WAKE_UNLOCK : TERMUX_SERVICE.ACTION_WAKE_LOCK;
         Intent toggleWakeLockIntent = new Intent(this, TermuxService.class).setAction(newWakeAction);
         String actionTitle = res.getString(wakeLockHeld ?
             R.string.notification_action_wake_unlock :
@@ -254,7 +238,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onDestroy() {
-        File termuxTmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
+        File termuxTmpDir = new File(TermuxConstants.PREFIX_PATH + "/tmp");
 
         if (termuxTmpDir.exists()) {
             try {
@@ -280,9 +264,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
-        new File(HOME_PATH).mkdirs();
+        new File(TermuxConstants.HOME_PATH).mkdirs();
 
-        if (cwd == null || cwd.isEmpty()) cwd = HOME_PATH;
+        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.HOME_PATH;
 
         String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
         boolean isLoginShell = false;
@@ -290,7 +274,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         if (executablePath == null) {
             if (!failSafe) {
                 for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
-                    File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
+                    File shellFile = new File(TermuxConstants.PREFIX_PATH + "/bin/" + shellBinary);
                     if (shellFile.canExecute()) {
                         executablePath = shellFile.getAbsolutePath();
                         break;
@@ -320,8 +304,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
         updateNotification();
 
         // Make sure that terminal styling is always applied.
-        Intent stylingIntent = new Intent("com.termux.app.reload_style");
-        stylingIntent.putExtra("com.termux.app.reload_style", "styling");
+        Intent stylingIntent = new Intent(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
+        stylingIntent.putExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE, "styling");
         sendBroadcast(stylingIntent);
 
         return session;

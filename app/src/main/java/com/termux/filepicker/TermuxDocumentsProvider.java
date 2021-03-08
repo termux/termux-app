@@ -12,7 +12,7 @@ import android.provider.DocumentsProvider;
 import android.webkit.MimeTypeMap;
 
 import com.termux.R;
-import com.termux.app.TermuxService;
+import com.termux.app.TermuxConstants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,7 +35,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     private static final String ALL_MIME_TYPES = "*/*";
 
-    private static final File BASE_DIR = new File(TermuxService.HOME_PATH);
+    private static final File BASE_DIR = new File(TermuxConstants.HOME_PATH);
 
 
     // The default columns to return information about a root if no specific
@@ -171,7 +171,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
             // through the whole SD card).
             boolean isInsideHome;
             try {
-                isInsideHome = file.getCanonicalPath().startsWith(TermuxService.HOME_PATH);
+                isInsideHome = file.getCanonicalPath().startsWith(TermuxConstants.HOME_PATH);
             } catch (IOException e) {
                 isInsideHome = true;
             }

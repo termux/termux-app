@@ -13,6 +13,8 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.termux.R;
+import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
+import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -77,12 +79,6 @@ import java.util.Properties;
  */
 public class RunCommandService extends Service {
 
-    public static final String RUN_COMMAND_ACTION = "com.termux.RUN_COMMAND";
-    public static final String RUN_COMMAND_PATH = "com.termux.RUN_COMMAND_PATH";
-    public static final String RUN_COMMAND_ARGUMENTS = "com.termux.RUN_COMMAND_ARGUMENTS";
-    public static final String RUN_COMMAND_WORKDIR = "com.termux.RUN_COMMAND_WORKDIR";
-    public static final String RUN_COMMAND_BACKGROUND = "com.termux.RUN_COMMAND_BACKGROUND";
-
     private static final String NOTIFICATION_CHANNEL_ID = "termux_run_command_notification_channel";
     private static final int NOTIFICATION_ID = 1338;
 
@@ -108,7 +104,7 @@ public class RunCommandService extends Service {
         runStartForeground();
 
         // If wrong action passed, then just return
-        if (!RUN_COMMAND_ACTION.equals(intent.getAction())) {
+        if (!RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND.equals(intent.getAction())) {
             Log.e("termux", "Unexpected intent action to RunCommandService: " + intent.getAction());
             return Service.START_NOT_STICKY;
         }
@@ -119,16 +115,16 @@ public class RunCommandService extends Service {
             return Service.START_NOT_STICKY;
         }
 
-        Uri programUri = new Uri.Builder().scheme("com.termux.file").path(getExpandedTermuxPath(intent.getStringExtra(RUN_COMMAND_PATH))).build();
+        Uri programUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(getExpandedTermuxPath(intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH))).build();
 
-        Intent execIntent = new Intent(TermuxService.ACTION_EXECUTE, programUri);
+        Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, programUri);
         execIntent.setClass(this, TermuxService.class);
-        execIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, intent.getStringArrayExtra(RUN_COMMAND_ARGUMENTS));
-        execIntent.putExtra(TermuxService.EXTRA_EXECUTE_IN_BACKGROUND, intent.getBooleanExtra(RUN_COMMAND_BACKGROUND, false));
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, intent.getStringArrayExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS));
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, intent.getBooleanExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, false));
 
-        String workingDirectory = intent.getStringExtra(RUN_COMMAND_WORKDIR);
+        String workingDirectory = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_WORKDIR);
         if (workingDirectory != null && !workingDirectory.isEmpty()) {
-            execIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, getExpandedTermuxPath(workingDirectory));
+            execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, getExpandedTermuxPath(workingDirectory));
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -188,9 +184,9 @@ public class RunCommandService extends Service {
     }
 
     private boolean allowExternalApps() {
-        File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
+        File propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_PATH);
         if (!propsFile.exists())
-            propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
+            propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_SECONDARY_PATH);
 
         Properties props = new Properties();
         try {
@@ -209,10 +205,10 @@ public class RunCommandService extends Service {
     /** Replace "$PREFIX/" or "~/" prefix with termux absolute paths */
     public static String getExpandedTermuxPath(String path) {
         if(path != null && !path.isEmpty()) {
-            path = path.replaceAll("^\\$PREFIX$", TermuxService.PREFIX_PATH);
-            path = path.replaceAll("^\\$PREFIX/", TermuxService.PREFIX_PATH + "/");
-            path = path.replaceAll("^~/$", TermuxService.HOME_PATH);
-            path = path.replaceAll("^~/", TermuxService.HOME_PATH + "/");
+            path = path.replaceAll("^\\$PREFIX$", TermuxConstants.PREFIX_PATH);
+            path = path.replaceAll("^\\$PREFIX/", TermuxConstants.PREFIX_PATH + "/");
+            path = path.replaceAll("^~/$", TermuxConstants.HOME_PATH);
+            path = path.replaceAll("^~/", TermuxConstants.HOME_PATH + "/");
         }
 
         return path;

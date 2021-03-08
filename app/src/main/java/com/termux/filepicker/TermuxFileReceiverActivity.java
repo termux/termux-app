@@ -11,6 +11,8 @@ import android.util.Patterns;
 
 import com.termux.R;
 import com.termux.app.DialogUtils;
+import com.termux.app.TermuxConstants;
+import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.TermuxService;
 
 import java.io.ByteArrayInputStream;
@@ -25,9 +27,9 @@ import java.util.regex.Pattern;
 
 public class TermuxFileReceiverActivity extends Activity {
 
-    static final String TERMUX_RECEIVEDIR = TermuxService.FILES_PATH + "/home/downloads";
-    static final String EDITOR_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-file-editor";
-    static final String URL_OPENER_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-url-opener";
+    static final String TERMUX_RECEIVEDIR = TermuxConstants.FILES_PATH + "/home/downloads";
+    static final String EDITOR_PROGRAM = TermuxConstants.HOME_PATH + "/bin/termux-file-editor";
+    static final String URL_OPENER_PROGRAM = TermuxConstants.HOME_PATH + "/bin/termux-url-opener";
 
     /**
      * If the activity should be finished when the name input dialog is dismissed. This is disabled
@@ -131,17 +133,17 @@ public class TermuxFileReceiverActivity extends Activity {
 
             final Uri scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
 
-            Intent executeIntent = new Intent(TermuxService.ACTION_EXECUTE, scriptUri);
+            Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
             executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-            executeIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
+            executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
             startService(executeIntent);
             finish();
         },
             R.string.file_received_open_folder_button, text -> {
                 if (saveStreamWithName(in, text) == null) return;
 
-                Intent executeIntent = new Intent(TermuxService.ACTION_EXECUTE);
-                executeIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, TERMUX_RECEIVEDIR);
+                Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE);
+                executeIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, TERMUX_RECEIVEDIR);
                 executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
                 startService(executeIntent);
                 finish();
@@ -188,9 +190,9 @@ public class TermuxFileReceiverActivity extends Activity {
 
         final Uri urlOpenerProgramUri = new Uri.Builder().scheme("file").path(URL_OPENER_PROGRAM).build();
 
-        Intent executeIntent = new Intent(TermuxService.ACTION_EXECUTE, urlOpenerProgramUri);
+        Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, urlOpenerProgramUri);
         executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-        executeIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, new String[]{url});
+        executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{url});
         startService(executeIntent);
         finish();
     }
