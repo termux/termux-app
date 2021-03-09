@@ -105,8 +105,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private static final String BROADCAST_TERMUX_OPENED = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.OPENED";
 
     /** The main view of the activity showing the terminal. Initialized in onCreate(). */
-    @SuppressWarnings("NullableProblems")
-    @NonNull
     TerminalView mTerminalView;
 
     ExtraKeysView mExtraKeysView;
@@ -366,7 +364,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         for (ResolveInfo info : matches) {
             Intent explicitBroadcast = new Intent(broadcast);
             ComponentName cname = new ComponentName(info.activityInfo.applicationInfo.packageName,
-                                                    info.activityInfo.name);
+                info.activityInfo.name);
             explicitBroadcast.setComponent(cname);
             sendBroadcast(explicitBroadcast);
         }
@@ -488,7 +486,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 }
 
                 TerminalSession sessionAtRow = getItem(position);
-                boolean sessionRunning = sessionAtRow.isRunning();
+                if (sessionAtRow == null) return row;
+
+                boolean sessionRunning = false;
+                sessionRunning = sessionAtRow.isRunning();
 
                 TextView firstLineView = row.findViewById(R.id.row_line);
                 if (mIsUsingBlackUI) {
@@ -577,6 +578,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     @SuppressLint("InflateParams")
     void renameSession(final TerminalSession sessionToRename) {
+        if (sessionToRename == null) return;
         DialogUtils.textInput(this, R.string.session_rename_title, sessionToRename.mSessionName, R.string.session_rename_positive_button, text -> {
             sessionToRename.mSessionName = text;
             mListViewAdapter.notifyDataSetChanged();
@@ -629,6 +631,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         getDrawer().closeDrawers();
     }
 
+    @SuppressLint("RtlHardcoded")
     @Override
     public void onBackPressed() {
         if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
@@ -825,7 +828,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     void showUrlSelection() {
-        String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
+        String text = null;
+        if (getCurrentTermSession() != null) {
+            text = getCurrentTermSession().getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
+        }
         LinkedHashSet<CharSequence> urlSet = extractUrls(text);
         if (urlSet.isEmpty()) {
             new AlertDialog.Builder(this).setMessage(R.string.select_url_no_found).show();
@@ -896,11 +902,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 return true;
             case CONTEXTMENU_KILL_PROCESS_ID:
                 final AlertDialog.Builder b = new AlertDialog.Builder(this);
+                final TerminalSession terminalSession = getCurrentTermSession();
+                if (terminalSession == null) return true;
+
                 b.setIcon(android.R.drawable.ic_dialog_alert);
                 b.setMessage(R.string.confirm_kill_process);
                 b.setPositiveButton(android.R.string.yes, (dialog, id) -> {
                     dialog.dismiss();
-                    getCurrentTermSession().finishIfRunning();
+                    terminalSession.finishIfRunning();
                 });
                 b.setNegativeButton(android.R.string.no, null);
                 b.show();
@@ -952,7 +961,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUESTCODE_PERMISSION_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             TermuxInstaller.setupStorageSymlinks(this);
         }
@@ -969,7 +978,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (clipData == null) return;
         CharSequence paste = clipData.getItemAt(0).coerceToText(this);
         if (!TextUtils.isEmpty(paste))
-            getCurrentTermSession().getEmulator().paste(paste.toString());
+            if (getCurrentTermSession() != null) {
+                getCurrentTermSession().getEmulator().paste(paste.toString());
+            }
     }
 
     /** The current session as stored or the last one if that does not exist. */
