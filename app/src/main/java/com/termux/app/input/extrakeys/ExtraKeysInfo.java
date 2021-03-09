@@ -1,31 +1,24 @@
-package com.termux.app;
-
-import android.text.TextUtils;
-
-import androidx.annotation.Nullable;
+package com.termux.app.input.extrakeys;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-public class ExtraKeysInfos {
+public class ExtraKeysInfo {
 
     /**
      * Matrix of buttons displayed
      */
-    private ExtraKeyButton[][] buttons;
+    private final ExtraKeyButton[][] buttons;
 
     /**
      * This corresponds to one of the CharMapDisplay below
      */
     private String style = "default";
 
-    public ExtraKeysInfos(String propertiesInfo, String style) throws JSONException {
+    public ExtraKeysInfo(String propertiesInfo, String style) throws JSONException {
         this.style = style;
 
         // Convert String propertiesInfo to Array of Arrays
@@ -151,7 +144,7 @@ public class ExtraKeysInfos {
         put("-", "―"); // U+2015 ― HORIZONTAL BAR
     }};
 
-    /**
+    /*
      * Multiple maps are available to quickly change
      * the style of the keys.
      */
@@ -258,83 +251,3 @@ public class ExtraKeysInfos {
     }
 }
 
-class ExtraKeyButton {
-
-    /**
-     * The key that will be sent to the terminal, either a control character
-     * defined in ExtraKeysView.keyCodesForString (LEFT, RIGHT, PGUP...) or
-     * some text.
-     */
-    private String key;
-
-    /**
-     * If the key is a macro, i.e. a sequence of keys separated by space.
-     */
-    private boolean macro;
-
-    /**
-     * The text that will be shown on the button.
-     */
-    private String display;
-
-    /**
-     * The information of the popup (triggered by swipe up).
-     */
-    @Nullable
-    private ExtraKeyButton popup = null;
-
-    public ExtraKeyButton(ExtraKeysInfos.CharDisplayMap charDisplayMap, JSONObject config) throws JSONException {
-        this(charDisplayMap, config, null);
-    }
-
-    public ExtraKeyButton(ExtraKeysInfos.CharDisplayMap charDisplayMap, JSONObject config, ExtraKeyButton popup) throws JSONException {
-        String keyFromConfig = config.optString("key", null);
-        String macroFromConfig = config.optString("macro", null);
-        String[] keys;
-        if (keyFromConfig != null && macroFromConfig != null) {
-            throw new JSONException("Both key and macro can't be set for the same key");
-        } else if (keyFromConfig != null) {
-            keys = new String[]{keyFromConfig};
-            this.macro = false;
-        } else if (macroFromConfig != null) {
-            keys = macroFromConfig.split(" ");
-            this.macro = true;
-        } else {
-            throw new JSONException("All keys have to specify either key or macro");
-        }
-
-        for (int i = 0; i < keys.length; i++) {
-            keys[i] = ExtraKeysInfos.replaceAlias(keys[i]);
-        }
-
-        this.key = TextUtils.join(" ", keys);
-
-        String displayFromConfig = config.optString("display", null);
-        if (displayFromConfig != null) {
-            this.display = displayFromConfig;
-        } else {
-            this.display = Arrays.stream(keys)
-                .map(key -> charDisplayMap.get(key, key))
-                .collect(Collectors.joining(" "));
-        }
-
-        this.popup = popup;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public boolean isMacro() {
-        return macro;
-    }
-
-    public String getDisplay() {
-        return display;
-    }
-
-    @Nullable
-    public ExtraKeyButton getPopup() {
-        return popup;
-    }
-}

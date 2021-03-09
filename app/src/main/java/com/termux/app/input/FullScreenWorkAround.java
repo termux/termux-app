@@ -1,8 +1,10 @@
-package com.termux.app;
+package com.termux.app.input;
 
 import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.termux.app.TermuxActivity;
 
 /**
  * Work around for fullscreen mode in Termux to fix ExtraKeysView not being visible.
@@ -13,11 +15,11 @@ import android.view.ViewGroup;
  * For more information, see https://issuetracker.google.com/issues/36911528
  */
 public class FullScreenWorkAround {
-    private View mChildOfContent;
+    private final View mChildOfContent;
     private int mUsableHeightPrevious;
-    private ViewGroup.LayoutParams mViewGroupLayoutParams;
+    private final ViewGroup.LayoutParams mViewGroupLayoutParams;
 
-    private int mNavBarHeight;
+    private final int mNavBarHeight;
 
 
     public static void apply(TermuxActivity activity) {

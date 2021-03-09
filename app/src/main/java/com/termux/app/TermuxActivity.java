@@ -48,6 +48,9 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.app.input.BellHandler;
+import com.termux.app.input.extrakeys.ExtraKeysView;
+import com.termux.app.input.FullScreenWorkAround;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
@@ -455,7 +458,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
                         break;
                     case TermuxPreferences.BELL_VIBRATE:
-                        BellUtil.getInstance(TermuxActivity.this).doBell();
+                        BellHandler.getInstance(TermuxActivity.this).doBell();
                         break;
                     case TermuxPreferences.BELL_IGNORE:
                         // Ignore the bell character.

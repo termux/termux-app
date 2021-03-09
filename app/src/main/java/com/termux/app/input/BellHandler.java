@@ -1,4 +1,4 @@
-package com.termux.app;
+package com.termux.app.input;
 
 import android.content.Context;
 import android.os.Handler;
@@ -6,15 +6,15 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.os.Vibrator;
 
-public class BellUtil {
-    private static BellUtil instance = null;
+public class BellHandler {
+    private static BellHandler instance = null;
     private static final Object lock = new Object();
 
-    public static BellUtil getInstance(Context context) {
+    public static BellHandler getInstance(Context context) {
         if (instance == null) {
             synchronized (lock) {
                 if (instance == null) {
-                    instance = new BellUtil((Vibrator) context.getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE));
+                    instance = new BellHandler((Vibrator) context.getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE));
                 }
             }
         }
@@ -29,7 +29,7 @@ public class BellUtil {
     private long lastBell = 0;
     private final Runnable bellRunnable;
 
-    private BellUtil(final Vibrator vibrator) {
+    private BellHandler(final Vibrator vibrator) {
         bellRunnable = new Runnable() {
             @Override
             public void run() {

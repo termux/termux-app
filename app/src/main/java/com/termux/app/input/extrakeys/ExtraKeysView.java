@@ -1,4 +1,4 @@
-package com.termux.app;
+package com.termux.app.input.extrakeys;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -78,6 +78,7 @@ public final class ExtraKeysView extends GridLayout {
         put("F12", KeyEvent.KEYCODE_F12);
     }};
 
+    @SuppressLint("RtlHardcoded")
     private void sendKey(View view, String keyName, boolean forceCtrlDown, boolean forceLeftAltDown) {
         TerminalView terminalView = view.findViewById(R.id.terminal_view);
         if ("KEYBOARD".equals(keyName)) {
@@ -87,7 +88,8 @@ public final class ExtraKeysView extends GridLayout {
             DrawerLayout drawer = view.findViewById(R.id.drawer_layout);
             drawer.openDrawer(Gravity.LEFT);
         } else if (keyCodesForString.containsKey(keyName)) {
-            int keyCode = keyCodesForString.get(keyName);
+            Integer keyCode = keyCodesForString.get(keyName);
+            if (keyCode == null) return;
             int metaState = 0;
             if (forceCtrlDown) {
                 metaState |= KeyEvent.META_CTRL_ON | KeyEvent.META_CTRL_LEFT_ON;
@@ -172,6 +174,7 @@ public final class ExtraKeysView extends GridLayout {
 
     private Button createSpecialButton(String buttonKey, boolean needUpdate) {
         SpecialButtonState state = specialButtons.get(SpecialButton.valueOf(buttonKey));
+        if (state == null) return null;
         state.isOn = true;
         Button button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
         button.setTextColor(state.isActive ? INTERESTING_COLOR : TEXT_COLOR);
@@ -187,6 +190,7 @@ public final class ExtraKeysView extends GridLayout {
         Button button;
         if(isSpecialButton(extraButton)) {
             button = createSpecialButton(extraButton.getKey(), false);
+            if (button == null) return;
         } else {
             button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
             button.setTextColor(TEXT_COLOR);
@@ -235,7 +239,7 @@ public final class ExtraKeysView extends GridLayout {
      * "-_-" will input the string "-_-"
      */
     @SuppressLint("ClickableViewAccessibility")
-    void reload(ExtraKeysInfos infos) {
+    public void reload(ExtraKeysInfo infos) {
         if(infos == null)
             return;
 
@@ -256,6 +260,7 @@ public final class ExtraKeysView extends GridLayout {
                 Button button;
                 if(isSpecialButton(buttonInfo)) {
                     button = createSpecialButton(buttonInfo.getKey(), true);
+                    if (button == null) return;
                 } else {
                     button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
                 }
@@ -282,6 +287,7 @@ public final class ExtraKeysView extends GridLayout {
                     View root = getRootView();
                     if (isSpecialButton(buttonInfo)) {
                         SpecialButtonState state = specialButtons.get(SpecialButton.valueOf(buttonInfo.getKey()));
+                        if (state == null) return;
                         state.setIsActive(!state.isActive);
                     } else {
                         sendKey(root, buttonInfo);
@@ -343,6 +349,7 @@ public final class ExtraKeysView extends GridLayout {
                                     if (buttonInfo.getPopup() != null) {
                                         if (isSpecialButton(buttonInfo.getPopup())) {
                                             SpecialButtonState state = specialButtons.get(SpecialButton.valueOf(buttonInfo.getPopup().getKey()));
+                                            if (state == null) return true;
                                             state.setIsActive(!state.isActive);
                                         } else {
                                             sendKey(root, buttonInfo.getPopup());
