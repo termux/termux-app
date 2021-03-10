@@ -311,11 +311,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             getDrawer().closeDrawers();
         });
 
-        findViewById(R.id.toggle_keyboard_button).setOnLongClickListener(v -> {
-            toggleShowExtraKeys();
-            return true;
-        });
-
         registerForContextMenu(mTerminalView);
 
         Intent serviceIntent = new Intent(this, TermuxService.class);
