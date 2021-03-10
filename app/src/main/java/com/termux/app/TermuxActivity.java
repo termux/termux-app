@@ -482,10 +482,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             getDrawer().closeDrawers();
         });
 
-        findViewById(R.id.toggle_keyboard_button).setOnLongClickListener(v -> {
-            toggleShowExtraKeys();
-            return true;
-        });
 
         registerForContextMenu(mTerminalView);
 
@@ -522,16 +518,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                                                     info.activityInfo.name);
             explicitBroadcast.setComponent(cname);
             sendBroadcast(explicitBroadcast);
-        }
-    }
-
-    void toggleShowExtraKeys() {
-        final ViewPager viewPager = findViewById(R.id.viewpager);
-        final boolean showNow = mSettings.toggleShowExtraKeys(TermuxActivity.this);
-        viewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
-        if (showNow && viewPager.getCurrentItem() == 1) {
-            // Focus the text input view if just revealed.
-            findViewById(R.id.text_input).requestFocus();
         }
     }
 
