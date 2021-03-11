@@ -51,6 +51,8 @@ import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.input.BellHandler;
 import com.termux.app.input.extrakeys.ExtraKeysView;
 import com.termux.app.input.FullScreenWorkAround;
+import com.termux.app.settings.properties.TermuxPropertyConstants;
+import com.termux.app.settings.properties.TermuxSharedProperties;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
@@ -110,6 +112,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     ExtraKeysView mExtraKeysView;
 
     TermuxPreferences mSettings;
+    TermuxSharedProperties mProperties;
 
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -144,16 +147,19 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         public void onReceive(Context context, Intent intent) {
             if (mIsVisible) {
                 String whatToReload = intent.getStringExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE);
+                Log.d("termux", "Reloading termux style for: " + whatToReload);
                 if ("storage".equals(whatToReload)) {
                     if (ensureStoragePermissionGranted())
                         TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
                     return;
                 }
+
                 checkForFontAndColors();
-                mSettings.reloadFromProperties(TermuxActivity.this);
+
+                mProperties.loadTermuxPropertiesFromDisk();
 
                 if (mExtraKeysView != null) {
-                    mExtraKeysView.reload(mSettings.mExtraKeys);
+                    mExtraKeysView.reload(mProperties.getExtraKeysInfo());
                 }
             }
         }
@@ -205,7 +211,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     @Override
     public void onCreate(Bundle bundle) {
         mSettings = new TermuxPreferences(this);
-        mIsUsingBlackUI = mSettings.isUsingBlackUI();
+        mProperties = new TermuxSharedProperties(this);
+
+        mIsUsingBlackUI = mProperties.isUsingBlackUI();
         if (mIsUsingBlackUI) {
             this.setTheme(R.style.Theme_Termux_Black);
         } else {
@@ -223,7 +231,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             return insets;
         });
 
-        if (mSettings.isUsingFullScreen()) {
+        if (mProperties.isUsingFullScreen()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
@@ -245,7 +253,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 
         ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
-        layoutParams.height = layoutParams.height * (mSettings.mExtraKeys == null ? 0 : mSettings.mExtraKeys.getMatrix().length);
+        layoutParams.height = layoutParams.height * (mProperties.getExtraKeysInfo() == null ? 0 : mProperties.getExtraKeysInfo().getMatrix().length);
         viewPager.setLayoutParams(layoutParams);
 
         viewPager.setAdapter(new PagerAdapter() {
@@ -266,10 +274,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 View layout;
                 if (position == 0) {
                     layout = mExtraKeysView = (ExtraKeysView) inflater.inflate(R.layout.extra_keys_main, collection, false);
-                    mExtraKeysView.reload(mSettings.mExtraKeys);
+                    mExtraKeysView.reload(mProperties.getExtraKeysInfo());
 
                     // apply extra keys fix if enabled in prefs
-                    if (mSettings.isUsingFullScreen() && mSettings.isUsingFullScreenWorkAround()) {
+                    if (mProperties.isUsingFullScreen() && mProperties.isUsingFullScreenWorkAround()) {
                         FullScreenWorkAround.apply(TermuxActivity.this);
                     }
 
@@ -451,14 +459,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             public void onBell(TerminalSession session) {
                 if (!mIsVisible) return;
 
-                switch (mSettings.mBellBehaviour) {
-                    case TermuxPreferences.BELL_BEEP:
-                        mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
-                        break;
-                    case TermuxPreferences.BELL_VIBRATE:
+                switch (mProperties.getBellBehaviour()) {
+                    case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_VIBRATE:
                         BellHandler.getInstance(TermuxActivity.this).doBell();
                         break;
-                    case TermuxPreferences.BELL_IGNORE:
+                    case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_BEEP:
+                        mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
+                        break;
+                    case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_IGNORE:
                         // Ignore the bell character.
                         break;
                 }
@@ -665,7 +673,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
             String workingDirectory;
             if (currentSession == null) {
-                workingDirectory = mSettings.mDefaultWorkingDir;
+                workingDirectory = mProperties.getDefaultWorkingDirectory();
             } else {
                 workingDirectory = currentSession.getCwd();
             }

@@ -8,7 +8,9 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.InputMethodManager;
 
+import com.termux.app.input.KeyboardShortcut;
 import com.termux.app.input.extrakeys.ExtraKeysView;
+import com.termux.app.settings.properties.TermuxPropertyConstants;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -47,7 +49,7 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     @Override
     public boolean shouldBackButtonBeMappedToEscape() {
-        return mActivity.mSettings.mBackIsEscape;
+        return mActivity.mProperties.isBackKeyTheEscapeKey();
     }
 
     @Override
@@ -230,23 +232,23 @@ public final class TermuxViewClient implements TerminalViewClient {
                 return true;
             }
 
-            List<TermuxPreferences.KeyboardShortcut> shortcuts = mActivity.mSettings.shortcuts;
+            List<KeyboardShortcut> shortcuts = mActivity.mProperties.getSessionShortcuts();
             if (!shortcuts.isEmpty()) {
                 int codePointLowerCase = Character.toLowerCase(codePoint);
                 for (int i = shortcuts.size() - 1; i >= 0; i--) {
-                    TermuxPreferences.KeyboardShortcut shortcut = shortcuts.get(i);
+                    KeyboardShortcut shortcut = shortcuts.get(i);
                     if (codePointLowerCase == shortcut.codePoint) {
                         switch (shortcut.shortcutAction) {
-                            case TermuxPreferences.SHORTCUT_ACTION_CREATE_SESSION:
+                            case TermuxPropertyConstants.ACTION_SHORTCUT_CREATE_SESSION:
                                 mActivity.addNewSession(false, null);
                                 return true;
-                            case TermuxPreferences.SHORTCUT_ACTION_PREVIOUS_SESSION:
-                                mActivity.switchToSession(false);
-                                return true;
-                            case TermuxPreferences.SHORTCUT_ACTION_NEXT_SESSION:
+                            case TermuxPropertyConstants.ACTION_SHORTCUT_NEXT_SESSION:
                                 mActivity.switchToSession(true);
                                 return true;
-                            case TermuxPreferences.SHORTCUT_ACTION_RENAME_SESSION:
+                            case TermuxPropertyConstants.ACTION_SHORTCUT_PREVIOUS_SESSION:
+                                mActivity.switchToSession(false);
+                                return true;
+                            case TermuxPropertyConstants.ACTION_SHORTCUT_RENAME_SESSION:
                                 mActivity.renameSession(mActivity.getCurrentTermSession());
                                 return true;
                         }
@@ -266,7 +268,7 @@ public final class TermuxViewClient implements TerminalViewClient {
     /** Handle dedicated volume buttons as virtual keys if applicable. */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
         InputDevice inputDevice = event.getDevice();
-        if (mActivity.mSettings.mDisableVolumeVirtualKeys) {
+        if (mActivity.mProperties.areVirtualVolumeKeysDisabled()) {
             return false;
         } else if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
             // Do not steal dedicated buttons from a full external keyboard.

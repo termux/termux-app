@@ -2,60 +2,12 @@ package com.termux.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.util.TypedValue;
-import android.widget.Toast;
+
 import com.termux.terminal.TerminalSession;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import androidx.annotation.IntDef;
-
-import static com.termux.terminal.EmulatorDebug.LOG_TAG;
 
 final class TermuxPreferences {
-
-    @IntDef({BELL_VIBRATE, BELL_BEEP, BELL_IGNORE})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface AsciiBellBehaviour {
-    }
-
-    final static class KeyboardShortcut {
-
-        KeyboardShortcut(int codePoint, int shortcutAction) {
-            this.codePoint = codePoint;
-            this.shortcutAction = shortcutAction;
-        }
-
-        final int codePoint;
-        final int shortcutAction;
-    }
-
-    static final int SHORTCUT_ACTION_CREATE_SESSION = 1;
-    static final int SHORTCUT_ACTION_NEXT_SESSION = 2;
-    static final int SHORTCUT_ACTION_PREVIOUS_SESSION = 3;
-    static final int SHORTCUT_ACTION_RENAME_SESSION = 4;
-
-    static final int BELL_VIBRATE = 1;
-    static final int BELL_BEEP = 2;
-    static final int BELL_IGNORE = 3;
 
     private final int MIN_FONTSIZE;
     private static final int MAX_FONTSIZE = 256;
@@ -65,34 +17,11 @@ final class TermuxPreferences {
     private static final String CURRENT_SESSION_KEY = "current_session";
     private static final String SCREEN_ALWAYS_ON_KEY = "screen_always_on";
 
-    private boolean mUseDarkUI;
     private boolean mScreenAlwaysOn;
     private int mFontSize;
-
-    private boolean mUseFullScreen;
-    private boolean mUseFullScreenWorkAround;
-
-    @AsciiBellBehaviour
-    int mBellBehaviour = BELL_VIBRATE;
-
-    boolean mBackIsEscape;
-    boolean mDisableVolumeVirtualKeys;
     boolean mShowExtraKeys;
-    String mDefaultWorkingDir;
-
-    ExtraKeysInfos mExtraKeys;
-
-    final List<KeyboardShortcut> shortcuts = new ArrayList<>();
-
-    /**
-     * If value is not in the range [min, max], set it to either min or max.
-     */
-    static int clamp(int value, int min, int max) {
-        return Math.min(Math.max(value, min), max);
-    }
 
     TermuxPreferences(Context context) {
-        reloadFromProperties(context);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         float dipInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
@@ -139,18 +68,6 @@ final class TermuxPreferences {
         return mScreenAlwaysOn;
     }
 
-    boolean isUsingBlackUI() {
-        return mUseDarkUI;
-    }
-
-    boolean isUsingFullScreen() {
-        return mUseFullScreen;
-    }
-
-    boolean isUsingFullScreenWorkAround() {
-        return mUseFullScreenWorkAround;
-    }
-
     void setScreenAlwaysOn(Context context, boolean newValue) {
         mScreenAlwaysOn = newValue;
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(SCREEN_ALWAYS_ON_KEY, newValue).apply();
@@ -169,108 +86,11 @@ final class TermuxPreferences {
         return null;
     }
 
-    void reloadFromProperties(Context context) {
-        File propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_PATH);
-        if (!propsFile.exists())
-            propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_SECONDARY_PATH);
-
-        Properties props = new Properties();
-        try {
-            if (propsFile.isFile() && propsFile.canRead()) {
-                try (FileInputStream in = new FileInputStream(propsFile)) {
-                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-                }
-            }
-        } catch (Exception e) {
-            Toast.makeText(context, "Could not open properties file termux.properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            Log.e("termux", "Error loading props", e);
-        }
-
-        switch (props.getProperty("bell-character", "vibrate")) {
-            case "beep":
-                mBellBehaviour = BELL_BEEP;
-                break;
-            case "ignore":
-                mBellBehaviour = BELL_IGNORE;
-                break;
-            default: // "vibrate".
-                mBellBehaviour = BELL_VIBRATE;
-                break;
-        }
-
-        switch (props.getProperty("use-black-ui", "").toLowerCase()) {
-            case "true":
-                mUseDarkUI = true;
-                break;
-            case "false":
-                mUseDarkUI = false;
-                break;
-            default:
-                int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-                mUseDarkUI = nightMode == Configuration.UI_MODE_NIGHT_YES;
-        }
-
-        mUseFullScreen = "true".equals(props.getProperty("fullscreen", "false").toLowerCase());
-        mUseFullScreenWorkAround = "true".equals(props.getProperty("use-fullscreen-workaround", "false").toLowerCase());
-
-        mDefaultWorkingDir = props.getProperty("default-working-directory", TermuxConstants.HOME_PATH);
-        File workDir = new File(mDefaultWorkingDir);
-        if (!workDir.exists() || !workDir.isDirectory()) {
-            // Fallback to home directory if user configured working directory is not exist
-            // or is a regular file.
-            mDefaultWorkingDir = TermuxConstants.HOME_PATH;
-        }
-
-        String defaultExtraKeys = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";
-
-        try {
-            String extrakeyProp = props.getProperty("extra-keys", defaultExtraKeys);
-            String extraKeysStyle = props.getProperty("extra-keys-style", "default");
-            mExtraKeys = new ExtraKeysInfos(extrakeyProp, extraKeysStyle);
-        } catch (JSONException e) {
-            Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
-            Log.e("termux", "Error loading props", e);
-
-            try {
-                mExtraKeys = new ExtraKeysInfos(defaultExtraKeys, "default");
-            } catch (JSONException e2) {
-                e2.printStackTrace();
-                Toast.makeText(context, "Can't create default extra keys", Toast.LENGTH_LONG).show();
-                mExtraKeys = null;
-            }
-        }
-
-        mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
-        mDisableVolumeVirtualKeys = "volume".equals(props.getProperty("volume-keys", "virtual"));
-
-        shortcuts.clear();
-        parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
-        parseAction("shortcut.next-session", SHORTCUT_ACTION_NEXT_SESSION, props);
-        parseAction("shortcut.previous-session", SHORTCUT_ACTION_PREVIOUS_SESSION, props);
-        parseAction("shortcut.rename-session", SHORTCUT_ACTION_RENAME_SESSION, props);
-    }
-
-    private void parseAction(String name, int shortcutAction, Properties props) {
-        String value = props.getProperty(name);
-        if (value == null) return;
-        String[] parts = value.toLowerCase().trim().split("\\+");
-        String input = parts.length == 2 ? parts[1].trim() : null;
-        if (!(parts.length == 2 && parts[0].trim().equals("ctrl")) || input.isEmpty() || input.length() > 2) {
-            Log.e("termux", "Keyboard shortcut '" + name + "' is not Ctrl+<something>");
-            return;
-        }
-
-        char c = input.charAt(0);
-        int codePoint = c;
-        if (Character.isLowSurrogate(c)) {
-            if (input.length() != 2 || Character.isHighSurrogate(input.charAt(1))) {
-                Log.e("termux", "Keyboard shortcut '" + name + "' is not Ctrl+<something>");
-                return;
-            } else {
-                codePoint = Character.toCodePoint(input.charAt(1), c);
-            }
-        }
-        shortcuts.add(new KeyboardShortcut(codePoint, shortcutAction));
+    /**
+     * If value is not in the range [min, max], set it to either min or max.
+     */
+    static int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
     }
 
 }
