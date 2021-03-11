@@ -1,4 +1,4 @@
-package com.termux.app.input;
+package com.termux.app.terminal;
 
 import android.graphics.Rect;
 import android.view.View;

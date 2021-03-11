@@ -1,5 +1,6 @@
-package com.termux.app;
+package com.termux.app.terminal;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioManager;
 import android.view.Gravity;
@@ -8,8 +9,9 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.InputMethodManager;
 
-import com.termux.app.input.KeyboardShortcut;
-import com.termux.app.input.extrakeys.ExtraKeysView;
+import com.termux.app.TermuxActivity;
+import com.termux.app.TermuxService;
+import com.termux.app.terminal.extrakeys.ExtraKeysView;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
@@ -44,22 +46,22 @@ public final class TermuxViewClient implements TerminalViewClient {
     @Override
     public void onSingleTapUp(MotionEvent e) {
         InputMethodManager mgr = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.showSoftInput(mActivity.mTerminalView, InputMethodManager.SHOW_IMPLICIT);
+        mgr.showSoftInput(mActivity.getTerminalView(), InputMethodManager.SHOW_IMPLICIT);
     }
 
     @Override
     public boolean shouldBackButtonBeMappedToEscape() {
-        return mActivity.mProperties.isBackKeyTheEscapeKey();
+        return mActivity.getProperties().isBackKeyTheEscapeKey();
     }
 
     @Override
     public boolean shouldEnforeCharBasedInput() {
-        return mActivity.mProperties.isEnforcingCharBasedInput();
+        return mActivity.getProperties().isEnforcingCharBasedInput();
     }
 
     @Override
     public boolean shouldUseCtrlSpaceWorkaround() {
-        return mActivity.mProperties.isUsingCtrlSpaceWorkaround();
+        return mActivity.getProperties().isUsingCtrlSpaceWorkaround();
     }
 
     @Override
@@ -68,6 +70,7 @@ public final class TermuxViewClient implements TerminalViewClient {
         mActivity.getDrawer().setDrawerLockMode(copyMode ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
+    @SuppressLint("RtlHardcoded")
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession currentSession) {
         if (handleVirtualKeys(keyCode, e, true)) return true;
@@ -91,7 +94,7 @@ public final class TermuxViewClient implements TerminalViewClient {
                 InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
             } else if (unicodeChar == 'm'/* menu */) {
-                mActivity.mTerminalView.showContextMenu();
+                mActivity.getTerminalView().showContextMenu();
             } else if (unicodeChar == 'r'/* rename */) {
                 mActivity.renameSession(currentSession);
             } else if (unicodeChar == 'c'/* create */) {
@@ -108,7 +111,7 @@ public final class TermuxViewClient implements TerminalViewClient {
                 mActivity.changeFontSize(false);
             } else if (unicodeChar >= '1' && unicodeChar <= '9') {
                 int num = unicodeChar - '1';
-                TermuxService service = mActivity.mTermService;
+                TermuxService service = mActivity.getTermService();
                 if (service.getSessions().size() > num)
                     mActivity.switchToSession(service.getSessions().get(num));
             }
@@ -126,12 +129,12 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     @Override
     public boolean readControlKey() {
-        return (mActivity.mExtraKeysView != null && mActivity.mExtraKeysView.readSpecialButton(ExtraKeysView.SpecialButton.CTRL)) || mVirtualControlKeyDown;
+        return (mActivity.getExtraKeysView() != null && mActivity.getExtraKeysView().readSpecialButton(ExtraKeysView.SpecialButton.CTRL)) || mVirtualControlKeyDown;
     }
 
     @Override
     public boolean readAltKey() {
-        return (mActivity.mExtraKeysView != null && mActivity.mExtraKeysView.readSpecialButton(ExtraKeysView.SpecialButton.ALT));
+        return (mActivity.getExtraKeysView() != null && mActivity.getExtraKeysView().readSpecialButton(ExtraKeysView.SpecialButton.ALT));
     }
 
     @Override
@@ -242,7 +245,7 @@ public final class TermuxViewClient implements TerminalViewClient {
                 return true;
             }
 
-            List<KeyboardShortcut> shortcuts = mActivity.mProperties.getSessionShortcuts();
+            List<KeyboardShortcut> shortcuts = mActivity.getProperties().getSessionShortcuts();
             if (!shortcuts.isEmpty()) {
                 int codePointLowerCase = Character.toLowerCase(codePoint);
                 for (int i = shortcuts.size() - 1; i >= 0; i--) {
@@ -278,7 +281,7 @@ public final class TermuxViewClient implements TerminalViewClient {
     /** Handle dedicated volume buttons as virtual keys if applicable. */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
         InputDevice inputDevice = event.getDevice();
-        if (mActivity.mProperties.areVirtualVolumeKeysDisabled()) {
+        if (mActivity.getProperties().areVirtualVolumeKeysDisabled()) {
             return false;
         } else if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
             // Do not steal dedicated buttons from a full external keyboard.
@@ -292,6 +295,5 @@ public final class TermuxViewClient implements TerminalViewClient {
         }
         return false;
     }
-
 
 }

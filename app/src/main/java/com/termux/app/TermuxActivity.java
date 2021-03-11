@@ -48,9 +48,10 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
-import com.termux.app.input.BellHandler;
-import com.termux.app.input.extrakeys.ExtraKeysView;
-import com.termux.app.input.FullScreenWorkAround;
+import com.termux.app.terminal.BellHandler;
+import com.termux.app.terminal.TermuxViewClient;
+import com.termux.app.terminal.extrakeys.ExtraKeysView;
+import com.termux.app.terminal.FullScreenWorkAround;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
 import com.termux.app.settings.properties.TermuxSharedProperties;
 import com.termux.terminal.EmulatorDebug;
@@ -106,20 +107,21 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private static final String BROADCAST_TERMUX_OPENED = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.OPENED";
 
-    /** The main view of the activity showing the terminal. Initialized in onCreate(). */
-    TerminalView mTerminalView;
-
-    ExtraKeysView mExtraKeysView;
-
-    TermuxPreferences mSettings;
-    TermuxSharedProperties mProperties;
-
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
      * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
      * {@link #onServiceConnected(ComponentName, IBinder)}.
      */
     TermuxService mTermService;
+
+    /** The main view of the activity showing the terminal. Initialized in onCreate(). */
+    TerminalView mTerminalView;
+
+    ExtraKeysView mExtraKeysView;
+
+    TermuxPreferences mSettings;
+
+    TermuxSharedProperties mProperties;
 
     /** Initialized in {@link #onServiceConnected(ComponentName, IBinder)}. */
     ArrayAdapter<TerminalSession> mListViewAdapter;
@@ -378,7 +380,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    void toggleShowExtraKeys() {
+    public void toggleShowExtraKeys() {
         final ViewPager viewPager = findViewById(R.id.viewpager);
         final boolean showNow = mSettings.toggleShowExtraKeys(TermuxActivity.this);
         viewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
@@ -585,7 +587,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     @SuppressLint("InflateParams")
-    void renameSession(final TerminalSession sessionToRename) {
+    public void renameSession(final TerminalSession sessionToRename) {
         if (sessionToRename == null) return;
         DialogUtils.textInput(this, R.string.session_rename_title, sessionToRename.mSessionName, R.string.session_rename_positive_button, text -> {
             sessionToRename.mSessionName = text;
@@ -607,7 +609,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     @Nullable
-    TerminalSession getCurrentTermSession() {
+    public TerminalSession getCurrentTermSession() {
         return mTerminalView.getCurrentSession();
     }
 
@@ -660,11 +662,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         unbindService(this);
     }
 
-    DrawerLayout getDrawer() {
+    public DrawerLayout getDrawer() {
         return (DrawerLayout) findViewById(R.id.drawer_layout);
     }
 
-    void addNewSession(boolean failSafe, String sessionName) {
+    public void addNewSession(boolean failSafe, String sessionName) {
         if (mTermService.getSessions().size() >= MAX_SESSIONS) {
             new AlertDialog.Builder(this).setTitle(R.string.max_terminals_reached_title).setMessage(R.string.max_terminals_reached_message)
                 .setPositiveButton(android.R.string.ok, null).show();
@@ -688,7 +690,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     /** Try switching to session and note about it, but do nothing if already displaying the session. */
-    void switchToSession(TerminalSession session) {
+    public void switchToSession(TerminalSession session) {
         if (mTerminalView.attachSession(session)) {
             noteSessionInfo();
             updateBackgroundColor();
@@ -835,7 +837,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return urlSet;
     }
 
-    void showUrlSelection() {
+    public void showUrlSelection() {
         String text = null;
         if (getCurrentTermSession() != null) {
             text = getCurrentTermSession().getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
@@ -975,12 +977,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    void changeFontSize(boolean increase) {
+    public void changeFontSize(boolean increase) {
         mSettings.changeFontSize(this, increase);
         mTerminalView.setTextSize(mSettings.getFontSize());
     }
 
-    void doPaste() {
+    public void doPaste() {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clipData = clipboard.getPrimaryClip();
         if (clipData == null) return;
@@ -1022,6 +1024,21 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
             switchToSession(service.getSessions().get(index));
         }
+    }
+
+    public TermuxService getTermService() {
+        return mTermService;
+    }
+
+    public TerminalView getTerminalView() {
+        return mTerminalView;
+    }
+
+    public ExtraKeysView getExtraKeysView() {
+        return mExtraKeysView;
+    }
+    public TermuxSharedProperties getProperties() {
+        return mProperties;
     }
 
 }

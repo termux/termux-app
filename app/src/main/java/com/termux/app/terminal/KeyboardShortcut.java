@@ -1,4 +1,4 @@
-package com.termux.app.input;
+package com.termux.app.terminal;
 
 public class KeyboardShortcut {
 

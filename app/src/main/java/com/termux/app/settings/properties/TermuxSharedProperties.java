@@ -5,11 +5,10 @@ import android.content.res.Configuration;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.termux.app.input.extrakeys.ExtraKeysInfo;
-import com.termux.app.input.KeyboardShortcut;
+import com.termux.app.terminal.extrakeys.ExtraKeysInfo;
+import com.termux.app.terminal.KeyboardShortcut;
 
 import org.json.JSONException;
 
