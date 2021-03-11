@@ -15,6 +15,8 @@ import android.util.Log;
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.app.settings.properties.TermuxPropertyConstants;
+import com.termux.app.settings.properties.TermuxSharedProperties;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -109,9 +111,9 @@ public class RunCommandService extends Service {
             return Service.START_NOT_STICKY;
         }
 
-        // If allow-external-apps property to not set to "true"
-        if (!allowExternalApps()) {
-            Log.e("termux", "RunCommandService requires allow-external-apps property to be set to \"true\" in ~/.termux/termux.properties file.");
+        // If allow-external-apps property is not set to "true"
+        if (!TermuxSharedProperties.isPropertyValueTrue(this, TermuxPropertyConstants.getTermuxPropertiesFile(), TermuxConstants.PROP_ALLOW_EXTERNAL_APPS)) {
+            Log.e("termux", "RunCommandService requires allow-external-apps property to be set to \"true\" in \"" + TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH + "\" file");
             return Service.START_NOT_STICKY;
         }
 
@@ -181,25 +183,6 @@ public class RunCommandService extends Service {
         NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.createNotificationChannel(channel);
-    }
-
-    private boolean allowExternalApps() {
-        File propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH);
-        if (!propsFile.exists())
-            propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_SECONDARY_FILE_PATH);
-
-        Properties props = new Properties();
-        try {
-            if (propsFile.isFile() && propsFile.canRead()) {
-                try (FileInputStream in = new FileInputStream(propsFile)) {
-                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-                }
-            }
-        } catch (Exception e) {
-            Log.e("termux", "Error loading props", e);
-        }
-
-        return props.getProperty("allow-external-apps", "false").equals("true");
     }
 
     /** Replace "$PREFIX/" or "~/" prefix with termux absolute paths */
