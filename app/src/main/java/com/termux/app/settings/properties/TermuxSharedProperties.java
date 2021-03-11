@@ -485,12 +485,20 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
 
 
+    public boolean isEnforcingCharBasedInput() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_ENFORCE_CHAR_BASED_INPUT, true);
+    }
+
     public boolean isBackKeyTheEscapeKey() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_BACK_KEY_AS_ESCAPE_KEY, true);
     }
 
     public boolean isUsingBlackUI() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_BLACK_UI, true);
+    }
+
+    public boolean isUsingCtrlSpaceWorkaround() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_CTRL_SPACE_WORKAROUND, true);
     }
 
     public boolean isUsingFullScreen() {

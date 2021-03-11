@@ -37,12 +37,6 @@ import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.textselection.TextSelectionCursorController;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
-
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
 
@@ -246,9 +240,7 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        Properties props = getProperties();
-
-        if (props.getProperty("enforce-char-based-input", "false").equals("true")) {
+        if (mClient.shouldEnforeCharBasedInput()) {
             // Some keyboards seems do not reset the internal state on TYPE_NULL.
             // Affects mostly Samsung stock keyboards.
             // https://github.com/termux/termux-app/issues/686
@@ -529,8 +521,6 @@ public final class TerminalView extends View {
 
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
-        Properties props = getProperties();
-
         if (LOG_KEY_EVENTS)
             Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -546,9 +536,9 @@ public final class TerminalView extends View {
                         return onKeyUp(keyCode, event);
                 }
             }
-        } else if (props.getProperty("ctrl-space-workaround", "false").equals("true") &&
+        } else if (mClient.shouldUseCtrlSpaceWorkaround() &&
                    keyCode == KeyEvent.KEYCODE_SPACE && event.isCtrlPressed()) {
-            /* ctrl + space does not work on some ROMs without this workaround.
+            /* ctrl+space does not work on some ROMs without this workaround.
                However, this breaks it on devices where it works out of the box. */
             return onKeyDown(keyCode, event);
         }
@@ -959,38 +949,6 @@ public final class TerminalView extends View {
                     showFloatingToolbar();
             }
         }
-    }
-
-
-
-
-
-    private Properties getProperties() {
-        File propsFile;
-        Properties props = new Properties();
-        String possiblePropLocations[] = {
-            getContext().getFilesDir() + "/home/.termux/termux.properties",
-            getContext().getFilesDir() + "/home/.config/termux/termux.properties"
-        };
-
-        propsFile = new File(possiblePropLocations[0]);
-        int i = 0;
-        while (!propsFile.exists() && i < possiblePropLocations.length) {
-            propsFile = new File(possiblePropLocations[i]);
-            i += 1;
-        }
-
-        try {
-            if (propsFile.isFile() && propsFile.canRead()) {
-                try (FileInputStream in = new FileInputStream(propsFile)) {
-                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-                }
-            }
-        } catch (Exception e) {
-            Log.e("termux", "Error loading props", e);
-        }
-
-        return props;
     }
 
 }

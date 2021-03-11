@@ -61,8 +61,19 @@ public final class TermuxPropertyConstants {
 
 
 
+    /** Defines the key for whether to enforce character based input to fix the issue where for some devices like Samsung, the letters might not appear until enter is pressed */
+    public static final String KEY_ENFORCE_CHAR_BASED_INPUT =  "enforce-char-based-input"; // Default: "enforce-char-based-input"
+
+
+
+
     /** Defines the key for whether to use black UI */
     public static final String KEY_USE_BLACK_UI =  "use-black-ui"; // Default: "use-black-ui"
+
+
+
+    /** Defines the key for whether to use ctrl space workaround to fix the issue where ctrl+space does not work on some ROMs */
+    public static final String KEY_USE_CTRL_SPACE_WORKAROUND =  "ctrl-space-workaround"; // Default: "ctrl-space-workaround"
 
 
 
@@ -155,8 +166,10 @@ public final class TermuxPropertyConstants {
      * */
     public static final Set<String> TERMUX_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         // boolean
+        KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_USE_BACK_KEY_AS_ESCAPE_KEY,
         KEY_USE_BLACK_UI,
+        KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
         KEY_VIRTUAL_VOLUME_KEYS_DISABLED,
@@ -183,6 +196,8 @@ public final class TermuxPropertyConstants {
      * default: false
      * */
     public static final Set<String> TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+        KEY_ENFORCE_CHAR_BASED_INPUT,
+        KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
         TermuxConstants.PROP_ALLOW_EXTERNAL_APPS

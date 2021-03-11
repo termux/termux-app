@@ -53,6 +53,16 @@ public final class TermuxViewClient implements TerminalViewClient {
     }
 
     @Override
+    public boolean shouldEnforeCharBasedInput() {
+        return mActivity.mProperties.isEnforcingCharBasedInput();
+    }
+
+    @Override
+    public boolean shouldUseCtrlSpaceWorkaround() {
+        return mActivity.mProperties.isUsingCtrlSpaceWorkaround();
+    }
+
+    @Override
     public void copyModeChanged(boolean copyMode) {
         // Disable drawer while copying.
         mActivity.getDrawer().setDrawerLockMode(copyMode ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
