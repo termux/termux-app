@@ -27,9 +27,9 @@ import java.util.regex.Pattern;
 
 public class TermuxFileReceiverActivity extends Activity {
 
-    static final String TERMUX_RECEIVEDIR = TermuxConstants.FILES_PATH + "/home/downloads";
-    static final String EDITOR_PROGRAM = TermuxConstants.HOME_PATH + "/bin/termux-file-editor";
-    static final String URL_OPENER_PROGRAM = TermuxConstants.HOME_PATH + "/bin/termux-url-opener";
+    static final String TERMUX_RECEIVEDIR = TermuxConstants.TERMUX_FILES_DIR_PATH + "/home/downloads";
+    static final String EDITOR_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-file-editor";
+    static final String URL_OPENER_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-url-opener";
 
     /**
      * If the activity should be finished when the name input dialog is dismissed. This is disabled

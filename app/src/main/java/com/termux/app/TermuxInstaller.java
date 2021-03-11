@@ -58,7 +58,7 @@ final class TermuxInstaller {
             return;
         }
 
-        final File PREFIX_FILE = new File(TermuxConstants.PREFIX_PATH);
+        final File PREFIX_FILE = TermuxConstants.TERMUX_PREFIX_DIR;
         if (PREFIX_FILE.isDirectory()) {
             whenDone.run();
             return;
@@ -69,7 +69,7 @@ final class TermuxInstaller {
             @Override
             public void run() {
                 try {
-                    final String STAGING_PREFIX_PATH = TermuxConstants.FILES_PATH + "/usr-staging";
+                    final String STAGING_PREFIX_PATH = TermuxConstants.TERMUX_STAGING_PREFIX_DIR_PATH;
                     final File STAGING_PREFIX_FILE = new File(STAGING_PREFIX_PATH);
 
                     if (STAGING_PREFIX_FILE.exists()) {
@@ -194,7 +194,7 @@ final class TermuxInstaller {
         new Thread() {
             public void run() {
                 try {
-                    File storageDir = new File(TermuxConstants.HOME_PATH, "storage");
+                    File storageDir = TermuxConstants.TERMUX_STORAGE_HOME_DIR;
 
                     if (storageDir.exists()) {
                         try {

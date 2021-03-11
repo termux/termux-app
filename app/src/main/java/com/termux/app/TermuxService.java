@@ -238,7 +238,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onDestroy() {
-        File termuxTmpDir = new File(TermuxConstants.PREFIX_PATH + "/tmp");
+        File termuxTmpDir = TermuxConstants.TERMUX_TMP_DIR;
 
         if (termuxTmpDir.exists()) {
             try {
@@ -264,9 +264,9 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
-        new File(TermuxConstants.HOME_PATH).mkdirs();
+        TermuxConstants.TERMUX_HOME_DIR.mkdirs();
 
-        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.HOME_PATH;
+        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
         String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
         boolean isLoginShell = false;
@@ -274,7 +274,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         if (executablePath == null) {
             if (!failSafe) {
                 for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
-                    File shellFile = new File(TermuxConstants.PREFIX_PATH + "/bin/" + shellBinary);
+                    File shellFile = new File(TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH, shellBinary);
                     if (shellFile.canExecute()) {
                         executablePath = shellFile.getAbsolutePath();
                         break;

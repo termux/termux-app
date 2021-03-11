@@ -35,7 +35,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     private static final String ALL_MIME_TYPES = "*/*";
 
-    private static final File BASE_DIR = new File(TermuxConstants.HOME_PATH);
+    private static final File BASE_DIR = TermuxConstants.TERMUX_HOME_DIR;
 
 
     // The default columns to return information about a root if no specific
@@ -171,7 +171,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
             // through the whole SD card).
             boolean isInsideHome;
             try {
-                isInsideHome = file.getCanonicalPath().startsWith(TermuxConstants.HOME_PATH);
+                isInsideHome = file.getCanonicalPath().startsWith(TermuxConstants.TERMUX_HOME_DIR_PATH);
             } catch (IOException e) {
                 isInsideHome = true;
             }

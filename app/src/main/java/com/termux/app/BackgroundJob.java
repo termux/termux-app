@@ -36,7 +36,7 @@ public final class BackgroundJob {
 
     public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service, PendingIntent pendingIntent) {
         String[] env = buildEnvironment(false, cwd);
-        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.HOME_PATH;
+        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
         final String[] progArray = setupProcessArgs(fileToExecute, args);
         final String processDescription = Arrays.toString(progArray);
@@ -134,17 +134,17 @@ public final class BackgroundJob {
     }
 
     static String[] buildEnvironment(boolean failSafe, String cwd) {
-        new File(TermuxConstants.HOME_PATH).mkdirs();
+        TermuxConstants.TERMUX_HOME_DIR.mkdirs();
 
-        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.HOME_PATH;
+        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
         List<String> environment = new ArrayList<>();
 
         environment.add("TERMUX_VERSION=" + BuildConfig.VERSION_NAME);
         environment.add("TERM=xterm-256color");
         environment.add("COLORTERM=truecolor");
-        environment.add("HOME=" + TermuxConstants.HOME_PATH);
-        environment.add("PREFIX=" + TermuxConstants.PREFIX_PATH);
+        environment.add("HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH);
+        environment.add("PREFIX=" + TermuxConstants.TERMUX_PREFIX_DIR_PATH);
         environment.add("BOOTCLASSPATH=" + System.getenv("BOOTCLASSPATH"));
         environment.add("ANDROID_ROOT=" + System.getenv("ANDROID_ROOT"));
         environment.add("ANDROID_DATA=" + System.getenv("ANDROID_DATA"));
@@ -164,9 +164,9 @@ public final class BackgroundJob {
             environment.add("PATH= " + System.getenv("PATH"));
         } else {
             environment.add("LANG=en_US.UTF-8");
-            environment.add("PATH=" + TermuxConstants.PREFIX_PATH + "/bin");
+            environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
             environment.add("PWD=" + cwd);
-            environment.add("TMPDIR=" + TermuxConstants.PREFIX_PATH + "/tmp");
+            environment.add("TMPDIR=" + TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH);
         }
 
         return environment.toArray(new String[0]);
@@ -215,7 +215,7 @@ public final class BackgroundJob {
                                     if (executable.startsWith("/usr") || executable.startsWith("/bin")) {
                                         String[] parts = executable.split("/");
                                         String binary = parts[parts.length - 1];
-                                        interpreter = TermuxConstants.PREFIX_PATH + "/bin/" + binary;
+                                        interpreter = TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/" + binary;
                                     }
                                     break;
                                 }
@@ -225,7 +225,7 @@ public final class BackgroundJob {
                         }
                     } else {
                         // No shebang and no ELF, use standard shell.
-                        interpreter = TermuxConstants.PREFIX_PATH + "/bin/sh";
+                        interpreter = TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/sh";
                     }
                 }
             }

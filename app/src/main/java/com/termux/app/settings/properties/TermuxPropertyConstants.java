@@ -8,16 +8,19 @@ import com.termux.app.TermuxConstants;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
 /*
- * Version: v0.1.0
+ * Version: v0.2.0
  *
  * Changelog
  *
- * - 0.1.0 (2021-03-08)
- *      - Initial Release
+ * - 0.1.0 (2021-03-11)
+ *      - Initial Release.
+ * - 0.2.0 (2021-03-11)
+ *      - Renamed `HOME_PATH` to `TERMUX_HOME_DIR_PATH`
+ *      - Renamed `TERMUX_PROPERTIES_PRIMARY_PATH` to `TERMUX_PROPERTIES_PRIMARY_FILE_PATH`
+ *      - Renamed `TERMUX_PROPERTIES_SECONDARY_FILE_PATH` to `TERMUX_PROPERTIES_SECONDARY_FILE_PATH`
  *
  */
 
@@ -29,8 +32,8 @@ import java.util.Set;
  *  * and add an entry in the Changelog section above.
  *
  * The properties are loaded from the first file found at
- * {@link TermuxConstants#TERMUX_PROPERTIES_PRIMARY_PATH} or
- * {@link TermuxConstants#TERMUX_PROPERTIES_SECONDARY_PATH}
+ * {@link TermuxConstants#TERMUX_PROPERTIES_PRIMARY_FILE_PATH} or
+ * {@link TermuxConstants#TERMUX_PROPERTIES_SECONDARY_FILE_PATH}
  */
 public final class TermuxPropertyConstants {
 
@@ -132,7 +135,7 @@ public final class TermuxPropertyConstants {
     /** Defines the key for the default working directory */
     public static final String KEY_DEFAULT_WORKING_DIRECTORY =  "default-working-directory"; // Default: "default-working-directory"
     /** Defines the default working directory */
-    public static final String DEFAULT_IVALUE_DEFAULT_WORKING_DIRECTORY = TermuxConstants.HOME_PATH;
+    public static final String DEFAULT_IVALUE_DEFAULT_WORKING_DIRECTORY = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
 
 
@@ -197,8 +200,8 @@ public final class TermuxPropertyConstants {
 
 
     /** Returns the first {@link File} found at
-     * {@link TermuxConstants#TERMUX_PROPERTIES_PRIMARY_PATH} or
-     * {@link TermuxConstants#TERMUX_PROPERTIES_SECONDARY_PATH}
+     * {@link TermuxConstants#TERMUX_PROPERTIES_PRIMARY_FILE_PATH} or
+     * {@link TermuxConstants#TERMUX_PROPERTIES_SECONDARY_FILE_PATH}
      * from which termux properties can be loaded.
      * If the {@link File} found is not a regular file or is not readable then null is returned.
      *
@@ -206,8 +209,8 @@ public final class TermuxPropertyConstants {
      */
     public static File getTermuxPropertiesFile() {
         String[] possiblePropertiesFileLocations = {
-            TermuxConstants.TERMUX_PROPERTIES_PRIMARY_PATH,
-            TermuxConstants.TERMUX_PROPERTIES_SECONDARY_PATH
+            TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH,
+            TermuxConstants.TERMUX_PROPERTIES_SECONDARY_FILE_PATH
         };
 
         File propertiesFile = new File(possiblePropertiesFileLocations[0]);

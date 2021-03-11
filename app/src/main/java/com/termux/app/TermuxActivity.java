@@ -167,8 +167,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     void checkForFontAndColors() {
         try {
-            File colorsFile = new File(TermuxConstants.COLOR_PROPERTIES_PATH);
-            File fontFile = new File(TermuxConstants.FONT_PATH);
+            File colorsFile = TermuxConstants.TERMUX_COLOR_PROPERTIES_FILE;
+            File fontFile = TermuxConstants.TERMUX_FONT_FILE;
 
             final Properties props = new Properties();
             if (colorsFile.isFile()) {

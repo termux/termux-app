@@ -184,9 +184,9 @@ public class RunCommandService extends Service {
     }
 
     private boolean allowExternalApps() {
-        File propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_PATH);
+        File propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH);
         if (!propsFile.exists())
-            propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_SECONDARY_PATH);
+            propsFile = new File(TermuxConstants.TERMUX_PROPERTIES_SECONDARY_FILE_PATH);
 
         Properties props = new Properties();
         try {
@@ -205,10 +205,10 @@ public class RunCommandService extends Service {
     /** Replace "$PREFIX/" or "~/" prefix with termux absolute paths */
     public static String getExpandedTermuxPath(String path) {
         if(path != null && !path.isEmpty()) {
-            path = path.replaceAll("^\\$PREFIX$", TermuxConstants.PREFIX_PATH);
-            path = path.replaceAll("^\\$PREFIX/", TermuxConstants.PREFIX_PATH + "/");
-            path = path.replaceAll("^~/$", TermuxConstants.HOME_PATH);
-            path = path.replaceAll("^~/", TermuxConstants.HOME_PATH + "/");
+            path = path.replaceAll("^\\$PREFIX$", TermuxConstants.TERMUX_PREFIX_DIR_PATH);
+            path = path.replaceAll("^\\$PREFIX/", TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/");
+            path = path.replaceAll("^~/$", TermuxConstants.TERMUX_HOME_DIR_PATH);
+            path = path.replaceAll("^~/", TermuxConstants.TERMUX_HOME_DIR_PATH + "/");
         }
 
         return path;
