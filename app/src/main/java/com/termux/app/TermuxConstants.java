@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.2.0
+ * Version: v0.3.0
  *
  * Changelog
  *
@@ -22,6 +22,14 @@ import java.io.File;
  *      - Renamed `DATA_HOME_PATH` to `TERMUX_DATA_HOME_DIR_PATH`.
  *      - Renamed `CONFIG_HOME_PATH` to `TERMUX_CONFIG_HOME_DIR_PATH`.
  *      - Updated javadocs and spacing.
+ *
+ * - 0.3.0 (2021-03-12)
+ *      - Remove TERMUX_CACHE_DIR_PATH*, TERMUX_DATABASES_DIR_PATH*, TERMUX_SHARED_PREFERENCES_DIR_PATH*
+ *          since they may not be consistent on all devices.
+ *      - Renamed `TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME` to
+ *          `TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`. This should be used for
+ *           accessing shared preferences between Termux app and its plugins if ever needed by first
+ *           getting shared package context with {@link Context.createPackageContext(String,int}).
  *
  */
 
@@ -120,23 +128,6 @@ public final class TermuxConstants {
     /** Termux app internal private app data directory */
     public static final File INTERNAL_PRIVATE_APP_DATA_DIR = new File(INTERNAL_PRIVATE_APP_DATA_DIR_PATH);
 
-
-    /** Termux app cache directory path */
-    public static final String TERMUX_CACHE_DIR_PATH = INTERNAL_PRIVATE_APP_DATA_DIR_PATH + "/cache"; // Default: "/data/data/com.termux/cache"
-    /** Termux app cache directory */
-    public static final File TERMUX_CACHE_DIR = new File(TERMUX_CACHE_DIR_PATH);
-
-
-    /** Termux app database directory path */
-    public static final String TERMUX_DATABASES_DIR_PATH = INTERNAL_PRIVATE_APP_DATA_DIR_PATH + "/databases"; // Default: "/data/data/com.termux/databases"
-    /** Termux app database directory */
-    public static final File TERMUX_DATABASES_DIR = new File(TERMUX_DATABASES_DIR_PATH);
-
-
-    /** Termux app shared preferences directory path */
-    public static final String TERMUX_SHARED_PREFERENCES_DIR_PATH = INTERNAL_PRIVATE_APP_DATA_DIR_PATH + "/shared_prefs"; // Default: "/data/data/com.termux/shared_prefs"
-    /** Termux app shared preferences directory */
-    public static final File TERMUX_SHARED_PREFERENCES_DIR = new File(TERMUX_SHARED_PREFERENCES_DIR_PATH);
 
 
     /** Termux app Files directory path */
@@ -239,13 +230,9 @@ public final class TermuxConstants {
      * Termux app core file paths.
      */
 
-    /* Termux app default SharedPreferences file basename */
-    public static final String TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME = TERMUX_PACKAGE_NAME + "_preferences.xml"; // Default: "com.termux_preferences.xml"
+    /* Termux app default SharedPreferences file basename without extension */
+    public static final String TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_PACKAGE_NAME + "_preferences"; // Default: "com.termux_preferences"
 
-    /* Termux app default SharedPreferences file path */
-    public static final String TERMUX_DEFAULT_PREFERENCES_FILE_PATH = TERMUX_SHARED_PREFERENCES_DIR_PATH + "/" + TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME; // Default: "/data/data/com.termux/shared_prefs/com.termux_preferences.xml"
-    /* Termux app default SharedPreferences file */
-    public static final File TERMUX_DEFAULT_PREFERENCES_FILE = new File(TERMUX_DEFAULT_PREFERENCES_FILE_PATH);
 
     /* Termux app termux.properties primary file path */
     public static final String TERMUX_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.termux/files/home/.termux/termux.properties"
