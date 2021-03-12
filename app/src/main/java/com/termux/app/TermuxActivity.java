@@ -48,6 +48,7 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.app.settings.preferences.TermuxSharedPreferences;
 import com.termux.app.terminal.BellHandler;
 import com.termux.app.terminal.TermuxViewClient;
 import com.termux.app.terminal.extrakeys.ExtraKeysView;
@@ -119,9 +120,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     ExtraKeysView mExtraKeysView;
 
-    TermuxPreferences mSettings;
+    private TermuxSharedPreferences mPreferences;
 
-    TermuxSharedProperties mProperties;
+    private TermuxSharedProperties mProperties;
 
     /** Initialized in {@link #onServiceConnected(ComponentName, IBinder)}. */
     ArrayAdapter<TerminalSession> mListViewAdapter;
@@ -212,7 +213,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     @Override
     public void onCreate(Bundle bundle) {
-        mSettings = new TermuxPreferences(this);
+        mPreferences = new TermuxSharedPreferences(this);
         mProperties = new TermuxSharedProperties(this);
 
         mIsUsingBlackUI = mProperties.isUsingBlackUI();
@@ -246,12 +247,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mTerminalView = findViewById(R.id.terminal_view);
         mTerminalView.setOnKeyListener(new TermuxViewClient(this));
 
-        mTerminalView.setTextSize(mSettings.getFontSize());
-        mTerminalView.setKeepScreenOn(mSettings.isScreenAlwaysOn());
+        mTerminalView.setTextSize(mPreferences.getFontSize());
+        mTerminalView.setKeepScreenOn(mPreferences.getKeepScreenOn());
         mTerminalView.requestFocus();
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
-        if (mSettings.mShowExtraKeys) viewPager.setVisibility(View.VISIBLE);
+        if (mPreferences.getShowExtraKeys()) viewPager.setVisibility(View.VISIBLE);
 
 
         ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
@@ -382,7 +383,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     public void toggleShowExtraKeys() {
         final ViewPager viewPager = findViewById(R.id.viewpager);
-        final boolean showNow = mSettings.toggleShowExtraKeys(TermuxActivity.this);
+        final boolean showNow = mPreferences.toggleShowExtraKeys();
         viewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
         if (showNow && viewPager.getCurrentItem() == 1) {
             // Focus the text input view if just revealed.
@@ -636,7 +637,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         super.onStop();
         mIsVisible = false;
         TerminalSession currentSession = getCurrentTermSession();
-        if (currentSession != null) TermuxPreferences.storeCurrentSession(this, currentSession);
+        if (currentSession != null) mPreferences.setCurrentSession(currentSession.mHandle);
         unregisterReceiver(mBroadcastReceiever);
         getDrawer().closeDrawers();
     }
@@ -739,7 +740,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXTMENU_RESET_TERMINAL_ID, Menu.NONE, R.string.reset_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.kill_process, getCurrentTermSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXTMENU_STYLING_ID, Menu.NONE, R.string.style_terminal);
-        menu.add(Menu.NONE, CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.toggle_keep_screen_on).setCheckable(true).setChecked(mSettings.isScreenAlwaysOn());
+        menu.add(Menu.NONE, CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.toggle_keep_screen_on).setCheckable(true).setChecked(mPreferences.getKeepScreenOn());
         menu.add(Menu.NONE, CONTEXTMENU_HELP_ID, Menu.NONE, R.string.help);
     }
 
@@ -950,10 +951,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             case CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON: {
                 if(mTerminalView.getKeepScreenOn()) {
                     mTerminalView.setKeepScreenOn(false);
-                    mSettings.setScreenAlwaysOn(this, false);
+                    mPreferences.setKeepScreenOn(false);
                 } else {
                     mTerminalView.setKeepScreenOn(true);
-                    mSettings.setScreenAlwaysOn(this, true);
+                    mPreferences.setKeepScreenOn(true);
                 }
                 return true;
             }
@@ -978,8 +979,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     public void changeFontSize(boolean increase) {
-        mSettings.changeFontSize(this, increase);
-        mTerminalView.setTextSize(mSettings.getFontSize());
+        mPreferences.changeFontSize(this, increase);
+        mTerminalView.setTextSize(mPreferences.getFontSize());
     }
 
     public void doPaste() {
@@ -995,10 +996,19 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     /** The current session as stored or the last one if that does not exist. */
     public TerminalSession getStoredCurrentSessionOrLast() {
-        TerminalSession stored = TermuxPreferences.getCurrentSession(this);
+        TerminalSession stored = getCurrentSession(this);
         if (stored != null) return stored;
         List<TerminalSession> sessions = mTermService.getSessions();
         return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
+    }
+
+    private TerminalSession getCurrentSession(TermuxActivity context) {
+        String sessionHandle = mPreferences.getCurrentSession();
+        for (int i = 0, len = context.getTermService().getSessions().size(); i < len; i++) {
+            TerminalSession session = context.getTermService().getSessions().get(i);
+            if (session.mHandle.equals(sessionHandle)) return session;
+        }
+        return null;
     }
 
     /** Show a toast and dismiss the last one if still visible. */

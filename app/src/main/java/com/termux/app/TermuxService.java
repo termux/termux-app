@@ -24,6 +24,7 @@ import android.widget.ArrayAdapter;
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.app.settings.preferences.TermuxSharedPreferences;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
@@ -148,7 +149,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 }
 
                 // Make the newly created session the current one to be displayed:
-                TermuxPreferences.storeCurrentSession(this, newSession);
+                TermuxSharedPreferences preferences = new TermuxSharedPreferences(this);
+                preferences.setCurrentSession(newSession.mHandle);
 
                 // Launch the main Termux app, which will now show the current session:
                 startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
