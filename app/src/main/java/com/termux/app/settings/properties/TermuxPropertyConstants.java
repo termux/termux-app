@@ -29,7 +29,7 @@ import java.util.Set;
  * This class will be hosted by termux-app and should be imported by other termux plugin apps as is
  * instead of copying constants to random classes. The 3rd party apps can also import it for
  * interacting with termux apps. If changes are made to this file, increment the version number
- *  * and add an entry in the Changelog section above.
+ * and add an entry in the Changelog section above.
  *
  * The properties are loaded from the first file found at
  * {@link TermuxConstants#TERMUX_PROPERTIES_PRIMARY_FILE_PATH} or
@@ -63,7 +63,6 @@ public final class TermuxPropertyConstants {
 
     /** Defines the key for whether to enforce character based input to fix the issue where for some devices like Samsung, the letters might not appear until enter is pressed */
     public static final String KEY_ENFORCE_CHAR_BASED_INPUT =  "enforce-char-based-input"; // Default: "enforce-char-based-input"
-
 
 
 
