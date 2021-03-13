@@ -3,13 +3,14 @@ package com.termux.app.settings.preferences;
 import com.termux.app.TermuxConstants;
 
 /*
- * Version: v0.1.0
+ * Version: v0.2.0
  *
  * Changelog
  *
  * - 0.1.0 (2021-03-12)
  *      - Initial Release.
- *
+ * - 0.2.0 (2021-03-13)
+ *      - Added `KEY_LOG_LEVEL` and `KEY_TERMINAL_VIEW_LOGGING_ENABLED`
  */
 
 /**
@@ -46,5 +47,14 @@ public final class TermuxPreferenceConstants {
     public static final String KEY_CURRENT_SESSION = "current_session";
 
 
+
+    /** Defines the key for current termux log level */
+    public static final String KEY_LOG_LEVEL = "log_level";
+
+
+
+    /** Defines the key for whether termux terminal view key logging is enabled or not */
+    public static final String KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED = "terminal_view_key_logging_enabled";
+    public static final boolean DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
 
 }

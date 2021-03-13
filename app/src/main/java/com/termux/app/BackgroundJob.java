@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.termux.BuildConfig;
+import com.termux.app.utils.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,9 +26,9 @@ import java.util.List;
  */
 public final class BackgroundJob {
 
-    private static final String LOG_TAG = "termux-task";
-
     final Process mProcess;
+
+    private static final String LOG_TAG = "BackgroundJob";
 
     public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service){
         this(cwd, fileToExecute, args, service, null);
@@ -47,7 +47,7 @@ public final class BackgroundJob {
         } catch (IOException e) {
             mProcess = null;
             // TODO: Visible error message?
-            Log.e(LOG_TAG, "Failed running background job: " + processDescription, e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed running background job: " + processDescription, e);
             return;
         }
 
@@ -67,7 +67,7 @@ public final class BackgroundJob {
                     // FIXME: Long lines.
                     while ((line = reader.readLine()) != null) {
                         errResult.append(line).append('\n');
-                        Log.i(LOG_TAG, "[" + pid + "] stderr: " + line);
+                        Logger.logDebug(LOG_TAG, "[" + pid + "] stderr: " + line);
                     }
                 } catch (IOException e) {
                     // Ignore.
@@ -79,7 +79,7 @@ public final class BackgroundJob {
         new Thread() {
             @Override
             public void run() {
-                Log.i(LOG_TAG, "[" + pid + "] starting: " + processDescription);
+                Logger.logDebug(LOG_TAG, "[" + pid + "] starting: " + processDescription);
                 InputStream stdout = mProcess.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stdout, StandardCharsets.UTF_8));
 
@@ -87,20 +87,20 @@ public final class BackgroundJob {
                 try {
                     // FIXME: Long lines.
                     while ((line = reader.readLine()) != null) {
-                        Log.i(LOG_TAG, "[" + pid + "] stdout: " + line);
+                        Logger.logDebug(LOG_TAG, "[" + pid + "] stdout: " + line);
                         outResult.append(line).append('\n');
                     }
                 } catch (IOException e) {
-                    Log.e(LOG_TAG, "Error reading output", e);
+                    Logger.logStackTraceWithMessage(LOG_TAG, "Error reading output", e);
                 }
 
                 try {
                     int exitCode = mProcess.waitFor();
                     service.onBackgroundJobExited(BackgroundJob.this);
                     if (exitCode == 0) {
-                        Log.i(LOG_TAG, "[" + pid + "] exited normally");
+                        Logger.logDebug(LOG_TAG, "[" + pid + "] exited normally");
                     } else {
-                        Log.w(LOG_TAG, "[" + pid + "] exited with code: " + exitCode);
+                        Logger.logDebug(LOG_TAG, "[" + pid + "] exited with code: " + exitCode);
                     }
 
                     result.putString("stdout", outResult.toString());

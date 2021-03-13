@@ -2,11 +2,11 @@ package com.termux.app.settings.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.util.TypedValue;
 
 import com.termux.app.TermuxConstants;
-import com.termux.terminal.EmulatorDebug;
+import com.termux.app.utils.Logger;
+import com.termux.app.utils.TermuxUtils;
 
 import javax.annotation.Nonnull;
 
@@ -21,17 +21,7 @@ public class TermuxSharedPreferences {
     private int DEFAULT_FONTSIZE;
 
     public TermuxSharedPreferences(@Nonnull Context context) {
-        Context mTempContext;
-
-        try {
-            mTempContext = context.createPackageContext(TermuxConstants.TERMUX_PACKAGE_NAME, Context.CONTEXT_RESTRICTED);
-        } catch (Exception e) {
-            Log.e(EmulatorDebug.LOG_TAG, "Failed to get \"" + TermuxConstants.TERMUX_PACKAGE_NAME + "\" package context", e);
-            Log.e(EmulatorDebug.LOG_TAG, "Force using current context");
-            mTempContext = context;
-        }
-
-        mContext = mTempContext;
+        mContext = TermuxUtils.getTermuxPackageContext(context);
         mSharedPreferences = getSharedPreferences(mContext);
 
         setFontVariables(context);
@@ -133,6 +123,33 @@ public class TermuxSharedPreferences {
 
     public void setCurrentSession(String value) {
         mSharedPreferences.edit().putString(TermuxPreferenceConstants.KEY_CURRENT_SESSION, value).apply();
+    }
+
+
+
+    public int getLogLevel() {
+        try {
+            return mSharedPreferences.getInt(TermuxPreferenceConstants.KEY_LOG_LEVEL, Logger.DEFAULT_LOG_LEVEL);
+        }
+        catch (Exception e) {
+            Logger.logStackTraceWithMessage("Error getting \"" + TermuxPreferenceConstants.KEY_LOG_LEVEL + "\" from shared preferences", e);
+            return Logger.DEFAULT_LOG_LEVEL;
+        }
+    }
+
+    public void setLogLevel(Context context, int logLevel) {
+        logLevel = Logger.setLogLevel(context, logLevel);
+        mSharedPreferences.edit().putInt(TermuxPreferenceConstants.KEY_LOG_LEVEL, logLevel).apply();
+    }
+
+
+
+    public boolean getTerminalViewKeyLoggingEnabled() {
+        return mSharedPreferences.getBoolean(TermuxPreferenceConstants.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, TermuxPreferenceConstants.DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED);
+    }
+
+    public void setTerminalViewKeyLoggingEnabled(boolean value) {
+        mSharedPreferences.edit().putBoolean(TermuxPreferenceConstants.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, value).apply();
     }
 
 }

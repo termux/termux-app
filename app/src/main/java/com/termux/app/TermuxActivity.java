@@ -28,7 +28,6 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -55,7 +54,7 @@ import com.termux.app.terminal.extrakeys.ExtraKeysView;
 import com.termux.app.terminal.FullScreenWorkAround;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
 import com.termux.app.settings.properties.TermuxSharedProperties;
-import com.termux.terminal.EmulatorDebug;
+import com.termux.app.utils.Logger;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
@@ -100,6 +99,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private static final int CONTEXTMENU_HELP_ID = 8;
     private static final int CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON = 9;
     private static final int CONTEXTMENU_AUTOFILL_ID = 10;
+    private static final int CONTEXTMENU_SETTINGS_ID = 11;
 
     private static final int MAX_SESSIONS = 8;
 
@@ -145,12 +145,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
     int mBellSoundId;
 
+    private static final String LOG_TAG = "TermuxActivity";
+
     private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mIsVisible) {
                 String whatToReload = intent.getStringExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE);
-                Log.d("termux", "Reloading termux style for: " + whatToReload);
+                Logger.logDebug(LOG_TAG, "Reloading termux style for: " + whatToReload);
                 if ("storage".equals(whatToReload)) {
                     if (ensureStoragePermissionGranted())
                         TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
@@ -190,7 +192,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
             mTerminalView.setTypeface(newTypeface);
         } catch (Exception e) {
-            Log.e(EmulatorDebug.LOG_TAG, "Error in checkForFontAndColors()", e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "Error in checkForFontAndColors()", e);
         }
     }
 
@@ -245,10 +247,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
 
         mTerminalView = findViewById(R.id.terminal_view);
-        mTerminalView.setOnKeyListener(new TermuxViewClient(this));
+
+        mTerminalView.setTerminalViewClient(new TermuxViewClient(this));
 
         mTerminalView.setTextSize(mPreferences.getFontSize());
         mTerminalView.setKeepScreenOn(mPreferences.getKeepScreenOn());
+        mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.getTerminalViewKeyLoggingEnabled());
         mTerminalView.requestFocus();
 
         final ViewPager viewPager = findViewById(R.id.viewpager);
@@ -627,6 +631,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         registerReceiver(mBroadcastReceiever, new IntentFilter(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE));
 
+        mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.getTerminalViewKeyLoggingEnabled());
+
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal:
         mTerminalView.onScreenUpdated();
@@ -742,6 +748,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXTMENU_STYLING_ID, Menu.NONE, R.string.style_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.toggle_keep_screen_on).setCheckable(true).setChecked(mPreferences.getKeepScreenOn());
         menu.add(Menu.NONE, CONTEXTMENU_HELP_ID, Menu.NONE, R.string.help);
+        menu.add(Menu.NONE, CONTEXTMENU_SETTINGS_ID, Menu.NONE, R.string.settings);
     }
 
     /** Hook system menu to show context menu instead. */
@@ -948,6 +955,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             case CONTEXTMENU_HELP_ID:
                 startActivity(new Intent(this, TermuxHelpActivity.class));
                 return true;
+            case CONTEXTMENU_SETTINGS_ID:
+                startActivity(new Intent(this, TermuxSettingsActivity.class));
+                return true;
             case CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON: {
                 if(mTerminalView.getKeepScreenOn()) {
                     mTerminalView.setKeepScreenOn(false);
@@ -1036,6 +1046,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
+    public boolean isVisible() {
+        return mIsVisible;
+    }
+
     public TermuxService getTermService() {
         return mTermService;
     }
@@ -1047,8 +1061,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public ExtraKeysView getExtraKeysView() {
         return mExtraKeysView;
     }
+
     public TermuxSharedProperties getProperties() {
         return mProperties;
+    }
+
+    public TermuxSharedPreferences getPreferences() {
+        return mPreferences;
     }
 
 }

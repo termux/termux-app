@@ -7,12 +7,11 @@ import android.content.Context;
 import android.os.Environment;
 import android.os.UserManager;
 import android.system.Os;
-import android.util.Log;
 import android.util.Pair;
 import android.view.WindowManager;
 
 import com.termux.R;
-import com.termux.terminal.EmulatorDebug;
+import com.termux.app.utils.Logger;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -45,6 +44,8 @@ import java.util.zip.ZipInputStream;
  * (5.2) For every other zip entry, extract it into $STAGING_PREFIX and set execute permissions if necessary.
  */
 final class TermuxInstaller {
+
+    private static final String LOG_TAG = "TermuxInstaller";
 
     /** Performs setup if necessary. */
     static void setupIfNeeded(final Activity activity, final Runnable whenDone) {
@@ -130,7 +131,7 @@ final class TermuxInstaller {
 
                     activity.runOnUiThread(whenDone);
                 } catch (final Exception e) {
-                    Log.e(EmulatorDebug.LOG_TAG, "Bootstrap error", e);
+                    Logger.logStackTraceWithMessage(LOG_TAG, "Bootstrap error", e);
                     activity.runOnUiThread(() -> {
                         try {
                             new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(R.string.bootstrap_error_body)
@@ -200,13 +201,13 @@ final class TermuxInstaller {
                         try {
                             deleteFolder(storageDir);
                         } catch (IOException e) {
-                            Log.e(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage());
+                            Logger.logError(LOG_TAG, "Could not delete old $HOME/storage, " + e.getMessage());
                             return;
                         }
                     }
 
                     if (!storageDir.mkdirs()) {
-                        Log.e(LOG_TAG, "Unable to mkdirs() for $HOME/storage");
+                        Logger.logError(LOG_TAG, "Unable to mkdirs() for $HOME/storage");
                         return;
                     }
 
@@ -238,7 +239,7 @@ final class TermuxInstaller {
                         }
                     }
                 } catch (Exception e) {
-                    Log.e(LOG_TAG, "Error setting up link", e);
+                    Logger.logStackTraceWithMessage(LOG_TAG, "Error setting up link", e);
                 }
             }
         }.start();

@@ -12,7 +12,6 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -31,7 +30,6 @@ import android.widget.Scroller;
 
 import androidx.annotation.RequiresApi;
 
-import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -40,8 +38,8 @@ import com.termux.view.textselection.TextSelectionCursorController;
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
 
-    /** Log view key and IME events. */
-    private static final boolean LOG_KEY_EVENTS = false;
+    /** Log terminal view key and IME events. */
+    private static boolean TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
 
     /** The currently displayed terminal session, whose emulator is {@link #mEmulator}. */
     public TerminalSession mTermSession;
@@ -75,6 +73,8 @@ public final class TerminalView extends View {
     int mCombiningAccent;
 
     private final boolean mAccessibilityEnabled;
+
+    private static final String LOG_TAG = "TerminalView";
 
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
         super(context, attributes);
@@ -210,11 +210,23 @@ public final class TerminalView extends View {
     }
 
     /**
-     * @param onKeyListener Listener for all kinds of key events, both hardware and IME (which makes it different from that
-     *                      available with {@link View#setOnKeyListener(OnKeyListener)}.
+     * @param terminalViewClient Interface for communicating with the terminal view client. It allows
+     *                           for getting various configuration options from the client and
+     *                           for sending back data to the client like logs, key events, both
+     *                           hardware and IME (which makes it different from that available with
+     *                           {@link View#setOnKeyListener(OnKeyListener)}, etc.
      */
-    public void setOnKeyListener(TerminalViewClient onKeyListener) {
-        this.mClient = onKeyListener;
+    public void setTerminalViewClient(TerminalViewClient terminalViewClient) {
+        this.mClient = terminalViewClient;
+    }
+
+    /**
+     * Sets terminal view key logging is enabled or not.
+     *
+     * @param value The boolean value that defines the state.
+     */
+    public void setIsTerminalViewKeyLoggingEnabled(boolean value) {
+        TERMINAL_VIEW_KEY_LOGGING_ENABLED = value;
     }
 
     /**
@@ -264,7 +276,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean finishComposingText() {
-                if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "IME: finishComposingText()");
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
                 super.finishComposingText();
 
                 sendTextToTerminal(getEditable());
@@ -274,8 +286,8 @@ public final class TerminalView extends View {
 
             @Override
             public boolean commitText(CharSequence text, int newCursorPosition) {
-                if (LOG_KEY_EVENTS) {
-                    Log.i(EmulatorDebug.LOG_TAG, "IME: commitText(\"" + text + "\", " + newCursorPosition + ")");
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
+                    mClient.logInfo(LOG_TAG, "IME: commitText(\"" + text + "\", " + newCursorPosition + ")");
                 }
                 super.commitText(text, newCursorPosition);
 
@@ -289,8 +301,8 @@ public final class TerminalView extends View {
 
             @Override
             public boolean deleteSurroundingText(int leftLength, int rightLength) {
-                if (LOG_KEY_EVENTS) {
-                    Log.i(EmulatorDebug.LOG_TAG, "IME: deleteSurroundingText(" + leftLength + ", " + rightLength + ")");
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
+                    mClient.logInfo(LOG_TAG, "IME: deleteSurroundingText(" + leftLength + ", " + rightLength + ")");
                 }
                 // The stock Samsung keyboard with 'Auto check spelling' enabled sends leftLength > 1.
                 KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
@@ -521,8 +533,8 @@ public final class TerminalView extends View {
 
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
-        if (LOG_KEY_EVENTS)
-            Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
+        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
+            mClient.logInfo(LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (isSelectingText()) {
                 stopTextSelectionMode();
@@ -547,8 +559,8 @@ public final class TerminalView extends View {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (LOG_KEY_EVENTS)
-            Log.i(EmulatorDebug.LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
+        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
+            mClient.logInfo(LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
         if (mEmulator == null) return true;
         if (isSelectingText()) {
             stopTextSelectionMode();
@@ -575,7 +587,7 @@ public final class TerminalView extends View {
         if (event.isShiftPressed()) keyMod |= KeyHandler.KEYMOD_SHIFT;
         if (event.isNumLockOn()) keyMod |= KeyHandler.KEYMOD_NUM_LOCK;
         if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod)) {
-            if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "handleKeyCode() took key event");
+            if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "handleKeyCode() took key event");
             return true;
         }
 
@@ -590,8 +602,8 @@ public final class TerminalView extends View {
         int effectiveMetaState = event.getMetaState() & ~bitsToClear;
 
         int result = event.getUnicodeChar(effectiveMetaState);
-        if (LOG_KEY_EVENTS)
-            Log.i(EmulatorDebug.LOG_TAG, "KeyEvent#getUnicodeChar(" + effectiveMetaState + ") returned: " + result);
+        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
+            mClient.logInfo(LOG_TAG, "KeyEvent#getUnicodeChar(" + effectiveMetaState + ") returned: " + result);
         if (result == 0) {
             return false;
         }
@@ -617,8 +629,8 @@ public final class TerminalView extends View {
     }
 
     public void inputCodePoint(int codePoint, boolean controlDownFromEvent, boolean leftAltDownFromEvent) {
-        if (LOG_KEY_EVENTS) {
-            Log.i(EmulatorDebug.LOG_TAG, "inputCodePoint(codePoint=" + codePoint + ", controlDownFromEvent=" + controlDownFromEvent + ", leftAltDownFromEvent="
+        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
+            mClient.logInfo(LOG_TAG, "inputCodePoint(codePoint=" + codePoint + ", controlDownFromEvent=" + controlDownFromEvent + ", leftAltDownFromEvent="
                 + leftAltDownFromEvent + ")");
         }
 
@@ -692,8 +704,8 @@ public final class TerminalView extends View {
      */
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (LOG_KEY_EVENTS)
-            Log.i(EmulatorDebug.LOG_TAG, "onKeyUp(keyCode=" + keyCode + ", event=" + event + ")");
+        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
+            mClient.logInfo(LOG_TAG, "onKeyUp(keyCode=" + keyCode + ", event=" + event + ")");
         if (mEmulator == null) return true;
 
         if (mClient.onKeyUp(keyCode, event)) {

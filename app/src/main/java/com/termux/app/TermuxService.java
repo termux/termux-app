@@ -18,14 +18,13 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.settings.preferences.TermuxSharedPreferences;
-import com.termux.terminal.EmulatorDebug;
+import com.termux.app.utils.Logger;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
 
@@ -49,6 +48,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
     private static final int NOTIFICATION_ID = 1337;
+
+    private static final String LOG_TAG = "TermuxService";
 
     /** This service is only bound from inside the same process and never uses IPC. */
     class LocalBinder extends Binder {
@@ -91,12 +92,12 @@ public final class TermuxService extends Service implements SessionChangedCallba
         } else if (TERMUX_SERVICE.ACTION_WAKE_LOCK.equals(action)) {
             if (mWakeLock == null) {
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, EmulatorDebug.LOG_TAG + ":service-wakelock");
+                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TermuxConstants.TERMUX_APP_NAME.toLowerCase() + ":service-wakelock");
                 mWakeLock.acquire();
 
                 // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
                 WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, EmulatorDebug.LOG_TAG);
+                mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, TermuxConstants.TERMUX_APP_NAME.toLowerCase());
                 mWifiLock.acquire();
 
                 String packageName = getPackageName();
@@ -109,7 +110,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
                     try {
                         startActivity(whitelist);
                     } catch (ActivityNotFoundException e) {
-                        Log.e(EmulatorDebug.LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
+                        Logger.logStackTraceWithMessage(LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
                     }
                 }
 
@@ -156,7 +157,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
                 startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
         } else if (action != null) {
-            Log.e(EmulatorDebug.LOG_TAG, "Unknown TermuxService action: '" + action + "'");
+            Logger.logError(LOG_TAG, "Unknown TermuxService action: '" + action + "'");
         }
 
         // If this service really do get killed, there is no point restarting it automatically - let the user do on next
@@ -246,7 +247,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
             try {
                 TermuxInstaller.deleteFolder(termuxTmpDir.getCanonicalFile());
             } catch (Exception e) {
-                Log.e(EmulatorDebug.LOG_TAG, "Error while removing file at " + termuxTmpDir.getAbsolutePath(), e);
+                Logger.logStackTraceWithMessage(LOG_TAG, "Error while removing file at " + termuxTmpDir.getAbsolutePath(), e);
             }
 
             termuxTmpDir.mkdirs();
@@ -367,13 +368,17 @@ public final class TermuxService extends Service implements SessionChangedCallba
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
-        String channelName = "Termux";
-        String channelDescription = "Notifications from Termux";
+        String channelName = TermuxConstants.TERMUX_APP_NAME;
+        String channelDescription = "Notifications from " + TermuxConstants.TERMUX_APP_NAME;
         int importance = NotificationManager.IMPORTANCE_LOW;
 
         NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName,importance);
         channel.setDescription(channelDescription);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.createNotificationChannel(channel);
+    }
+
+    public boolean wantsToStop() {
+        return mWantsToStop;
     }
 }

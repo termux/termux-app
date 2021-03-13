@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
-import android.util.Log;
 import android.util.Patterns;
 
 import com.termux.R;
@@ -14,6 +13,7 @@ import com.termux.app.DialogUtils;
 import com.termux.app.TermuxConstants;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.TermuxService;
+import com.termux.app.utils.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -38,6 +38,8 @@ public class TermuxFileReceiverActivity extends Activity {
      * when showing the error dialog.
      */
     boolean mFinishOnDismissNameDialog = true;
+
+    private static final String LOG_TAG = "TermuxFileReceiverActivity";
 
     static boolean isSharedTextAnUrl(String sharedText) {
         return Patterns.WEB_URL.matcher(sharedText).matches()
@@ -111,7 +113,7 @@ public class TermuxFileReceiverActivity extends Activity {
             promptNameAndSave(in, attachmentFileName);
         } catch (Exception e) {
             showErrorDialogAndQuit("Unable to handle shared content:\n\n" + e.getMessage());
-            Log.e("termux", "handleContentUri(uri=" + uri + ") failed", e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "handleContentUri(uri=" + uri + ") failed", e);
         }
     }
 
@@ -171,7 +173,7 @@ public class TermuxFileReceiverActivity extends Activity {
             return outFile;
         } catch (IOException e) {
             showErrorDialogAndQuit("Error saving file:\n\n" + e);
-            Log.e("termux", "Error saving file", e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "Error saving file", e);
             return null;
         }
     }

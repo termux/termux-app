@@ -2,13 +2,12 @@ package com.termux.app.settings.properties;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.termux.app.terminal.extrakeys.ExtraKeysInfo;
 import com.termux.app.terminal.KeyboardShortcut;
+import com.termux.app.utils.Logger;
 
 import org.json.JSONException;
 
@@ -29,6 +28,8 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
     private ExtraKeysInfo mExtraKeysInfo;
     private final List<KeyboardShortcut> mSessionShortcuts = new ArrayList<>();
+
+    private static final String LOG_TAG = "TermuxSharedProperties";
 
     public TermuxSharedProperties(@Nonnull Context context) {
         mContext = context;
@@ -65,14 +66,14 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             String extraKeysStyle = (String) getInternalPropertyValue(TermuxPropertyConstants.KEY_EXTRA_KEYS_STYLE, true);
             mExtraKeysInfo = new ExtraKeysInfo(extrakeys, extraKeysStyle);
         } catch (JSONException e) {
-            Toast.makeText(mContext, "Could not load and set the \"" + TermuxPropertyConstants.KEY_EXTRA_KEYS + "\" property from the properties file: " + e.toString(), Toast.LENGTH_LONG).show();
-            Log.e("termux", "Could not load and set the \"" + TermuxPropertyConstants.KEY_EXTRA_KEYS + "\" property from the properties file: ", e);
+            Logger.showToast(mContext, "Could not load and set the \"" + TermuxPropertyConstants.KEY_EXTRA_KEYS + "\" property from the properties file: " + e.toString(), true);
+            Logger.logStackTraceWithMessage(LOG_TAG, "Could not load and set the \"" + TermuxPropertyConstants.KEY_EXTRA_KEYS + "\" property from the properties file: ", e);
 
             try {
                 mExtraKeysInfo = new ExtraKeysInfo(TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE);
             } catch (JSONException e2) {
-                Toast.makeText(mContext, "Can't create default extra keys", Toast.LENGTH_LONG).show();
-                Log.e("termux", "Could create default extra keys: ", e);
+                Logger.showToast(mContext, "Can't create default extra keys",true);
+                Logger.logStackTraceWithMessage(LOG_TAG, "Could create default extra keys: ", e);
                 mExtraKeysInfo = null;
             }
         }
@@ -262,7 +263,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
                 // A null value can still be returned by
                 // {@link #getInternalPropertyValueFromValue(Context,String,String)} for some keys
                 value = getInternalPropertyValueFromValue(mContext, key, null);
-                Log.w("termux", "The value for \"" + key + "\" not found in SharedProperties cahce, force returning default value: `" + value +  "`");
+                Logger.logWarn(LOG_TAG, "The value for \"" + key + "\" not found in SharedProperties cahce, force returning default value: `" + value +  "`");
                 return value;
             }
         } else {
@@ -423,7 +424,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         String[] parts = value.toLowerCase().trim().split("\\+");
         String input = parts.length == 2 ? parts[1].trim() : null;
         if (!(parts.length == 2 && parts[0].trim().equals("ctrl")) || input.isEmpty() || input.length() > 2) {
-            Log.e("termux", "Keyboard shortcut '" + key + "' is not Ctrl+<something>");
+            Logger.logError(LOG_TAG, "Keyboard shortcut '" + key + "' is not Ctrl+<something>");
             return null;
         }
 
@@ -431,7 +432,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         int codePoint = c;
         if (Character.isLowSurrogate(c)) {
             if (input.length() != 2 || Character.isHighSurrogate(input.charAt(1))) {
-                Log.e("termux", "Keyboard shortcut '" + key + "' is not Ctrl+<something>");
+                Logger.logError(LOG_TAG, "Keyboard shortcut '" + key + "' is not Ctrl+<something>");
                 return null;
             } else {
                 codePoint = Character.toCodePoint(input.charAt(1), c);
@@ -556,7 +557,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             propertiesDump.append(" null");
         }
 
-        Log.d("termux", propertiesDump.toString());
+        Logger.logDebug(LOG_TAG, propertiesDump.toString());
     }
 
     public void dumpInternalPropertiesToLog() {
@@ -570,7 +571,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             }
         }
 
-        Log.d("termux", internalPropertiesDump.toString());
+        Logger.logDebug(LOG_TAG, internalPropertiesDump.toString());
     }
 
 }

@@ -63,4 +63,35 @@
     <string name="file_received_title">Save file in ~/downloads/</string>
     <string name="file_received_edit_button">Edit</string>
     <string name="file_received_open_folder_button">Open folder</string>
+
+
+
+
+
+    <!-- Termux Settings -->
+    <string name="settings">Settings</string>
+    <string name="title_activity_termux_settings">Termux Settings</string>
+
+
+
+    <!-- Debugging Preferences -->
+    <string name="debugging_preferences">Debugging</string>
+
+        <!-- Logging Category -->
+        <string name="logging_header">Logging</string>
+
+            <!-- Log Level -->
+            <string name="log_level_title">Log Level</string>
+            <string name="log_level_off">"Off"</string>
+            <string name="log_level_normal">"Normal"</string>
+            <string name="log_level_debug">"Debug"</string>
+            <string name="log_level_verbose">"Verbose"</string>
+            <string name="log_level_unknown">"*Unknown*"</string>
+            <string name="log_level_value">Logcat log level set to \"%1$s\"</string>
+
+            <!-- Terminal View Key Logging -->
+            <string name="terminal_view_key_logging_title">Terminal View Key Logging</string>
+            <string name="terminal_view_key_logging_off">Logs will not have entries for terminal view keys. (Default)</string>
+            <string name="terminal_view_key_logging_on">Logcat logs will have entries for terminal view keys. These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
+
 </resources>

@@ -10,13 +10,13 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
 import com.termux.app.settings.properties.TermuxSharedProperties;
+import com.termux.app.utils.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,6 +84,8 @@ public class RunCommandService extends Service {
     private static final String NOTIFICATION_CHANNEL_ID = "termux_run_command_notification_channel";
     private static final int NOTIFICATION_ID = 1338;
 
+    private static final String LOG_TAG = "RunCommandService";
+
     class LocalBinder extends Binder {
         public final RunCommandService service = RunCommandService.this;
     }
@@ -107,13 +109,13 @@ public class RunCommandService extends Service {
 
         // If wrong action passed, then just return
         if (!RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND.equals(intent.getAction())) {
-            Log.e("termux", "Unexpected intent action to RunCommandService: " + intent.getAction());
+            Logger.logError(LOG_TAG, "Unexpected intent action to RunCommandService: " + intent.getAction());
             return Service.START_NOT_STICKY;
         }
 
         // If allow-external-apps property is not set to "true"
         if (!TermuxSharedProperties.isPropertyValueTrue(this, TermuxPropertyConstants.getTermuxPropertiesFile(), TermuxConstants.PROP_ALLOW_EXTERNAL_APPS)) {
-            Log.e("termux", "RunCommandService requires allow-external-apps property to be set to \"true\" in \"" + TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH + "\" file");
+            Logger.logError(LOG_TAG, "RunCommandService requires allow-external-apps property to be set to \"true\" in \"" + TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH + "\" file");
             return Service.START_NOT_STICKY;
         }
 
@@ -155,7 +157,7 @@ public class RunCommandService extends Service {
 
     private Notification buildNotification() {
         Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentTitle(getText(R.string.application_name) + " Run Command");
+        builder.setContentTitle(TermuxConstants.TERMUX_APP_NAME + " Run Command");
         builder.setSmallIcon(R.drawable.ic_service_notification);
 
         // Use a low priority:
@@ -177,7 +179,7 @@ public class RunCommandService extends Service {
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
-        String channelName = "Termux Run Command";
+        String channelName = TermuxConstants.TERMUX_APP_NAME + " Run Command";
         int importance = NotificationManager.IMPORTANCE_LOW;
 
         NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);

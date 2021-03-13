@@ -1,9 +1,8 @@
 package com.termux.app.settings.properties;
 
-import android.util.Log;
-
 import com.google.common.collect.ImmutableBiMap;
 import com.termux.app.TermuxConstants;
+import com.termux.app.utils.Logger;
 
 import java.io.File;
 import java.util.Arrays;
@@ -237,7 +236,7 @@ public final class TermuxPropertyConstants {
         if (propertiesFile.isFile() && propertiesFile.canRead()) {
             return propertiesFile;
         } else {
-            Log.d("termux", "No readable termux.properties file found");
+            Logger.logDebug("No readable termux.properties file found");
             return null;
         }
     }

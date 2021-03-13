@@ -1,10 +1,10 @@
 package com.termux.app.settings.properties;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.common.primitives.Primitives;
+import com.termux.app.utils.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,6 +57,8 @@ public class SharedProperties {
 
     private final Object mLock = new Object();
 
+    private static final String LOG_TAG = "SharedProperties";
+
     /**
      * Constructor for the SharedProperties class.
      *
@@ -97,7 +99,7 @@ public class SharedProperties {
             Object internalValue;
             for (String key : mPropertiesList) {
                 value = properties.getProperty(key); // value will be null if key does not exist in propertiesFile
-                Log.d("termux", key + " : " + value);
+                Logger.logDebug(LOG_TAG, key + " : " + value);
 
                 // Call the {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}
                 // interface method to get the internal value to store in the  {@link #mMap}.
@@ -129,13 +131,13 @@ public class SharedProperties {
     public static boolean putToMap(HashMap<String, Object> map, String key, Object value) {
 
         if (map == null) {
-            Log.e("termux", "Map passed to SharedProperties.putToProperties() is null");
+            Logger.logError(LOG_TAG, "Map passed to SharedProperties.putToProperties() is null");
             return false;
         }
 
         // null keys are not allowed to be stored in mMap
         if (key == null) {
-            Log.e("termux", "Cannot put a null key into properties map");
+            Logger.logError(LOG_TAG, "Cannot put a null key into properties map");
             return false;
         }
 
@@ -153,7 +155,7 @@ public class SharedProperties {
             map.put(key, value);
             return true;
         } else {
-            Log.e("termux", "Cannot put a non-primitive value for the key \"" + key + "\" into properties map");
+            Logger.logError(LOG_TAG, "Cannot put a non-primitive value for the key \"" + key + "\" into properties map");
             return false;
         }
     }
@@ -172,13 +174,13 @@ public class SharedProperties {
     public static boolean putToProperties(Properties properties, String key, String value) {
 
         if (properties == null) {
-            Log.e("termux", "Properties passed to SharedProperties.putToProperties() is null");
+            Logger.logError(LOG_TAG, "Properties passed to SharedProperties.putToProperties() is null");
             return false;
         }
 
         // null keys are not allowed to be stored in mMap
         if (key == null) {
-            Log.e("termux", "Cannot put a null key into properties");
+            Logger.logError(LOG_TAG, "Cannot put a null key into properties");
             return false;
         }
 
@@ -206,19 +208,19 @@ public class SharedProperties {
         Properties properties = new Properties();
 
         if (propertiesFile == null) {
-            Log.e("termux", "Not loading properties since file is null");
+            Logger.logError(LOG_TAG, "Not loading properties since file is null");
             return properties;
         }
 
         try {
             try (FileInputStream in = new FileInputStream(propertiesFile)) {
-                Log.v("termux", "Loading properties from \"" + propertiesFile.getAbsolutePath() + "\" file");
+                Logger.logVerbose(LOG_TAG, "Loading properties from \"" + propertiesFile.getAbsolutePath() + "\" file");
                 properties.load(new InputStreamReader(in, StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
             if(context != null)
                 Toast.makeText(context, "Could not open properties file \"" + propertiesFile.getAbsolutePath() + "\": " + e.getMessage(), Toast.LENGTH_LONG).show();
-            Log.e("termux", "Error loading properties file \"" + propertiesFile.getAbsolutePath() + "\"", e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "Error loading properties file \"" + propertiesFile.getAbsolutePath() + "\"", e);
             return null;
         }
 

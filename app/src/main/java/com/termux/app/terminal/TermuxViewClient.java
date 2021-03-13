@@ -13,12 +13,14 @@ import com.termux.app.TermuxActivity;
 import com.termux.app.TermuxService;
 import com.termux.app.terminal.extrakeys.ExtraKeysView;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
+import com.termux.app.utils.Logger;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalViewClient;
 
 import java.util.List;
+
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -43,6 +45,8 @@ public final class TermuxViewClient implements TerminalViewClient {
         return scale;
     }
 
+
+
     @Override
     public void onSingleTapUp(MotionEvent e) {
         InputMethodManager mgr = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -64,11 +68,15 @@ public final class TermuxViewClient implements TerminalViewClient {
         return mActivity.getProperties().isUsingCtrlSpaceWorkaround();
     }
 
+
+
     @Override
     public void copyModeChanged(boolean copyMode) {
         // Disable drawer while copying.
         mActivity.getDrawer().setDrawerLockMode(copyMode ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
     }
+
+
 
     @SuppressLint("RtlHardcoded")
     @Override
@@ -127,6 +135,26 @@ public final class TermuxViewClient implements TerminalViewClient {
         return handleVirtualKeys(keyCode, e, false);
     }
 
+    /** Handle dedicated volume buttons as virtual keys if applicable. */
+    private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
+        InputDevice inputDevice = event.getDevice();
+        if (mActivity.getProperties().areVirtualVolumeKeysDisabled()) {
+            return false;
+        } else if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
+            // Do not steal dedicated buttons from a full external keyboard.
+            return false;
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            mVirtualControlKeyDown = down;
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            mVirtualFnKeyDown = down;
+            return true;
+        }
+        return false;
+    }
+
+
+
     @Override
     public boolean readControlKey() {
         return (mActivity.getExtraKeysView() != null && mActivity.getExtraKeysView().readSpecialButton(ExtraKeysView.SpecialButton.CTRL)) || mVirtualControlKeyDown;
@@ -136,6 +164,13 @@ public final class TermuxViewClient implements TerminalViewClient {
     public boolean readAltKey() {
         return (mActivity.getExtraKeysView() != null && mActivity.getExtraKeysView().readSpecialButton(ExtraKeysView.SpecialButton.ALT));
     }
+
+    @Override
+    public boolean onLongPress(MotionEvent event) {
+        return false;
+    }
+
+
 
     @Override
     public boolean onCodePoint(final int codePoint, boolean ctrlDown, TerminalSession session) {
@@ -273,27 +308,41 @@ public final class TermuxViewClient implements TerminalViewClient {
         return false;
     }
 
+
+
     @Override
-    public boolean onLongPress(MotionEvent event) {
-        return false;
+    public void logError(String tag, String message) {
+        Logger.logError(tag, message);
     }
 
-    /** Handle dedicated volume buttons as virtual keys if applicable. */
-    private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
-        InputDevice inputDevice = event.getDevice();
-        if (mActivity.getProperties().areVirtualVolumeKeysDisabled()) {
-            return false;
-        } else if (inputDevice != null && inputDevice.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
-            // Do not steal dedicated buttons from a full external keyboard.
-            return false;
-        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            mVirtualControlKeyDown = down;
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            mVirtualFnKeyDown = down;
-            return true;
-        }
-        return false;
+    @Override
+    public void logWarn(String tag, String message) {
+        Logger.logWarn(tag, message);
+    }
+
+    @Override
+    public void logInfo(String tag, String message) {
+        Logger.logInfo(tag, message);
+    }
+
+    @Override
+    public void logDebug(String tag, String message) {
+        Logger.logDebug(tag, message);
+    }
+
+    @Override
+    public void logVerbose(String tag, String message) {
+        Logger.logVerbose(tag, message);
+    }
+
+    @Override
+    public void logStackTraceWithMessage(String tag, String message, Exception e) {
+        Logger.logStackTraceWithMessage(tag, message, e);
+    }
+
+    @Override
+    public void logStackTrace(String tag, Exception e) {
+        Logger.logStackTrace(tag, e);
     }
 
 }
