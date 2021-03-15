@@ -3,13 +3,16 @@ package com.termux.view;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.View;
 
 import com.termux.terminal.TerminalSession;
 
 /**
- * Input and scale listener which may be set on a {@link TerminalView} through
- * {@link TerminalView#setTerminalViewClient(TerminalViewClient)}.
- * <p/>
+ * The interface for communication between {@link TerminalView} and its client. It allows for getting
+ * various  configuration options from the client and for sending back data to the client like logs,
+ * key events, both hardware and IME (which makes it different from that available with
+ * {@link View#setOnKeyListener(View.OnKeyListener)}, etc. It must be set for the
+ * {@link TerminalView} through {@link TerminalView#setTerminalViewClient(TerminalViewClient)}.
  */
 public interface TerminalViewClient {
 

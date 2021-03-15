@@ -210,14 +210,11 @@ public final class TerminalView extends View {
     }
 
     /**
-     * @param terminalViewClient Interface for communicating with the terminal view client. It allows
-     *                           for getting various configuration options from the client and
-     *                           for sending back data to the client like logs, key events, both
-     *                           hardware and IME (which makes it different from that available with
-     *                           {@link View#setOnKeyListener(OnKeyListener)}, etc.
+     * @param client The {@link TerminalViewClient} interface implementation to allow
+     *                           for communication between {@link TerminalView} and its client.
      */
-    public void setTerminalViewClient(TerminalViewClient terminalViewClient) {
-        this.mClient = terminalViewClient;
+    public void setTerminalViewClient(TerminalViewClient client) {
+        this.mClient = client;
     }
 
     /**
