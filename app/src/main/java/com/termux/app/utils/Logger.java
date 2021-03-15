@@ -30,15 +30,15 @@ public class Logger {
 
     static public void logMesssage(int logLevel, String tag, String message) {
         if(logLevel == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
-            Log.e(tag, message);
+            Log.e(getFullTag(tag), message);
         else if(logLevel == Log.WARN && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
-            Log.w(tag, message);
+            Log.w(getFullTag(tag), message);
         else if(logLevel == Log.INFO && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
-            Log.i(tag, message);
+            Log.i(getFullTag(tag), message);
         else if(logLevel == Log.DEBUG && CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
-            Log.d(tag, message);
+            Log.d(getFullTag(tag), message);
         else if(logLevel == Log.VERBOSE && CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE)
-            Log.v(tag, message);
+            Log.v(getFullTag(tag), message);
     }
 
 
@@ -133,9 +133,9 @@ public class Logger {
                 e.printStackTrace(pw);
                 pw.close();
                 if(message != null)
-                    Log.e(tag, message + ":\n" + errors.toString());
+                    Log.e(getFullTag(tag), message + ":\n" + errors.toString());
                 else
-                    Log.e(tag, errors.toString());
+                    Log.e(getFullTag(tag), errors.toString());
                 errors.close();
             } catch (IOException e1) {
                 e1.printStackTrace();
@@ -218,6 +218,13 @@ public class Logger {
             showToast(context, context.getString(R.string.log_level_value, getLogLevelLabel(context, CURRENT_LOG_LEVEL, false)),true);
 
         return CURRENT_LOG_LEVEL;
+    }
+
+    static public String getFullTag(String tag) {
+        if(DEFAULT_LOG_TAG.equals(tag))
+            return tag;
+        else
+            return DEFAULT_LOG_TAG + ":" + tag;
     }
 
 }
