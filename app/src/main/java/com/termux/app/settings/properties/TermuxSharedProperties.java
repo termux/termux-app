@@ -5,8 +5,8 @@ import android.content.res.Configuration;
 
 import androidx.annotation.Nullable;
 
-import com.termux.app.terminal.extrakeys.ExtraKeysInfo;
-import com.termux.app.terminal.KeyboardShortcut;
+import com.termux.app.terminal.io.extrakeys.ExtraKeysInfo;
+import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.utils.Logger;
 
 import org.json.JSONException;
