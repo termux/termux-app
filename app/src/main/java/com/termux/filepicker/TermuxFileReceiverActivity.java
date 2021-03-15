@@ -9,7 +9,7 @@ import android.provider.OpenableColumns;
 import android.util.Patterns;
 
 import com.termux.R;
-import com.termux.app.DialogUtils;
+import com.termux.app.utils.DialogUtils;
 import com.termux.app.TermuxConstants;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.TermuxService;
