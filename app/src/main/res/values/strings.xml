@@ -70,7 +70,7 @@
 
     <!-- Termux Settings -->
     <string name="settings">Settings</string>
-    <string name="title_activity_termux_settings">Termux Settings</string>
+    <string name="title_activity_termux_settings">&TERMUX_APP_NAME; Settings</string>
 
 
 
