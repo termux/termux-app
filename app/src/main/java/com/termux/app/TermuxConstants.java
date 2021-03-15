@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.3.0
+ * Version: v0.4.0
  *
  * Changelog
  *
@@ -14,22 +14,32 @@ import java.io.File;
  *
  * - 0.2.0 (2021-03-11)
  *      - Added `_DIR` and `_FILE` substrings to paths.
- *      - Add INTERNAL_PRIVATE_APP_DATA_DIR*, TERMUX_CACHE_DIR*, TERMUX_DATABASES_DIR*,
- *          TERMUX_SHARED_PREFERENCES_DIR*, TERMUX_BIN_PREFIX_DIR*, TERMUX_ETC_DIR*, TERMUX_INCLUDE_DIR*,
- *          TERMUX_LIB_DIR*, TERMUX_LIBEXEC_DIR*, TERMUX_SHARE_DIR*, TERMUX_TMP_DIR*, TERMUX_VAR_DIR*,
- *          TERMUX_STAGING_PREFIX_DIR*, TERMUX_STORAGE_HOME_DIR*, TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME*,
- *          TERMUX_DEFAULT_PREFERENCES_FILE
+ *      - Added `INTERNAL_PRIVATE_APP_DATA_DIR*`, `TERMUX_CACHE_DIR*`, `TERMUX_DATABASES_DIR*`,
+ *          `TERMUX_SHARED_PREFERENCES_DIR*`, `TERMUX_BIN_PREFIX_DIR*`, `TERMUX_ETC_DIR*`,
+ *          `TERMUX_INCLUDE_DIR*`, `TERMUX_LIB_DIR*`, `TERMUX_LIBEXEC_DIR*`, `TERMUX_SHARE_DIR*`,
+ *          `TERMUX_TMP_DIR*`, `TERMUX_VAR_DIR*`, `TERMUX_STAGING_PREFIX_DIR*`,
+ *          `TERMUX_STORAGE_HOME_DIR*`, `TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME*`,
+ *          `TERMUX_DEFAULT_PREFERENCES_FILE`.
  *      - Renamed `DATA_HOME_PATH` to `TERMUX_DATA_HOME_DIR_PATH`.
  *      - Renamed `CONFIG_HOME_PATH` to `TERMUX_CONFIG_HOME_DIR_PATH`.
  *      - Updated javadocs and spacing.
  *
  * - 0.3.0 (2021-03-12)
- *      - Remove TERMUX_CACHE_DIR_PATH*, TERMUX_DATABASES_DIR_PATH*, TERMUX_SHARED_PREFERENCES_DIR_PATH*
- *          since they may not be consistent on all devices.
+ *      - Remove `TERMUX_CACHE_DIR_PATH*`, `TERMUX_DATABASES_DIR_PATH*`,
+ *          `TERMUX_SHARED_PREFERENCES_DIR_PATH*` since they may not be consistent on all devices.
  *      - Renamed `TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME` to
  *          `TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`. This should be used for
  *           accessing shared preferences between Termux app and its plugins if ever needed by first
  *           getting shared package context with {@link Context.createPackageContext(String,int}).
+ *
+ * - 0.4.0 (2021-03-16)
+ *      - Added `BROADCAST_TERMUX_OPENED`,
+ *          `TERMUX_API_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`
+ *          `TERMUX_BOOT_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`,
+ *          `TERMUX_FLOAT_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`,
+ *          `TERMUX_STYLING_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`,
+ *          `TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`,
+ *          `TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`.
  *
  */
 
@@ -227,11 +237,29 @@ public final class TermuxConstants {
 
 
     /*
-     * Termux app core file paths.
+     * Termux app and plugin preferences and properties file paths.
      */
 
     /* Termux app default SharedPreferences file basename without extension */
     public static final String TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_PACKAGE_NAME + "_preferences"; // Default: "com.termux_preferences"
+
+    /* Termux API app default SharedPreferences file basename without extension */
+    public static final String TERMUX_API_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_API_PACKAGE_NAME + "_preferences"; // Default: "com.termux.api_preferences"
+
+    /* Termux Boot app default SharedPreferences file basename without extension */
+    public static final String TERMUX_BOOT_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_BOOT_PACKAGE_NAME + "_preferences"; // Default: "com.termux.boot_preferences"
+
+    /* Termux Float app default SharedPreferences file basename without extension */
+    public static final String TERMUX_FLOAT_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_FLOAT_PACKAGE_NAME + "_preferences"; // Default: "com.termux.window_preferences"
+
+    /* Termux Styling app default SharedPreferences file basename without extension */
+    public static final String TERMUX_STYLING_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_STYLING_PACKAGE_NAME + "_preferences"; // Default: "com.termux.styling_preferences"
+
+    /* Termux Plugin app default SharedPreferences file basename without extension */
+    public static final String TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_TASKER_PACKAGE_NAME + "_preferences"; // Default: "com.termux.tasker_preferences"
+
+    /* Termux Widget app default SharedPreferences file basename without extension */
+    public static final String TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_WIDGET_PACKAGE_NAME + "_preferences"; // Default: "com.termux.widget_preferences"
 
 
     /* Termux app termux.properties primary file path */
@@ -243,6 +271,7 @@ public final class TermuxConstants {
     public static final String TERMUX_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.termux/files/home/.config/termux/termux.properties"
     /* Termux app termux.properties secondary file */
     public static final File TERMUX_PROPERTIES_SECONDARY_FILE = new File(TERMUX_PROPERTIES_SECONDARY_FILE_PATH);
+
 
     /* Termux app and Termux:Styling colors.properties file path */
     public static final String TERMUX_COLOR_PROPERTIES_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/colors.properties"; // Default: "/data/data/com.termux/files/home/.termux/colors.properties"
@@ -302,6 +331,7 @@ public final class TermuxConstants {
     public static final String PROP_DEFAULT_VALUE_ALLOW_EXTERNAL_APPS = "false"; // Default: "false"
 
 
+    public static final String BROADCAST_TERMUX_OPENED = TERMUX_PACKAGE_NAME + ".app.OPENED";
 
 
 
