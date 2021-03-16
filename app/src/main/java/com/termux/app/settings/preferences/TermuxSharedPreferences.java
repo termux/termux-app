@@ -8,6 +8,7 @@ import com.termux.app.TermuxConstants;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.TermuxUtils;
 import com.termux.app.utils.TextDataUtils;
+import com.termux.app.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
 
 import javax.annotation.Nonnull;
 
@@ -35,11 +36,11 @@ public class TermuxSharedPreferences {
 
 
     public boolean getShowTerminalToolbar() {
-        return mSharedPreferences.getBoolean(TermuxPreferenceConstants.KEY_SHOW_TERMINAL_TOOLBAR, TermuxPreferenceConstants.DEFAULT_VALUE_SHOW_TERMINAL_TOOLBAR);
+        return mSharedPreferences.getBoolean(TERMUX_APP.KEY_SHOW_TERMINAL_TOOLBAR, TERMUX_APP.DEFAULT_VALUE_SHOW_TERMINAL_TOOLBAR);
     }
 
     public void setShowTerminalToolbar(boolean value) {
-        mSharedPreferences.edit().putBoolean(TermuxPreferenceConstants.KEY_SHOW_TERMINAL_TOOLBAR, value).apply();
+        mSharedPreferences.edit().putBoolean(TERMUX_APP.KEY_SHOW_TERMINAL_TOOLBAR, value).apply();
     }
 
     public boolean toogleShowTerminalToolbar() {
@@ -51,11 +52,11 @@ public class TermuxSharedPreferences {
 
 
     public boolean getKeepScreenOn() {
-        return mSharedPreferences.getBoolean(TermuxPreferenceConstants.KEY_KEEP_SCREEN_ON, TermuxPreferenceConstants.DEFAULT_VALUE_KEEP_SCREEN_ON);
+        return mSharedPreferences.getBoolean(TERMUX_APP.KEY_KEEP_SCREEN_ON, TERMUX_APP.DEFAULT_VALUE_KEEP_SCREEN_ON);
     }
 
     public void setKeepScreenOn(boolean value) {
-        mSharedPreferences.edit().putBoolean(TermuxPreferenceConstants.KEY_KEEP_SCREEN_ON, value).apply();
+        mSharedPreferences.edit().putBoolean(TERMUX_APP.KEY_KEEP_SCREEN_ON, value).apply();
     }
 
 
@@ -82,7 +83,7 @@ public class TermuxSharedPreferences {
         String fontString;
 
         try {
-            fontString = mSharedPreferences.getString(TermuxPreferenceConstants.KEY_FONTSIZE, Integer.toString(DEFAULT_FONTSIZE));
+            fontString = mSharedPreferences.getString(TERMUX_APP.KEY_FONTSIZE, Integer.toString(DEFAULT_FONTSIZE));
             if(fontString != null)
                 fontSize =  Integer.parseInt(fontString);
             else
@@ -96,7 +97,7 @@ public class TermuxSharedPreferences {
     }
 
     public void setFontSize(String value) {
-        mSharedPreferences.edit().putString(TermuxPreferenceConstants.KEY_FONTSIZE, value).apply();
+        mSharedPreferences.edit().putString(TERMUX_APP.KEY_FONTSIZE, value).apply();
     }
 
     public void changeFontSize(Context context, boolean increase) {
@@ -112,42 +113,38 @@ public class TermuxSharedPreferences {
 
 
     public String getCurrentSession() {
-        return mSharedPreferences.getString(TermuxPreferenceConstants.KEY_CURRENT_SESSION, "");
+        return mSharedPreferences.getString(TERMUX_APP.KEY_CURRENT_SESSION, "");
     }
 
     public void setCurrentSession(String value) {
-        mSharedPreferences.edit().putString(TermuxPreferenceConstants.KEY_CURRENT_SESSION, value).apply();
+        mSharedPreferences.edit().putString(TERMUX_APP.KEY_CURRENT_SESSION, value).apply();
     }
 
 
 
     public int getLogLevel() {
         try {
-            return mSharedPreferences.getInt(TermuxPreferenceConstants.KEY_LOG_LEVEL, Logger.DEFAULT_LOG_LEVEL);
+            return mSharedPreferences.getInt(TERMUX_APP.KEY_LOG_LEVEL, Logger.DEFAULT_LOG_LEVEL);
         }
         catch (Exception e) {
-            Logger.logStackTraceWithMessage("Error getting \"" + TermuxPreferenceConstants.KEY_LOG_LEVEL + "\" from shared preferences", e);
+            Logger.logStackTraceWithMessage("Error getting \"" + TERMUX_APP.KEY_LOG_LEVEL + "\" from shared preferences", e);
             return Logger.DEFAULT_LOG_LEVEL;
         }
     }
 
     public void setLogLevel(Context context, int logLevel) {
         logLevel = Logger.setLogLevel(context, logLevel);
-        mSharedPreferences.edit().putInt(TermuxPreferenceConstants.KEY_LOG_LEVEL, logLevel).apply();
+        mSharedPreferences.edit().putInt(TERMUX_APP.KEY_LOG_LEVEL, logLevel).apply();
     }
 
 
 
     public boolean getTerminalViewKeyLoggingEnabled() {
-        return mSharedPreferences.getBoolean(TermuxPreferenceConstants.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, TermuxPreferenceConstants.DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED);
+        return mSharedPreferences.getBoolean(TERMUX_APP.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, TERMUX_APP.DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED);
     }
 
     public void setTerminalViewKeyLoggingEnabled(boolean value) {
-        mSharedPreferences.edit().putBoolean(TermuxPreferenceConstants.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, value).apply();
+        mSharedPreferences.edit().putBoolean(TERMUX_APP.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, value).apply();
     }
-
-
-
-
 
 }
