@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.6.0
+ * Version: v0.7.0
  *
  * Changelog
  *
@@ -42,10 +42,13 @@ import java.io.File;
  *          `TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`.
  *
  * - 0.5.0 (2021-03-16)
- *      - Renamed "Termux Plugin app" labels to "Termux Tasker app"
+ *      - Renamed "Termux Plugin app" labels to "Termux Tasker app".
  *
  * - 0.6.0 (2021-03-16)
- *      - Added `TERMUX_FILE_SHARE_URI_AUTHORITY`
+ *      - Added `TERMUX_FILE_SHARE_URI_AUTHORITY`.
+ *
+ * - 0.7.0 (2021-03-17)
+ *      - Fixed javadocs.
  */
 
 /**
@@ -55,32 +58,33 @@ import java.io.File;
  * interacting with termux apps. If changes are made to this file, increment the version number
  * and add an entry in the Changelog section above.
  *
- * Termux app default package name is "com.termux" and is used in PREFIX_PATH.
- * The binaries compiled for termux have PREFIX_PATH hardcoded in them but it can be changed during
- * compilation.
+ * Termux app default package name is "com.termux" and is used in {@link #TERMUX_PREFIX_DIR_PATH}.
+ * The binaries compiled for termux have {@link #TERMUX_PREFIX_DIR_PATH} hardcoded in them but it
+ * can be changed during compilation.
  *
- * The TERMUX_PACKAGE_NAME must be the same as the applicationId of termux-app build.gradle since
- * its also used by FILES_PATH.
- * If TERMUX_PACKAGE_NAME is changed, then binaries, specially used in bootstrap need to be compiled
- * appropriately. Check https://github.com/termux/termux-packages/wiki/Building-packages for more info.
+ * The {@link #TERMUX_PACKAGE_NAME} must be the same as the applicationId of termux-app build.gradle
+ * since its also used by {@link #TERMUX_FILES_DIR_PATH}.
+ * If {@link #TERMUX_PACKAGE_NAME} is changed, then binaries, specially used in bootstrap need to be
+ * compiled appropriately. Check https://github.com/termux/termux-packages/wiki/Building-packages
+ * for more info.
  *
  * Ideally the only places where changes should be required if changing package name are the following:
- * - The TERMUX_PACKAGE_NAME in TermuxConstants.
+ * - The {@link #TERMUX_PACKAGE_NAME} in {@link TermuxConstants}.
  * - The "applicationId" in "build.gradle". This is package name that android and app stores will
  *       use and is also the final package name stored in "AndroidManifest.xml".
- * - The "manifestPlaceholders" values for TERMUX_PACKAGE_NAME and *_APP_NAME in "build.gradle".
- * - The "ENTITY" values for TERMUX_PACKAGE_NAME and *_APP_NAME in "strings.xml".
+ * - The "manifestPlaceholders" values for {@link #TERMUX_PACKAGE_NAME} and *_APP_NAME in "build.gradle".
+ * - The "ENTITY" values for {@link #TERMUX_PACKAGE_NAME} and *_APP_NAME in "strings.xml".
  * - The "shortcut.xml" files like in termux-app since dynamic variables don't work in it.
  * - Optionally the "package" in "AndroidManifest.xml" if modifying project structure. This is
  *      package name for java classes project structure and is prefixed if activity and service
  *      names use dot (.) notation.
- * - Optionally the *_PATH variables in TermuxConstants containing the string "termux".
+ * - Optionally the *_PATH variables in {@link TermuxConstants} containing the string "termux".
  *
  * Check https://developer.android.com/studio/build/application-id for info on "package" in
  * "AndroidManifest.xml" and "applicationId" in "build.gradle".
  *
- * TERMUX_PACKAGE_NAME must be used in source code of Termux app and its plugins instead of hardcoded
- * "com.termux" paths.
+ * {@link #TERMUX_PACKAGE_NAME} must be used in source code of Termux app and its plugins instead of
+ * hardcoded "com.termux" paths.
  */
 public final class TermuxConstants {
 
