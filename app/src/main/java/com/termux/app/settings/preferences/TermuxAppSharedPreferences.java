@@ -26,13 +26,13 @@ public class TermuxAppSharedPreferences {
 
     public TermuxAppSharedPreferences(@Nonnull Context context) {
         mContext = TermuxUtils.getTermuxPackageContext(context);
-        mSharedPreferences = getSharedPreferences(mContext);
+        mSharedPreferences = getPrivateSharedPreferences(mContext);
 
         setFontVariables(context);
     }
 
-    private static SharedPreferences getSharedPreferences(Context context) {
-        return context.getSharedPreferences(TermuxConstants.TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION, Context.MODE_PRIVATE);
+    private static SharedPreferences getPrivateSharedPreferences(Context context) {
+        return SharedPreferenceUtils.getPrivateSharedPreferences(context, TermuxConstants.TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
     }
 
 
@@ -42,7 +42,7 @@ public class TermuxAppSharedPreferences {
     }
 
     public void setShowTerminalToolbar(boolean value) {
-        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_SHOW_TERMINAL_TOOLBAR, value);
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_SHOW_TERMINAL_TOOLBAR, value, false);
     }
 
     public boolean toogleShowTerminalToolbar() {
@@ -58,7 +58,7 @@ public class TermuxAppSharedPreferences {
     }
 
     public void setKeepScreenOn(boolean value) {
-        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_KEEP_SCREEN_ON, value);
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_KEEP_SCREEN_ON, value, false);
     }
 
 
@@ -86,7 +86,7 @@ public class TermuxAppSharedPreferences {
     }
 
     public void setFontSize(int value) {
-        SharedPreferenceUtils.setIntStoredAsString(mSharedPreferences, TERMUX_APP.KEY_FONTSIZE, value);
+        SharedPreferenceUtils.setIntStoredAsString(mSharedPreferences, TERMUX_APP.KEY_FONTSIZE, value, false);
     }
 
     public void changeFontSize(boolean increase) {
@@ -106,7 +106,7 @@ public class TermuxAppSharedPreferences {
     }
 
     public void setCurrentSession(String value) {
-        SharedPreferenceUtils.setString(mSharedPreferences, TERMUX_APP.KEY_CURRENT_SESSION, value);
+        SharedPreferenceUtils.setString(mSharedPreferences, TERMUX_APP.KEY_CURRENT_SESSION, value, false);
     }
 
 
@@ -117,7 +117,7 @@ public class TermuxAppSharedPreferences {
 
     public void setLogLevel(Context context, int logLevel) {
         logLevel = Logger.setLogLevel(context, logLevel);
-        SharedPreferenceUtils.setInt(mSharedPreferences, TERMUX_APP.KEY_LOG_LEVEL, logLevel);
+        SharedPreferenceUtils.setInt(mSharedPreferences, TERMUX_APP.KEY_LOG_LEVEL, logLevel, false);
     }
 
 
@@ -127,7 +127,7 @@ public class TermuxAppSharedPreferences {
     }
 
     public void setTerminalViewKeyLoggingEnabled(boolean value) {
-        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, value);
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, value, false);
     }
 
 }
