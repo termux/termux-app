@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysInfo;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.utils.Logger;
+import com.termux.app.utils.TextDataUtils;
 
 import org.json.JSONException;
 
@@ -313,6 +314,10 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             case TermuxPropertyConstants.KEY_BELL_BEHAVIOUR:
                 return (int) getBellBehaviourInternalPropertyValueFromValue(value);
 
+            // float
+            case TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR:
+                return (float) getTerminalToolbarHeightScaleFactorInternalPropertyValueFromValue(value);
+
             // Integer (may be null)
             case TermuxPropertyConstants.KEY_SHORTCUT_CREATE_SESSION:
             case TermuxPropertyConstants.KEY_SHORTCUT_NEXT_SESSION:
@@ -391,7 +396,8 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
     }
 
     /**
-     * Returns {@code true} if value is not {@code null} and equals {@link TermuxPropertyConstants#VALUE_VOLUME_KEY_BEHAVIOUR_VOLUME}, otherwise {@code false}.
+     * Returns {@code true} if value is not {@code null} and equals
+     * {@link TermuxPropertyConstants#VALUE_VOLUME_KEY_BEHAVIOUR_VOLUME}, otherwise {@code false}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
@@ -401,13 +407,44 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
     }
 
     /**
-     * Returns {@code true} if value is not {@code null} and equals {@link TermuxPropertyConstants#VALUE_BACK_KEY_BEHAVIOUR_ESCAPE}, otherwise {@code false}.
+     * Returns the internal value after mapping it based on
+     * {@code TermuxPropertyConstants#MAP_BELL_BEHAVIOUR} if the value is not {@code null}
+     * and is valid, otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_BELL_BEHAVIOUR}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
      */
     public static int getBellBehaviourInternalPropertyValueFromValue(String value) {
         return getDefaultIfNull(TermuxPropertyConstants.MAP_BELL_BEHAVIOUR.get(toLowerCase(value)), TermuxPropertyConstants.DEFAULT_IVALUE_BELL_BEHAVIOUR);
+    }
+
+    /**
+     * Returns the int for the value if its not null and is between
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN} and
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX},
+     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR}.
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static float getTerminalToolbarHeightScaleFactorInternalPropertyValueFromValue(String value) {
+        return rangeTerminalToolbarHeightScaleFactorValue(TextDataUtils.getFloatFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR));
+    }
+
+    /**
+     * Returns the value itself if it is between
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN} and
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX},
+     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR}.
+     *
+     * @param value The value to clamp.
+     * @return Returns the clamped value.
+     */
+    public static float rangeTerminalToolbarHeightScaleFactorValue(float value) {
+        return TextDataUtils.rangedOrDefault(value,
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
+            TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX);
     }
 
     /**
@@ -515,6 +552,10 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
     public int getBellBehaviour() {
         return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_BELL_BEHAVIOUR, true);
+    }
+
+    public float getTerminalToolbarHeightScaleFactor() {
+        return rangeTerminalToolbarHeightScaleFactorValue((float) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR, true));
     }
 
     public List<KeyboardShortcut> getSessionShortcuts() {

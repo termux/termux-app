@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.2.0
+ * Version: v0.3.0
  *
  * Changelog
  *
@@ -20,6 +20,8 @@ import java.util.Set;
  *      - Renamed `HOME_PATH` to `TERMUX_HOME_DIR_PATH`
  *      - Renamed `TERMUX_PROPERTIES_PRIMARY_PATH` to `TERMUX_PROPERTIES_PRIMARY_FILE_PATH`
  *      - Renamed `TERMUX_PROPERTIES_SECONDARY_FILE_PATH` to `TERMUX_PROPERTIES_SECONDARY_FILE_PATH`
+ * - 0.3.0 (2021-03-16)
+ *      - Add `*TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR*`
  *
  */
 
@@ -116,6 +118,14 @@ public final class TermuxPropertyConstants {
 
 
 
+    /** Defines the key for the bell behaviour */
+    public static final String KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR =  "terminal-toolbar-height"; // Default: "terminal-toolbar-height"
+    public static final float IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN = 0.4f;
+    public static final float IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX = 3;
+    public static final float DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR = 1;
+
+
+
     /** Defines the key for create session shortcut */
     public static final String KEY_SHORTCUT_CREATE_SESSION =  "shortcut.create-session"; // Default: "shortcut.create-session"
     /** Defines the key for next session shortcut */
@@ -175,6 +185,9 @@ public final class TermuxPropertyConstants {
 
         // int
         KEY_BELL_BEHAVIOUR,
+
+        // float
+        KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
 
         // Integer
         KEY_SHORTCUT_CREATE_SESSION,

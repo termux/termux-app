@@ -124,9 +124,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
      * If between onResume() and onStop(). Note that only one session is in the foreground of the terminal view at the
      * time, so if the session causing a change is not in the foreground it should probably be treated as background.
      */
-    boolean mIsVisible;
+    private boolean mIsVisible;
 
-    int mNavBarHeight;
+    private int mNavBarHeight;
+
+    private int mTerminalToolbarDefaultHeight;
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
@@ -341,8 +343,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (mPreferences.getShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
-        layoutParams.height = layoutParams.height * (mProperties.getExtraKeysInfo() == null ? 0 : mProperties.getExtraKeysInfo().getMatrix().length);
-        terminalToolbarViewPager.setLayoutParams(layoutParams);
+        mTerminalToolbarDefaultHeight = layoutParams.height;
+
+        setTerminalToolbarHeight();
 
         String savedTextInput = null;
         if(savedInstanceState != null)
@@ -352,8 +355,20 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         terminalToolbarViewPager.addOnPageChangeListener(new TerminalToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
     }
 
+    private void setTerminalToolbarHeight() {
+        final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
+        if(terminalToolbarViewPager == null) return;
+        ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
+        layoutParams.height = (int) Math.round(mTerminalToolbarDefaultHeight *
+                                                (mProperties.getExtraKeysInfo() == null ? 0 : mProperties.getExtraKeysInfo().getMatrix().length) *
+                                                    mProperties.getTerminalToolbarHeightScaleFactor());
+        terminalToolbarViewPager.setLayoutParams(layoutParams);
+    }
+
     public void toggleTerminalToolbar() {
         final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
+        if(terminalToolbarViewPager == null) return;
+
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
         if (showNow && terminalToolbarViewPager.getCurrentItem() == 1) {
@@ -689,6 +704,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         mExtraKeysView.reload(mProperties.getExtraKeysInfo());
                     }
                 }
+
+                setTerminalToolbarHeight();
 
                 // To change the activity and drawer theme, activity needs to be recreated.
                 // But this will destroy the activity, and will call the onCreate() again.

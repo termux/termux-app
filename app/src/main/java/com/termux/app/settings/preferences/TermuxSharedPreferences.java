@@ -7,6 +7,7 @@ import android.util.TypedValue;
 import com.termux.app.TermuxConstants;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.TermuxUtils;
+import com.termux.app.utils.TextDataUtils;
 
 import javax.annotation.Nonnull;
 
@@ -89,7 +90,7 @@ public class TermuxSharedPreferences {
         } catch (NumberFormatException | ClassCastException e) {
             fontSize = DEFAULT_FONTSIZE;
         }
-        fontSize = clamp(fontSize, MIN_FONTSIZE, MAX_FONTSIZE);
+        fontSize = TextDataUtils.clamp(fontSize, MIN_FONTSIZE, MAX_FONTSIZE);
 
         return fontSize;
     }
@@ -147,11 +148,6 @@ public class TermuxSharedPreferences {
 
 
 
-    /**
-     * If value is not in the range [min, max], set it to either min or max.
-     */
-    static int clamp(int value, int min, int max) {
-        return Math.min(Math.max(value, min), max);
-    }
+
 
 }

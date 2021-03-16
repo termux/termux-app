@@ -21,6 +21,47 @@ public class TextDataUtils {
         return text;
     }
 
+    public static float getFloatFromString(String value, float def) {
+        if(value == null) return def;
+
+        try {
+            return Float.parseFloat(value);
+        }
+        catch (Exception e) {
+            return def;
+        }
+    }
+
+    public static int getIntFromString(String value, int def) {
+        if(value == null) return def;
+
+        try {
+            return Integer.parseInt(value);
+        }
+        catch (Exception e) {
+            return def;
+        }
+    }
+
+    /**
+     * If value is not in the range [min, max], set it to either min or max.
+     */
+    public static int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    /**
+     * If value is not in the range [min, max], set it to default.
+     */
+    public static float rangedOrDefault(float value, float def, float min, float max) {
+        if (value < min || value > max)
+            return def;
+        else
+            return value;
+    }
+
+
+
     public static LinkedHashSet<CharSequence> extractUrls(String text) {
 
         StringBuilder regex_sb = new StringBuilder();
