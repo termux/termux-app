@@ -3,8 +3,6 @@ package com.termux.app.settings.properties;
 import android.content.Context;
 import android.content.res.Configuration;
 
-import androidx.annotation.Nullable;
-
 import com.termux.app.terminal.io.extrakeys.ExtraKeysInfo;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.utils.Logger;
@@ -38,9 +36,6 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         mSharedProperties = new SharedProperties(context, mPropertiesFile, TermuxPropertyConstants.TERMUX_PROPERTIES_LIST, this);
         loadTermuxPropertiesFromDisk();
     }
-
-
-
 
     /**
      * Reload the termux properties from disk into an in-memory cache.
@@ -103,66 +98,6 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
 
     /**
-     * A static function to get the {@link Properties} from the propertiesFile file.
-     *
-     * @param context The {@link Context} for the {@link SharedProperties#getPropertiesFromFile(Context,File)} call.
-     * @param propertiesFile The {@link File} to read the {@link Properties} from.
-     * @return Returns the {@link Properties} object. It will be {@code null} if an exception is
-     * raised while reading the file.
-     */
-    public static Properties getPropertiesFromFile(Context context, File propertiesFile) {
-        return SharedProperties.getPropertiesFromFile(context, propertiesFile);
-    }
-
-    /**
-     * A static function to get the {@link String} value for the {@link Properties} key read from
-     * the propertiesFile file.
-     *
-     * @param context The {@link Context} for the {@link SharedProperties#getPropertiesFromFile(Context,File)} call.
-     * @param propertiesFile The {@link File} to read the {@link Properties} from.
-     * @param key The key to read.
-     * @param def The default value.
-     * @return Returns the {@link String} object. This will be {@code null} if key is not found.
-     */
-    public static String getPropertyValue(Context context, File propertiesFile, String key, String def) {
-        return (String) getDefaultIfNull(getDefaultIfNull(getPropertiesFromFile(context, propertiesFile), new Properties()).get(key), def);
-    }
-
-    /**
-     * A static function to check if the value is {@code true} for {@link Properties} key read from
-     * the propertiesFile file.
-     *
-     * @param context The {@link Context} for the {@link SharedProperties#getPropertiesFromFile(Context,File)}call.
-     * @param propertiesFile The {@link File} to read the {@link Properties} from.
-     * @param key The key to read.
-     * @return Returns the {@code true} if the {@link Properties} key {@link String} value equals "true",
-     * regardless of case. If the key does not exist in the file or does not equal "true", then
-     * {@code false} will be returned.
-     */
-    public static boolean isPropertyValueTrue(Context context, File propertiesFile, String key) {
-        return (boolean) getBooleanValueForStringValue((String) getPropertyValue(context, propertiesFile, key, null), false);
-    }
-
-    /**
-     * A static function to check if the value is {@code false} for {@link Properties} key read from
-     * the propertiesFile file.
-     *
-     * @param context The {@link Context} for the {@link SharedProperties#getPropertiesFromFile(Context,File)} call.
-     * @param propertiesFile The {@link File} to read the {@link Properties} from.
-     * @param key The key to read.
-     * @return Returns the {@code true} if the {@link Properties} key {@link String} value equals "false",
-     * regardless of case. If the key does not exist in the file or does not equal "false", then
-     * {@code true} will be returned.
-     */
-    public static boolean isPropertyValueFalse(Context context, File propertiesFile, String key) {
-        return (boolean) getInvertedBooleanValueForStringValue((String) getPropertyValue(context, propertiesFile, key, null), true);
-    }
-
-
-
-
-
-    /**
      * Get the {@link Properties} from the {@link #mPropertiesFile} file.
      *
      * @param cached If {@code true}, then the {@link Properties} in-memory cache is returned.
@@ -186,7 +121,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the {@link String} object. This will be {@code null} if key is not found.
      */
     public String getPropertyValue(String key, String def, boolean cached) {
-        return getDefaultIfNull(mSharedProperties.getProperty(key, cached), def);
+        return SharedProperties.getDefaultIfNull(mSharedProperties.getProperty(key, cached), def);
     }
 
     /**
@@ -202,7 +137,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * {@code false} will be returned.
      */
     public boolean isPropertyValueTrue(String key, boolean cached) {
-        return (boolean) getBooleanValueForStringValue((String) getPropertyValue(key, null, cached), false);
+        return (boolean) SharedProperties.getBooleanValueForStringValue((String) getPropertyValue(key, null, cached), false);
     }
 
     /**
@@ -218,7 +153,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * {@code true} will be returned.
      */
     public boolean isPropertyValueFalse(String key, boolean cached) {
-        return (boolean) getInvertedBooleanValueForStringValue((String) getPropertyValue(key, null, cached), true);
+        return (boolean) SharedProperties.getInvertedBooleanValueForStringValue((String) getPropertyValue(key, null, cached), true);
     }
 
 
@@ -335,10 +270,10 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             default:
                 // default boolean behaviour
                 if(TermuxPropertyConstants.TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
-                    return (boolean) getBooleanValueForStringValue(value, false);
+                    return (boolean) SharedProperties.getBooleanValueForStringValue(value, false);
                 // default inverted boolean behaviour
                 else if(TermuxPropertyConstants.TERMUX_DEFAULT_INVERETED_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
-                    return (boolean) getInvertedBooleanValueForStringValue(value, true);
+                    return (boolean) SharedProperties.getInvertedBooleanValueForStringValue(value, true);
                 // just use String object as is (may be null)
                 else
                     return value;
@@ -350,37 +285,13 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
 
     /**
-     * Get the boolean value for the {@link String} value.
-     *
-     * @param value The {@link String} value to convert.
-     * @param def The default {@link boolean} value to return.
-     * @return Returns {@code true} or {@code false} if value is the literal string "true" or "false" respectively,
-     * regardless of case. Otherwise returns default value.
-     */
-    public static boolean getBooleanValueForStringValue(String value, boolean def) {
-        return (boolean) getDefaultIfNull(TermuxPropertyConstants.MAP_GENERIC_BOOLEAN.get(toLowerCase(value)), def);
-    }
-
-    /**
-     * Get the inverted boolean value for the {@link String} value.
-     *
-     * @param value The {@link String} value to convert.
-     * @param def The default {@link boolean} value to return.
-     * @return Returns {@code true} or {@code false} if value is the literal string "false" or "true" respectively,
-     * regardless of case. Otherwise returns default value.
-     */
-    public static boolean getInvertedBooleanValueForStringValue(String value, boolean def) {
-        return (boolean) getDefaultIfNull(TermuxPropertyConstants.MAP_GENERIC_INVERTED_BOOLEAN.get(toLowerCase(value)), def);
-    }
-
-    /**
      * Returns {@code true} if value is not {@code null} and equals {@link TermuxPropertyConstants#VALUE_BACK_KEY_BEHAVIOUR_ESCAPE}, otherwise false.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
      */
     public static boolean getUseBackKeyAsEscapeKeyInternalPropertyValueFromValue(String value) {
-        return getDefaultIfNull(value, TermuxPropertyConstants.VALUE_BACK_KEY_BEHAVIOUR_BACK).equals(TermuxPropertyConstants.VALUE_BACK_KEY_BEHAVIOUR_ESCAPE);
+        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.VALUE_BACK_KEY_BEHAVIOUR_BACK).equals(TermuxPropertyConstants.VALUE_BACK_KEY_BEHAVIOUR_ESCAPE);
     }
 
     /**
@@ -392,7 +303,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      */
     public static boolean getUseBlackUIInternalPropertyValueFromValue(Context context, String value) {
         int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return getBooleanValueForStringValue(value, nightMode == Configuration.UI_MODE_NIGHT_YES);
+        return SharedProperties.getBooleanValueForStringValue(value, nightMode == Configuration.UI_MODE_NIGHT_YES);
     }
 
     /**
@@ -403,7 +314,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static boolean getVolumeKeysDisabledInternalPropertyValueFromValue(String value) {
-        return getDefaultIfNull(value, TermuxPropertyConstants.VALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL).equals(TermuxPropertyConstants.VALUE_VOLUME_KEY_BEHAVIOUR_VOLUME);
+        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.VALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL).equals(TermuxPropertyConstants.VALUE_VOLUME_KEY_BEHAVIOUR_VOLUME);
     }
 
     /**
@@ -415,7 +326,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static int getBellBehaviourInternalPropertyValueFromValue(String value) {
-        return getDefaultIfNull(TermuxPropertyConstants.MAP_BELL_BEHAVIOUR.get(toLowerCase(value)), TermuxPropertyConstants.DEFAULT_IVALUE_BELL_BEHAVIOUR);
+        return SharedProperties.getDefaultIfNull(TermuxPropertyConstants.MAP_BELL_BEHAVIOUR.get(SharedProperties.toLowerCase(value)), TermuxPropertyConstants.DEFAULT_IVALUE_BELL_BEHAVIOUR);
     }
 
     /**
@@ -505,7 +416,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static String getExtraKeysInternalPropertyValueFromValue(String value) {
-        return getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS);
+        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS);
     }
 
     /**
@@ -515,7 +426,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static String getExtraKeysStyleInternalPropertyValueFromValue(String value) {
-        return getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE);
+        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE);
     }
 
 
@@ -574,17 +485,6 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
 
 
-    public static <T> T getDefaultIfNull(@Nullable T object, @Nullable T def) {
-        return (object == null) ? def : object;
-    }
-
-    private static String toLowerCase(String value) {
-        if (value == null) return null; else return value.toLowerCase();
-    }
-
-
-
-
     public void dumpPropertiesToLog() {
         Properties properties = getProperties(true);
         StringBuilder propertiesDump = new StringBuilder();
@@ -598,7 +498,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             propertiesDump.append(" null");
         }
 
-        Logger.logDebug(LOG_TAG, propertiesDump.toString());
+        Logger.logVerbose(LOG_TAG, propertiesDump.toString());
     }
 
     public void dumpInternalPropertiesToLog() {
@@ -612,7 +512,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             }
         }
 
-        Logger.logDebug(LOG_TAG, internalPropertiesDump.toString());
+        Logger.logVerbose(LOG_TAG, internalPropertiesDump.toString());
     }
 
 }

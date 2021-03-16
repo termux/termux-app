@@ -14,8 +14,8 @@ import android.os.IBinder;
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.app.settings.properties.SharedProperties;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
-import com.termux.app.settings.properties.TermuxSharedProperties;
 import com.termux.app.utils.Logger;
 
 import java.io.File;
@@ -114,7 +114,7 @@ public class RunCommandService extends Service {
         }
 
         // If allow-external-apps property is not set to "true"
-        if (!TermuxSharedProperties.isPropertyValueTrue(this, TermuxPropertyConstants.getTermuxPropertiesFile(), TermuxConstants.PROP_ALLOW_EXTERNAL_APPS)) {
+        if (!SharedProperties.isPropertyValueTrue(this, TermuxPropertyConstants.getTermuxPropertiesFile(), TermuxConstants.PROP_ALLOW_EXTERNAL_APPS)) {
             Logger.logError(LOG_TAG, "RunCommandService requires allow-external-apps property to be set to \"true\" in \"" + TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH + "\" file");
             return Service.START_NOT_STICKY;
         }

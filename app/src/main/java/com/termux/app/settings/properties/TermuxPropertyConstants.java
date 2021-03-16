@@ -10,19 +10,23 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.3.0
+ * Version: v0.4.0
  *
  * Changelog
  *
  * - 0.1.0 (2021-03-11)
  *      - Initial Release.
+ *
  * - 0.2.0 (2021-03-11)
  *      - Renamed `HOME_PATH` to `TERMUX_HOME_DIR_PATH`
  *      - Renamed `TERMUX_PROPERTIES_PRIMARY_PATH` to `TERMUX_PROPERTIES_PRIMARY_FILE_PATH`
  *      - Renamed `TERMUX_PROPERTIES_SECONDARY_FILE_PATH` to `TERMUX_PROPERTIES_SECONDARY_FILE_PATH`
+ *
  * - 0.3.0 (2021-03-16)
  *      - Add `*TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR*`
  *
+ * - 0.4.0 (2021-03-16)
+ *      - Removed `MAP_GENERIC_BOOLEAN` and `MAP_GENERIC_INVERTED_BOOLEAN`.
  */
 
 /**
@@ -37,22 +41,6 @@ import java.util.Set;
  * {@link TermuxConstants#TERMUX_PROPERTIES_SECONDARY_FILE_PATH}
  */
 public final class TermuxPropertyConstants {
-
-    /** Defines the bidirectional map for boolean values and their internal values  */
-    public static final ImmutableBiMap<String, Boolean> MAP_GENERIC_BOOLEAN =
-        new ImmutableBiMap.Builder<String, Boolean>()
-            .put("true", true)
-            .put("false", false)
-            .build();
-
-    /** Defines the bidirectional map for inverted boolean values and their internal values  */
-    public static final ImmutableBiMap<String, Boolean> MAP_GENERIC_INVERTED_BOOLEAN =
-        new ImmutableBiMap.Builder<String, Boolean>()
-            .put("true", false)
-            .put("false", true)
-            .build();
-
-
 
     /** Defines the key for whether to use back key as the escape key */
     public static final String KEY_USE_BACK_KEY_AS_ESCAPE_KEY =  "back-key"; // Default: "back-key"
