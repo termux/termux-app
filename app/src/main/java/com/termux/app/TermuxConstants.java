@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.5.0
+ * Version: v0.6.0
  *
  * Changelog
  *
@@ -42,7 +42,10 @@ import java.io.File;
  *          `TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`.
  *
  * - 0.5.0 (2021-03-16)
- *      - Renamed "Termux Plugin app" to "Termux Tasker app"
+ *      - Renamed "Termux Plugin app" labels to "Termux Tasker app"
+ *
+ * - 0.6.0 (2021-03-16)
+ *      - Added `TERMUX_FILE_SHARE_URI_AUTHORITY`
  */
 
 /**
@@ -332,8 +335,12 @@ public final class TermuxConstants {
     /* Default value for {@link #PROP_ALLOW_EXTERNAL_APPS} */
     public static final String PROP_DEFAULT_VALUE_ALLOW_EXTERNAL_APPS = "false"; // Default: "false"
 
-
+    /* The broadcast action sent when Termux App opens */
     public static final String BROADCAST_TERMUX_OPENED = TERMUX_PACKAGE_NAME + ".app.OPENED";
+
+    /* The Uri authority for Termux app file shares */
+    public static final String TERMUX_FILE_SHARE_URI_AUTHORITY = TERMUX_PACKAGE_NAME + ".files"; // Default: "com.termux.files"
+
 
 
 
