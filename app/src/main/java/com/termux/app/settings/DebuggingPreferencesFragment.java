@@ -12,7 +12,7 @@ import androidx.preference.PreferenceManager;
 
 import com.termux.R;
 import com.termux.app.settings.preferences.TermuxPreferenceConstants;
-import com.termux.app.settings.preferences.TermuxSharedPreferences;
+import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.utils.Logger;
 
 public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
@@ -41,7 +41,6 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
         logLevelListPreference.setEntryValues(logLevels);
         logLevelListPreference.setEntries(logLevelLabels);
 
-        logLevelListPreference.setKey(TermuxPreferenceConstants.KEY_LOG_LEVEL);
         logLevelListPreference.setValue(String.valueOf(Logger.getLogLevel()));
         logLevelListPreference.setDefaultValue(Logger.getLogLevel());
 
@@ -53,13 +52,13 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
 class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
     private final Context mContext;
-    private final TermuxSharedPreferences mPreferences;
+    private final TermuxAppSharedPreferences mPreferences;
 
     private static DebuggingPreferencesDataStore mInstance;
 
     private DebuggingPreferencesDataStore(Context context) {
         mContext = context;
-        mPreferences = new TermuxSharedPreferences(context);
+        mPreferences = new TermuxAppSharedPreferences(context);
     }
 
     public static synchronized DebuggingPreferencesDataStore getInstance(Context context) {
@@ -68,6 +67,8 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
         }
         return mInstance;
     }
+
+
 
     @Override
     @Nullable
@@ -96,6 +97,8 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
                 break;
         }
     }
+
+
 
     @Override
     public void putBoolean(String key, boolean value) {

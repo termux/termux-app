@@ -328,7 +328,7 @@ public class TermuxViewClient implements TerminalViewClient {
 
 
     public void changeFontSize(boolean increase) {
-        mActivity.getPreferences().changeFontSize(mActivity, increase);
+        mActivity.getPreferences().changeFontSize(increase);
         mActivity.getTerminalView().setTextSize(mActivity.getPreferences().getFontSize());
     }
 

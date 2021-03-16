@@ -32,7 +32,7 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
-import com.termux.app.settings.preferences.TermuxSharedPreferences;
+import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.TermuxSessionClient;
@@ -93,7 +93,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     /**
      * Termux app shared preferences manager.
      */
-    private TermuxSharedPreferences mPreferences;
+    private TermuxAppSharedPreferences mPreferences;
 
     /**
      * Termux app shared properties manager, loaded from termux.properties
@@ -154,7 +154,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         Logger.logDebug(LOG_TAG, "onCreate");
 
         // Load termux shared preferences and properties
-        mPreferences = new TermuxSharedPreferences(this);
+        mPreferences = new TermuxAppSharedPreferences(this);
         mProperties = new TermuxSharedProperties(this);
 
         setActivityTheme();
@@ -670,7 +670,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             return null;
     }
 
-    public TermuxSharedPreferences getPreferences() {
+    public TermuxAppSharedPreferences getPreferences() {
         return mPreferences;
     }
 
