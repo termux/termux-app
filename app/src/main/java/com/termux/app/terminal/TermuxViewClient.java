@@ -1,45 +1,62 @@
 package com.termux.app.terminal;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
+import android.net.Uri;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ListView;
+import android.widget.Toast;
 
+import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.app.TermuxService;
-import com.termux.app.terminal.extrakeys.ExtraKeysView;
+import com.termux.app.terminal.io.KeyboardShortcut;
+import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
+import com.termux.app.utils.TextDataUtils;
 import com.termux.app.utils.Logger;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalViewClient;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
-
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
-public final class TermuxViewClient implements TerminalViewClient {
+public class TermuxViewClient implements TerminalViewClient {
 
     final TermuxActivity mActivity;
+
+    final TermuxSessionClient mTermuxSessionClient;
 
     /** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
     boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
 
-    public TermuxViewClient(TermuxActivity activity) {
+    public TermuxViewClient(TermuxActivity activity, TermuxSessionClient termuxSessionClient) {
         this.mActivity = activity;
+        this.mTermuxSessionClient = termuxSessionClient;
     }
 
     @Override
     public float onScale(float scale) {
         if (scale < 0.9f || scale > 1.1f) {
             boolean increase = scale > 1.f;
-            mActivity.changeFontSize(increase);
+            changeFontSize(increase);
             return 1.0f;
         }
         return scale;
@@ -84,16 +101,16 @@ public final class TermuxViewClient implements TerminalViewClient {
         if (handleVirtualKeys(keyCode, e, true)) return true;
 
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
-            mActivity.removeFinishedSession(currentSession);
+            mTermuxSessionClient.removeFinishedSession(currentSession);
             return true;
         } else if (e.isCtrlPressed() && e.isAltPressed()) {
             // Get the unmodified code point:
             int unicodeChar = e.getUnicodeChar(0);
 
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN || unicodeChar == 'n'/* next */) {
-                mActivity.switchToSession(true);
+                mTermuxSessionClient.switchToSession(true);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP || unicodeChar == 'p' /* previous */) {
-                mActivity.switchToSession(false);
+                mTermuxSessionClient.switchToSession(false);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 mActivity.getDrawer().openDrawer(Gravity.LEFT);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
@@ -104,24 +121,24 @@ public final class TermuxViewClient implements TerminalViewClient {
             } else if (unicodeChar == 'm'/* menu */) {
                 mActivity.getTerminalView().showContextMenu();
             } else if (unicodeChar == 'r'/* rename */) {
-                mActivity.renameSession(currentSession);
+                mTermuxSessionClient.renameSession(currentSession);
             } else if (unicodeChar == 'c'/* create */) {
-                mActivity.addNewSession(false, null);
+                mTermuxSessionClient.addNewSession(false, null);
             } else if (unicodeChar == 'u' /* urls */) {
-                mActivity.showUrlSelection();
+                showUrlSelection();
             } else if (unicodeChar == 'v') {
-                mActivity.doPaste();
+                doPaste();
             } else if (unicodeChar == '+' || e.getUnicodeChar(KeyEvent.META_SHIFT_ON) == '+') {
                 // We also check for the shifted char here since shift may be required to produce '+',
                 // see https://github.com/termux/termux-api/issues/2
-                mActivity.changeFontSize(true);
+                changeFontSize(true);
             } else if (unicodeChar == '-') {
-                mActivity.changeFontSize(false);
+                changeFontSize(false);
             } else if (unicodeChar >= '1' && unicodeChar <= '9') {
                 int num = unicodeChar - '1';
-                TermuxService service = mActivity.getTermService();
+                TermuxService service = mActivity.getTermuxService();
                 if (service.getSessions().size() > num)
-                    mActivity.switchToSession(service.getSessions().get(num));
+                    mTermuxSessionClient.setCurrentSession(service.getSessions().get(num));
             }
             return true;
         }
@@ -262,7 +279,7 @@ public final class TermuxViewClient implements TerminalViewClient {
                 // Writing mode:
                 case 'q':
                 case 'k':
-                    mActivity.toggleShowExtraKeys();
+                    mActivity.toggleTerminalToolbar();
                     mVirtualFnKeyDown=false; // force disable fn key down to restore keyboard input into terminal view, fixes termux/termux-app#1420
                     break;
             }
@@ -276,7 +293,7 @@ public final class TermuxViewClient implements TerminalViewClient {
             return true;
         } else if (ctrlDown) {
             if (codePoint == 106 /* Ctrl+j or \n */ && !session.isRunning()) {
-                mActivity.removeFinishedSession(session);
+                mTermuxSessionClient.removeFinishedSession(session);
                 return true;
             }
 
@@ -288,16 +305,16 @@ public final class TermuxViewClient implements TerminalViewClient {
                     if (codePointLowerCase == shortcut.codePoint) {
                         switch (shortcut.shortcutAction) {
                             case TermuxPropertyConstants.ACTION_SHORTCUT_CREATE_SESSION:
-                                mActivity.addNewSession(false, null);
+                                mTermuxSessionClient.addNewSession(false, null);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_NEXT_SESSION:
-                                mActivity.switchToSession(true);
+                                mTermuxSessionClient.switchToSession(true);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_PREVIOUS_SESSION:
-                                mActivity.switchToSession(false);
+                                mTermuxSessionClient.switchToSession(false);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_RENAME_SESSION:
-                                mActivity.renameSession(mActivity.getCurrentTermSession());
+                                mTermuxSessionClient.renameSession(mActivity.getCurrentSession());
                                 return true;
                         }
                     }
@@ -306,6 +323,90 @@ public final class TermuxViewClient implements TerminalViewClient {
         }
 
         return false;
+    }
+
+
+
+    public void changeFontSize(boolean increase) {
+        mActivity.getPreferences().changeFontSize(mActivity, increase);
+        mActivity.getTerminalView().setTextSize(mActivity.getPreferences().getFontSize());
+    }
+
+
+
+    public void shareSessionTranscript() {
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session == null) return;
+
+        String transcriptText = session.getEmulator().getScreen().getTranscriptTextWithoutJoinedLines().trim();
+
+        try {
+            // See https://github.com/termux/termux-app/issues/1166.
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            transcriptText = TextDataUtils.getTruncatedCommandOutput(transcriptText, 100_000);
+            intent.putExtra(Intent.EXTRA_TEXT, transcriptText);
+            intent.putExtra(Intent.EXTRA_SUBJECT, mActivity.getString(R.string.share_transcript_title));
+            mActivity.startActivity(Intent.createChooser(intent, mActivity.getString(R.string.share_transcript_chooser_title)));
+        } catch (Exception e) {
+            Logger.logStackTraceWithMessage("Failed to get share session transcript of length " + transcriptText.length(), e);
+        }
+    }
+
+    public void showUrlSelection() {
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session == null) return;
+
+        String text = session.getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
+
+        LinkedHashSet<CharSequence> urlSet = TextDataUtils.extractUrls(text);
+        if (urlSet.isEmpty()) {
+            new AlertDialog.Builder(mActivity).setMessage(R.string.select_url_no_found).show();
+            return;
+        }
+
+        final CharSequence[] urls = urlSet.toArray(new CharSequence[0]);
+        Collections.reverse(Arrays.asList(urls)); // Latest first.
+
+        // Click to copy url to clipboard:
+        final AlertDialog dialog = new AlertDialog.Builder(mActivity).setItems(urls, (di, which) -> {
+            String url = (String) urls[which];
+            ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(new ClipData(null, new String[]{"text/plain"}, new ClipData.Item(url)));
+            Toast.makeText(mActivity, R.string.select_url_copied_to_clipboard, Toast.LENGTH_LONG).show();
+        }).setTitle(R.string.select_url_dialog_title).create();
+
+        // Long press to open URL:
+        dialog.setOnShowListener(di -> {
+            ListView lv = dialog.getListView(); // this is a ListView with your "buds" in it
+            lv.setOnItemLongClickListener((parent, view, position, id) -> {
+                dialog.dismiss();
+                String url = (String) urls[position];
+                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                try {
+                    mActivity.startActivity(i, null);
+                } catch (ActivityNotFoundException e) {
+                    // If no applications match, Android displays a system message.
+                    mActivity.startActivity(Intent.createChooser(i, null));
+                }
+                return true;
+            });
+        });
+
+        dialog.show();
+    }
+
+    public void doPaste() {
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session == null) return;
+        if (!session.isRunning()) return;
+
+        ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clipData = clipboard.getPrimaryClip();
+        if (clipData == null) return;
+        CharSequence paste = clipData.getItemAt(0).coerceToText(mActivity);
+        if (!TextUtils.isEmpty(paste))
+            session.getEmulator().paste(paste.toString());
     }
 
 

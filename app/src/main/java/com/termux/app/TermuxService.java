@@ -24,9 +24,12 @@ import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.settings.preferences.TermuxSharedPreferences;
+import com.termux.app.terminal.TermuxSessionClient;
+import com.termux.app.terminal.TermuxSessionClientBase;
 import com.termux.app.utils.Logger;
+import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
-import com.termux.terminal.TerminalSession.SessionChangedCallback;
+import com.termux.terminal.TerminalSessionClient;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,12 +47,10 @@ import java.util.List;
  * Optionally may hold a wake and a wifi lock, in which case that is shown in the notification - see
  * {@link #buildNotification()}.
  */
-public final class TermuxService extends Service implements SessionChangedCallback {
+public final class TermuxService extends Service {
 
     private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
     private static final int NOTIFICATION_ID = 1337;
-
-    private static final String LOG_TAG = "TermuxService";
 
     /** This service is only bound from inside the same process and never uses IPC. */
     class LocalBinder extends Binder {
@@ -63,15 +64,23 @@ public final class TermuxService extends Service implements SessionChangedCallba
     /**
      * The terminal sessions which this service manages.
      * <p/>
-     * Note that this list is observed by {@link TermuxActivity#mListViewAdapter}, so any changes must be made on the UI
+     * Note that this list is observed by {@link TermuxActivity#mTermuxSessionListViewController}, so any changes must be made on the UI
      * thread and followed by a call to {@link ArrayAdapter#notifyDataSetChanged()} }.
      */
     final List<TerminalSession> mTerminalSessions = new ArrayList<>();
 
     final List<BackgroundJob> mBackgroundTasks = new ArrayList<>();
 
-    /** Note that the service may often outlive the activity, so need to clear this reference. */
-    SessionChangedCallback mSessionChangeCallback;
+    /** The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
+     * that holds activity references for activity related functions.
+     * Note that the service may often outlive the activity, so need to clear this reference.
+     */
+    TermuxSessionClient mTermuxSessionClient;
+
+    /** The basic implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
+     * that does not hold activity references.
+     */
+    final TermuxSessionClientBase mTermuxSessionClientBase = new TermuxSessionClientBase();;
 
     /** The wake lock and wifi lock are always acquired and released together. */
     private PowerManager.WakeLock mWakeLock;
@@ -79,6 +88,8 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     /** If the user has executed the {@link TermuxConstants.TERMUX_APP.TERMUX_SERVICE#ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
+
+    private static final String LOG_TAG = "TermuxService";
 
     @SuppressLint("Wakelock")
     @Override
@@ -266,7 +277,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         return mTerminalSessions;
     }
 
-    TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
+    public TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
         TermuxConstants.TERMUX_HOME_DIR.mkdirs();
 
         if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.TERMUX_HOME_DIR_PATH;
@@ -302,7 +313,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         args[0] = processName;
         if (processArgs.length > 1) System.arraycopy(processArgs, 1, args, 1, processArgs.length - 1);
 
-        TerminalSession session = new TerminalSession(executablePath, cwd, args, env, this);
+        TerminalSession session = new TerminalSession(executablePath, cwd, args, env, getTermuxSessionClient());
         mTerminalSessions.add(session);
         updateNotification();
 
@@ -327,35 +338,48 @@ public final class TermuxService extends Service implements SessionChangedCallba
         return indexOfRemoved;
     }
 
-    @Override
-    public void onTitleChanged(TerminalSession changedSession) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onTitleChanged(changedSession);
+    /** If {@link TermuxActivity} has not bound to the {@link TermuxService} yet or is destroyed, then
+     * interface functions requiring the activity should not be available to the terminal sessions,
+     * so we just return the {@link #mTermuxSessionClientBase}. Once {@link TermuxActivity} bind
+     * callback is received, it should call {@link #setTermuxSessionClient} to set the
+     * {@link TermuxService#mTermuxSessionClient} so that further terminal sessions are directly
+     * passed the {@link TermuxSessionClient} object which fully implements the
+     * {@link TerminalSessionClient} interface.
+     *
+     * @return Returns the {@link TermuxSessionClient} if {@link TermuxActivity} has bound with
+     * {@link TermuxService}, otherwise {@link TermuxSessionClientBase}.
+     */
+    public TermuxSessionClientBase getTermuxSessionClient() {
+        if (mTermuxSessionClient != null)
+            return mTermuxSessionClient;
+        else
+            return mTermuxSessionClientBase;
     }
 
-    @Override
-    public void onSessionFinished(final TerminalSession finishedSession) {
-        if (mSessionChangeCallback != null)
-            mSessionChangeCallback.onSessionFinished(finishedSession);
+    /** This should be called when {@link TermuxActivity#onServiceConnected} is called to set the
+     * {@link TermuxService#mTermuxSessionClient} variable and update the {@link TerminalSession}
+     * and {@link TerminalEmulator} clients in case they were passed {@link TermuxSessionClientBase}
+     * earlier.
+     *
+     * @param termuxSessionClient The {@link TermuxSessionClient} object that fully
+     * implements the {@link TerminalSessionClient} interface.
+     */
+    public void setTermuxSessionClient(TermuxSessionClient termuxSessionClient) {
+        mTermuxSessionClient = termuxSessionClient;
+
+        for (int i = 0; i < mTerminalSessions.size(); i++)
+            mTerminalSessions.get(i).updateTerminalSessionClient(mTermuxSessionClient);
     }
 
-    @Override
-    public void onTextChanged(TerminalSession changedSession) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onTextChanged(changedSession);
-    }
+    /** This should be called when {@link TermuxActivity} has been destroyed so that the
+     * {@link TermuxService} and {@link TerminalSession} and {@link TerminalEmulator} clients do not
+     * hold an activity references.
+     */
+    public void unsetTermuxSessionClient() {
+        mTermuxSessionClient = null;
 
-    @Override
-    public void onClipboardText(TerminalSession session, String text) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onClipboardText(session, text);
-    }
-
-    @Override
-    public void onBell(TerminalSession session) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onBell(session);
-    }
-
-    @Override
-    public void onColorsChanged(TerminalSession session) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onColorsChanged(session);
+        for (int i = 0; i < mTerminalSessions.size(); i++)
+            mTerminalSessions.get(i).updateTerminalSessionClient(mTermuxSessionClientBase);
     }
 
     public void onBackgroundJobExited(final BackgroundJob task) {

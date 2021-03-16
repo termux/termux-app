@@ -33,17 +33,17 @@ public class TermuxSharedPreferences {
 
 
 
-    public boolean getShowExtraKeys() {
-        return mSharedPreferences.getBoolean(TermuxPreferenceConstants.KEY_SHOW_EXTRA_KEYS, TermuxPreferenceConstants.DEFAULT_VALUE_SHOW_EXTRA_KEYS);
+    public boolean getShowTerminalToolbar() {
+        return mSharedPreferences.getBoolean(TermuxPreferenceConstants.KEY_SHOW_TERMINAL_TOOLBAR, TermuxPreferenceConstants.DEFAULT_VALUE_SHOW_TERMINAL_TOOLBAR);
     }
 
-    public void setShowExtraKeys(boolean value) {
-        mSharedPreferences.edit().putBoolean(TermuxPreferenceConstants.KEY_SHOW_EXTRA_KEYS, value).apply();
+    public void setShowTerminalToolbar(boolean value) {
+        mSharedPreferences.edit().putBoolean(TermuxPreferenceConstants.KEY_SHOW_TERMINAL_TOOLBAR, value).apply();
     }
 
-    public boolean toggleShowExtraKeys() {
-        boolean currentValue = getShowExtraKeys();
-        setShowExtraKeys(!currentValue);
+    public boolean toogleShowTerminalToolbar() {
+        boolean currentValue = getShowTerminalToolbar();
+        setShowTerminalToolbar(!currentValue);
         return !currentValue;
     }
 
@@ -108,13 +108,6 @@ public class TermuxSharedPreferences {
         setFontSize(Integer.toString(fontSize));
     }
 
-    /**
-     * If value is not in the range [min, max], set it to either min or max.
-     */
-    static int clamp(int value, int min, int max) {
-        return Math.min(Math.max(value, min), max);
-    }
-
 
 
     public String getCurrentSession() {
@@ -150,6 +143,15 @@ public class TermuxSharedPreferences {
 
     public void setTerminalViewKeyLoggingEnabled(boolean value) {
         mSharedPreferences.edit().putBoolean(TermuxPreferenceConstants.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, value).apply();
+    }
+
+
+
+    /**
+     * If value is not in the range [min, max], set it to either min or max.
+     */
+    static int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
     }
 
 }
