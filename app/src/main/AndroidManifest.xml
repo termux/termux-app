@@ -33,6 +33,7 @@
         android:banner="@drawable/banner"
         android:label="@string/application_name"
         android:theme="@style/Theme.Termux"
+        android:debuggable="true"
         android:supportsRtl="false" >
 
         <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8
