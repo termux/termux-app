@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.4.0
+ * Version: v0.5.0
  *
  * Changelog
  *
@@ -41,6 +41,8 @@ import java.io.File;
  *          `TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`,
  *          `TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`.
  *
+ * - 0.5.0 (2021-03-16)
+ *      - Renamed "Termux Plugin app" to "Termux Tasker app"
  */
 
 /**
@@ -113,9 +115,9 @@ public final class TermuxConstants {
     public static final String TERMUX_STYLING_PACKAGE_NAME = TERMUX_PACKAGE_NAME + ".styling"; // Default: "com.termux.styling"
 
 
-    /** Termux Plugin app name */
+    /** Termux Tasker app name */
     public static final String TERMUX_TASKER_APP_NAME = "Termux:Tasker"; // Default: "Termux:Tasker"
-    /** Termux Plugin app package name */
+    /** Termux Tasker app package name */
     public static final String TERMUX_TASKER_PACKAGE_NAME = TERMUX_PACKAGE_NAME + ".tasker"; // Default: "com.termux.tasker"
 
 
@@ -255,7 +257,7 @@ public final class TermuxConstants {
     /* Termux Styling app default SharedPreferences file basename without extension */
     public static final String TERMUX_STYLING_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_STYLING_PACKAGE_NAME + "_preferences"; // Default: "com.termux.styling_preferences"
 
-    /* Termux Plugin app default SharedPreferences file basename without extension */
+    /* Termux Tasker app default SharedPreferences file basename without extension */
     public static final String TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_TASKER_PACKAGE_NAME + "_preferences"; // Default: "com.termux.tasker_preferences"
 
     /* Termux Widget app default SharedPreferences file basename without extension */
