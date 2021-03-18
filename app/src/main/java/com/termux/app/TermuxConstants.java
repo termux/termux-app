@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.8.0
+ * Version: v0.9.0
  *
  * Changelog
  *
@@ -54,6 +54,9 @@ import java.io.File;
  *      - Fixed Intent extra types javadocs.
  *      - Added `EXTRA_PENDING_INTENT`, `EXTRA_RESULT_BUNDLE`,
  *          `EXTRA_STDOUT`, `EXTRA_STDERR`, `EXTRA_EXIT_CODE`, `EXTRA_ERR`, `EXTRA_ERRMSG`.
+ *
+ * - 0.9.0 (2021-03-18)
+ *      - Fixed javadocs.
  */
 
 /**
@@ -254,47 +257,47 @@ public final class TermuxConstants {
      * Termux app and plugin preferences and properties file paths.
      */
 
-    /* Termux app default SharedPreferences file basename without extension */
+    /** Termux app default SharedPreferences file basename without extension */
     public static final String TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_PACKAGE_NAME + "_preferences"; // Default: "com.termux_preferences"
 
-    /* Termux API app default SharedPreferences file basename without extension */
+    /** Termux API app default SharedPreferences file basename without extension */
     public static final String TERMUX_API_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_API_PACKAGE_NAME + "_preferences"; // Default: "com.termux.api_preferences"
 
-    /* Termux Boot app default SharedPreferences file basename without extension */
+    /** Termux Boot app default SharedPreferences file basename without extension */
     public static final String TERMUX_BOOT_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_BOOT_PACKAGE_NAME + "_preferences"; // Default: "com.termux.boot_preferences"
 
-    /* Termux Float app default SharedPreferences file basename without extension */
+    /** Termux Float app default SharedPreferences file basename without extension */
     public static final String TERMUX_FLOAT_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_FLOAT_PACKAGE_NAME + "_preferences"; // Default: "com.termux.window_preferences"
 
-    /* Termux Styling app default SharedPreferences file basename without extension */
+    /** Termux Styling app default SharedPreferences file basename without extension */
     public static final String TERMUX_STYLING_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_STYLING_PACKAGE_NAME + "_preferences"; // Default: "com.termux.styling_preferences"
 
-    /* Termux Tasker app default SharedPreferences file basename without extension */
+    /** Termux Tasker app default SharedPreferences file basename without extension */
     public static final String TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_TASKER_PACKAGE_NAME + "_preferences"; // Default: "com.termux.tasker_preferences"
 
-    /* Termux Widget app default SharedPreferences file basename without extension */
+    /** Termux Widget app default SharedPreferences file basename without extension */
     public static final String TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_WIDGET_PACKAGE_NAME + "_preferences"; // Default: "com.termux.widget_preferences"
 
 
-    /* Termux app termux.properties primary file path */
+    /** Termux app termux.properties primary file path */
     public static final String TERMUX_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.termux/files/home/.termux/termux.properties"
-    /* Termux app termux.properties primary file */
+    /** Termux app termux.properties primary file */
     public static final File TERMUX_PROPERTIES_PRIMARY_FILE = new File(TERMUX_PROPERTIES_PRIMARY_FILE_PATH);
 
-    /* Termux app termux.properties secondary file path */
+    /** Termux app termux.properties secondary file path */
     public static final String TERMUX_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.termux/files/home/.config/termux/termux.properties"
-    /* Termux app termux.properties secondary file */
+    /** Termux app termux.properties secondary file */
     public static final File TERMUX_PROPERTIES_SECONDARY_FILE = new File(TERMUX_PROPERTIES_SECONDARY_FILE_PATH);
 
 
-    /* Termux app and Termux:Styling colors.properties file path */
+    /** Termux app and Termux:Styling colors.properties file path */
     public static final String TERMUX_COLOR_PROPERTIES_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/colors.properties"; // Default: "/data/data/com.termux/files/home/.termux/colors.properties"
-    /* Termux app and Termux:Styling colors.properties file */
+    /** Termux app and Termux:Styling colors.properties file */
     public static final File TERMUX_COLOR_PROPERTIES_FILE = new File(TERMUX_COLOR_PROPERTIES_FILE_PATH);
 
-    /* Termux app and Termux:Styling font.ttf file path */
+    /** Termux app and Termux:Styling font.ttf file path */
     public static final String TERMUX_FONT_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/font.ttf"; // Default: "/data/data/com.termux/files/home/.termux/font.ttf"
-    /* Termux app and Termux:Styling font.ttf file */
+    /** Termux app and Termux:Styling font.ttf file */
     public static final File TERMUX_FONT_FILE = new File(TERMUX_FONT_FILE_PATH);
 
 
@@ -305,27 +308,27 @@ public final class TermuxConstants {
      * Termux app plugin specific paths.
      */
 
-     /* Termux app directory path to store scripts to be run at boot by Termux:Boot */
+     /** Termux app directory path to store scripts to be run at boot by Termux:Boot */
     public static final String TERMUX_BOOT_SCRIPTS_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/boot"; // Default: "/data/data/com.termux/files/home/.termux/boot"
-    /* Termux app directory to store scripts to be run at boot by Termux:Boot */
+    /** Termux app directory to store scripts to be run at boot by Termux:Boot */
     public static final File TERMUX_BOOT_SCRIPTS_DIR = new File(TERMUX_BOOT_SCRIPTS_DIR_PATH);
 
 
-    /* Termux app directory path to store foreground scripts that can be run by the termux launcher widget provided by Termux:Widget */
+    /** Termux app directory path to store foreground scripts that can be run by the termux launcher widget provided by Termux:Widget */
     public static final String TERMUX_SHORTCUT_SCRIPTS_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/shortcuts"; // Default: "/data/data/com.termux/files/home/.termux/shortcuts"
-    /* Termux app directory to store foreground scripts that can be run by the termux launcher widget provided by Termux:Widget */
+    /** Termux app directory to store foreground scripts that can be run by the termux launcher widget provided by Termux:Widget */
     public static final File TERMUX_SHORTCUT_SCRIPTS_DIR = new File(TERMUX_SHORTCUT_SCRIPTS_DIR_PATH);
 
 
-     /* Termux app directory path to store background scripts that can be run by the termux launcher widget provided by Termux:Widget */
+     /** Termux app directory path to store background scripts that can be run by the termux launcher widget provided by Termux:Widget */
     public static final String TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/shortcuts/tasks"; // Default: "/data/data/com.termux/files/home/.termux/shortcuts/tasks"
-    /* Termux app directory to store background scripts that can be run by the termux launcher widget provided by Termux:Widget */
+    /** Termux app directory to store background scripts that can be run by the termux launcher widget provided by Termux:Widget */
     public static final File TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR = new File(TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_PATH);
 
 
-    /* Termux app directory path to store scripts to be run by 3rd party twofortyfouram locale plugin host apps like Tasker app via the Termux:Tasker plugin client */
+    /** Termux app directory path to store scripts to be run by 3rd party twofortyfouram locale plugin host apps like Tasker app via the Termux:Tasker plugin client */
     public static final String TERMUX_TASKER_SCRIPTS_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/tasker"; // Default: "/data/data/com.termux/files/home/.termux/tasker"
-    /* Termux app directory to store scripts to be run by 3rd party twofortyfouram locale plugin host apps like Tasker app via the Termux:Tasker plugin client */
+    /** Termux app directory to store scripts to be run by 3rd party twofortyfouram locale plugin host apps like Tasker app via the Termux:Tasker plugin client */
     public static final File TERMUX_TASKER_SCRIPTS_DIR = new File(TERMUX_TASKER_SCRIPTS_DIR_PATH);
 
 
@@ -336,18 +339,18 @@ public final class TermuxConstants {
      * Termux app and plugins miscellaneous variables.
      */
 
-     /* Android OS permission declared by Termux app in AndroidManifest.xml which can be requested by 3rd party apps to run various commands in Termux app context */
+     /** Android OS permission declared by Termux app in AndroidManifest.xml which can be requested by 3rd party apps to run various commands in Termux app context */
     public static final String PERMISSION_RUN_COMMAND = TERMUX_PACKAGE_NAME + ".permission.RUN_COMMAND"; // Default: "com.termux.permission.RUN_COMMAND"
 
-     /* Termux property defined in termux.properties file as a secondary check to PERMISSION_RUN_COMMAND to allow 3rd party apps to run various commands in Termux app context */
+     /** Termux property defined in termux.properties file as a secondary check to PERMISSION_RUN_COMMAND to allow 3rd party apps to run various commands in Termux app context */
     public static final String PROP_ALLOW_EXTERNAL_APPS = "allow-external-apps"; // Default: "allow-external-apps"
-    /* Default value for {@link #PROP_ALLOW_EXTERNAL_APPS} */
+    /** Default value for {@link #PROP_ALLOW_EXTERNAL_APPS} */
     public static final String PROP_DEFAULT_VALUE_ALLOW_EXTERNAL_APPS = "false"; // Default: "false"
 
-    /* The broadcast action sent when Termux App opens */
+    /** The broadcast action sent when Termux App opens */
     public static final String BROADCAST_TERMUX_OPENED = TERMUX_PACKAGE_NAME + ".app.OPENED";
 
-    /* The Uri authority for Termux app file shares */
+    /** The Uri authority for Termux app file shares */
     public static final String TERMUX_FILE_SHARE_URI_AUTHORITY = TERMUX_PACKAGE_NAME + ".files"; // Default: "com.termux.files"
 
 
@@ -367,13 +370,13 @@ public final class TermuxConstants {
          */
         public static final class TERMUX_ACTIVITY {
 
-            /* Intent action to start termux failsafe session */
+            /** Intent action to start termux failsafe session */
             public static final String ACTION_FAILSAFE_SESSION = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.failsafe_session"; // Default: "com.termux.app.failsafe_session"
 
 
-            /* Intent action to make termux reload its termux session styling */
+            /** Intent action to make termux reload its termux session styling */
             public static final String ACTION_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
-            /* Intent {@code String} extra for what to reload for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent */
+            /** Intent {@code String} extra for what to reload for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent */
             public static final String EXTRA_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
 
         }
@@ -390,27 +393,27 @@ public final class TermuxConstants {
          */
         public static final class TERMUX_SERVICE {
 
-            /* Intent action to stop TERMUX_SERVICE */
+            /** Intent action to stop TERMUX_SERVICE */
             public static final String ACTION_STOP_SERVICE = TERMUX_PACKAGE_NAME + ".service_stop"; // Default: "com.termux.service_stop"
 
 
-            /* Intent action to make TERMUX_SERVICE acquire a wakelock */
+            /** Intent action to make TERMUX_SERVICE acquire a wakelock */
             public static final String ACTION_WAKE_LOCK = TERMUX_PACKAGE_NAME + ".service_wake_lock"; // Default: "com.termux.service_wake_lock"
 
 
-            /* Intent action to make TERMUX_SERVICE release wakelock */
+            /** Intent action to make TERMUX_SERVICE release wakelock */
             public static final String ACTION_WAKE_UNLOCK = TERMUX_PACKAGE_NAME + ".service_wake_unlock"; // Default: "com.termux.service_wake_unlock"
 
 
-            /* Intent action to execute command with TERMUX_SERVICE */
+            /** Intent action to execute command with TERMUX_SERVICE */
             public static final String ACTION_SERVICE_EXECUTE = TERMUX_PACKAGE_NAME + ".service_execute"; // Default: "com.termux.service_execute"
-            /* Uri scheme for paths sent via intent to TERMUX_SERVICE */
+            /** Uri scheme for paths sent via intent to TERMUX_SERVICE */
             public static final String URI_SCHEME_SERVICE_EXECUTE = TERMUX_PACKAGE_NAME + ".file"; // Default: "com.termux.file"
-            /* Intent {@code String[]} extra for command arguments for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            /** Intent {@code String[]} extra for command arguments for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_ARGUMENTS = TERMUX_PACKAGE_NAME + ".execute.arguments"; // Default: "com.termux.execute.arguments"
-            /* Intent {@code String} extra for command current working directory for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            /** Intent {@code String} extra for command current working directory for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_WORKDIR = TERMUX_PACKAGE_NAME + ".execute.cwd"; // Default: "com.termux.execute.cwd"
-            /* Intent {@code boolean} extra for command background mode for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            /** Intent {@code boolean} extra for command background mode for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_BACKGROUND = TERMUX_PACKAGE_NAME + ".execute.background"; // Default: "com.termux.execute.background"
             /** Intent {@code Parcelable} extra containing pending intent for the execute command caller */
             public static final String EXTRA_PENDING_INTENT = "pendingIntent"; // Default: "pendingIntent"
@@ -445,15 +448,15 @@ public final class TermuxConstants {
          */
         public static final class RUN_COMMAND_SERVICE {
 
-            /* Intent action to execute command with RUN_COMMAND_SERVICE */
+            /** Intent action to execute command with RUN_COMMAND_SERVICE */
             public static final String ACTION_RUN_COMMAND = TERMUX_PACKAGE_NAME + ".RUN_COMMAND"; // Default: "com.termux.RUN_COMMAND"
-            /* Intent {@code String} extra for command path for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /** Intent {@code String} extra for command path for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_COMMAND_PATH = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_PATH"; // Default: "com.termux.RUN_COMMAND_PATH"
-            /* Intent {@code String[]} extra for command arguments for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /** Intent {@code String[]} extra for command arguments for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_ARGUMENTS = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_ARGUMENTS"; // Default: "com.termux.RUN_COMMAND_ARGUMENTS"
-            /* Intent {@code String} extra for command current working directory for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /** Intent {@code String} extra for command current working directory for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_WORKDIR = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_WORKDIR"; // Default: "com.termux.RUN_COMMAND_WORKDIR"
-            /* Intent {@code boolean} extra for command background mode for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /** Intent {@code boolean} extra for command background mode for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_BACKGROUND = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_BACKGROUND"; // Default: "com.termux.RUN_COMMAND_BACKGROUND"
 
         }
