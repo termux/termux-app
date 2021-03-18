@@ -319,6 +319,11 @@ public final class TermuxService extends Service {
         TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(this);
         preferences.setCurrentSession(newSession.mHandle);
 
+        // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
+        // activity in is foreground
+        if(mTermuxSessionClient != null)
+            mTermuxSessionClient.terminalSessionListNotifyUpdated();
+
         // Launch the main Termux app, which will now show the current session:
         startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }

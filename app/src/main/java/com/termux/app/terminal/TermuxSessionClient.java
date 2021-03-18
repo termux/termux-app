@@ -68,7 +68,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
             mActivity.showToast(toToastTitle(updatedSession), true);
         }
 
-        mActivity.terminalSessionListNotifyUpdated();
+        terminalSessionListNotifyUpdated();
     }
 
     @Override
@@ -101,7 +101,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
             }
         }
 
-        mActivity.terminalSessionListNotifyUpdated();
+        terminalSessionListNotifyUpdated();
     }
 
     @Override
@@ -152,7 +152,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         TerminalSession session = mActivity.getCurrentSession();
         final int indexOfSession = mActivity.getTermuxService().getSessions().indexOf(session);
         mActivity.showToast(toToastTitle(session), false);
-        mActivity.terminalSessionListNotifyUpdated();
+        terminalSessionListNotifyUpdated();
 
         final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
         termuxSessionsListView.setItemChecked(indexOfSession, true);
@@ -178,7 +178,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
 
         DialogUtils.textInput(mActivity, R.string.session_rename_title, sessionToRename.mSessionName, R.string.session_rename_positive_button, text -> {
             sessionToRename.mSessionName = text;
-            mActivity.terminalSessionListNotifyUpdated();
+            terminalSessionListNotifyUpdated();
         }, -1, null, -1, null, null);
     }
 
@@ -250,7 +250,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         TermuxService service = mActivity.getTermuxService();
 
         int index = service.removeTerminalSession(finishedSession);
-        mActivity.terminalSessionListNotifyUpdated();
+        terminalSessionListNotifyUpdated();
         if (mActivity.getTermuxService().getSessions().isEmpty()) {
             // There are no sessions to show, so finish the activity.
             mActivity.finishActivityIfNotFinishing();
@@ -260,6 +260,10 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
             }
             setCurrentSession(service.getSessions().get(index));
         }
+    }
+
+    public void terminalSessionListNotifyUpdated() {
+        mActivity.terminalSessionListNotifyUpdated();
     }
 
 
