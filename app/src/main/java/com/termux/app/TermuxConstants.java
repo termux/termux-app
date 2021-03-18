@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.7.0
+ * Version: v0.8.0
  *
  * Changelog
  *
@@ -49,6 +49,11 @@ import java.io.File;
  *
  * - 0.7.0 (2021-03-17)
  *      - Fixed javadocs.
+ *
+ * - 0.8.0 (2021-03-18)
+ *      - Fixed Intent extra types javadocs.
+ *      - Added `EXTRA_PENDING_INTENT`, `EXTRA_RESULT_BUNDLE`,
+ *          `EXTRA_STDOUT`, `EXTRA_STDERR`, `EXTRA_EXIT_CODE`, `EXTRA_ERR`, `EXTRA_ERRMSG`.
  */
 
 /**
@@ -368,7 +373,7 @@ public final class TermuxConstants {
 
             /* Intent action to make termux reload its termux session styling */
             public static final String ACTION_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
-            /* Intent extra for what to reload for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent */
+            /* Intent {@code String} extra for what to reload for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent */
             public static final String EXTRA_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
 
         }
@@ -401,12 +406,30 @@ public final class TermuxConstants {
             public static final String ACTION_SERVICE_EXECUTE = TERMUX_PACKAGE_NAME + ".service_execute"; // Default: "com.termux.service_execute"
             /* Uri scheme for paths sent via intent to TERMUX_SERVICE */
             public static final String URI_SCHEME_SERVICE_EXECUTE = TERMUX_PACKAGE_NAME + ".file"; // Default: "com.termux.file"
-            /* Intent extra for command arguments for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            /* Intent {@code String[]} extra for command arguments for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_ARGUMENTS = TERMUX_PACKAGE_NAME + ".execute.arguments"; // Default: "com.termux.execute.arguments"
-            /* Intent extra for command current working directory for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            /* Intent {@code String} extra for command current working directory for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_WORKDIR = TERMUX_PACKAGE_NAME + ".execute.cwd"; // Default: "com.termux.execute.cwd"
-            /* Intent extra for command background mode for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            /* Intent {@code boolean} extra for command background mode for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_BACKGROUND = TERMUX_PACKAGE_NAME + ".execute.background"; // Default: "com.termux.execute.background"
+            /** Intent {@code Parcelable} extra containing pending intent for the execute command caller */
+            public static final String EXTRA_PENDING_INTENT = "pendingIntent"; // Default: "pendingIntent"
+
+
+            /** Intent {@code Bundle} extra to store result of execute command that is sent back for the
+             * TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent if the {@link #EXTRA_PENDING_INTENT} is not
+             * {@code null} */
+            public static final String EXTRA_RESULT_BUNDLE = "result"; // Default: "result"
+            /** Intent {@code String} extra for stdout value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
+            public static final String EXTRA_STDOUT = "stdout"; // Default: "stdout"
+            /** Intent {@code String} extra for stderr value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
+            public static final String EXTRA_STDERR = "stderr"; // Default: "stderr"
+            /** Intent {@code int} extra for exit code value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
+            public static final String EXTRA_EXIT_CODE = "exitCode"; // Default: "exitCode"
+            /** Intent {@code int} extra for err value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
+            public static final String EXTRA_ERR = "err"; // Default: "err"
+            /** Intent {@code String} extra for errmsg value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
+            public static final String EXTRA_ERRMSG = "errmsg"; // Default: "errmsg"
 
         }
 
@@ -424,13 +447,13 @@ public final class TermuxConstants {
 
             /* Intent action to execute command with RUN_COMMAND_SERVICE */
             public static final String ACTION_RUN_COMMAND = TERMUX_PACKAGE_NAME + ".RUN_COMMAND"; // Default: "com.termux.RUN_COMMAND"
-            /* Intent extra for command path for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /* Intent {@code String} extra for command path for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_COMMAND_PATH = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_PATH"; // Default: "com.termux.RUN_COMMAND_PATH"
-            /* Intent extra for command arguments for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /* Intent {@code String[]} extra for command arguments for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_ARGUMENTS = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_ARGUMENTS"; // Default: "com.termux.RUN_COMMAND_ARGUMENTS"
-            /* Intent extra for command current working directory for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /* Intent {@code String} extra for command current working directory for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_WORKDIR = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_WORKDIR"; // Default: "com.termux.RUN_COMMAND_WORKDIR"
-            /* Intent extra for command background mode for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /* Intent {@code boolean} extra for command background mode for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_BACKGROUND = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_BACKGROUND"; // Default: "com.termux.RUN_COMMAND_BACKGROUND"
 
         }
