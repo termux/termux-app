@@ -153,9 +153,10 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         final int indexOfSession = mActivity.getTermuxService().getSessions().indexOf(session);
         mActivity.showToast(toToastTitle(session), false);
         mActivity.terminalSessionListNotifyUpdated();
-        final ListView lv = mActivity.findViewById(R.id.terminal_sessions_list);
-        lv.setItemChecked(indexOfSession, true);
-        lv.smoothScrollToPosition(indexOfSession);
+
+        final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
+        termuxSessionsListView.setItemChecked(indexOfSession, true);
+        termuxSessionsListView.smoothScrollToPosition(indexOfSession);
     }
 
     public void switchToSession(boolean forward) {
@@ -195,7 +196,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
                 workingDirectory = currentSession.getCwd();
             }
 
-            TerminalSession newSession = mActivity.getTermuxService().createTermSession(null, null, workingDirectory, failSafe);
+            TerminalSession newSession = mActivity.getTermuxService().createTerminalSession(null, null, workingDirectory, failSafe);
             if (sessionName != null) {
                 newSession.mSessionName = sessionName;
             }
@@ -248,7 +249,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         // Return pressed with finished session - remove it.
         TermuxService service = mActivity.getTermuxService();
 
-        int index = service.removeTermSession(finishedSession);
+        int index = service.removeTerminalSession(finishedSession);
         mActivity.terminalSessionListNotifyUpdated();
         if (mActivity.getTermuxService().getSessions().isEmpty()) {
             // There are no sessions to show, so finish the activity.
