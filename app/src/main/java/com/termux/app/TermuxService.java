@@ -27,6 +27,7 @@ import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionClient;
 import com.termux.app.terminal.TermuxSessionClientBase;
 import com.termux.app.utils.Logger;
+import com.termux.app.utils.TextDataUtils;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -276,10 +277,13 @@ public final class TermuxService extends Service {
 
         PendingIntent pendingIntent = intent.getParcelableExtra(TERMUX_SERVICE.EXTRA_PENDING_INTENT);
 
+        int sessionAction = TextDataUtils.getIntStoredAsStringFromBundle(intent.getExtras(),
+            TERMUX_SERVICE.EXTRA_SESSION_ACTION, TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY);
+
         if (intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false)) {
             executeBackgroundCommand(executablePath, arguments, cwd, pendingIntent);
         } else {
-            executeForegroundCommand(intent, executablePath, arguments, cwd);
+            executeForegroundCommand(intent, executablePath, arguments, cwd, sessionAction);
         }
     }
 
@@ -301,7 +305,7 @@ public final class TermuxService extends Service {
     }
 
     /** Execute a shell command in a foreground terminal session. */
-    private void executeForegroundCommand(Intent intent, String executablePath, String[] arguments, String cwd) {
+    private void executeForegroundCommand(Intent intent, String executablePath, String[] arguments, String cwd, int sessionAction) {
         Logger.logDebug(LOG_TAG, "Starting foreground command");
 
         boolean failsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
@@ -315,20 +319,55 @@ public final class TermuxService extends Service {
             newSession.mSessionName = name;
         }
 
-        // Make the newly created session the current one to be displayed:
-        TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(this);
-        preferences.setCurrentSession(newSession.mHandle);
-
         // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
         // activity in is foreground
         if(mTermuxSessionClient != null)
             mTermuxSessionClient.terminalSessionListNotifyUpdated();
 
-        // Launch the main Termux app, which will now show the current session:
-        startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        handleSessionAction(sessionAction, newSession);
     }
 
+    private void setCurrentStoredSession(TerminalSession newSession) {
+        // Make the newly created session the current one to be displayed:
+        TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(this);
+        preferences.setCurrentSession(newSession.mHandle);
+    }
 
+    /** Process session action for new session. */
+    private void handleSessionAction(int sessionAction, TerminalSession newSession) {
+        Logger.logDebug(LOG_TAG, "Processing sessionAction \"" + sessionAction + "\" for session \"" + newSession.mSessionName + "\"");
+
+        switch (sessionAction) {
+            case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY:
+                setCurrentStoredSession(newSession);
+                if(mTermuxSessionClient != null)
+                    mTermuxSessionClient.setCurrentSession(newSession);
+                startTermuxActivity();
+                break;
+            case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY:
+                if(mTerminalSessions.size() == 1)
+                    setCurrentStoredSession(newSession);
+                startTermuxActivity();
+                break;
+            case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY:
+                setCurrentStoredSession(newSession);
+                if(mTermuxSessionClient != null)
+                    mTermuxSessionClient.setCurrentSession(newSession);
+                break;
+            case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY:
+                if(mTerminalSessions.size() == 1)
+                    setCurrentStoredSession(newSession);
+                break;
+            default:
+                Logger.logError(LOG_TAG, "Invalid sessionAction: \"" + sessionAction + "\"");
+                break;
+        }
+    }
+
+    /** Launch the {@link }TermuxActivity} to bring it to foreground. */
+    private void startTermuxActivity() {
+        startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
 
     /** Create a terminal session. */
     public TerminalSession createTerminalSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {

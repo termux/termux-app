@@ -1,5 +1,7 @@
 package com.termux.app.utils;
 
+import android.os.Bundle;
+
 import java.util.LinkedHashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +23,14 @@ public class TextDataUtils {
         return text;
     }
 
+    /**
+     * Get the {@code float} from a {@link String}.
+     *
+     * @param value The {@link String value.
+     * @param def The default value if failed to read a valid value.
+     * @return Returns the {@code float} value after parsing the {@link String} value, otherwise
+     * returns default if failed to read a valid value, like in case of an exception.
+     */
     public static float getFloatFromString(String value, float def) {
         if(value == null) return def;
 
@@ -32,6 +42,14 @@ public class TextDataUtils {
         }
     }
 
+    /**
+     * Get the {@code int} from a {@link String}.
+     *
+     * @param value The {@link String value.
+     * @param def The default value if failed to read a valid value.
+     * @return Returns the {@code int} value after parsing the {@link String} value, otherwise
+     * returns default if failed to read a valid value, like in case of an exception.
+     */
     public static int getIntFromString(String value, int def) {
         if(value == null) return def;
 
@@ -42,6 +60,23 @@ public class TextDataUtils {
             return def;
         }
     }
+
+    /**
+     * Get an {@code int} from {@link Bundle} that is stored as a {@link String}.
+     *
+     * @param bundle The {@link Bundle} to get the value from.
+     * @param key The key for the value.
+     * @param def The default value if failed to read a valid value.
+     * @return Returns the {@code int} value after parsing the {@link String} value stored in
+     * {@link Bundle}, otherwise returns default if failed to read a valid value,
+     * like in case of an exception.
+     */
+    public static int getIntStoredAsStringFromBundle(Bundle bundle, String key, int def) {
+        if(bundle == null) return def;
+        return getIntFromString(bundle.getString(key, Integer.toString(def)), def);
+    }
+
+
 
     /**
      * If value is not in the range [min, max], set it to either min or max.
