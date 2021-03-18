@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.9.0
+ * Version: v0.10.0
  *
  * Changelog
  *
@@ -52,11 +52,24 @@ import java.io.File;
  *
  * - 0.8.0 (2021-03-18)
  *      - Fixed Intent extra types javadocs.
- *      - Added `EXTRA_PENDING_INTENT`, `EXTRA_RESULT_BUNDLE`,
- *          `EXTRA_STDOUT`, `EXTRA_STDERR`, `EXTRA_EXIT_CODE`, `EXTRA_ERR`, `EXTRA_ERRMSG`.
+ *      - Added following to `TERMUX_SERVICE`:
+ *          `EXTRA_PENDING_INTENT`, `EXTRA_RESULT_BUNDLE`,
+ *          `EXTRA_STDOUT`, `EXTRA_STDERR`, `EXTRA_EXIT_CODE`,
+ *          `EXTRA_ERR`, `EXTRA_ERRMSG`
+ *          .
  *
  * - 0.9.0 (2021-03-18)
  *      - Fixed javadocs.
+ *
+ * - 0.10.0 (2021-03-19)
+ *      - Added following to `TERMUX_SERVICE`:
+ *          `EXTRA_SESSION_ACTION`,
+ *          `VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY`,
+ *          `VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY`,
+ *          `VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY`
+ *          `VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY`
+ *      - Added following to `RUN_COMMAND_SERVICE`:
+ *          `EXTRA_SESSION_ACTION`
  */
 
 /**
@@ -415,8 +428,42 @@ public final class TermuxConstants {
             public static final String EXTRA_WORKDIR = TERMUX_PACKAGE_NAME + ".execute.cwd"; // Default: "com.termux.execute.cwd"
             /** Intent {@code boolean} extra for command background mode for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_BACKGROUND = TERMUX_PACKAGE_NAME + ".execute.background"; // Default: "com.termux.execute.background"
+            /** Intent {@code String} extra for session action for foreground commands for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            public static final String EXTRA_SESSION_ACTION = TERMUX_PACKAGE_NAME + ".execute.session_action"; // Default: "com.termux.execute.session_action"
             /** Intent {@code Parcelable} extra containing pending intent for the execute command caller */
             public static final String EXTRA_PENDING_INTENT = "pendingIntent"; // Default: "pendingIntent"
+
+
+
+            /** The value for {@link #EXTRA_SESSION_ACTION} extra that will set the new session as
+             * the current session and will start {@link TermuxActivity} if its not running to bring
+             * the new session to foreground.
+             */
+            public static final int VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY = 0;
+
+            /** The value for {@link #EXTRA_SESSION_ACTION} extra that will keep any existing session
+             * as the current session and will start {@link TermuxActivity} if its not running to
+             * bring the existing session to foreground. The new session will be added to the left
+             * sidebar in the sessions list.
+             */
+            public static final int VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY = 1;
+
+            /** The value for {@link #EXTRA_SESSION_ACTION} extra that will set the new session as
+             * the current session but will not start {@link TermuxActivity} if its not running
+             * and session(s) will be seen in Termux notification and can be clicked to bring new
+             * session to foreground. If the {@link TermuxActivity} is already running, then this
+             * will behave like {@link #VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY}.
+             */
+            public static final int VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY = 2;
+
+            /** The value for {@link #EXTRA_SESSION_ACTION} extra that will keep any existing session
+             * as the current session but will not start {@link TermuxActivity} if its not running
+             * and session(s) will be seen in Termux notification and can be clicked to bring
+             * existing session to foreground. If the {@link TermuxActivity} is already running,
+             * then this will behave like {@link #VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY}.
+             */
+            public static final int VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY = 3;
+
 
 
             /** Intent {@code Bundle} extra to store result of execute command that is sent back for the
@@ -450,14 +497,16 @@ public final class TermuxConstants {
 
             /** Intent action to execute command with RUN_COMMAND_SERVICE */
             public static final String ACTION_RUN_COMMAND = TERMUX_PACKAGE_NAME + ".RUN_COMMAND"; // Default: "com.termux.RUN_COMMAND"
-            /** Intent {@code String} extra for command path for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /** Intent {@code String} extra for absolute path of command for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_COMMAND_PATH = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_PATH"; // Default: "com.termux.RUN_COMMAND_PATH"
-            /** Intent {@code String[]} extra for command arguments for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /** Intent {@code String[]} extra for any arguments to pass to command for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_ARGUMENTS = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_ARGUMENTS"; // Default: "com.termux.RUN_COMMAND_ARGUMENTS"
-            /** Intent {@code String} extra for command current working directory for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /** Intent {@code String} extra for current working directory of command for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_WORKDIR = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_WORKDIR"; // Default: "com.termux.RUN_COMMAND_WORKDIR"
-            /** Intent {@code boolean} extra for command background mode for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            /** Intent {@code boolean} extra for whether to run command in background or foreground terminal session for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_BACKGROUND = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_BACKGROUND"; // Default: "com.termux.RUN_COMMAND_BACKGROUND"
+            /** Intent {@code String} extra for session action of foreground commands for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            public static final String EXTRA_SESSION_ACTION = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_SESSION_ACTION"; // Default: "com.termux.RUN_COMMAND_SESSION_ACTION"
 
         }
     }
