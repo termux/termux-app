@@ -8,9 +8,11 @@ android {
 
     dependencies {
         implementation "androidx.annotation:annotation:1.1.0"
-        implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation 'androidx.appcompat:appcompat:1.2.0'
+        implementation 'androidx.core:core:1.5.0-beta03'
         implementation "androidx.drawerlayout:drawerlayout:1.1.1"
-        implementation 'androidx.core:core:1.5.0-beta02'
+        implementation 'androidx.preference:preference:1.1.1'
+        implementation "androidx.viewpager:viewpager:1.0.0"
         implementation 'com.google.guava:guava:24.1-jre'
         implementation project(":terminal-view")
     }
@@ -87,8 +89,6 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.preference:preference:1.1.1'
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.robolectric:robolectric:4.4'
 }
