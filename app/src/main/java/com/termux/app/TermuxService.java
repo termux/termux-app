@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
@@ -27,6 +28,7 @@ import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionClient;
 import com.termux.app.terminal.TermuxSessionClientBase;
 import com.termux.app.utils.Logger;
+import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.TextDataUtils;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -34,6 +36,8 @@ import com.termux.terminal.TerminalSessionClient;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -291,7 +295,15 @@ public final class TermuxService extends Service {
     private void executeBackgroundCommand(String executablePath, String[] arguments, String cwd, PendingIntent pendingIntent) {
         Logger.logDebug(LOG_TAG, "Starting background command");
 
+        final String pendingIntentCreator;
+        if(pendingIntent != null) pendingIntentCreator = pendingIntent.getCreatorPackage(); else pendingIntentCreator = null;
+
+        PluginUtils.dumpExecutionIntentToLog(Log.DEBUG, LOG_TAG, null, executablePath, Arrays.asList(arguments), cwd, true, new HashMap<String, Object>() {{
+            put("pendingIntentCreator", pendingIntentCreator);
+        }});
+
         BackgroundJob task = new BackgroundJob(cwd, executablePath, arguments, this, pendingIntent);
+
         mBackgroundTasks.add(task);
         updateNotification();
     }
@@ -309,6 +321,12 @@ public final class TermuxService extends Service {
         Logger.logDebug(LOG_TAG, "Starting foreground command");
 
         boolean failsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
+
+        PluginUtils.dumpExecutionIntentToLog(Log.DEBUG, LOG_TAG, null, executablePath, Arrays.asList(arguments), cwd, false, new HashMap<String, Object>() {{
+            put("sessionAction", sessionAction);
+            put("failsafe", failsafe);
+        }});
+
         TerminalSession newSession = createTerminalSession(executablePath, arguments, cwd, failsafe);
 
         // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
