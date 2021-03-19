@@ -212,38 +212,40 @@ public final class TermuxService extends Service {
     /** Process action to acquire Power and Wi-Fi WakeLocks. */
     @SuppressLint({"WakelockTimeout", "BatteryLife"})
     private void actionAcquireWakeLock() {
-        if (mWakeLock == null) {
-            Logger.logDebug(LOG_TAG, "Acquiring WakeLocks");
-
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TermuxConstants.TERMUX_APP_NAME.toLowerCase() + ":service-wakelock");
-            mWakeLock.acquire();
-
-            // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
-            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, TermuxConstants.TERMUX_APP_NAME.toLowerCase());
-            mWifiLock.acquire();
-
-            String packageName = getPackageName();
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                Intent whitelist = new Intent();
-                whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                whitelist.setData(Uri.parse("package:" + packageName));
-                whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                try {
-                    startActivity(whitelist);
-                } catch (ActivityNotFoundException e) {
-                    Logger.logStackTraceWithMessage(LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
-                }
-            }
-
-            updateNotification();
-
-            Logger.logDebug(LOG_TAG, "WakeLocks acquired successfully");
-        } else {
+        if (mWakeLock != null) {
             Logger.logDebug(LOG_TAG, "Ignoring acquiring WakeLocks since they are already held");
+            return;
         }
+
+        Logger.logDebug(LOG_TAG, "Acquiring WakeLocks");
+
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TermuxConstants.TERMUX_APP_NAME.toLowerCase() + ":service-wakelock");
+        mWakeLock.acquire();
+
+        // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
+        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, TermuxConstants.TERMUX_APP_NAME.toLowerCase());
+        mWifiLock.acquire();
+
+        String packageName = getPackageName();
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+            Intent whitelist = new Intent();
+            whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            whitelist.setData(Uri.parse("package:" + packageName));
+            whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            try {
+                startActivity(whitelist);
+            } catch (ActivityNotFoundException e) {
+                Logger.logStackTraceWithMessage(LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
+            }
+        }
+
+        updateNotification();
+
+        Logger.logDebug(LOG_TAG, "WakeLocks acquired successfully");
+
     }
 
     /** Process action to release Power and Wi-Fi WakeLocks. */
