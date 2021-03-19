@@ -9,6 +9,7 @@
     <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
     <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
     <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
+    <!ENTITY TERMUX_PROPERTIES_PRIMARY_PATH_SHORT "~/.termux/termux.properties">
     ]>
 
 <resources>
@@ -64,6 +65,29 @@
     <string name="file_received_edit_button">Edit</string>
     <string name="file_received_open_folder_button">Open folder</string>
 
+    <string name="executable_absolute_path">Executable Absolute Path: \"%1$s\"</string>
+    <string name="working_directory_absolute_path">Working Directory Absolute Path: \"%1$s\"</string>
+
+    <string name="executable_required">Executable required.</string>
+    <string name="null_or_empty_path">The path is null or empty.</string>
+    <string name="null_or_empty_file">The file is null or empty.</string>
+    <string name="null_or_empty_executable">The executable is null or empty.</string>
+    <string name="null_or_empty_directory">The directory is null or empty.</string>
+    <string name="invalid_file_permissions_string_to_check">The file permission string to check is invalid.</string>
+    <string name="no_regular_file_found">Regular file not found at path.</string>
+    <string name="no_directory_found">Directory not found at path.</string>
+    <string name="file_not_readable">%1$s at path is not readable. Permission Denied.</string>
+    <string name="file_not_writable">%1$s at path is not writable. Permission Denied.</string>
+    <string name="file_not_executable">%1$s at path is not executable. Permission Denied.</string>
+    <string name="non_regular_file_found">Non-regular file found at path.</string>
+    <string name="non_directory_file_found">Non-directory file found at path.</string>
+    <string name="creating_missing_directory_failed">Failed to create missing directory at path: \"%1$s\"</string>
+    <string name="validate_file_existence_and_permissions_failed_with_exception">Validating file existence and permissions fafiled: \"%1$s\"\nException: %2$s</string>
+    <string name="validate_directory_existence_and_permissions_failed_with_exception">Validating directory existence and permissions fafiled: \"%1$s\"\nException: %2$s</string>
+
+    <string name="run_command_service_invalid_action">Invalid intent action to RunCommandService: \"%1$s\"</string>
+    <string name="run_command_service_invalid_command_path">Invalid coommand path to RunCommandService: \"%1$s\"</string>
+    <string name="run_command_service_allow_external_apps_ungranted_warning">RunCommandService require allow-external-apps property to be set to \"true\" in &TERMUX_PROPERTIES_PRIMARY_PATH_SHORT; file.</string>
 
 
 

@@ -10,27 +10,79 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.app.settings.properties.SharedProperties;
-import com.termux.app.settings.properties.TermuxPropertyConstants;
+import com.termux.app.utils.FileUtils;
 import com.termux.app.utils.Logger;
+import com.termux.app.utils.PluginUtils;
+
+import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Third-party apps that are not part of termux world can run commands in termux context by either
  * sending an intent to RunCommandService or becoming a plugin host for the termux-tasker plugin
  * client.
  *
- * For the {@link RUN_COMMAND_SERVICE#ACTION_RUN_COMMAND} intent to work, there are 2 main requirements:
+ * For the {@link RUN_COMMAND_SERVICE#ACTION_RUN_COMMAND} intent to work, here are the requirements:
  *
- * 1. The `allow-external-apps` property must be set to "true" in ~/.termux/termux.properties in
- *      termux app, regardless of if the executable path is inside or outside the `~/.termux/tasker/`
- *      directory.
- * 2. The intent sender/third-party app must request the `com.termux.permission.RUN_COMMAND`
+ * 1. `com.termux.permission.RUN_COMMAND` permission (Mandatory)
+ *      The Intent sender/third-party app must request the `com.termux.permission.RUN_COMMAND`
  *      permission in its `AndroidManifest.xml` and it should be granted by user to the app through the
- *      app's App Info permissions page in android settings, likely under Additional Permissions.
+ *      app's `App Info` `Permissions` page in Android Settings, likely under `Additional Permissions`.
+ *      This is a security measure to prevent any other apps from running commands in `Termux` context
+ *      which do not have the required permission granted to them.
+ *
+ *      For `Tasker` you can grant it with:
+ *      `Android Settings` -> `Apps` -> `Tasker` -> `Permissions` -> `Additional permissions` ->
+ *      `Run commands in Termux environment`.
+ *
+ * 2. `allow-external-apps` property (Mandatory)
+ *      The `allow-external-apps` property must be set to "true" in `~/.termux/termux.properties` in
+ *      Termux app, regardless of if the executable path is inside or outside the `~/.termux/tasker/`
+ *      directory. Check https://github.com/termux/termux-tasker#allow-external-apps-property-optional
+ *      for more info.
+ *
+ * 3. `Draw Over Apps` permission (Optional)
+ *      For android `>= 10` there are new
+ *      [restrictions](https://developer.android.com/guide/components/activities/background-starts)
+ *      that prevent activities from starting from the background. This prevents the background
+ *      {@link TermuxService} from starting a terminal session in the foreground and running the
+ *      commands until the user manually clicks `Termux` notification in the status bar dropdown
+ *      notifications list. This only affects commands that are to be executed in a terminal
+ *      session and not the background ones. `Termux` version `>= 0.100`
+ *      requests the `Draw Over Apps` permission so that users can bypass this restriction so
+ *      that commands can automatically start running without user intervention.
+ *      You can grant `Termux` the `Draw Over Apps` permission from its `App Info` activity:
+ *      `Android Settings` -> `Apps` -> `Termux` -> `Advanced` -> `Draw over other apps`.
+ *
+ * 4. `Storage` permission (Optional)
+ *      Termux app must be granted `Storage` permission if the executable is accessing or working
+ *      directory is set to path in external shared storage. The common paths which usually refer to
+ *      it are `~/storage`, `/sdcard`, `/storage/emulated/0` etc.
+ *       You can grant `Termux` the `Storage` permission from its `App Info` activity:
+ *       For Android version < 11:
+ *          `Android Settings` -> `Apps` -> `Termux` -> `Permissions` -> `Storage`.
+ *       For Android version >= 11
+ *          `Android Settings` -> `Apps` -> `Termux` -> `Permissions` -> `Files and media` ->
+ *          `Allowed management of all files`.
+ *       NOTE: For Android version >= 11, sometimes you will get `Permission Denied` errors for
+ *       external shared storage even when you have granted `Files and media` permission. To solve
+ *       this, Deny the permission and then Allow it again and restart Termux.
+ *       Also check https://wiki.termux.com/wiki/Termux-setup-storage
+ *
+ * 5. Battery Optimizations (May be mandatory depending on device)
+ *      Some devices kill apps aggressively or prevent apps from starting from background.
+ *      If Termux is running into such problems, then exempt it from such restrictions.
+ *      The user may also disable battery optimizations for Termux to reduce the chances of Termux
+ *      being killed by Android even further due to violation of not being able to call
+ *      `startForeground()` within ~5s of service start in android >= 8.
+ *      Check https://dontkillmyapp.com/ for device specfic info to opt-out of battery optimiations.
+ *
+ *  You may also want to check https://github.com/termux/termux-tasker
  *
  *
  *
@@ -54,21 +106,6 @@ import com.termux.app.utils.Logger;
  * can optionally be prefixed with "$PREFIX/" or "~/" if an absolute path is not to be given.
  * The "$PREFIX/" will expand to {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} and
  * "~/" will expand to {@link TermuxConstants#TERMUX_HOME_DIR_PATH}, followed by a forward slash "/".
- *
- *
- * To automatically bring termux session to foreground and start termux commands that were started
- * with background mode "false" in android >= 10 without user having to click the notification
- * manually requires termux to be granted draw over apps permission due to new restrictions
- * of starting activities from the background, this also applies to Termux:Tasker plugin.
- *
- * Check https://github.com/termux/termux-tasker for more details on allow-external-apps and draw
- * over apps and other limitations.
- *
- *
- * To reduce the chance of termux being killed by android even further due to violation of not
- * being able to call startForeground() within ~5s of service start in android >= 8, the user
- * may disable battery optimizations for termux.
- *
  *
  * If your third-party app is targeting sdk 30 (android 11), then it needs to add `com.termux`
  * package to the `queries` element or request `QUERY_ALL_PACKAGES` permission in its
@@ -129,44 +166,80 @@ public class RunCommandService extends Service {
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
 
+        String errmsg;
+
         // If invalid action passed, then just return
         if (!RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND.equals(intent.getAction())) {
-            Logger.logError(LOG_TAG, "Invalid intent action to RunCommandService: \"" + intent.getAction() + "\"");
+            errmsg = this.getString(R.string.run_command_service_invalid_action, intent.getAction());
+            Logger.logError(LOG_TAG, errmsg);
             return Service.START_NOT_STICKY;
         }
 
-        // If allow-external-apps property is not set to "true"
-        if (!SharedProperties.isPropertyValueTrue(this, TermuxPropertyConstants.getTermuxPropertiesFile(), TermuxConstants.PROP_ALLOW_EXTERNAL_APPS)) {
-            Logger.logError(LOG_TAG, "RunCommandService requires allow-external-apps property to be set to \"true\" in \"" + TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH + "\" file");
+        // If "allow-external-apps" property to not set to "true", then just return
+        errmsg = PluginUtils.checkIfRunCommandServiceAllowExternalAppsPolicyIsViolated(this);
+        if (errmsg != null) {
+            Logger.logError(LOG_TAG, errmsg);
             return Service.START_NOT_STICKY;
         }
 
 
-
-        String commandPath = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
-        // If invalid commandPath passed, then just return
-        if (commandPath == null || commandPath.isEmpty()) {
-            Logger.logError(LOG_TAG, "Invalid coommand path to RunCommandService: \"" + commandPath + "\"");
-            return Service.START_NOT_STICKY;
-        }
-
-        Uri programUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(getExpandedTermuxPath(commandPath)).build();
-
-
-
-        Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, programUri);
-        execIntent.setClass(this, TermuxService.class);
-        execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, intent.getStringArrayExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS));
-        execIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, intent.getBooleanExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, false));
-        execIntent.putExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION, intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION));
-
+        String executable = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
+        String[] arguments = intent.getStringArrayExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS);
+        boolean inBackground = intent.getBooleanExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, false);
         String workingDirectory = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_WORKDIR);
-        if (workingDirectory != null && !workingDirectory.isEmpty()) {
-            execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, getExpandedTermuxPath(workingDirectory));
+        String sessionAction = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION);
+
+        // Get canonical path of executable
+        executable = FileUtils.getCanonicalPath(executable, null, true);
+
+        // If executable is not a regular file, or is not readable or executable, then just return
+        // Setting of missing read and execute permissions is not done
+        errmsg = FileUtils.validateRegularFileExistenceAndPermissions(this, executable,
+            null, PluginUtils.PLUGIN_EXECUTABLE_FILE_PERMISSIONS,
+            false, false);
+        if (errmsg != null) {
+            errmsg  += "\n" + this.getString(R.string.executable_absolute_path, executable);
+            Logger.logError(LOG_TAG, errmsg);
+            return Service.START_NOT_STICKY;
         }
 
+        // If workingDirectory is not null or empty
+        if (workingDirectory != null && !workingDirectory.isEmpty()) {
+            // Get canonical path of workingDirectory
+            workingDirectory = FileUtils.getCanonicalPath(workingDirectory, null, true);
+
+            // If workingDirectory is not a directory, or is not readable or writable, then just return
+            // Creation of missing directory and setting of read, write and execute permissions are only done if workingDirectory is
+            // under {@link TermuxConstants#TERMUX_FILES_DIR_PATH}
+            // We try to set execute permissions, but ignore if they are missing, since only read and write permissions are required
+            // for working directories.
+            errmsg = FileUtils.validateDirectoryExistenceAndPermissions(this, workingDirectory,
+                TermuxConstants.TERMUX_FILES_DIR_PATH, PluginUtils.PLUGIN_WORKING_DIRECTORY_PERMISSIONS,
+                true, true, false,
+                true);
+            if (errmsg != null) {
+                errmsg  += "\n" + this.getString(R.string.working_directory_absolute_path, workingDirectory);
+                Logger.logError(LOG_TAG, errmsg);
+                return Service.START_NOT_STICKY;
+            }
+        }
+
+        PluginUtils.dumpExecutionIntentToLog(Log.VERBOSE, LOG_TAG, "RUN_COMMAND Intent", executable, Arrays.asList(arguments), workingDirectory, inBackground, new HashMap<String, Object>() {{
+            put("sessionAction", sessionAction);
+        }});
+
+        Uri executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(FileUtils.getExpandedTermuxPath(executable)).build();
+
+        // Create execution intent with the action TERMUX_SERVICE#ACTION_SERVICE_EXECUTE to be sent to the TERMUX_SERVICE
+        Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executableUri);
+        execIntent.setClass(this, TermuxService.class);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, arguments);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, inBackground);
+        if (workingDirectory != null && !workingDirectory.isEmpty()) execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, workingDirectory);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION, sessionAction);
 
 
+        // Start TERMUX_SERVICE and pass it execution intent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.startForegroundService(execIntent);
         } else {
@@ -223,15 +296,4 @@ public class RunCommandService extends Service {
         manager.createNotificationChannel(channel);
     }
 
-    /** Replace "$PREFIX/" or "~/" prefix with termux absolute paths */
-    public static String getExpandedTermuxPath(String path) {
-        if(path != null && !path.isEmpty()) {
-            path = path.replaceAll("^\\$PREFIX$", TermuxConstants.TERMUX_PREFIX_DIR_PATH);
-            path = path.replaceAll("^\\$PREFIX/", TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/");
-            path = path.replaceAll("^~/$", TermuxConstants.TERMUX_HOME_DIR_PATH);
-            path = path.replaceAll("^~/", TermuxConstants.TERMUX_HOME_DIR_PATH + "/");
-        }
-
-        return path;
-    }
 }
