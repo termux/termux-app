@@ -16,6 +16,12 @@
             app:summaryOn="@string/terminal_view_key_logging_on"
             app:title="@string/terminal_view_key_logging_title" />
 
+        <SwitchPreferenceCompat
+            app:key="plugin_error_notifications_enabled"
+            app:summaryOff="@string/plugin_error_notifications_off"
+            app:summaryOn="@string/plugin_error_notifications_on"
+            app:title="@string/plugin_error_notifications_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

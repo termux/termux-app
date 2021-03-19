@@ -118,4 +118,10 @@
             <string name="terminal_view_key_logging_off">Logs will not have entries for terminal view keys. (Default)</string>
             <string name="terminal_view_key_logging_on">Logcat logs will have entries for terminal view keys. These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
 
+
+            <!-- Plugin Error Notifications -->
+            <string name="plugin_error_notifications_title">Plugin Error Notifications</string>
+            <string name="plugin_error_notifications_off">Disable flashes and notifications for plugin errors.</string>
+            <string name="plugin_error_notifications_on">Show flashes and notifications for plugin errors. (Default)</string>
+
 </resources>

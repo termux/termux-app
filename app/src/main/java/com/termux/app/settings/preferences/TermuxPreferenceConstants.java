@@ -1,7 +1,7 @@
 package com.termux.app.settings.preferences;
 
 /*
- * Version: v0.3.0
+ * Version: v0.4.0
  *
  * Changelog
  *
@@ -16,7 +16,12 @@ package com.termux.app.settings.preferences;
  *          Termux app and its plugins. This will allow {@link com.termux.app.TermuxSettings} to
  *          manage preferences of plugins as well if they don't have launcher activity themselves
  *          and also allow plugin apps to make changes to preferences from background.
- *      - Added `KEY_LOG_LEVEL` to `TERMUX_TASKER_APP` scope.
+ *      - Added following to `TERMUX_TASKER_APP`:
+     *      `KEY_LOG_LEVEL`.
+ *
+ * - 0.4.0 (2021-03-13)
+ *      - Added following to `TERMUX_APP`:
+ *          `KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED` and `DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED`.
  */
 
 /**
@@ -70,6 +75,12 @@ public final class TermuxPreferenceConstants {
          */
         public static final String KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED = "terminal_view_key_logging_enabled";
         public static final boolean DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
+
+        /**
+         * Defines the key for whether flashes and notifications for plugin errors are enabled or not
+         */
+        public static final String KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED = "plugin_error_notifications_enabled";
+        public static final boolean DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED = true;
 
     }
 
