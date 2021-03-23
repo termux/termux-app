@@ -151,7 +151,7 @@ public final class TermuxService extends Service {
 
         if (termuxTmpDir.exists()) {
             try {
-                TermuxInstaller.deleteFolder(termuxTmpDir.getCanonicalFile());
+                TermuxInstaller.deleteDirectory(termuxTmpDir.getCanonicalFile());
             } catch (Exception e) {
                 Logger.logStackTraceWithMessage(LOG_TAG, "Error while removing file at " + termuxTmpDir.getAbsolutePath(), e);
             }
