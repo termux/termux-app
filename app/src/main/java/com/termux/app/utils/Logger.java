@@ -6,14 +6,14 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
-
 import com.termux.R;
 import com.termux.app.TermuxConstants;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
 
 public class Logger {
 
@@ -123,36 +123,112 @@ public class Logger {
 
 
 
-    static public void logStackTraceWithMessage(String tag, String message, Exception e) {
-
+    static public void logStackTraceWithMessage(String tag, String message, Throwable throwable) {
         if(CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
-        {
-            try {
-                StringWriter errors = new StringWriter();
-                PrintWriter pw = new PrintWriter(errors);
-                e.printStackTrace(pw);
-                pw.close();
-                if(message != null)
-                    Log.e(getFullTag(tag), message + ":\n" + errors.toString());
-                else
-                    Log.e(getFullTag(tag), errors.toString());
-                errors.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
+            Log.e(getFullTag(tag), getMessageAndStackTraceString(message, throwable));
+    }
+
+    static public void logStackTraceWithMessage(String message, Throwable throwable) {
+        logStackTraceWithMessage(DEFAULT_LOG_TAG, message, throwable);
+    }
+
+    static public void logStackTrace(String tag, Throwable throwable) {
+        logStackTraceWithMessage(tag, null, throwable);
+    }
+
+    static public void logStackTrace(Throwable throwable) {
+        logStackTraceWithMessage(DEFAULT_LOG_TAG, null, throwable);
+    }
+
+    static public void logStackTracesWithMessage(String tag, String message, List<Throwable> throwableList) {
+        if(CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+            Log.e(getFullTag(tag), getMessageAndStackTracesString(message, throwableList));
+    }
+
+    static public String getMessageAndStackTraceString(String message, Throwable throwable) {
+        if(message == null && throwable == null)
+            return null;
+        else if(message != null && throwable != null)
+            return message + ":\n" + getStackTraceString(throwable);
+        else if(throwable == null)
+            return message;
+        else
+            return getStackTraceString(throwable);
+    }
+
+    static public String getMessageAndStackTracesString(String message, List<Throwable> throwableList) {
+        if(message == null && (throwableList == null || throwableList.size() == 0))
+            return null;
+        else if(message != null && (throwableList != null && throwableList.size() != 0))
+            return message + ":\n" + getStackTracesString(null, getStackTraceStringArray(throwableList));
+        else if(throwableList == null || throwableList.size() == 0)
+            return message;
+        else
+            return getStackTracesString(null, getStackTraceStringArray(throwableList));
+    }
+
+    static public String getStackTraceString(Throwable throwable) {
+        if(throwable == null) return null;
+
+        String stackTraceString = null;
+
+        try {
+            StringWriter errors = new StringWriter();
+            PrintWriter pw = new PrintWriter(errors);
+            throwable.printStackTrace(pw);
+            pw.close();
+            stackTraceString = errors.toString();
+            errors.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
+        return stackTraceString;
+    }
+    private static String[] getStackTraceStringArray(Throwable throwable) {
+        return getStackTraceStringArray(Collections.singletonList(throwable));
+    }
+
+    public static String[] getStackTraceStringArray(List<Throwable> throwableList) {
+        if (throwableList == null) return null;
+
+        final String[] stackTraceStringArray = new String[throwableList.size()];
+        for (int i = 0; i < throwableList.size(); i++) {
+            stackTraceStringArray[i] = getStackTraceString(throwableList.get(i));
+        }
+        return stackTraceStringArray;
+    }
+
+    public static String getStackTracesString(String label, String[] stackTraceStringArray) {
+        if(label == null) label = "StackTraces:";
+        StringBuilder stackTracesString = new StringBuilder(label);
+
+        if (stackTraceStringArray == null || stackTraceStringArray.length == 0) {
+            stackTracesString.append(" -");
+        } else {
+            for (int i = 0; i != stackTraceStringArray.length; i++) {
+                stackTracesString.append("\n\nStacktrace ").append(i + 1).append("\n```\n").append(stackTraceStringArray[i]).append("\n```\n");
             }
         }
+
+        return stackTracesString.toString();
     }
 
-    static public void logStackTraceWithMessage(String message, Exception e) {
-        logStackTraceWithMessage(DEFAULT_LOG_TAG, message, e);
-    }
+    public static String getStackTracesMarkdownString(String label, String[] stackTraceStringArray) {
+        if(label == null) label = "StackTraces:";
+        StringBuilder stackTracesString = new StringBuilder("#### " + label);
 
-    static public void logStackTrace(String tag, Exception e) {
-        logStackTraceWithMessage(tag, null, e);
-    }
+        if (stackTraceStringArray == null || stackTraceStringArray.length == 0) {
+            stackTracesString.append("\n\n`-`");
+        } else {
+            for (int i = 0; i != stackTraceStringArray.length; i++) {
+                stackTracesString.append("\n\n\n##### Stacktrace ").append(i + 1).append("\n\n```\n").append(stackTraceStringArray[i]).append("\n```");
+            }
+        }
 
-    static public void logStackTrace(Exception e) {
-        logStackTraceWithMessage(DEFAULT_LOG_TAG, null, e);
+        stackTracesString.append("\n##\n");
+
+        return stackTracesString.toString();
     }
     
 
