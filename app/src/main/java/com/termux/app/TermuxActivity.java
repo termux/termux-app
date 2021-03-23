@@ -263,8 +263,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             Intent i = getIntent();
             if (i != null && Intent.ACTION_RUN.equals(i.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
-                boolean failSafe = i.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
-                mTermuxSessionClient.addNewSession(failSafe, null);
+                boolean isFailSafe = i.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
+                mTermuxSessionClient.addNewSession(isFailSafe, null);
             } else {
                 mTermuxSessionClient.setCurrentSession(mTermuxSessionClient.getCurrentStoredSessionOrLast());
             }

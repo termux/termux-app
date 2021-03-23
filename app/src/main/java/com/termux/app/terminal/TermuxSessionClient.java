@@ -182,7 +182,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         }, -1, null, -1, null, null);
     }
 
-    public void addNewSession(boolean failSafe, String sessionName) {
+    public void addNewSession(boolean isFailSafe, String sessionName) {
         if (mActivity.getTermuxService().getSessions().size() >= MAX_SESSIONS) {
             new AlertDialog.Builder(mActivity).setTitle(R.string.max_terminals_reached_title).setMessage(R.string.max_terminals_reached_message)
                 .setPositiveButton(android.R.string.ok, null).show();
@@ -196,7 +196,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
                 workingDirectory = currentSession.getCwd();
             }
 
-            TerminalSession newSession = mActivity.getTermuxService().createTerminalSession(null, null, workingDirectory, failSafe);
+            TerminalSession newSession = mActivity.getTermuxService().createTerminalSession(null, null, workingDirectory, isFailSafe);
             if (sessionName != null) {
                 newSession.mSessionName = sessionName;
             }

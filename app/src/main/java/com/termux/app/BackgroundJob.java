@@ -7,6 +7,8 @@ import android.os.Bundle;
 
 import com.termux.BuildConfig;
 import com.termux.app.utils.Logger;
+import com.termux.models.ExecutionCommand;
+import com.termux.models.ExecutionCommand.ExecutionState;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,28 +28,33 @@ import java.util.List;
  */
 public final class BackgroundJob {
 
-    final Process mProcess;
+    Process mProcess;
 
     private static final String LOG_TAG = "BackgroundJob";
 
-    public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service){
-        this(cwd, fileToExecute, args, service, null);
+    public BackgroundJob(String executable, final String[] arguments, String workingDirectory, final TermuxService service){
+        this(new ExecutionCommand(TermuxService.getNextExecutionId(), executable, arguments, workingDirectory, false, false), service);
     }
 
-    public BackgroundJob(String cwd, String fileToExecute, final String[] args, final TermuxService service, PendingIntent pendingIntent) {
-        String[] env = buildEnvironment(false, cwd);
-        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.TERMUX_HOME_DIR_PATH;
+    public BackgroundJob(ExecutionCommand executionCommand, final TermuxService service) {
+        String[] env = buildEnvironment(false, executionCommand.workingDirectory);
 
-        final String[] progArray = setupProcessArgs(fileToExecute, args);
-        final String processDescription = Arrays.toString(progArray);
+        if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty())
+            executionCommand.workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
+
+        final String[] commandArray = setupProcessArgs(executionCommand.executable, executionCommand.arguments);
+        final String commandDescription = Arrays.toString(commandArray);
+
+        if(!executionCommand.setState(ExecutionState.EXECUTING))
+            return;
 
         Process process;
         try {
-            process = Runtime.getRuntime().exec(progArray, env, new File(cwd));
+            process = Runtime.getRuntime().exec(commandArray, env, new File(executionCommand.workingDirectory));
         } catch (IOException e) {
             mProcess = null;
             // TODO: Visible error message?
-            Logger.logStackTraceWithMessage(LOG_TAG, "Failed running background job: " + processDescription, e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed running background job: " + commandDescription, e);
             return;
         }
 
@@ -79,7 +86,7 @@ public final class BackgroundJob {
         new Thread() {
             @Override
             public void run() {
-                Logger.logDebug(LOG_TAG, "[" + pid + "] starting: " + processDescription);
+                Logger.logDebug(LOG_TAG, "[" + pid + "] starting: " + commandDescription);
                 InputStream stdout = mProcess.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stdout, StandardCharsets.UTF_8));
 
@@ -109,16 +116,21 @@ public final class BackgroundJob {
                     errThread.join();
                     result.putString("stderr", errResult.toString());
 
+                    if(!executionCommand.setState(ExecutionState.EXECUTED))
+                        return;
+
                     Intent data = new Intent();
                     data.putExtra("result", result);
 
-                    if(pendingIntent != null) {
+                    if(executionCommand.pluginPendingIntent != null) {
                         try {
-                            pendingIntent.send(service.getApplicationContext(), Activity.RESULT_OK, data);
+                            executionCommand.pluginPendingIntent.send(service.getApplicationContext(), Activity.RESULT_OK, data);
                         } catch (PendingIntent.CanceledException e) {
                             // The caller doesn't want the result? That's fine, just ignore
                         }
                     }
+
+                    executionCommand.setState(ExecutionState.SUCCESS);
                 } catch (InterruptedException e) {
                     // Ignore
                 }
@@ -133,10 +145,10 @@ public final class BackgroundJob {
         }
     }
 
-    static String[] buildEnvironment(boolean failSafe, String cwd) {
+    static String[] buildEnvironment(boolean isFailSafe, String workingDirectory) {
         TermuxConstants.TERMUX_HOME_DIR.mkdirs();
 
-        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.TERMUX_HOME_DIR_PATH;
+        if (workingDirectory == null || workingDirectory.isEmpty()) workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
         List<String> environment = new ArrayList<>();
 
@@ -159,13 +171,13 @@ public final class BackgroundJob {
         addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
         addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
 
-        if (failSafe) {
+        if (isFailSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             environment.add("PATH= " + System.getenv("PATH"));
         } else {
             environment.add("LANG=en_US.UTF-8");
             environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
-            environment.add("PWD=" + cwd);
+            environment.add("PWD=" + workingDirectory);
             environment.add("TMPDIR=" + TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH);
         }
 
@@ -186,7 +198,7 @@ public final class BackgroundJob {
         }
     }
 
-    static String[] setupProcessArgs(String fileToExecute, String[] args) {
+    static String[] setupProcessArgs(String fileToExecute, String[] arguments) {
         // The file to execute may either be:
         // - An elf file, in which we execute it directly.
         // - A script file without shebang, which we execute with our standard shell $PREFIX/bin/sh instead of the
@@ -236,7 +248,7 @@ public final class BackgroundJob {
         List<String> result = new ArrayList<>();
         if (interpreter != null) result.add(interpreter);
         result.add(fileToExecute);
-        if (args != null) Collections.addAll(result, args);
+        if (arguments != null) Collections.addAll(result, arguments);
         return result.toArray(new String[0]);
     }
 

@@ -18,7 +18,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
@@ -28,16 +27,15 @@ import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionClient;
 import com.termux.app.terminal.TermuxSessionClientBase;
 import com.termux.app.utils.Logger;
-import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.TextDataUtils;
+import com.termux.models.ExecutionCommand;
+import com.termux.models.ExecutionCommand.ExecutionState;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -55,7 +53,9 @@ import java.util.List;
 public final class TermuxService extends Service {
 
     private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
-    private static final int NOTIFICATION_ID = 1337;
+    public static final int NOTIFICATION_ID = 1337;
+
+    private static int EXECUTION_ID = 1000;
 
     /** This service is only bound from inside the same process and never uses IPC. */
     class LocalBinder extends Binder {
@@ -275,36 +275,45 @@ public final class TermuxService extends Service {
 
     /** Process action to execute a shell command in a foreground session or in background. */
     private void actionServiceExecute(Intent intent) {
-        Uri executableUri = intent.getData();
-        String executablePath = (executableUri == null ? null : executableUri.getPath());
+        if (intent == null){
+            Logger.logError(LOG_TAG, "Ignoring null intent to actionServiceExecute");
+            return;
+        }
 
-        String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS));
-        String cwd = intent.getStringExtra(TERMUX_SERVICE.EXTRA_WORKDIR);
+        ExecutionCommand executionCommand = new ExecutionCommand(getNextExecutionId());
 
-        PendingIntent pendingIntent = intent.getParcelableExtra(TERMUX_SERVICE.EXTRA_PENDING_INTENT);
+        executionCommand.executableUri = intent.getData();
 
-        int sessionAction = TextDataUtils.getIntStoredAsStringFromBundle(intent.getExtras(),
-            TERMUX_SERVICE.EXTRA_SESSION_ACTION, TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY);
+        if(executionCommand.executableUri != null) {
+            executionCommand.executable = executionCommand.executableUri.getPath();
+            executionCommand.arguments = intent.getStringArrayExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS);
+        }
 
-        if (intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false)) {
-            executeBackgroundCommand(executablePath, arguments, cwd, pendingIntent);
+        executionCommand.workingDirectory = intent.getStringExtra(TERMUX_SERVICE.EXTRA_WORKDIR);
+        executionCommand.inBackground = intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false);
+        executionCommand.isFailsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
+        executionCommand.sessionAction = intent.getStringExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION);
+        executionCommand.commandLabel = TextDataUtils.getDefaultIfNull(intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_LABEL), "Execution Intent Command");
+        executionCommand.commandDescription = intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_DESCRIPTION);
+        executionCommand.commandHelp = intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_HELP);
+        executionCommand.pluginAPIHelp = intent.getStringExtra(TERMUX_SERVICE.EXTRA_PLUGIN_API_HELP);
+        executionCommand.isPluginExecutionCommand = true;
+        executionCommand.pluginPendingIntent = intent.getParcelableExtra(TERMUX_SERVICE.EXTRA_PENDING_INTENT);
+
+        if (executionCommand.inBackground) {
+            executeBackgroundCommand(executionCommand);
         } else {
-            executeForegroundCommand(intent, executablePath, arguments, cwd, sessionAction);
+            executeForegroundCommand(executionCommand);
         }
     }
 
     /** Execute a shell command in background with {@link BackgroundJob}. */
-    private void executeBackgroundCommand(String executablePath, String[] arguments, String cwd, PendingIntent pendingIntent) {
+    private void executeBackgroundCommand(ExecutionCommand executionCommand) {
         Logger.logDebug(LOG_TAG, "Starting background command");
 
-        final String pendingIntentCreator;
-        if(pendingIntent != null) pendingIntentCreator = pendingIntent.getCreatorPackage(); else pendingIntentCreator = null;
+        Logger.logDebug(LOG_TAG, executionCommand.toString());
 
-        PluginUtils.dumpExecutionIntentToLog(Log.DEBUG, LOG_TAG, null, executablePath, Arrays.asList(arguments), cwd, true, new HashMap<String, Object>() {{
-            put("pendingIntentCreator", pendingIntentCreator);
-        }});
-
-        BackgroundJob task = new BackgroundJob(cwd, executablePath, arguments, this, pendingIntent);
+        BackgroundJob task = new BackgroundJob(executionCommand, this);
 
         mBackgroundTasks.add(task);
         updateNotification();
@@ -319,22 +328,20 @@ public final class TermuxService extends Service {
     }
 
     /** Execute a shell command in a foreground terminal session. */
-    private void executeForegroundCommand(Intent intent, String executablePath, String[] arguments, String cwd, int sessionAction) {
+    private void executeForegroundCommand(ExecutionCommand executionCommand) {
         Logger.logDebug(LOG_TAG, "Starting foreground command");
 
-        boolean failsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
+        if(!executionCommand.setState(ExecutionState.EXECUTING))
+            return;
 
-        PluginUtils.dumpExecutionIntentToLog(Log.DEBUG, LOG_TAG, null, executablePath, Arrays.asList(arguments), cwd, false, new HashMap<String, Object>() {{
-            put("sessionAction", sessionAction);
-            put("failsafe", failsafe);
-        }});
+        Logger.logDebug(LOG_TAG, executionCommand.toString());
 
-        TerminalSession newSession = createTerminalSession(executablePath, arguments, cwd, failsafe);
+        TerminalSession newSession = createTerminalSession(executionCommand.executable, executionCommand.arguments, executionCommand.workingDirectory, executionCommand.isFailsafe);
 
         // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
-        if (executablePath != null) {
-            int lastSlash = executablePath.lastIndexOf('/');
-            String name = (lastSlash == -1) ? executablePath : executablePath.substring(lastSlash + 1);
+        if (executionCommand.executable != null) {
+            int lastSlash = executionCommand.executable.lastIndexOf('/');
+            String name = (lastSlash == -1) ? executionCommand.executable : executionCommand.executable.substring(lastSlash + 1);
             name = name.replace('-', ' ');
             newSession.mSessionName = name;
         }
@@ -344,7 +351,7 @@ public final class TermuxService extends Service {
         if(mTermuxSessionClient != null)
             mTermuxSessionClient.terminalSessionListNotifyUpdated();
 
-        handleSessionAction(sessionAction, newSession);
+        handleSessionAction(TextDataUtils.getIntFromString(executionCommand.sessionAction, TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY), newSession);
     }
 
     private void setCurrentStoredSession(TerminalSession newSession) {
@@ -390,16 +397,16 @@ public final class TermuxService extends Service {
     }
 
     /** Create a terminal session. */
-    public TerminalSession createTerminalSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
+    public TerminalSession createTerminalSession(String executablePath, String[] arguments, String workingDirectory, boolean isFailSafe) {
         TermuxConstants.TERMUX_HOME_DIR.mkdirs();
 
-        if (cwd == null || cwd.isEmpty()) cwd = TermuxConstants.TERMUX_HOME_DIR_PATH;
+        if (workingDirectory == null || workingDirectory.isEmpty()) workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
-        String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
+        String[] env = BackgroundJob.buildEnvironment(isFailSafe, workingDirectory);
         boolean isLoginShell = false;
 
         if (executablePath == null) {
-            if (!failSafe) {
+            if (!isFailSafe) {
                 for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
                     File shellFile = new File(TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH, shellBinary);
                     if (shellFile.canExecute()) {
@@ -426,7 +433,7 @@ public final class TermuxService extends Service {
         args[0] = processName;
         if (processArgs.length > 1) System.arraycopy(processArgs, 1, args, 1, processArgs.length - 1);
 
-        TerminalSession session = new TerminalSession(executablePath, cwd, args, env, getTermuxSessionClient());
+        TerminalSession session = new TerminalSession(executablePath, workingDirectory, args, env, getTermuxSessionClient());
         mTerminalSessions.add(session);
         updateNotification();
 
@@ -569,8 +576,8 @@ public final class TermuxService extends Service {
 
         NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName,importance);
         channel.setDescription(channelDescription);
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.createNotificationChannel(channel);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(channel);
     }
 
     /** Update the shown foreground service notification after making any changes that affect it. */
@@ -591,6 +598,10 @@ public final class TermuxService extends Service {
 
     public List<TerminalSession> getSessions() {
         return mTerminalSessions;
+    }
+
+    synchronized public static int getNextExecutionId() {
+        return EXECUTION_ID++;
     }
 
 }
