@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
@@ -18,9 +17,9 @@ import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.utils.FileUtils;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.PluginUtils;
-
-import java.util.Arrays;
-import java.util.HashMap;
+import com.termux.app.utils.TextDataUtils;
+import com.termux.models.ExecutionCommand;
+import com.termux.models.ExecutionCommand.ExecutionState;
 
 /**
  * Third-party apps that are not part of termux world can run commands in termux context by either
@@ -88,24 +87,44 @@ import java.util.HashMap;
  *
  * The {@link RUN_COMMAND_SERVICE#ACTION_RUN_COMMAND} intent expects the following extras:
  *
- * 1. The {@code String} {@link RUN_COMMAND_SERVICE#EXTRA_COMMAND_PATH} extra for absolute path of
- *      command. This is mandatory.
+ * 1. The **mandatory** {@code String} {@link RUN_COMMAND_SERVICE#EXTRA_COMMAND_PATH} extra for
+ *      absolute path of command.
  * 2. The {@code String[]} {@link RUN_COMMAND_SERVICE#EXTRA_ARGUMENTS} extra for any arguments to
- *      pass to command. This is optional.
+ *      pass to command.
  * 3. The {@code String} {@link RUN_COMMAND_SERVICE#EXTRA_WORKDIR} extra for current working directory
- *      of command. This is optional and defaults to {@link TermuxConstants#TERMUX_HOME_DIR_PATH}.
+ *      of command. This defaults to {@link TermuxConstants#TERMUX_HOME_DIR_PATH}.
  * 4. The {@code boolean} {@link RUN_COMMAND_SERVICE#EXTRA_BACKGROUND} extra whether to run command
- *      in background or foreground terminal session. This is optional and defaults to {@code false}.
+ *      in background or foreground terminal session. This defaults to {@code false}.
  * 5. The {@code String} {@link RUN_COMMAND_SERVICE#EXTRA_SESSION_ACTION} extra for for session action
- *      of foreground commands. This is optional and defaults to
+ *      of foreground commands. This defaults to
  *      {@link TERMUX_SERVICE#VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY}.
- *
+ * 6. The {@code String} {@link RUN_COMMAND_SERVICE#EXTRA_COMMAND_LABEL} extra for label of the command.
+ * 7. The markdown {@code String} {@link RUN_COMMAND_SERVICE#EXTRA_COMMAND_DESCRIPTION} extra for
+ *      description of the command. This should ideally be get short.
+ * 8. The markdown {@code String} {@link RUN_COMMAND_SERVICE#EXTRA_COMMAND_HELP} extra for help of
+ *      the command. This can add details about the command. 3rd party apps can provide more info
+ *      to users for setting up commands. Ideally a url link should be provided that goes into full
+ *      details.
  *
  *
  * The {@link RUN_COMMAND_SERVICE#EXTRA_COMMAND_PATH} and {@link RUN_COMMAND_SERVICE#EXTRA_WORKDIR}
  * can optionally be prefixed with "$PREFIX/" or "~/" if an absolute path is not to be given.
  * The "$PREFIX/" will expand to {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} and
  * "~/" will expand to {@link TermuxConstants#TERMUX_HOME_DIR_PATH}, followed by a forward slash "/".
+ *
+ *
+ * The `EXTRA_COMMAND_*` extras are used for logging and are their values are provided to users in case
+ * of failure in a popup. The popup shown is in commonmark-spec markdown using markwon library so
+ * make sure to follow its formatting rules. Also make sure to end lines with 2 blank spaces to prevent
+ * word-wrap wherever needed.
+ * It's the users and 3rd party apps responsibility to use them wisely. There are also android
+ * internal intent size limits (roughly 500KB) that must not exceed when sending intents so make sure
+ * the combined size of ALL extras is less than that.
+ * There are also limits on the arguments size you can pass to commands or the full command string
+ * length that can be run, which is likely equal to 131072 bytes or 128KB on an android device.
+ * Check https://github.com/termux/termux-tasker#arguments-and-result-data-limits for more details.
+ *
+ *
  *
  * If your third-party app is targeting sdk 30 (android 11), then it needs to add `com.termux`
  * package to the `queries` element or request `QUERY_ALL_PACKAGES` permission in its
@@ -138,7 +157,7 @@ import java.util.HashMap;
 public class RunCommandService extends Service {
 
     private static final String NOTIFICATION_CHANNEL_ID = "termux_run_command_notification_channel";
-    private static final int NOTIFICATION_ID = 1338;
+    public static final int NOTIFICATION_ID = 1338;
 
     private static final String LOG_TAG = "RunCommandService";
 
@@ -166,78 +185,91 @@ public class RunCommandService extends Service {
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
 
+        ExecutionCommand executionCommand = new ExecutionCommand();
+        executionCommand.pluginAPIHelp = this.getString(R.string.run_command_service_api_help);
+
         String errmsg;
 
         // If invalid action passed, then just return
         if (!RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND.equals(intent.getAction())) {
             errmsg = this.getString(R.string.run_command_service_invalid_action, intent.getAction());
-            Logger.logError(LOG_TAG, errmsg);
+            executionCommand.setStateFailed(1, errmsg, null);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
             return Service.START_NOT_STICKY;
         }
+
+        executionCommand.executable = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
+        executionCommand.arguments = intent.getStringArrayExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS);
+        executionCommand.workingDirectory = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_WORKDIR);
+        executionCommand.inBackground = intent.getBooleanExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, false);
+        executionCommand.sessionAction = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION);
+        executionCommand.commandLabel = TextDataUtils.getDefaultIfNull(intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_LABEL), "RUN_COMMAND Execution Intent Command");
+        executionCommand.commandDescription = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_DESCRIPTION);
+        executionCommand.commandHelp = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_HELP);
+
+        if(!executionCommand.setState(ExecutionState.PRE_EXECUTION))
+            return Service.START_NOT_STICKY;
 
         // If "allow-external-apps" property to not set to "true", then just return
         errmsg = PluginUtils.checkIfRunCommandServiceAllowExternalAppsPolicyIsViolated(this);
         if (errmsg != null) {
-            Logger.logError(LOG_TAG, errmsg);
+            executionCommand.setStateFailed(1, errmsg, null);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
             return Service.START_NOT_STICKY;
         }
 
-
-        String executable = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
-        String[] arguments = intent.getStringArrayExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS);
-        boolean inBackground = intent.getBooleanExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, false);
-        String workingDirectory = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_WORKDIR);
-        String sessionAction = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION);
-
         // Get canonical path of executable
-        executable = FileUtils.getCanonicalPath(executable, null, true);
+        executionCommand.executable = FileUtils.getCanonicalPath(executionCommand.executable, null, true);
 
         // If executable is not a regular file, or is not readable or executable, then just return
         // Setting of missing read and execute permissions is not done
-        errmsg = FileUtils.validateRegularFileExistenceAndPermissions(this, executable,
+        errmsg = FileUtils.validateRegularFileExistenceAndPermissions(this, executionCommand.executable,
             null, PluginUtils.PLUGIN_EXECUTABLE_FILE_PERMISSIONS,
             false, false);
         if (errmsg != null) {
-            errmsg  += "\n" + this.getString(R.string.executable_absolute_path, executable);
-            Logger.logError(LOG_TAG, errmsg);
+            errmsg  += "\n" + this.getString(R.string.executable_absolute_path, executionCommand.executable);
+            executionCommand.setStateFailed(1, errmsg, null);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
             return Service.START_NOT_STICKY;
         }
 
         // If workingDirectory is not null or empty
-        if (workingDirectory != null && !workingDirectory.isEmpty()) {
+        if (executionCommand.workingDirectory != null && !executionCommand.workingDirectory.isEmpty()) {
             // Get canonical path of workingDirectory
-            workingDirectory = FileUtils.getCanonicalPath(workingDirectory, null, true);
+            executionCommand.workingDirectory = FileUtils.getCanonicalPath(executionCommand.workingDirectory, null, true);
 
             // If workingDirectory is not a directory, or is not readable or writable, then just return
             // Creation of missing directory and setting of read, write and execute permissions are only done if workingDirectory is
             // under {@link TermuxConstants#TERMUX_FILES_DIR_PATH}
             // We try to set execute permissions, but ignore if they are missing, since only read and write permissions are required
             // for working directories.
-            errmsg = FileUtils.validateDirectoryExistenceAndPermissions(this, workingDirectory,
+            errmsg = FileUtils.validateDirectoryExistenceAndPermissions(this, executionCommand.workingDirectory,
                 TermuxConstants.TERMUX_FILES_DIR_PATH, PluginUtils.PLUGIN_WORKING_DIRECTORY_PERMISSIONS,
                 true, true, false,
                 true);
             if (errmsg != null) {
-                errmsg  += "\n" + this.getString(R.string.working_directory_absolute_path, workingDirectory);
-                Logger.logError(LOG_TAG, errmsg);
+                errmsg  += "\n" + this.getString(R.string.working_directory_absolute_path, executionCommand.workingDirectory);
+                executionCommand.setStateFailed(1, errmsg, null);
+                PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
                 return Service.START_NOT_STICKY;
             }
         }
 
-        PluginUtils.dumpExecutionIntentToLog(Log.VERBOSE, LOG_TAG, "RUN_COMMAND Intent", executable, Arrays.asList(arguments), workingDirectory, inBackground, new HashMap<String, Object>() {{
-            put("sessionAction", sessionAction);
-        }});
+        executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(FileUtils.getExpandedTermuxPath(executionCommand.executable)).build();
 
-        Uri executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(FileUtils.getExpandedTermuxPath(executable)).build();
+        Logger.logVerbose(LOG_TAG, executionCommand.toString());
 
         // Create execution intent with the action TERMUX_SERVICE#ACTION_SERVICE_EXECUTE to be sent to the TERMUX_SERVICE
-        Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executableUri);
+        Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executionCommand.executableUri);
         execIntent.setClass(this, TermuxService.class);
-        execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, arguments);
-        execIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, inBackground);
-        if (workingDirectory != null && !workingDirectory.isEmpty()) execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, workingDirectory);
-        execIntent.putExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION, sessionAction);
-
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, executionCommand.arguments);
+        if (executionCommand.workingDirectory != null && !executionCommand.workingDirectory.isEmpty()) execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, executionCommand.workingDirectory);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, executionCommand.inBackground);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION, executionCommand.sessionAction);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_COMMAND_LABEL, executionCommand.commandLabel);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_COMMAND_DESCRIPTION, executionCommand.commandDescription);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_COMMAND_HELP, executionCommand.commandHelp);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_PLUGIN_API_HELP, executionCommand.pluginAPIHelp);
 
         // Start TERMUX_SERVICE and pass it execution intent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -292,8 +324,8 @@ public class RunCommandService extends Service {
         int importance = NotificationManager.IMPORTANCE_LOW;
 
         NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.createNotificationChannel(channel);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(channel);
     }
 
 }

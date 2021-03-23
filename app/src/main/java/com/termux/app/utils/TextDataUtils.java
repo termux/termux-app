@@ -97,6 +97,19 @@ public class TextDataUtils {
 
 
 
+    /**
+     * Get the object itself if it is not {@code null}, otherwise default.
+     *
+     * @param object The {@link Object} to check.
+     * @param def The default {@link Object}.
+     * @return Returns {@code object} if it is not {@code null}, otherwise returns {@code def}.
+     */
+    public static <T> T getDefaultIfNull(@androidx.annotation.Nullable T object, @androidx.annotation.Nullable T def) {
+        return (object == null) ? def : object;
+    }
+
+
+
     public static LinkedHashSet<CharSequence> extractUrls(String text) {
 
         StringBuilder regex_sb = new StringBuilder();

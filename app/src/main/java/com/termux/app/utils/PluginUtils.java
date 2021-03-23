@@ -1,38 +1,31 @@
 package com.termux.app.utils;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
+
 import com.termux.R;
 import com.termux.app.TermuxConstants;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.app.activities.ReportActivity;
+import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.app.settings.preferences.TermuxPreferenceConstants;
 import com.termux.app.settings.properties.SharedProperties;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.termux.models.ReportInfo;
+import com.termux.models.ExecutionCommand;
+import com.termux.models.UserAction;
 
 public class PluginUtils {
 
-    /** Plugin variable for stdout value of termux command */
-    public static final String PLUGIN_VARIABLE_STDOUT = "%stdout"; // Default: "%stdout"
-    /** Plugin variable for stderr value of termux command */
-    public static final String PLUGIN_VARIABLE_STDERR = "%stderr"; // Default: "%stderr"
-    /** Plugin variable for exit code value of termux command */
-    public static final String PLUGIN_VARIABLE_EXIT_CODE = "%result"; // Default: "%result"
-    /** Plugin variable for err value of termux command */
-    public static final String PLUGIN_VARIABLE_ERR = "%err"; // Default: "%err"
-    /** Plugin variable for errmsg value of termux command */
-    public static final String PLUGIN_VARIABLE_ERRMSG = "%errmsg"; // Default: "%errmsg"
-
-    /** Intent {@code Parcelable} extra containing original intent received from plugin host app by FireReceiver */
-    public static final String EXTRA_ORIGINAL_INTENT = "originalIntent"; // Default: "originalIntent"
-
-
+    private static final String NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS = "termux_plugin_command_errors_notification_channel";
+    private static final String NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS = TermuxConstants.TERMUX_APP_NAME + " Plugin Commands Errors";
 
     /** Required file permissions for the executable file of execute intent. Executable file must have read and execute permissions */
     public static final String PLUGIN_EXECUTABLE_FILE_PERMISSIONS = "r-x"; // Default: "r-x"
@@ -40,34 +33,23 @@ public class PluginUtils {
      * Execute permissions should be attempted to be set, but ignored if they are missing */
     public static final String PLUGIN_WORKING_DIRECTORY_PERMISSIONS = "rwx"; // Default: "rwx"
 
-
-
-    /**
-     * A regex to validate if a string matches a valid plugin host variable name with the percent sign "%" prefix.
-     * Valid values: A string containing a percent sign character "%", followed by 1 alphanumeric character,
-     * followed by 2 or more alphanumeric or underscore "_" characters but does not end with an underscore "_"
-     */
-    public static final String PLUGIN_HOST_VARIABLE_NAME_MATCH_EXPRESSION =  "%[a-zA-Z0-9][a-zA-Z0-9_]{2,}(?<!_)";
-
-
-
     private static final String LOG_TAG = "PluginUtils";
 
     /**
      * Send execution result of commands to the {@link PendingIntent} creator received by
-     * execution service if {@code pendingIntent} is not {@code null}
+     * execution service if {@code pendingIntent} is not {@code null}.
      *
+     * @param context The {@link Context} that will be used to send result intent to the {@link PendingIntent} creator.
      * @param logLevel The log level to dump the result.
      * @param logTag The log tag to use for logging.
-     * @param context The {@link Context} that will be used to send result intent to the PluginResultsService.
      * @param pendingIntent The {@link PendingIntent} sent by creator to the execution service.
-     * @param stdout The value for {@link TERMUX_SERVICE#EXTRA_STDOUT} extra of {@link TERMUX_SERVICE#EXTRA_RESULT_BUNDLE} bundle of intent.
-     * @param stderr The value for {@link TERMUX_SERVICE#EXTRA_STDERR} extra of {@link TERMUX_SERVICE#EXTRA_RESULT_BUNDLE} bundle of intent.
-     * @param exitCode The value for {@link TERMUX_SERVICE#EXTRA_EXIT_CODE} extra of {@link TERMUX_SERVICE#EXTRA_RESULT_BUNDLE} bundle of intent.
-     * @param errCode The value for {@link TERMUX_SERVICE#EXTRA_ERR} extra of {@link TERMUX_SERVICE#EXTRA_RESULT_BUNDLE} bundle of intent.
-     * @param errmsg The value for {@link TERMUX_SERVICE#EXTRA_ERRMSG} extra of {@link TERMUX_SERVICE#EXTRA_RESULT_BUNDLE} bundle of intent.
+     * @param stdout The value for {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT} extra of {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE} bundle of intent.
+     * @param stderr The value for {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDERR} extra of {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE} bundle of intent.
+     * @param exitCode The value for {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE} extra of {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE} bundle of intent.
+     * @param errCode The value for {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_ERR} extra of {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE} bundle of intent.
+     * @param errmsg The value for {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG} extra of {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE} bundle of intent.
      */
-    public static void sendExecuteResultToResultsService(final int logLevel, final String logTag, final Context context, final PendingIntent pendingIntent, final String stdout, final String stderr, final String exitCode, final String errCode, final String errmsg) {
+    public static void sendExecuteResultToResultsService(final Context context, final int logLevel, final String logTag, final PendingIntent pendingIntent, final String stdout, final String stderr, final String exitCode, final String errCode, final String errmsg) {
         String label;
 
         if(pendingIntent == null)
@@ -76,25 +58,25 @@ public class PluginUtils {
             label = "Sending execution result to " + pendingIntent.getCreatorPackage();
 
         Logger.logMesssage(logLevel, logTag, label + ":\n" +
-            TERMUX_SERVICE.EXTRA_STDOUT + ":\n```\n" + stdout + "\n```\n" +
-            TERMUX_SERVICE.EXTRA_STDERR + ":\n```\n" + stderr + "\n```\n" +
-            TERMUX_SERVICE.EXTRA_EXIT_CODE + ": `" + exitCode + "`\n" +
-            TERMUX_SERVICE.EXTRA_ERR + ": `" + errCode + "`\n" +
-            TERMUX_SERVICE.EXTRA_ERRMSG + ": `" + errmsg + "`");
+            TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT + ":\n```\n" + stdout + "\n```\n" +
+            TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDERR + ":\n```\n" + stderr + "\n```\n" +
+            TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE + ": `" + exitCode + "`\n" +
+            TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERR + ": `" + errCode + "`\n" +
+            TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG + ": `" + errmsg + "`");
 
         // If pendingIntent is null, then just return
         if(pendingIntent == null) return;
 
         final Bundle resultBundle = new Bundle();
 
-        resultBundle.putString(TERMUX_SERVICE.EXTRA_STDOUT, stdout);
-        resultBundle.putString(TERMUX_SERVICE.EXTRA_STDERR, stderr);
-        if (exitCode != null && !exitCode.isEmpty()) resultBundle.putInt(TERMUX_SERVICE.EXTRA_EXIT_CODE, Integer.parseInt(exitCode));
-        if (errCode != null && !errCode.isEmpty()) resultBundle.putInt(TERMUX_SERVICE.EXTRA_ERR, Integer.parseInt(errCode));
-        resultBundle.putString(TERMUX_SERVICE.EXTRA_ERRMSG, errmsg);
+        resultBundle.putString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT, stdout);
+        resultBundle.putString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDERR, stderr);
+        if (exitCode != null && !exitCode.isEmpty()) resultBundle.putInt(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE, Integer.parseInt(exitCode));
+        if (errCode != null && !errCode.isEmpty()) resultBundle.putInt(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERR, Integer.parseInt(errCode));
+        resultBundle.putString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG, errmsg);
 
         Intent resultIntent = new Intent();
-        resultIntent.putExtra(TERMUX_SERVICE.EXTRA_RESULT_BUNDLE, resultBundle);
+        resultIntent.putExtra(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE, resultBundle);
 
         if(context != null) {
             try {
@@ -121,60 +103,108 @@ public class PluginUtils {
     }
 
     /**
-     * Send execution result of commands to the {@link PendingIntent} creator received by
-     * execution service if {@code pendingIntent} is not {@code null}
+     * Proceses {@link ExecutionCommand} error.
+     * The {@link ExecutionCommand#errCode} must have been set to a non-zero value.
+     * The {@link ExecutionCommand#errmsg} and any {@link ExecutionCommand#throwableList} must also
+     * be set with appropriate error info.
+     * If the {@link TermuxPreferenceConstants.TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED} is
+     * enabled, then a flash and a notification will be shown for the error as well
+     * on the {@link #NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS} channel.
      *
-     * @param logLevel The log level to dump the result.
+     * @param context The {@link Context} for operations.
      * @param logTag The log tag to use for logging.
-     * @param executable The executable received.
-     * @param arguments_list The arguments list for executable received.
-     * @param workingDirectory The working directory for the command received.
-     * @param inBackground The command should be run in background.
-     * @param additionalExtras The {@link HashMap} for additional extras received. The key will be
-     *                         used as the label to log the value. The object will be converted
-     *                        to {@link String} with a call to {@code value.toString()}.
+     * @param executionCommand The {@link ExecutionCommand} that failed.
      */
-    public static void dumpExecutionIntentToLog(int logLevel, String logTag, String label, String executable, List<String> arguments_list, String workingDirectory, boolean inBackground, HashMap<String, Object> additionalExtras) {
-        if (label == null) label = "Execution Intent";
+    public static void processPluginExecutionCommandError(final Context context, String logTag, final ExecutionCommand executionCommand) {
+        if(context == null || executionCommand == null) return;
 
-        StringBuilder executionIntentDump = new StringBuilder();
-
-        executionIntentDump.append(label).append(":\n");
-        executionIntentDump.append("Executable: `").append(executable).append("`\n");
-        executionIntentDump.append("Arguments:").append(getArgumentsStringForLog(arguments_list)).append("\n");
-        executionIntentDump.append("Working Directory: `").append(workingDirectory).append("`\n");
-        executionIntentDump.append("inBackground: `").append(inBackground).append("`");
-
-        if(additionalExtras != null) {
-            for (Map.Entry<String, Object> entry : additionalExtras.entrySet()) {
-                executionIntentDump.append("\n").append(entry.getKey()).append(": `").append(entry.getValue()).append("`");
-            }
+        if(executionCommand.errCode == null || executionCommand.errCode == 0) {
+            Logger.logWarn(LOG_TAG, "Ignoring call to processPluginExecutionCommandError() since the execution command errCode has not been set to a non-zero value");
+            return;
         }
 
-        Logger.logMesssage(logLevel, logTag, executionIntentDump.toString());
+        // Log the error and any exception
+        logTag = TextDataUtils.getDefaultIfNull(logTag, LOG_TAG);
+        Logger.logStackTracesWithMessage(logTag, executionCommand.errmsg, executionCommand.throwableList);
+
+        TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(context);
+        // If user has disabled notifications for plugin, then just return
+        if (!preferences.getPluginErrorNotificationsEnabled())
+            return;
+
+        // Flash the errmsg
+        Logger.showToast(context, executionCommand.errmsg, true);
+
+        // Send a notification to show the errmsg which when clicked will open the {@link ReportActivity}
+        // to show the details of the error
+        String title = TermuxConstants.TERMUX_APP_NAME + " Plugin Execution Command Error";
+
+        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND, logTag, title, ExecutionCommand.getDetailedMarkdownString(executionCommand), true));
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Setup the notification channel if not already set up
+        setupPluginCommandErrorsNotificationChannel(context);
+
+        // Use markdown in notification
+        CharSequence notifiationText = MarkdownUtils.getSpannedMarkdownText(context, executionCommand.errmsg);
+        //CharSequence notifiationText = executionCommand.errmsg;
+
+        // Build the notification
+        Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title, notifiationText, notifiationText, pendingIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
+        if(builder == null)  return;
+
+        // Send the notification
+        int nextNotificationId = NotificationUtils.getNextNotificationId(context);
+        NotificationManager notificationManager = NotificationUtils.getNotificationManager(context);
+        if(notificationManager != null)
+            notificationManager.notify(nextNotificationId, builder.build());
     }
 
     /**
-     * Converts arguments list to log friendly format. If arguments are null or of size 0, then
-     * nothing is returned. Otherwise following format is returned:
+     * Get {@link Notification.Builder} for {@link #NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS}
+     * and {@link #NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS}.
      *
-     * ```
-     * Arg 0: `value`
-     * Arg 1: 'value`
-     * ```
-     *
-     * @param arguments_list The arguments list.
-     * @return Returns the formatted arguments list.
+     * @param context The {@link Context} for operations.
+     * @param title The title for the notification.
+     * @param notifiationText The second line text of the notification.
+     * @param notificationBigText The full text of the notification that may optionally be styled.
+     * @param pendingIntent The {@link PendingIntent} which should be sent when notification is clicked.
+     * @param notificationMode The notification mode. It must be one of {@code NotificationUtils.NOTIFICATION_MODE_*}.
+     * @return Returns the {@link Notification.Builder}.
      */
-    public static String getArgumentsStringForLog(List<String> arguments_list) {
-        if (arguments_list==null || arguments_list.size() == 0) return "";
+    @Nullable
+    public static Notification.Builder getPluginCommandErrorsNotificationBuilder(final Context context, final CharSequence title, final CharSequence notifiationText, final CharSequence notificationBigText, final PendingIntent pendingIntent, final int notificationMode) {
 
-        StringBuilder arguments_list_string = new StringBuilder("\n```\n");
-        for(int i = 0; i != arguments_list.size(); i++) {
-            arguments_list_string.append("Arg ").append(i).append(": `").append(arguments_list.get(i)).append("`\n");
-        }
-        arguments_list_string.append("```");
+        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(context,
+            NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS, Notification.PRIORITY_HIGH,
+            title, notifiationText, notificationBigText, pendingIntent, notificationMode);
 
-        return arguments_list_string.toString();
+        if(builder == null)  return null;
+
+        // Enable timestamp
+        builder.setShowWhen(true);
+
+        // Set notification icon
+        builder.setSmallIcon(R.drawable.ic_error_notification);
+
+        // Set background color for small notification icon
+        builder.setColor(0xFF607D8B);
+
+        // Dismiss on click
+        builder.setAutoCancel(true);
+
+        return builder;
     }
+
+    /**
+     * Setup the notification channel for {@link #NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS} and
+     * {@link #NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS}.
+     *
+     * @param context The {@link Context} for operations.
+     */
+    public static void setupPluginCommandErrorsNotificationChannel(final Context context) {
+        NotificationUtils.setupNotificationChannel(context, NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS,
+            NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS, NotificationManager.IMPORTANCE_HIGH);
+    }
+
 }

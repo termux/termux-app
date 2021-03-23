@@ -16,7 +16,8 @@
     <string name="application_name">&TERMUX_APP_NAME;</string>
     <string name="shared_user_label">&TERMUX_APP_NAME; user</string>
     <string name="run_command_permission_label">Run commands in &TERMUX_APP_NAME; environment</string>
-    <string name="run_command_permission_description">execute arbitrary commands within &TERMUX_APP_NAME; environment</string>
+    <string name="run_command_permission_description">execute arbitrary commands within &TERMUX_APP_NAME;
+        environment</string>
     <string name="new_session">New session</string>
     <string name="new_session_failsafe">Failsafe</string>
     <string name="toggle_soft_keyboard">Keyboard</string>
@@ -85,9 +86,10 @@
     <string name="validate_file_existence_and_permissions_failed_with_exception">Validating file existence and permissions fafiled: \"%1$s\"\nException: %2$s</string>
     <string name="validate_directory_existence_and_permissions_failed_with_exception">Validating directory existence and permissions fafiled: \"%1$s\"\nException: %2$s</string>
 
-    <string name="run_command_service_invalid_action">Invalid intent action to RunCommandService: \"%1$s\"</string>
-    <string name="run_command_service_invalid_command_path">Invalid coommand path to RunCommandService: \"%1$s\"</string>
-    <string name="run_command_service_allow_external_apps_ungranted_warning">RunCommandService require allow-external-apps property to be set to \"true\" in &TERMUX_PROPERTIES_PRIMARY_PATH_SHORT; file.</string>
+    <string name="run_command_service_invalid_action">Invalid intent action to RunCommandService: `%1$s`</string>
+    <string name="run_command_service_invalid_command_path">Invalid coommand path to RunCommandService: `%1$s`</string>
+    <string name="run_command_service_allow_external_apps_ungranted_warning">RunCommandService require `allow-external-apps` property to be set to `true` in `&TERMUX_PROPERTIES_PRIMARY_PATH_SHORT;` file.</string>
+    <string name="run_command_service_api_help">Visit https://github.com/termux/termux-app/blob/master/app/src/main/java/com/termux/app/RunCommandService.java for more info on RUN_COMMAND Intent usage.</string>
 
     <string name="share">Share</string>
     <string name="share_with">Share With</string>
