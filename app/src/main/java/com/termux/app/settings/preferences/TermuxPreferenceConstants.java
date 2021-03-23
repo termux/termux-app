@@ -1,7 +1,7 @@
 package com.termux.app.settings.preferences;
 
 /*
- * Version: v0.4.0
+ * Version: v0.5.0
  *
  * Changelog
  *
@@ -9,19 +9,23 @@ package com.termux.app.settings.preferences;
  *      - Initial Release.
  *
  * - 0.2.0 (2021-03-13)
- *      - Added `KEY_LOG_LEVEL` and `KEY_TERMINAL_VIEW_LOGGING_ENABLED`
- * 
+ *      - Added `KEY_LOG_LEVEL` and `KEY_TERMINAL_VIEW_LOGGING_ENABLED`.
+ *
  * - 0.3.0 (2021-03-16)
  *      - Changed to per app scoping of variables so that the same file can store all constants of
  *          Termux app and its plugins. This will allow {@link com.termux.app.TermuxSettings} to
  *          manage preferences of plugins as well if they don't have launcher activity themselves
  *          and also allow plugin apps to make changes to preferences from background.
  *      - Added following to `TERMUX_TASKER_APP`:
-     *      `KEY_LOG_LEVEL`.
+ *           `KEY_LOG_LEVEL`.
  *
  * - 0.4.0 (2021-03-13)
  *      - Added following to `TERMUX_APP`:
  *          `KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED` and `DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED`.
+ *
+ * - 0.5.0 (2021-03-24)
+ *      - Added following to `TERMUX_APP`:
+ *          `KEY_LAST_NOTIFICATION_ID` and `DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID`.
  */
 
 /**
@@ -68,6 +72,13 @@ public final class TermuxPreferenceConstants {
          * Defines the key for current termux log level
          */
         public static final String KEY_LOG_LEVEL = "log_level";
+
+
+        /**
+         * Defines the key for last used notification id
+         */
+        public static final String KEY_LAST_NOTIFICATION_ID = "last_notification_id";
+        public static final int DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID = 0;
 
 
         /**
