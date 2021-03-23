@@ -102,6 +102,12 @@
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
         <activity
+            android:name=".app.activities.ReportActivity"
+            android:theme="@style/Theme.AppCompat.TermuxReportActivity"
+            android:documentLaunchMode="intoExisting"
+            />
+
+        <activity
             android:name=".filepicker.TermuxFileReceiverActivity"
             android:excludeFromRecents="true"
             android:label="@string/application_name"

@@ -89,14 +89,16 @@
     <string name="run_command_service_invalid_command_path">Invalid coommand path to RunCommandService: \"%1$s\"</string>
     <string name="run_command_service_allow_external_apps_ungranted_warning">RunCommandService require allow-external-apps property to be set to \"true\" in &TERMUX_PROPERTIES_PRIMARY_PATH_SHORT; file.</string>
 
+    <string name="share">Share</string>
+    <string name="share_with">Share With</string>
+    <string name="copy">Copy</string>
+    <string name="report_text">Report Text</string>
 
 
 
     <!-- Termux Settings -->
     <string name="settings">Settings</string>
     <string name="title_activity_termux_settings">&TERMUX_APP_NAME; Settings</string>
-
-
 
     <!-- Debugging Preferences -->
     <string name="debugging_preferences">Debugging</string>
@@ -117,7 +119,6 @@
             <string name="terminal_view_key_logging_title">Terminal View Key Logging</string>
             <string name="terminal_view_key_logging_off">Logs will not have entries for terminal view keys. (Default)</string>
             <string name="terminal_view_key_logging_on">Logcat logs will have entries for terminal view keys. These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
-
 
             <!-- Plugin Error Notifications -->
             <string name="plugin_error_notifications_title">Plugin Error Notifications</string>
