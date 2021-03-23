@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.10.0
+ * Version: v0.11.0
  *
  * Changelog
  *
@@ -55,8 +55,7 @@ import java.io.File;
  *      - Added following to `TERMUX_SERVICE`:
  *          `EXTRA_PENDING_INTENT`, `EXTRA_RESULT_BUNDLE`,
  *          `EXTRA_STDOUT`, `EXTRA_STDERR`, `EXTRA_EXIT_CODE`,
- *          `EXTRA_ERR`, `EXTRA_ERRMSG`
- *          .
+ *          `EXTRA_ERR`, `EXTRA_ERRMSG`.
  *
  * - 0.9.0 (2021-03-18)
  *      - Fixed javadocs.
@@ -67,9 +66,16 @@ import java.io.File;
  *          `VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY`,
  *          `VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY`,
  *          `VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY`
- *          `VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY`
+ *          `VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY`.
  *      - Added following to `RUN_COMMAND_SERVICE`:
- *          `EXTRA_SESSION_ACTION`
+ *          `EXTRA_SESSION_ACTION`.
+ *
+ * - 0.11.0 (2021-03-24)
+ *      - Added following to `TERMUX_SERVICE`:
+ *          `EXTRA_COMMAND_LABEL`, `EXTRA_COMMAND_DESCRIPTION`, `EXTRA_COMMAND_HELP`, `EXTRA_PLUGIN_API_HELP`.
+ *      - Added following to `RUN_COMMAND_SERVICE`:
+ *          `EXTRA_COMMAND_LABEL`, `EXTRA_COMMAND_DESCRIPTION`, `EXTRA_COMMAND_HELP`.
+ *      - Updated `RESULT_BUNDLE` related extras with `PLUGIN_RESULT_BUNDLE` prefixes.
  */
 
 /**
@@ -432,6 +438,14 @@ public final class TermuxConstants {
             public static final String EXTRA_SESSION_ACTION = TERMUX_PACKAGE_NAME + ".execute.session_action"; // Default: "com.termux.execute.session_action"
             /** Intent {@code Parcelable} extra containing pending intent for the execute command caller */
             public static final String EXTRA_PENDING_INTENT = "pendingIntent"; // Default: "pendingIntent"
+            /** Intent {@code String} extra for label of the command for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            public static final String EXTRA_COMMAND_LABEL = TERMUX_PACKAGE_NAME + ".execute.command_label"; // Default: "com.termux.execute.command_label"
+            /** Intent markdown {@code String} extra for description of the command for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            public static final String EXTRA_COMMAND_DESCRIPTION = TERMUX_PACKAGE_NAME + ".execute.command_description"; // Default: "com.termux.execute.command_description"
+            /** Intent markdown {@code String} extra for help of the command for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
+            public static final String EXTRA_COMMAND_HELP = TERMUX_PACKAGE_NAME + ".execute.command_help"; // Default: "com.termux.execute.command_help"
+            /** Intent markdown {@code String} extra for help of the plugin API for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent (Internal Use Only) */
+            public static final String EXTRA_PLUGIN_API_HELP = TERMUX_PACKAGE_NAME + ".execute.plugin_api_help"; // Default: "com.termux.execute.plugin_help"
 
 
 
@@ -469,17 +483,17 @@ public final class TermuxConstants {
             /** Intent {@code Bundle} extra to store result of execute command that is sent back for the
              * TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent if the {@link #EXTRA_PENDING_INTENT} is not
              * {@code null} */
-            public static final String EXTRA_RESULT_BUNDLE = "result"; // Default: "result"
-            /** Intent {@code String} extra for stdout value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
-            public static final String EXTRA_STDOUT = "stdout"; // Default: "stdout"
-            /** Intent {@code String} extra for stderr value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
-            public static final String EXTRA_STDERR = "stderr"; // Default: "stderr"
-            /** Intent {@code int} extra for exit code value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
-            public static final String EXTRA_EXIT_CODE = "exitCode"; // Default: "exitCode"
-            /** Intent {@code int} extra for err value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
-            public static final String EXTRA_ERR = "err"; // Default: "err"
-            /** Intent {@code String} extra for errmsg value of execute command of the {@link #EXTRA_RESULT_BUNDLE} */
-            public static final String EXTRA_ERRMSG = "errmsg"; // Default: "errmsg"
+            public static final String EXTRA_PLUGIN_RESULT_BUNDLE = "result"; // Default: "result"
+            /** Intent {@code String} extra for stdout value of execute command of the {@link #EXTRA_PLUGIN_RESULT_BUNDLE} */
+            public static final String EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT = "stdout"; // Default: "stdout"
+            /** Intent {@code String} extra for stderr value of execute command of the {@link #EXTRA_PLUGIN_RESULT_BUNDLE} */
+            public static final String EXTRA_PLUGIN_RESULT_BUNDLE_STDERR = "stderr"; // Default: "stderr"
+            /** Intent {@code int} extra for exit code value of execute command of the {@link #EXTRA_PLUGIN_RESULT_BUNDLE} */
+            public static final String EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE = "exitCode"; // Default: "exitCode"
+            /** Intent {@code int} extra for err value of execute command of the {@link #EXTRA_PLUGIN_RESULT_BUNDLE} */
+            public static final String EXTRA_PLUGIN_RESULT_BUNDLE_ERR = "err"; // Default: "err"
+            /** Intent {@code String} extra for errmsg value of execute command of the {@link #EXTRA_PLUGIN_RESULT_BUNDLE} */
+            public static final String EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG = "errmsg"; // Default: "errmsg"
 
         }
 
@@ -507,6 +521,12 @@ public final class TermuxConstants {
             public static final String EXTRA_BACKGROUND = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_BACKGROUND"; // Default: "com.termux.RUN_COMMAND_BACKGROUND"
             /** Intent {@code String} extra for session action of foreground commands for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_SESSION_ACTION = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_SESSION_ACTION"; // Default: "com.termux.RUN_COMMAND_SESSION_ACTION"
+            /** Intent {@code String} extra for label of the command for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            public static final String EXTRA_COMMAND_LABEL = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_COMMAND_LABEL"; // Default: "com.termux.RUN_COMMAND_COMMAND_LABEL"
+            /** Intent markdown {@code String} extra for description of the command for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            public static final String EXTRA_COMMAND_DESCRIPTION = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_COMMAND_DESCRIPTION"; // Default: "com.termux.RUN_COMMAND_COMMAND_DESCRIPTION"
+            /** Intent markdown {@code String} extra for help of the command for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            public static final String EXTRA_COMMAND_HELP = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_COMMAND_HELP"; // Default: "com.termux.RUN_COMMAND_COMMAND_HELP"
 
         }
     }
