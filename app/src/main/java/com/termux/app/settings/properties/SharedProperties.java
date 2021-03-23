@@ -42,8 +42,8 @@ public class SharedProperties {
 
     /**
      * The {@link Properties} object that maintains an in-memory cache of values loaded from the
-     * {@link #mPropertiesFile} file. The key/value pairs are of any keys defined by
-     * {@link #mPropertiesList} that are found in the file against their literal values in the file.
+     * {@link #mPropertiesFile} file. The key/value pairs are of any keys that are found in the file
+     * against their literal values in the file.
      */
     private Properties mProperties;
 
@@ -85,9 +85,11 @@ public class SharedProperties {
      * @param context The Context for operations.
      * @param propertiesFile The {@link File} object to load properties from.
      * @param propertiesList The {@link Set<String>} object that defined which properties to load.
+     *                       If this is set to {@code null}, then all properties that exist in
+     *                       {@code propertiesFile} will be read by {@link #loadPropertiesFromDisk()}
      * @param sharedPropertiesParser The implementation of the {@link SharedPropertiesParser} interface.
      */
-    public SharedProperties(@Nonnull Context context, @Nullable File propertiesFile, @Nonnull Set<String> propertiesList, @Nonnull SharedPropertiesParser sharedPropertiesParser) {
+    public SharedProperties(@Nonnull Context context, @Nullable File propertiesFile, Set<String> propertiesList, @Nonnull SharedPropertiesParser sharedPropertiesParser) {
         mContext = context;
         mPropertiesFile = propertiesFile;
         mPropertiesList = propertiesList;
@@ -98,8 +100,9 @@ public class SharedProperties {
     }
 
     /**
-     * Load the properties defined by {@link #mPropertiesList} from the {@link #mPropertiesFile} file
-     * to update the {@link #mProperties} and {@link #mMap} in-memory cache.
+     * Load the properties defined by {@link #mPropertiesList} or all properties if its {@code null}
+     * from the {@link #mPropertiesFile} file to update the {@link #mProperties} and {@link #mMap}
+     * in-memory cache.
      * Properties are not loading automatically when constructor is called and must be manually called.
      */
     public void loadPropertiesFromDisk() {
@@ -115,9 +118,13 @@ public class SharedProperties {
             HashMap<String, Object> map = new HashMap<String, Object>();
             Properties newProperties = new Properties();
 
+            Set<String> propertiesList = mPropertiesList;
+            if(propertiesList == null)
+                propertiesList = properties.stringPropertyNames();
+
             String value;
             Object internalValue;
-            for (String key : mPropertiesList) {
+            for (String key : propertiesList) {
                 value = properties.getProperty(key); // value will be null if key does not exist in propertiesFile
                 Logger.logDebug(LOG_TAG, key + " : " + value);
 
@@ -126,7 +133,7 @@ public class SharedProperties {
                 internalValue = mSharedPropertiesParser.getInternalPropertyValueFromValue(mContext, key, value);
 
                 // If the internal value was successfully added to map, then also add value to newProperties
-                // We only store values in-memory defined by {@link #mPropertiesList}
+                // We only store values in-memory defined by propertiesList
                 if (putToMap(map, key, internalValue)) { // null internalValue will be put into map
                     putToProperties(newProperties, key, value); // null value will **not** be into properties
                 }
