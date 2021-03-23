@@ -2,6 +2,8 @@ plugins {
   id "com.android.application"
 }
 
+ext.markwon_version='4.6.2'
+
 android {
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
     ndkVersion project.properties.ndkVersion
@@ -14,6 +16,10 @@ android {
         implementation 'androidx.preference:preference:1.1.1'
         implementation "androidx.viewpager:viewpager:1.0.0"
         implementation 'com.google.guava:guava:24.1-jre'
+        implementation  "io.noties.markwon:core:$markwon_version"
+        implementation  "io.noties.markwon:ext-strikethrough:$markwon_version"
+        implementation  "io.noties.markwon:linkify:$markwon_version"
+        implementation  "io.noties.markwon:recycler:$markwon_version"
         implementation project(":terminal-view")
     }
 
@@ -89,6 +95,8 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.robolectric:robolectric:4.4'
 }
