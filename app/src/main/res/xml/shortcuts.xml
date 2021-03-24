@@ -13,7 +13,7 @@
         android:shortcutId="new_session"
         android:enabled="true"
         android:icon="@drawable/ic_new_session"
-        android:shortcutShortLabel="@string/acton_new_session"
+        android:shortcutShortLabel="@string/action_new_session"
         tools:targetApi="n_mr1">
         <intent
             android:action="android.intent.action.RUN"
