@@ -214,7 +214,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             // Get the session stored in shared preferences stored by {@link #onStop} if its valid,
             // otherwise get the last session currently running.
             mTermuxSessionClient.setCurrentSession(mTermuxSessionClient.getCurrentStoredSessionOrLast());
-            terminalSessionListNotifyUpdated();
+            termuxSessionListNotifyUpdated();
         }
 
         registerReceiver(mTermuxActivityBroadcastReceiever, new IntentFilter(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE));
@@ -242,7 +242,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         setTermuxSessionsListView();
 
-        if (mTermuxService.getSessions().isEmpty()) {
+        if (mTermuxService.isTermuxSessionsEmpty()) {
             if (mIsVisible) {
                 TermuxInstaller.setupIfNeeded(TermuxActivity.this, () -> {
                     if (mTermuxService == null) return; // Activity might have been destroyed.
@@ -395,9 +395,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> mTermuxSessionClient.addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
-            DialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null, R.string.action_create_named_session_confirm,
-                text -> mTermuxSessionClient.addNewSession(false, text), R.string.action_new_session_failsafe, text -> mTermuxSessionClient.addNewSession(true, text)
-                , -1, null, null);
+            DialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
+                R.string.action_create_named_session_confirm, text -> mTermuxSessionClient.addNewSession(false, text),
+                R.string.action_new_session_failsafe, text -> mTermuxSessionClient.addNewSession(true, text),
+                -1, null, null);
             return true;
         });
     }
@@ -439,7 +440,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private void setTermuxSessionsListView() {
         ListView termuxSessionsListView = findViewById(R.id.terminal_sessions_list);
-        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getSessions());
+        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getTermuxSessions());
         termuxSessionsListView.setAdapter(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemClickListener(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
@@ -468,6 +469,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     /** Show a toast and dismiss the last one if still visible. */
     public void showToast(String text, boolean longDuration) {
+        if(text == null || text.isEmpty()) return;
         if (mLastToast != null) mLastToast.cancel();
         mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
         mLastToast.setGravity(Gravity.TOP, 0, 0);
@@ -642,7 +644,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return (DrawerLayout) findViewById(R.id.drawer_layout);
     }
 
-    public void terminalSessionListNotifyUpdated() {
+    public void termuxSessionListNotifyUpdated() {
         mTermuxSessionListViewController.notifyDataSetChanged();
     }
 
@@ -682,6 +684,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 
 
+
+    public static void updateTermuxActivityStyling(Context context) {
+        // Make sure that terminal styling is always applied.
+        Intent stylingIntent = new Intent(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
+        stylingIntent.putExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE, "styling");
+        context.sendBroadcast(stylingIntent);
+    }
 
     class TermuxActivityBroadcastReceiever extends BroadcastReceiver {
         @Override

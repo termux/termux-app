@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxActivity;
-import com.termux.app.TermuxService;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
@@ -135,10 +134,8 @@ public class TermuxViewClient implements TerminalViewClient {
             } else if (unicodeChar == '-') {
                 changeFontSize(false);
             } else if (unicodeChar >= '1' && unicodeChar <= '9') {
-                int num = unicodeChar - '1';
-                TermuxService service = mActivity.getTermuxService();
-                if (service.getSessions().size() > num)
-                    mTermuxSessionClient.setCurrentSession(service.getSessions().get(num));
+                int index = unicodeChar - '1';
+                mTermuxSessionClient.switchToSession(index);
             }
             return true;
         }

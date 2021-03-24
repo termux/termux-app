@@ -24,14 +24,14 @@ import com.termux.terminal.TerminalSession;
 
 import java.util.List;
 
-public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     final TermuxActivity mActivity;
 
     final StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
     final StyleSpan italicSpan = new StyleSpan(Typeface.ITALIC);
 
-    public TermuxSessionsListViewController(TermuxActivity activity, List<TerminalSession> sessionList) {
+    public TermuxSessionsListViewController(TermuxActivity activity, List<TermuxSession> sessionList) {
         super(activity.getApplicationContext(), R.layout.item_terminal_sessions_list, sessionList);
         this.mActivity = activity;
     }
@@ -48,7 +48,7 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSessi
 
         TextView sessionTitleView = sessionRowView.findViewById(R.id.session_title);
 
-        TerminalSession sessionAtRow = getItem(position);
+        TerminalSession sessionAtRow = getItem(position).getTerminalSession();
         if (sessionAtRow == null) {
             sessionTitleView.setText("null session");
             return sessionRowView;
@@ -91,16 +91,16 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSessi
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        TerminalSession clickedSession = getItem(position);
-        mActivity.getTermuxSessionClient().setCurrentSession(clickedSession);
+        TermuxSession clickedSession = getItem(position);
+        mActivity.getTermuxSessionClient().setCurrentSession(clickedSession.getTerminalSession());
         mActivity.getDrawer().closeDrawers();
 
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        final TerminalSession selectedSession = getItem(position);
-        mActivity.getTermuxSessionClient().renameSession(selectedSession);
+        final TermuxSession selectedSession = getItem(position);
+        mActivity.getTermuxSessionClient().renameSession(selectedSession.getTerminalSession());
         return true;
     }
 

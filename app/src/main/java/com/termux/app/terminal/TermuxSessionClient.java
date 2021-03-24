@@ -27,7 +27,6 @@ import com.termux.terminal.TextStyle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
 
 public class TermuxSessionClient extends TermuxSessionClientBase {
@@ -68,7 +67,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
             mActivity.showToast(toToastTitle(updatedSession), true);
         }
 
-        terminalSessionListNotifyUpdated();
+        termuxSessionListNotifyUpdated();
     }
 
     @Override
@@ -81,7 +80,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
 
         if (mActivity.isVisible() && finishedSession != mActivity.getCurrentSession()) {
             // Show toast for non-current sessions that exit.
-            int indexOfSession = mActivity.getTermuxService().getSessions().indexOf(finishedSession);
+            int indexOfSession = mActivity.getTermuxService().getIndexOfSession(finishedSession);
             // Verify that session was not removed before we got told about it finishing:
             if (indexOfSession >= 0)
                 mActivity.showToast(toToastTitle(finishedSession) + " - exited", true);
@@ -90,7 +89,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         if (mActivity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
             // On Android TV devices we need to use older behaviour because we may
             // not be able to have multiple launcher icons.
-            if (mActivity.getTermuxService().getSessions().size() > 1) {
+            if (mActivity.getTermuxService().getTermuxSessionsSize() > 1) {
                 removeFinishedSession(finishedSession);
             }
         } else {
@@ -100,8 +99,6 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
                 removeFinishedSession(finishedSession);
             }
         }
-
-        terminalSessionListNotifyUpdated();
     }
 
     @Override
@@ -138,38 +135,49 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
 
 
 
-    /** Try switching to session and note about it, but do nothing if already displaying the session. */
+    /** Try switching to session. */
     public void setCurrentSession(TerminalSession session) {
+        if(session == null) return;
+
         if (mActivity.getTerminalView().attachSession(session)) {
-            noteSessionInfo();
-            updateBackgroundColor();
+            // notify about switched session if not already displaying the session
+            notifyOfSessionChange();
         }
+
+        // We call the following even when the session is already being displayed since config may
+        // be stale, like current session not selected or scrolled to.
+        checkAndScrollToSession(session);
+        updateBackgroundColor();
     }
 
-    void noteSessionInfo() {
+    void notifyOfSessionChange() {
         if (!mActivity.isVisible()) return;
 
         TerminalSession session = mActivity.getCurrentSession();
-        final int indexOfSession = mActivity.getTermuxService().getSessions().indexOf(session);
         mActivity.showToast(toToastTitle(session), false);
-        terminalSessionListNotifyUpdated();
-
-        final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
-        termuxSessionsListView.setItemChecked(indexOfSession, true);
-        termuxSessionsListView.smoothScrollToPosition(indexOfSession);
     }
 
     public void switchToSession(boolean forward) {
         TermuxService service = mActivity.getTermuxService();
 
-        TerminalSession currentSession = mActivity.getCurrentSession();
-        int index = service.getSessions().indexOf(currentSession);
+        TerminalSession currentTerminalSession = mActivity.getCurrentSession();
+        int index = service.getIndexOfSession(currentTerminalSession);
+        int size = service.getTermuxSessionsSize();
         if (forward) {
-            if (++index >= service.getSessions().size()) index = 0;
+            if (++index >= size) index = 0;
         } else {
-            if (--index < 0) index = service.getSessions().size() - 1;
+            if (--index < 0) index = size - 1;
         }
-        setCurrentSession(service.getSessions().get(index));
+
+        TermuxSession termuxSession = service.getTermuxSession(index);
+        if(termuxSession != null)
+            setCurrentSession(termuxSession.getTerminalSession());
+    }
+
+    public void switchToSession(int index) {
+        TermuxSession termuxSession = mActivity.getTermuxService().getTermuxSession(index);
+        if(termuxSession != null)
+            setCurrentSession(termuxSession.getTerminalSession());
     }
 
     @SuppressLint("InflateParams")
@@ -178,12 +186,12 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
 
         DialogUtils.textInput(mActivity, R.string.title_rename_session, sessionToRename.mSessionName, R.string.action_rename_session_confirm, text -> {
             sessionToRename.mSessionName = text;
-            terminalSessionListNotifyUpdated();
+            termuxSessionListNotifyUpdated();
         }, -1, null, -1, null, null);
     }
 
     public void addNewSession(boolean isFailSafe, String sessionName) {
-        if (mActivity.getTermuxService().getSessions().size() >= MAX_SESSIONS) {
+        if (mActivity.getTermuxService().getTermuxSessionsSize() >= MAX_SESSIONS) {
             new AlertDialog.Builder(mActivity).setTitle(R.string.title_max_terminals_reached).setMessage(R.string.msg_max_terminals_reached)
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
@@ -196,11 +204,12 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
                 workingDirectory = currentSession.getCwd();
             }
 
-            TerminalSession newSession = mActivity.getTermuxService().createTerminalSession(null, null, workingDirectory, isFailSafe);
-            if (sessionName != null) {
-                newSession.mSessionName = sessionName;
-            }
-            setCurrentSession(newSession);
+            TermuxSession newTermuxSession = mActivity.getTermuxService().createTermuxSession(null, null, workingDirectory, isFailSafe, sessionName);
+            if (newTermuxSession == null) return;
+
+            TerminalSession newTerminalSession = newTermuxSession.getTerminalSession();
+            setCurrentSession(newTerminalSession);
+
             mActivity.getDrawer().closeDrawers();
         }
     }
@@ -222,8 +231,11 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
             return stored;
         } else {
             // Else return the last session currently running
-            List<TerminalSession> sessions = mActivity.getTermuxService().getSessions();
-            return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
+            TermuxSession termuxSession = mActivity.getTermuxService().getLastTermuxSession();
+            if(termuxSession != null)
+                return termuxSession.getTerminalSession();
+            else
+                return null;
         }
     }
 
@@ -235,41 +247,50 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
             return null;
 
         // Check if the session handle found matches one of the currently running sessions
-        List<TerminalSession> sessions = context.getTermuxService().getSessions();
-        for (int i = 0, len = sessions.size(); i < len; i++) {
-            TerminalSession session = sessions.get(i);
-            if (session.mHandle.equals(sessionHandle))
-                return session;
-        }
-
-        return null;
+        return context.getTermuxService().getTerminalSessionForHandle(sessionHandle);
     }
 
     public void removeFinishedSession(TerminalSession finishedSession) {
         // Return pressed with finished session - remove it.
         TermuxService service = mActivity.getTermuxService();
 
-        int index = service.removeTerminalSession(finishedSession);
-        terminalSessionListNotifyUpdated();
-        if (mActivity.getTermuxService().getSessions().isEmpty()) {
+        int index = service.removeTermuxSession(finishedSession);
+        int size = mActivity.getTermuxService().getTermuxSessionsSize();
+        if (size == 0) {
             // There are no sessions to show, so finish the activity.
             mActivity.finishActivityIfNotFinishing();
         } else {
-            if (index >= service.getSessions().size()) {
-                index = service.getSessions().size() - 1;
+            if (index >= size) {
+                index = size - 1;
             }
-            setCurrentSession(service.getSessions().get(index));
+            TermuxSession termuxSession = service.getTermuxSession(index);
+            if(termuxSession != null)
+                setCurrentSession(termuxSession.getTerminalSession());
         }
     }
 
-    public void terminalSessionListNotifyUpdated() {
-        mActivity.terminalSessionListNotifyUpdated();
+    public void termuxSessionListNotifyUpdated() {
+        mActivity.termuxSessionListNotifyUpdated();
+    }
+
+    public void checkAndScrollToSession(TerminalSession session) {
+        if (!mActivity.isVisible()) return;
+        final int indexOfSession = mActivity.getTermuxService().getIndexOfSession(session);
+        if (indexOfSession < 0) return;
+        final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
+        if(termuxSessionsListView == null) return;
+
+        termuxSessionsListView.setItemChecked(indexOfSession, true);
+        // Delay is necessary otherwise sometimes scroll to newly added session does not happen
+        termuxSessionsListView.postDelayed(() -> termuxSessionsListView.smoothScrollToPosition(indexOfSession), 1000);
+
+        Logger.logError("scrolled to " + indexOfSession);
     }
 
 
-
     String toToastTitle(TerminalSession session) {
-        final int indexOfSession = mActivity.getTermuxService().getSessions().indexOf(session);
+        final int indexOfSession = mActivity.getTermuxService().getIndexOfSession(session);
+        if (indexOfSession < 0) return null;
         StringBuilder toastTitle = new StringBuilder("[" + (indexOfSession + 1) + "]");
         if (!TextUtils.isEmpty(session.mSessionName)) {
             toastTitle.append(" ").append(session.mSessionName);
@@ -311,6 +332,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
     }
 
     public void updateBackgroundColor() {
+        if (!mActivity.isVisible()) return;
         TerminalSession session = mActivity.getCurrentSession();
         if (session != null && session.getEmulator() != null) {
             mActivity.getWindow().getDecorView().setBackgroundColor(session.getEmulator().mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]);
