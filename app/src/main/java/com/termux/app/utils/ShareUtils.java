@@ -43,7 +43,7 @@ public class ShareUtils {
         shareTextIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
         shareTextIntent.putExtra(Intent.EXTRA_TEXT, text);
 
-        openSystemAppChooser(context, shareTextIntent, context.getString(R.string.share_with));
+        openSystemAppChooser(context, shareTextIntent, context.getString(R.string.title_share_with));
     }
 
     /**

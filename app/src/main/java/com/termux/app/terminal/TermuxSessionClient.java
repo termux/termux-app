@@ -176,7 +176,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
     public void renameSession(final TerminalSession sessionToRename) {
         if (sessionToRename == null) return;
 
-        DialogUtils.textInput(mActivity, R.string.session_rename_title, sessionToRename.mSessionName, R.string.session_rename_positive_button, text -> {
+        DialogUtils.textInput(mActivity, R.string.title_rename_session, sessionToRename.mSessionName, R.string.action_rename_session_confirm, text -> {
             sessionToRename.mSessionName = text;
             terminalSessionListNotifyUpdated();
         }, -1, null, -1, null, null);
@@ -184,7 +184,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
 
     public void addNewSession(boolean isFailSafe, String sessionName) {
         if (mActivity.getTermuxService().getSessions().size() >= MAX_SESSIONS) {
-            new AlertDialog.Builder(mActivity).setTitle(R.string.max_terminals_reached_title).setMessage(R.string.max_terminals_reached_message)
+            new AlertDialog.Builder(mActivity).setTitle(R.string.title_max_terminals_reached).setMessage(R.string.msg_max_terminals_reached)
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
             TerminalSession currentSession = mActivity.getCurrentSession();

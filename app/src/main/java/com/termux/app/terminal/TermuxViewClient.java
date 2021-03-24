@@ -346,8 +346,8 @@ public class TermuxViewClient implements TerminalViewClient {
             intent.setType("text/plain");
             transcriptText = TextDataUtils.getTruncatedCommandOutput(transcriptText, 100_000);
             intent.putExtra(Intent.EXTRA_TEXT, transcriptText);
-            intent.putExtra(Intent.EXTRA_SUBJECT, mActivity.getString(R.string.share_transcript_title));
-            mActivity.startActivity(Intent.createChooser(intent, mActivity.getString(R.string.share_transcript_chooser_title)));
+            intent.putExtra(Intent.EXTRA_SUBJECT, mActivity.getString(R.string.title_share_transcript));
+            mActivity.startActivity(Intent.createChooser(intent, mActivity.getString(R.string.title_share_transcript_with)));
         } catch (Exception e) {
             Logger.logStackTraceWithMessage("Failed to get share session transcript of length " + transcriptText.length(), e);
         }
@@ -361,7 +361,7 @@ public class TermuxViewClient implements TerminalViewClient {
 
         LinkedHashSet<CharSequence> urlSet = TextDataUtils.extractUrls(text);
         if (urlSet.isEmpty()) {
-            new AlertDialog.Builder(mActivity).setMessage(R.string.select_url_no_found).show();
+            new AlertDialog.Builder(mActivity).setMessage(R.string.title_select_url_none_found).show();
             return;
         }
 
@@ -373,8 +373,8 @@ public class TermuxViewClient implements TerminalViewClient {
             String url = (String) urls[which];
             ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
             clipboard.setPrimaryClip(new ClipData(null, new String[]{"text/plain"}, new ClipData.Item(url)));
-            Toast.makeText(mActivity, R.string.select_url_copied_to_clipboard, Toast.LENGTH_LONG).show();
-        }).setTitle(R.string.select_url_dialog_title).create();
+            Toast.makeText(mActivity, R.string.msg_select_url_copied_to_clipboard, Toast.LENGTH_LONG).show();
+        }).setTitle(R.string.title_select_url_dialog).create();
 
         // Long press to open URL:
         dialog.setOnShowListener(di -> {

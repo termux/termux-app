@@ -22,7 +22,7 @@ import java.util.LinkedList;
 
 /**
  * A document provider for the Storage Access Framework which exposes the files in the
- * $HOME/ folder to other apps.
+ * $HOME/ directory to other apps.
  * <p/>
  * Note that this replaces providing an activity matching the ACTION_GET_CONTENT intent:
  * <p/>
@@ -167,7 +167,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         final int MAX_SEARCH_RESULTS = 50;
         while (!pending.isEmpty() && result.getCount() < MAX_SEARCH_RESULTS) {
             final File file = pending.removeFirst();
-            // Avoid folders outside the $HOME folders linked in to symlinks (to avoid e.g. search
+            // Avoid directories outside the $HOME directory linked with symlinks (to avoid e.g. search
             // through the whole SD card).
             boolean isInsideHome;
             try {

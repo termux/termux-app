@@ -118,7 +118,7 @@ public class TermuxFileReceiverActivity extends Activity {
     }
 
     void promptNameAndSave(final InputStream in, final String attachmentFileName) {
-        DialogUtils.textInput(this, R.string.file_received_title, attachmentFileName, R.string.file_received_edit_button, text -> {
+        DialogUtils.textInput(this, R.string.title_file_received, attachmentFileName, R.string.action_file_received_edit, text -> {
             File outFile = saveStreamWithName(in, text);
             if (outFile == null) return;
 
@@ -141,7 +141,7 @@ public class TermuxFileReceiverActivity extends Activity {
             startService(executeIntent);
             finish();
         },
-            R.string.file_received_open_folder_button, text -> {
+            R.string.action_file_received_open_directory, text -> {
                 if (saveStreamWithName(in, text) == null) return;
 
                 Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE);

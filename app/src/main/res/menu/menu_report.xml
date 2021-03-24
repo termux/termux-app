@@ -5,11 +5,11 @@
     <item
         android:id="@+id/menu_item_share_report"
         android:icon="@drawable/ic_share"
-        android:title="@string/share"
+        android:title="@string/action_share"
         app:showAsAction="never" />
     <item
         android:id="@+id/menu_item_copy_report"
         android:icon="@drawable/ic_copy"
-        android:title="@string/copy"
+        android:title="@string/action_copy"
         app:showAsAction="never" />
 </menu>

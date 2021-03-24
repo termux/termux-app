@@ -15,9 +15,9 @@
 
     <permission
         android:name="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND"
-        android:description="@string/run_command_permission_description"
+        android:description="@string/permission_run_command_description"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/run_command_permission_label"
+        android:label="@string/permission_run_command_label"
         android:protectionLevel="dangerous" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

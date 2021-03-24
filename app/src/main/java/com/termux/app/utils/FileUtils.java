@@ -156,14 +156,14 @@ public class FileUtils {
      * failed, otherwise {@code null}.
      */
     public static String validateRegularFileExistenceAndPermissions(final Context context, final String path, final String parentDirPath, String permissionsToCheck, final boolean setMissingPermissions, final boolean ignoreErrorsIfPathIsUnderParentDirPath) {
-        if (path == null || path.isEmpty()) return context.getString(R.string.null_or_empty_file);
+        if (path == null || path.isEmpty()) return context.getString(R.string.error_null_or_empty_file);
 
         try {
             File file = new File(path);
 
             // If file exits but not a regular file
             if (file.exists() && !file.isFile()) {
-                return context.getString(R.string.non_regular_file_found);
+                return context.getString(R.string.error_non_regular_file_found);
             }
 
             boolean isPathUnderParentDirPath = false;
@@ -183,7 +183,7 @@ public class FileUtils {
             // If path is not a regular file
             // Regular files cannot be automatically created so we do not ignore if missing
             if (!file.isFile()) {
-                return context.getString(R.string.no_regular_file_found);
+                return context.getString(R.string.error_no_regular_file_found);
             }
 
             // If there is not parentDirPath restriction or path is not under parentDirPath or
@@ -197,7 +197,7 @@ public class FileUtils {
         }
         // Some function calls may throw SecurityException, etc
         catch (Exception e) {
-            return context.getString(R.string.validate_file_existence_and_permissions_failed_with_exception, path, e.getMessage());
+            return context.getString(R.string.error_validate_file_existence_and_permissions_failed_with_exception, path, e.getMessage());
         }
 
         return null;
@@ -230,14 +230,14 @@ public class FileUtils {
      * failed, otherwise {@code null}.
      */
     public static String validateDirectoryExistenceAndPermissions(final Context context, final String path, final String parentDirPath, String permissionsToCheck, final boolean createDirectoryIfMissing, final boolean setMissingPermissions, final boolean ignoreErrorsIfPathIsInParentDirPath, final boolean ignoreIfNotExecutable) {
-        if (path == null || path.isEmpty()) return context.getString(R.string.null_or_empty_directory);
+        if (path == null || path.isEmpty()) return context.getString(R.string.error_null_or_empty_directory);
 
         try {
             File file = new File(path);
 
             // If file exits but not a directory file
             if (file.exists() && !file.isDirectory()) {
-                return context.getString(R.string.non_directory_file_found);
+                return context.getString(R.string.error_non_directory_file_found);
             }
 
             boolean isPathInParentDirPath = false;
@@ -254,7 +254,7 @@ public class FileUtils {
                         Logger.logVerbose(LOG_TAG, "Creating missing directory at path: \"" + path + "\"");
                         // If failed to create directory
                         if (!file.mkdirs()) {
-                            return context.getString(R.string.creating_missing_directory_failed, path);
+                            return context.getString(R.string.error_creating_missing_directory_failed, path);
                         }
                     }
 
@@ -271,7 +271,7 @@ public class FileUtils {
                 // If path is not a directory
                 // Directories can be automatically created so we can ignore if missing with above check
                 if (!file.isDirectory()) {
-                    return context.getString(R.string.no_directory_found);
+                    return context.getString(R.string.error_no_directory_found);
                 }
 
                 if (permissionsToCheck != null) {
@@ -282,7 +282,7 @@ public class FileUtils {
         }
         // Some function calls may throw SecurityException, etc
         catch (Exception e) {
-            return context.getString(R.string.validate_directory_existence_and_permissions_failed_with_exception, path, e.getMessage());
+            return context.getString(R.string.error_validate_directory_existence_and_permissions_failed_with_exception, path, e.getMessage());
         }
 
         return null;
@@ -332,11 +332,11 @@ public class FileUtils {
      * @return Returns the {@code errmsg} if validating permissions failed, otherwise {@code null}.
      */
     public static String checkMissingFilePermissions(Context context, String path, String permissionsToCheck, String fileType, boolean ignoreIfNotExecutable) {
-        if (path == null || path.isEmpty()) return context.getString(R.string.null_or_empty_path);
+        if (path == null || path.isEmpty()) return context.getString(R.string.error_null_or_empty_path);
 
         if (!isValidPermissingString(permissionsToCheck)) {
             Logger.logError(LOG_TAG, "Invalid permissionsToCheck passed to checkMissingFilePermissions: \"" + permissionsToCheck + "\"");
-            return context.getString(R.string.invalid_file_permissions_string_to_check);
+            return context.getString(R.string.error_invalid_file_permissions_string_to_check);
         }
 
         if (fileType == null || fileType.isEmpty()) fileType = "File";
@@ -345,17 +345,17 @@ public class FileUtils {
 
         // If file is not readable
         if (permissionsToCheck.contains("r") && !file.canRead()) {
-            return context.getString(R.string.file_not_readable, fileType);
+            return context.getString(R.string.error_file_not_readable, fileType);
         }
 
         // If file is not writable
         if (permissionsToCheck.contains("w") && !file.canWrite()) {
-            return context.getString(R.string.file_not_writable, fileType);
+            return context.getString(R.string.error_file_not_writable, fileType);
         }
         // If file is not executable
         // This canExecute() will give "avc: granted { execute }" warnings for target sdk 29
         else if (permissionsToCheck.contains("x") && !file.canExecute() && !ignoreIfNotExecutable) {
-            return context.getString(R.string.file_not_executable, fileType);
+            return context.getString(R.string.error_file_not_executable, fileType);
         }
 
         return null;

@@ -129,7 +129,7 @@ public class ReportActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.menu_item_share_report) {
             if (mReportInfo != null)
-                ShareUtils.shareText(this, getString(R.string.report_text), mReportInfo.reportString);
+                ShareUtils.shareText(this, getString(R.string.title_report_text), mReportInfo.reportString);
         } else if (id == R.id.menu_item_copy_report) {
             if (mReportInfo != null)
                 ShareUtils.copyTextToClipboard(this, mReportInfo.reportString, null);
