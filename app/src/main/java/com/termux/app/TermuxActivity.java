@@ -32,6 +32,8 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.app.activities.HelpActivity;
+import com.termux.app.activities.SettingsActivity;
 import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
@@ -529,10 +531,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 showStylingDialog();
                 return true;
             case CONTEXT_MENU_HELP_ID:
-                startActivity(new Intent(this, TermuxHelpActivity.class));
+                startActivity(new Intent(this, HelpActivity.class));
                 return true;
             case CONTEXT_MENU_SETTINGS_ID:
-                startActivity(new Intent(this, TermuxSettingsActivity.class));
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             case CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON:
                 toggleKeepScreenOn();

@@ -89,7 +89,7 @@
         </activity-alias>
 
         <activity
-            android:name=".app.TermuxHelpActivity"
+            android:name=".app.activities.HelpActivity"
             android:exported="false"
             android:label="@string/application_name"
             android:parentActivityName=".app.TermuxActivity"
@@ -97,7 +97,7 @@
             android:theme="@android:style/Theme.Material.Light.DarkActionBar" />
 
         <activity
-            android:name=".app.TermuxSettingsActivity"
+            android:name=".app.activities.SettingsActivity"
             android:label="@string/title_activity_termux_settings"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 

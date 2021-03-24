@@ -1,4 +1,4 @@
-package com.termux.app;
+package com.termux.app.activities;
 
 import android.os.Bundle;
 
@@ -8,7 +8,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.termux.R;
 
-public class TermuxSettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

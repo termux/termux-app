@@ -3,6 +3,6 @@
     <Preference
         app:title="@string/debugging_preferences"
         app:summary="Preferences for debugging"
-        app:fragment="com.termux.app.settings.DebuggingPreferencesFragment"/>
+        app:fragment="com.termux.app.fragments.settings.DebuggingPreferencesFragment"/>
 
 </PreferenceScreen>

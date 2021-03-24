@@ -1,4 +1,4 @@
-package com.termux.app;
+package com.termux.app.activities;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -13,7 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 /** Basic embedded browser for viewing help pages. */
-public final class TermuxHelpActivity extends Activity {
+public final class HelpActivity extends Activity {
 
     WebView mWebView;
 
