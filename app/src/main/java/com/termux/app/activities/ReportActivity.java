@@ -29,7 +29,7 @@ import io.noties.markwon.recycler.SimpleEntry;
 
 public class ReportActivity extends AppCompatActivity {
 
-    private static final String ARG_REPORT_INFO = "report_info";
+    private static final String EXTRA_REPORT_INFO = "report_info";
 
     ReportInfo mReportInfo;
 
@@ -70,7 +70,7 @@ public class ReportActivity extends AppCompatActivity {
             return;
         }
 
-        mReportInfo = (ReportInfo) bundle.getSerializable(ARG_REPORT_INFO);
+        mReportInfo = (ReportInfo) bundle.getSerializable(EXTRA_REPORT_INFO);
 
         if (mReportInfo == null) {
             finish();
@@ -108,7 +108,7 @@ public class ReportActivity extends AppCompatActivity {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putSerializable(ARG_REPORT_INFO, mReportInfo);
+        outState.putSerializable(EXTRA_REPORT_INFO, mReportInfo);
     }
 
     @Override
@@ -176,7 +176,7 @@ public class ReportActivity extends AppCompatActivity {
 
         Intent intent = new Intent(context, ReportActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putSerializable(ARG_REPORT_INFO, reportInfo);
+        bundle.putSerializable(EXTRA_REPORT_INFO, reportInfo);
         intent.putExtras(bundle);
 
         // Note that ReportActivity task has documentLaunchMode="intoExisting" set in AndroidManifest.xml
