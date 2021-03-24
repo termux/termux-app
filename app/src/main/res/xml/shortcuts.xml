@@ -1,5 +1,5 @@
 <shortcuts xmlns:tools="http://schemas.android.com/tools"
-           xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         For shortcut.xml:
@@ -33,6 +33,18 @@
             android:targetClass="com.termux.app.TermuxActivity">
             <extra android:name="com.termux.app.failsafe_session" android:value="true" />
         </intent>
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="settings"
+        android:enabled="true"
+        android:icon="@drawable/ic_settings"
+        android:shortcutShortLabel="@string/action_open_settings"
+        tools:targetApi="n_mr1">
+        <intent
+            android:action="android.intent.action.RUN"
+            android:targetPackage="com.termux"
+            android:targetClass="com.termux.app.activities.SettingsActivity"/>
     </shortcut>
 
 </shortcuts>
