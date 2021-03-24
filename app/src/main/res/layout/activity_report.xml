@@ -6,7 +6,7 @@
 
     <include
         layout="@layout/partial_toolbar"
-        android:id="@+id/toolbar_layout"/>
+        android:id="@+id/partial_toolbar"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
