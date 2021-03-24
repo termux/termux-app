@@ -32,7 +32,7 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSessi
     final StyleSpan italicSpan = new StyleSpan(Typeface.ITALIC);
 
     public TermuxSessionsListViewController(TermuxActivity activity, List<TerminalSession> sessionList) {
-        super(activity.getApplicationContext(), R.layout.terminal_sessions_list_item, sessionList);
+        super(activity.getApplicationContext(), R.layout.item_terminal_sessions_list, sessionList);
         this.mActivity = activity;
     }
 
@@ -43,7 +43,7 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSessi
         View sessionRowView = convertView;
         if (sessionRowView == null) {
             LayoutInflater inflater = mActivity.getLayoutInflater();
-            sessionRowView = inflater.inflate(R.layout.terminal_sessions_list_item, parent, false);
+            sessionRowView = inflater.inflate(R.layout.item_terminal_sessions_list, parent, false);
         }
 
         TextView sessionTitleView = sessionRowView.findViewById(R.id.session_title);
@@ -58,7 +58,7 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSessi
 
         if (isUsingBlackUI) {
             sessionTitleView.setBackground(
-                ContextCompat.getDrawable(mActivity, R.drawable.selected_session_background_black)
+                ContextCompat.getDrawable(mActivity, R.drawable.session_background_black_selected)
             );
         }
 

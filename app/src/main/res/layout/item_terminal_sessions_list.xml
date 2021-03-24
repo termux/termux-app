@@ -2,7 +2,7 @@
     android:id="@+id/session_title"
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
-    android:background="@drawable/selected_session_background"
+    android:background="@drawable/session_background_selected"
     android:ellipsize="marquee"
     android:gravity="start|center_vertical"
     android:padding="6dip"

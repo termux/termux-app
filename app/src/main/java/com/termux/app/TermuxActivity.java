@@ -163,7 +163,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.termux_activity);
+        setContentView(R.layout.activity_termux);
 
         View content = findViewById(android.R.id.content);
         content.setOnApplyWindowInsetsListener((v, insets) -> {

@@ -42,7 +42,7 @@ public class TerminalToolbarViewPager {
             LayoutInflater inflater = LayoutInflater.from(mActivity);
             View layout;
             if (position == 0) {
-                layout = inflater.inflate(R.layout.terminal_toolbar_extra_keys_view, collection, false);
+                layout = inflater.inflate(R.layout.view_terminal_toolbar_extra_keys, collection, false);
                 ExtraKeysView extraKeysView = (ExtraKeysView) layout;
                 mActivity.setExtraKeysView(extraKeysView);
                 extraKeysView.reload(mActivity.getProperties().getExtraKeysInfo());
@@ -53,7 +53,7 @@ public class TerminalToolbarViewPager {
                 }
 
             } else {
-                layout = inflater.inflate(R.layout.terminal_toolbar_text_input_view, collection, false);
+                layout = inflater.inflate(R.layout.view_terminal_toolbar_text_input, collection, false);
                 final EditText editText = layout.findViewById(R.id.terminal_toolbar_text_input);
 
                 if(mSavedTextInput != null) {
