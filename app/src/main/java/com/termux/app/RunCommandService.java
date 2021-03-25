@@ -210,9 +210,21 @@ public class RunCommandService extends Service {
         if(!executionCommand.setState(ExecutionState.PRE_EXECUTION))
             return Service.START_NOT_STICKY;
 
+
+
         // If "allow-external-apps" property to not set to "true", then just return
         errmsg = PluginUtils.checkIfRunCommandServiceAllowExternalAppsPolicyIsViolated(this);
         if (errmsg != null) {
+            executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
+            return Service.START_NOT_STICKY;
+        }
+
+
+
+        // If executable is null or empty, then exit here instead of getting canonical path which would expand to "/"
+        if (executionCommand.executable == null || executionCommand.executable.isEmpty()) {
+            errmsg  = this.getString(R.string.error_run_command_service_mandatory_extra_missing, RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
             executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
             return Service.START_NOT_STICKY;
@@ -232,6 +244,8 @@ public class RunCommandService extends Service {
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
             return Service.START_NOT_STICKY;
         }
+
+
 
         // If workingDirectory is not null or empty
         if (executionCommand.workingDirectory != null && !executionCommand.workingDirectory.isEmpty()) {
@@ -254,6 +268,8 @@ public class RunCommandService extends Service {
                 return Service.START_NOT_STICKY;
             }
         }
+
+
 
         executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(FileUtils.getExpandedTermuxPath(executionCommand.executable)).build();
 
