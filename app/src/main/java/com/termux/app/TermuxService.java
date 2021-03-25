@@ -32,6 +32,7 @@ import com.termux.app.utils.ShellUtils;
 import com.termux.app.utils.TextDataUtils;
 import com.termux.models.ExecutionCommand;
 import com.termux.models.ExecutionCommand.ExecutionState;
+import com.termux.app.terminal.TermuxTask;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -71,7 +72,7 @@ public final class TermuxService extends Service {
     private final Handler mHandler = new Handler();
 
     /**
-     * The termux sessions which this service manages.
+     * The foreground termux sessions which this service manages.
      * Note that this list is observed by {@link TermuxActivity#mTermuxSessionListViewController},
      * so any changes must be made on the UI thread and followed by a call to
      * {@link ArrayAdapter#notifyDataSetChanged()} }.
@@ -79,9 +80,9 @@ public final class TermuxService extends Service {
     final List<TermuxSession> mTermuxSessions = new ArrayList<>();
 
     /**
-     * The background jobs which this service manages.
+     * The background termux tasks which this service manages.
      */
-    final List<BackgroundJob> mBackgroundTasks = new ArrayList<>();
+    final List<TermuxTask> mTermuxTasks = new ArrayList<>();
 
     /** The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
      * that holds activity references for activity related functions.
@@ -204,14 +205,23 @@ public final class TermuxService extends Service {
         stopSelf();
     }
 
-
-
     /** Process action to stop service. */
     private void actionStopService() {
         mWantsToStop = true;
         finishAllTermuxSessions();
         requestStopService();
     }
+
+    /** Finish all termux sessions by sending SIGKILL to their shells. */
+    private synchronized void finishAllTermuxSessions() {
+        // TODO: Should SIGKILL also be send to background processes maintained by mTermuxTasks?
+        for (int i = 0; i < mTermuxSessions.size(); i++)
+            mTermuxSessions.get(i).getTerminalSession().finishIfRunning();
+    }
+
+
+
+
 
     /** Process action to acquire Power and Wi-Fi WakeLocks. */
     @SuppressLint({"WakelockTimeout", "BatteryLife"})
@@ -306,36 +316,72 @@ public final class TermuxService extends Service {
         executionCommand.pluginPendingIntent = intent.getParcelableExtra(TERMUX_SERVICE.EXTRA_PENDING_INTENT);
 
         if (executionCommand.inBackground) {
-            executeBackgroundCommand(executionCommand);
+            executeTermuxTaskCommand(executionCommand);
         } else {
             executeTermuxSessionCommand(executionCommand);
         }
     }
 
-    /** Execute a shell command in background with {@link BackgroundJob}. */
-    private void executeBackgroundCommand(ExecutionCommand executionCommand) {
+
+
+
+
+    /** Execute a shell command in background {@link TermuxTask}. */
+    private void executeTermuxTaskCommand(ExecutionCommand executionCommand) {
         if (executionCommand == null) return;
-        
-        Logger.logDebug(LOG_TAG, "Starting background command");
+
+        Logger.logDebug(LOG_TAG, "Starting background termux task command");
+
+        TermuxTask newTermuxTask = createTermuxTask(executionCommand);
+    }
+
+    /** Create a {@link TermuxTask}. */
+    @Nullable
+    public TermuxTask createTermuxTask(String executablePath, String[] arguments, String workingDirectory) {
+        return createTermuxTask(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, workingDirectory, true, false));
+    }
+
+    /** Create a {@link TermuxTask}. */
+    @Nullable
+    public synchronized TermuxTask createTermuxTask(ExecutionCommand executionCommand) {
+        if (executionCommand == null) return null;
+
+        Logger.logDebug(LOG_TAG, "Creating termux task");
+
+        if (!executionCommand.inBackground) {
+            Logger.logDebug(LOG_TAG, "Ignoring a foreground execution command passed to createTermuxTask()");
+            return null;
+        }
 
         if(Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
             Logger.logVerbose(LOG_TAG, executionCommand.toString());
 
-        BackgroundJob task = new BackgroundJob(executionCommand, this);
+        TermuxTask newTermuxTask = TermuxTask.create(this, executionCommand);
+        if (newTermuxTask == null) {
+            // Logger.logError(LOG_TAG, "Failed to execute new termux task command for:\n" + executionCommand.toString());
+            return null;
+        };
 
-        mBackgroundTasks.add(task);
+        mTermuxTasks.add(newTermuxTask);
+
         updateNotification();
+
+        return newTermuxTask;
     }
 
-    /** Callback received when a {@link BackgroundJob} finishes. */
-    public void onBackgroundJobExited(final BackgroundJob task) {
+    /** Callback received when a {@link TermuxTask} finishes. */
+    public synchronized void onTermuxTaskExited(final TermuxTask task) {
         mHandler.post(() -> {
-            mBackgroundTasks.remove(task);
+            mTermuxTasks.remove(task);
             updateNotification();
         });
     }
 
-    /** Execute a shell command in a foreground terminal session. */
+
+
+
+
+    /** Execute a shell command in a foreground {@link TermuxSession}. */
     private void executeTermuxSessionCommand(ExecutionCommand executionCommand) {
         if (executionCommand == null) return;
         
@@ -357,7 +403,7 @@ public final class TermuxService extends Service {
     }
 
     /**
-     * Create a termux session.
+     * Create a {@link TermuxSession}.
      * Currently called by {@link TermuxSessionClient#addNewSession(boolean, String)} to add a new termux session.
      */
     @Nullable
@@ -365,7 +411,7 @@ public final class TermuxService extends Service {
         return createTermuxSession(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, workingDirectory, false, isFailSafe), sessionName);
     }
 
-    /** Create a termux session. */
+    /** Create a {@link TermuxSession}. */
     @Nullable
     public synchronized TermuxSession createTermuxSession(ExecutionCommand executionCommand, String sessionName) {
         if (executionCommand == null) return null;
@@ -428,11 +474,7 @@ public final class TermuxService extends Service {
         return index;
     }
 
-    /** Finish all termux sessions by sending SIGKILL to their shells. */
-    private synchronized void finishAllTermuxSessions() {
-        for (int i = 0; i < mTermuxSessions.size(); i++)
-            mTermuxSessions.get(i).getTerminalSession().finishIfRunning();
-    }
+
 
 
 
@@ -472,6 +514,10 @@ public final class TermuxService extends Service {
     private void startTermuxActivity() {
         startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
+
+
+
+
 
     /** If {@link TermuxActivity} has not bound to the {@link TermuxService} yet or is destroyed, then
      * interface functions requiring the activity should not be available to the terminal sessions,
@@ -519,6 +565,8 @@ public final class TermuxService extends Service {
 
 
 
+
+
     private Notification buildNotification() {
         Intent notifyIntent = new Intent(this, TermuxActivity.class);
         // PendingIntent#getActivity(): "Note that the activity will be started outside of the context of an existing
@@ -527,7 +575,7 @@ public final class TermuxService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notifyIntent, 0);
 
         int sessionCount = getTermuxSessionsSize();
-        int taskCount = mBackgroundTasks.size();
+        int taskCount = mTermuxTasks.size();
         String contentText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
         if (taskCount > 0) {
             contentText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
@@ -587,13 +635,15 @@ public final class TermuxService extends Service {
 
     /** Update the shown foreground service notification after making any changes that affect it. */
     void updateNotification() {
-        if (mWakeLock == null && mTermuxSessions.isEmpty() && mBackgroundTasks.isEmpty()) {
+        if (mWakeLock == null && mTermuxSessions.isEmpty() && mTermuxTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
         }
     }
+
+
 
 
 
