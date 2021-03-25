@@ -1,7 +1,12 @@
 package com.termux.app.terminal;
 
+import androidx.annotation.NonNull;
+
+import com.termux.R;
 import com.termux.app.TermuxConstants;
+import com.termux.app.TermuxService;
 import com.termux.app.utils.Logger;
+import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.ShellUtils;
 import com.termux.models.ExecutionCommand;
 import com.termux.terminal.TerminalSession;
@@ -25,14 +30,12 @@ public class TermuxSession {
         this.mExecutionCommand = executionCommand;
     }
 
-    public static TermuxSession create(ExecutionCommand executionCommand, TermuxSessionClientBase termuxSessionClient, String sessionName) {
-        TermuxConstants.TERMUX_HOME_DIR.mkdirs();
-
+    public static TermuxSession create(@NonNull final TermuxService service, @NonNull ExecutionCommand executionCommand, @NonNull TermuxSessionClientBase termuxSessionClient, String sessionName) {
         if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty()) executionCommand.workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
         String[] environment = ShellUtils.buildEnvironment(executionCommand.isFailsafe, executionCommand.workingDirectory);
-        boolean isLoginShell = false;
 
+        boolean isLoginShell = false;
         if (executionCommand.executable == null) {
             if (!executionCommand.isFailsafe) {
                 for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
@@ -62,8 +65,13 @@ public class TermuxSession {
 
         executionCommand.arguments = arguments;
 
-        if(!executionCommand.setState(ExecutionCommand.ExecutionState.EXECUTING))
+        if(!executionCommand.setState(ExecutionCommand.ExecutionState.EXECUTING)) {
+            executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, service.getString(R.string.error_failed_to_execute_termux_session_command, executionCommand.getCommandIdAndLabelLogString()), null);
+            if(executionCommand.isPluginExecutionCommand) {
+                TermuxSession.processTermuxSessionResult(service, null, executionCommand);
+            }
             return null;
+        }
 
         Logger.logDebug(LOG_TAG, executionCommand.toString());
 
@@ -74,6 +82,26 @@ public class TermuxSession {
         }
 
         return new TermuxSession(terminalSession, executionCommand);
+    }
+
+    public static void processTermuxSessionResult(@NonNull final TermuxService service, final TermuxSession termuxSession, ExecutionCommand executionCommand) {
+        TerminalSession terminalSession = null;
+        if(termuxSession != null) {
+            executionCommand = termuxSession.mExecutionCommand;
+            terminalSession = termuxSession.mTerminalSession;
+        }
+
+        if(executionCommand == null) return;
+
+        if(!executionCommand.isPluginExecutionCommand) return;
+
+        if(terminalSession != null && !terminalSession.isRunning() && executionCommand.hasExecuted() && !executionCommand.isStateFailed()) {
+            executionCommand.stdout = terminalSession.getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
+            executionCommand.stderr = null;
+            executionCommand.exitCode = terminalSession.getExitStatus();
+        }
+
+        PluginUtils.processPluginExecutionCommandResult(service.getApplicationContext(), LOG_TAG, executionCommand);
     }
 
     public TerminalSession getTerminalSession() {

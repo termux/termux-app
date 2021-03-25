@@ -2,6 +2,7 @@ package com.termux.app.terminal;
 
 import androidx.annotation.NonNull;
 
+import com.termux.R;
 import com.termux.app.TermuxConstants;
 import com.termux.app.TermuxService;
 import com.termux.app.utils.Logger;
@@ -53,8 +54,8 @@ public final class TermuxTask {
         try {
             process = Runtime.getRuntime().exec(commandArray, env, new File(executionCommand.workingDirectory));
         } catch (IOException e) {
-            executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, "Failed to run \"" + executionCommand.commandLabel + "\" background task", e);
-            TermuxTask.processTermuxTaskResult(service, null, executionCommand);
+            executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, service.getString(R.string.error_failed_to_execute_termux_task_command, executionCommand.getCommandIdAndLabelLogString()), e);
+            TermuxSession.processTermuxSessionResult(service, null, executionCommand);
             return null;
         }
 
@@ -117,7 +118,7 @@ public final class TermuxTask {
         return termuxTask;
     }
 
-    public static void processTermuxTaskResult(final TermuxService service, final TermuxTask termuxTask, ExecutionCommand executionCommand) {
+    public static void processTermuxTaskResult(@NonNull final TermuxService service, final TermuxTask termuxTask, ExecutionCommand executionCommand) {
         if(termuxTask != null)
             executionCommand = termuxTask.mExecutionCommand;
 
@@ -125,7 +126,7 @@ public final class TermuxTask {
 
         PluginUtils.processPluginExecutionCommandResult(service.getApplicationContext(), LOG_TAG, executionCommand);
 
-        if(termuxTask != null && service != null)
+        if(termuxTask != null)
             service.onTermuxTaskExited(termuxTask);
     }
 

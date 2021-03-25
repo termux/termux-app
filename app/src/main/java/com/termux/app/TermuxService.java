@@ -216,9 +216,22 @@ public final class TermuxService extends Service {
 
     /** Finish all termux sessions by sending SIGKILL to their shells. */
     private synchronized void finishAllTermuxSessions() {
+        ExecutionCommand executionCommand;
+
         // TODO: Should SIGKILL also be send to background processes maintained by mTermuxTasks?
-        for (int i = 0; i < mTermuxSessions.size(); i++)
-            mTermuxSessions.get(i).getTerminalSession().finishIfRunning();
+        for (int i = 0; i < mTermuxSessions.size(); i++) {
+            TermuxSession termuxSession = mTermuxSessions.get(i);
+            executionCommand = termuxSession.getExecutionCommand();
+
+            // If the execution command was started for a plugin and is currently executing, then notify the callers
+            if(executionCommand.isPluginExecutionCommand && executionCommand.isExecuting()) {
+                if (executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, this.getString(R.string.error_sending_sigkill_to_process), null)) {
+                    TermuxSession.processTermuxSessionResult(this, termuxSession, null);
+                }
+            }
+
+            termuxSession.getTerminalSession().finishIfRunning();
+        }
     }
 
 
@@ -360,7 +373,7 @@ public final class TermuxService extends Service {
 
         TermuxTask newTermuxTask = TermuxTask.create(this, executionCommand);
         if (newTermuxTask == null) {
-            // Logger.logError(LOG_TAG, "Failed to execute new termux task command for:\n" + executionCommand.toString());
+            Logger.logError(LOG_TAG, "Failed to execute new termux task command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             return null;
         };
 
@@ -428,9 +441,9 @@ public final class TermuxService extends Service {
         if(Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
             Logger.logVerbose(LOG_TAG, executionCommand.toString());
         
-        TermuxSession newTermuxSession = TermuxSession.create(executionCommand, getTermuxSessionClient(), sessionName);
+        TermuxSession newTermuxSession = TermuxSession.create(this, executionCommand, getTermuxSessionClient(), sessionName);
         if (newTermuxSession == null) {
-            Logger.logError(LOG_TAG, "Failed to execute new termux session command for:\n" + executionCommand.toString());
+            Logger.logError(LOG_TAG, "Failed to execute new termux session command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             return null;
         };
 
@@ -455,7 +468,11 @@ public final class TermuxService extends Service {
             TermuxSession termuxSession = mTermuxSessions.get(index);
 
             if (termuxSession.getExecutionCommand().setState(ExecutionState.EXECUTED)) {
-                ;
+                // If the execution command was started for a plugin and is currently executing, then process the result
+                if(termuxSession.getExecutionCommand().isPluginExecutionCommand)
+                    TermuxSession.processTermuxSessionResult(this, termuxSession, null);
+                else
+                    termuxSession.getExecutionCommand().setState(ExecutionState.SUCCESS);
             }
 
             mTermuxSessions.remove(termuxSession);

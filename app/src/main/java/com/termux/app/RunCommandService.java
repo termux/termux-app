@@ -1,5 +1,7 @@
 package com.termux.app;
 
+import android.app.Activity;
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
@@ -104,6 +106,10 @@ import com.termux.models.ExecutionCommand.ExecutionState;
  *      the command. This can add details about the command. 3rd party apps can provide more info
  *      to users for setting up commands. Ideally a url link should be provided that goes into full
  *      details.
+ * 9. The {@code Parcelable} {@link RUN_COMMAND_SERVICE#EXTRA_PENDING_INTENT} extra containing the
+ *      pending intent with which result of commands should be returned to the caller. The results
+ *      will be sent in the {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE} bundle. This is optional
+ *      and only needed if caller wants the results back.
  *
  *
  * The {@link RUN_COMMAND_SERVICE#EXTRA_COMMAND_PATH} and {@link RUN_COMMAND_SERVICE#EXTRA_WORKDIR}
@@ -132,19 +138,23 @@ import com.termux.models.ExecutionCommand.ExecutionState;
  * https://developer.android.com/training/basics/intents/package-visibility#package-name
  *
  *
+ * Its probably wiser for apps to import the {@link TermuxConstants} class and use the variables
+ * provided for actions and extras instead of using hardcoded string values.
  *
  * Sample code to run command "top" with java:
- *   Intent intent = new Intent();
- *   intent.setClassName("com.termux", "com.termux.app.RunCommandService");
- *   intent.setAction("com.termux.RUN_COMMAND");
- *   intent.putExtra("com.termux.RUN_COMMAND_PATH", "/data/data/com.termux/files/usr/bin/top");
- *   intent.putExtra("com.termux.RUN_COMMAND_ARGUMENTS", new String[]{"-n", "5"});
- *   intent.putExtra("com.termux.RUN_COMMAND_WORKDIR", "/data/data/com.termux/files/home");
- *   intent.putExtra("com.termux.RUN_COMMAND_BACKGROUND", false);
- *   intent.putExtra("com.termux.RUN_COMMAND_SESSION_ACTION", "0");
- *   startService(intent);
+ * ```
+ * intent.setClassName("com.termux", "com.termux.app.RunCommandService");
+ * intent.setAction("com.termux.RUN_COMMAND");
+ * intent.putExtra("com.termux.RUN_COMMAND_PATH", "/data/data/com.termux/files/usr/bin/top");
+ * intent.putExtra("com.termux.RUN_COMMAND_ARGUMENTS", new String[]{"-n", "5"});
+ * intent.putExtra("com.termux.RUN_COMMAND_WORKDIR", "/data/data/com.termux/files/home");
+ * intent.putExtra("com.termux.RUN_COMMAND_BACKGROUND", false);
+ * intent.putExtra("com.termux.RUN_COMMAND_SESSION_ACTION", "0");
+ * startService(intent);
+ * ```
  *
  * Sample code to run command "top" with "am startservice" command:
+ * ```
  * am startservice --user 0 -n com.termux/com.termux.app.RunCommandService \
  * -a com.termux.RUN_COMMAND \
  * --es com.termux.RUN_COMMAND_PATH '/data/data/com.termux/files/usr/bin/top' \
@@ -152,6 +162,111 @@ import com.termux.models.ExecutionCommand.ExecutionState;
  * --es com.termux.RUN_COMMAND_WORKDIR '/data/data/com.termux/files/home' \
  * --ez com.termux.RUN_COMMAND_BACKGROUND 'false' \
  * --es com.termux.RUN_COMMAND_SESSION_ACTION '0'
+ *
+ *
+ *
+ *
+ * The {@link RUN_COMMAND_SERVICE#ACTION_RUN_COMMAND} intent returns the following extras
+ * in the {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE} bundle if a pending intent is sent by the
+ * called in {@code Parcelable} {@link RUN_COMMAND_SERVICE#EXTRA_PENDING_INTENT} extra:
+ *
+ * For foreground commands ({@link RUN_COMMAND_SERVICE#EXTRA_BACKGROUND} is `false`):
+ * - {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT} will contain session transcript.
+ * - {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDERR} will be null since its not used.
+ * - {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE} will contain exit code of session.
+
+ * For background commands ({@link RUN_COMMAND_SERVICE#EXTRA_BACKGROUND} is `true`):
+ * - {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT} will contain stdout of commands.
+ * - {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDERR} will contain stderr of commands.
+ * - {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE} will contain exit code of command.
+ *
+ * The {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT_ORIGINAL_LENGTH} and
+ * {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDERR_ORIGINAL_LENGTH} will contain
+ * the original length of stdout and stderr respectively. This is useful to detect cases where
+ * stdout and stderr was too large to be sent back via an intent, otherwise
+ *
+ * The internal errors raised by termux outside the shell will be sent in the the
+ * {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_ERR} and {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG}
+ * extras. These will contain errors like if starting a termux command failed or if the user manually
+ * exited the termux sessions or android killed the termux service before the commands had finished executing.
+ * The err value will be {@link Activity#RESULT_OK}(-1) if no internal errors are raised.
+ *
+ * Note that if stdout or stderr are too large in length, then a {@link android.os.TransactionTooLargeException}
+ * exception will be raised when the pending intent is sent back containing the results, But it cannot
+ * be caught by the intent sender and intent will silently fail with logcat entries for the exception
+ * raised internally by android os components. To prevent this, the stdout and stderr sent
+ * back will be truncated from the start to max 100KB combined. The original length of stdout and
+ * stderr will be provided in
+ * {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT_ORIGINAL_LENGTH} and
+ * {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE_STDERR_ORIGINAL_LENGTH} extras respectively, so
+ * that the caller can check if either of them were truncated. The errmsg will also be truncated
+ * from end to max 25KB to preserve start of stacktraces.
+ *
+ *
+ *
+ * If your app (not shell) wants to receive termux session command results, then put the
+ * pending intent for your app like for an {@link IntentService} in the "com.termux.RUN_COMMAND_PENDING_INTENT"
+ * extra.
+ * ```
+ * // Create intent for your IntentService class
+ * Intent pluginResultsServiceIntent = new Intent(MainActivity.this, PluginResultsService.class);
+ * // Create PendingIntent that will be used by termux service to send result of commands back to PluginResultsService
+ * PendingIntent pendingIntent = PendingIntent.getService(context, 1, pluginResultsServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+ * intent.putExtra("com.termux.RUN_COMMAND_PENDING_INTENT", pendingIntent);
+ * ```
+ *
+ *
+ * Declare `PluginResultsService` entry in AndroidManifest.xml
+ * ```
+ * <service android:name=".PluginResultsService" />
+ * ```
+ *
+ *
+ * Define the `PluginResultsService` class
+ * ```
+ * public class PluginResultsService extends IntentService {
+ *
+ *     public static final String PLUGIN_SERVICE_LABEL = "PluginResultsService";
+ *
+ *     private static final String LOG_TAG = "PluginResultsService";
+ *
+ *     public PluginResultsService(){
+ *         super(PLUGIN_SERVICE_LABEL);
+ *     }
+ *
+ *     @Override
+ *     protected void onHandleIntent(@Nullable Intent intent) {
+ *         if (intent == null) return;
+ *
+ *         if(intent.getComponent() != null)
+ *             Log.d(LOG_TAG, PLUGIN_SERVICE_LABEL + " received execution result from " + intent.getComponent().toString());
+ *
+ *
+ *         final Bundle resultBundle = intent.getBundleExtra("result");
+ *         if (resultBundle == null) {
+ *             Log.e(LOG_TAG, "The intent does not contain the result bundle at the \"result\" key.");
+ *             return;
+ *         }
+ *
+ *         Log.d(LOG_TAG, "stdout:\n```\n" + resultBundle.getString("stdout", "") + "\n```\n" +
+ *                 "stdout_original_length: `" + resultBundle.getString("stdout_original_length") + "`\n" +
+ *                 "stderr:\n```\n" + resultBundle.getString("stderr", "") + "\n```\n" +
+ *                 "stderr_original_length: `" + resultBundle.getString("stderr_original_length") + "`\n" +
+ *                 "exitCode: `" + resultBundle.getInt("exitCode") + "`\n" +
+ *                 "errCode: `" + resultBundle.getInt("err") + "`\n" +
+ *                 "errmsg: `" + resultBundle.getString("errmsg", "") + "`");
+ *     }
+ *
+ * }
+ *```
+ *
+ *
+ *
+ *
+ *
+ * A service that receives {@link RUN_COMMAND_SERVICE#ACTION_RUN_COMMAND} intent from third party apps and
+ * plugins that contains info on command execution and forwards the extras to {@link TermuxService}
+ * for the actual execution.
  */
 public class RunCommandService extends Service {
 
@@ -206,6 +321,9 @@ public class RunCommandService extends Service {
         executionCommand.commandLabel = TextDataUtils.getDefaultIfNull(intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_LABEL), "RUN_COMMAND Execution Intent Command");
         executionCommand.commandDescription = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_DESCRIPTION);
         executionCommand.commandHelp = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_HELP);
+        executionCommand.pluginPendingIntent = intent.getParcelableExtra(RUN_COMMAND_SERVICE.EXTRA_PENDING_INTENT);
+
+
 
         if(!executionCommand.setState(ExecutionState.PRE_EXECUTION))
             return Service.START_NOT_STICKY;
@@ -286,6 +404,7 @@ public class RunCommandService extends Service {
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_COMMAND_DESCRIPTION, executionCommand.commandDescription);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_COMMAND_HELP, executionCommand.commandHelp);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_PLUGIN_API_HELP, executionCommand.pluginAPIHelp);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_PENDING_INTENT, executionCommand.pluginPendingIntent);
 
         // Start TERMUX_SERVICE and pass it execution intent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -6,6 +6,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.MarkdownUtils;
 import com.termux.app.utils.TextDataUtils;
@@ -101,8 +102,9 @@ public class ExecutionCommand {
     public String pluginAPIHelp;
 
 
-    /** Defines if {@link ExecutionCommand} was started because of an external plugin request or from
-     * within Termux app itself. */
+    /** Defines if {@link ExecutionCommand} was started because of an external plugin request
+     * like {@link TERMUX_SERVICE#ACTION_SERVICE_EXECUTE} intent or from within Termux app itself.
+     */
     public boolean isPluginExecutionCommand;
     /** Defines {@link PendingIntent} that should be sent if an external plugin requested the execution. */
     public PendingIntent pluginPendingIntent;
@@ -503,7 +505,7 @@ public class ExecutionCommand {
 
 
 
-    public boolean setState(ExecutionState newState) {
+    public synchronized boolean setState(ExecutionState newState) {
         // The state transition cannot go back or change if already at {@link ExecutionState#SUCCESS}
         if(newState.getValue() < currentState.getValue() || currentState == ExecutionState.SUCCESS) {
             Logger.logError("Invalid "+ getCommandIdAndLabelLogString() + " state transition from \"" + currentState.getName() + "\" to " +  "\"" + newState.getName() + "\"");
@@ -520,7 +522,7 @@ public class ExecutionCommand {
         return  true;
     }
 
-    public boolean setStateFailed(int errCode, String errmsg,  Throwable throwable) {
+    public synchronized boolean setStateFailed(int errCode, String errmsg,  Throwable throwable) {
         if (errCode > RESULT_CODE_OK) {
             this.errCode = errCode;
         } else {
@@ -542,7 +544,7 @@ public class ExecutionCommand {
         return true;
     }
 
-    public boolean isStateFailed() {
+    public synchronized boolean isStateFailed() {
         if(currentState != ExecutionState.FAILED)
             return false;
 
@@ -554,8 +556,12 @@ public class ExecutionCommand {
         }
     }
 
-    public boolean hasExecuted() {
+    public synchronized boolean hasExecuted() {
         return currentState.getValue() >= ExecutionState.EXECUTED.getValue();
+    }
+
+    public synchronized boolean isExecuting() {
+        return currentState == ExecutionState.EXECUTING;
     }
 
 }

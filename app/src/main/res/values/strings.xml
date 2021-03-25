@@ -96,6 +96,9 @@
     <!-- Termux Execution Commands -->
     <string name="msg_executable_absolute_path">Executable Absolute Path: \"%1$s\"</string>
     <string name="msg_working_directory_absolute_path">Working Directory Absolute Path: \"%1$s\"</string>
+    <string name="error_sending_sigkill_to_process">Sending SIGKILL to process on user request or because android is killing the service</string>
+    <string name="error_failed_to_execute_termux_session_command">"Failed to execute \"%1$s\" termux session command"</string>
+    <string name="error_failed_to_execute_termux_task_command">"Failed to execute \"%1$s\" termux task command"</string>
 
 
 
