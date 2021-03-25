@@ -437,6 +437,10 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_ENFORCE_CHAR_BASED_INPUT, true);
     }
 
+    public boolean shouldSoftKeyboardBeHiddenOnStartup() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP, true);
+    }
+
     public boolean isBackKeyTheEscapeKey() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_BACK_KEY_AS_ESCAPE_KEY, true);
     }

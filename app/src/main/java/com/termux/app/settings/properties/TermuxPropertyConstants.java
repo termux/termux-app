@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.4.0
+ * Version: v0.5.0
  *
  * Changelog
  *
@@ -18,15 +18,18 @@ import java.util.Set;
  *      - Initial Release.
  *
  * - 0.2.0 (2021-03-11)
- *      - Renamed `HOME_PATH` to `TERMUX_HOME_DIR_PATH`
- *      - Renamed `TERMUX_PROPERTIES_PRIMARY_PATH` to `TERMUX_PROPERTIES_PRIMARY_FILE_PATH`
- *      - Renamed `TERMUX_PROPERTIES_SECONDARY_FILE_PATH` to `TERMUX_PROPERTIES_SECONDARY_FILE_PATH`
+ *      - Renamed `HOME_PATH` to `TERMUX_HOME_DIR_PATH`.
+ *      - Renamed `TERMUX_PROPERTIES_PRIMARY_PATH` to `TERMUX_PROPERTIES_PRIMARY_FILE_PATH`.
+ *      - Renamed `TERMUX_PROPERTIES_SECONDARY_FILE_PATH` to `TERMUX_PROPERTIES_SECONDARY_FILE_PATH`.
  *
  * - 0.3.0 (2021-03-16)
- *      - Add `*TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR*`
+ *      - Add `*TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR*`.
  *
  * - 0.4.0 (2021-03-16)
  *      - Removed `MAP_GENERIC_BOOLEAN` and `MAP_GENERIC_INVERTED_BOOLEAN`.
+ *
+ * - 0.5.0 (2021-03-25)
+ *      - Add `KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP`.
  */
 
 /**
@@ -52,6 +55,11 @@ public final class TermuxPropertyConstants {
 
     /** Defines the key for whether to enforce character based input to fix the issue where for some devices like Samsung, the letters might not appear until enter is pressed */
     public static final String KEY_ENFORCE_CHAR_BASED_INPUT =  "enforce-char-based-input"; // Default: "enforce-char-based-input"
+
+
+
+    /** Defines the key for whether to hide soft keyboard when termux app is started */
+    public static final String KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP =  "hide-soft-keyboard-on-startup"; // Default: "hide-soft-keyboard-on-startup"
 
 
 
@@ -163,6 +171,7 @@ public final class TermuxPropertyConstants {
     public static final Set<String> TERMUX_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         // boolean
         KEY_ENFORCE_CHAR_BASED_INPUT,
+        KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_USE_BACK_KEY_AS_ESCAPE_KEY,
         KEY_USE_BLACK_UI,
         KEY_USE_CTRL_SPACE_WORKAROUND,
@@ -196,6 +205,7 @@ public final class TermuxPropertyConstants {
      * */
     public static final Set<String> TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         KEY_ENFORCE_CHAR_BASED_INPUT,
+        KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,

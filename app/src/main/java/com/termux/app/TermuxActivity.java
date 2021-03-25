@@ -405,8 +405,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private void setToggleKeyboardView() {
         findViewById(R.id.toggle_keyboard_button).setOnClickListener(v -> {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
             getDrawer().closeDrawers();
         });
 
@@ -414,6 +414,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             toggleTerminalToolbar();
             return true;
         });
+
+        // If soft keyboard is to be hidden on startup
+        if(mProperties.shouldSoftKeyboardBeHiddenOnStartup()) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        }
     }
 
 
