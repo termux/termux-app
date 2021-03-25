@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.12.0
+ * Version: v0.13.0
  *
  * Changelog
  *
@@ -81,6 +81,10 @@ import java.io.File;
  *      - Added following to `TERMUX_SERVICE`:
  *          `EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT_ORIGINAL_LENGTH`,
  *          `EXTRA_PLUGIN_RESULT_BUNDLE_STDERR_ORIGINAL_LENGTH`.
+ *
+ * - 0.13.0 (2021-03-25)
+ *      - Added following to `RUN_COMMAND_SERVICE`:
+ *          `EXTRA_PENDING_INTENT`.
  */
 
 /**
@@ -106,7 +110,8 @@ import java.io.File;
  *       use and is also the final package name stored in "AndroidManifest.xml".
  * - The "manifestPlaceholders" values for {@link #TERMUX_PACKAGE_NAME} and *_APP_NAME in "build.gradle".
  * - The "ENTITY" values for {@link #TERMUX_PACKAGE_NAME} and *_APP_NAME in "strings.xml".
- * - The "shortcut.xml" files like in termux-app since dynamic variables don't work in it.
+ * - The "shortcut.xml" and "*_preferences.xml" files like in termux-app since dynamic variables don't
+ *      work in it.
  * - Optionally the "package" in "AndroidManifest.xml" if modifying project structure. This is
  *      package name for java classes project structure and is prefixed if activity and service
  *      names use dot (.) notation.
@@ -441,8 +446,6 @@ public final class TermuxConstants {
             public static final String EXTRA_BACKGROUND = TERMUX_PACKAGE_NAME + ".execute.background"; // Default: "com.termux.execute.background"
             /** Intent {@code String} extra for session action for foreground commands for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_SESSION_ACTION = TERMUX_PACKAGE_NAME + ".execute.session_action"; // Default: "com.termux.execute.session_action"
-            /** Intent {@code Parcelable} extra containing pending intent for the execute command caller */
-            public static final String EXTRA_PENDING_INTENT = "pendingIntent"; // Default: "pendingIntent"
             /** Intent {@code String} extra for label of the command for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_COMMAND_LABEL = TERMUX_PACKAGE_NAME + ".execute.command_label"; // Default: "com.termux.execute.command_label"
             /** Intent markdown {@code String} extra for description of the command for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
@@ -451,6 +454,8 @@ public final class TermuxConstants {
             public static final String EXTRA_COMMAND_HELP = TERMUX_PACKAGE_NAME + ".execute.command_help"; // Default: "com.termux.execute.command_help"
             /** Intent markdown {@code String} extra for help of the plugin API for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent (Internal Use Only) */
             public static final String EXTRA_PLUGIN_API_HELP = TERMUX_PACKAGE_NAME + ".execute.plugin_api_help"; // Default: "com.termux.execute.plugin_help"
+            /** Intent {@code Parcelable} extra containing pending intent for the execute command caller */
+            public static final String EXTRA_PENDING_INTENT = "pendingIntent"; // Default: "pendingIntent"
 
 
 
@@ -536,6 +541,8 @@ public final class TermuxConstants {
             public static final String EXTRA_COMMAND_DESCRIPTION = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_COMMAND_DESCRIPTION"; // Default: "com.termux.RUN_COMMAND_COMMAND_DESCRIPTION"
             /** Intent markdown {@code String} extra for help of the command for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
             public static final String EXTRA_COMMAND_HELP = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_COMMAND_HELP"; // Default: "com.termux.RUN_COMMAND_COMMAND_HELP"
+            /** Intent {@code Parcelable} extra containing pending intent for the RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND intent */
+            public static final String EXTRA_PENDING_INTENT = TERMUX_PACKAGE_NAME + ".RUN_COMMAND_PENDING_INTENT"; // Default: "com.termux.RUN_COMMAND_PENDING_INTENT"
 
         }
     }
