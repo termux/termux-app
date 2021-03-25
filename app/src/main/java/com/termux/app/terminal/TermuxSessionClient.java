@@ -283,8 +283,6 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         termuxSessionsListView.setItemChecked(indexOfSession, true);
         // Delay is necessary otherwise sometimes scroll to newly added session does not happen
         termuxSessionsListView.postDelayed(() -> termuxSessionsListView.smoothScrollToPosition(indexOfSession), 1000);
-
-        Logger.logError("scrolled to " + indexOfSession);
     }
 
 
