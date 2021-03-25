@@ -8,18 +8,36 @@ import java.util.regex.Pattern;
 
 public class TextDataUtils {
 
-    // https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:media2/media2-session/src/main/java/androidx/media2/session/MediaUtils.java
-    public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 256 * 1024; // 256KB
+    public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 100 * 1024; // 100KB
+    public static final int LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES = 4 * 1024; // 4KB
 
-    public static String getTruncatedCommandOutput(String text, int maxLength) {
-        if (text.length() > maxLength) {
+    public static String getTruncatedCommandOutput(String text, int maxLength, boolean fromEnd, boolean onNewline, boolean addPrefix) {
+        if(text == null) return null;
+
+        String prefix = "(truncated) ";
+
+        if(addPrefix)
+            maxLength = maxLength - prefix.length();
+
+        if(maxLength < 0 || text.length() < maxLength) return text;
+
+        if (fromEnd) {
+            text = text.substring(0, Math.min(text.length(), maxLength));
+        } else {
             int cutOffIndex = text.length() - maxLength;
-            int nextNewlineIndex = text.indexOf('\n', cutOffIndex);
-            if (nextNewlineIndex != -1 && nextNewlineIndex != text.length() - 1) {
-                cutOffIndex = nextNewlineIndex + 1;
+
+            if(onNewline) {
+                int nextNewlineIndex = text.indexOf('\n', cutOffIndex);
+                if (nextNewlineIndex != -1 && nextNewlineIndex != text.length() - 1) {
+                    cutOffIndex = nextNewlineIndex + 1;
+                }
             }
-            text = text.substring(cutOffIndex).trim();
+            text = text.substring(cutOffIndex);
         }
+
+        if(addPrefix)
+            text = prefix + text;
+
         return text;
     }
 

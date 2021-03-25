@@ -336,12 +336,13 @@ public class TermuxViewClient implements TerminalViewClient {
         if (session == null) return;
 
         String transcriptText = session.getEmulator().getScreen().getTranscriptTextWithoutJoinedLines().trim();
+        if (transcriptText == null) return;
 
         try {
             // See https://github.com/termux/termux-app/issues/1166.
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setType("text/plain");
-            transcriptText = TextDataUtils.getTruncatedCommandOutput(transcriptText, 100_000);
+            transcriptText = TextDataUtils.getTruncatedCommandOutput(transcriptText, TextDataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();
             intent.putExtra(Intent.EXTRA_TEXT, transcriptText);
             intent.putExtra(Intent.EXTRA_SUBJECT, mActivity.getString(R.string.title_share_transcript));
             mActivity.startActivity(Intent.createChooser(intent, mActivity.getString(R.string.title_share_transcript_with)));
