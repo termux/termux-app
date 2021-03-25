@@ -10,7 +10,7 @@
     android:scrollbarStyle="outsideInset">
 
     <TextView
-        android:id="@+id/text_view"
+        android:id="@+id/code_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@color/background_markdown_code_block"
@@ -21,7 +21,6 @@
         android:paddingRight="16dip"
         android:paddingBottom="8dip"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="12sp"
-        android:textIsSelectable="true" />
+        android:textSize="12sp" />
 
 </HorizontalScrollView>

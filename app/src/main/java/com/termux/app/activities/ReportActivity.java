@@ -92,7 +92,7 @@ public class ReportActivity extends AppCompatActivity {
         final Markwon markwon = MarkdownUtils.getRecyclerMarkwonBuilder(this);
 
         final MarkwonAdapter adapter = MarkwonAdapter.builderTextViewIsRoot(R.layout.activity_report_adapter_node_default)
-            .include(FencedCodeBlock.class, SimpleEntry.create(R.layout.activity_report_adapter_node_code_block, R.id.text_view))
+            .include(FencedCodeBlock.class, SimpleEntry.create(R.layout.activity_report_adapter_node_code_block, R.id.code_text_view))
             .build();
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
