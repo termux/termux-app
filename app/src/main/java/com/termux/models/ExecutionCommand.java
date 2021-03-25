@@ -446,7 +446,7 @@ public class ExecutionCommand {
                 argumentsString.append(MarkdownUtils.getMultiLineMarkdownStringEntry("Arg " + (i + 1), argumentsArray[i], "-")).append("\n");
             }
         } else{
-            argumentsString.append(" -");
+            argumentsString.append(" -  ");
         }
 
         return argumentsString.toString();
