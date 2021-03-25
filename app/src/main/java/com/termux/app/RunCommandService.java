@@ -301,7 +301,7 @@ public class RunCommandService extends Service {
         runStartForeground();
 
         ExecutionCommand executionCommand = new ExecutionCommand();
-        executionCommand.pluginAPIHelp = this.getString(R.string.error_run_command_service_api_help);
+        executionCommand.pluginAPIHelp = this.getString(R.string.error_run_command_service_api_help, TermuxConstants.TERMUX_GITHUB_REPO_URL);
 
         String errmsg;
 

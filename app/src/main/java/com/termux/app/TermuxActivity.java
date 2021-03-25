@@ -584,7 +584,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.
             new AlertDialog.Builder(this).setMessage(getString(R.string.error_styling_not_installed))
-                .setPositiveButton(R.string.action_styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://f-droid.org/en/packages/" + TermuxConstants.TERMUX_STYLING_PACKAGE_NAME + " /")))).setNegativeButton(android.R.string.cancel, null).show();
+                .setPositiveButton(R.string.action_styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL)))).setNegativeButton(android.R.string.cancel, null).show();
         }
     }
     private void toggleKeepScreenOn() {
