@@ -1,5 +1,6 @@
 package com.termux.models;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.net.Uri;
 
@@ -49,14 +50,20 @@ public class ExecutionCommand {
 
     }
 
+    // Define errCode values
+    // TODO: Define custom values for different cases
+    public final static int	RESULT_CODE_OK = Activity.RESULT_OK;
+    public final static int	RESULT_CODE_OK_MINOR_FAILURES = Activity.RESULT_FIRST_USER;
+    public final static int	RESULT_CODE_FAILED = Activity.RESULT_FIRST_USER + 1;
+
     /** The optional unique id for the {@link ExecutionCommand}. */
     public Integer id;
 
 
     /** The current state of the {@link ExecutionCommand}. */
-    public ExecutionState currentState = ExecutionState.PRE_EXECUTION;
+    private ExecutionState currentState = ExecutionState.PRE_EXECUTION;
     /** The previous state of the {@link ExecutionCommand}. */
-    public ExecutionState previousState = ExecutionState.PRE_EXECUTION;
+    private ExecutionState previousState = ExecutionState.PRE_EXECUTION;
 
 
     /** The executable for the {@link ExecutionCommand}. */
@@ -110,7 +117,7 @@ public class ExecutionCommand {
 
 
     /** The internal error code of {@link ExecutionCommand}. */
-    public Integer errCode;
+    public Integer errCode = RESULT_CODE_OK;
     /** The internal error message of {@link ExecutionCommand}. */
     public String errmsg;
     /** The internal exceptions of {@link ExecutionCommand}. */
@@ -137,7 +144,7 @@ public class ExecutionCommand {
     @NonNull
     @Override
     public String toString() {
-        if(currentState.getValue() < ExecutionState.EXECUTED.getValue())
+        if(!hasExecuted())
             return getExecutionInputLogString(this, true);
         else {
             return getExecutionOutputLogString(this, true);
@@ -156,8 +163,7 @@ public class ExecutionCommand {
 
         StringBuilder logString = new StringBuilder();
 
-        logString.append(executionCommand.getIdLogString());
-        logString.append(executionCommand.getCommandLabelLogString()).append(":");
+        logString.append(executionCommand.getCommandIdAndLabelLogString()).append(":");
 
         if(executionCommand.previousState != ExecutionState.PRE_EXECUTION)
             logString.append("\n").append(executionCommand.getPreviousStateLogString());
@@ -194,8 +200,7 @@ public class ExecutionCommand {
 
         StringBuilder logString = new StringBuilder();
 
-        logString.append(executionCommand.getIdLogString());
-        logString.append(executionCommand.getCommandLabelLogString()).append(":");
+        logString.append(executionCommand.getCommandIdAndLabelLogString()).append(":");
 
         logString.append("\n").append(executionCommand.getPreviousStateLogString());
         logString.append("\n").append(executionCommand.getCurrentStateLogString());
@@ -219,7 +224,7 @@ public class ExecutionCommand {
     public static String getExecutionErrLogString(ExecutionCommand executionCommand, boolean ignoreNull) {
         StringBuilder logString = new StringBuilder();
 
-        if(!ignoreNull || (executionCommand.errCode != null && executionCommand.errCode != 0)) {
+        if(!ignoreNull || (executionCommand.isStateFailed())) {
             logString.append("\n").append(executionCommand.getErrCodeLogString());
             logString.append("\n").append(executionCommand.getErrmsgLogString());
             logString.append("\n").append(executionCommand.geStackTracesLogString());
@@ -332,6 +337,10 @@ public class ExecutionCommand {
             return "Execution Command";
     }
 
+    public String getCommandIdAndLabelLogString() {
+        return getIdLogString() + getCommandLabelLogString();
+    }
+
     public String getExecutableLogString() {
         return "Executable: `" + executable + "`";
     }
@@ -380,11 +389,11 @@ public class ExecutionCommand {
     }
 
     public String getStdoutLogString() {
-        return getMultiLineLogStringEntry("Stdout", stdout, "-");
+        return getMultiLineLogStringEntry("Stdout", TextDataUtils.getTruncatedCommandOutput(stdout, TextDataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
     }
 
     public String getStderrLogString() {
-        return getMultiLineLogStringEntry("Stderr", stderr, "-");
+        return getMultiLineLogStringEntry("Stderr", TextDataUtils.getTruncatedCommandOutput(stderr, TextDataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
     }
 
     public String getExitCodeLogString() {
@@ -464,7 +473,9 @@ public class ExecutionCommand {
         if (argumentsArray != null && argumentsArray.length != 0) {
             argumentsString.append("\n```\n");
             for (int i = 0; i != argumentsArray.length; i++) {
-                argumentsString.append(getSingleLineLogStringEntry("Arg " + (i + 1), argumentsArray[i], "-")).append("`\n");
+                argumentsString.append(getSingleLineLogStringEntry("Arg " + (i + 1),
+                    TextDataUtils.getTruncatedCommandOutput(argumentsArray[i], TextDataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, true, false, true),
+                    "-")).append("`\n");
             }
             argumentsString.append("```");
         } else{
@@ -495,7 +506,7 @@ public class ExecutionCommand {
     public boolean setState(ExecutionState newState) {
         // The state transition cannot go back or change if already at {@link ExecutionState#SUCCESS}
         if(newState.getValue() < currentState.getValue() || currentState == ExecutionState.SUCCESS) {
-            Logger.logError("Invalid ExecutionCommand state transition from \"" + currentState.getName() + "\" to " +  "\"" + newState.getName() + "\"");
+            Logger.logError("Invalid "+ getCommandIdAndLabelLogString() + " state transition from \"" + currentState.getName() + "\" to " +  "\"" + newState.getName() + "\"");
             return false;
         }
 
@@ -510,14 +521,17 @@ public class ExecutionCommand {
     }
 
     public boolean setStateFailed(int errCode, String errmsg,  Throwable throwable) {
-        if(errCode < 1)
-            return false;
+        if (errCode > RESULT_CODE_OK) {
+            this.errCode = errCode;
+        } else {
+            Logger.logWarn("Ignoring invalid "  + getCommandIdAndLabelLogString() + " errCode value \"" + errCode + "\". Force setting it to RESULT_CODE_FAILED \"" + RESULT_CODE_FAILED + "\"");
+            this.errCode = RESULT_CODE_FAILED;
+        }
+
+        this.errmsg = errmsg;
 
         if(!setState(ExecutionState.FAILED))
             return false;
-
-        this.errCode = errCode;
-        this.errmsg = errmsg;
 
         if(this.throwableList == null)
             this.throwableList =  new ArrayList<>();
@@ -526,6 +540,22 @@ public class ExecutionCommand {
             this.throwableList.add(throwable);
 
         return true;
+    }
+
+    public boolean isStateFailed() {
+        if(currentState != ExecutionState.FAILED)
+            return false;
+
+        if(errCode <= RESULT_CODE_OK) {
+            Logger.logWarn("The "  + getCommandIdAndLabelLogString() + " has an invalid errCode value \"" + errCode + "\" while having ExecutionState.FAILED state.");
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean hasExecuted() {
+        return currentState.getValue() >= ExecutionState.EXECUTED.getValue();
     }
 
 }

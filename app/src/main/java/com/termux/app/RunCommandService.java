@@ -193,7 +193,7 @@ public class RunCommandService extends Service {
         // If invalid action passed, then just return
         if (!RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND.equals(intent.getAction())) {
             errmsg = this.getString(R.string.error_run_command_service_invalid_intent_action, intent.getAction());
-            executionCommand.setStateFailed(1, errmsg, null);
+            executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
             return Service.START_NOT_STICKY;
         }
@@ -213,7 +213,7 @@ public class RunCommandService extends Service {
         // If "allow-external-apps" property to not set to "true", then just return
         errmsg = PluginUtils.checkIfRunCommandServiceAllowExternalAppsPolicyIsViolated(this);
         if (errmsg != null) {
-            executionCommand.setStateFailed(1, errmsg, null);
+            executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
             return Service.START_NOT_STICKY;
         }
@@ -228,7 +228,7 @@ public class RunCommandService extends Service {
             false, false);
         if (errmsg != null) {
             errmsg  += "\n" + this.getString(R.string.msg_executable_absolute_path, executionCommand.executable);
-            executionCommand.setStateFailed(1, errmsg, null);
+            executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
             return Service.START_NOT_STICKY;
         }
@@ -249,7 +249,7 @@ public class RunCommandService extends Service {
                 true);
             if (errmsg != null) {
                 errmsg  += "\n" + this.getString(R.string.msg_working_directory_absolute_path, executionCommand.workingDirectory);
-                executionCommand.setStateFailed(1, errmsg, null);
+                executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
                 PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
                 return Service.START_NOT_STICKY;
             }
