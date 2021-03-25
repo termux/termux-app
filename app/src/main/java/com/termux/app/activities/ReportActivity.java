@@ -167,13 +167,10 @@ public class ReportActivity extends AppCompatActivity {
 
 
     public static void startReportActivity(@NonNull final Context context, @NonNull final ReportInfo reportInfo) {
-        if(context == null) return;
         context.startActivity(newInstance(context, reportInfo));
     }
 
     public static Intent newInstance(@NonNull final Context context, @NonNull final ReportInfo reportInfo) {
-        if(context == null) return null;
-
         Intent intent = new Intent(context, ReportActivity.class);
         Bundle bundle = new Bundle();
         bundle.putSerializable(EXTRA_REPORT_INFO, reportInfo);

@@ -1,10 +1,8 @@
 package com.termux.app;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
@@ -16,6 +14,7 @@ import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.utils.FileUtils;
 import com.termux.app.utils.Logger;
+import com.termux.app.utils.NotificationUtils;
 import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.TextDataUtils;
 import com.termux.models.ExecutionCommand;
@@ -157,6 +156,7 @@ import com.termux.models.ExecutionCommand.ExecutionState;
 public class RunCommandService extends Service {
 
     private static final String NOTIFICATION_CHANNEL_ID = "termux_run_command_notification_channel";
+    private static final String NOTIFICATION_CHANNEL_NAME = TermuxConstants.TERMUX_APP_NAME + " RunCommandService";
     public static final int NOTIFICATION_ID = 1338;
 
     private static final String LOG_TAG = "RunCommandService";
@@ -313,22 +313,21 @@ public class RunCommandService extends Service {
     }
 
     private Notification buildNotification() {
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentTitle(TermuxConstants.TERMUX_APP_NAME + " Run Command");
-        builder.setSmallIcon(R.drawable.ic_service_notification);
-
-        // Use a low priority:
-        builder.setPriority(Notification.PRIORITY_LOW);
+        // Build the notification
+        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
+            NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_LOW,
+            NOTIFICATION_CHANNEL_NAME, null, null,
+            null, NotificationUtils.NOTIFICATION_MODE_SILENT);
+        if(builder == null)  return null;
 
         // No need to show a timestamp:
         builder.setShowWhen(false);
 
-        // Background color for small notification icon:
-        builder.setColor(0xFF607D8B);
+        // Set notification icon
+        builder.setSmallIcon(R.drawable.ic_service_notification);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(NOTIFICATION_CHANNEL_ID);
-        }
+        // Set background color for small notification icon
+        builder.setColor(0xFF607D8B);
 
         return builder.build();
     }
@@ -336,12 +335,8 @@ public class RunCommandService extends Service {
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
-        String channelName = TermuxConstants.TERMUX_APP_NAME + " Run Command";
-        int importance = NotificationManager.IMPORTANCE_LOW;
-
-        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.createNotificationChannel(channel);
+        NotificationUtils.setupNotificationChannel(this, NOTIFICATION_CHANNEL_ID,
+            NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
     }
 
 }

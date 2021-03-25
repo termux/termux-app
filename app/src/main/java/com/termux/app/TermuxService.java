@@ -2,7 +2,6 @@ package com.termux.app;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -28,6 +27,7 @@ import com.termux.app.terminal.TermuxSession;
 import com.termux.app.terminal.TermuxSessionClient;
 import com.termux.app.terminal.TermuxSessionClientBase;
 import com.termux.app.utils.Logger;
+import com.termux.app.utils.NotificationUtils;
 import com.termux.app.utils.ShellUtils;
 import com.termux.app.utils.TextDataUtils;
 import com.termux.models.ExecutionCommand;
@@ -58,6 +58,7 @@ import javax.annotation.Nullable;
 public final class TermuxService extends Service {
 
     private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
+    private static final String NOTIFICATION_CHANNEL_NAME = TermuxConstants.TERMUX_APP_NAME + " App";
     public static final int NOTIFICATION_ID = 1337;
 
     private static int EXECUTION_ID = 1000;
@@ -512,7 +513,7 @@ public final class TermuxService extends Service {
 
     /** Launch the {@link }TermuxActivity} to bring it to foreground. */
     private void startTermuxActivity() {
-        startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        TermuxActivity.startTermuxActivity(this);
     }
 
 
@@ -568,54 +569,63 @@ public final class TermuxService extends Service {
 
 
     private Notification buildNotification() {
-        Intent notifyIntent = new Intent(this, TermuxActivity.class);
-        // PendingIntent#getActivity(): "Note that the activity will be started outside of the context of an existing
-        // activity, so you must use the Intent.FLAG_ACTIVITY_NEW_TASK launch flag in the Intent":
-        notifyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notifyIntent, 0);
+        Resources res = getResources();
 
+        // Set pending intent to be launched when notification is clicked
+        Intent notificationIntent = TermuxActivity.newInstance(this);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+
+        // Set notification text
         int sessionCount = getTermuxSessionsSize();
         int taskCount = mTermuxTasks.size();
-        String contentText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
+        String notifiationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
         if (taskCount > 0) {
-            contentText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
+            notifiationText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
         }
 
         final boolean wakeLockHeld = mWakeLock != null;
-        if (wakeLockHeld) contentText += " (wake lock held)";
+        if (wakeLockHeld) notifiationText += " (wake lock held)";
 
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentTitle(getText(R.string.application_name));
-        builder.setContentText(contentText);
-        builder.setSmallIcon(R.drawable.ic_service_notification);
-        builder.setContentIntent(pendingIntent);
-        builder.setOngoing(true);
 
+        // Set notification priority
         // If holding a wake or wifi lock consider the notification of high priority since it's using power,
         // otherwise use a low priority
-        builder.setPriority((wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_LOW);
+        int priority = (wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_LOW;
+
+
+        // Build the notification
+        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
+            NOTIFICATION_CHANNEL_ID, priority,
+            getText(R.string.application_name), notifiationText, null,
+            pendingIntent, NotificationUtils.NOTIFICATION_MODE_SILENT);
+        if(builder == null)  return null;
 
         // No need to show a timestamp:
         builder.setShowWhen(false);
 
-        // Background color for small notification icon:
+        // Set notification icon
+        builder.setSmallIcon(R.drawable.ic_service_notification);
+
+        // Set background color for small notification icon
         builder.setColor(0xFF607D8B);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(NOTIFICATION_CHANNEL_ID);
-        }
+        // Termux sessions are always ongoing
+        builder.setOngoing(true);
 
-        Resources res = getResources();
+
+        // Set Exit button action
         Intent exitIntent = new Intent(this, TermuxService.class).setAction(TERMUX_SERVICE.ACTION_STOP_SERVICE);
         builder.addAction(android.R.drawable.ic_delete, res.getString(R.string.notification_action_exit), PendingIntent.getService(this, 0, exitIntent, 0));
 
+
+        // Set Wakelock button actions
         String newWakeAction = wakeLockHeld ? TERMUX_SERVICE.ACTION_WAKE_UNLOCK : TERMUX_SERVICE.ACTION_WAKE_LOCK;
         Intent toggleWakeLockIntent = new Intent(this, TermuxService.class).setAction(newWakeAction);
-        String actionTitle = res.getString(wakeLockHeld ?
-            R.string.notification_action_wake_unlock :
-            R.string.notification_action_wake_lock);
+        String actionTitle = res.getString(wakeLockHeld ? R.string.notification_action_wake_unlock : R.string.notification_action_wake_lock);
         int actionIcon = wakeLockHeld ? android.R.drawable.ic_lock_idle_lock : android.R.drawable.ic_lock_lock;
         builder.addAction(actionIcon, actionTitle, PendingIntent.getService(this, 0, toggleWakeLockIntent, 0));
+
 
         return builder.build();
     }
@@ -623,14 +633,8 @@ public final class TermuxService extends Service {
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
-        String channelName = TermuxConstants.TERMUX_APP_NAME;
-        String channelDescription = "Notifications from " + TermuxConstants.TERMUX_APP_NAME;
-        int importance = NotificationManager.IMPORTANCE_LOW;
-
-        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName,importance);
-        channel.setDescription(channelDescription);
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.createNotificationChannel(channel);
+        NotificationUtils.setupNotificationChannel(this, NOTIFICATION_CHANNEL_ID,
+            NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
     }
 
     /** Update the shown foreground service notification after making any changes that affect it. */

@@ -729,4 +729,16 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     };
 
+
+
+    public static void startTermuxActivity(@NonNull final Context context) {
+        context.startActivity(newInstance(context));
+    }
+
+    public static Intent newInstance(@NonNull final Context context) {
+        Intent intent = new Intent(context, TermuxActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return intent;
+    }
+
 }
