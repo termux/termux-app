@@ -128,6 +128,12 @@
 
 
 
+    <!-- Termux PermissionUtils -->
+    <string name="message_sudo_please_grant_permissions">Please grant permissions on next screen</string>
+    <string name="error_display_over_other_apps_permission_not_granted">&TERMUX_APP_NAME; requires \"Display over other apps\" permission to start terminal sessions from background on Android >= 10. Grants it from Settings -> Apps -> &TERMUX_APP_NAME; -> Advanced</string>
+
+
+
     <!-- Termux File Receiver -->
     <string name="title_file_received">Save file in ~/downloads/</string>
     <string name="action_file_received_edit">Edit</string>

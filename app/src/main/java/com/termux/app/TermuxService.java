@@ -28,6 +28,7 @@ import com.termux.app.terminal.TermuxSessionClient;
 import com.termux.app.terminal.TermuxSessionClientBase;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.NotificationUtils;
+import com.termux.app.utils.PermissionUtils;
 import com.termux.app.utils.ShellUtils;
 import com.termux.app.utils.TextDataUtils;
 import com.termux.models.ExecutionCommand;
@@ -513,7 +514,12 @@ public final class TermuxService extends Service {
 
     /** Launch the {@link }TermuxActivity} to bring it to foreground. */
     private void startTermuxActivity() {
-        TermuxActivity.startTermuxActivity(this);
+        // For android >= 10, apps require Display over other apps permission to start foreground activities
+        // from background (services). If it is not granted, then termux sessions that are started will
+        // show in Termux notification but will not run until user manually clicks the notification.
+        if(PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(this)) {
+            TermuxActivity.startTermuxActivity(this);
+        }
     }
 
 
