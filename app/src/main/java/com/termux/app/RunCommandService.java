@@ -20,7 +20,6 @@ import com.termux.app.utils.NotificationUtils;
 import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.TextDataUtils;
 import com.termux.models.ExecutionCommand;
-import com.termux.models.ExecutionCommand.ExecutionState;
 
 /**
  * Third-party apps that are not part of termux world can run commands in termux context by either
@@ -297,6 +296,8 @@ public class RunCommandService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Logger.logDebug(LOG_TAG, "onStartCommand");
 
+        if(intent == null) return Service.START_NOT_STICKY;;
+
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
 
@@ -309,7 +310,7 @@ public class RunCommandService extends Service {
         if (!RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND.equals(intent.getAction())) {
             errmsg = this.getString(R.string.error_run_command_service_invalid_intent_action, intent.getAction());
             executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
-            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
             return Service.START_NOT_STICKY;
         }
 
@@ -321,20 +322,20 @@ public class RunCommandService extends Service {
         executionCommand.commandLabel = TextDataUtils.getDefaultIfNull(intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_LABEL), "RUN_COMMAND Execution Intent Command");
         executionCommand.commandDescription = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_DESCRIPTION);
         executionCommand.commandHelp = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_HELP);
+        executionCommand.isPluginExecutionCommand = true;
         executionCommand.pluginPendingIntent = intent.getParcelableExtra(RUN_COMMAND_SERVICE.EXTRA_PENDING_INTENT);
 
 
 
-        if(!executionCommand.setState(ExecutionState.PRE_EXECUTION))
-            return Service.START_NOT_STICKY;
-
-
-
         // If "allow-external-apps" property to not set to "true", then just return
+        // We enable force notifications if "allow-external-apps" policy is violated so that the
+        // user knows someone tried to run a command in termux context, since it may be malicious
+        // app or imported (tasker) plugin project and not the user himself. If a pending intent is
+        // also sent, then its creator is also logged and shown.
         errmsg = PluginUtils.checkIfRunCommandServiceAllowExternalAppsPolicyIsViolated(this);
         if (errmsg != null) {
             executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
-            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, true);
             return Service.START_NOT_STICKY;
         }
 
@@ -344,7 +345,7 @@ public class RunCommandService extends Service {
         if (executionCommand.executable == null || executionCommand.executable.isEmpty()) {
             errmsg  = this.getString(R.string.error_run_command_service_mandatory_extra_missing, RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
             executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
-            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
             return Service.START_NOT_STICKY;
         }
 
@@ -359,7 +360,7 @@ public class RunCommandService extends Service {
         if (errmsg != null) {
             errmsg  += "\n" + this.getString(R.string.msg_executable_absolute_path, executionCommand.executable);
             executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
-            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
             return Service.START_NOT_STICKY;
         }
 
@@ -382,7 +383,7 @@ public class RunCommandService extends Service {
             if (errmsg != null) {
                 errmsg  += "\n" + this.getString(R.string.msg_working_directory_absolute_path, executionCommand.workingDirectory);
                 executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
-                PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand);
+                PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
                 return Service.START_NOT_STICKY;
             }
         }

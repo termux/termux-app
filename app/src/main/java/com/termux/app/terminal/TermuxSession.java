@@ -93,6 +93,7 @@ public class TermuxSession {
 
         if(executionCommand == null) return;
 
+        // Must be a normal command like foreground terminal session started by user, so just return
         if(!executionCommand.isPluginExecutionCommand) return;
 
         if(terminalSession != null && !terminalSession.isRunning() && executionCommand.hasExecuted() && !executionCommand.isStateFailed()) {
