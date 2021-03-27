@@ -15,6 +15,7 @@ import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.utils.Logger;
 
 public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         PreferenceManager preferenceManager = getPreferenceManager();
@@ -126,4 +127,5 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
                 return false;
         }
     }
+
 }

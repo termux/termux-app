@@ -1,7 +1,7 @@
 package com.termux.app.settings.preferences;
 
 /*
- * Version: v0.6.0
+ * Version: v0.7.0
  *
  * Changelog
  *
@@ -29,6 +29,10 @@ package com.termux.app.settings.preferences;
  *
  * - 0.6.0 (2021-03-24)
  *      - Change `DEFAULT_VALUE_KEEP_SCREEN_ON` value to `false` in `TERMUX_APP`.
+ *
+ * - 0.7.0 (2021-03-27)
+ *      - Added following to `TERMUX_APP`:
+ *          `KEY_SOFT_KEYBOARD_ENABLED` and `DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED`.
  */
 
 /**
@@ -46,39 +50,47 @@ public final class TermuxPreferenceConstants {
     public static final class TERMUX_APP {
 
         /**
-         * Defines the key for whether to show terminal toolbar containing extra keys and text input field
+         * Defines the key for whether to show terminal toolbar containing extra keys and text input field.
          */
         public static final String KEY_SHOW_TERMINAL_TOOLBAR = "show_extra_keys";
         public static final boolean DEFAULT_VALUE_SHOW_TERMINAL_TOOLBAR = true;
 
 
         /**
-         * Defines the key for whether to always keep screen on
+         * Defines the key for whether the soft keyboard will be enabled, for cases where users want
+         * to use a hardware keyboard instead.
+         */
+        public static final String KEY_SOFT_KEYBOARD_ENABLED = "soft_keyboard_enabled";
+        public static final boolean DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED = true;
+
+
+        /**
+         * Defines the key for whether to always keep screen on.
          */
         public static final String KEY_KEEP_SCREEN_ON = "screen_always_on";
         public static final boolean DEFAULT_VALUE_KEEP_SCREEN_ON = false;
 
 
         /**
-         * Defines the key for font size of termux terminal view
+         * Defines the key for font size of termux terminal view.
          */
         public static final String KEY_FONTSIZE = "fontsize";
 
 
         /**
-         * Defines the key for current termux terminal session
+         * Defines the key for current termux terminal session.
          */
         public static final String KEY_CURRENT_SESSION = "current_session";
 
 
         /**
-         * Defines the key for current termux log level
+         * Defines the key for current termux log level.
          */
         public static final String KEY_LOG_LEVEL = "log_level";
 
 
         /**
-         * Defines the key for last used notification id
+         * Defines the key for last used notification id.
          */
         public static final String KEY_LAST_NOTIFICATION_ID = "last_notification_id";
         public static final int DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID = 0;
@@ -91,7 +103,7 @@ public final class TermuxPreferenceConstants {
         public static final boolean DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
 
         /**
-         * Defines the key for whether flashes and notifications for plugin errors are enabled or not
+         * Defines the key for whether flashes and notifications for plugin errors are enabled or not.
          */
         public static final String KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED = "plugin_error_notifications_enabled";
         public static final boolean DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED = true;
@@ -104,7 +116,7 @@ public final class TermuxPreferenceConstants {
     public static final class TERMUX_TASKER_APP {
 
         /**
-         * Defines the key for current termux log level
+         * Defines the key for current termux log level.
          */
         public static final String KEY_LOG_LEVEL = "log_level";
 

@@ -1,0 +1,15 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="keyboard"
+        app:title="@string/keyboard_header">
+
+        <SwitchPreferenceCompat
+            app:key="soft_keyboard_enabled"
+            app:summaryOff="@string/soft_keyboard_off"
+            app:summaryOn="@string/soft_keyboard_on"
+            app:title="@string/soft_keyboard_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

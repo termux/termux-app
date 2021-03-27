@@ -172,4 +172,17 @@
             <string name="plugin_error_notifications_off">Disable flashes and notifications for plugin errors.</string>
             <string name="plugin_error_notifications_on">Show flashes and notifications for plugin errors. (Default)</string>
 
+
+    <!-- Terminal IO Preferences -->
+    <string name="terminal_io_preferences">Terminal I/O</string>
+
+        <!-- Keyboard Category -->
+        <string name="keyboard_header">Keyboard</string>
+
+            <!-- Soft Keyboard -->
+            <string name="soft_keyboard_title">Soft Keyboard</string>
+            <string name="soft_keyboard_off">Soft keyboard will be disabled.</string>
+            <string name="soft_keyboard_on">Soft keyboard will be enabled. (Default)</string>
+
+
 </resources>

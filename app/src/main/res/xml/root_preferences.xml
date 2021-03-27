@@ -5,4 +5,9 @@
         app:summary="Preferences for debugging"
         app:fragment="com.termux.app.fragments.settings.DebuggingPreferencesFragment"/>
 
+    <Preference
+        app:title="@string/terminal_io_preferences"
+        app:summary="Preferences for terminal I/O"
+        app:fragment="com.termux.app.fragments.settings.TerminalIOPreferencesFragment"/>
+
 </PreferenceScreen>
