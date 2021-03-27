@@ -8,7 +8,7 @@ import com.termux.app.TermuxService;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.ShellUtils;
-import com.termux.models.ExecutionCommand;
+import com.termux.app.models.ExecutionCommand;
 import com.termux.terminal.TerminalSession;
 
 import java.io.File;

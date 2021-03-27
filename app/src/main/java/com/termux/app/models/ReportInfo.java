@@ -1,4 +1,4 @@
-package com.termux.models;
+package com.termux.app.models;
 
 import java.io.Serializable;
 

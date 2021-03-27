@@ -18,9 +18,9 @@ import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
 import com.termux.app.settings.properties.SharedProperties;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
-import com.termux.models.ReportInfo;
-import com.termux.models.ExecutionCommand;
-import com.termux.models.UserAction;
+import com.termux.app.models.ReportInfo;
+import com.termux.app.models.ExecutionCommand;
+import com.termux.app.models.UserAction;
 
 public class PluginUtils {
 

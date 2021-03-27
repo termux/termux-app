@@ -19,7 +19,7 @@ import com.termux.app.TermuxConstants;
 import com.termux.app.utils.MarkdownUtils;
 import com.termux.app.utils.ShareUtils;
 import com.termux.app.utils.TermuxUtils;
-import com.termux.models.ReportInfo;
+import com.termux.app.models.ReportInfo;
 
 import org.commonmark.node.FencedCodeBlock;
 

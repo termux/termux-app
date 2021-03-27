@@ -19,7 +19,7 @@ import com.termux.app.utils.Logger;
 import com.termux.app.utils.NotificationUtils;
 import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.TextDataUtils;
-import com.termux.models.ExecutionCommand;
+import com.termux.app.models.ExecutionCommand;
 
 /**
  * Third-party apps that are not part of termux world can run commands in termux context by either

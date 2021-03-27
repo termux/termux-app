@@ -8,8 +8,8 @@ import com.termux.app.TermuxService;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.ShellUtils;
-import com.termux.models.ExecutionCommand;
-import com.termux.models.ExecutionCommand.ExecutionState;
+import com.termux.app.models.ExecutionCommand;
+import com.termux.app.models.ExecutionCommand.ExecutionState;
 
 import java.io.File;
 import java.io.IOException;

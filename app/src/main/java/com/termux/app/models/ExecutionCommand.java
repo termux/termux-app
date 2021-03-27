@@ -1,4 +1,4 @@
-package com.termux.models;
+package com.termux.app.models;
 
 import android.app.Activity;
 import android.app.PendingIntent;
