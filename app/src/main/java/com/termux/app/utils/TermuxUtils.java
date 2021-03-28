@@ -10,7 +10,6 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 
 import com.google.common.base.Joiner;
-import com.termux.BuildConfig;
 
 import com.termux.app.TermuxConstants;
 
@@ -28,15 +27,77 @@ import java.util.regex.Pattern;
 
 public class TermuxUtils {
 
-    public static Context getTermuxPackageContext(Context context) {
-        try {
-            return context.createPackageContext(TermuxConstants.TERMUX_PACKAGE_NAME, Context.CONTEXT_RESTRICTED);
-        } catch (Exception e) {
-            Logger.logStackTraceWithMessage("Failed to get \"" + TermuxConstants.TERMUX_PACKAGE_NAME + "\" package context. Force using current context.", e);
-            Logger.logError("Force using current context");
-            return context;
-        }
+    /**
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_PACKAGE_NAME} package.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the package.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    public static Context getTermuxPackageContext(@NonNull Context context) {
+        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_PACKAGE_NAME);
     }
+
+    /**
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_API_PACKAGE_NAME} package.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the package.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    public static Context getTermuxAPIPackageContext(@NonNull Context context) {
+        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_API_PACKAGE_NAME);
+    }
+
+    /**
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_BOOT_PACKAGE_NAME} package.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the package.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    public static Context getTermuxBootPackageContext(@NonNull Context context) {
+        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_BOOT_PACKAGE_NAME);
+    }
+
+    /**
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_FLOAT_PACKAGE_NAME} package.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the package.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    public static Context getTermuxFloatPackageContext(@NonNull Context context) {
+        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_FLOAT_PACKAGE_NAME);
+    }
+
+    /**
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_STYLING_PACKAGE_NAME} package.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the package.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    public static Context getTermuxStylingPackageContext(@NonNull Context context) {
+        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_STYLING_PACKAGE_NAME);
+    }
+
+    /**
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_TASKER_PACKAGE_NAME} package.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the package.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    public static Context getTermuxTaskerPackageContext(@NonNull Context context) {
+        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_TASKER_PACKAGE_NAME);
+    }
+
+    /**
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_WIDGET_PACKAGE_NAME} package.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the package.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    public static Context getTermuxWidgetPackageContext(@NonNull Context context) {
+        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_WIDGET_PACKAGE_NAME);
+    }
+
+
 
     /**
      * Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
@@ -44,7 +105,9 @@ public class TermuxUtils {
      *
      * @param context The Context to send the broadcast.
      */
-    public static void sendTermuxOpenedBroadcast(Context context) {
+    public static void sendTermuxOpenedBroadcast(@NonNull Context context) {
+        if (context == null) return;
+
         Intent broadcast = new Intent(TermuxConstants.BROADCAST_TERMUX_OPENED);
         List<ResolveInfo> matches = context.getPackageManager().queryBroadcastReceivers(broadcast, 0);
 
@@ -60,12 +123,78 @@ public class TermuxUtils {
     }
 
     /**
-     * Get a markdown {@link String} for the device details.
+     * Get a markdown {@link String} for the app info. If the {@code context} passed is different
+     * from the {@link TermuxConstants#TERMUX_PACKAGE_NAME} package context, then this function
+     * must have been called by a different package like a plugin, so we return info for both packages
+     * if {@code returnTermuxPackageInfoToo} is {@code true}.
+     *
+     * @param currentPackageContext The context of current package.
+     * @param returnTermuxPackageInfoToo If set to {@code true}, then will return info of the
+     * {@link TermuxConstants#TERMUX_PACKAGE_NAME} package as well if its different from current package.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getAppInfoMarkdownString(@NonNull final Context currentPackageContext, final boolean returnTermuxPackageInfoToo) {
+        if (currentPackageContext == null) return "null";
+
+        StringBuilder markdownString = new StringBuilder();
+
+        Context termuxPackageContext = getTermuxPackageContext(currentPackageContext);
+
+        String termuxPackageName = null;
+        String termuxAppName = null;
+        if(termuxPackageContext != null) {
+            termuxPackageName = PackageUtils.getPackageNameForPackage(termuxPackageContext);
+            termuxAppName = PackageUtils.getAppNameForPackage(termuxPackageContext);
+        }
+
+        String currentPackageName = PackageUtils.getPackageNameForPackage(currentPackageContext);
+        String currentAppName = PackageUtils.getAppNameForPackage(currentPackageContext);
+
+        boolean isTermuxPackage = (termuxPackageName != null && termuxPackageName.equals(currentPackageName));
+
+
+        if(returnTermuxPackageInfoToo && !isTermuxPackage)
+            markdownString.append("## ").append(currentAppName).append(" App Info (Current)\n");
+        else
+            markdownString.append("## ").append(currentAppName).append(" App Info\n");
+        markdownString.append(getAppInfoMarkdownStringInner(currentPackageContext));
+
+        if(returnTermuxPackageInfoToo && !isTermuxPackage) {
+            markdownString.append("\n\n## ").append(termuxAppName).append(" App Info\n");
+            markdownString.append(getAppInfoMarkdownStringInner(termuxPackageContext));
+        }
+
+        markdownString.append("\n##\n");
+
+        return markdownString.toString();
+    }
+
+    /**
+     * Get a markdown {@link String} for the app info for the package associated with the {@code context}.
+     *
+     * @param context The context for operations for the package.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getAppInfoMarkdownStringInner(@NonNull final Context context) {
+        StringBuilder markdownString = new StringBuilder();
+
+        appendPropertyToMarkdown(markdownString,"APP_NAME", PackageUtils.getAppNameForPackage(context));
+        appendPropertyToMarkdown(markdownString,"PACKAGE_NAME", PackageUtils.getPackageNameForPackage(context));
+        appendPropertyToMarkdown(markdownString,"VERSION_NAME", PackageUtils.getVersionNameForPackage(context));
+        appendPropertyToMarkdown(markdownString,"VERSION_CODE", PackageUtils.getVersionCodeForPackage(context));
+        appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(context));
+        appendPropertyToMarkdown(markdownString,"IS_DEBUG_BUILD", PackageUtils.isAppForPackageADebugBuild(context));
+
+        return markdownString.toString();
+    }
+
+    /**
+     * Get a markdown {@link String} for the device info.
      *
      * @param context The context for operations.
      * @return Returns the markdown {@link String}.
      */
-    public static String getDeviceDetailsMarkdownString(final Context context) {
+    public static String getDeviceInfoMarkdownString(@NonNull final Context context) {
         if (context == null) return "null";
 
         // Some properties cannot be read with {@link System#getProperty(String)} but can be read
@@ -74,36 +203,37 @@ public class TermuxUtils {
 
         StringBuilder markdownString = new StringBuilder();
 
-        markdownString.append("#### Software\n");
-        appendPropertyMarkdown(markdownString,
-            TermuxConstants.TERMUX_APP_NAME.toUpperCase() + "_VERSION", getTermuxAppVersionName() + "(" + getTermuxAppVersionCode() + ")");
-        appendPropertyMarkdown(markdownString,TermuxConstants.TERMUX_APP_NAME.toUpperCase() + "_DEBUG_BUILD", isTermuxAppDebugBuild());
-        appendPropertyMarkdown(markdownString,"OS_VERSION", getSystemPropertyWithAndroidAPI("os.version"));
-        appendPropertyMarkdown(markdownString, "SDK_INT", Build.VERSION.SDK_INT);
+        markdownString.append("## Device Info");
+
+        markdownString.append("\n\n### Software\n");
+        appendPropertyToMarkdown(markdownString,"OS_VERSION", getSystemPropertyWithAndroidAPI("os.version"));
+        appendPropertyToMarkdown(markdownString, "SDK_INT", Build.VERSION.SDK_INT);
         // If its a release version
         if ("REL".equals(Build.VERSION.CODENAME))
-            appendPropertyMarkdown(markdownString, "RELEASE", Build.VERSION.RELEASE);
+            appendPropertyToMarkdown(markdownString, "RELEASE", Build.VERSION.RELEASE);
         else
-            appendPropertyMarkdown(markdownString, "CODENAME", Build.VERSION.CODENAME);
-        appendPropertyMarkdown(markdownString, "INCREMENTAL", Build.VERSION.INCREMENTAL);
-        appendPropertyMarkdownIfSet(markdownString, "SECURITY_PATCH", systemProperties.getProperty("ro.build.version.security_patch"));
-        appendPropertyMarkdownIfSet(markdownString, "IS_DEBUGGABLE", systemProperties.getProperty("ro.debuggable"));
-        appendPropertyMarkdownIfSet(markdownString, "IS_EMULATOR", systemProperties.getProperty("ro.boot.qemu"));
-        appendPropertyMarkdownIfSet(markdownString, "IS_TREBLE_ENABLED", systemProperties.getProperty("ro.treble.enabled"));
-        appendPropertyMarkdown(markdownString, "TYPE", Build.TYPE);
-        appendPropertyMarkdown(markdownString, "TAGS", Build.TAGS);
+            appendPropertyToMarkdown(markdownString, "CODENAME", Build.VERSION.CODENAME);
+        appendPropertyToMarkdown(markdownString, "INCREMENTAL", Build.VERSION.INCREMENTAL);
+        appendPropertyToMarkdownIfSet(markdownString, "SECURITY_PATCH", systemProperties.getProperty("ro.build.version.security_patch"));
+        appendPropertyToMarkdownIfSet(markdownString, "IS_DEBUGGABLE", systemProperties.getProperty("ro.debuggable"));
+        appendPropertyToMarkdownIfSet(markdownString, "IS_EMULATOR", systemProperties.getProperty("ro.boot.qemu"));
+        appendPropertyToMarkdownIfSet(markdownString, "IS_TREBLE_ENABLED", systemProperties.getProperty("ro.treble.enabled"));
+        appendPropertyToMarkdown(markdownString, "TYPE", Build.TYPE);
+        appendPropertyToMarkdown(markdownString, "TAGS", Build.TAGS);
 
-        markdownString.append("\n\n#### Hardware\n");
-        appendPropertyMarkdown(markdownString, "MANUFACTURER", Build.MANUFACTURER);
-        appendPropertyMarkdown(markdownString, "BRAND", Build.BRAND);
-        appendPropertyMarkdown(markdownString, "MODEL", Build.MODEL);
-        appendPropertyMarkdown(markdownString, "PRODUCT", Build.PRODUCT);
-        appendPropertyMarkdown(markdownString, "DISPLAY", Build.DISPLAY);
-        appendPropertyMarkdown(markdownString, "ID", Build.ID);
-        appendPropertyMarkdown(markdownString, "BOARD", Build.BOARD);
-        appendPropertyMarkdown(markdownString, "HARDWARE", Build.HARDWARE);
-        appendPropertyMarkdown(markdownString, "DEVICE", Build.DEVICE);
-        appendPropertyMarkdown(markdownString, "SUPPORTED_ABIS", Joiner.on(", ").skipNulls().join(Build.SUPPORTED_ABIS));
+        markdownString.append("\n\n### Hardware\n");
+        appendPropertyToMarkdown(markdownString, "MANUFACTURER", Build.MANUFACTURER);
+        appendPropertyToMarkdown(markdownString, "BRAND", Build.BRAND);
+        appendPropertyToMarkdown(markdownString, "MODEL", Build.MODEL);
+        appendPropertyToMarkdown(markdownString, "PRODUCT", Build.PRODUCT);
+        appendPropertyToMarkdown(markdownString, "DISPLAY", Build.DISPLAY);
+        appendPropertyToMarkdown(markdownString, "ID", Build.ID);
+        appendPropertyToMarkdown(markdownString, "BOARD", Build.BOARD);
+        appendPropertyToMarkdown(markdownString, "HARDWARE", Build.HARDWARE);
+        appendPropertyToMarkdown(markdownString, "DEVICE", Build.DEVICE);
+        appendPropertyToMarkdown(markdownString, "SUPPORTED_ABIS", Joiner.on(", ").skipNulls().join(Build.SUPPORTED_ABIS));
+
+        markdownString.append("\n##\n");
 
         return markdownString.toString();
     }
@@ -163,13 +293,13 @@ public class TermuxUtils {
         }
     }
 
-    private static void appendPropertyMarkdownIfSet(StringBuilder markdownString, String label, Object value) {
+    private static void appendPropertyToMarkdownIfSet(StringBuilder markdownString, String label, Object value) {
         if(value == null) return;
         if(value instanceof String && (((String) value).isEmpty()) || "REL".equals(value)) return;
         markdownString.append("\n").append(getPropertyMarkdown(label, value));
     }
 
-    private static void appendPropertyMarkdown(StringBuilder markdownString, String label, Object value) {
+    private static void appendPropertyToMarkdown(StringBuilder markdownString, String label, Object value) {
         markdownString.append("\n").append(getPropertyMarkdown(label, value));
     }
 
@@ -179,24 +309,11 @@ public class TermuxUtils {
 
 
 
-    public static int getTermuxAppVersionCode() {
-        return BuildConfig.VERSION_CODE;
-    }
-
-    public static String getTermuxAppVersionName() {
-        return BuildConfig.VERSION_NAME;
-    }
-
-    public static boolean isTermuxAppDebugBuild() {
-        return BuildConfig.DEBUG;
-    }
-
     public static String getCurrentTimeStamp() {
         @SuppressLint("SimpleDateFormat")
         final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         return df.format(new Date());
     }
-
 
 }

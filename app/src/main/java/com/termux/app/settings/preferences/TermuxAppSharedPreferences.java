@@ -25,7 +25,8 @@ public class TermuxAppSharedPreferences {
     private static final String LOG_TAG = "TermuxAppSharedPreferences";
 
     public TermuxAppSharedPreferences(@Nonnull Context context) {
-        mContext = TermuxUtils.getTermuxPackageContext(context);
+        // We use the default context if failed to get termux package context
+        mContext = TextDataUtils.getDefaultIfNull(TermuxUtils.getTermuxPackageContext(context), context);
         mSharedPreferences = getPrivateSharedPreferences(mContext);
 
         setFontVariables(context);

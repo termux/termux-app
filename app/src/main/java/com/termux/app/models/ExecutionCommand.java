@@ -160,7 +160,7 @@ public class ExecutionCommand {
      * @param ignoreNull Set to {@code true} if non-critical {@code null} values are to be ignored.
      * @return Returns the log friendly {@link String}.
      */
-    public static String getExecutionInputLogString(ExecutionCommand executionCommand, boolean ignoreNull) {
+    public static String getExecutionInputLogString(final ExecutionCommand executionCommand, boolean ignoreNull) {
         if (executionCommand == null) return "null";
 
         StringBuilder logString = new StringBuilder();
@@ -197,7 +197,7 @@ public class ExecutionCommand {
      * @param ignoreNull Set to {@code true} if non-critical {@code null} values are to be ignored.
      * @return Returns the log friendly {@link String}.
      */
-    public static String getExecutionOutputLogString(ExecutionCommand executionCommand, boolean ignoreNull) {
+    public static String getExecutionOutputLogString(final ExecutionCommand executionCommand, boolean ignoreNull) {
         if (executionCommand == null) return "null";
 
         StringBuilder logString = new StringBuilder();
@@ -223,7 +223,7 @@ public class ExecutionCommand {
      * @param ignoreNull Set to {@code true} if non-critical {@code null} values are to be ignored.
      * @return Returns the log friendly {@link String}.
      */
-    public static String getExecutionErrLogString(ExecutionCommand executionCommand, boolean ignoreNull) {
+    public static String getExecutionErrLogString(final ExecutionCommand executionCommand, boolean ignoreNull) {
         StringBuilder logString = new StringBuilder();
 
         if(!ignoreNull || (executionCommand.isStateFailed())) {
@@ -243,7 +243,7 @@ public class ExecutionCommand {
      * @param executionCommand The {@link ExecutionCommand} to convert.
      * @return Returns the log friendly {@link String}.
      */
-    public static String getDetailedLogString(ExecutionCommand executionCommand) {
+    public static String getDetailedLogString(final ExecutionCommand executionCommand) {
         if (executionCommand == null) return "null";
 
         StringBuilder logString = new StringBuilder();
@@ -264,14 +264,14 @@ public class ExecutionCommand {
      * @param executionCommand The {@link ExecutionCommand} to convert.
      * @return Returns the markdown {@link String}.
      */
-    public static String getDetailedMarkdownString(ExecutionCommand executionCommand) {
+    public static String getExecutionCommandMarkdownString(final ExecutionCommand executionCommand) {
         if (executionCommand == null) return "null";
 
         if (executionCommand.commandLabel == null) executionCommand.commandLabel = "Execution Command";
 
         StringBuilder markdownString = new StringBuilder();
 
-        markdownString.append("### ").append(executionCommand.commandLabel).append("\n");
+        markdownString.append("## ").append(executionCommand.commandLabel).append("\n");
 
 
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Previous State", executionCommand.previousState.getName(), "-"));
@@ -301,14 +301,14 @@ public class ExecutionCommand {
 
         if(executionCommand.commandDescription != null || executionCommand.commandHelp != null) {
             if (executionCommand.commandDescription != null)
-                markdownString.append("\n\n#### Command Description\n\n").append(executionCommand.commandDescription).append("\n");
+                markdownString.append("\n\n### Command Description\n\n").append(executionCommand.commandDescription).append("\n");
             if (executionCommand.commandHelp != null)
-                markdownString.append("\n\n#### Command Help\n\n").append(executionCommand.commandHelp).append("\n");
+                markdownString.append("\n\n### Command Help\n\n").append(executionCommand.commandHelp).append("\n");
             markdownString.append("\n##\n");
         }
 
         if(executionCommand.pluginAPIHelp != null) {
-            markdownString.append("\n\n#### Plugin API Help\n\n").append(executionCommand.pluginAPIHelp);
+            markdownString.append("\n\n### Plugin API Help\n\n").append(executionCommand.pluginAPIHelp);
             markdownString.append("\n##\n");
         }
 
@@ -439,7 +439,7 @@ public class ExecutionCommand {
      * @param argumentsArray The {@link String[]} argumentsArray to convert.
      * @return Returns the markdown {@link String}.
      */
-    public static String getArgumentsMarkdownString(String[] argumentsArray) {
+    public static String getArgumentsMarkdownString(final String[] argumentsArray) {
         StringBuilder argumentsString = new StringBuilder("**Arguments:**");
 
         if (argumentsArray != null && argumentsArray.length != 0) {
@@ -469,7 +469,7 @@ public class ExecutionCommand {
      * @param argumentsArray The {@link String[]} argumentsArray to convert.
      * @return Returns the log friendly {@link String}.
      */
-    public static String getArgumentsLogString(String[] argumentsArray) {
+    public static String getArgumentsLogString(final String[] argumentsArray) {
         StringBuilder argumentsString = new StringBuilder("Arguments:");
 
         if (argumentsArray != null && argumentsArray.length != 0) {

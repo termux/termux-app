@@ -216,13 +216,13 @@ public class Logger {
 
     public static String getStackTracesMarkdownString(String label, String[] stackTraceStringArray) {
         if(label == null) label = "StackTraces:";
-        StringBuilder stackTracesString = new StringBuilder("#### " + label);
+        StringBuilder stackTracesString = new StringBuilder("### " + label);
 
         if (stackTraceStringArray == null || stackTraceStringArray.length == 0) {
             stackTracesString.append("\n\n`-`");
         } else {
             for (int i = 0; i != stackTraceStringArray.length; i++) {
-                stackTracesString.append("\n\n\n##### Stacktrace ").append(i + 1).append("\n\n```\n").append(stackTraceStringArray[i]).append("\n```");
+                stackTracesString.append("\n\n\n#### Stacktrace ").append(i + 1).append("\n\n```\n").append(stackTraceStringArray[i]).append("\n```");
             }
         }
 

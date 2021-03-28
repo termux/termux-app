@@ -32,6 +32,7 @@ public class ReportActivity extends AppCompatActivity {
     private static final String EXTRA_REPORT_INFO = "report_info";
 
     ReportInfo mReportInfo;
+    String mReportActivityMarkdownString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +99,9 @@ public class ReportActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        adapter.setMarkdown(markwon, mReportInfo.reportString + getReportAndDeviceDetailsMarkdownString());
+
+        generateReportActivityMarkdownString();
+        adapter.setMarkdown(markwon, mReportActivityMarkdownString);
         adapter.notifyDataSetChanged();
     }
 
@@ -129,39 +132,20 @@ public class ReportActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.menu_item_share_report) {
             if (mReportInfo != null)
-                ShareUtils.shareText(this, getString(R.string.title_report_text), mReportInfo.reportString);
+                ShareUtils.shareText(this, getString(R.string.title_report_text), mReportActivityMarkdownString);
         } else if (id == R.id.menu_item_copy_report) {
             if (mReportInfo != null)
-                ShareUtils.copyTextToClipboard(this, mReportInfo.reportString, null);
+                ShareUtils.copyTextToClipboard(this, mReportActivityMarkdownString, null);
         }
 
         return false;
     }
 
     /**
-     * Get a markdown {@link String} for {@link #mReportInfo} and device details.
-     *
-     * @return Returns the markdown {@link String}.
+     * Generate the markdown {@link String} to be shown in {@link ReportActivity}.
      */
-    private String getReportAndDeviceDetailsMarkdownString() {
-        if(!mReportInfo.addReportAndDeviceDetails) return "";
-
-        StringBuilder markdownString = new StringBuilder();
-
-        markdownString.append("\n\n### Report And Device Details\n\n");
-
-        if (mReportInfo != null) {
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User Action", mReportInfo.userAction, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Sender", mReportInfo.sender, "-"));
-        }
-
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Timestamp", TermuxUtils.getCurrentTimeStamp(), "-"));
-
-        markdownString.append("\n\n").append(TermuxUtils.getDeviceDetailsMarkdownString(this));
-
-        markdownString.append("\n##\n");
-
-        return markdownString.toString();
+    private void generateReportActivityMarkdownString() {
+        mReportActivityMarkdownString = ReportInfo.getReportInfoMarkdownString(this, mReportInfo);
     }
 
 
