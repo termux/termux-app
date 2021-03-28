@@ -7,7 +7,7 @@ import android.util.TypedValue;
 import com.termux.app.TermuxConstants;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.TermuxUtils;
-import com.termux.app.utils.TextDataUtils;
+import com.termux.app.utils.DataUtils;
 import com.termux.app.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
 
 import javax.annotation.Nonnull;
@@ -26,7 +26,7 @@ public class TermuxAppSharedPreferences {
 
     public TermuxAppSharedPreferences(@Nonnull Context context) {
         // We use the default context if failed to get termux package context
-        mContext = TextDataUtils.getDefaultIfNull(TermuxUtils.getTermuxPackageContext(context), context);
+        mContext = DataUtils.getDefaultIfNull(TermuxUtils.getTermuxPackageContext(context), context);
         mSharedPreferences = getPrivateSharedPreferences(mContext);
 
         setFontVariables(context);
@@ -93,7 +93,7 @@ public class TermuxAppSharedPreferences {
 
     public int getFontSize() {
         int fontSize = SharedPreferenceUtils.getIntStoredAsString(mSharedPreferences, TERMUX_APP.KEY_FONTSIZE, DEFAULT_FONTSIZE);
-        return TextDataUtils.clamp(fontSize, MIN_FONTSIZE, MAX_FONTSIZE);
+        return DataUtils.clamp(fontSize, MIN_FONTSIZE, MAX_FONTSIZE);
     }
 
     public void setFontSize(int value) {

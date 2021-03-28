@@ -23,7 +23,7 @@ import com.termux.app.TermuxActivity;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
-import com.termux.app.utils.TextDataUtils;
+import com.termux.app.utils.DataUtils;
 import com.termux.app.utils.Logger;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
@@ -342,7 +342,7 @@ public class TermuxViewClient implements TerminalViewClient {
             // See https://github.com/termux/termux-app/issues/1166.
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setType("text/plain");
-            transcriptText = TextDataUtils.getTruncatedCommandOutput(transcriptText, TextDataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();
+            transcriptText = DataUtils.getTruncatedCommandOutput(transcriptText, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();
             intent.putExtra(Intent.EXTRA_TEXT, transcriptText);
             intent.putExtra(Intent.EXTRA_SUBJECT, mActivity.getString(R.string.title_share_transcript));
             mActivity.startActivity(Intent.createChooser(intent, mActivity.getString(R.string.title_share_transcript_with)));
@@ -357,7 +357,7 @@ public class TermuxViewClient implements TerminalViewClient {
 
         String text = session.getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
 
-        LinkedHashSet<CharSequence> urlSet = TextDataUtils.extractUrls(text);
+        LinkedHashSet<CharSequence> urlSet = DataUtils.extractUrls(text);
         if (urlSet.isEmpty()) {
             new AlertDialog.Builder(mActivity).setMessage(R.string.title_select_url_none_found).show();
             return;

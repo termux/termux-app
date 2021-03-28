@@ -6,7 +6,7 @@ import android.content.res.Configuration;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysInfo;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.utils.Logger;
-import com.termux.app.utils.TextDataUtils;
+import com.termux.app.utils.DataUtils;
 
 import org.json.JSONException;
 
@@ -339,7 +339,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static float getTerminalToolbarHeightScaleFactorInternalPropertyValueFromValue(String value) {
-        return rangeTerminalToolbarHeightScaleFactorValue(TextDataUtils.getFloatFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR));
+        return rangeTerminalToolbarHeightScaleFactorValue(DataUtils.getFloatFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR));
     }
 
     /**
@@ -352,7 +352,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the clamped value.
      */
     public static float rangeTerminalToolbarHeightScaleFactorValue(float value) {
-        return TextDataUtils.rangedOrDefault(value,
+        return DataUtils.rangedOrDefault(value,
             TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
             TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN,
             TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX);

@@ -18,7 +18,7 @@ import com.termux.app.utils.FileUtils;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.NotificationUtils;
 import com.termux.app.utils.PluginUtils;
-import com.termux.app.utils.TextDataUtils;
+import com.termux.app.utils.DataUtils;
 import com.termux.app.models.ExecutionCommand;
 
 /**
@@ -319,7 +319,7 @@ public class RunCommandService extends Service {
         executionCommand.workingDirectory = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_WORKDIR);
         executionCommand.inBackground = intent.getBooleanExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, false);
         executionCommand.sessionAction = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION);
-        executionCommand.commandLabel = TextDataUtils.getDefaultIfNull(intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_LABEL), "RUN_COMMAND Execution Intent Command");
+        executionCommand.commandLabel = DataUtils.getDefaultIfNull(intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_LABEL), "RUN_COMMAND Execution Intent Command");
         executionCommand.commandDescription = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_DESCRIPTION);
         executionCommand.commandHelp = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_HELP);
         executionCommand.isPluginExecutionCommand = true;

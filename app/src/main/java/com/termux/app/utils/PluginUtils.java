@@ -51,7 +51,7 @@ public class PluginUtils {
     public static void processPluginExecutionCommandResult(final Context context, String logTag, final ExecutionCommand executionCommand) {
         if (executionCommand == null) return;
 
-        logTag = TextDataUtils.getDefaultIfNull(logTag, LOG_TAG);
+        logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
         if(!executionCommand.hasExecuted()) {
             Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandResult() since the execution command has not been ExecutionState.EXECUTED");
@@ -109,7 +109,7 @@ public class PluginUtils {
     public static void processPluginExecutionCommandError(final Context context, String logTag, final ExecutionCommand executionCommand, boolean forceNotification) {
         if(context == null || executionCommand == null) return;
 
-        logTag = TextDataUtils.getDefaultIfNull(logTag, LOG_TAG);
+        logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
         if(!executionCommand.isStateFailed()) {
             Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandError() since the execution command does not have ExecutionState.FAILED state");
@@ -190,7 +190,7 @@ public class PluginUtils {
     public static boolean sendPluginExecutionCommandResultPendingIntent(Context context, String logTag, String label, String stdout, String stderr, Integer exitCode, Integer errCode, String errmsg, PendingIntent pluginPendingIntent) {
         if(context == null || pluginPendingIntent == null) return false;
 
-        logTag = TextDataUtils.getDefaultIfNull(logTag, LOG_TAG);
+        logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
         Logger.logDebug(logTag,  "Sending execution result for Execution Command \"" + label +  "\" to " + pluginPendingIntent.getCreatorPackage());
 
@@ -203,12 +203,12 @@ public class PluginUtils {
 
         // Truncate stdout and stdout to max TRANSACTION_SIZE_LIMIT_IN_BYTES
         if(stderr == null || stderr.isEmpty()) {
-            truncatedStdout = TextDataUtils.getTruncatedCommandOutput(stdout, TextDataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, false, false);
+            truncatedStdout = DataUtils.getTruncatedCommandOutput(stdout, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, false, false);
         } else if (stdout == null || stdout.isEmpty()) {
-            truncatedStderr = TextDataUtils.getTruncatedCommandOutput(stderr, TextDataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, false, false);
+            truncatedStderr = DataUtils.getTruncatedCommandOutput(stderr, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, false, false);
         } else {
-            truncatedStdout = TextDataUtils.getTruncatedCommandOutput(stdout, TextDataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 2, false, false, false);
-            truncatedStderr = TextDataUtils.getTruncatedCommandOutput(stderr, TextDataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 2, false, false, false);
+            truncatedStdout = DataUtils.getTruncatedCommandOutput(stdout, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 2, false, false, false);
+            truncatedStderr = DataUtils.getTruncatedCommandOutput(stderr, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 2, false, false, false);
         }
 
         if(truncatedStdout != null && truncatedStdout.length() < stdout.length()){
@@ -225,7 +225,7 @@ public class PluginUtils {
 
         // Truncate errmsg to max TRANSACTION_SIZE_LIMIT_IN_BYTES / 4
         // trim from end to preserve start of stacktraces
-        truncatedErrmsg = TextDataUtils.getTruncatedCommandOutput(errmsg, TextDataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 4, true, false, false);
+        truncatedErrmsg = DataUtils.getTruncatedCommandOutput(errmsg, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 4, true, false, false);
         if(truncatedErrmsg != null && truncatedErrmsg.length() < errmsg.length()){
             Logger.logWarn(logTag, "Execution Result for Execution Command \"" + label +  "\" errmsg length truncated from " + errmsgOriginalLength + " to " + truncatedErrmsg.length());
             errmsg = truncatedErrmsg;

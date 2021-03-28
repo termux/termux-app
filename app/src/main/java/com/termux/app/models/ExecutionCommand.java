@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.MarkdownUtils;
-import com.termux.app.utils.TextDataUtils;
+import com.termux.app.utils.DataUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -296,7 +296,7 @@ public class ExecutionCommand {
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Exit Code", executionCommand.exitCode, "-"));
 
         markdownString.append("\n\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Err Code", executionCommand.errCode, "-"));
-        markdownString.append("\n").append("**Errmsg:**\n").append(TextDataUtils.getDefaultIfNull(executionCommand.errmsg, "-"));
+        markdownString.append("\n").append("**Errmsg:**\n").append(DataUtils.getDefaultIfNull(executionCommand.errmsg, "-"));
         markdownString.append("\n\n").append(executionCommand.geStackTracesMarkdownString());
 
         if(executionCommand.commandDescription != null || executionCommand.commandHelp != null) {
@@ -391,11 +391,11 @@ public class ExecutionCommand {
     }
 
     public String getStdoutLogString() {
-        return getMultiLineLogStringEntry("Stdout", TextDataUtils.getTruncatedCommandOutput(stdout, TextDataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
+        return getMultiLineLogStringEntry("Stdout", DataUtils.getTruncatedCommandOutput(stdout, DataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
     }
 
     public String getStderrLogString() {
-        return getMultiLineLogStringEntry("Stderr", TextDataUtils.getTruncatedCommandOutput(stderr, TextDataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
+        return getMultiLineLogStringEntry("Stderr", DataUtils.getTruncatedCommandOutput(stderr, DataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
     }
 
     public String getExitCodeLogString() {
@@ -476,7 +476,7 @@ public class ExecutionCommand {
             argumentsString.append("\n```\n");
             for (int i = 0; i != argumentsArray.length; i++) {
                 argumentsString.append(getSingleLineLogStringEntry("Arg " + (i + 1),
-                    TextDataUtils.getTruncatedCommandOutput(argumentsArray[i], TextDataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, true, false, true),
+                    DataUtils.getTruncatedCommandOutput(argumentsArray[i], DataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, true, false, true),
                     "-")).append("`\n");
             }
             argumentsString.append("```");

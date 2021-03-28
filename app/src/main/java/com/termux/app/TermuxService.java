@@ -30,7 +30,7 @@ import com.termux.app.utils.Logger;
 import com.termux.app.utils.NotificationUtils;
 import com.termux.app.utils.PermissionUtils;
 import com.termux.app.utils.ShellUtils;
-import com.termux.app.utils.TextDataUtils;
+import com.termux.app.utils.DataUtils;
 import com.termux.app.models.ExecutionCommand;
 import com.termux.app.models.ExecutionCommand.ExecutionState;
 import com.termux.app.terminal.TermuxTask;
@@ -323,7 +323,7 @@ public final class TermuxService extends Service {
         executionCommand.inBackground = intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false);
         executionCommand.isFailsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
         executionCommand.sessionAction = intent.getStringExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION);
-        executionCommand.commandLabel = TextDataUtils.getDefaultIfNull(intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_LABEL), "Execution Intent Command");
+        executionCommand.commandLabel = DataUtils.getDefaultIfNull(intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_LABEL), "Execution Intent Command");
         executionCommand.commandDescription = intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_DESCRIPTION);
         executionCommand.commandHelp = intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_HELP);
         executionCommand.pluginAPIHelp = intent.getStringExtra(TERMUX_SERVICE.EXTRA_PLUGIN_API_HELP);
@@ -412,7 +412,7 @@ public final class TermuxService extends Service {
         TermuxSession newTermuxSession = createTermuxSession(executionCommand, sessionName);
         if (newTermuxSession == null) return;
 
-        handleSessionAction(TextDataUtils.getIntFromString(executionCommand.sessionAction,
+        handleSessionAction(DataUtils.getIntFromString(executionCommand.sessionAction,
             TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY),
             newTermuxSession.getTerminalSession());
     }
