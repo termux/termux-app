@@ -34,7 +34,7 @@ public final class TermuxTask {
     public static TermuxTask create(@NonNull final TermuxService service, @NonNull ExecutionCommand executionCommand) {
         if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty()) executionCommand.workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
-        String[] env = ShellUtils.buildEnvironment(false, executionCommand.workingDirectory);
+        String[] env = ShellUtils.buildEnvironment(service, false, executionCommand.workingDirectory);
 
         final String[] commandArray = ShellUtils.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
         // final String commandDescription = Arrays.toString(commandArray);

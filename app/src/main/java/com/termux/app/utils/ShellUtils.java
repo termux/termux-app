@@ -1,6 +1,7 @@
 package com.termux.app.utils;
 
-import com.termux.BuildConfig;
+import android.content.Context;
+
 import com.termux.app.TermuxConstants;
 
 import java.io.File;
@@ -13,14 +14,21 @@ import java.util.List;
 
 public class ShellUtils {
 
-    public static String[] buildEnvironment(boolean isFailSafe, String workingDirectory) {
+    public static String[] buildEnvironment(Context currentPackageContext, boolean isFailSafe, String workingDirectory) {
         TermuxConstants.TERMUX_HOME_DIR.mkdirs();
 
         if (workingDirectory == null || workingDirectory.isEmpty()) workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
         List<String> environment = new ArrayList<>();
 
-        environment.add("TERMUX_VERSION=" + BuildConfig.VERSION_NAME);
+        // This function may be called by a different package like a plugin, so we get version for Termux package via its context
+        Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
+        if(termuxPackageContext != null) {
+            String termuxVersionName = PackageUtils.getVersionNameForPackage(termuxPackageContext);
+            if(termuxVersionName != null)
+                environment.add("TERMUX_VERSION=" + termuxVersionName);
+        }
+
         environment.add("TERM=xterm-256color");
         environment.add("COLORTERM=truecolor");
         environment.add("HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH);

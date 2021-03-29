@@ -33,7 +33,7 @@ public class TermuxSession {
     public static TermuxSession create(@NonNull final TermuxService service, @NonNull ExecutionCommand executionCommand, @NonNull TermuxSessionClientBase termuxSessionClient, String sessionName) {
         if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty()) executionCommand.workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
 
-        String[] environment = ShellUtils.buildEnvironment(executionCommand.isFailsafe, executionCommand.workingDirectory);
+        String[] environment = ShellUtils.buildEnvironment(service, executionCommand.isFailsafe, executionCommand.workingDirectory);
 
         boolean isLoginShell = false;
         if (executionCommand.executable == null) {
