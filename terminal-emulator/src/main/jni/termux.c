@@ -10,6 +10,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <android/fdsan.h>
+#include <dlfcn.h>
 
 #define TERMUX_UNUSED(x) x __attribute__((__unused__))
 #ifdef __APPLE__
