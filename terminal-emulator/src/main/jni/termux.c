@@ -32,7 +32,14 @@ static int create_subprocess(JNIEnv* env,
         jint rows,
         jint columns)
 {
-    android_fdsan_set_error_level(ANDROID_FDSAN_ERROR_LEVEL_DISABLED);
+    void *lib_handle = dlopen("libc.so", RTLD_LAZY);
+    if (lib_handle) {
+        void (*set_fdsan_error_level)(enum android_fdsan_error_level newlevel) = dlsym(lib_handle, "android_fdsan_set_error_level");
+        if (set_fdsan_error_level) {
+            set_fdsan_error_level(ANDROID_FDSAN_ERROR_LEVEL_DISABLED);
+        }
+        dlclose(lib_handle);
+    }
     
     int ptm = open("/dev/ptmx", O_RDWR | O_CLOEXEC);
     if (ptm < 0) return throw_runtime_exception(env, "Cannot open /dev/ptmx");
