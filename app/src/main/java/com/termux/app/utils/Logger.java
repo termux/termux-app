@@ -25,8 +25,11 @@ public class Logger {
     public static final int LOG_LEVEL_VERBOSE = 3; // start logging verbose messages
 
     public static final int DEFAULT_LOG_LEVEL = LOG_LEVEL_NORMAL;
-
     private static int CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
+
+    public static final int LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES = 4 * 1024; // 4KB
+
+
 
     static public void logMesssage(int logLevel, String tag, String message) {
         if(logLevel == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
@@ -229,6 +232,20 @@ public class Logger {
         stackTracesString.append("\n##\n");
 
         return stackTracesString.toString();
+    }
+
+    public static String getSingleLineLogStringEntry(String label, Object object, String def) {
+        if (object != null)
+            return label + ": `" + object + "`";
+        else
+            return  label + ": "  +  def;
+    }
+
+    public static String getMultiLineLogStringEntry(String label, Object object, String def) {
+        if (object != null)
+            return label + ":\n```\n" + object + "\n```\n";
+        else
+            return  label + ": "  +  def;
     }
     
 

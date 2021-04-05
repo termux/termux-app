@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 public class DataUtils {
 
     public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 100 * 1024; // 100KB
-    public static final int LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES = 4 * 1024; // 4KB
 
     public static String getTruncatedCommandOutput(String text, int maxLength, boolean fromEnd, boolean onNewline, boolean addPrefix) {
         if(text == null) return null;

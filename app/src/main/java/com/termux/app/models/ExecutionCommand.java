@@ -368,7 +368,7 @@ public class ExecutionCommand {
     }
 
     public String getSessionActionLogString() {
-        return getSingleLineLogStringEntry("Session Action", sessionAction, "-");
+        return Logger.getSingleLineLogStringEntry("Session Action", sessionAction, "-");
     }
 
     public String getPendingIntentCreatorLogString() {
@@ -379,35 +379,35 @@ public class ExecutionCommand {
     }
 
     public String getCommandDescriptionLogString() {
-        return getSingleLineLogStringEntry("Command Description", commandDescription, "-");
+        return Logger.getSingleLineLogStringEntry("Command Description", commandDescription, "-");
     }
 
     public String getCommandHelpLogString() {
-        return getSingleLineLogStringEntry("Command Help", commandHelp, "-");
+        return Logger.getSingleLineLogStringEntry("Command Help", commandHelp, "-");
     }
 
     public String getPluginAPIHelpLogString() {
-        return getSingleLineLogStringEntry("Plugin API Help", pluginAPIHelp, "-");
+        return Logger.getSingleLineLogStringEntry("Plugin API Help", pluginAPIHelp, "-");
     }
 
     public String getStdoutLogString() {
-        return getMultiLineLogStringEntry("Stdout", DataUtils.getTruncatedCommandOutput(stdout, DataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
+        return Logger.getMultiLineLogStringEntry("Stdout", DataUtils.getTruncatedCommandOutput(stdout, Logger.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
     }
 
     public String getStderrLogString() {
-        return getMultiLineLogStringEntry("Stderr", DataUtils.getTruncatedCommandOutput(stderr, DataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
+        return Logger.getMultiLineLogStringEntry("Stderr", DataUtils.getTruncatedCommandOutput(stderr, Logger.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, false, false, true), "-");
     }
 
     public String getExitCodeLogString() {
-        return getSingleLineLogStringEntry("Exit Code", exitCode, "-");
+        return Logger.getSingleLineLogStringEntry("Exit Code", exitCode, "-");
     }
 
     public String getErrCodeLogString() {
-        return getSingleLineLogStringEntry("Err Code", errCode, "-");
+        return Logger.getSingleLineLogStringEntry("Err Code", errCode, "-");
     }
 
     public String getErrmsgLogString() {
-        return getMultiLineLogStringEntry("Errmsg", errmsg, "-");
+        return Logger.getMultiLineLogStringEntry("Errmsg", errmsg, "-");
     }
 
     public String geStackTracesLogString() {
@@ -475,8 +475,8 @@ public class ExecutionCommand {
         if (argumentsArray != null && argumentsArray.length != 0) {
             argumentsString.append("\n```\n");
             for (int i = 0; i != argumentsArray.length; i++) {
-                argumentsString.append(getSingleLineLogStringEntry("Arg " + (i + 1),
-                    DataUtils.getTruncatedCommandOutput(argumentsArray[i], DataUtils.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, true, false, true),
+                argumentsString.append(Logger.getSingleLineLogStringEntry("Arg " + (i + 1),
+                    DataUtils.getTruncatedCommandOutput(argumentsArray[i], Logger.LOGGER_ENTRY_SIZE_LIMIT_IN_BYTES / 5, true, false, true),
                     "-")).append("`\n");
             }
             argumentsString.append("```");
@@ -486,23 +486,6 @@ public class ExecutionCommand {
 
         return argumentsString.toString();
     }
-
-
-
-    public static String getSingleLineLogStringEntry(String label, Object object, String def) {
-        if (object != null)
-            return label + ": `" + object + "`";
-        else
-            return  label + ": "  +  def;
-    }
-
-    public static String getMultiLineLogStringEntry( String label, Object object,String def) {
-        if (object != null)
-            return label + ":\n```\n" + object + "\n```\n";
-        else
-            return  label + ": "  +  def;
-    }
-
 
 
     public synchronized boolean setState(ExecutionState newState) {
