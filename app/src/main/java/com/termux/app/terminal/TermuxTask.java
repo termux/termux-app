@@ -8,7 +8,7 @@ import com.termux.app.TermuxService;
 import com.termux.app.shell.StreamGobbler;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.PluginUtils;
-import com.termux.app.utils.ShellUtils;
+import com.termux.app.shell.ShellUtils;
 import com.termux.app.models.ExecutionCommand;
 import com.termux.app.models.ExecutionCommand.ExecutionState;
 

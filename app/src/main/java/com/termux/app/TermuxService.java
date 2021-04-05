@@ -29,7 +29,7 @@ import com.termux.app.terminal.TermuxSessionClientBase;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.NotificationUtils;
 import com.termux.app.utils.PermissionUtils;
-import com.termux.app.utils.ShellUtils;
+import com.termux.app.shell.ShellUtils;
 import com.termux.app.utils.DataUtils;
 import com.termux.app.models.ExecutionCommand;
 import com.termux.app.models.ExecutionCommand.ExecutionState;

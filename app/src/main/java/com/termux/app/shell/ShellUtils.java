@@ -1,8 +1,10 @@
-package com.termux.app.utils;
+package com.termux.app.shell;
 
 import android.content.Context;
 
 import com.termux.app.TermuxConstants;
+import com.termux.app.utils.PackageUtils;
+import com.termux.app.utils.TermuxUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
