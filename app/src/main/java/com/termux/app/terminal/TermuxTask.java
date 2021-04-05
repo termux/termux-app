@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.termux.R;
 import com.termux.app.TermuxConstants;
 import com.termux.app.TermuxService;
+import com.termux.app.shell.StreamGobbler;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.PluginUtils;
 import com.termux.app.utils.ShellUtils;

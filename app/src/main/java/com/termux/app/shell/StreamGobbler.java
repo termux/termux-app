@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.termux.app.terminal;
+package com.termux.app.shell;
 
 import java.io.BufferedReader;
 import java.io.IOException;
