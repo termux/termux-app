@@ -111,6 +111,9 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
             case "plugin_error_notifications_enabled":
                 mPreferences.setPluginErrorNotificationsEnabled(value);
                 break;
+            case "crash_report_notifications_enabled":
+                mPreferences.setCrashReportNotificationsEnabled(value);
+                break;
             default:
                 break;
         }
@@ -123,6 +126,8 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
                 return mPreferences.getTerminalViewKeyLoggingEnabled();
             case "plugin_error_notifications_enabled":
                 return mPreferences.getPluginErrorNotificationsEnabled();
+            case "crash_report_notifications_enabled":
+                return mPreferences.getCrashReportNotificationsEnabled();
             default:
                 return false;
         }

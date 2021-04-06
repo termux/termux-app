@@ -1,7 +1,7 @@
 package com.termux.app.settings.preferences;
 
 /*
- * Version: v0.7.0
+ * Version: v0.8.0
  *
  * Changelog
  *
@@ -33,6 +33,10 @@ package com.termux.app.settings.preferences;
  * - 0.7.0 (2021-03-27)
  *      - Added following to `TERMUX_APP`:
  *          `KEY_SOFT_KEYBOARD_ENABLED` and `DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED`.
+ *
+ * - 0.8.0 (2021-04-06)
+ *      - Added following to `TERMUX_APP`:
+ *          `KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED` and `DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED`.
  */
 
 /**
@@ -107,6 +111,12 @@ public final class TermuxPreferenceConstants {
          */
         public static final String KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED = "plugin_error_notifications_enabled";
         public static final boolean DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED = true;
+
+        /**
+         * Defines the key for whether notifications for crash reports are enabled or not.
+         */
+        public static final String KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED = "crash_report_notifications_enabled";
+        public static final boolean DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED = true;
 
     }
 

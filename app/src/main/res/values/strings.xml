@@ -201,6 +201,11 @@
             <string name="plugin_error_notifications_off">Disable flashes and notifications for plugin errors.</string>
             <string name="plugin_error_notifications_on">Show flashes and notifications for plugin errors. (Default)</string>
 
+            <!-- Crash Report Notifications -->
+            <string name="crash_report_notifications_title">Crash Report Notifications</string>
+            <string name="crash_report_notifications_off">Disable notifications for crash reports.</string>
+            <string name="crash_report_notifications_on">Show notifications for crash reports. (Default)</string>
+
 
     <!-- Terminal IO Preferences -->
     <string name="terminal_io_preferences">Terminal I/O</string>

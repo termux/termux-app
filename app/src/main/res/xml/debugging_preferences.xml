@@ -22,6 +22,12 @@
             app:summaryOn="@string/plugin_error_notifications_on"
             app:title="@string/plugin_error_notifications_title" />
 
+        <SwitchPreferenceCompat
+            app:key="crash_report_notifications_enabled"
+            app:summaryOff="@string/crash_report_notifications_off"
+            app:summaryOn="@string/crash_report_notifications_on"
+            app:title="@string/crash_report_notifications_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
