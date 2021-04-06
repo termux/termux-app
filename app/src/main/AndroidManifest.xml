@@ -98,6 +98,7 @@
 
         <activity
             android:name=".app.activities.SettingsActivity"
+            android:exported="true"
             android:label="@string/title_activity_termux_settings"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 

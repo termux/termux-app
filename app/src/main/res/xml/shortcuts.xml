@@ -9,6 +9,7 @@
         need to be manually patched since dot (.) prefix does not work to automatically prefix the
         package name.
     -->
+
     <shortcut
         android:shortcutId="new_session"
         android:enabled="true"
@@ -18,7 +19,8 @@
         <intent
             android:action="android.intent.action.RUN"
             android:targetPackage="com.termux"
-            android:targetClass="com.termux.app.TermuxActivity"/>
+            android:targetClass="com.termux.app.TermuxActivity"
+            android:name="android.shortcut.conversation"/>
     </shortcut>
 
     <shortcut
@@ -30,8 +32,9 @@
         <intent
             android:action="android.intent.action.RUN"
             android:targetPackage="com.termux"
-            android:targetClass="com.termux.app.TermuxActivity">
-            <extra android:name="com.termux.app.failsafe_session" android:value="true" />
+            android:targetClass="com.termux.app.TermuxActivity"
+            android:name="android.shortcut.conversation">
+            <extra android:name="com.termux.app.failsafe_session" android:value="true"/>
         </intent>
     </shortcut>
 
@@ -42,9 +45,10 @@
         android:shortcutShortLabel="@string/action_open_settings"
         tools:targetApi="n_mr1">
         <intent
-            android:action="android.intent.action.RUN"
+            android:action="android.intent.action.VIEW"
             android:targetPackage="com.termux"
-            android:targetClass="com.termux.app.activities.SettingsActivity"/>
+            android:targetClass="com.termux.app.activities.SettingsActivity"
+            android:name="android.shortcut.conversation"/>
     </shortcut>
 
 </shortcuts>
