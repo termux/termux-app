@@ -7,5 +7,6 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
--renamesourcefileattribute SourceFile
--keepattributes SourceFile,LineNumberTable
+-dontobfuscate
+#-renamesourcefileattribute SourceFile
+#-keepattributes SourceFile,LineNumberTable
