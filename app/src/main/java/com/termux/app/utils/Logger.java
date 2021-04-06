@@ -31,7 +31,7 @@ public class Logger {
 
 
 
-    static public void logMesssage(int logLevel, String tag, String message) {
+    public static void logMesssage(int logLevel, String tag, String message) {
         if(logLevel == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.e(getFullTag(tag), message);
         else if(logLevel == Log.WARN && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
@@ -46,57 +46,57 @@ public class Logger {
 
 
 
-    static public void logError(String tag, String message) {
+    public static void logError(String tag, String message) {
         logMesssage(Log.ERROR, tag, message);
     }
 
-    static public void logError(String message) {
+    public static void logError(String message) {
         logMesssage(Log.ERROR, DEFAULT_LOG_TAG, message);
     }
 
 
 
-    static public void logWarn(String tag, String message) {
+    public static void logWarn(String tag, String message) {
         logMesssage(Log.WARN, tag, message);
     }
 
-    static public void logWarn(String message) {
+    public static void logWarn(String message) {
         logMesssage(Log.WARN, DEFAULT_LOG_TAG, message);
     }
 
 
 
-    static public void logInfo(String tag, String message) {
+    public static void logInfo(String tag, String message) {
         logMesssage(Log.INFO, tag, message);
     }
 
-    static public void logInfo(String message) {
+    public static void logInfo(String message) {
         logMesssage(Log.INFO, DEFAULT_LOG_TAG, message);
     }
 
 
 
-    static public void logDebug(String tag, String message) {
+    public static void logDebug(String tag, String message) {
         logMesssage(Log.DEBUG, tag, message);
     }
 
-    static public void logDebug(String message) {
+    public static void logDebug(String message) {
         logMesssage(Log.DEBUG, DEFAULT_LOG_TAG, message);
     }
 
 
 
-    static public void logVerbose(String tag, String message) {
+    public static void logVerbose(String tag, String message) {
         logMesssage(Log.VERBOSE, tag, message);
     }
 
-    static public void logVerbose(String message) {
+    public static void logVerbose(String message) {
         logMesssage(Log.VERBOSE, DEFAULT_LOG_TAG, message);
     }
 
 
 
-    static public void logErrorAndShowToast(Context context, String tag, String message) {
+    public static void logErrorAndShowToast(Context context, String tag, String message) {
         if (context == null) return;
 
         if(CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL) {
@@ -105,13 +105,13 @@ public class Logger {
         }
     }
 
-    static public void logErrorAndShowToast(Context context, String message) {
+    public static void logErrorAndShowToast(Context context, String message) {
         logErrorAndShowToast(context, DEFAULT_LOG_TAG, message);
     }
 
 
 
-    static public void logDebugAndShowToast(Context context, String tag, String message) {
+    public static void logDebugAndShowToast(Context context, String tag, String message) {
         if (context == null) return;
 
         if(CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
@@ -120,35 +120,35 @@ public class Logger {
         }
     }
 
-    static public void logDebugAndShowToast(Context context, String message) {
+    public static void logDebugAndShowToast(Context context, String message) {
         logDebugAndShowToast(context, DEFAULT_LOG_TAG, message);
     }
 
 
 
-    static public void logStackTraceWithMessage(String tag, String message, Throwable throwable) {
+    public static void logStackTraceWithMessage(String tag, String message, Throwable throwable) {
         if(CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.e(getFullTag(tag), getMessageAndStackTraceString(message, throwable));
     }
 
-    static public void logStackTraceWithMessage(String message, Throwable throwable) {
+    public static void logStackTraceWithMessage(String message, Throwable throwable) {
         logStackTraceWithMessage(DEFAULT_LOG_TAG, message, throwable);
     }
 
-    static public void logStackTrace(String tag, Throwable throwable) {
+    public static void logStackTrace(String tag, Throwable throwable) {
         logStackTraceWithMessage(tag, null, throwable);
     }
 
-    static public void logStackTrace(Throwable throwable) {
+    public static void logStackTrace(Throwable throwable) {
         logStackTraceWithMessage(DEFAULT_LOG_TAG, null, throwable);
     }
 
-    static public void logStackTracesWithMessage(String tag, String message, List<Throwable> throwableList) {
+    public static void logStackTracesWithMessage(String tag, String message, List<Throwable> throwableList) {
         if(CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.e(getFullTag(tag), getMessageAndStackTracesString(message, throwableList));
     }
 
-    static public String getMessageAndStackTraceString(String message, Throwable throwable) {
+    public static String getMessageAndStackTraceString(String message, Throwable throwable) {
         if(message == null && throwable == null)
             return null;
         else if(message != null && throwable != null)
@@ -159,7 +159,7 @@ public class Logger {
             return getStackTraceString(throwable);
     }
 
-    static public String getMessageAndStackTracesString(String message, List<Throwable> throwableList) {
+    public static String getMessageAndStackTracesString(String message, List<Throwable> throwableList) {
         if(message == null && (throwableList == null || throwableList.size() == 0))
             return null;
         else if(message != null && (throwableList != null && throwableList.size() != 0))
@@ -170,7 +170,7 @@ public class Logger {
             return getStackTracesString(null, getStackTraceStringArray(throwableList));
     }
 
-    static public String getStackTraceString(Throwable throwable) {
+    public static String getStackTraceString(Throwable throwable) {
         if(throwable == null) return null;
 
         String stackTraceString = null;
@@ -188,7 +188,8 @@ public class Logger {
 
         return stackTraceString;
     }
-    private static String[] getStackTraceStringArray(Throwable throwable) {
+
+    public static String[] getStackTraceStringArray(Throwable throwable) {
         return getStackTraceStringArray(Collections.singletonList(throwable));
     }
 
@@ -210,7 +211,10 @@ public class Logger {
             stackTracesString.append(" -");
         } else {
             for (int i = 0; i != stackTraceStringArray.length; i++) {
-                stackTracesString.append("\n\nStacktrace ").append(i + 1).append("\n```\n").append(stackTraceStringArray[i]).append("\n```\n");
+                if(stackTraceStringArray.length > 1)
+                    stackTracesString.append("\n\nStacktrace ").append(i + 1);
+
+                stackTracesString.append("\n```\n").append(stackTraceStringArray[i]).append("\n```\n");
             }
         }
 
@@ -218,14 +222,17 @@ public class Logger {
     }
 
     public static String getStackTracesMarkdownString(String label, String[] stackTraceStringArray) {
-        if(label == null) label = "StackTraces:";
+        if(label == null) label = "StackTraces";
         StringBuilder stackTracesString = new StringBuilder("### " + label);
 
         if (stackTraceStringArray == null || stackTraceStringArray.length == 0) {
             stackTracesString.append("\n\n`-`");
         } else {
             for (int i = 0; i != stackTraceStringArray.length; i++) {
-                stackTracesString.append("\n\n\n#### Stacktrace ").append(i + 1).append("\n\n```\n").append(stackTraceStringArray[i]).append("\n```");
+                if(stackTraceStringArray.length > 1)
+                    stackTracesString.append("\n\n\n#### Stacktrace ").append(i + 1);
+
+                stackTracesString.append("\n\n```\n").append(stackTraceStringArray[i]).append("\n```");
             }
         }
 
@@ -250,7 +257,7 @@ public class Logger {
     
 
 
-    static public void showToast(final Context context, final String toastText, boolean longDuration) {
+    public static void showToast(final Context context, final String toastText, boolean longDuration) {
         if (context == null) return;
 
         new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, toastText, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show());
@@ -313,7 +320,7 @@ public class Logger {
         return CURRENT_LOG_LEVEL;
     }
 
-    static public String getFullTag(String tag) {
+    public static String getFullTag(String tag) {
         if(DEFAULT_LOG_TAG.equals(tag))
             return tag;
         else
