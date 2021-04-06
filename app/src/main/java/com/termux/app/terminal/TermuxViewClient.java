@@ -20,11 +20,17 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxActivity;
+import com.termux.app.TermuxConstants;
+import com.termux.app.activities.ReportActivity;
+import com.termux.app.models.ReportInfo;
+import com.termux.app.models.UserAction;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.app.settings.properties.TermuxPropertyConstants;
 import com.termux.app.utils.DataUtils;
 import com.termux.app.utils.Logger;
+import com.termux.app.utils.MarkdownUtils;
+import com.termux.app.utils.TermuxUtils;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -392,6 +398,28 @@ public class TermuxViewClient implements TerminalViewClient {
         });
 
         dialog.show();
+    }
+
+    public void reportIssueFromTranscript() {
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session == null) return;
+
+        String transcriptText = session.getEmulator().getScreen().getTranscriptTextWithoutJoinedLines().trim();
+        if (transcriptText == null) return;
+
+        transcriptText = DataUtils.getTruncatedCommandOutput(transcriptText, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();
+
+        StringBuilder reportString = new StringBuilder();
+
+        String title = TermuxConstants.TERMUX_APP_NAME + " Report Issue";
+
+        reportString.append("## Transcript\n");
+        reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptText, true));
+
+        reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, true));
+        reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(mActivity));
+
+        ReportActivity.startReportActivity(mActivity, new ReportInfo(UserAction.REPORT_ISSUE_FROM_TRANSCRIPT, TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity), false));
     }
 
     public void doPaste() {

@@ -250,7 +250,7 @@ public class TermuxUtils {
 
         StringBuilder markdownString = new StringBuilder();
 
-        markdownString.append("## Report Issue");
+        markdownString.append("## Where To Report An Issue");
 
         markdownString.append("\n\n").append(context.getString(R.string.msg_report_issue)).append("\n");
 

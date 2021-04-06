@@ -135,15 +135,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
-    private static final int CONTEXT_MENU_PASTE_ID = 3;
+    private static final int CONTEXT_MENU_AUTOFILL_ID = 2;
+    private static final int CONTEXT_MENU_RESET_TERMINAL_ID = 3;
     private static final int CONTEXT_MENU_KILL_PROCESS_ID = 4;
-    private static final int CONTEXT_MENU_RESET_TERMINAL_ID = 5;
-    private static final int CONTEXT_MENU_STYLING_ID = 6;
-    private static final int CONTEXT_MENU_HELP_ID = 8;
-    private static final int CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON = 9;
-    private static final int CONTEXT_MENU_AUTOFILL_ID = 10;
-    private static final int CONTEXT_MENU_SETTINGS_ID = 11;
-
+    private static final int CONTEXT_MENU_STYLING_ID = 5;
+    private static final int CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON = 6;
+    private static final int CONTEXT_MENU_HELP_ID = 7;
+    private static final int CONTEXT_MENU_SETTINGS_ID = 8;
+    private static final int CONTEXT_MENU_REPORT_ID = 9;
 
     private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
 
@@ -526,6 +525,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.action_toggle_keep_screen_on).setCheckable(true).setChecked(mPreferences.getKeepScreenOn());
         menu.add(Menu.NONE, CONTEXT_MENU_HELP_ID, Menu.NONE, R.string.action_open_help);
         menu.add(Menu.NONE, CONTEXT_MENU_SETTINGS_ID, Menu.NONE, R.string.action_open_settings);
+        menu.add(Menu.NONE, CONTEXT_MENU_REPORT_ID, Menu.NONE, R.string.action_report_issue);
     }
 
     /** Hook system menu to show context menu instead. */
@@ -546,17 +546,20 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             case CONTEXT_MENU_SHARE_TRANSCRIPT_ID:
                 mTermuxViewClient.shareSessionTranscript();
                 return true;
-            case CONTEXT_MENU_PASTE_ID:
-                mTermuxViewClient.doPaste();
-                return true;
-            case CONTEXT_MENU_KILL_PROCESS_ID:
-                showKillSessionDialog(session);
+            case CONTEXT_MENU_AUTOFILL_ID:
+                requestAutoFill();
                 return true;
             case CONTEXT_MENU_RESET_TERMINAL_ID:
                 resetSession(session);
                 return true;
+            case CONTEXT_MENU_KILL_PROCESS_ID:
+                showKillSessionDialog(session);
+                return true;
             case CONTEXT_MENU_STYLING_ID:
                 showStylingDialog();
+                return true;
+            case CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON:
+                toggleKeepScreenOn();
                 return true;
             case CONTEXT_MENU_HELP_ID:
                 startActivity(new Intent(this, HelpActivity.class));
@@ -564,11 +567,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             case CONTEXT_MENU_SETTINGS_ID:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
-            case CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON:
-                toggleKeepScreenOn();
-                return true;
-            case CONTEXT_MENU_AUTOFILL_ID:
-                requestAutoFill();
+            case CONTEXT_MENU_REPORT_ID:
+                mTermuxViewClient.reportIssueFromTranscript();
                 return true;
             default:
                 return super.onContextItemSelected(item);
