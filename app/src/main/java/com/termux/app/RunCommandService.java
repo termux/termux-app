@@ -14,7 +14,7 @@ import android.os.IBinder;
 import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.app.utils.FileUtils;
+import com.termux.app.file.FileUtils;
 import com.termux.app.utils.Logger;
 import com.termux.app.utils.NotificationUtils;
 import com.termux.app.utils.PluginUtils;
@@ -354,9 +354,9 @@ public class RunCommandService extends Service {
 
         // If executable is not a regular file, or is not readable or executable, then just return
         // Setting of missing read and execute permissions is not done
-        errmsg = FileUtils.validateRegularFileExistenceAndPermissions(this, executionCommand.executable,
-            null, PluginUtils.PLUGIN_EXECUTABLE_FILE_PERMISSIONS,
-            false, false);
+        errmsg = FileUtils.validateRegularFileExistenceAndPermissions(this, "executable", executionCommand.executable, null,
+            PluginUtils.PLUGIN_EXECUTABLE_FILE_PERMISSIONS, true, true,
+            false);
         if (errmsg != null) {
             errmsg  += "\n" + this.getString(R.string.msg_executable_absolute_path, executionCommand.executable);
             executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
@@ -376,10 +376,9 @@ public class RunCommandService extends Service {
             // under {@link TermuxConstants#TERMUX_FILES_DIR_PATH}
             // We try to set execute permissions, but ignore if they are missing, since only read and write permissions are required
             // for working directories.
-            errmsg = FileUtils.validateDirectoryExistenceAndPermissions(this, executionCommand.workingDirectory,
-                TermuxConstants.TERMUX_FILES_DIR_PATH, PluginUtils.PLUGIN_WORKING_DIRECTORY_PERMISSIONS,
-                true, true, false,
-                true);
+            errmsg = FileUtils.validateDirectoryFileExistenceAndPermissions(this, "working", executionCommand.workingDirectory, TermuxConstants.TERMUX_FILES_DIR_PATH, true,
+                PluginUtils.PLUGIN_WORKING_DIRECTORY_PERMISSIONS, true, true,
+                true, true);
             if (errmsg != null) {
                 errmsg  += "\n" + this.getString(R.string.msg_working_directory_absolute_path, executionCommand.workingDirectory);
                 executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, errmsg, null);
