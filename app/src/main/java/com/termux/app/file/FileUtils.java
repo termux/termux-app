@@ -41,7 +41,7 @@ public class FileUtils {
      * @return Returns the {@code expand path}.
      */
     public static String getExpandedTermuxPath(String path) {
-        if(path != null && !path.isEmpty()) {
+        if (path != null && !path.isEmpty()) {
             path = path.replaceAll("^\\$PREFIX$", TermuxConstants.TERMUX_PREFIX_DIR_PATH);
             path = path.replaceAll("^\\$PREFIX/", TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/");
             path = path.replaceAll("^~/$", TermuxConstants.TERMUX_HOME_DIR_PATH);
@@ -58,7 +58,7 @@ public class FileUtils {
      * @return Returns the {@code unexpand path}.
      */
     public static String getUnExpandedTermuxPath(String path) {
-        if(path != null && !path.isEmpty()) {
+        if (path != null && !path.isEmpty()) {
             path = path.replaceAll("^" + Pattern.quote(TermuxConstants.TERMUX_PREFIX_DIR_PATH) + "/", "\\$PREFIX/");
             path = path.replaceAll("^" + Pattern.quote(TermuxConstants.TERMUX_HOME_DIR_PATH) + "/", "~/");
         }
@@ -88,7 +88,7 @@ public class FileUtils {
     public static String getCanonicalPath(String path, final String prefixForNonAbsolutePath, final boolean expandPath) {
         if (path == null) path = "";
 
-        if(expandPath)
+        if (expandPath)
             path = getExpandedTermuxPath(path);
 
         String absolutePath;
@@ -153,7 +153,7 @@ public class FileUtils {
 
         String normalizedDirPath = normalizePath(dirPath);
 
-        if(ensureUnder)
+        if (ensureUnder)
             return !path.equals(normalizedDirPath) && path.startsWith(normalizedDirPath + "/");
         else
             return path.startsWith(normalizedDirPath + "/");
@@ -276,7 +276,7 @@ public class FileUtils {
             if (setPermissions && permissionsToCheck != null && fileType == FileType.REGULAR) {
                 // If there is not parentDirPath restriction or path is under parentDirPath
                 if (parentDirPath == null || (isPathUnderParentDirPath && getFileType(parentDirPath, false) == FileType.DIRECTORY)) {
-                    if(setMissingPermissionsOnly)
+                    if (setMissingPermissionsOnly)
                         setMissingFilePermissions(label + "file", filePath, permissionsToCheck);
                     else
                         setFilePermissions(label + "file", filePath, permissionsToCheck);
@@ -369,7 +369,7 @@ public class FileUtils {
 
                     // If setPermissions is enabled and path is a directory
                     if (setPermissions && permissionsToCheck != null && fileType == FileType.DIRECTORY) {
-                        if(setMissingPermissionsOnly)
+                        if (setMissingPermissionsOnly)
                             setMissingFilePermissions(label + "directory", filePath, permissionsToCheck);
                         else
                             setFilePermissions(label + "directory", filePath, permissionsToCheck);
@@ -471,13 +471,13 @@ public class FileUtils {
 
         // Create the file parent directory
         errmsg = createParentDirectoryFile(context, label + "regular file parent", filePath);
-        if(errmsg != null)
+        if (errmsg != null)
             return errmsg;
 
         try {
             Logger.logVerbose(LOG_TAG, "Creating " + label + "regular file at path \"" + filePath + "\"");
 
-            if(!file.createNewFile())
+            if (!file.createNewFile())
                 return context.getString(R.string.error_creating_file_failed, label + "regular file", filePath);
         } catch (Exception e) {
             return context.getString(R.string.error_creating_file_failed_with_exception, label + "regular file", filePath, e.getMessage());
@@ -509,7 +509,7 @@ public class FileUtils {
         File file = new File(filePath);
         String fileParentPath = file.getParent();
 
-        if(fileParentPath != null)
+        if (fileParentPath != null)
             return createDirectoryFile(context, label, fileParentPath,
             null, false, false);
         else
@@ -648,7 +648,7 @@ public class FileUtils {
             // If target path is relative instead of absolute
             if (!targetFilePath.startsWith("/")) {
                 String destFileParentPath = destFile.getParent();
-                if(destFileParentPath != null)
+                if (destFileParentPath != null)
                     targetFileAbsolutePath = destFileParentPath + "/" +  targetFilePath;
             }
 
@@ -658,29 +658,29 @@ public class FileUtils {
             // If target file does not exist
             if (targetFileType == FileType.NO_EXIST) {
                 // If dangling symlink should not be allowed, then return with error
-                if(!allowDangling)
+                if (!allowDangling)
                     return context.getString(R.string.error_file_not_found_at_path, label + "symlink target file", targetFileAbsolutePath);
             }
 
             // If destination exists
-            if(destFileType != FileType.NO_EXIST) {
+            if (destFileType != FileType.NO_EXIST) {
                 // If destination must not be overwritten
-                if(!overwrite) {
+                if (!overwrite) {
                     return null;
                 }
 
                 // If overwriteOnlyIfDestIsASymlink is enabled but destination file is not a symlink
-                if(overwriteOnlyIfDestIsASymlink && destFileType != FileType.SYMLINK)
+                if (overwriteOnlyIfDestIsASymlink && destFileType != FileType.SYMLINK)
                     return context.getString(R.string.error_cannot_overwrite_a_non_symlink_file_type, label + " file", destFilePath, targetFilePath, destFileType.getName());
 
                 // Delete the destination file
                 errmsg = deleteFile(context, label + "symlink destination", destFilePath, true);
-                if(errmsg != null)
+                if (errmsg != null)
                     return errmsg;
             } else {
                 // Create the destination file parent directory
                 errmsg = createParentDirectoryFile(context, label + "symlink destination file parent", destFilePath);
-                if(errmsg != null)
+                if (errmsg != null)
                     return errmsg;
             }
 
@@ -942,7 +942,7 @@ public class FileUtils {
             // If source file does not exist
             if (srcFileType == FileType.NO_EXIST) {
                 // If copy or move is to be ignored if source file is not found
-                if(ignoreNonExistentSrcFile)
+                if (ignoreNonExistentSrcFile)
                     return null;
                 // Else return with error
                 else
@@ -950,7 +950,7 @@ public class FileUtils {
             }
 
             // If the file type of the source file does not exist in the allowedFileTypeFlags, then return with error
-            if((allowedFileTypeFlags & srcFileType.getValue()) <= 0)
+            if ((allowedFileTypeFlags & srcFileType.getValue()) <= 0)
                 return context.getString(R.string.error_file_not_an_allowed_file_type, label + "source file meant to be " + modePast, srcFilePath, FileTypes.convertFileTypeFlagsToNamesString(allowedFileTypeFlags));
 
             // If source and destination file path are the same
@@ -958,19 +958,19 @@ public class FileUtils {
                 return context.getString(R.string.error_copying_or_moving_file_to_same_path, mode + " " + label + "source file", srcFilePath, destFilePath);
 
             // If destination exists
-            if(destFileType != FileType.NO_EXIST) {
+            if (destFileType != FileType.NO_EXIST) {
                 // If destination must not be overwritten
-                if(!overwrite) {
+                if (!overwrite) {
                     return null;
                 }
 
                 // If overwriteOnlyIfDestSameFileTypeAsSrc is enabled but destination file does not match source file type
-                if(overwriteOnlyIfDestSameFileTypeAsSrc && destFileType != srcFileType)
+                if (overwriteOnlyIfDestSameFileTypeAsSrc && destFileType != srcFileType)
                     return context.getString(R.string.error_cannot_overwrite_a_different_file_type, label + "source file", mode.toLowerCase(), srcFilePath, destFilePath, destFileType.getName(), srcFileType.getName());
 
                 // Delete the destination file
                 errmsg = deleteFile(context, label + "destination file", destFilePath, true);
-                if(errmsg != null)
+                if (errmsg != null)
                     return errmsg;
             }
 
@@ -979,14 +979,14 @@ public class FileUtils {
             boolean copyFile = !moveFile;
 
             // If moveFile is true
-            if(moveFile) {
+            if (moveFile) {
                 // We first try to rename source file to destination file to save a copy operation in case both source and destination are on the same filesystem
                 Logger.logVerbose(LOG_TAG, "Attempting to rename source to destination.");
 
                 // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:libcore/ojluni/src/main/java/java/io/UnixFileSystem.java;l=358
                 // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:libcore/luni/src/main/java/android/system/Os.java;l=512
                 // Uses File.getPath() to get the path of source and destination and not the canonical path
-                if(!srcFile.renameTo(destFile)) {
+                if (!srcFile.renameTo(destFile)) {
                     // If destination directory is a subdirectory of the source directory
                     // Copying is still allowed by copyDirectory() by excluding destination directory files
                     if (srcFileType == FileType.DIRECTORY && destFileCanonicalPath.startsWith(srcFileCanonicalPath + File.separator))
@@ -999,12 +999,12 @@ public class FileUtils {
             }
 
             // If moveFile is false or renameTo failed while moving
-            if(copyFile) {
+            if (copyFile) {
                 Logger.logVerbose(LOG_TAG, "Attempting to copy source to destination.");
 
                 // Create the dest file parent directory
                 errmsg = createParentDirectoryFile(context, label + "dest file parent", destFilePath);
-                if(errmsg != null)
+                if (errmsg != null)
                     return errmsg;
 
                 if (srcFileType == FileType.DIRECTORY) {
@@ -1031,10 +1031,10 @@ public class FileUtils {
             }
 
             // If source file had to be moved
-            if(moveFile) {
+            if (moveFile) {
                 // Delete the source file since copying would have succeeded
                 errmsg = deleteFile(context, label + "source file", srcFilePath, true);
-                if(errmsg != null)
+                if (errmsg != null)
                     return errmsg;
             }
 
@@ -1149,7 +1149,7 @@ public class FileUtils {
             // If file does not exist
             if (fileType == FileType.NO_EXIST) {
                 // If delete is to be ignored if file does not exist
-                if(ignoreNonExistentFile)
+                if (ignoreNonExistentFile)
                     return null;
                 // Else return with error
                 else
@@ -1157,7 +1157,7 @@ public class FileUtils {
             }
 
             // If the file type of the file does not exist in the allowedFileTypeFlags, then return with error
-            if((allowedFileTypeFlags & fileType.getValue()) <= 0)
+            if ((allowedFileTypeFlags & fileType.getValue()) <= 0)
                 return context.getString(R.string.error_file_not_an_allowed_file_type, label + "file meant to be deleted", filePath, FileTypes.convertFileTypeFlagsToNamesString(allowedFileTypeFlags));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -1185,7 +1185,7 @@ public class FileUtils {
 
             // If file still exists after deleting it
             fileType = getFileType(filePath, false);
-            if(fileType != FileType.NO_EXIST)
+            if (fileType != FileType.NO_EXIST)
                 return context.getString(R.string.error_file_still_exists_after_deleting, label + "file meant to be deleted", filePath);
         }
         catch (Exception e) {
@@ -1254,7 +1254,7 @@ public class FileUtils {
             // Else create it
             else {
                 errmsg = createDirectoryFile(context, label, filePath);
-                if(errmsg != null)
+                if (errmsg != null)
                     return errmsg;
             }
         } catch (Exception e) {
@@ -1297,18 +1297,18 @@ public class FileUtils {
         // If file does not exist
         if (fileType == FileType.NO_EXIST) {
             // If reading is to be ignored if file does not exist
-            if(ignoreNonExistentFile)
+            if (ignoreNonExistentFile)
                 return null;
             // Else return with error
             else
                 return context.getString(R.string.error_file_not_found_at_path, label + "file meant to be read", filePath);
         }
 
-        if(charset == null) charset = Charset.defaultCharset();
+        if (charset == null) charset = Charset.defaultCharset();
 
         // Check if charset is supported
         errmsg = isCharsetSupported(context, charset);
-        if(errmsg != null)
+        if (errmsg != null)
             return errmsg;
 
         FileInputStream fileInputStream = null;
@@ -1322,7 +1322,7 @@ public class FileUtils {
 
             boolean firstLine = true;
             while ((receiveString = bufferedReader.readLine()) != null ) {
-                if(!firstLine) dataStringBuilder.append("\n"); else firstLine = false;
+                if (!firstLine) dataStringBuilder.append("\n"); else firstLine = false;
                 dataStringBuilder.append(receiveString);
             }
 
@@ -1365,14 +1365,14 @@ public class FileUtils {
 
         // Create the file parent directory
         errmsg = createParentDirectoryFile(context, label + "file parent", filePath);
-        if(errmsg != null)
+        if (errmsg != null)
             return errmsg;
 
-        if(charset == null) charset = Charset.defaultCharset();
+        if (charset == null) charset = Charset.defaultCharset();
 
         // Check if charset is supported
         errmsg = isCharsetSupported(context, charset);
-        if(errmsg != null)
+        if (errmsg != null)
             return errmsg;
 
         FileOutputStream fileOutputStream = null;
@@ -1407,7 +1407,7 @@ public class FileUtils {
         if (charset == null) return context.getString(R.string.error_null_or_empty_parameter, "charset", "isCharsetSupported");
 
         try {
-            if(!Charset.isSupported(charset.name())) {
+            if (!Charset.isSupported(charset.name())) {
                 return context.getString(R.string.error_unsupported_charset, charset.name());
             }
         } catch (Exception e) {

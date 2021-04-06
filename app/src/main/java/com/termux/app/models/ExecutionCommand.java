@@ -146,7 +146,7 @@ public class ExecutionCommand {
     @NonNull
     @Override
     public String toString() {
-        if(!hasExecuted())
+        if (!hasExecuted())
             return getExecutionInputLogString(this, true);
         else {
             return getExecutionOutputLogString(this, true);
@@ -167,7 +167,7 @@ public class ExecutionCommand {
 
         logString.append(executionCommand.getCommandIdAndLabelLogString()).append(":");
 
-        if(executionCommand.previousState != ExecutionState.PRE_EXECUTION)
+        if (executionCommand.previousState != ExecutionState.PRE_EXECUTION)
             logString.append("\n").append(executionCommand.getPreviousStateLogString());
         logString.append("\n").append(executionCommand.getCurrentStateLogString());
 
@@ -178,11 +178,11 @@ public class ExecutionCommand {
         logString.append("\n").append(executionCommand.getIsFailsafeLogString());
 
 
-        if(!ignoreNull || executionCommand.sessionAction != null)
+        if (!ignoreNull || executionCommand.sessionAction != null)
             logString.append("\n").append(executionCommand.getSessionActionLogString());
 
         logString.append("\n").append(executionCommand.getIsPluginExecutionCommandLogString());
-        if(!ignoreNull || executionCommand.isPluginExecutionCommand) {
+        if (!ignoreNull || executionCommand.isPluginExecutionCommand) {
             if (!ignoreNull || executionCommand.pluginPendingIntent != null)
                 logString.append("\n").append(executionCommand.getPendingIntentCreatorLogString());
         }
@@ -226,7 +226,7 @@ public class ExecutionCommand {
     public static String getExecutionErrLogString(final ExecutionCommand executionCommand, boolean ignoreNull) {
         StringBuilder logString = new StringBuilder();
 
-        if(!ignoreNull || (executionCommand.isStateFailed())) {
+        if (!ignoreNull || (executionCommand.isStateFailed())) {
             logString.append("\n").append(executionCommand.getErrCodeLogString());
             logString.append("\n").append(executionCommand.getErrmsgLogString());
             logString.append("\n").append(executionCommand.geStackTracesLogString());
@@ -299,7 +299,7 @@ public class ExecutionCommand {
         markdownString.append("\n").append("**Errmsg:**\n").append(DataUtils.getDefaultIfNull(executionCommand.errmsg, "-"));
         markdownString.append("\n\n").append(executionCommand.geStackTracesMarkdownString());
 
-        if(executionCommand.commandDescription != null || executionCommand.commandHelp != null) {
+        if (executionCommand.commandDescription != null || executionCommand.commandHelp != null) {
             if (executionCommand.commandDescription != null)
                 markdownString.append("\n\n### Command Description\n\n").append(executionCommand.commandDescription).append("\n");
             if (executionCommand.commandHelp != null)
@@ -307,7 +307,7 @@ public class ExecutionCommand {
             markdownString.append("\n##\n");
         }
 
-        if(executionCommand.pluginAPIHelp != null) {
+        if (executionCommand.pluginAPIHelp != null) {
             markdownString.append("\n\n### Plugin API Help\n\n").append(executionCommand.pluginAPIHelp);
             markdownString.append("\n##\n");
         }
@@ -318,7 +318,7 @@ public class ExecutionCommand {
 
 
     public String getIdLogString() {
-        if(id != null)
+        if (id != null)
             return "(" + id + ") ";
         else
             return "";
@@ -490,7 +490,7 @@ public class ExecutionCommand {
 
     public synchronized boolean setState(ExecutionState newState) {
         // The state transition cannot go back or change if already at {@link ExecutionState#SUCCESS}
-        if(newState.getValue() < currentState.getValue() || currentState == ExecutionState.SUCCESS) {
+        if (newState.getValue() < currentState.getValue() || currentState == ExecutionState.SUCCESS) {
             Logger.logError("Invalid "+ getCommandIdAndLabelLogString() + " state transition from \"" + currentState.getName() + "\" to " +  "\"" + newState.getName() + "\"");
             return false;
         }
@@ -498,7 +498,7 @@ public class ExecutionCommand {
         // The {@link ExecutionState#FAILED} can be set again, like to add more errors, but we don't update
         // {@link #previousState} with the {@link #currentState} value if its at {@link ExecutionState#FAILED} to
         // preserve the last valid state
-        if(currentState != ExecutionState.FAILED)
+        if (currentState != ExecutionState.FAILED)
             previousState = currentState;
 
         currentState = newState;
@@ -515,23 +515,23 @@ public class ExecutionCommand {
 
         this.errmsg = errmsg;
 
-        if(!setState(ExecutionState.FAILED))
+        if (!setState(ExecutionState.FAILED))
             return false;
 
-        if(this.throwableList == null)
+        if (this.throwableList == null)
             this.throwableList =  new ArrayList<>();
 
-        if(throwable != null)
+        if (throwable != null)
             this.throwableList.add(throwable);
 
         return true;
     }
 
     public synchronized boolean isStateFailed() {
-        if(currentState != ExecutionState.FAILED)
+        if (currentState != ExecutionState.FAILED)
             return false;
 
-        if(errCode <= RESULT_CODE_OK) {
+        if (errCode <= RESULT_CODE_OK) {
             Logger.logWarn("The "  + getCommandIdAndLabelLogString() + " has an invalid errCode value \"" + errCode + "\" while having ExecutionState.FAILED state.");
             return false;
         } else {

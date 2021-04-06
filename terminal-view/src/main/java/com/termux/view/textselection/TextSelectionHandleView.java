@@ -123,14 +123,14 @@ public class TextSelectionHandleView extends View {
         coords[0] += mPointX;
         coords[1] += mPointY;
 
-        if(mHandle != null)
+        if (mHandle != null)
             mHandle.showAtLocation(terminalView, 0, coords[0], coords[1]);
     }
 
     public void hide() {
         mIsDragging = false;
 
-        if(mHandle != null) {
+        if (mHandle != null) {
             mHandle.dismiss();
 
             // We remove handle from its parent, otherwise it may still be shown in some cases even after the dismiss call
@@ -141,7 +141,7 @@ public class TextSelectionHandleView extends View {
     }
 
     public void removeFromParent() {
-        if(!isParentNull()) {
+        if (!isParentNull()) {
             ((ViewGroup)this.getParent()).removeView(this);
         }
     }

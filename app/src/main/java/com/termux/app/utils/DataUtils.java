@@ -11,21 +11,21 @@ public class DataUtils {
     public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 100 * 1024; // 100KB
 
     public static String getTruncatedCommandOutput(String text, int maxLength, boolean fromEnd, boolean onNewline, boolean addPrefix) {
-        if(text == null) return null;
+        if (text == null) return null;
 
         String prefix = "(truncated) ";
 
-        if(addPrefix)
+        if (addPrefix)
             maxLength = maxLength - prefix.length();
 
-        if(maxLength < 0 || text.length() < maxLength) return text;
+        if (maxLength < 0 || text.length() < maxLength) return text;
 
         if (fromEnd) {
             text = text.substring(0, Math.min(text.length(), maxLength));
         } else {
             int cutOffIndex = text.length() - maxLength;
 
-            if(onNewline) {
+            if (onNewline) {
                 int nextNewlineIndex = text.indexOf('\n', cutOffIndex);
                 if (nextNewlineIndex != -1 && nextNewlineIndex != text.length() - 1) {
                     cutOffIndex = nextNewlineIndex + 1;
@@ -34,7 +34,7 @@ public class DataUtils {
             text = text.substring(cutOffIndex);
         }
 
-        if(addPrefix)
+        if (addPrefix)
             text = prefix + text;
 
         return text;
@@ -49,7 +49,7 @@ public class DataUtils {
      * returns default if failed to read a valid value, like in case of an exception.
      */
     public static float getFloatFromString(String value, float def) {
-        if(value == null) return def;
+        if (value == null) return def;
 
         try {
             return Float.parseFloat(value);
@@ -68,7 +68,7 @@ public class DataUtils {
      * returns default if failed to read a valid value, like in case of an exception.
      */
     public static int getIntFromString(String value, int def) {
-        if(value == null) return def;
+        if (value == null) return def;
 
         try {
             return Integer.parseInt(value);
@@ -89,7 +89,7 @@ public class DataUtils {
      * like in case of an exception.
      */
     public static int getIntStoredAsStringFromBundle(Bundle bundle, String key, int def) {
-        if(bundle == null) return def;
+        if (bundle == null) return def;
         return getIntFromString(bundle.getString(key, Integer.toString(def)), def);
     }
 

@@ -26,7 +26,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
      * Set default uncaught crash handler of current thread to {@link CrashHandler}.
      */
     public static void setCrashHandler(final Context context) {
-        if(!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
+        if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
             Thread.setDefaultUncaughtExceptionHandler(new CrashHandler(context));
         }
     }

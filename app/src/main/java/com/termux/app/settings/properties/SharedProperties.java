@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
  *
  * The {@link SharedProperties} also provides static functions that can be used to read properties
  * from files or individual key values or even their internal values. An automatic mapping to a
- * boolean as internal value can also be done. An in-memory cache is not maintained, nor a locks used.
+ * boolean as internal value can also be done. An in-memory cache is not maintained, nor are locks used.
  *
  * This currently only has read support, write support can/will be added later if needed. Check android's
  * SharedPreferencesImpl class for reference implementation.
@@ -119,7 +119,7 @@ public class SharedProperties {
             Properties newProperties = new Properties();
 
             Set<String> propertiesList = mPropertiesList;
-            if(propertiesList == null)
+            if (propertiesList == null)
                 propertiesList = properties.stringPropertyNames();
 
             String value;
@@ -240,7 +240,7 @@ public class SharedProperties {
                 properties.load(new InputStreamReader(in, StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
-            if(context != null)
+            if (context != null)
                 Toast.makeText(context, "Could not open properties file \"" + propertiesFile.getAbsolutePath() + "\": " + e.getMessage(), Toast.LENGTH_LONG).show();
             Logger.logStackTraceWithMessage(LOG_TAG, "Error loading properties file \"" + propertiesFile.getAbsolutePath() + "\"", e);
             return null;
@@ -394,7 +394,7 @@ public class SharedProperties {
     }
 
     public static Properties getPropertiesCopy(Properties inputProperties) {
-        if(inputProperties == null) return null;
+        if (inputProperties == null) return null;
 
         Properties outputProperties = new Properties();
         for (String key : inputProperties.stringPropertyNames()) {
@@ -405,7 +405,7 @@ public class SharedProperties {
     }
 
     public static Map<String, Object> getMapCopy(Map<String, Object> map) {
-        if(map == null) return null;
+        if (map == null) return null;
         return new HashMap<String, Object>(map);
     }
 

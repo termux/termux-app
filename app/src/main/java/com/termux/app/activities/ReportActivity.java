@@ -46,9 +46,9 @@ public class ReportActivity extends AppCompatActivity {
 
         Bundle bundle = null;
         Intent intent = getIntent();
-        if(intent != null)
+        if (intent != null)
             bundle = intent.getExtras();
-        else if(savedInstanceState != null)
+        else if (savedInstanceState != null)
             bundle = savedInstanceState;
 
         updateUI(bundle);
@@ -60,7 +60,7 @@ public class ReportActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         setIntent(intent);
 
-        if(intent != null)
+        if (intent != null)
             updateUI(intent.getExtras());
     }
 
@@ -148,12 +148,12 @@ public class ReportActivity extends AppCompatActivity {
         mReportMarkdownString = ReportInfo.getReportInfoMarkdownString(mReportInfo);
 
         mReportActivityMarkdownString = "";
-        if(mReportInfo.reportStringPrefix != null)
+        if (mReportInfo.reportStringPrefix != null)
             mReportActivityMarkdownString += mReportInfo.reportStringPrefix;
 
         mReportActivityMarkdownString += mReportMarkdownString;
 
-        if(mReportInfo.reportStringSuffix != null)
+        if (mReportInfo.reportStringSuffix != null)
             mReportActivityMarkdownString += mReportInfo.reportStringSuffix;
     }
 

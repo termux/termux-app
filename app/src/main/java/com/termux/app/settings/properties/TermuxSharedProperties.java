@@ -228,7 +228,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal termux {@link Object} object.
      */
     public static Object getInternalTermuxPropertyValueFromValue(Context context, String key, String value) {
-        if(key == null) return null;
+        if (key == null) return null;
         /*
           For keys where a MAP_* is checked by respective functions. Note that value to this function
           would actually be the key for the MAP_*:
@@ -269,10 +269,10 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
                 return (String) getExtraKeysStyleInternalPropertyValueFromValue(value);
             default:
                 // default boolean behaviour
-                if(TermuxPropertyConstants.TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
+                if (TermuxPropertyConstants.TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
                     return (boolean) SharedProperties.getBooleanValueForStringValue(value, false);
                 // default inverted boolean behaviour
-                else if(TermuxPropertyConstants.TERMUX_DEFAULT_INVERETED_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
+                else if (TermuxPropertyConstants.TERMUX_DEFAULT_INVERETED_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
                     return (boolean) SharedProperties.getInvertedBooleanValueForStringValue(value, true);
                 // just use String object as is (may be null)
                 else

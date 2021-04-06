@@ -57,7 +57,7 @@ public class CrashUtils {
 
         // Write report string to crash log file
         String errmsg = FileUtils.writeStringToFile(context, "crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportString.toString(), false);
-        if(errmsg != null) {
+        if (errmsg != null) {
             Logger.logError(LOG_TAG, errmsg);
         }
     }
@@ -77,7 +77,7 @@ public class CrashUtils {
      * @param logTagParam The log tag to use for logging.
      */
     public static void notifyCrash(final Context context, final String logTagParam) {
-        if(context == null) return;
+        if (context == null) return;
 
 
         TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(context);
@@ -90,7 +90,7 @@ public class CrashUtils {
             public void run() {
                 String logTag = DataUtils.getDefaultIfNull(logTagParam, LOG_TAG);
 
-                if(!FileUtils.regularFileExists(TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, false))
+                if (!FileUtils.regularFileExists(TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, false))
                     return;
 
                 String errmsg;
@@ -98,20 +98,20 @@ public class CrashUtils {
 
                 // Read report string from crash log file
                 errmsg = FileUtils.readStringFromFile(context, "crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportStringBuilder, false);
-                if(errmsg != null) {
+                if (errmsg != null) {
                     Logger.logError(logTag, errmsg);
                     return;
                 }
 
                 // Move crash log file to backup location if it exists
                 FileUtils.moveRegularFile(context, "crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, TermuxConstants.TERMUX_CRASH_LOG_BACKUP_FILE_PATH, true);
-                if(errmsg != null) {
+                if (errmsg != null) {
                     Logger.logError(logTag, errmsg);
                 }
 
                 String reportString = reportStringBuilder.toString();
 
-                if(reportString == null || reportString.isEmpty())
+                if (reportString == null || reportString.isEmpty())
                     return;
 
                 // Send a notification to show the crash log which when clicked will open the {@link ReportActivity}
@@ -128,12 +128,12 @@ public class CrashUtils {
 
                 // Build the notification
                 Notification.Builder builder = getCrashReportsNotificationBuilder(context, title, null, null, pendingIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
-                if(builder == null)  return;
+                if (builder == null)  return;
 
                 // Send the notification
                 int nextNotificationId = NotificationUtils.getNextNotificationId(context);
                 NotificationManager notificationManager = NotificationUtils.getNotificationManager(context);
-                if(notificationManager != null)
+                if (notificationManager != null)
                     notificationManager.notify(nextNotificationId, builder.build());
             }
         }.start();
@@ -158,7 +158,7 @@ public class CrashUtils {
             NOTIFICATION_CHANNEL_ID_CRASH_REPORT_ERRORS, Notification.PRIORITY_HIGH,
             title, notifiationText, notificationBigText, pendingIntent, notificationMode);
 
-        if(builder == null)  return null;
+        if (builder == null)  return null;
 
         // Enable timestamp
         builder.setShowWhen(true);

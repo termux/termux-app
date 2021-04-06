@@ -44,14 +44,14 @@ public class NativeDispatcher {
 
         File file = new File(filePath);
 
-        //if(!file.exists())
+        //if (!file.exists())
         //    throw new IOException("No such file or directory: \"" + filePath + "\"");
     }
 
     public static void validateFileDescriptor(FileDescriptor fileDescriptor) throws IOException {
         if (fileDescriptor == null) throw new IOException("The file descriptor is null");
 
-        if(!fileDescriptor.valid())
+        if (!fileDescriptor.valid())
             throw new IOException("No such file descriptor: \"" + fileDescriptor.toString() + "\"");
     }
 

@@ -137,7 +137,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
 
     /** Try switching to session. */
     public void setCurrentSession(TerminalSession session) {
-        if(session == null) return;
+        if (session == null) return;
 
         if (mActivity.getTerminalView().attachSession(session)) {
             // notify about switched session if not already displaying the session
@@ -170,13 +170,13 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         }
 
         TermuxSession termuxSession = service.getTermuxSession(index);
-        if(termuxSession != null)
+        if (termuxSession != null)
             setCurrentSession(termuxSession.getTerminalSession());
     }
 
     public void switchToSession(int index) {
         TermuxSession termuxSession = mActivity.getTermuxService().getTermuxSession(index);
-        if(termuxSession != null)
+        if (termuxSession != null)
             setCurrentSession(termuxSession.getTerminalSession());
     }
 
@@ -232,7 +232,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         } else {
             // Else return the last session currently running
             TermuxSession termuxSession = mActivity.getTermuxService().getLastTermuxSession();
-            if(termuxSession != null)
+            if (termuxSession != null)
                 return termuxSession.getTerminalSession();
             else
                 return null;
@@ -243,7 +243,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         String sessionHandle = mActivity.getPreferences().getCurrentSession();
 
         // If no session is stored in shared preferences
-        if(sessionHandle == null)
+        if (sessionHandle == null)
             return null;
 
         // Check if the session handle found matches one of the currently running sessions
@@ -264,7 +264,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
                 index = size - 1;
             }
             TermuxSession termuxSession = service.getTermuxSession(index);
-            if(termuxSession != null)
+            if (termuxSession != null)
                 setCurrentSession(termuxSession.getTerminalSession());
         }
     }
@@ -278,7 +278,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         final int indexOfSession = mActivity.getTermuxService().getIndexOfSession(session);
         if (indexOfSession < 0) return;
         final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
-        if(termuxSessionsListView == null) return;
+        if (termuxSessionsListView == null) return;
 
         termuxSessionsListView.setItemChecked(indexOfSession, true);
         // Delay is necessary otherwise sometimes scroll to newly added session does not happen

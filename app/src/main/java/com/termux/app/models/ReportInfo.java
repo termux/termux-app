@@ -48,7 +48,7 @@ public class ReportInfo implements Serializable {
 
         StringBuilder markdownString = new StringBuilder();
 
-        if(reportInfo.addReportInfoToMarkdown) {
+        if (reportInfo.addReportInfoToMarkdown) {
             markdownString.append("## Report Info\n\n");
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User Action", reportInfo.userAction, "-"));
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Sender", reportInfo.sender, "-"));
