@@ -2,6 +2,7 @@ package com.termux.app;
 
 import android.app.Application;
 
+import com.termux.app.crash.CrashHandler;
 import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.utils.Logger;
 
@@ -10,10 +11,14 @@ public class TermuxApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        updateLogLevel();
+        // Set crash handler for the app
+        CrashHandler.setCrashHandler(this);
+
+        // Set log level for the app
+        setLogLevel();
     }
 
-    private void updateLogLevel() {
+    private void setLogLevel() {
         // Load the log level from shared preferences and set it to the {@link Loggger.CURRENT_LOG_LEVEL}
         TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(getApplicationContext());
         preferences.setLogLevel(null, preferences.getLogLevel());

@@ -18,7 +18,6 @@ import com.termux.R;
 import com.termux.app.TermuxConstants;
 import com.termux.app.utils.MarkdownUtils;
 import com.termux.app.utils.ShareUtils;
-import com.termux.app.utils.TermuxUtils;
 import com.termux.app.models.ReportInfo;
 
 import org.commonmark.node.FencedCodeBlock;
@@ -32,6 +31,7 @@ public class ReportActivity extends AppCompatActivity {
     private static final String EXTRA_REPORT_INFO = "report_info";
 
     ReportInfo mReportInfo;
+    String mReportMarkdownString;
     String mReportActivityMarkdownString;
 
     @Override
@@ -131,11 +131,11 @@ public class ReportActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_item_share_report) {
-            if (mReportInfo != null)
-                ShareUtils.shareText(this, getString(R.string.title_report_text), mReportActivityMarkdownString);
+            if (mReportMarkdownString != null)
+                ShareUtils.shareText(this, getString(R.string.title_report_text), mReportMarkdownString);
         } else if (id == R.id.menu_item_copy_report) {
-            if (mReportInfo != null)
-                ShareUtils.copyTextToClipboard(this, mReportActivityMarkdownString, null);
+            if (mReportMarkdownString != null)
+                ShareUtils.copyTextToClipboard(this, mReportMarkdownString, null);
         }
 
         return false;
@@ -145,7 +145,16 @@ public class ReportActivity extends AppCompatActivity {
      * Generate the markdown {@link String} to be shown in {@link ReportActivity}.
      */
     private void generateReportActivityMarkdownString() {
-        mReportActivityMarkdownString = ReportInfo.getReportInfoMarkdownString(this, mReportInfo);
+        mReportMarkdownString = ReportInfo.getReportInfoMarkdownString(mReportInfo);
+
+        mReportActivityMarkdownString = "";
+        if(mReportInfo.reportStringPrefix != null)
+            mReportActivityMarkdownString += mReportInfo.reportStringPrefix;
+
+        mReportActivityMarkdownString += mReportMarkdownString;
+
+        if(mReportInfo.reportStringSuffix != null)
+            mReportActivityMarkdownString += mReportInfo.reportStringSuffix;
     }
 
 

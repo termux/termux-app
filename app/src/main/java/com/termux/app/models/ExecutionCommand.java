@@ -415,7 +415,7 @@ public class ExecutionCommand {
     }
 
     public String geStackTracesMarkdownString() {
-        return Logger.getStackTracesMarkdownString("StackTraces:", Logger.getStackTraceStringArray(throwableList));
+        return Logger.getStackTracesMarkdownString("StackTraces", Logger.getStackTraceStringArray(throwableList));
     }
 
 

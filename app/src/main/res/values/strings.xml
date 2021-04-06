@@ -158,6 +158,8 @@
     <string name="title_share_with">Share With</string>
     <string name="title_report_text">Report Text</string>
 
+    <string name="msg_report_issue">If you think this report should be reported, then copy its text from the options menu (3-dots on top right) and post an issue on one of the following links at which the report belongs at.</string>
+
 
 
     <!-- Termux PermissionUtils -->

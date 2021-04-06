@@ -149,7 +149,13 @@ public class PluginUtils {
         // to show the details of the error
         String title = TermuxConstants.TERMUX_APP_NAME + " Plugin Execution Command Error";
 
-        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND, logTag, title, ExecutionCommand.getExecutionCommandMarkdownString(executionCommand), true));
+        StringBuilder reportString = new StringBuilder();
+
+        reportString.append(ExecutionCommand.getExecutionCommandMarkdownString(executionCommand));
+        reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
+        reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(context));
+
+        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND, logTag, title, null, reportString.toString(), null,true));
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Setup the notification channel if not already set up

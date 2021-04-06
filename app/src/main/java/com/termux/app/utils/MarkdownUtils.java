@@ -117,6 +117,13 @@ public class MarkdownUtils {
             return "**" + label + "**: " + def + "\n";
     }
 
+    public static String getLinkMarkdownString(String label, Object object) {
+        if (object != null)
+            return "[" + label + "](" + object +  ")";
+        else
+            return label;
+    }
+
 
     /** Check following for more info:
      * https://github.com/noties/Markwon/tree/v4.6.2/app-sample

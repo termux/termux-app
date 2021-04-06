@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.google.common.base.Joiner;
 
+import com.termux.R;
 import com.termux.app.TermuxConstants;
 
 import java.io.BufferedReader;
@@ -238,6 +239,49 @@ public class TermuxUtils {
         return markdownString.toString();
     }
 
+    /**
+     * Get a markdown {@link String} for reporting an issue.
+     *
+     * @param context The context for operations.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getReportIssueMarkdownString(@NonNull final Context context) {
+        if (context == null) return "null";
+
+        StringBuilder markdownString = new StringBuilder();
+
+        markdownString.append("## Report Issue");
+
+        markdownString.append("\n\n").append(context.getString(R.string.msg_report_issue)).append("\n");
+
+        //markdownString.append("\n\n### Email\n");
+        //markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_SUPPORT_EMAIL, TermuxConstants.TERMUX_SUPPORT_EMAIL_MAILTO_URL)).append("  ");
+
+        markdownString.append("\n\n### Reddit\n");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_REDDIT_SUBREDDIT, TermuxConstants.TERMUX_REDDIT_SUBREDDIT_URL)).append("  ");
+
+        markdownString.append("\n\n### Github Issues for Termux apps\n");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_APP_NAME, TermuxConstants.TERMUX_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_API_APP_NAME, TermuxConstants.TERMUX_API_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_BOOT_APP_NAME, TermuxConstants.TERMUX_BOOT_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_FLOAT_APP_NAME, TermuxConstants.TERMUX_FLOAT_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_STYLING_APP_NAME, TermuxConstants.TERMUX_STYLING_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_TASKER_APP_NAME, TermuxConstants.TERMUX_TASKER_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_WIDGET_APP_NAME, TermuxConstants.TERMUX_WIDGET_GITHUB_ISSUES_REPO_URL)).append("  ");
+
+        markdownString.append("\n\n### Github Issues for Termux packages\n");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_GAME_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_GAME_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_SCIENCE_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_ROOT_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_ROOT_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_UNSTABLE_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_X11_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_X11_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
+
+        markdownString.append("\n##\n");
+
+        return markdownString.toString();
+    }
+
     public static Properties getSystemProperties() {
         Properties systemProperties = new Properties();
 
@@ -311,7 +355,7 @@ public class TermuxUtils {
 
     public static String getCurrentTimeStamp() {
         @SuppressLint("SimpleDateFormat")
-        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         return df.format(new Date());
     }

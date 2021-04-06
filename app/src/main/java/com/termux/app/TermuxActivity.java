@@ -34,6 +34,7 @@ import com.termux.R;
 import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.activities.HelpActivity;
 import com.termux.app.activities.SettingsActivity;
+import com.termux.app.crash.CrashUtils;
 import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
@@ -154,6 +155,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public void onCreate(Bundle savedInstanceState) {
 
         Logger.logDebug(LOG_TAG, "onCreate");
+
+        // Check if a crash happened on last run of the app and show a
+        // notification with the crash details if it did
+        CrashUtils.notifyCrash(this, LOG_TAG);
 
         // Load termux shared preferences and properties
         mPreferences = new TermuxAppSharedPreferences(this);
