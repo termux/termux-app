@@ -154,17 +154,8 @@ public final class TermuxService extends Service {
     @Override
     public void onDestroy() {
         Logger.logVerbose(LOG_TAG, "onDestroy");
-        File termuxTmpDir = TermuxConstants.TERMUX_TMP_DIR;
 
-        if (termuxTmpDir.exists()) {
-            try {
-                TermuxInstaller.deleteDirectory(termuxTmpDir.getCanonicalFile());
-            } catch (Exception e) {
-                Logger.logStackTraceWithMessage(LOG_TAG, "Error while removing file at " + termuxTmpDir.getAbsolutePath(), e);
-            }
-
-            termuxTmpDir.mkdirs();
-        }
+        ShellUtils.clearTermuxTMPDIR(this);
 
         actionReleaseWakeLock(false);
         finishAllTermuxSessions();

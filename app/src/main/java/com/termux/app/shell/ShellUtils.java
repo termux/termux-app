@@ -3,6 +3,8 @@ package com.termux.app.shell;
 import android.content.Context;
 
 import com.termux.app.TermuxConstants;
+import com.termux.app.file.FileUtils;
+import com.termux.app.utils.Logger;
 import com.termux.app.utils.PackageUtils;
 import com.termux.app.utils.TermuxUtils;
 
@@ -141,6 +143,14 @@ public class ShellUtils {
         if(executable == null) return null;
         int lastSlash = executable.lastIndexOf('/');
         return (lastSlash == -1) ? executable : executable.substring(lastSlash + 1);
+    }
+
+    public static void clearTermuxTMPDIR(Context context) {
+        String errmsg;
+        errmsg = FileUtils.clearDirectory(context, "$TMPDIR", FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null, false));
+        if (errmsg != null) {
+            Logger.logErrorAndShowToast(context, errmsg);
+        }
     }
 
 }
