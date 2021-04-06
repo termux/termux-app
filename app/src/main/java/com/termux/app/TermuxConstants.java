@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.15.0
+ * Version: v0.16.0
  *
  * Changelog
  *
@@ -113,6 +113,11 @@ import java.io.File;
  *          `TERMUX_X11_PACKAGES_GITHUB_REPO_NAME`, `TERMUX_X11_PACKAGES_GITHUB_REPO_URL`, `TERMUX_X11_PACKAGES_GITHUB_ISSUES_REPO_URL`.
  *      - Added following to `RUN_COMMAND_SERVICE`:
  *          `RUN_COMMAND_API_HELP_URL`.
+ *
+ * - 0.16.0 (2021-04-06)
+ *      - Added `TERMUX_SUPPORT_EMAIL`, `TERMUX_SUPPORT_EMAIL_URL`, `TERMUX_SUPPORT_EMAIL_MAILTO_URL`,
+ *          `TERMUX_REDDIT_SUBREDDIT`, `TERMUX_REDDIT_SUBREDDIT_URL`.
+ *      - The `TERMUX_SUPPORT_EMAIL_URL` value must be fixed later when email has been set up.
  */
 
 /**
@@ -163,8 +168,25 @@ public final class TermuxConstants {
     /** Termux Github organization url */
     public static final String TERMUX_GITHUB_ORGANIZATION_URL = "https://github.com" + "/" + TERMUX_GITHUB_ORGANIZATION_NAME; // Default: "https://github.com/termux"
 
+    /** Termux support email */
+    public static final String TERMUX_SUPPORT_EMAIL = "support"; // Default: "support"
+
+    /** Termux support email url */
+    public static final String TERMUX_SUPPORT_EMAIL_URL = "email@example.com"; // Default: "email@example.com"
+
+    /** Termux support email mailto url */
+    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:email@example.com"
+
+    /** Termux Reddit subreddit */
+    public static final String TERMUX_REDDIT_SUBREDDIT = "r/termux"; // Default: "r/termux"
+
+    /** Termux Reddit subreddit url */
+    public static final String TERMUX_REDDIT_SUBREDDIT_URL = "https://www.reddit.com/r/termux"; // Default: "https://www.reddit.com/r/termux"
+
     /** F-Droid packages base url */
     public static final String FDROID_PACKAGES_BASE_URL = "https://f-droid.org/en/packages"; // Default: "https://f-droid.org/en/packages"
+
+
 
 
 
