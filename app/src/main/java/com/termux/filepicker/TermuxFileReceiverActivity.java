@@ -9,11 +9,11 @@ import android.provider.OpenableColumns;
 import android.util.Patterns;
 
 import com.termux.R;
-import com.termux.app.utils.DialogUtils;
-import com.termux.app.TermuxConstants;
-import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.shared.interact.DialogUtils;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.TermuxService;
-import com.termux.app.utils.Logger;
+import com.termux.shared.logger.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

@@ -1,30 +1,30 @@
 package com.termux.app.models;
 
-import com.termux.app.utils.MarkdownUtils;
-import com.termux.app.utils.TermuxUtils;
+import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.termux.TermuxUtils;
 
 import java.io.Serializable;
 
 public class ReportInfo implements Serializable {
 
     /** The user action that was being processed for which the report was generated. */
-    public UserAction userAction;
+    public final UserAction userAction;
     /** The internal app component that sent the report. */
-    public String sender;
+    public final String sender;
     /** The report title. */
-    public String reportTitle;
+    public final String reportTitle;
     /** The markdown report text prefix. Will not be part of copy and share operations, etc. */
-    public String reportStringPrefix;
+    public final String reportStringPrefix;
     /** The markdown report text. */
-    public String reportString;
+    public final String reportString;
     /** The markdown report text suffix. Will not be part of copy and share operations, etc. */
-    public String reportStringSuffix;
+    public final String reportStringSuffix;
     /** If set to {@code true}, then report, app and device info will be added to the report when
      * markdown is generated.
      */
-    public boolean addReportInfoToMarkdown;
+    public final boolean addReportInfoToMarkdown;
     /** The timestamp for the report. */
-    public String reportTimestammp;
+    public final String reportTimestamp;
 
     public ReportInfo(UserAction userAction, String sender, String reportTitle, String reportStringPrefix, String reportString, String reportStringSuffix, boolean addReportInfoToMarkdown) {
         this.userAction = userAction;
@@ -34,7 +34,7 @@ public class ReportInfo implements Serializable {
         this.reportString = reportString;
         this.reportStringSuffix = reportStringSuffix;
         this.addReportInfoToMarkdown = addReportInfoToMarkdown;
-        this.reportTimestammp = TermuxUtils.getCurrentTimeStamp();
+        this.reportTimestamp = TermuxUtils.getCurrentTimeStamp();
     }
 
     /**
@@ -52,7 +52,7 @@ public class ReportInfo implements Serializable {
             markdownString.append("## Report Info\n\n");
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User Action", reportInfo.userAction, "-"));
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Sender", reportInfo.sender, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Report Timestamp", reportInfo.reportTimestammp, "-"));
+            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Report Timestamp", reportInfo.reportTimestamp, "-"));
             markdownString.append("\n##\n\n");
         }
 

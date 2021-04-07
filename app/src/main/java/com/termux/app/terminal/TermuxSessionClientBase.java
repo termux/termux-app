@@ -1,6 +1,6 @@
 package com.termux.app.terminal;
 
-import com.termux.app.utils.Logger;
+import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 

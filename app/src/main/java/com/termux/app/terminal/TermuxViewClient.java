@@ -20,17 +20,17 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxActivity;
-import com.termux.app.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.activities.ReportActivity;
 import com.termux.app.models.ReportInfo;
 import com.termux.app.models.UserAction;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
-import com.termux.app.settings.properties.TermuxPropertyConstants;
-import com.termux.app.utils.DataUtils;
-import com.termux.app.utils.Logger;
-import com.termux.app.utils.MarkdownUtils;
-import com.termux.app.utils.TermuxUtils;
+import com.termux.shared.settings.properties.TermuxPropertyConstants;
+import com.termux.shared.data.DataUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.termux.TermuxUtils;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -81,7 +81,7 @@ public class TermuxViewClient implements TerminalViewClient {
     }
 
     @Override
-    public boolean shouldEnforeCharBasedInput() {
+    public boolean shouldEnforceCharBasedInput() {
         return mActivity.getProperties().isEnforcingCharBasedInput();
     }
 
@@ -301,7 +301,7 @@ public class TermuxViewClient implements TerminalViewClient {
             }
 
             List<KeyboardShortcut> shortcuts = mActivity.getProperties().getSessionShortcuts();
-            if (!shortcuts.isEmpty()) {
+            if (shortcuts != null && !shortcuts.isEmpty()) {
                 int codePointLowerCase = Character.toLowerCase(codePoint);
                 for (int i = shortcuts.size() - 1; i >= 0; i--) {
                     KeyboardShortcut shortcut = shortcuts.get(i);

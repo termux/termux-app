@@ -3,11 +3,11 @@ package com.termux.app.terminal;
 import androidx.annotation.NonNull;
 
 import com.termux.R;
-import com.termux.app.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.TermuxService;
-import com.termux.app.utils.Logger;
+import com.termux.shared.logger.Logger;
 import com.termux.app.utils.PluginUtils;
-import com.termux.app.shell.ShellUtils;
+import com.termux.shared.shell.ShellUtils;
 import com.termux.app.models.ExecutionCommand;
 import com.termux.terminal.TerminalSession;
 

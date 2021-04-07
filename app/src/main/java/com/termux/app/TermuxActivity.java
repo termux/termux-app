@@ -31,22 +31,23 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.termux.R;
-import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.activities.HelpActivity;
 import com.termux.app.activities.SettingsActivity;
-import com.termux.app.crash.CrashUtils;
-import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.TermuxSessionClient;
 import com.termux.app.terminal.TermuxViewClient;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
-import com.termux.app.settings.properties.TermuxSharedProperties;
-import com.termux.app.utils.DialogUtils;
-import com.termux.app.utils.Logger;
-import com.termux.app.utils.TermuxUtils;
+import com.termux.app.settings.properties.TermuxAppSharedProperties;
+import com.termux.shared.interact.DialogUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.termux.TermuxUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
+import com.termux.app.utils.CrashUtils;
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
 
@@ -101,7 +102,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     /**
      * Termux app shared properties manager, loaded from termux.properties
      */
-    private TermuxSharedProperties mProperties;
+    private TermuxAppSharedProperties mProperties;
 
     /**
      * The terminal extra keys view.
@@ -116,7 +117,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     /**
      * The {@link TermuxActivity} broadcast receiver for various things like terminal style configuration changes.
      */
-    private final BroadcastReceiver mTermuxActivityBroadcastReceiever = new TermuxActivityBroadcastReceiever();
+    private final BroadcastReceiver mTermuxActivityBroadcastReceiever = new TermuxActivityBroadcastReceiver();
 
     /**
      * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
@@ -161,7 +162,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         // Load termux shared preferences and properties
         mPreferences = new TermuxAppSharedPreferences(this);
-        mProperties = new TermuxSharedProperties(this);
+        mProperties = new TermuxAppSharedProperties(this);
 
         setActivityTheme();
 
@@ -327,7 +328,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
     }
@@ -383,6 +384,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if(terminalToolbarViewPager == null) return;
 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
+        Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
         terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
         if (showNow && terminalToolbarViewPager.getCurrentItem() == 1) {
             // Focus the text input view if just revealed.
@@ -704,7 +706,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return mPreferences;
     }
 
-    public TermuxSharedProperties getProperties() {
+    public TermuxAppSharedProperties getProperties() {
         return mProperties;
     }
 
@@ -718,7 +720,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         context.sendBroadcast(stylingIntent);
     }
 
-    class TermuxActivityBroadcastReceiever extends BroadcastReceiver {
+    class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mIsVisible) {
@@ -755,7 +757,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 // TermuxActivity.this.recreate();
             }
         }
-    };
+    }
 
 
 

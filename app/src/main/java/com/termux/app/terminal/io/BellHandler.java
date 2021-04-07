@@ -47,7 +47,7 @@ public class BellHandler {
         if (timeSinceLastBell < 0) {
             // there is a next bell pending; don't schedule another one
         } else if (timeSinceLastBell < MIN_PAUSE) {
-            // there was a bell recently, scheudle the next one
+            // there was a bell recently, schedule the next one
             handler.postDelayed(bellRunnable, MIN_PAUSE - timeSinceLastBell);
             lastBell = lastBell + MIN_PAUSE;
         } else {

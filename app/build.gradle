@@ -2,8 +2,6 @@ plugins {
   id "com.android.application"
 }
 
-ext.markwon_version='4.6.2'
-
 android {
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
     ndkVersion project.properties.ndkVersion
@@ -15,16 +13,13 @@ android {
         implementation "androidx.preference:preference:1.1.1"
         implementation "androidx.viewpager:viewpager:1.0.0"
         implementation "com.google.guava:guava:24.1-jre"
-        implementation "io.noties.markwon:core:$markwon_version"
-        implementation "io.noties.markwon:ext-strikethrough:$markwon_version"
-        implementation "io.noties.markwon:linkify:$markwon_version"
-        implementation "io.noties.markwon:recycler:$markwon_version"
-        implementation project(":terminal-view")
+        implementation "io.noties.markwon:core:$markwonVersion"
+        implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
+        implementation "io.noties.markwon:linkify:$markwonVersion"
+        implementation "io.noties.markwon:recycler:$markwonVersion"
 
-        // Do not increment version higher than 2.5 or there
-        // will be runtime exceptions on android < 8
-        // due to missing classes like java.nio.file.Path.
-        implementation "commons-io:commons-io:2.5"
+        implementation project(":terminal-view")
+        implementation project(":termux-shared")
     }
 
     defaultConfig {
@@ -99,7 +94,7 @@ android {
 }
 
 dependencies {
-    testImplementation "junit:junit:4.13.1"
+    testImplementation "junit:junit:4.13.2"
     testImplementation "org.robolectric:robolectric:4.4"
 }
 

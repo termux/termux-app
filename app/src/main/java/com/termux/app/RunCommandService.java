@@ -12,13 +12,14 @@ import android.os.Build;
 import android.os.IBinder;
 
 import com.termux.R;
-import com.termux.app.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
-import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.app.file.FileUtils;
-import com.termux.app.utils.Logger;
-import com.termux.app.utils.NotificationUtils;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.shared.file.FileUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.notification.NotificationUtils;
 import com.termux.app.utils.PluginUtils;
-import com.termux.app.utils.DataUtils;
+import com.termux.shared.data.DataUtils;
 import com.termux.app.models.ExecutionCommand;
 
 /**
@@ -269,10 +270,6 @@ import com.termux.app.models.ExecutionCommand;
  */
 public class RunCommandService extends Service {
 
-    private static final String NOTIFICATION_CHANNEL_ID = "termux_run_command_notification_channel";
-    private static final String NOTIFICATION_CHANNEL_NAME = TermuxConstants.TERMUX_APP_NAME + " RunCommandService";
-    public static final int NOTIFICATION_ID = 1338;
-
     private static final String LOG_TAG = "RunCommandService";
 
     class LocalBinder extends Binder {
@@ -296,7 +293,7 @@ public class RunCommandService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Logger.logDebug(LOG_TAG, "onStartCommand");
 
-        if(intent == null) return Service.START_NOT_STICKY;;
+        if(intent == null) return Service.START_NOT_STICKY;
 
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
@@ -421,7 +418,7 @@ public class RunCommandService extends Service {
     private void runStartForeground() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             setupNotificationChannel();
-            startForeground(NOTIFICATION_ID, buildNotification());
+            startForeground(TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_ID, buildNotification());
         }
     }
 
@@ -434,8 +431,8 @@ public class RunCommandService extends Service {
     private Notification buildNotification() {
         // Build the notification
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
-            NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_LOW,
-            NOTIFICATION_CHANNEL_NAME, null, null,
+            TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_LOW,
+            TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, null, null,
             null, NotificationUtils.NOTIFICATION_MODE_SILENT);
         if(builder == null)  return null;
 
@@ -454,8 +451,8 @@ public class RunCommandService extends Service {
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
-        NotificationUtils.setupNotificationChannel(this, NOTIFICATION_CHANNEL_ID,
-            NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+        NotificationUtils.setupNotificationChannel(this, TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID,
+            TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
     }
 
 }

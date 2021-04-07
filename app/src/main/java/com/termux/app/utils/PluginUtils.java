@@ -11,21 +11,23 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
-import com.termux.app.TermuxConstants;
-import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.shared.notification.NotificationUtils;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.activities.ReportActivity;
-import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
-import com.termux.app.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
-import com.termux.app.settings.properties.SharedProperties;
-import com.termux.app.settings.properties.TermuxPropertyConstants;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
+import com.termux.shared.settings.properties.SharedProperties;
+import com.termux.shared.settings.properties.TermuxPropertyConstants;
 import com.termux.app.models.ReportInfo;
 import com.termux.app.models.ExecutionCommand;
 import com.termux.app.models.UserAction;
+import com.termux.shared.data.DataUtils;
+import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.termux.TermuxUtils;
 
 public class PluginUtils {
-
-    private static final String NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS = "termux_plugin_command_errors_notification_channel";
-    private static final String NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS = TermuxConstants.TERMUX_APP_NAME + " Plugin Commands Errors";
 
     /** Required file permissions for the executable file of execute intent. Executable file must have read and execute permissions */
     public static final String PLUGIN_EXECUTABLE_FILE_PERMISSIONS = "r-x"; // Default: "r-x"
@@ -95,7 +97,7 @@ public class PluginUtils {
      *
      * Otherwise if the {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED} is
      * enabled, then a flash and a notification will be shown for the error as well
-     * on the {@link #NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS} channel instead of just logging
+     * on the {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME} channel instead of just logging
      * the error.
      *
      * @param context The {@link Context} for operations.
@@ -162,11 +164,11 @@ public class PluginUtils {
         setupPluginCommandErrorsNotificationChannel(context);
 
         // Use markdown in notification
-        CharSequence notifiationText = MarkdownUtils.getSpannedMarkdownText(context, executionCommand.errmsg);
-        //CharSequence notifiationText = executionCommand.errmsg;
+        CharSequence notificationText = MarkdownUtils.getSpannedMarkdownText(context, executionCommand.errmsg);
+        //CharSequence notificationText = executionCommand.errmsg;
 
         // Build the notification
-        Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title, notifiationText, notifiationText, pendingIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
+        Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title, notificationText, notificationText, pendingIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
         if(builder == null)  return;
 
         // Send the notification
@@ -202,7 +204,6 @@ public class PluginUtils {
 
         String truncatedStdout = null;
         String truncatedStderr = null;
-        String truncatedErrmsg = null;
 
         String stdoutOriginalLength = (stdout == null) ? null: String.valueOf(stdout.length());
         String stderrOriginalLength = (stderr == null) ? null: String.valueOf(stderr.length());
@@ -231,7 +232,7 @@ public class PluginUtils {
 
         // Truncate errmsg to max TRANSACTION_SIZE_LIMIT_IN_BYTES / 4
         // trim from end to preserve start of stacktraces
-        truncatedErrmsg = DataUtils.getTruncatedCommandOutput(errmsg, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 4, true, false, false);
+        String truncatedErrmsg = DataUtils.getTruncatedCommandOutput(errmsg, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 4, true, false, false);
         if(truncatedErrmsg != null && truncatedErrmsg.length() < errmsg.length()){
             Logger.logWarn(logTag, "Execution Result for Execution Command \"" + label +  "\" errmsg length truncated from " + errmsgOriginalLength + " to " + truncatedErrmsg.length());
             errmsg = truncatedErrmsg;
@@ -262,23 +263,23 @@ public class PluginUtils {
 
 
     /**
-     * Get {@link Notification.Builder} for {@link #NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS}
-     * and {@link #NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS}.
+     * Get {@link Notification.Builder} for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
+     * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      * @param title The title for the notification.
-     * @param notifiationText The second line text of the notification.
+     * @param notificationText The second line text of the notification.
      * @param notificationBigText The full text of the notification that may optionally be styled.
      * @param pendingIntent The {@link PendingIntent} which should be sent when notification is clicked.
      * @param notificationMode The notification mode. It must be one of {@code NotificationUtils.NOTIFICATION_MODE_*}.
      * @return Returns the {@link Notification.Builder}.
      */
     @Nullable
-    public static Notification.Builder getPluginCommandErrorsNotificationBuilder(final Context context, final CharSequence title, final CharSequence notifiationText, final CharSequence notificationBigText, final PendingIntent pendingIntent, final int notificationMode) {
+    public static Notification.Builder getPluginCommandErrorsNotificationBuilder(final Context context, final CharSequence title, final CharSequence notificationText, final CharSequence notificationBigText, final PendingIntent pendingIntent, final int notificationMode) {
 
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(context,
-            NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS, Notification.PRIORITY_HIGH,
-            title, notifiationText, notificationBigText, pendingIntent, notificationMode);
+            TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
+            title, notificationText, notificationBigText, pendingIntent, notificationMode);
 
         if(builder == null)  return null;
 
@@ -298,14 +299,14 @@ public class PluginUtils {
     }
 
     /**
-     * Setup the notification channel for {@link #NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS} and
-     * {@link #NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS}.
+     * Setup the notification channel for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID} and
+     * {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      */
     public static void setupPluginCommandErrorsNotificationChannel(final Context context) {
-        NotificationUtils.setupNotificationChannel(context, NOTIFICATION_CHANNEL_ID_PLUGIN_COMMAND_ERRORS,
-            NOTIFICATION_CHANNEL_NAME_PLUGIN_COMMAND_ERRORS, NotificationManager.IMPORTANCE_HIGH);
+        NotificationUtils.setupNotificationChannel(context, TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID,
+            TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
     }
 
 

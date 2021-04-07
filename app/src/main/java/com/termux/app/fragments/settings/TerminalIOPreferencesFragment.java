@@ -3,14 +3,12 @@ package com.termux.app.fragments.settings;
 import android.content.Context;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
-
 import androidx.preference.PreferenceDataStore;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.termux.R;
-import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 
 public class TerminalIOPreferencesFragment extends PreferenceFragmentCompat {
 

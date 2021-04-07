@@ -33,7 +33,7 @@ public class ExtraKeyButton {
      * The information of the popup (triggered by swipe up).
      */
     @Nullable
-    private ExtraKeyButton popup = null;
+    private ExtraKeyButton popup;
 
     public ExtraKeyButton(ExtraKeysInfo.CharDisplayMap charDisplayMap, JSONObject config) throws JSONException {
         this(charDisplayMap, config, null);

@@ -15,9 +15,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.termux.R;
-import com.termux.app.TermuxConstants;
-import com.termux.app.utils.MarkdownUtils;
-import com.termux.app.utils.ShareUtils;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.interact.ShareUtils;
 import com.termux.app.models.ReportInfo;
 
 import org.commonmark.node.FencedCodeBlock;

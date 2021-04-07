@@ -1,6 +1,6 @@
 package com.termux.app;
 
-import com.termux.app.utils.DataUtils;
+import com.termux.shared.data.DataUtils;
 
 import org.junit.Assert;
 import org.junit.Test;

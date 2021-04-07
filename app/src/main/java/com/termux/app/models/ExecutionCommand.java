@@ -6,10 +6,10 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.app.utils.Logger;
-import com.termux.app.utils.MarkdownUtils;
-import com.termux.app.utils.DataUtils;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.data.DataUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,7 +112,7 @@ public class ExecutionCommand {
 
     /** The stdout of shell command. */
     public String stdout;
-    /** The sterr of shell command. */
+    /** The stderr of shell command. */
     public String stderr;
     /** The exit code of shell command. */
     public Integer exitCode;

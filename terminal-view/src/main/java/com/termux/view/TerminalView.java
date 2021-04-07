@@ -249,7 +249,7 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        if (mClient.shouldEnforeCharBasedInput()) {
+        if (mClient.shouldEnforceCharBasedInput()) {
             // Some keyboards seems do not reset the internal state on TYPE_NULL.
             // Affects mostly Samsung stock keyboards.
             // https://github.com/termux/termux-app/issues/686

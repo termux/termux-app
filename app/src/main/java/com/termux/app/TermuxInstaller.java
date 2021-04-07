@@ -11,8 +11,9 @@ import android.util.Pair;
 import android.view.WindowManager;
 
 import com.termux.R;
-import com.termux.app.file.FileUtils;
-import com.termux.app.utils.Logger;
+import com.termux.shared.file.FileUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.termux.TermuxConstants;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

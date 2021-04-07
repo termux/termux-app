@@ -20,17 +20,18 @@ import android.provider.Settings;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
-import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
-import com.termux.app.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.app.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSession;
 import com.termux.app.terminal.TermuxSessionClient;
 import com.termux.app.terminal.TermuxSessionClientBase;
-import com.termux.app.utils.Logger;
-import com.termux.app.utils.NotificationUtils;
-import com.termux.app.utils.PermissionUtils;
-import com.termux.app.shell.ShellUtils;
-import com.termux.app.utils.DataUtils;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.notification.NotificationUtils;
+import com.termux.shared.packages.PermissionUtils;
+import com.termux.shared.shell.ShellUtils;
+import com.termux.shared.data.DataUtils;
 import com.termux.app.models.ExecutionCommand;
 import com.termux.app.models.ExecutionCommand.ExecutionState;
 import com.termux.app.terminal.TermuxTask;
@@ -38,7 +39,6 @@ import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,10 +57,6 @@ import javax.annotation.Nullable;
  * {@link #buildNotification()}.
  */
 public final class TermuxService extends Service {
-
-    private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
-    private static final String NOTIFICATION_CHANNEL_NAME = TermuxConstants.TERMUX_APP_NAME + " App";
-    public static final int NOTIFICATION_ID = 1337;
 
     private static int EXECUTION_ID = 1000;
 
@@ -95,7 +91,7 @@ public final class TermuxService extends Service {
     /** The basic implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
      * that does not hold activity references.
      */
-    final TermuxSessionClientBase mTermuxSessionClientBase = new TermuxSessionClientBase();;
+    final TermuxSessionClientBase mTermuxSessionClientBase = new TermuxSessionClientBase();
 
     /** The wake lock and wifi lock are always acquired and released together. */
     private PowerManager.WakeLock mWakeLock;
@@ -183,7 +179,7 @@ public final class TermuxService extends Service {
     /** Make service run in foreground mode. */
     private void runStartForeground() {
         setupNotificationChannel();
-        startForeground(NOTIFICATION_ID, buildNotification());
+        startForeground(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
     }
 
     /** Make service leave foreground mode. */
@@ -366,7 +362,7 @@ public final class TermuxService extends Service {
         if (newTermuxTask == null) {
             Logger.logError(LOG_TAG, "Failed to execute new termux task command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             return null;
-        };
+        }
 
         mTermuxTasks.add(newTermuxTask);
 
@@ -436,7 +432,7 @@ public final class TermuxService extends Service {
         if (newTermuxSession == null) {
             Logger.logError(LOG_TAG, "Failed to execute new termux session command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             return null;
-        };
+        }
 
         mTermuxSessions.add(newTermuxSession);
 
@@ -593,13 +589,13 @@ public final class TermuxService extends Service {
         // Set notification text
         int sessionCount = getTermuxSessionsSize();
         int taskCount = mTermuxTasks.size();
-        String notifiationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
+        String notificationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
         if (taskCount > 0) {
-            notifiationText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
+            notificationText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
         }
 
         final boolean wakeLockHeld = mWakeLock != null;
-        if (wakeLockHeld) notifiationText += " (wake lock held)";
+        if (wakeLockHeld) notificationText += " (wake lock held)";
 
 
         // Set notification priority
@@ -610,8 +606,8 @@ public final class TermuxService extends Service {
 
         // Build the notification
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
-            NOTIFICATION_CHANNEL_ID, priority,
-            getText(R.string.application_name), notifiationText, null,
+            TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID, priority,
+            getText(R.string.application_name), notificationText, null,
             pendingIntent, NotificationUtils.NOTIFICATION_MODE_SILENT);
         if(builder == null)  return null;
 
@@ -647,8 +643,8 @@ public final class TermuxService extends Service {
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
-        NotificationUtils.setupNotificationChannel(this, NOTIFICATION_CHANNEL_ID,
-            NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+        NotificationUtils.setupNotificationChannel(this, TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID,
+            TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
     }
 
     /** Update the shown foreground service notification after making any changes that affect it. */
@@ -657,7 +653,7 @@ public final class TermuxService extends Service {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
-            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
         }
     }
 

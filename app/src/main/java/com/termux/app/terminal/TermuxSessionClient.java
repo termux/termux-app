@@ -13,13 +13,13 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import com.termux.R;
-import com.termux.app.utils.DialogUtils;
+import com.termux.shared.interact.DialogUtils;
 import com.termux.app.TermuxActivity;
-import com.termux.app.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.TermuxService;
-import com.termux.app.settings.properties.TermuxPropertyConstants;
+import com.termux.shared.settings.properties.TermuxPropertyConstants;
 import com.termux.app.terminal.io.BellHandler;
-import com.termux.app.utils.Logger;
+import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TextStyle;
@@ -31,15 +31,15 @@ import java.util.Properties;
 
 public class TermuxSessionClient extends TermuxSessionClientBase {
 
-    final TermuxActivity mActivity;
+    private final TermuxActivity mActivity;
 
     private static final int MAX_SESSIONS = 8;
 
-    final SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
+    private final SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
         new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
 
-    int mBellSoundId;
+    private final int mBellSoundId;
 
     private static final String LOG_TAG = "TermuxSessionClient";
 

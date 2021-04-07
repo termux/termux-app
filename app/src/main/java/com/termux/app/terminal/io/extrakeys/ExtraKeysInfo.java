@@ -16,7 +16,7 @@ public class ExtraKeysInfo {
     /**
      * This corresponds to one of the CharMapDisplay below
      */
-    private String style = "default";
+    private String style;
 
     public ExtraKeysInfo(String propertiesInfo, String style) throws JSONException {
         this.style = style;
