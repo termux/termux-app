@@ -168,12 +168,13 @@ public class StreamGobbler extends Thread {
     public void run() {
         // keep reading the InputStream until it ends (or an error occurs)
         // optionally pausing when a command is executed that consumes the InputStream itself
-        int logLevel = Logger.getLogLevel();
+        int currentLogLevel = Logger.getLogLevel();
+        int logLevelVerbose = Logger.LOG_LEVEL_VERBOSE;
         try {
             String line;
             while ((line = reader.readLine()) != null) {
 
-                if(logLevel >= Logger.LOG_LEVEL_VERBOSE)
+                if(currentLogLevel >= logLevelVerbose)
                     Logger.logVerbose(LOG_TAG, String.format(Locale.ENGLISH, "[%s] %s", shell, line)); // This will get truncated by LOGGER_ENTRY_MAX_LEN, likely 4KB
 
                 if (stringWriter != null) stringWriter.append(line).append("\n");
