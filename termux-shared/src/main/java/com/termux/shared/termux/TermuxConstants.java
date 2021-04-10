@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import java.io.File;
 
 /*
- * Version: v0.17.0
+ * Version: v0.18.0
  *
  * Changelog
  *
@@ -125,6 +125,10 @@ import java.io.File;
  *          `TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID`, `TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME`,
  *          `TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID`, `TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME`.
  *      - Updated javadocs.
+ *
+ * - 0.18.0 (2021-04-11)
+ *      - Updated `TERMUX_SUPPORT_EMAIL_URL` to a valid email.
+ *      - Removed `TERMUX_SUPPORT_EMAIL`.
  */
 
 /**
@@ -178,14 +182,11 @@ public final class TermuxConstants {
     /** Termux Github organization url */
     public static final String TERMUX_GITHUB_ORGANIZATION_URL = "https://github.com" + "/" + TERMUX_GITHUB_ORGANIZATION_NAME; // Default: "https://github.com/termux"
 
-    /** Termux support email */
-    public static final String TERMUX_SUPPORT_EMAIL = "support"; // Default: "support"
-
     /** Termux support email url */
-    public static final String TERMUX_SUPPORT_EMAIL_URL = "email@example.com"; // Default: "email@example.com"
+    public static final String TERMUX_SUPPORT_EMAIL_URL = "termuxreports@groups.io"; // Default: "termuxreports@groups.io"
 
     /** Termux support email mailto url */
-    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:email@example.com"
+    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:termuxreports@groups.io"
 
     /** Termux Reddit subreddit */
     public static final String TERMUX_REDDIT_SUBREDDIT = "r/termux"; // Default: "r/termux"
