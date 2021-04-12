@@ -206,7 +206,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
                 workingDirectory = currentSession.getCwd();
             }
 
-            TermuxSession newTermuxSession = mActivity.getTermuxService().createTermuxSession(null, null, workingDirectory, isFailSafe, sessionName);
+            TermuxSession newTermuxSession = mActivity.getTermuxService().createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);
             if (newTermuxSession == null) return;
 
             TerminalSession newTerminalSession = newTermuxSession.getTerminalSession();

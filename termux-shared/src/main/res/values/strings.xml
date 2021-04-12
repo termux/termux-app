@@ -82,6 +82,8 @@
     <string name="error_execution_cancelled">Execution has been cancelled since execution service is being killed</string>
     <string name="error_failed_to_execute_termux_session_command">"Failed to execute \"%1$s\" termux session command"</string>
     <string name="error_failed_to_execute_termux_task_command">"Failed to execute \"%1$s\" termux task command"</string>
+    <string name="error_exception_received_while_executing_termux_session_command">Exception received while to executing \"%1$s\" termux session command.\nException: %2$s</string>
+    <string name="error_exception_received_while_executing_termux_task_command">Exception received while to executing \"%1$s\" termux task command.\nException: %2$s"</string>
 
 
 

@@ -392,8 +392,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
     /** Create a {@link TermuxTask}. */
     @Nullable
-    public TermuxTask createTermuxTask(String executablePath, String[] arguments, String workingDirectory) {
-        return createTermuxTask(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, workingDirectory, true, false));
+    public TermuxTask createTermuxTask(String executablePath, String[] arguments, String stdin, String workingDirectory) {
+        return createTermuxTask(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, stdin, workingDirectory, true, false));
     }
 
     /** Create a {@link TermuxTask}. */
@@ -479,8 +479,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
      * Currently called by {@link TermuxTerminalSessionClient#addNewSession(boolean, String)} to add a new {@link TermuxSession}.
      */
     @Nullable
-    public TermuxSession createTermuxSession(String executablePath, String[] arguments, String workingDirectory, boolean isFailSafe, String sessionName) {
-        return createTermuxSession(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, workingDirectory, false, isFailSafe), sessionName);
+    public TermuxSession createTermuxSession(String executablePath, String[] arguments, String stdin, String workingDirectory, boolean isFailSafe, String sessionName) {
+        return createTermuxSession(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, stdin, workingDirectory, false, isFailSafe), sessionName);
     }
 
     /** Create a {@link TermuxSession}. */

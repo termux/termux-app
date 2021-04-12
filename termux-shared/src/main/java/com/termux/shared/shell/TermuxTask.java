@@ -13,8 +13,10 @@ import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.models.ExecutionCommand.ExecutionState;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A class that maintains info for background Termux tasks run with {@link Runtime#exec(String[], String[], File)}.
@@ -92,7 +94,7 @@ public final class TermuxTask {
 
         if (isSynchronous) {
             try {
-                termuxTask.executeInner();
+                termuxTask.executeInner(context);
             } catch (IllegalThreadStateException | InterruptedException e) {
                 // TODO: Should either of these be handled or returned?
             }
@@ -101,7 +103,7 @@ public final class TermuxTask {
                 @Override
                 public void run() {
                     try {
-                        termuxTask.executeInner();
+                        termuxTask.executeInner(context);
                     } catch (IllegalThreadStateException | InterruptedException e) {
                         // TODO: Should either of these be handled or returned?
                     }
@@ -118,8 +120,10 @@ public final class TermuxTask {
      * If the processes finishes, then sets {@link ExecutionCommand#stdout}, {@link ExecutionCommand#stderr}
      * and {@link ExecutionCommand#exitCode} for the {@link #mExecutionCommand} of the {@code termuxTask}
      * and then calls {@link #processTermuxTaskResult(TermuxTask, ExecutionCommand) to process the result}.
+     *
+     * @param context The {@link Context} for operations.
      */
-    private void executeInner() throws IllegalThreadStateException, InterruptedException {
+    private void executeInner(@NonNull final Context context) throws IllegalThreadStateException, InterruptedException {
         final int pid = ShellUtils.getPid(mProcess);
 
         Logger.logDebug(LOG_TAG, "Running \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask with pid " + pid);
@@ -129,14 +133,41 @@ public final class TermuxTask {
         mExecutionCommand.exitCode = null;
 
 
-
-        // setup stdout and stderr gobblers
+        // setup stdin, and stdout and stderr gobblers
+        DataOutputStream STDIN = new DataOutputStream(mProcess.getOutputStream());
         StreamGobbler STDOUT = new StreamGobbler(pid + "-stdout", mProcess.getInputStream(), mStdout);
         StreamGobbler STDERR = new StreamGobbler(pid + "-stderr", mProcess.getErrorStream(), mStderr);
 
         // start gobbling
         STDOUT.start();
         STDERR.start();
+
+        if (mExecutionCommand.stdin != null && !mExecutionCommand.stdin.isEmpty()) {
+            try {
+                STDIN.write((mExecutionCommand.stdin + "\n").getBytes(StandardCharsets.UTF_8));
+                STDIN.flush();
+                STDIN.close();
+                //STDIN.write("exit\n".getBytes(StandardCharsets.UTF_8));
+                //STDIN.flush();
+            } catch(IOException e){
+                if (e.getMessage().contains("EPIPE") || e.getMessage().contains("Stream closed")) {
+                    // Method most horrid to catch broken pipe, in which case we
+                    // do nothing. The command is not a shell, the shell closed
+                    // STDIN, the script already contained the exit command, etc.
+                    // these cases we want the output instead of returning null.
+                } else {
+                    // other issues we don't know how to handle, leads to
+                    // returning null
+                    mExecutionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, context.getString(R.string.error_exception_received_while_executing_termux_task_command, mExecutionCommand.getCommandIdAndLabelLogString(), e.getMessage()), e);
+                    mExecutionCommand.stdout = mStdout.toString();
+                    mExecutionCommand.stderr = mStderr.toString();
+                    mExecutionCommand.exitCode = -1;
+                    TermuxTask.processTermuxTaskResult(this, null);
+                    kill();
+                    return;
+                }
+            }
+        }
 
         // wait for our process to finish, while we gobble away in the background
         int exitCode = mProcess.waitFor();
@@ -146,6 +177,11 @@ public final class TermuxTask {
         // needed in theory, and may even produce warnings, in "normal" Java
         // they are required for guaranteed cleanup of resources, so lets be
         // safe and do this on Android as well
+        try {
+            STDIN.close();
+        } catch (IOException e) {
+            // might be closed already
+        }
         STDOUT.join();
         STDERR.join();
         mProcess.destroy();
@@ -201,13 +237,20 @@ public final class TermuxTask {
         }
 
         if (mExecutionCommand.isExecuting()) {
-            int pid = ShellUtils.getPid(mProcess);
-            try {
-                // Send SIGKILL to process
-                Os.kill(pid, OsConstants.SIGKILL);
-            } catch (ErrnoException e) {
-                Logger.logWarn(LOG_TAG, "Failed to send SIGKILL to \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask with pid " + pid + ": " + e.getMessage());
-            }
+            kill();
+        }
+    }
+
+    /**
+     * Kill this {@link TermuxTask} by sending a {@link OsConstants#SIGILL} to its {@link #mProcess}.
+     */
+    public void kill() {
+        int pid = ShellUtils.getPid(mProcess);
+        try {
+            // Send SIGKILL to process
+            Os.kill(pid, OsConstants.SIGKILL);
+        } catch (ErrnoException e) {
+            Logger.logWarn(LOG_TAG, "Failed to send SIGKILL to \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask with pid " + pid + ": " + e.getMessage());
         }
     }
 

@@ -74,6 +74,8 @@ public class ExecutionCommand {
     public Uri executableUri;
     /** The executable arguments array for the {@link ExecutionCommand}. */
     public String[] arguments;
+    /** The stdin string for the {@link ExecutionCommand}. */
+    public String stdin;
     /** The current working directory for the {@link ExecutionCommand}. */
     public String workingDirectory;
 
@@ -138,10 +140,11 @@ public class ExecutionCommand {
         this.id = id;
     }
 
-    public ExecutionCommand(Integer id, String executable, String[] arguments, String workingDirectory, boolean inBackground, boolean isFailsafe) {
+    public ExecutionCommand(Integer id, String executable, String[] arguments, String stdin, String workingDirectory, boolean inBackground, boolean isFailsafe) {
         this.id = id;
         this.executable = executable;
         this.arguments = arguments;
+        this.stdin = stdin;
         this.workingDirectory = workingDirectory;
         this.inBackground = inBackground;
         this.isFailsafe = isFailsafe;
@@ -558,6 +561,10 @@ public class ExecutionCommand {
 
     public synchronized boolean isExecuting() {
         return currentState == ExecutionState.EXECUTING;
+    }
+
+    public synchronized boolean isSuccessful() {
+        return currentState == ExecutionState.SUCCESS;
     }
 
 }
