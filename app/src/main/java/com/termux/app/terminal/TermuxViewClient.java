@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.TermuxActivity;
+import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.activities.ReportActivity;
 import com.termux.app.models.ReportInfo;
@@ -341,7 +342,7 @@ public class TermuxViewClient implements TerminalViewClient {
         TerminalSession session = mActivity.getCurrentSession();
         if (session == null) return;
 
-        String transcriptText = session.getEmulator().getScreen().getTranscriptTextWithoutJoinedLines().trim();
+        String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, false, true);
         if (transcriptText == null) return;
 
         try {
@@ -361,7 +362,7 @@ public class TermuxViewClient implements TerminalViewClient {
         TerminalSession session = mActivity.getCurrentSession();
         if (session == null) return;
 
-        String text = session.getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
+        String text = ShellUtils.getTerminalSessionTranscriptText(session, true, true);
 
         LinkedHashSet<CharSequence> urlSet = DataUtils.extractUrls(text);
         if (urlSet.isEmpty()) {
@@ -404,7 +405,7 @@ public class TermuxViewClient implements TerminalViewClient {
         TerminalSession session = mActivity.getCurrentSession();
         if (session == null) return;
 
-        String transcriptText = session.getEmulator().getScreen().getTranscriptTextWithoutJoinedLines().trim();
+        String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, false, true);
         if (transcriptText == null) return;
 
         transcriptText = DataUtils.getTruncatedCommandOutput(transcriptText, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();

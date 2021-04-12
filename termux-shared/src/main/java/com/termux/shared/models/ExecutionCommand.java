@@ -1,4 +1,4 @@
-package com.termux.app.models;
+package com.termux.shared.models;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -56,6 +56,7 @@ public class ExecutionCommand {
     public final static int	RESULT_CODE_OK = Activity.RESULT_OK;
     public final static int	RESULT_CODE_OK_MINOR_FAILURES = Activity.RESULT_FIRST_USER;
     public final static int	RESULT_CODE_FAILED = Activity.RESULT_FIRST_USER + 1;
+    public final static int	RESULT_CODE_CANCELED = Activity.RESULT_FIRST_USER + 2;
 
     /** The optional unique id for the {@link ExecutionCommand}. */
     public Integer id;
@@ -124,6 +125,9 @@ public class ExecutionCommand {
     public String errmsg;
     /** The internal exceptions of {@link ExecutionCommand}. */
     public List<Throwable> throwableList  = new ArrayList<>();
+
+    /** Defines if processing results already called for this {@link ExecutionCommand}. */
+    public boolean processingResultsAlreadyCalled;
 
 
 
@@ -525,6 +529,15 @@ public class ExecutionCommand {
             this.throwableList.add(throwable);
 
         return true;
+    }
+
+    public synchronized boolean shouldNotProcessResults() {
+        if (processingResultsAlreadyCalled) {
+            return true;
+        } else {
+            processingResultsAlreadyCalled = true;
+            return false;
+        }
     }
 
     public synchronized boolean isStateFailed() {

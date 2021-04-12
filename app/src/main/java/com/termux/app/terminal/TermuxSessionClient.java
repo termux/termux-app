@@ -13,8 +13,10 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import com.termux.R;
+import com.termux.shared.shell.TermuxSession;
 import com.termux.shared.interact.DialogUtils;
 import com.termux.app.TermuxActivity;
+import com.termux.shared.shell.TermuxSessionClientBase;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.TermuxService;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;
@@ -255,6 +257,7 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
         TermuxService service = mActivity.getTermuxService();
 
         int index = service.removeTermuxSession(finishedSession);
+
         int size = mActivity.getTermuxService().getTermuxSessionsSize();
         if (size == 0) {
             // There are no sessions to show, so finish the activity.

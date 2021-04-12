@@ -1,4 +1,4 @@
-package com.termux.app.terminal;
+package com.termux.shared.shell;
 
 import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalSession;

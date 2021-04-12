@@ -21,7 +21,7 @@ import com.termux.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_A
 import com.termux.shared.settings.properties.SharedProperties;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;
 import com.termux.app.models.ReportInfo;
-import com.termux.app.models.ExecutionCommand;
+import com.termux.shared.models.ExecutionCommand;
 import com.termux.app.models.UserAction;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.markdown.MarkdownUtils;
@@ -56,7 +56,7 @@ public class PluginUtils {
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
         if(!executionCommand.hasExecuted()) {
-            Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandResult() since the execution command has not been ExecutionState.EXECUTED");
+            Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandResult() since the execution command state is not higher than the ExecutionState.EXECUTED");
             return;
         }
 
@@ -114,7 +114,7 @@ public class PluginUtils {
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
         if(!executionCommand.isStateFailed()) {
-            Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandError() since the execution command does not have ExecutionState.FAILED state");
+            Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandError() since the execution command is not in ExecutionState.FAILED");
             return;
         }
 
@@ -255,6 +255,7 @@ public class PluginUtils {
             pluginPendingIntent.send(context, Activity.RESULT_OK, resultIntent);
         } catch (PendingIntent.CanceledException e) {
             // The caller doesn't want the result? That's fine, just ignore
+            Logger.logDebug(logTag,  "The Execution Command \"" + label +  "\" creator " + pluginPendingIntent.getCreatorPackage() + " does not want the results anymore");
         }
 
         return true;

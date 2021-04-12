@@ -32,6 +32,9 @@ import com.termux.shared.logger.Logger;
 
 /**
  * Thread utility class continuously reading from an InputStream
+ *
+ * https://github.com/Chainfire/libsuperuser/blob/1.1.0.201907261845/libsuperuser/src/eu/chainfire/libsuperuser/Shell.java#L141
+ * https://github.com/Chainfire/libsuperuser/blob/1.1.0.201907261845/libsuperuser/src/eu/chainfire/libsuperuser/StreamGobbler.java
  */
 @SuppressWarnings({"WeakerAccess"})
 public class StreamGobbler extends Thread {
@@ -170,6 +173,7 @@ public class StreamGobbler extends Thread {
         // optionally pausing when a command is executed that consumes the InputStream itself
         int currentLogLevel = Logger.getLogLevel();
         int logLevelVerbose = Logger.LOG_LEVEL_VERBOSE;
+
         try {
             String line;
             while ((line = reader.readLine()) != null) {

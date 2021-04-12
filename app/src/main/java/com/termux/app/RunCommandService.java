@@ -18,7 +18,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.app.utils.PluginUtils;
 import com.termux.shared.data.DataUtils;
-import com.termux.app.models.ExecutionCommand;
+import com.termux.shared.models.ExecutionCommand;
 
 /**
  * A service that receives {@link RUN_COMMAND_SERVICE#ACTION_RUN_COMMAND} intent from third party apps and

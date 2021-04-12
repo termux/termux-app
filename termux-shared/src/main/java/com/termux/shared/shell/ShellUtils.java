@@ -2,11 +2,16 @@ package com.termux.shared.shell;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.termux.TermuxUtils;
+import com.termux.terminal.TerminalBuffer;
+import com.termux.terminal.TerminalEmulator;
+import com.termux.terminal.TerminalSession;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -85,7 +90,7 @@ public class ShellUtils {
         }
     }
 
-    public static String[] setupProcessArgs(String fileToExecute, String[] arguments) {
+    public static String[] setupProcessArgs(@NonNull String fileToExecute, String[] arguments) {
         // The file to execute may either be:
         // - An elf file, in which we execute it directly.
         // - A script file without shebang, which we execute with our standard shell $PREFIX/bin/sh instead of the
@@ -151,6 +156,30 @@ public class ShellUtils {
         if (errmsg != null) {
             Logger.logErrorAndShowToast(context, errmsg);
         }
+    }
+
+    public static String getTerminalSessionTranscriptText(TerminalSession terminalSession, boolean linesJoined, boolean trim) {
+        if (terminalSession == null) return null;
+
+        TerminalEmulator terminalEmulator = terminalSession.getEmulator();
+        if (terminalEmulator == null) return null;
+
+        TerminalBuffer terminalBuffer = terminalEmulator.getScreen();
+        if (terminalBuffer == null) return null;
+
+        String transcriptText;
+
+        if(linesJoined)
+            transcriptText = terminalBuffer.getTranscriptTextWithFullLinesJoined();
+        else
+            transcriptText = terminalBuffer.getTranscriptTextWithoutJoinedLines();
+
+        if (transcriptText == null) return null;
+
+        if(trim)
+            transcriptText = transcriptText.trim();
+
+        return transcriptText;
     }
 
 }
