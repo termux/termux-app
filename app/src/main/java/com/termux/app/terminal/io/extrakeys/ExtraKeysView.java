@@ -188,7 +188,7 @@ public final class ExtraKeysView extends GridLayout {
         int width = view.getMeasuredWidth();
         int height = view.getMeasuredHeight();
         Button button;
-        if(isSpecialButton(extraButton)) {
+        if (isSpecialButton(extraButton)) {
             button = createSpecialButton(extraButton.getKey(), false);
             if (button == null) return;
         } else {
@@ -240,7 +240,7 @@ public final class ExtraKeysView extends GridLayout {
      */
     @SuppressLint("ClickableViewAccessibility")
     public void reload(ExtraKeysInfo infos) {
-        if(infos == null)
+        if (infos == null)
             return;
 
         for(SpecialButtonState state : specialButtons.values())
@@ -258,7 +258,7 @@ public final class ExtraKeysView extends GridLayout {
                 final ExtraKeyButton buttonInfo = buttons[row][col];
 
                 Button button;
-                if(isSpecialButton(buttonInfo)) {
+                if (isSpecialButton(buttonInfo)) {
                     button = createSpecialButton(buttonInfo.getKey(), true);
                     if (button == null) return;
                 } else {

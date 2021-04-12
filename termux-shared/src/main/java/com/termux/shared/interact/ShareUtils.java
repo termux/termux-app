@@ -21,7 +21,7 @@ public class ShareUtils {
      * @param title The title for choose menu.
      */
     private static void openSystemAppChooser(final Context context, final Intent intent, final String title) {
-        if(context == null) return;
+        if (context == null) return;
 
         final Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
         chooserIntent.putExtra(Intent.EXTRA_INTENT, intent);
@@ -38,7 +38,7 @@ public class ShareUtils {
      * @param text The text to share.
      */
     public static void shareText(final Context context, final String subject, final String text) {
-        if(context == null) return;
+        if (context == null) return;
 
         final Intent shareTextIntent = new Intent(Intent.ACTION_SEND);
         shareTextIntent.setType("text/plain");
@@ -57,7 +57,7 @@ public class ShareUtils {
      *                    clipboard is successful.
      */
     public static void copyTextToClipboard(final Context context, final String text, final String toastString) {
-        if(context == null) return;
+        if (context == null) return;
 
         final ClipboardManager clipboardManager = ContextCompat.getSystemService(context, ClipboardManager.class);
 

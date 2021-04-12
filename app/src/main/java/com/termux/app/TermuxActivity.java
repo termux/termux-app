@@ -362,7 +362,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         setTerminalToolbarHeight();
 
         String savedTextInput = null;
-        if(savedInstanceState != null)
+        if (savedInstanceState != null)
             savedTextInput = savedInstanceState.getString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT);
 
         terminalToolbarViewPager.setAdapter(new TerminalToolbarViewPager.PageAdapter(this, savedTextInput));
@@ -371,7 +371,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private void setTerminalToolbarHeight() {
         final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
-        if(terminalToolbarViewPager == null) return;
+        if (terminalToolbarViewPager == null) return;
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         layoutParams.height = (int) Math.round(mTerminalToolbarDefaultHeight *
                                                 (mProperties.getExtraKeysInfo() == null ? 0 : mProperties.getExtraKeysInfo().getMatrix().length) *
@@ -381,7 +381,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     public void toggleTerminalToolbar() {
         final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
-        if(terminalToolbarViewPager == null) return;
+        if (terminalToolbarViewPager == null) return;
 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
@@ -393,12 +393,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     private void saveTerminalToolbarTextInput(Bundle savedInstanceState) {
-        if(savedInstanceState == null) return;
+        if (savedInstanceState == null) return;
 
         final EditText textInputView =  findViewById(R.id.terminal_toolbar_text_input);
-        if(textInputView != null) {
+        if (textInputView != null) {
             String textInput = textInputView.getText().toString();
-            if(!textInput.isEmpty()) savedInstanceState.putString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT, textInput);
+            if (!textInput.isEmpty()) savedInstanceState.putString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT, textInput);
         }
     }
 
@@ -431,14 +431,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private void setSoftKeyboardState() {
         // If soft keyboard is to disabled
-        if(!mPreferences.getSoftKeyboardEnabled()) {
+        if (!mPreferences.getSoftKeyboardEnabled()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
         }
 
         // If soft keyboard is to be hidden on startup
-        if(mProperties.shouldSoftKeyboardBeHiddenOnStartup()) {
+        if (mProperties.shouldSoftKeyboardBeHiddenOnStartup()) {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
     }
@@ -496,7 +496,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     /** Show a toast and dismiss the last one if still visible. */
     public void showToast(String text, boolean longDuration) {
-        if(text == null || text.isEmpty()) return;
+        if (text == null || text.isEmpty()) return;
         if (mLastToast != null) mLastToast.cancel();
         mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
         mLastToast.setGravity(Gravity.TOP, 0, 0);
@@ -611,7 +611,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
     private void toggleKeepScreenOn() {
-        if(mTerminalView.getKeepScreenOn()) {
+        if (mTerminalView.getKeepScreenOn()) {
             mTerminalView.setKeepScreenOn(false);
             mPreferences.setKeepScreenOn(false);
         } else {
@@ -696,7 +696,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     @Nullable
     public TerminalSession getCurrentSession() {
-        if(mTerminalView != null)
+        if (mTerminalView != null)
             return mTerminalView.getCurrentSession();
         else
             return null;
@@ -766,11 +766,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     private void reloadTermuxActivityStyling() {
-        if(mTermuxTerminalSessionClient != null) {
+        if (mTermuxTerminalSessionClient != null) {
             mTermuxTerminalSessionClient.checkForFontAndColors();
         }
 
-        if(mProperties!= null) {
+        if (mProperties!= null) {
             mProperties.loadTermuxPropertiesFromDisk();
 
             if (mExtraKeysView != null) {

@@ -151,27 +151,27 @@ public class Logger {
     public static String getMessageAndStackTraceString(String message, Throwable throwable) {
         if (message == null && throwable == null)
             return null;
-        else if(message != null && throwable != null)
+        else if (message != null && throwable != null)
             return message + ":\n" + getStackTraceString(throwable);
-        else if(throwable == null)
+        else if (throwable == null)
             return message;
         else
             return getStackTraceString(throwable);
     }
 
     public static String getMessageAndStackTracesString(String message, List<Throwable> throwableList) {
-        if(message == null && (throwableList == null || throwableList.size() == 0))
+        if (message == null && (throwableList == null || throwableList.size() == 0))
             return null;
-        else if(message != null && (throwableList != null && throwableList.size() != 0))
+        else if (message != null && (throwableList != null && throwableList.size() != 0))
             return message + ":\n" + getStackTracesString(null, getStackTraceStringArray(throwableList));
-        else if(throwableList == null || throwableList.size() == 0)
+        else if (throwableList == null || throwableList.size() == 0)
             return message;
         else
             return getStackTracesString(null, getStackTraceStringArray(throwableList));
     }
 
     public static String getStackTraceString(Throwable throwable) {
-        if(throwable == null) return null;
+        if (throwable == null) return null;
 
         String stackTraceString = null;
 
@@ -204,14 +204,14 @@ public class Logger {
     }
 
     public static String getStackTracesString(String label, String[] stackTraceStringArray) {
-        if(label == null) label = "StackTraces:";
+        if (label == null) label = "StackTraces:";
         StringBuilder stackTracesString = new StringBuilder(label);
 
         if (stackTraceStringArray == null || stackTraceStringArray.length == 0) {
             stackTracesString.append(" -");
         } else {
             for (int i = 0; i != stackTraceStringArray.length; i++) {
-                if(stackTraceStringArray.length > 1)
+                if (stackTraceStringArray.length > 1)
                     stackTracesString.append("\n\nStacktrace ").append(i + 1);
 
                 stackTracesString.append("\n```\n").append(stackTraceStringArray[i]).append("\n```\n");
@@ -222,14 +222,14 @@ public class Logger {
     }
 
     public static String getStackTracesMarkdownString(String label, String[] stackTraceStringArray) {
-        if(label == null) label = "StackTraces";
+        if (label == null) label = "StackTraces";
         StringBuilder stackTracesString = new StringBuilder("### " + label);
 
         if (stackTraceStringArray == null || stackTraceStringArray.length == 0) {
             stackTracesString.append("\n\n`-`");
         } else {
             for (int i = 0; i != stackTraceStringArray.length; i++) {
-                if(stackTraceStringArray.length > 1)
+                if (stackTraceStringArray.length > 1)
                     stackTracesString.append("\n\n\n#### Stacktrace ").append(i + 1);
 
                 stackTracesString.append("\n\n```\n").append(stackTraceStringArray[i]).append("\n```");
@@ -309,19 +309,19 @@ public class Logger {
     }
 
     public static int setLogLevel(Context context, int logLevel) {
-        if(logLevel >= LOG_LEVEL_OFF && logLevel <= LOG_LEVEL_VERBOSE)
+        if (logLevel >= LOG_LEVEL_OFF && logLevel <= LOG_LEVEL_VERBOSE)
             CURRENT_LOG_LEVEL = logLevel;
         else
             CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
 
-        if(context != null)
+        if (context != null)
             showToast(context, context.getString(R.string.log_level_value, getLogLevelLabel(context, CURRENT_LOG_LEVEL, false)),true);
 
         return CURRENT_LOG_LEVEL;
     }
 
     public static String getFullTag(String tag) {
-        if(DEFAULT_LOG_TAG.equals(tag))
+        if (DEFAULT_LOG_TAG.equals(tag))
             return tag;
         else
             return DEFAULT_LOG_TAG + ":" + tag;

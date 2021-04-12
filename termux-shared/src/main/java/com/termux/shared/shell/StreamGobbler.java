@@ -178,7 +178,7 @@ public class StreamGobbler extends Thread {
             String line;
             while ((line = reader.readLine()) != null) {
 
-                if(currentLogLevel >= logLevelVerbose)
+                if (currentLogLevel >= logLevelVerbose)
                     Logger.logVerbose(LOG_TAG, String.format(Locale.ENGLISH, "[%s] %s", shell, line)); // This will get truncated by LOGGER_ENTRY_MAX_LEN, likely 4KB
 
                 if (stringWriter != null) stringWriter.append(line).append("\n");

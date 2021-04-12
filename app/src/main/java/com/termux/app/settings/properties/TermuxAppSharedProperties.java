@@ -70,7 +70,7 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties implements
      * Set the terminal sessions shortcuts.
      */
     private void setSessionShortcuts() {
-        if(mSessionShortcuts == null)
+        if (mSessionShortcuts == null)
             mSessionShortcuts = new ArrayList<>();
         else
             mSessionShortcuts.clear();

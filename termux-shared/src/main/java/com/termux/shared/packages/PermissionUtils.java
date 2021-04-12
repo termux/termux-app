@@ -36,7 +36,7 @@ public class PermissionUtils {
     }
 
     public static void askPermissions(Activity context, String[] permissions) {
-        if(context == null || permissions == null) return;
+        if (context == null || permissions == null) return;
 
         int result;
         Logger.showToast(context, context.getString(R.string.message_sudo_please_grant_permissions), true);
@@ -74,9 +74,9 @@ public class PermissionUtils {
     public static boolean validateDisplayOverOtherAppsPermissionForPostAndroid10(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true;
         
-        if(!PermissionUtils.checkDisplayOverOtherAppsPermission(context)) {
+        if (!PermissionUtils.checkDisplayOverOtherAppsPermission(context)) {
             TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(context);
-            if(preferences.getPluginErrorNotificationsEnabled())
+            if (preferences.getPluginErrorNotificationsEnabled())
                 Logger.showToast(context, context.getString(R.string.error_display_over_other_apps_permission_not_granted), true);
             return false;
         } else {

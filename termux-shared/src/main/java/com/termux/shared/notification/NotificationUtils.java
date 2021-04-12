@@ -45,7 +45,7 @@ public class NotificationUtils {
      */
     @Nullable
     public static NotificationManager getNotificationManager(final Context context) {
-        if(context == null) return null;
+        if (context == null) return null;
         return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
@@ -59,7 +59,7 @@ public class NotificationUtils {
      * @return Returns the notification id that should be safe to use.
      */
     public synchronized static int getNextNotificationId(final Context context) {
-        if(context == null) return TermuxPreferenceConstants.TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID;
+        if (context == null) return TermuxPreferenceConstants.TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID;
 
         TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(context);
         int lastNotificationId = preferences.getLastNotificationId();
@@ -69,7 +69,7 @@ public class NotificationUtils {
             nextNotificationId++;
         }
 
-        if(nextNotificationId == Integer.MAX_VALUE || nextNotificationId < 0)
+        if (nextNotificationId == Integer.MAX_VALUE || nextNotificationId < 0)
             nextNotificationId = TermuxPreferenceConstants.TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID;
 
         preferences.setLastNotificationId(nextNotificationId);
@@ -91,7 +91,7 @@ public class NotificationUtils {
      */
     @Nullable
     public static Notification.Builder geNotificationBuilder(final Context context, final String channelId, final int priority, final CharSequence title, final CharSequence notifiationText, final CharSequence notificationBigText, final PendingIntent pendingIntent, final int notificationMode) {
-        if(context == null) return null;
+        if (context == null) return null;
         Notification.Builder builder = new Notification.Builder(context);
         builder.setContentTitle(title);
         builder.setContentText(notifiationText);
@@ -124,7 +124,7 @@ public class NotificationUtils {
         NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
 
         NotificationManager notificationManager = getNotificationManager(context);
-        if(notificationManager != null)
+        if (notificationManager != null)
             notificationManager.createNotificationChannel(channel);
     }
 

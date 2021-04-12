@@ -45,7 +45,7 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public void putBoolean(String key, boolean value) {
-        if(key == null) return;
+        if (key == null) return;
 
         switch (key) {
             case "soft_keyboard_enabled":

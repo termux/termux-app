@@ -32,7 +32,7 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
     }
 
     protected ListPreference setLogLevelListPreferenceData(ListPreference logLevelListPreference, Context context) {
-        if(logLevelListPreference == null)
+        if (logLevelListPreference == null)
             logLevelListPreference = new ListPreference(context);
 
         CharSequence[] logLevels = Logger.getLogLevelsArray();
@@ -73,7 +73,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
     @Override
     @Nullable
     public String getString(String key, @Nullable String defValue) {
-        if(key == null) return null;
+        if (key == null) return null;
 
         switch (key) {
             case "log_level":
@@ -85,7 +85,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public void putString(String key, @Nullable String value) {
-        if(key == null) return;
+        if (key == null) return;
 
         switch (key) {
             case "log_level":
@@ -102,7 +102,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public void putBoolean(String key, boolean value) {
-        if(key == null) return;
+        if (key == null) return;
 
         switch (key) {
             case "terminal_view_key_logging_enabled":

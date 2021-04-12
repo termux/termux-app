@@ -149,7 +149,7 @@ public final class TermuxTask {
                 STDIN.close();
                 //STDIN.write("exit\n".getBytes(StandardCharsets.UTF_8));
                 //STDIN.flush();
-            } catch(IOException e){
+            } catch(IOException e) {
                 if (e.getMessage().contains("EPIPE") || e.getMessage().contains("Stream closed")) {
                     // Method most horrid to catch broken pipe, in which case we
                     // do nothing. The command is not a shell, the shell closed
@@ -218,7 +218,7 @@ public final class TermuxTask {
      */
     public void killIfExecuting(@NonNull final Context context, boolean processResult) {
         // If execution command has already finished executing, then no need to process results or send SIGKILL
-        if(mExecutionCommand.hasExecuted()) {
+        if (mExecutionCommand.hasExecuted()) {
             Logger.logDebug(LOG_TAG, "Ignoring sending SIGKILL to \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask since it has already finished executing");
             return;
         }

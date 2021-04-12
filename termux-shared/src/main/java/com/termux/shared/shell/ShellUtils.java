@@ -32,9 +32,9 @@ public class ShellUtils {
 
         // This function may be called by a different package like a plugin, so we get version for Termux package via its context
         Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
-        if(termuxPackageContext != null) {
+        if (termuxPackageContext != null) {
             String termuxVersionName = PackageUtils.getVersionNameForPackage(termuxPackageContext);
-            if(termuxVersionName != null)
+            if (termuxVersionName != null)
                 environment.add("TERMUX_VERSION=" + termuxVersionName);
         }
 
@@ -145,7 +145,7 @@ public class ShellUtils {
     }
 
     public static String getExecutableBasename(String executable) {
-        if(executable == null) return null;
+        if (executable == null) return null;
         int lastSlash = executable.lastIndexOf('/');
         return (lastSlash == -1) ? executable : executable.substring(lastSlash + 1);
     }
@@ -169,14 +169,14 @@ public class ShellUtils {
 
         String transcriptText;
 
-        if(linesJoined)
+        if (linesJoined)
             transcriptText = terminalBuffer.getTranscriptTextWithFullLinesJoined();
         else
             transcriptText = terminalBuffer.getTranscriptTextWithoutJoinedLines();
 
         if (transcriptText == null) return null;
 
-        if(trim)
+        if (trim)
             transcriptText = transcriptText.trim();
 
         return transcriptText;

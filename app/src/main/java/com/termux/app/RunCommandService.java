@@ -52,7 +52,7 @@ public class RunCommandService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Logger.logDebug(LOG_TAG, "onStartCommand");
 
-        if(intent == null) return Service.START_NOT_STICKY;
+        if (intent == null) return Service.START_NOT_STICKY;
 
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
@@ -195,7 +195,7 @@ public class RunCommandService extends Service {
             TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_LOW,
             TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, null, null,
             null, NotificationUtils.NOTIFICATION_MODE_SILENT);
-        if(builder == null)  return null;
+        if (builder == null)  return null;
 
         // No need to show a timestamp:
         builder.setShowWhen(false);

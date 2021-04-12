@@ -689,7 +689,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID, priority,
             getText(R.string.application_name), notificationText, null,
             pendingIntent, NotificationUtils.NOTIFICATION_MODE_SILENT);
-        if(builder == null)  return null;
+        if (builder == null)  return null;
 
         // No need to show a timestamp:
         builder.setShowWhen(false);
@@ -742,7 +742,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
 
     private void setCurrentStoredTerminalSession(TerminalSession session) {
-        if(session == null) return;
+        if (session == null) return;
         // Make the newly created session the current one to be displayed:
         TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(this);
         preferences.setCurrentSession(session.mHandle);
@@ -762,7 +762,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
     @Nullable
     public synchronized TermuxSession getTermuxSession(int index) {
-        if(index >= 0 && index < mTermuxSessions.size())
+        if (index >= 0 && index < mTermuxSessions.size())
             return mTermuxSessions.get(index);
         else
             return null;

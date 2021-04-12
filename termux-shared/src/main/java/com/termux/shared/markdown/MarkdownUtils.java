@@ -50,15 +50,15 @@ public class MarkdownUtils {
      * @return Returns the markdown code {@link String}.
      */
     public static String getMarkdownCodeForString(String string, boolean codeBlock) {
-        if(string == null) return null;
-        if(string.isEmpty()) return "";
+        if (string == null) return null;
+        if (string.isEmpty()) return "";
 
         int maxConsecutiveBackTicksCount = getMaxConsecutiveBackTicksCount(string);
 
         // markdown requires surrounding backticks count to be at least one more than the count
         // of consecutive ticks in the string itself
         int backticksCountToUse;
-        if(codeBlock)
+        if (codeBlock)
             backticksCountToUse = maxConsecutiveBackTicksCount + 3;
         else
             backticksCountToUse = maxConsecutiveBackTicksCount + 1;
@@ -66,13 +66,13 @@ public class MarkdownUtils {
         // create a string with n backticks where n==backticksCountToUse
         String backticksToUse = Strings.repeat(backtick, backticksCountToUse);
 
-        if(codeBlock)
+        if (codeBlock)
             return backticksToUse + "\n" + string + "\n" + backticksToUse;
         else {
             // add a space to any prefixed or suffixed backtick characters
-            if(string.startsWith(backtick))
+            if (string.startsWith(backtick))
                 string = " " + string;
-            if(string.endsWith(backtick))
+            if (string.endsWith(backtick))
                 string = string + " ";
 
             return backticksToUse + string + backticksToUse;
@@ -86,7 +86,7 @@ public class MarkdownUtils {
      * @return Returns the max consecutive backticks count.
      */
     public static int getMaxConsecutiveBackTicksCount(String string) {
-        if(string == null || string.isEmpty()) return 0;
+        if (string == null || string.isEmpty()) return 0;
 
         int maxCount = 0;
         int matchCount;
@@ -94,7 +94,7 @@ public class MarkdownUtils {
         Matcher matcher = backticksPattern.matcher(string);
         while(matcher.find()) {
             matchCount = matcher.group(1).length();
-            if(matchCount > maxCount)
+            if (matchCount > maxCount)
                 maxCount = matchCount;
         }
 

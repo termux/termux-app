@@ -170,7 +170,7 @@ public class TermuxSession {
      */
     public void killIfExecuting(@NonNull final Context context, boolean processResult) {
         // If execution command has already finished executing, then no need to process results or send SIGKILL
-        if(mExecutionCommand.hasExecuted()) {
+        if (mExecutionCommand.hasExecuted()) {
             Logger.logDebug(LOG_TAG, "Ignoring sending SIGKILL to \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession since it has already finished executing");
             return;
         }
