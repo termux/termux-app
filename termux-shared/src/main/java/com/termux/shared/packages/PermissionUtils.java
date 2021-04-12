@@ -21,7 +21,7 @@ public class PermissionUtils {
 
     public static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 0;
 
-    private static final String LOG_TAG = "PluginUtils";
+    private static final String LOG_TAG = "PermissionUtils";
 
     public static boolean checkPermissions(Context context, String[] permissions) {
         int result;

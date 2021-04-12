@@ -126,7 +126,7 @@ public class SharedProperties {
             Object internalValue;
             for (String key : propertiesList) {
                 value = properties.getProperty(key); // value will be null if key does not exist in propertiesFile
-                Logger.logDebug(LOG_TAG, key + " : " + value);
+                // Logger.logVerbose(LOG_TAG, key + " : " + value);
 
                 // Call the {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}
                 // interface method to get the internal value to store in the {@link #mMap}.
