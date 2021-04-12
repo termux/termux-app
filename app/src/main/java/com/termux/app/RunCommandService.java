@@ -72,6 +72,7 @@ public class RunCommandService extends Service {
 
         executionCommand.executable = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
         executionCommand.arguments = intent.getStringArrayExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS);
+        executionCommand.stdin = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_STDIN);
         executionCommand.workingDirectory = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_WORKDIR);
         executionCommand.inBackground = intent.getBooleanExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, false);
         executionCommand.sessionAction = intent.getStringExtra(RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION);
@@ -153,6 +154,7 @@ public class RunCommandService extends Service {
         Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executionCommand.executableUri);
         execIntent.setClass(this, TermuxService.class);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, executionCommand.arguments);
+        execIntent.putExtra(TERMUX_SERVICE.EXTRA_STDIN, executionCommand.stdin);
         if (executionCommand.workingDirectory != null && !executionCommand.workingDirectory.isEmpty()) execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, executionCommand.workingDirectory);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, executionCommand.inBackground);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION, executionCommand.sessionAction);

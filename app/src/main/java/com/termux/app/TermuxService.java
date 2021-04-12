@@ -350,14 +350,16 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         ExecutionCommand executionCommand = new ExecutionCommand(getNextExecutionId());
 
         executionCommand.executableUri = intent.getData();
+        executionCommand.inBackground = intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false);
 
         if (executionCommand.executableUri != null) {
             executionCommand.executable = executionCommand.executableUri.getPath();
             executionCommand.arguments = intent.getStringArrayExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS);
+            if (executionCommand.inBackground)
+                executionCommand.stdin = intent.getStringExtra(TERMUX_SERVICE.EXTRA_STDIN);
         }
 
         executionCommand.workingDirectory = intent.getStringExtra(TERMUX_SERVICE.EXTRA_WORKDIR);
-        executionCommand.inBackground = intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false);
         executionCommand.isFailsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
         executionCommand.sessionAction = intent.getStringExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION);
         executionCommand.commandLabel = DataUtils.getDefaultIfNull(intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_LABEL), "Execution Intent Command");
