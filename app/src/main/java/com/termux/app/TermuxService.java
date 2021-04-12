@@ -20,14 +20,14 @@ import android.provider.Settings;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
-import com.termux.app.terminal.TermuxSessionClient;
+import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.utils.PluginUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.shell.TermuxSession;
-import com.termux.shared.shell.TermuxSessionClientBase;
+import com.termux.shared.shell.TermuxTerminalSessionClientBase;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.packages.PermissionUtils;
@@ -92,12 +92,12 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
      * that holds activity references for activity related functions.
      * Note that the service may often outlive the activity, so need to clear this reference.
      */
-    com.termux.app.terminal.TermuxSessionClient mTermuxSessionClient;
+    TermuxTerminalSessionClient mTermuxTerminalSessionClient;
 
     /** The basic implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
      * that does not hold activity references.
      */
-    final TermuxSessionClientBase mTermuxSessionClientBase = new TermuxSessionClientBase();
+    final TermuxTerminalSessionClientBase mTermuxTerminalSessionClientBase = new TermuxTerminalSessionClientBase();
 
     /** The wake lock and wifi lock are always acquired and released together. */
     private PowerManager.WakeLock mWakeLock;
@@ -178,8 +178,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         // Since we cannot rely on {@link TermuxActivity.onDestroy()} to always complete,
         // we unset clients here as well if it failed, so that we do not leave service and session
         // clients with references to the activity.
-        if (mTermuxSessionClient != null)
-            unsetTermuxSessionClient();
+        if (mTermuxTerminalSessionClient != null)
+            unsetTermuxTerminalSessionClient();
         return false;
     }
 
@@ -476,7 +476,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
     /**
      * Create a {@link TermuxSession}.
-     * Currently called by {@link TermuxSessionClient#addNewSession(boolean, String)} to add a new {@link TermuxSession}.
+     * Currently called by {@link TermuxTerminalSessionClient#addNewSession(boolean, String)} to add a new {@link TermuxSession}.
      */
     @Nullable
     public TermuxSession createTermuxSession(String executablePath, String[] arguments, String workingDirectory, boolean isFailSafe, String sessionName) {
@@ -501,7 +501,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         // If the execution command was started for a plugin, only then will the stdout be set
         // Otherwise if command was manually started by the user like by adding a new terminal session,
         // then no need to set stdout
-        TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxSessionClient(), this, sessionName, executionCommand.isPluginExecutionCommand);
+        TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(), this, sessionName, executionCommand.isPluginExecutionCommand);
         if (newTermuxSession == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxSession command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             return null;
@@ -516,8 +516,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
         // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
         // activity in is foreground
-        if (mTermuxSessionClient != null)
-            mTermuxSessionClient.termuxSessionListNotifyUpdated();
+        if (mTermuxTerminalSessionClient != null)
+            mTermuxTerminalSessionClient.termuxSessionListNotifyUpdated();
 
         updateNotification();
         TermuxActivity.updateTermuxActivityStyling(this);
@@ -551,8 +551,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
             // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
             // activity in is foreground
-            if (mTermuxSessionClient != null)
-                mTermuxSessionClient.termuxSessionListNotifyUpdated();
+            if (mTermuxTerminalSessionClient != null)
+                mTermuxTerminalSessionClient.termuxSessionListNotifyUpdated();
         }
 
         updateNotification();
@@ -569,8 +569,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         switch (sessionAction) {
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY:
                 setCurrentStoredTerminalSession(newTerminalSession);
-                if (mTermuxSessionClient != null)
-                    mTermuxSessionClient.setCurrentSession(newTerminalSession);
+                if (mTermuxTerminalSessionClient != null)
+                    mTermuxTerminalSessionClient.setCurrentSession(newTerminalSession);
                 startTermuxActivity();
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY:
@@ -580,8 +580,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY:
                 setCurrentStoredTerminalSession(newTerminalSession);
-                if (mTermuxSessionClient != null)
-                    mTermuxSessionClient.setCurrentSession(newTerminalSession);
+                if (mTermuxTerminalSessionClient != null)
+                    mTermuxTerminalSessionClient.setCurrentSession(newTerminalSession);
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY:
                 if (getTermuxSessionsSize() == 1)
@@ -610,46 +610,46 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
     /** If {@link TermuxActivity} has not bound to the {@link TermuxService} yet or is destroyed, then
      * interface functions requiring the activity should not be available to the terminal sessions,
-     * so we just return the {@link #mTermuxSessionClientBase}. Once {@link TermuxActivity} bind
-     * callback is received, it should call {@link #setTermuxSessionClient} to set the
-     * {@link TermuxService#mTermuxSessionClient} so that further terminal sessions are directly
-     * passed the {@link TermuxSessionClient} object which fully implements the
+     * so we just return the {@link #mTermuxTerminalSessionClientBase}. Once {@link TermuxActivity} bind
+     * callback is received, it should call {@link #setTermuxTerminalSessionClient} to set the
+     * {@link TermuxService#mTermuxTerminalSessionClient} so that further terminal sessions are directly
+     * passed the {@link TermuxTerminalSessionClient} object which fully implements the
      * {@link TerminalSessionClient} interface.
      *
-     * @return Returns the {@link TermuxSessionClient} if {@link TermuxActivity} has bound with
-     * {@link TermuxService}, otherwise {@link TermuxSessionClientBase}.
+     * @return Returns the {@link TermuxTerminalSessionClient} if {@link TermuxActivity} has bound with
+     * {@link TermuxService}, otherwise {@link TermuxTerminalSessionClientBase}.
      */
-    public synchronized TermuxSessionClientBase getTermuxSessionClient() {
-        if (mTermuxSessionClient != null)
-            return mTermuxSessionClient;
+    public synchronized TermuxTerminalSessionClientBase getTermuxTerminalSessionClient() {
+        if (mTermuxTerminalSessionClient != null)
+            return mTermuxTerminalSessionClient;
         else
-            return mTermuxSessionClientBase;
+            return mTermuxTerminalSessionClientBase;
     }
 
     /** This should be called when {@link TermuxActivity#onServiceConnected} is called to set the
-     * {@link TermuxService#mTermuxSessionClient} variable and update the {@link TerminalSession}
-     * and {@link TerminalEmulator} clients in case they were passed {@link TermuxSessionClientBase}
+     * {@link TermuxService#mTermuxTerminalSessionClient} variable and update the {@link TerminalSession}
+     * and {@link TerminalEmulator} clients in case they were passed {@link TermuxTerminalSessionClientBase}
      * earlier.
      *
-     * @param termuxSessionClient The {@link TermuxSessionClient} object that fully
+     * @param termuxTerminalSessionClient The {@link TermuxTerminalSessionClient} object that fully
      * implements the {@link TerminalSessionClient} interface.
      */
-    public synchronized void setTermuxSessionClient(TermuxSessionClient termuxSessionClient) {
-        mTermuxSessionClient = termuxSessionClient;
+    public synchronized void setTermuxTerminalSessionClient(TermuxTerminalSessionClient termuxTerminalSessionClient) {
+        mTermuxTerminalSessionClient = termuxTerminalSessionClient;
 
         for (int i = 0; i < mTermuxSessions.size(); i++)
-            mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxSessionClient);
+            mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionClient);
     }
 
     /** This should be called when {@link TermuxActivity} has been destroyed and in {@link #onUnbind(Intent)}
      * so that the {@link TermuxService} and {@link TerminalSession} and {@link TerminalEmulator}
      * clients do not hold an activity references.
      */
-    public synchronized void unsetTermuxSessionClient() {
+    public synchronized void unsetTermuxTerminalSessionClient() {
         for (int i = 0; i < mTermuxSessions.size(); i++)
-            mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxSessionClientBase);
+            mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionClientBase);
 
-        mTermuxSessionClient = null;
+        mTermuxTerminalSessionClient = null;
     }
 
 

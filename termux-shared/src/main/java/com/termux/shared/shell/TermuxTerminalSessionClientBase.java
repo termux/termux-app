@@ -4,9 +4,9 @@ import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
-public class TermuxSessionClientBase implements TerminalSessionClient {
+public class TermuxTerminalSessionClientBase implements TerminalSessionClient {
 
-    public TermuxSessionClientBase() {
+    public TermuxTerminalSessionClientBase() {
     }
 
     @Override

@@ -69,7 +69,7 @@ public class TerminalToolbarViewPager {
                             if (textToSend.length() == 0) textToSend = "\r";
                             session.write(textToSend);
                         } else {
-                            mActivity.getTermuxSessionClient().removeFinishedSession(session);
+                            mActivity.getTermuxTerminalSessionClient().removeFinishedSession(session);
                         }
                         editText.setText("");
                     }

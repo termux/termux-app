@@ -16,7 +16,7 @@ import com.termux.R;
 import com.termux.shared.shell.TermuxSession;
 import com.termux.shared.interact.DialogUtils;
 import com.termux.app.TermuxActivity;
-import com.termux.shared.shell.TermuxSessionClientBase;
+import com.termux.shared.shell.TermuxTerminalSessionClientBase;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.TermuxService;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;
@@ -31,7 +31,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class TermuxSessionClient extends TermuxSessionClientBase {
+public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase {
 
     private final TermuxActivity mActivity;
 
@@ -43,9 +43,9 @@ public class TermuxSessionClient extends TermuxSessionClientBase {
 
     private final int mBellSoundId;
 
-    private static final String LOG_TAG = "TermuxSessionClient";
+    private static final String LOG_TAG = "TermuxTerminalSessionClient";
 
-    public TermuxSessionClient(TermuxActivity activity) {
+    public TermuxTerminalSessionClient(TermuxActivity activity) {
         this.mActivity = activity;
 
         mBellSoundId = mBellSoundPool.load(activity, R.raw.bell, 1);

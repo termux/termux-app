@@ -44,18 +44,18 @@ import java.util.List;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
-public class TermuxViewClient implements TerminalViewClient {
+public class TermuxTerminalViewClient implements TerminalViewClient {
 
     final TermuxActivity mActivity;
 
-    final TermuxSessionClient mTermuxSessionClient;
+    final TermuxTerminalSessionClient mTermuxTerminalSessionClient;
 
     /** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
     boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
 
-    public TermuxViewClient(TermuxActivity activity, TermuxSessionClient termuxSessionClient) {
+    public TermuxTerminalViewClient(TermuxActivity activity, TermuxTerminalSessionClient termuxTerminalSessionClient) {
         this.mActivity = activity;
-        this.mTermuxSessionClient = termuxSessionClient;
+        this.mTermuxTerminalSessionClient = termuxTerminalSessionClient;
     }
 
     @Override
@@ -107,16 +107,16 @@ public class TermuxViewClient implements TerminalViewClient {
         if (handleVirtualKeys(keyCode, e, true)) return true;
 
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
-            mTermuxSessionClient.removeFinishedSession(currentSession);
+            mTermuxTerminalSessionClient.removeFinishedSession(currentSession);
             return true;
         } else if (e.isCtrlPressed() && e.isAltPressed()) {
             // Get the unmodified code point:
             int unicodeChar = e.getUnicodeChar(0);
 
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN || unicodeChar == 'n'/* next */) {
-                mTermuxSessionClient.switchToSession(true);
+                mTermuxTerminalSessionClient.switchToSession(true);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP || unicodeChar == 'p' /* previous */) {
-                mTermuxSessionClient.switchToSession(false);
+                mTermuxTerminalSessionClient.switchToSession(false);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 mActivity.getDrawer().openDrawer(Gravity.LEFT);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
@@ -127,9 +127,9 @@ public class TermuxViewClient implements TerminalViewClient {
             } else if (unicodeChar == 'm'/* menu */) {
                 mActivity.getTerminalView().showContextMenu();
             } else if (unicodeChar == 'r'/* rename */) {
-                mTermuxSessionClient.renameSession(currentSession);
+                mTermuxTerminalSessionClient.renameSession(currentSession);
             } else if (unicodeChar == 'c'/* create */) {
-                mTermuxSessionClient.addNewSession(false, null);
+                mTermuxTerminalSessionClient.addNewSession(false, null);
             } else if (unicodeChar == 'u' /* urls */) {
                 showUrlSelection();
             } else if (unicodeChar == 'v') {
@@ -142,7 +142,7 @@ public class TermuxViewClient implements TerminalViewClient {
                 changeFontSize(false);
             } else if (unicodeChar >= '1' && unicodeChar <= '9') {
                 int index = unicodeChar - '1';
-                mTermuxSessionClient.switchToSession(index);
+                mTermuxTerminalSessionClient.switchToSession(index);
             }
             return true;
         }
@@ -297,7 +297,7 @@ public class TermuxViewClient implements TerminalViewClient {
             return true;
         } else if (ctrlDown) {
             if (codePoint == 106 /* Ctrl+j or \n */ && !session.isRunning()) {
-                mTermuxSessionClient.removeFinishedSession(session);
+                mTermuxTerminalSessionClient.removeFinishedSession(session);
                 return true;
             }
 
@@ -309,16 +309,16 @@ public class TermuxViewClient implements TerminalViewClient {
                     if (codePointLowerCase == shortcut.codePoint) {
                         switch (shortcut.shortcutAction) {
                             case TermuxPropertyConstants.ACTION_SHORTCUT_CREATE_SESSION:
-                                mTermuxSessionClient.addNewSession(false, null);
+                                mTermuxTerminalSessionClient.addNewSession(false, null);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_NEXT_SESSION:
-                                mTermuxSessionClient.switchToSession(true);
+                                mTermuxTerminalSessionClient.switchToSession(true);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_PREVIOUS_SESSION:
-                                mTermuxSessionClient.switchToSession(false);
+                                mTermuxTerminalSessionClient.switchToSession(false);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_RENAME_SESSION:
-                                mTermuxSessionClient.renameSession(mActivity.getCurrentSession());
+                                mTermuxTerminalSessionClient.renameSession(mActivity.getCurrentSession());
                                 return true;
                         }
                     }
