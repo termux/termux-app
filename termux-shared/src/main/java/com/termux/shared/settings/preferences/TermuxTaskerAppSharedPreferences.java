@@ -38,7 +38,7 @@ public class TermuxTaskerAppSharedPreferences {
 
 
     public int getLogLevel(boolean readFromFfile) {
-        if(readFromFfile)
+        if (readFromFfile)
             return SharedPreferenceUtils.getInt(mMultiProcessSharedPreferences, TERMUX_TASKER_APP.KEY_LOG_LEVEL, Logger.DEFAULT_LOG_LEVEL);
         else
             return SharedPreferenceUtils.getInt(mSharedPreferences, TERMUX_TASKER_APP.KEY_LOG_LEVEL, Logger.DEFAULT_LOG_LEVEL);

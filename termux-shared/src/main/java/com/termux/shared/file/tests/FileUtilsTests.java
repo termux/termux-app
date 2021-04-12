@@ -104,7 +104,7 @@ public class FileUtilsTests {
         errmsg = FileUtils.clearDirectory(context, label, testRootDirectoryPath);
         assertEqual("Failed to create " + label + " directory file", null, errmsg);
 
-        if(!FileUtils.directoryFileExists(testRootDirectoryPath, false))
+        if (!FileUtils.directoryFileExists(testRootDirectoryPath, false))
             throwException("The " + label + " directory file does not exist as expected after creation");
 
 
@@ -124,30 +124,30 @@ public class FileUtilsTests {
         label = dir1__sub_dir1_label; path = dir1__sub_dir1_path;
         errmsg = FileUtils.createDirectoryFile(context, label, path);
         assertEqual("Failed to create " + label + " directory file", null, errmsg);
-        if(!FileUtils.directoryFileExists(path, false))
+        if (!FileUtils.directoryFileExists(path, false))
             throwException("The " + label + " directory file does not exist as expected after creation");
 
         // Create dir1/sub_reg1 regular file
         label = dir1__sub_reg1_label; path = dir1__sub_reg1_path;
         errmsg = FileUtils.createRegularFile(context, label, path);
         assertEqual("Failed to create " + label + " regular file", null, errmsg);
-        if(!FileUtils.regularFileExists(path, false))
+        if (!FileUtils.regularFileExists(path, false))
             throwException("The " + label + " regular file does not exist as expected after creation");
 
         // Create dir1/sub_sym1 -> dir2 absolute symlink file
         label = dir1__sub_sym1_label; path = dir1__sub_sym1_path;
         errmsg = FileUtils.createSymlinkFile(context, label, dir2_path, path);
         assertEqual("Failed to create " + label + " symlink file", null, errmsg);
-        if(!FileUtils.symlinkFileExists(path))
+        if (!FileUtils.symlinkFileExists(path))
             throwException("The " + label + " symlink file does not exist as expected after creation");
 
         // Copy dir1/sub_sym1 symlink file to dir1/sub_sym2
         label = dir1__sub_sym2_label; path = dir1__sub_sym2_path;
         errmsg = FileUtils.copySymlinkFile(context, label, dir1__sub_sym1_path, path, false);
         assertEqual("Failed to copy " + dir1__sub_sym1_label + " symlink file to " + label, null, errmsg);
-        if(!FileUtils.symlinkFileExists(path))
+        if (!FileUtils.symlinkFileExists(path))
             throwException("The " + label + " symlink file does not exist as expected after copying it from " + dir1__sub_sym1_label);
-        if(!new File(path).getCanonicalPath().equals(dir2_path))
+        if (!new File(path).getCanonicalPath().equals(dir2_path))
             throwException("The " + label + " symlink file does not point to " + dir2_label);
 
 
@@ -158,7 +158,7 @@ public class FileUtilsTests {
         label = dir2__sub_reg1_label; path = dir2__sub_reg1_path;
         errmsg = FileUtils.writeStringToFile(context, label, path, Charset.defaultCharset(), "line1", false);
         assertEqual("Failed to write string to " + label + " file with append mode false", null, errmsg);
-        if(!FileUtils.regularFileExists(path, false))
+        if (!FileUtils.regularFileExists(path, false))
             throwException("The " + label + " file does not exist as expected after writing to it with append mode false");
 
         // Write "line2" to dir2/sub_reg1 regular file
@@ -175,7 +175,7 @@ public class FileUtilsTests {
         label = dir2__sub_reg2_label; path = dir2__sub_reg2_path;
         errmsg = FileUtils.copyRegularFile(context, label, dir2__sub_reg1_path, path, false);
         assertEqual("Failed to copy " + dir2__sub_reg1_label + " regular file to " + label, null, errmsg);
-        if(!FileUtils.regularFileExists(path, false))
+        if (!FileUtils.regularFileExists(path, false))
             throwException("The " + label + " regular file does not exist as expected after copying it from " + dir2__sub_reg1_label);
 
 
@@ -186,21 +186,21 @@ public class FileUtilsTests {
         label = dir3_label; path = dir3_path;
         errmsg = FileUtils.copyDirectoryFile(context, label, dir2_path, path, false);
         assertEqual("Failed to copy " + dir2_label + " directory file to " + label, null, errmsg);
-        if(!FileUtils.directoryFileExists(path, false))
+        if (!FileUtils.directoryFileExists(path, false))
             throwException("The " + label + " directory file does not exist as expected after copying it from " + dir2_label);
 
         // Copy dir1 directory file to dir3 again to test overwrite
         label = dir3_label; path = dir3_path;
         errmsg = FileUtils.copyDirectoryFile(context, label, dir2_path, path, false);
         assertEqual("Failed to copy " + dir2_label + " directory file to " + label, null, errmsg);
-        if(!FileUtils.directoryFileExists(path, false))
+        if (!FileUtils.directoryFileExists(path, false))
             throwException("The " + label + " directory file does not exist as expected after copying it from " + dir2_label);
 
         // Move dir3 directory file to dir4
         label = dir4_label; path = dir4_path;
         errmsg = FileUtils.moveDirectoryFile(context, label, dir3_path, path, false);
         assertEqual("Failed to move " + dir3_label + " directory file to " + label, null, errmsg);
-        if(!FileUtils.directoryFileExists(path, false))
+        if (!FileUtils.directoryFileExists(path, false))
             throwException("The " + label + " directory file does not exist as expected after copying it from " + dir3_label);
 
 
@@ -211,7 +211,7 @@ public class FileUtilsTests {
         label = dir1__sub_sym3_label; path = dir1__sub_sym3_path;
         errmsg = FileUtils.createSymlinkFile(context, label, "../dir4", path);
         assertEqual("Failed to create " + label + " symlink file", null, errmsg);
-        if(!FileUtils.symlinkFileExists(path))
+        if (!FileUtils.symlinkFileExists(path))
             throwException("The " + label + " symlink file does not exist as expected after creation");
 
         // Create dir1/sub_sym3 -> dirX relative dangling symlink file
@@ -219,7 +219,7 @@ public class FileUtilsTests {
         label = dir1__sub_sym3_label; path = dir1__sub_sym3_path;
         errmsg = FileUtils.createSymlinkFile(context, label, "../dirX", path);
         assertEqual("Failed to create " + label + " symlink file", null, errmsg);
-        if(!FileUtils.symlinkFileExists(path))
+        if (!FileUtils.symlinkFileExists(path))
             throwException("The " + label + " dangling symlink file does not exist as expected after creation");
 
 
@@ -230,13 +230,13 @@ public class FileUtilsTests {
         label = dir1__sub_sym2_label; path = dir1__sub_sym2_path;
         errmsg = FileUtils.deleteSymlinkFile(context, label, path, false);
         assertEqual("Failed to delete " + label + " symlink file", null, errmsg);
-        if(FileUtils.fileExists(path, false))
+        if (FileUtils.fileExists(path, false))
             throwException("The " + label + " symlink file still exist after deletion");
 
         // Check if dir2 directory file still exists after deletion of dir1/sub_sym2 since it was a symlink to dir2
         // When deleting a symlink file, its target must not be deleted
         label = dir2_label; path = dir2_path;
-        if(!FileUtils.directoryFileExists(path, false))
+        if (!FileUtils.directoryFileExists(path, false))
             throwException("The " + label + " directory file has unexpectedly been deleted after deletion of " + dir1__sub_sym2_label);
 
 
@@ -247,7 +247,7 @@ public class FileUtilsTests {
         label = dir1_label; path = dir1_path;
         errmsg = FileUtils.deleteDirectoryFile(context, label, path, false);
         assertEqual("Failed to delete " + label + " directory file", null, errmsg);
-        if(FileUtils.fileExists(path, false))
+        if (FileUtils.fileExists(path, false))
             throwException("The " + label + " directory file still exist after deletion");
 
 
@@ -255,10 +255,10 @@ public class FileUtilsTests {
         // dir1 since there was a dir1/sub_sym1 symlink to dir2 in it
         // When deleting a directory, any targets of symlinks must not be deleted when deleting symlink files
         label = dir2_label; path = dir2_path;
-        if(!FileUtils.directoryFileExists(path, false))
+        if (!FileUtils.directoryFileExists(path, false))
             throwException("The " + label + " directory file has unexpectedly been deleted after deletion of " + dir1_label);
         label = dir2__sub_reg1_label; path = dir2__sub_reg1_path;
-        if(!FileUtils.fileExists(path, false))
+        if (!FileUtils.fileExists(path, false))
             throwException("The " + label + " regular file has unexpectedly been deleted after deletion of " + dir1_label);
 
 
@@ -269,7 +269,7 @@ public class FileUtilsTests {
         label = dir2__sub_reg1_label; path = dir2__sub_reg1_path;
         errmsg = FileUtils.deleteRegularFile(context, label, path, false);
         assertEqual("Failed to delete " + label + " regular file", null, errmsg);
-        if(FileUtils.fileExists(path, false))
+        if (FileUtils.fileExists(path, false))
             throwException("The " + label + " regular file still exist after deletion");
 
         FileUtils.getFileType("/dev/ptmx", false);

@@ -43,7 +43,7 @@ public class ExtraKeysInfo {
 
                 ExtraKeyButton button;
 
-                if(! jobject.has("popup")) {
+                if (! jobject.has("popup")) {
                     // no popup
                     button = new ExtraKeyButton(getSelectedCharMap(), jobject);
                 } else {
@@ -63,10 +63,10 @@ public class ExtraKeysInfo {
      */
     private static JSONObject normalizeKeyConfig(Object key) throws JSONException {
         JSONObject jobject;
-        if(key instanceof String) {
+        if (key instanceof String) {
             jobject = new JSONObject();
             jobject.put("key", key);
-        } else if(key instanceof JSONObject) {
+        } else if (key instanceof JSONObject) {
             jobject = (JSONObject) key;
         } else {
             throw new JSONException("An key in the extra-key matrix must be a string or an object");
@@ -84,7 +84,7 @@ public class ExtraKeysInfo {
      */
     static class CleverMap<K,V> extends HashMap<K,V> {
         V get(K key, V defaultValue) {
-            if(containsKey(key))
+            if (containsKey(key))
                 return get(key);
             else
                 return defaultValue;

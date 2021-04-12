@@ -32,15 +32,15 @@ public class Logger {
 
 
     public static void logMessage(int logLevel, String tag, String message) {
-        if(logLevel == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+        if (logLevel == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.e(getFullTag(tag), message);
-        else if(logLevel == Log.WARN && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+        else if (logLevel == Log.WARN && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.w(getFullTag(tag), message);
-        else if(logLevel == Log.INFO && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+        else if (logLevel == Log.INFO && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.i(getFullTag(tag), message);
-        else if(logLevel == Log.DEBUG && CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
+        else if (logLevel == Log.DEBUG && CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
             Log.d(getFullTag(tag), message);
-        else if(logLevel == Log.VERBOSE && CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE)
+        else if (logLevel == Log.VERBOSE && CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE)
             Log.v(getFullTag(tag), message);
     }
 
@@ -99,7 +99,7 @@ public class Logger {
     public static void logErrorAndShowToast(Context context, String tag, String message) {
         if (context == null) return;
 
-        if(CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL) {
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL) {
             logError(tag, message);
             showToast(context, message, true);
         }
@@ -114,7 +114,7 @@ public class Logger {
     public static void logDebugAndShowToast(Context context, String tag, String message) {
         if (context == null) return;
 
-        if(CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
             logDebug(tag, message);
             showToast(context, message, true);
         }
@@ -127,7 +127,7 @@ public class Logger {
 
 
     public static void logStackTraceWithMessage(String tag, String message, Throwable throwable) {
-        if(CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.e(getFullTag(tag), getMessageAndStackTraceString(message, throwable));
     }
 
@@ -144,12 +144,12 @@ public class Logger {
     }
 
     public static void logStackTracesWithMessage(String tag, String message, List<Throwable> throwableList) {
-        if(CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.e(getFullTag(tag), getMessageAndStackTracesString(message, throwableList));
     }
 
     public static String getMessageAndStackTraceString(String message, Throwable throwable) {
-        if(message == null && throwable == null)
+        if (message == null && throwable == null)
             return null;
         else if(message != null && throwable != null)
             return message + ":\n" + getStackTraceString(throwable);

@@ -55,7 +55,7 @@ public class PluginUtils {
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
-        if(!executionCommand.hasExecuted()) {
+        if (!executionCommand.hasExecuted()) {
             Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandResult() since the execution command state is not higher than the ExecutionState.EXECUTED");
             return;
         }
@@ -66,7 +66,7 @@ public class PluginUtils {
 
         // If isPluginExecutionCommand is true and pluginPendingIntent is not null, then
         // send pluginPendingIntent to its creator with the result
-        if(executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null) {
+        if (executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null) {
             String errmsg = executionCommand.errmsg;
 
             //Combine errmsg and stacktraces
@@ -78,7 +78,7 @@ public class PluginUtils {
             result = sendPluginExecutionCommandResultPendingIntent(context, logTag, executionCommand.getCommandIdAndLabelLogString(), executionCommand.stdout, executionCommand.stderr, executionCommand.exitCode, executionCommand.errCode, errmsg, executionCommand.pluginPendingIntent);
         }
 
-        if(!executionCommand.isStateFailed() && result)
+        if (!executionCommand.isStateFailed() && result)
             executionCommand.setState(ExecutionCommand.ExecutionState.SUCCESS);
     }
 
@@ -109,11 +109,11 @@ public class PluginUtils {
      *                          is {@code false}.
      */
     public static void processPluginExecutionCommandError(final Context context, String logTag, final ExecutionCommand executionCommand, boolean forceNotification) {
-        if(context == null || executionCommand == null) return;
+        if (context == null || executionCommand == null) return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
-        if(!executionCommand.isStateFailed()) {
+        if (!executionCommand.isStateFailed()) {
             Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandError() since the execution command is not in ExecutionState.FAILED");
             return;
         }
@@ -124,7 +124,7 @@ public class PluginUtils {
 
         // If isPluginExecutionCommand is true and pluginPendingIntent is not null, then
         // send pluginPendingIntent to its creator with the errors
-        if(executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null) {
+        if (executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null) {
             String errmsg = executionCommand.errmsg;
 
             //Combine errmsg and stacktraces
@@ -169,12 +169,12 @@ public class PluginUtils {
 
         // Build the notification
         Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title, notificationText, notificationText, pendingIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
-        if(builder == null)  return;
+        if (builder == null)  return;
 
         // Send the notification
         int nextNotificationId = NotificationUtils.getNextNotificationId(context);
         NotificationManager notificationManager = NotificationUtils.getNotificationManager(context);
-        if(notificationManager != null)
+        if (notificationManager != null)
             notificationManager.notify(nextNotificationId, builder.build());
 
     }
@@ -196,7 +196,7 @@ public class PluginUtils {
      * @return Returns {@code true} if pluginPendingIntent was successfully send, otherwise [@code false}.
      */
     public static boolean sendPluginExecutionCommandResultPendingIntent(Context context, String logTag, String label, String stdout, String stderr, Integer exitCode, Integer errCode, String errmsg, PendingIntent pluginPendingIntent) {
-        if(context == null || pluginPendingIntent == null) return false;
+        if (context == null || pluginPendingIntent == null) return false;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
@@ -209,7 +209,7 @@ public class PluginUtils {
         String stderrOriginalLength = (stderr == null) ? null: String.valueOf(stderr.length());
 
         // Truncate stdout and stdout to max TRANSACTION_SIZE_LIMIT_IN_BYTES
-        if(stderr == null || stderr.isEmpty()) {
+        if (stderr == null || stderr.isEmpty()) {
             truncatedStdout = DataUtils.getTruncatedCommandOutput(stdout, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, false, false);
         } else if (stdout == null || stdout.isEmpty()) {
             truncatedStderr = DataUtils.getTruncatedCommandOutput(stderr, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, false, false);
@@ -218,12 +218,12 @@ public class PluginUtils {
             truncatedStderr = DataUtils.getTruncatedCommandOutput(stderr, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 2, false, false, false);
         }
 
-        if(truncatedStdout != null && truncatedStdout.length() < stdout.length()){
+        if (truncatedStdout != null && truncatedStdout.length() < stdout.length()) {
             Logger.logWarn(logTag, "Execution Result for Execution Command \"" + label +  "\" stdout length truncated from " + stdoutOriginalLength + " to " + truncatedStdout.length());
             stdout = truncatedStdout;
         }
 
-        if(truncatedStderr != null && truncatedStderr.length() < stderr.length()){
+        if (truncatedStderr != null && truncatedStderr.length() < stderr.length()) {
             Logger.logWarn(logTag, "Execution Result for Execution Command \"" + label +  "\" stderr length truncated from " + stderrOriginalLength + " to " + truncatedStderr.length());
             stderr = truncatedStderr;
         }
@@ -233,7 +233,7 @@ public class PluginUtils {
         // Truncate errmsg to max TRANSACTION_SIZE_LIMIT_IN_BYTES / 4
         // trim from end to preserve start of stacktraces
         String truncatedErrmsg = DataUtils.getTruncatedCommandOutput(errmsg, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 4, true, false, false);
-        if(truncatedErrmsg != null && truncatedErrmsg.length() < errmsg.length()){
+        if (truncatedErrmsg != null && truncatedErrmsg.length() < errmsg.length()) {
             Logger.logWarn(logTag, "Execution Result for Execution Command \"" + label +  "\" errmsg length truncated from " + errmsgOriginalLength + " to " + truncatedErrmsg.length());
             errmsg = truncatedErrmsg;
         }
@@ -282,7 +282,7 @@ public class PluginUtils {
             TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
             title, notificationText, notificationBigText, pendingIntent, notificationMode);
 
-        if(builder == null)  return null;
+        if (builder == null)  return null;
 
         // Enable timestamp
         builder.setShowWhen(true);

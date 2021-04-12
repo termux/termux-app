@@ -104,9 +104,9 @@ public class FileAttributes {
     }
 
     public String file() {
-        if(filePath != null)
+        if (filePath != null)
             return filePath;
-        else if(fileDescriptor != null)
+        else if (fileDescriptor != null)
             return fileDescriptor.toString();
         else
             return null;
@@ -397,7 +397,7 @@ public class FileAttributes {
         logString.append("\n").append(fileAttributes.getInodeString());
         logString.append("\n").append(fileAttributes.getLinksString());
 
-        if(fileAttributes.isBlock() || fileAttributes.isCharacter())
+        if (fileAttributes.isBlock() || fileAttributes.isCharacter())
             logString.append("\n").append(fileAttributes.getDeviceTypeString());
 
         logString.append("\n").append(fileAttributes.getOwnerString());

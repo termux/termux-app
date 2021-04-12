@@ -178,7 +178,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         // Since we cannot rely on {@link TermuxActivity.onDestroy()} to always complete,
         // we unset clients here as well if it failed, so that we do not leave service and session
         // clients with references to the activity.
-        if(mTermuxSessionClient != null)
+        if (mTermuxSessionClient != null)
             unsetTermuxSessionClient();
         return false;
     }
@@ -258,14 +258,14 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         List<TermuxTask> termuxTasks = new ArrayList<>(mTermuxTasks);
         for (int i = 0; i < termuxTasks.size(); i++) {
             ExecutionCommand executionCommand = termuxTasks.get(i).getExecutionCommand();
-            if(executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null)
+            if (executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null)
                 termuxTasks.get(i).killIfExecuting(this, true);
         }
 
         List<ExecutionCommand> pendingPluginExecutionCommands = new ArrayList<>(mPendingPluginExecutionCommands);
         for (int i = 0; i < pendingPluginExecutionCommands.size(); i++) {
             ExecutionCommand executionCommand = pendingPluginExecutionCommands.get(i);
-            if(!executionCommand.shouldNotProcessResults() && executionCommand.pluginPendingIntent != null) {
+            if (!executionCommand.shouldNotProcessResults() && executionCommand.pluginPendingIntent != null) {
                 if (executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_CANCELED, this.getString(com.termux.shared.R.string.error_execution_cancelled), null)) {
                     PluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
                 }
@@ -316,7 +316,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
     /** Process action to release Power and Wi-Fi WakeLocks. */
     private void actionReleaseWakeLock(boolean updateNotification) {
-        if (mWakeLock == null && mWifiLock == null){
+        if (mWakeLock == null && mWifiLock == null) {
             Logger.logDebug(LOG_TAG, "Ignoring releasing WakeLocks since none are already held");
             return;
         }
@@ -333,7 +333,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             mWifiLock = null;
         }
 
-        if(updateNotification)
+        if (updateNotification)
             updateNotification();
 
         Logger.logDebug(LOG_TAG, "WakeLocks released successfully");
@@ -342,7 +342,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     /** Process {@link TERMUX_SERVICE#ACTION_SERVICE_EXECUTE} intent to execute a shell command in
      * a foreground TermuxSession or in a background TermuxTask. */
     private void actionServiceExecute(Intent intent) {
-        if (intent == null){
+        if (intent == null) {
             Logger.logError(LOG_TAG, "Ignoring null intent to actionServiceExecute");
             return;
         }
@@ -351,7 +351,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
         executionCommand.executableUri = intent.getData();
 
-        if(executionCommand.executableUri != null) {
+        if (executionCommand.executableUri != null) {
             executionCommand.executable = executionCommand.executableUri.getPath();
             executionCommand.arguments = intent.getStringArrayExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS);
         }
@@ -408,7 +408,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             return null;
         }
 
-        if(Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
+        if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
             Logger.logVerbose(LOG_TAG, executionCommand.toString());
 
         TermuxTask newTermuxTask = TermuxTask.execute(this, executionCommand, this, false);
@@ -421,7 +421,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
         // Remove the execution command from the pending plugin execution commands list since it has
         // now been processed
-        if(executionCommand.isPluginExecutionCommand)
+        if (executionCommand.isPluginExecutionCommand)
             mPendingPluginExecutionCommands.remove(executionCommand);
 
         updateNotification();
@@ -433,13 +433,13 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     @Override
     public void onTermuxTaskExited(final TermuxTask termuxTask) {
         mHandler.post(() -> {
-            if(termuxTask != null) {
+            if (termuxTask != null) {
                 ExecutionCommand executionCommand = termuxTask.getExecutionCommand();
 
                 Logger.logVerbose(LOG_TAG, "The onTermuxTaskExited() callback called for \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask command");
 
                 // If the execution command was started for a plugin, then process the results
-                if(executionCommand != null && executionCommand.isPluginExecutionCommand)
+                if (executionCommand != null && executionCommand.isPluginExecutionCommand)
                     PluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
 
                 mTermuxTasks.remove(termuxTask);
@@ -495,7 +495,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             return null;
         }
 
-        if(Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
+        if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
             Logger.logVerbose(LOG_TAG, executionCommand.toString());
 
         // If the execution command was started for a plugin, only then will the stdout be set
@@ -511,12 +511,12 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
         // Remove the execution command from the pending plugin execution commands list since it has
         // now been processed
-        if(executionCommand.isPluginExecutionCommand)
+        if (executionCommand.isPluginExecutionCommand)
             mPendingPluginExecutionCommands.remove(executionCommand);
 
         // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
         // activity in is foreground
-        if(mTermuxSessionClient != null)
+        if (mTermuxSessionClient != null)
             mTermuxSessionClient.termuxSessionListNotifyUpdated();
 
         updateNotification();
@@ -529,7 +529,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     public synchronized int removeTermuxSession(TerminalSession sessionToRemove) {
         int index = getIndexOfSession(sessionToRemove);
 
-        if(index >= 0)
+        if (index >= 0)
             mTermuxSessions.get(index).finish();
 
         return index;
@@ -538,20 +538,20 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     /** Callback received when a {@link TermuxSession} finishes. */
     @Override
     public void onTermuxSessionExited(final TermuxSession termuxSession) {
-        if(termuxSession != null) {
+        if (termuxSession != null) {
             ExecutionCommand executionCommand = termuxSession.getExecutionCommand();
 
             Logger.logVerbose(LOG_TAG, "The onTermuxSessionExited() callback called for \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession command");
 
             // If the execution command was started for a plugin, then process the results
-            if(executionCommand != null && executionCommand.isPluginExecutionCommand)
+            if (executionCommand != null && executionCommand.isPluginExecutionCommand)
                 PluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
 
             mTermuxSessions.remove(termuxSession);
 
             // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
             // activity in is foreground
-            if(mTermuxSessionClient != null)
+            if (mTermuxSessionClient != null)
                 mTermuxSessionClient.termuxSessionListNotifyUpdated();
         }
 
@@ -575,22 +575,22 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         switch (sessionAction) {
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY:
                 setCurrentStoredTerminalSession(newTerminalSession);
-                if(mTermuxSessionClient != null)
+                if (mTermuxSessionClient != null)
                     mTermuxSessionClient.setCurrentSession(newTerminalSession);
                 startTermuxActivity();
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY:
-                if(getTermuxSessionsSize() == 1)
+                if (getTermuxSessionsSize() == 1)
                     setCurrentStoredTerminalSession(newTerminalSession);
                 startTermuxActivity();
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY:
                 setCurrentStoredTerminalSession(newTerminalSession);
-                if(mTermuxSessionClient != null)
+                if (mTermuxSessionClient != null)
                     mTermuxSessionClient.setCurrentSession(newTerminalSession);
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY:
-                if(getTermuxSessionsSize() == 1)
+                if (getTermuxSessionsSize() == 1)
                     setCurrentStoredTerminalSession(newTerminalSession);
                 break;
             default:
@@ -605,7 +605,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         // For android >= 10, apps require Display over other apps permission to start foreground activities
         // from background (services). If it is not granted, then TermuxSessions that are started will
         // show in Termux notification but will not run until user manually clicks the notification.
-        if(PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(this)) {
+        if (PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(this)) {
             TermuxActivity.startTermuxActivity(this);
         }
     }

@@ -131,10 +131,10 @@ public class ExecutionCommand {
 
 
 
-    public ExecutionCommand(){
+    public ExecutionCommand() {
     }
 
-    public ExecutionCommand(Integer id){
+    public ExecutionCommand(Integer id) {
         this.id = id;
     }
 

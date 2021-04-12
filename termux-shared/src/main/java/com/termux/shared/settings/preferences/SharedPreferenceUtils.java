@@ -52,7 +52,7 @@ public class SharedPreferenceUtils {
      * default if failed to read a valid value, like in case of an exception.
      */
     public static boolean getBoolean(SharedPreferences sharedPreferences, String key, boolean def) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Error getting boolean value for the \"" + key + "\" key from null shared preferences. Returning default value \"" + def + "\".");
             return def;
         }
@@ -78,12 +78,12 @@ public class SharedPreferenceUtils {
      */
     @SuppressLint("ApplySharedPref")
     public static void setBoolean(SharedPreferences sharedPreferences, String key, boolean value, boolean commitToFile) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Ignoring setting boolean value \"" + value + "\" for the \"" + key + "\" key into null shared preferences.");
             return;
         }
 
-        if(commitToFile)
+        if (commitToFile)
             sharedPreferences.edit().putBoolean(key, value).commit();
         else
             sharedPreferences.edit().putBoolean(key, value).apply();
@@ -102,7 +102,7 @@ public class SharedPreferenceUtils {
      * default if failed to read a valid value, like in case of an exception.
      */
     public static float getFloat(SharedPreferences sharedPreferences, String key, float def) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Error getting float value for the \"" + key + "\" key from null shared preferences. Returning default value \"" + def + "\".");
             return def;
         }
@@ -128,12 +128,12 @@ public class SharedPreferenceUtils {
      */
     @SuppressLint("ApplySharedPref")
     public static void setFloat(SharedPreferences sharedPreferences, String key, float value, boolean commitToFile) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Ignoring setting float value \"" + value + "\" for the \"" + key + "\" key into null shared preferences.");
             return;
         }
 
-        if(commitToFile)
+        if (commitToFile)
             sharedPreferences.edit().putFloat(key, value).commit();
         else
             sharedPreferences.edit().putFloat(key, value).apply();
@@ -151,7 +151,7 @@ public class SharedPreferenceUtils {
      * default if failed to read a valid value, like in case of an exception.
      */
     public static int getInt(SharedPreferences sharedPreferences, String key, int def) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Error getting int value for the \"" + key + "\" key from null shared preferences. Returning default value \"" + def + "\".");
             return def;
         }
@@ -177,12 +177,12 @@ public class SharedPreferenceUtils {
      */
     @SuppressLint("ApplySharedPref")
     public static void setInt(SharedPreferences sharedPreferences, String key, int value, boolean commitToFile) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Ignoring setting int value \"" + value + "\" for the \"" + key + "\" key into null shared preferences.");
             return;
         }
 
-        if(commitToFile)
+        if (commitToFile)
             sharedPreferences.edit().putInt(key, value).commit();
         else
             sharedPreferences.edit().putInt(key, value).apply();
@@ -200,7 +200,7 @@ public class SharedPreferenceUtils {
      * default if failed to read a valid value, like in case of an exception.
      */
     public static long getLong(SharedPreferences sharedPreferences, String key, long def) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Error getting long value for the \"" + key + "\" key from null shared preferences. Returning default value \"" + def + "\".");
             return def;
         }
@@ -226,12 +226,12 @@ public class SharedPreferenceUtils {
      */
     @SuppressLint("ApplySharedPref")
     public static void setLong(SharedPreferences sharedPreferences, String key, long value, boolean commitToFile) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Ignoring setting long value \"" + value + "\" for the \"" + key + "\" key into null shared preferences.");
             return;
         }
 
-        if(commitToFile)
+        if (commitToFile)
             sharedPreferences.edit().putLong(key, value).commit();
         else
             sharedPreferences.edit().putLong(key, value).apply();
@@ -249,7 +249,7 @@ public class SharedPreferenceUtils {
      * default if failed to read a valid value, like in case of an exception.
      */
     public static String getString(SharedPreferences sharedPreferences, String key, String def) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Error getting String value for the \"" + key + "\" key from null shared preferences. Returning default value \"" + def + "\".");
             return def;
         }
@@ -275,12 +275,12 @@ public class SharedPreferenceUtils {
      */
     @SuppressLint("ApplySharedPref")
     public static void setString(SharedPreferences sharedPreferences, String key, String value, boolean commitToFile) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Ignoring setting String value \"" + value + "\" for the \"" + key + "\" key into null shared preferences.");
             return;
         }
 
-        if(commitToFile)
+        if (commitToFile)
             sharedPreferences.edit().putString(key, value).commit();
         else
             sharedPreferences.edit().putString(key, value).apply();
@@ -298,7 +298,7 @@ public class SharedPreferenceUtils {
      * default if failed to read a valid value, like in case of an exception.
      */
     public static Set<String> getStringSet(SharedPreferences sharedPreferences, String key, Set<String> def) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Error getting Set<String> value for the \"" + key + "\" key from null shared preferences. Returning default value \"" + def + "\".");
             return def;
         }
@@ -324,12 +324,12 @@ public class SharedPreferenceUtils {
      */
     @SuppressLint("ApplySharedPref")
     public static void setStringSet(SharedPreferences sharedPreferences, String key, Set<String> value, boolean commitToFile) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Ignoring setting Set<String> value \"" + value + "\" for the \"" + key + "\" key into null shared preferences.");
             return;
         }
 
-        if(commitToFile)
+        if (commitToFile)
             sharedPreferences.edit().putStringSet(key, value).commit();
         else
             sharedPreferences.edit().putStringSet(key, value).apply();
@@ -348,7 +348,7 @@ public class SharedPreferenceUtils {
      * like in case of an exception.
      */
     public static int getIntStoredAsString(SharedPreferences sharedPreferences, String key, int def) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Error getting int value for the \"" + key + "\" key from null shared preferences. Returning default value \"" + def + "\".");
             return def;
         }
@@ -358,7 +358,7 @@ public class SharedPreferenceUtils {
 
         try {
             stringValue = sharedPreferences.getString(key, Integer.toString(def));
-            if(stringValue != null)
+            if (stringValue != null)
                 intValue =  Integer.parseInt(stringValue);
             else
                 intValue = def;
@@ -381,12 +381,12 @@ public class SharedPreferenceUtils {
      */
     @SuppressLint("ApplySharedPref")
     public static void setIntStoredAsString(SharedPreferences sharedPreferences, String key, int value, boolean commitToFile) {
-        if(sharedPreferences == null) {
+        if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Ignoring setting int value \"" + value + "\" for the \"" + key + "\" key into null shared preferences.");
             return;
         }
 
-        if(commitToFile)
+        if (commitToFile)
             sharedPreferences.edit().putString(key, Integer.toString(value)).commit();
         else
             sharedPreferences.edit().putString(key, Integer.toString(value)).apply();

@@ -153,7 +153,7 @@ clean {
     }
 }
 
-task downloadBootstraps(){
+task downloadBootstraps() {
     doLast {
         def version = "2021.02.19-r1"
         downloadBootstrap("aarch64", "1e3d80bd8cc8771715845ab4a1e67fc125d84c4deda3a1a435116fe4d1f86160", version)

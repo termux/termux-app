@@ -145,7 +145,7 @@ public class TermuxUtils {
 
         String termuxPackageName = null;
         String termuxAppName = null;
-        if(termuxPackageContext != null) {
+        if (termuxPackageContext != null) {
             termuxPackageName = PackageUtils.getPackageNameForPackage(termuxPackageContext);
             termuxAppName = PackageUtils.getAppNameForPackage(termuxPackageContext);
         }
@@ -156,13 +156,13 @@ public class TermuxUtils {
         boolean isTermuxPackage = (termuxPackageName != null && termuxPackageName.equals(currentPackageName));
 
 
-        if(returnTermuxPackageInfoToo && !isTermuxPackage)
+        if (returnTermuxPackageInfoToo && !isTermuxPackage)
             markdownString.append("## ").append(currentAppName).append(" App Info (Current)\n");
         else
             markdownString.append("## ").append(currentAppName).append(" App Info\n");
         markdownString.append(getAppInfoMarkdownStringInner(currentPackageContext));
 
-        if(returnTermuxPackageInfoToo && !isTermuxPackage) {
+        if (returnTermuxPackageInfoToo && !isTermuxPackage) {
             markdownString.append("\n\n## ").append(termuxAppName).append(" App Info\n");
             markdownString.append(getAppInfoMarkdownStringInner(termuxPackageContext));
         }
@@ -284,6 +284,8 @@ public class TermuxUtils {
         return markdownString.toString();
     }
 
+
+
     public static Properties getSystemProperties() {
         Properties systemProperties = new Properties();
 
@@ -311,7 +313,7 @@ public class TermuxUtils {
                 if (matcher.matches()) {
                     key = matcher.group(1);
                     value = matcher.group(2);
-                    if(key != null && value != null && !key.isEmpty() && !value.isEmpty())
+                    if (key != null && value != null && !key.isEmpty() && !value.isEmpty())
                         systemProperties.put(key, value);
                 }
             }
@@ -340,8 +342,8 @@ public class TermuxUtils {
     }
 
     private static void appendPropertyToMarkdownIfSet(StringBuilder markdownString, String label, Object value) {
-        if(value == null) return;
-        if(value instanceof String && (((String) value).isEmpty()) || "REL".equals(value)) return;
+        if (value == null) return;
+        if (value instanceof String && (((String) value).isEmpty()) || "REL".equals(value)) return;
         markdownString.append("\n").append(getPropertyMarkdown(label, value));
     }
 
