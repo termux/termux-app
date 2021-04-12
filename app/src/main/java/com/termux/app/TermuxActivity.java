@@ -117,7 +117,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     /**
      * The {@link TermuxActivity} broadcast receiver for various things like terminal style configuration changes.
      */
-    private final BroadcastReceiver mTermuxActivityBroadcastReceiever = new TermuxActivityBroadcastReceiver();
+    private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new TermuxActivityBroadcastReceiver();
 
     /**
      * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
@@ -222,7 +222,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             termuxSessionListNotifyUpdated();
         }
 
-        registerReceiver(mTermuxActivityBroadcastReceiever, new IntentFilter(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE));
+        registerTermuxActivityBroadcastReceiver();
 
         // If user changed the preference from {@link TermuxSettings} activity and returns, then
         // update the {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value.
@@ -309,7 +309,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         // {@link #onStart} if needed.
         mTermuxTerminalSessionClient.setCurrentStoredSession();
 
-        unregisterReceiver(mTermuxActivityBroadcastReceiever);
+        unregisterTermuxActivityBroadcastReceiever();
         getDrawer().closeDrawers();
     }
 
@@ -716,47 +716,79 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public static void updateTermuxActivityStyling(Context context) {
         // Make sure that terminal styling is always applied.
         Intent stylingIntent = new Intent(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
-        stylingIntent.putExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE, "styling");
         context.sendBroadcast(stylingIntent);
+    }
+
+    private void registerTermuxActivityBroadcastReceiver() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
+        intentFilter.addAction(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
+
+        registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
+    }
+
+    private void unregisterTermuxActivityBroadcastReceiever() {
+        unregisterReceiver(mTermuxActivityBroadcastReceiver);
+    }
+
+    private void fixTermuxActivityBroadcastReceieverIntent(Intent intent) {
+        if (intent == null) return;
+
+        String extraReloadStyle = intent.getStringExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE);
+        if ("storage".equals(extraReloadStyle)) {
+            intent.removeExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE);
+            intent.setAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
+        }
     }
 
     class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (intent == null) return;
+
             if (mIsVisible) {
-                String whatToReload = intent.getStringExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE);
-                Logger.logDebug(LOG_TAG, "Reloading termux style for: " + whatToReload);
-                if ("storage".equals(whatToReload)) {
-                    if (ensureStoragePermissionGranted())
-                        TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
-                    return;
+                fixTermuxActivityBroadcastReceieverIntent(intent);
+
+                switch (intent.getAction()) {
+                    case TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS:
+                        Logger.logDebug(LOG_TAG, "Received intent to request storage permissions");
+                        if (ensureStoragePermissionGranted())
+                            TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
+                        return;
+                    case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
+                        Logger.logDebug(LOG_TAG, "Received intent to reload styling");
+                        reloadTermuxActivityStyling();
+                        return;
+                    default:
                 }
-
-                if(mTermuxTerminalSessionClient != null) {
-                    mTermuxTerminalSessionClient.checkForFontAndColors();
-                }
-
-                if(mProperties!= null) {
-                    mProperties.loadTermuxPropertiesFromDisk();
-
-                    if (mExtraKeysView != null) {
-                        mExtraKeysView.reload(mProperties.getExtraKeysInfo());
-                    }
-                }
-
-                setTerminalToolbarHeight();
-
-                setSoftKeyboardState();
-
-                // To change the activity and drawer theme, activity needs to be recreated.
-                // But this will destroy the activity, and will call the onCreate() again.
-                // We need to investigate if enabling this is wise, since all stored variables and
-                // views will be destroyed and bindService() will be called again. Extra keys input
-                // text will we restored since that has already been implemented. Terminal sessions
-                // and transcripts are also already preserved. Theme does change properly too.
-                // TermuxActivity.this.recreate();
             }
         }
+    }
+
+    private void reloadTermuxActivityStyling() {
+        if(mTermuxTerminalSessionClient != null) {
+            mTermuxTerminalSessionClient.checkForFontAndColors();
+        }
+
+        if(mProperties!= null) {
+            mProperties.loadTermuxPropertiesFromDisk();
+
+            if (mExtraKeysView != null) {
+                mExtraKeysView.reload(mProperties.getExtraKeysInfo());
+            }
+        }
+
+        setTerminalToolbarHeight();
+
+        setSoftKeyboardState();
+
+        // To change the activity and drawer theme, activity needs to be recreated.
+        // But this will destroy the activity, and will call the onCreate() again.
+        // We need to investigate if enabling this is wise, since all stored variables and
+        // views will be destroyed and bindService() will be called again. Extra keys input
+        // text will we restored since that has already been implemented. Terminal sessions
+        // and transcripts are also already preserved. Theme does change properly too.
+        // TermuxActivity.this.recreate();
     }
 
 
