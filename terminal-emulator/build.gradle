@@ -50,7 +50,7 @@ tasks.withType(Test) {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 
@@ -59,7 +59,7 @@ publishing {
         bar(MavenPublication) {
             groupId 'com.termux'
             artifactId 'terminal-emulator'
-            version '0.106.1'
+            version '0.109'
             artifact("$buildDir/outputs/aar/terminal-emulator-release.aar")
         }
     }

@@ -2,7 +2,6 @@ package com.termux.app;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -18,22 +17,38 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
-import com.termux.terminal.EmulatorDebug;
+import com.termux.app.terminal.TermuxTerminalSessionClient;
+import com.termux.app.utils.PluginUtils;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.shared.shell.TermuxSession;
+import com.termux.shared.shell.TermuxTerminalSessionClientBase;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.notification.NotificationUtils;
+import com.termux.shared.packages.PermissionUtils;
+import com.termux.shared.shell.ShellUtils;
+import com.termux.shared.data.DataUtils;
+import com.termux.shared.models.ExecutionCommand;
+import com.termux.shared.shell.TermuxTask;
+import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
-import com.termux.terminal.TerminalSession.SessionChangedCallback;
+import com.termux.terminal.TerminalSessionClient;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 /**
- * A service holding a list of terminal sessions, {@link #mTerminalSessions}, showing a foreground notification while
- * running so that it is not terminated. The user interacts with the session through {@link TermuxActivity}, but this
- * service may outlive the activity when the user or the system disposes of the activity. In that case the user may
+ * A service holding a list of {@link TermuxSession} in {@link #mTermuxSessions} and background {@link TermuxTask}
+ * in {@link #mTermuxTasks}, showing a foreground notification while running so that it is not terminated.
+ * The user interacts with the session through {@link TermuxActivity}, but this service may outlive
+ * the activity when the user or the system disposes of the activity. In that case the user may
  * restart {@link TermuxActivity} later to yet again access the sessions.
  * <p/>
  * In order to keep both terminal sessions and spawned processes (who may outlive the terminal sessions) alive as long
@@ -42,28 +57,9 @@ import java.util.List;
  * Optionally may hold a wake and a wifi lock, in which case that is shown in the notification - see
  * {@link #buildNotification()}.
  */
-public final class TermuxService extends Service implements SessionChangedCallback {
+public final class TermuxService extends Service implements TermuxTask.TermuxTaskClient, TermuxSession.TermuxSessionClient {
 
-    private static final String NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
-
-    /** Note that this is a symlink on the Android M preview. */
-    @SuppressLint("SdCardPath")
-    public static final String FILES_PATH = "/data/data/com.termux/files";
-    public static final String PREFIX_PATH = FILES_PATH + "/usr";
-    public static final String HOME_PATH = FILES_PATH + "/home";
-
-    private static final int NOTIFICATION_ID = 1337;
-
-    private static final String ACTION_STOP_SERVICE = "com.termux.service_stop";
-    private static final String ACTION_LOCK_WAKE = "com.termux.service_wake_lock";
-    private static final String ACTION_UNLOCK_WAKE = "com.termux.service_wake_unlock";
-    /** Intent action to launch a new terminal session. Executed from TermuxWidgetProvider. */
-    public static final String ACTION_EXECUTE = "com.termux.service_execute";
-
-    public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
-
-    public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
-    public static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
+    private static int EXECUTION_ID = 1000;
 
     /** This service is only bound from inside the same process and never uses IPC. */
     class LocalBinder extends Binder {
@@ -75,102 +71,81 @@ public final class TermuxService extends Service implements SessionChangedCallba
     private final Handler mHandler = new Handler();
 
     /**
-     * The terminal sessions which this service manages.
-     * <p/>
-     * Note that this list is observed by {@link TermuxActivity#mListViewAdapter}, so any changes must be made on the UI
-     * thread and followed by a call to {@link ArrayAdapter#notifyDataSetChanged()} }.
+     * The foreground TermuxSessions which this service manages.
+     * Note that this list is observed by {@link TermuxActivity#mTermuxSessionListViewController},
+     * so any changes must be made on the UI thread and followed by a call to
+     * {@link ArrayAdapter#notifyDataSetChanged()} }.
      */
-    final List<TerminalSession> mTerminalSessions = new ArrayList<>();
+    final List<TermuxSession> mTermuxSessions = new ArrayList<>();
 
-    final List<BackgroundJob> mBackgroundTasks = new ArrayList<>();
+    /**
+     * The background TermuxTasks which this service manages.
+     */
+    final List<TermuxTask> mTermuxTasks = new ArrayList<>();
 
-    /** Note that the service may often outlive the activity, so need to clear this reference. */
-    SessionChangedCallback mSessionChangeCallback;
+    /**
+     * The pending plugin ExecutionCommands that have yet to be processed by this service.
+     */
+    final List<ExecutionCommand> mPendingPluginExecutionCommands = new ArrayList<>();
+
+    /** The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
+     * that holds activity references for activity related functions.
+     * Note that the service may often outlive the activity, so need to clear this reference.
+     */
+    TermuxTerminalSessionClient mTermuxTerminalSessionClient;
+
+    /** The basic implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
+     * that does not hold activity references.
+     */
+    final TermuxTerminalSessionClientBase mTermuxTerminalSessionClientBase = new TermuxTerminalSessionClientBase();
 
     /** The wake lock and wifi lock are always acquired and released together. */
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
 
-    /** If the user has executed the {@link #ACTION_STOP_SERVICE} intent. */
+    /** If the user has executed the {@link TERMUX_SERVICE#ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
+
+    private static final String LOG_TAG = "TermuxService";
+
+    @Override
+    public void onCreate() {
+        Logger.logVerbose(LOG_TAG, "onCreate");
+        runStartForeground();
+    }
 
     @SuppressLint("Wakelock")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Logger.logDebug(LOG_TAG, "onStartCommand");
+
+        // Run again in case service is already started and onCreate() is not called
+        runStartForeground();
+
         String action = intent.getAction();
-        if (ACTION_STOP_SERVICE.equals(action)) {
-            mWantsToStop = true;
-            for (int i = 0; i < mTerminalSessions.size(); i++)
-                mTerminalSessions.get(i).finishIfRunning();
-            stopSelf();
-        } else if (ACTION_LOCK_WAKE.equals(action)) {
-            if (mWakeLock == null) {
-                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, EmulatorDebug.LOG_TAG + ":service-wakelock");
-                mWakeLock.acquire();
 
-                // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
-                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, EmulatorDebug.LOG_TAG);
-                mWifiLock.acquire();
-
-                String packageName = getPackageName();
-                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                    Intent whitelist = new Intent();
-                    whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                    whitelist.setData(Uri.parse("package:" + packageName));
-                    whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                    try {
-                        startActivity(whitelist);
-                    } catch (ActivityNotFoundException e) {
-                        Log.e(EmulatorDebug.LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
-                    }
-                }
-
-                updateNotification();
+        if (action != null) {
+            switch (action) {
+                case TERMUX_SERVICE.ACTION_STOP_SERVICE:
+                    Logger.logDebug(LOG_TAG, "ACTION_STOP_SERVICE intent received");
+                    actionStopService();
+                    break;
+                case TERMUX_SERVICE.ACTION_WAKE_LOCK:
+                    Logger.logDebug(LOG_TAG, "ACTION_WAKE_LOCK intent received");
+                    actionAcquireWakeLock();
+                    break;
+                case TERMUX_SERVICE.ACTION_WAKE_UNLOCK:
+                    Logger.logDebug(LOG_TAG, "ACTION_WAKE_UNLOCK intent received");
+                    actionReleaseWakeLock(true);
+                    break;
+                case TERMUX_SERVICE.ACTION_SERVICE_EXECUTE:
+                    Logger.logDebug(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
+                    actionServiceExecute(intent);
+                    break;
+                default:
+                    Logger.logError(LOG_TAG, "Invalid action: \"" + action + "\"");
+                    break;
             }
-        } else if (ACTION_UNLOCK_WAKE.equals(action)) {
-            if (mWakeLock != null) {
-                mWakeLock.release();
-                mWakeLock = null;
-
-                mWifiLock.release();
-                mWifiLock = null;
-
-                updateNotification();
-            }
-        } else if (ACTION_EXECUTE.equals(action)) {
-            Uri executableUri = intent.getData();
-            String executablePath = (executableUri == null ? null : executableUri.getPath());
-
-            String[] arguments = (executableUri == null ? null : intent.getStringArrayExtra(EXTRA_ARGUMENTS));
-            String cwd = intent.getStringExtra(EXTRA_CURRENT_WORKING_DIRECTORY);
-
-            if (intent.getBooleanExtra(EXTRA_EXECUTE_IN_BACKGROUND, false)) {
-                BackgroundJob task = new BackgroundJob(cwd, executablePath, arguments, this, intent.getParcelableExtra("pendingIntent"));
-                mBackgroundTasks.add(task);
-                updateNotification();
-            } else {
-                boolean failsafe = intent.getBooleanExtra(TermuxActivity.TERMUX_FAILSAFE_SESSION_ACTION, false);
-                TerminalSession newSession = createTermSession(executablePath, arguments, cwd, failsafe);
-
-                // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
-                if (executablePath != null) {
-                    int lastSlash = executablePath.lastIndexOf('/');
-                    String name = (lastSlash == -1) ? executablePath : executablePath.substring(lastSlash + 1);
-                    name = name.replace('-', ' ');
-                    newSession.mSessionName = name;
-                }
-
-                // Make the newly created session the current one to be displayed:
-                TermuxPreferences.storeCurrentSession(this, newSession);
-
-                // Launch the main Termux app, which will now show the current session:
-                startActivity(new Intent(this, TermuxActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            }
-        } else if (action != null) {
-            Log.e(EmulatorDebug.LOG_TAG, "Unknown TermuxService action: '" + action + "'");
         }
 
         // If this service really do get killed, there is no point restarting it automatically - let the user do on next
@@ -179,215 +154,650 @@ public final class TermuxService extends Service implements SessionChangedCallba
     }
 
     @Override
+    public void onDestroy() {
+        Logger.logVerbose(LOG_TAG, "onDestroy");
+
+        ShellUtils.clearTermuxTMPDIR(this);
+
+        actionReleaseWakeLock(false);
+        if (!mWantsToStop)
+            killAllTermuxExecutionCommands();
+        runStopForeground();
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
+        Logger.logVerbose(LOG_TAG, "onBind");
         return mBinder;
     }
 
     @Override
-    public void onCreate() {
-        setupNotificationChannel();
-        startForeground(NOTIFICATION_ID, buildNotification());
+    public boolean onUnbind(Intent intent) {
+        Logger.logVerbose(LOG_TAG, "onUnbind");
+
+        // Since we cannot rely on {@link TermuxActivity.onDestroy()} to always complete,
+        // we unset clients here as well if it failed, so that we do not leave service and session
+        // clients with references to the activity.
+        if (mTermuxTerminalSessionClient != null)
+            unsetTermuxTerminalSessionClient();
+        return false;
     }
 
-    /** Update the shown foreground service notification after making any changes that affect it. */
-    void updateNotification() {
-        if (mWakeLock == null && mTerminalSessions.isEmpty() && mBackgroundTasks.isEmpty()) {
-            // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
-            stopSelf();
-        } else {
-            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
+    /** Make service run in foreground mode. */
+    private void runStartForeground() {
+        setupNotificationChannel();
+        startForeground(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
+    }
+
+    /** Make service leave foreground mode. */
+    private void runStopForeground() {
+        stopForeground(true);
+    }
+
+    /** Request to stop service. */
+    private void requestStopService() {
+        Logger.logDebug(LOG_TAG, "Requesting to stop service");
+        runStopForeground();
+        stopSelf();
+    }
+
+    /** Process action to stop service. */
+    private void actionStopService() {
+        mWantsToStop = true;
+        killAllTermuxExecutionCommands();
+        requestStopService();
+    }
+
+    /** Kill all TermuxSessions and TermuxTasks by sending SIGKILL to their processes.
+     *
+     * For TermuxSessions, all sessions will be killed, whether user manually exited Termux or if
+     * onDestroy() was directly called because of unintended shutdown. The processing of results
+     * will only be done if user manually exited termux or if the session was started by a plugin
+     * which **expects** the result back via a pending intent.
+     *
+     * For TermuxTasks, only tasks that were started by a plugin which **expects** the result
+     * back via a pending intent will be killed, whether user manually exited Termux or if
+     * onDestroy() was directly called because of unintended shutdown. The processing of results
+     * will always be done for the tasks that are killed. The remaining processes will keep on
+     * running until the termux app process is killed by android, like by OOM, so we let them run
+     * as long as they can.
+     *
+     * Some plugin execution commands may not have been processed and added to mTermuxSessions and
+     * mTermuxTasks lists before the service is killed, so we maintain a separate
+     * mPendingPluginExecutionCommands list for those, so that we can notify the pending intent
+     * creators that execution was cancelled.
+     *
+     * Note that if user didn't manually exit Termux and if onDestroy() was directly called because
+     * of unintended shutdown, like android deciding to kill the service, then there will be no
+     * guarantee that onDestroy() will be allowed to finish and termux app process may be killed before
+     * it has finished. This means that in those cases some results may not be sent back to their
+     * creators for plugin commands but we still try to process whatever results can be processed
+     * despite the unreliable behaviour of onDestroy().
+     *
+     * Note that if don't kill the processes started by plugins which **expect** the result back
+     * and notify their creators that they have been killed, then they may get stuck waiting for
+     * the results forever like in case of commands started by Termux:Tasker or RUN_COMMAND intent,
+     * since once TermuxService has been killed, no result will be sent back. They may still get
+     * stuck if termux app process gets killed, so for this case reasonable timeout values should
+     * be used, like in Tasker for the Termux:Tasker actions.
+     *
+     * We make copies of each list since items are removed inside the loop.
+     */
+    private synchronized void killAllTermuxExecutionCommands() {
+        boolean processResult;
+
+        Logger.logDebug(LOG_TAG, "Killing TermuxSessions=" + mTermuxSessions.size() + ", TermuxTasks=" + mTermuxTasks.size() + ", PendingPluginExecutionCommands=" + mPendingPluginExecutionCommands.size());
+
+        List<TermuxSession> termuxSessions = new ArrayList<>(mTermuxSessions);
+        for (int i = 0; i < termuxSessions.size(); i++) {
+            ExecutionCommand executionCommand = termuxSessions.get(i).getExecutionCommand();
+            processResult = mWantsToStop || (executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null);
+            termuxSessions.get(i).killIfExecuting(this, processResult);
+        }
+
+        List<TermuxTask> termuxTasks = new ArrayList<>(mTermuxTasks);
+        for (int i = 0; i < termuxTasks.size(); i++) {
+            ExecutionCommand executionCommand = termuxTasks.get(i).getExecutionCommand();
+            if (executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null)
+                termuxTasks.get(i).killIfExecuting(this, true);
+        }
+
+        List<ExecutionCommand> pendingPluginExecutionCommands = new ArrayList<>(mPendingPluginExecutionCommands);
+        for (int i = 0; i < pendingPluginExecutionCommands.size(); i++) {
+            ExecutionCommand executionCommand = pendingPluginExecutionCommands.get(i);
+            if (!executionCommand.shouldNotProcessResults() && executionCommand.pluginPendingIntent != null) {
+                if (executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_CANCELED, this.getString(com.termux.shared.R.string.error_execution_cancelled), null)) {
+                    PluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
+                }
+            }
         }
     }
 
-    private Notification buildNotification() {
-        Intent notifyIntent = new Intent(this, TermuxActivity.class);
-        // PendingIntent#getActivity(): "Note that the activity will be started outside of the context of an existing
-        // activity, so you must use the Intent.FLAG_ACTIVITY_NEW_TASK launch flag in the Intent":
-        notifyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notifyIntent, 0);
 
-        int sessionCount = mTerminalSessions.size();
-        int taskCount = mBackgroundTasks.size();
-        String contentText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
+
+    /** Process action to acquire Power and Wi-Fi WakeLocks. */
+    @SuppressLint({"WakelockTimeout", "BatteryLife"})
+    private void actionAcquireWakeLock() {
+        if (mWakeLock != null) {
+            Logger.logDebug(LOG_TAG, "Ignoring acquiring WakeLocks since they are already held");
+            return;
+        }
+
+        Logger.logDebug(LOG_TAG, "Acquiring WakeLocks");
+
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TermuxConstants.TERMUX_APP_NAME.toLowerCase() + ":service-wakelock");
+        mWakeLock.acquire();
+
+        // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
+        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, TermuxConstants.TERMUX_APP_NAME.toLowerCase());
+        mWifiLock.acquire();
+
+        String packageName = getPackageName();
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+            Intent whitelist = new Intent();
+            whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            whitelist.setData(Uri.parse("package:" + packageName));
+            whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            try {
+                startActivity(whitelist);
+            } catch (ActivityNotFoundException e) {
+                Logger.logStackTraceWithMessage(LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
+            }
+        }
+
+        updateNotification();
+
+        Logger.logDebug(LOG_TAG, "WakeLocks acquired successfully");
+
+    }
+
+    /** Process action to release Power and Wi-Fi WakeLocks. */
+    private void actionReleaseWakeLock(boolean updateNotification) {
+        if (mWakeLock == null && mWifiLock == null) {
+            Logger.logDebug(LOG_TAG, "Ignoring releasing WakeLocks since none are already held");
+            return;
+        }
+
+        Logger.logDebug(LOG_TAG, "Releasing WakeLocks");
+
+        if (mWakeLock != null) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
+
+        if (mWifiLock != null) {
+            mWifiLock.release();
+            mWifiLock = null;
+        }
+
+        if (updateNotification)
+            updateNotification();
+
+        Logger.logDebug(LOG_TAG, "WakeLocks released successfully");
+    }
+
+    /** Process {@link TERMUX_SERVICE#ACTION_SERVICE_EXECUTE} intent to execute a shell command in
+     * a foreground TermuxSession or in a background TermuxTask. */
+    private void actionServiceExecute(Intent intent) {
+        if (intent == null) {
+            Logger.logError(LOG_TAG, "Ignoring null intent to actionServiceExecute");
+            return;
+        }
+
+        ExecutionCommand executionCommand = new ExecutionCommand(getNextExecutionId());
+
+        executionCommand.executableUri = intent.getData();
+        executionCommand.inBackground = intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false);
+
+        if (executionCommand.executableUri != null) {
+            executionCommand.executable = executionCommand.executableUri.getPath();
+            executionCommand.arguments = intent.getStringArrayExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS);
+            if (executionCommand.inBackground)
+                executionCommand.stdin = intent.getStringExtra(TERMUX_SERVICE.EXTRA_STDIN);
+        }
+
+        executionCommand.workingDirectory = intent.getStringExtra(TERMUX_SERVICE.EXTRA_WORKDIR);
+        executionCommand.isFailsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
+        executionCommand.sessionAction = intent.getStringExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION);
+        executionCommand.commandLabel = DataUtils.getDefaultIfNull(intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_LABEL), "Execution Intent Command");
+        executionCommand.commandDescription = intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_DESCRIPTION);
+        executionCommand.commandHelp = intent.getStringExtra(TERMUX_SERVICE.EXTRA_COMMAND_HELP);
+        executionCommand.pluginAPIHelp = intent.getStringExtra(TERMUX_SERVICE.EXTRA_PLUGIN_API_HELP);
+        executionCommand.isPluginExecutionCommand = true;
+        executionCommand.pluginPendingIntent = intent.getParcelableExtra(TERMUX_SERVICE.EXTRA_PENDING_INTENT);
+
+        // Add the execution command to pending plugin execution commands list
+        mPendingPluginExecutionCommands.add(executionCommand);
+
+        if (executionCommand.inBackground) {
+            executeTermuxTaskCommand(executionCommand);
+        } else {
+            executeTermuxSessionCommand(executionCommand);
+        }
+    }
+
+
+
+
+
+    /** Execute a shell command in background {@link TermuxTask}. */
+    private void executeTermuxTaskCommand(ExecutionCommand executionCommand) {
+        if (executionCommand == null) return;
+
+        Logger.logDebug(LOG_TAG, "Executing background \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask command");
+
+        TermuxTask newTermuxTask = createTermuxTask(executionCommand);
+    }
+
+    /** Create a {@link TermuxTask}. */
+    @Nullable
+    public TermuxTask createTermuxTask(String executablePath, String[] arguments, String stdin, String workingDirectory) {
+        return createTermuxTask(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, stdin, workingDirectory, true, false));
+    }
+
+    /** Create a {@link TermuxTask}. */
+    @Nullable
+    public synchronized TermuxTask createTermuxTask(ExecutionCommand executionCommand) {
+        if (executionCommand == null) return null;
+
+        Logger.logDebug(LOG_TAG, "Creating \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask");
+
+        if (!executionCommand.inBackground) {
+            Logger.logDebug(LOG_TAG, "Ignoring a foreground execution command passed to createTermuxTask()");
+            return null;
+        }
+
+        if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
+            Logger.logVerbose(LOG_TAG, executionCommand.toString());
+
+        TermuxTask newTermuxTask = TermuxTask.execute(this, executionCommand, this, false);
+        if (newTermuxTask == null) {
+            Logger.logError(LOG_TAG, "Failed to execute new TermuxTask command for:\n" + executionCommand.getCommandIdAndLabelLogString());
+            return null;
+        }
+
+        mTermuxTasks.add(newTermuxTask);
+
+        // Remove the execution command from the pending plugin execution commands list since it has
+        // now been processed
+        if (executionCommand.isPluginExecutionCommand)
+            mPendingPluginExecutionCommands.remove(executionCommand);
+
+        updateNotification();
+
+        return newTermuxTask;
+    }
+
+    /** Callback received when a {@link TermuxTask} finishes. */
+    @Override
+    public void onTermuxTaskExited(final TermuxTask termuxTask) {
+        mHandler.post(() -> {
+            if (termuxTask != null) {
+                ExecutionCommand executionCommand = termuxTask.getExecutionCommand();
+
+                Logger.logVerbose(LOG_TAG, "The onTermuxTaskExited() callback called for \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask command");
+
+                // If the execution command was started for a plugin, then process the results
+                if (executionCommand != null && executionCommand.isPluginExecutionCommand)
+                    PluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
+
+                mTermuxTasks.remove(termuxTask);
+            }
+
+            updateNotification();
+        });
+    }
+
+
+
+
+
+    /** Execute a shell command in a foreground {@link TermuxSession}. */
+    private void executeTermuxSessionCommand(ExecutionCommand executionCommand) {
+        if (executionCommand == null) return;
+
+        Logger.logDebug(LOG_TAG, "Executing foreground \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession command");
+
+        String sessionName = null;
+
+        // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
+        if (executionCommand.executable != null) {
+            sessionName = ShellUtils.getExecutableBasename(executionCommand.executable).replace('-', ' ');
+        }
+
+        TermuxSession newTermuxSession = createTermuxSession(executionCommand, sessionName);
+        if (newTermuxSession == null) return;
+
+        handleSessionAction(DataUtils.getIntFromString(executionCommand.sessionAction,
+            TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY),
+            newTermuxSession.getTerminalSession());
+    }
+
+    /**
+     * Create a {@link TermuxSession}.
+     * Currently called by {@link TermuxTerminalSessionClient#addNewSession(boolean, String)} to add a new {@link TermuxSession}.
+     */
+    @Nullable
+    public TermuxSession createTermuxSession(String executablePath, String[] arguments, String stdin, String workingDirectory, boolean isFailSafe, String sessionName) {
+        return createTermuxSession(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, stdin, workingDirectory, false, isFailSafe), sessionName);
+    }
+
+    /** Create a {@link TermuxSession}. */
+    @Nullable
+    public synchronized TermuxSession createTermuxSession(ExecutionCommand executionCommand, String sessionName) {
+        if (executionCommand == null) return null;
+
+        Logger.logDebug(LOG_TAG, "Creating \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession");
+
+        if (executionCommand.inBackground) {
+            Logger.logDebug(LOG_TAG, "Ignoring a background execution command passed to createTermuxSession()");
+            return null;
+        }
+
+        if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
+            Logger.logVerbose(LOG_TAG, executionCommand.toString());
+
+        // If the execution command was started for a plugin, only then will the stdout be set
+        // Otherwise if command was manually started by the user like by adding a new terminal session,
+        // then no need to set stdout
+        TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(), this, sessionName, executionCommand.isPluginExecutionCommand);
+        if (newTermuxSession == null) {
+            Logger.logError(LOG_TAG, "Failed to execute new TermuxSession command for:\n" + executionCommand.getCommandIdAndLabelLogString());
+            return null;
+        }
+
+        mTermuxSessions.add(newTermuxSession);
+
+        // Remove the execution command from the pending plugin execution commands list since it has
+        // now been processed
+        if (executionCommand.isPluginExecutionCommand)
+            mPendingPluginExecutionCommands.remove(executionCommand);
+
+        // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
+        // activity in is foreground
+        if (mTermuxTerminalSessionClient != null)
+            mTermuxTerminalSessionClient.termuxSessionListNotifyUpdated();
+
+        updateNotification();
+        TermuxActivity.updateTermuxActivityStyling(this);
+
+        return newTermuxSession;
+    }
+
+    /** Remove a TermuxSession. */
+    public synchronized int removeTermuxSession(TerminalSession sessionToRemove) {
+        int index = getIndexOfSession(sessionToRemove);
+
+        if (index >= 0)
+            mTermuxSessions.get(index).finish();
+
+        return index;
+    }
+
+    /** Callback received when a {@link TermuxSession} finishes. */
+    @Override
+    public void onTermuxSessionExited(final TermuxSession termuxSession) {
+        if (termuxSession != null) {
+            ExecutionCommand executionCommand = termuxSession.getExecutionCommand();
+
+            Logger.logVerbose(LOG_TAG, "The onTermuxSessionExited() callback called for \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession command");
+
+            // If the execution command was started for a plugin, then process the results
+            if (executionCommand != null && executionCommand.isPluginExecutionCommand)
+                PluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
+
+            mTermuxSessions.remove(termuxSession);
+
+            // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
+            // activity in is foreground
+            if (mTermuxTerminalSessionClient != null)
+                mTermuxTerminalSessionClient.termuxSessionListNotifyUpdated();
+        }
+
+        updateNotification();
+    }
+
+
+
+
+
+    /** Process session action for new session. */
+    private void handleSessionAction(int sessionAction, TerminalSession newTerminalSession) {
+        Logger.logDebug(LOG_TAG, "Processing sessionAction \"" + sessionAction + "\" for session \"" + newTerminalSession.mSessionName + "\"");
+
+        switch (sessionAction) {
+            case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY:
+                setCurrentStoredTerminalSession(newTerminalSession);
+                if (mTermuxTerminalSessionClient != null)
+                    mTermuxTerminalSessionClient.setCurrentSession(newTerminalSession);
+                startTermuxActivity();
+                break;
+            case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY:
+                if (getTermuxSessionsSize() == 1)
+                    setCurrentStoredTerminalSession(newTerminalSession);
+                startTermuxActivity();
+                break;
+            case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY:
+                setCurrentStoredTerminalSession(newTerminalSession);
+                if (mTermuxTerminalSessionClient != null)
+                    mTermuxTerminalSessionClient.setCurrentSession(newTerminalSession);
+                break;
+            case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY:
+                if (getTermuxSessionsSize() == 1)
+                    setCurrentStoredTerminalSession(newTerminalSession);
+                break;
+            default:
+                Logger.logError(LOG_TAG, "Invalid sessionAction: \"" + sessionAction + "\". Force using default sessionAction.");
+                handleSessionAction(TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY, newTerminalSession);
+                break;
+        }
+    }
+
+    /** Launch the {@link }TermuxActivity} to bring it to foreground. */
+    private void startTermuxActivity() {
+        // For android >= 10, apps require Display over other apps permission to start foreground activities
+        // from background (services). If it is not granted, then TermuxSessions that are started will
+        // show in Termux notification but will not run until user manually clicks the notification.
+        if (PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(this)) {
+            TermuxActivity.startTermuxActivity(this);
+        }
+    }
+
+
+
+
+
+    /** If {@link TermuxActivity} has not bound to the {@link TermuxService} yet or is destroyed, then
+     * interface functions requiring the activity should not be available to the terminal sessions,
+     * so we just return the {@link #mTermuxTerminalSessionClientBase}. Once {@link TermuxActivity} bind
+     * callback is received, it should call {@link #setTermuxTerminalSessionClient} to set the
+     * {@link TermuxService#mTermuxTerminalSessionClient} so that further terminal sessions are directly
+     * passed the {@link TermuxTerminalSessionClient} object which fully implements the
+     * {@link TerminalSessionClient} interface.
+     *
+     * @return Returns the {@link TermuxTerminalSessionClient} if {@link TermuxActivity} has bound with
+     * {@link TermuxService}, otherwise {@link TermuxTerminalSessionClientBase}.
+     */
+    public synchronized TermuxTerminalSessionClientBase getTermuxTerminalSessionClient() {
+        if (mTermuxTerminalSessionClient != null)
+            return mTermuxTerminalSessionClient;
+        else
+            return mTermuxTerminalSessionClientBase;
+    }
+
+    /** This should be called when {@link TermuxActivity#onServiceConnected} is called to set the
+     * {@link TermuxService#mTermuxTerminalSessionClient} variable and update the {@link TerminalSession}
+     * and {@link TerminalEmulator} clients in case they were passed {@link TermuxTerminalSessionClientBase}
+     * earlier.
+     *
+     * @param termuxTerminalSessionClient The {@link TermuxTerminalSessionClient} object that fully
+     * implements the {@link TerminalSessionClient} interface.
+     */
+    public synchronized void setTermuxTerminalSessionClient(TermuxTerminalSessionClient termuxTerminalSessionClient) {
+        mTermuxTerminalSessionClient = termuxTerminalSessionClient;
+
+        for (int i = 0; i < mTermuxSessions.size(); i++)
+            mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionClient);
+    }
+
+    /** This should be called when {@link TermuxActivity} has been destroyed and in {@link #onUnbind(Intent)}
+     * so that the {@link TermuxService} and {@link TerminalSession} and {@link TerminalEmulator}
+     * clients do not hold an activity references.
+     */
+    public synchronized void unsetTermuxTerminalSessionClient() {
+        for (int i = 0; i < mTermuxSessions.size(); i++)
+            mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionClientBase);
+
+        mTermuxTerminalSessionClient = null;
+    }
+
+
+
+
+
+    private Notification buildNotification() {
+        Resources res = getResources();
+
+        // Set pending intent to be launched when notification is clicked
+        Intent notificationIntent = TermuxActivity.newInstance(this);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+
+        // Set notification text
+        int sessionCount = getTermuxSessionsSize();
+        int taskCount = mTermuxTasks.size();
+        String notificationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
         if (taskCount > 0) {
-            contentText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
+            notificationText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
         }
 
         final boolean wakeLockHeld = mWakeLock != null;
-        if (wakeLockHeld) contentText += " (wake lock held)";
+        if (wakeLockHeld) notificationText += " (wake lock held)";
 
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentTitle(getText(R.string.application_name));
-        builder.setContentText(contentText);
-        builder.setSmallIcon(R.drawable.ic_service_notification);
-        builder.setContentIntent(pendingIntent);
-        builder.setOngoing(true);
 
+        // Set notification priority
         // If holding a wake or wifi lock consider the notification of high priority since it's using power,
         // otherwise use a low priority
-        builder.setPriority((wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_LOW);
+        int priority = (wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_LOW;
+
+
+        // Build the notification
+        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
+            TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID, priority,
+            getText(R.string.application_name), notificationText, null,
+            pendingIntent, NotificationUtils.NOTIFICATION_MODE_SILENT);
+        if (builder == null)  return null;
 
         // No need to show a timestamp:
         builder.setShowWhen(false);
 
-        // Background color for small notification icon:
+        // Set notification icon
+        builder.setSmallIcon(R.drawable.ic_service_notification);
+
+        // Set background color for small notification icon
         builder.setColor(0xFF607D8B);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(NOTIFICATION_CHANNEL_ID);
-        }
+        // TermuxSessions are always ongoing
+        builder.setOngoing(true);
 
-        Resources res = getResources();
-        Intent exitIntent = new Intent(this, TermuxService.class).setAction(ACTION_STOP_SERVICE);
+
+        // Set Exit button action
+        Intent exitIntent = new Intent(this, TermuxService.class).setAction(TERMUX_SERVICE.ACTION_STOP_SERVICE);
         builder.addAction(android.R.drawable.ic_delete, res.getString(R.string.notification_action_exit), PendingIntent.getService(this, 0, exitIntent, 0));
 
-        String newWakeAction = wakeLockHeld ? ACTION_UNLOCK_WAKE : ACTION_LOCK_WAKE;
+
+        // Set Wakelock button actions
+        String newWakeAction = wakeLockHeld ? TERMUX_SERVICE.ACTION_WAKE_UNLOCK : TERMUX_SERVICE.ACTION_WAKE_LOCK;
         Intent toggleWakeLockIntent = new Intent(this, TermuxService.class).setAction(newWakeAction);
-        String actionTitle = res.getString(wakeLockHeld ?
-            R.string.notification_action_wake_unlock :
-            R.string.notification_action_wake_lock);
+        String actionTitle = res.getString(wakeLockHeld ? R.string.notification_action_wake_unlock : R.string.notification_action_wake_lock);
         int actionIcon = wakeLockHeld ? android.R.drawable.ic_lock_idle_lock : android.R.drawable.ic_lock_lock;
         builder.addAction(actionIcon, actionTitle, PendingIntent.getService(this, 0, toggleWakeLockIntent, 0));
 
+
         return builder.build();
-    }
-
-    @Override
-    public void onDestroy() {
-        File termuxTmpDir = new File(TermuxService.PREFIX_PATH + "/tmp");
-
-        if (termuxTmpDir.exists()) {
-            try {
-                TermuxInstaller.deleteFolder(termuxTmpDir.getCanonicalFile());
-            } catch (Exception e) {
-                Log.e(EmulatorDebug.LOG_TAG, "Error while removing file at " + termuxTmpDir.getAbsolutePath(), e);
-            }
-
-            termuxTmpDir.mkdirs();
-        }
-
-        if (mWakeLock != null) mWakeLock.release();
-        if (mWifiLock != null) mWifiLock.release();
-
-        stopForeground(true);
-
-        for (int i = 0; i < mTerminalSessions.size(); i++)
-            mTerminalSessions.get(i).finishIfRunning();
-    }
-
-    public List<TerminalSession> getSessions() {
-        return mTerminalSessions;
-    }
-
-    TerminalSession createTermSession(String executablePath, String[] arguments, String cwd, boolean failSafe) {
-        new File(HOME_PATH).mkdirs();
-
-        if (cwd == null) cwd = HOME_PATH;
-
-        String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
-        boolean isLoginShell = false;
-
-        if (executablePath == null) {
-            if (!failSafe) {
-                for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
-                    File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
-                    if (shellFile.canExecute()) {
-                        executablePath = shellFile.getAbsolutePath();
-                        break;
-                    }
-                }
-            }
-
-            if (executablePath == null) {
-                // Fall back to system shell as last resort:
-                executablePath = "/system/bin/sh";
-            }
-            isLoginShell = true;
-        }
-
-        String[] processArgs = BackgroundJob.setupProcessArgs(executablePath, arguments);
-        executablePath = processArgs[0];
-        int lastSlashIndex = executablePath.lastIndexOf('/');
-        String processName = (isLoginShell ? "-" : "") +
-            (lastSlashIndex == -1 ? executablePath : executablePath.substring(lastSlashIndex + 1));
-
-        String[] args = new String[processArgs.length];
-        args[0] = processName;
-        if (processArgs.length > 1) System.arraycopy(processArgs, 1, args, 1, processArgs.length - 1);
-
-        TerminalSession session = new TerminalSession(executablePath, cwd, args, env, this);
-        mTerminalSessions.add(session);
-        updateNotification();
-
-        // Make sure that terminal styling is always applied.
-        Intent stylingIntent = new Intent("com.termux.app.reload_style");
-        stylingIntent.putExtra("com.termux.app.reload_style", "styling");
-        sendBroadcast(stylingIntent);
-
-        return session;
-    }
-
-    public int removeTermSession(TerminalSession sessionToRemove) {
-        int indexOfRemoved = mTerminalSessions.indexOf(sessionToRemove);
-        mTerminalSessions.remove(indexOfRemoved);
-        if (mTerminalSessions.isEmpty() && mWakeLock == null) {
-            // Finish if there are no sessions left and the wake lock is not held, otherwise keep the service alive if
-            // holding wake lock since there may be daemon processes (e.g. sshd) running.
-            stopSelf();
-        } else {
-            updateNotification();
-        }
-        return indexOfRemoved;
-    }
-
-    @Override
-    public void onTitleChanged(TerminalSession changedSession) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onTitleChanged(changedSession);
-    }
-
-    @Override
-    public void onSessionFinished(final TerminalSession finishedSession) {
-        if (mSessionChangeCallback != null)
-            mSessionChangeCallback.onSessionFinished(finishedSession);
-    }
-
-    @Override
-    public void onTextChanged(TerminalSession changedSession) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onTextChanged(changedSession);
-    }
-
-    @Override
-    public void onClipboardText(TerminalSession session, String text) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onClipboardText(session, text);
-    }
-
-    @Override
-    public void onBell(TerminalSession session) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onBell(session);
-    }
-
-    @Override
-    public void onColorsChanged(TerminalSession session) {
-        if (mSessionChangeCallback != null) mSessionChangeCallback.onColorsChanged(session);
-    }
-
-    public void onBackgroundJobExited(final BackgroundJob task) {
-        mHandler.post(() -> {
-            mBackgroundTasks.remove(task);
-            updateNotification();
-        });
     }
 
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
-        String channelName = "Termux";
-        String channelDescription = "Notifications from Termux";
-        int importance = NotificationManager.IMPORTANCE_LOW;
-
-        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName,importance);
-        channel.setDescription(channelDescription);
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.createNotificationChannel(channel);
+        NotificationUtils.setupNotificationChannel(this, TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID,
+            TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
     }
+
+    /** Update the shown foreground service notification after making any changes that affect it. */
+    private synchronized void updateNotification() {
+        if (mWakeLock == null && mTermuxSessions.isEmpty() && mTermuxTasks.isEmpty()) {
+            // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
+            requestStopService();
+        } else {
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
+        }
+    }
+
+
+
+
+
+    private void setCurrentStoredTerminalSession(TerminalSession session) {
+        if (session == null) return;
+        // Make the newly created session the current one to be displayed:
+        TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(this);
+        preferences.setCurrentSession(session.mHandle);
+    }
+
+    public synchronized boolean isTermuxSessionsEmpty() {
+        return mTermuxSessions.isEmpty();
+    }
+
+    public synchronized int getTermuxSessionsSize() {
+        return mTermuxSessions.size();
+    }
+
+    public synchronized List<TermuxSession> getTermuxSessions() {
+        return mTermuxSessions;
+    }
+
+    @Nullable
+    public synchronized TermuxSession getTermuxSession(int index) {
+        if (index >= 0 && index < mTermuxSessions.size())
+            return mTermuxSessions.get(index);
+        else
+            return null;
+    }
+
+    public synchronized TermuxSession getLastTermuxSession() {
+        return mTermuxSessions.isEmpty() ? null : mTermuxSessions.get(mTermuxSessions.size() - 1);
+    }
+
+    public synchronized int getIndexOfSession(TerminalSession terminalSession) {
+        for (int i = 0; i < mTermuxSessions.size(); i++) {
+            if (mTermuxSessions.get(i).getTerminalSession().equals(terminalSession))
+                return i;
+        }
+        return -1;
+    }
+
+    public synchronized TerminalSession getTerminalSessionForHandle(String sessionHandle) {
+        TerminalSession terminalSession;
+        for (int i = 0, len = mTermuxSessions.size(); i < len; i++) {
+            terminalSession = mTermuxSessions.get(i).getTerminalSession();
+            if (terminalSession.mHandle.equals(sessionHandle))
+                return terminalSession;
+        }
+        return null;
+    }
+
+
+
+    public static synchronized int getNextExecutionId() {
+        return EXECUTION_ID++;
+    }
+
+    public boolean wantsToStop() {
+        return mWantsToStop;
+    }
+
 }

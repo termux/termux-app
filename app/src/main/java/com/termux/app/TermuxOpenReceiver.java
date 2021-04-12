@@ -11,10 +11,10 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
-import com.termux.terminal.EmulatorDebug;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,11 +24,13 @@ import androidx.annotation.NonNull;
 
 public class TermuxOpenReceiver extends BroadcastReceiver {
 
+    private static final String LOG_TAG = "TermuxOpenReceiver";
+
     @Override
     public void onReceive(Context context, Intent intent) {
         final Uri data = intent.getData();
         if (data == null) {
-            Log.e(EmulatorDebug.LOG_TAG, "termux-open: Called without intent data");
+            Logger.logError(LOG_TAG, "termux-open: Called without intent data");
             return;
         }
 
@@ -42,7 +44,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 // Ok.
                 break;
             default:
-                Log.e(EmulatorDebug.LOG_TAG, "Invalid action '" + intentAction + "', using 'view'");
+                Logger.logError(LOG_TAG, "Invalid action '" + intentAction + "', using 'view'");
                 break;
         }
 
@@ -59,14 +61,14 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             try {
                 context.startActivity(urlIntent);
             } catch (ActivityNotFoundException e) {
-                Log.e(EmulatorDebug.LOG_TAG, "termux-open: No app handles the url " + data);
+                Logger.logError(LOG_TAG, "termux-open: No app handles the url " + data);
             }
             return;
         }
 
         final File fileToShare = new File(filePath);
         if (!(fileToShare.isFile() && fileToShare.canRead())) {
-            Log.e(EmulatorDebug.LOG_TAG, "termux-open: Not a readable file: '" + fileToShare.getAbsolutePath() + "'");
+            Logger.logError(LOG_TAG, "termux-open: Not a readable file: '" + fileToShare.getAbsolutePath() + "'");
             return;
         }
 
@@ -87,7 +89,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             contentTypeToUse = contentTypeExtra;
         }
 
-        Uri uriToShare = Uri.parse("content://com.termux.files" + fileToShare.getAbsolutePath());
+        Uri uriToShare = Uri.parse("content://" + TermuxConstants.TERMUX_FILE_SHARE_URI_AUTHORITY + fileToShare.getAbsolutePath());
 
         if (Intent.ACTION_SEND.equals(intentAction)) {
             sendIntent.putExtra(Intent.EXTRA_STREAM, uriToShare);
@@ -103,7 +105,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         try {
             context.startActivity(sendIntent);
         } catch (ActivityNotFoundException e) {
-            Log.e(EmulatorDebug.LOG_TAG, "termux-open: No app handles the url " + data);
+            Logger.logError(LOG_TAG, "termux-open: No app handles the url " + data);
         }
     }
 
@@ -178,7 +180,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 String path = file.getCanonicalPath();
                 String storagePath = Environment.getExternalStorageDirectory().getCanonicalPath();
                 // See https://support.google.com/faqs/answer/7496913:
-                if (!(path.startsWith(TermuxService.FILES_PATH) || path.startsWith(storagePath))) {
+                if (!(path.startsWith(TermuxConstants.TERMUX_FILES_DIR_PATH) || path.startsWith(storagePath))) {
                     throw new IllegalArgumentException("Invalid path: " + path);
                 }
             } catch (IOException e) {

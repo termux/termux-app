@@ -6,12 +6,14 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
-import android.util.Log;
 import android.util.Patterns;
 
 import com.termux.R;
-import com.termux.app.DialogUtils;
+import com.termux.shared.interact.DialogUtils;
+import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.TermuxService;
+import com.termux.shared.logger.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -25,9 +27,9 @@ import java.util.regex.Pattern;
 
 public class TermuxFileReceiverActivity extends Activity {
 
-    static final String TERMUX_RECEIVEDIR = TermuxService.FILES_PATH + "/home/downloads";
-    static final String EDITOR_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-file-editor";
-    static final String URL_OPENER_PROGRAM = TermuxService.HOME_PATH + "/bin/termux-url-opener";
+    static final String TERMUX_RECEIVEDIR = TermuxConstants.TERMUX_FILES_DIR_PATH + "/home/downloads";
+    static final String EDITOR_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-file-editor";
+    static final String URL_OPENER_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-url-opener";
 
     /**
      * If the activity should be finished when the name input dialog is dismissed. This is disabled
@@ -36,6 +38,8 @@ public class TermuxFileReceiverActivity extends Activity {
      * when showing the error dialog.
      */
     boolean mFinishOnDismissNameDialog = true;
+
+    private static final String LOG_TAG = "TermuxFileReceiverActivity";
 
     static boolean isSharedTextAnUrl(String sharedText) {
         return Patterns.WEB_URL.matcher(sharedText).matches()
@@ -109,12 +113,12 @@ public class TermuxFileReceiverActivity extends Activity {
             promptNameAndSave(in, attachmentFileName);
         } catch (Exception e) {
             showErrorDialogAndQuit("Unable to handle shared content:\n\n" + e.getMessage());
-            Log.e("termux", "handleContentUri(uri=" + uri + ") failed", e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "handleContentUri(uri=" + uri + ") failed", e);
         }
     }
 
     void promptNameAndSave(final InputStream in, final String attachmentFileName) {
-        DialogUtils.textInput(this, R.string.file_received_title, attachmentFileName, R.string.file_received_edit_button, text -> {
+        DialogUtils.textInput(this, R.string.title_file_received, attachmentFileName, R.string.action_file_received_edit, text -> {
             File outFile = saveStreamWithName(in, text);
             if (outFile == null) return;
 
@@ -131,17 +135,17 @@ public class TermuxFileReceiverActivity extends Activity {
 
             final Uri scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
 
-            Intent executeIntent = new Intent(TermuxService.ACTION_EXECUTE, scriptUri);
+            Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
             executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-            executeIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
+            executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
             startService(executeIntent);
             finish();
         },
-            R.string.file_received_open_folder_button, text -> {
+            R.string.action_file_received_open_directory, text -> {
                 if (saveStreamWithName(in, text) == null) return;
 
-                Intent executeIntent = new Intent(TermuxService.ACTION_EXECUTE);
-                executeIntent.putExtra(TermuxService.EXTRA_CURRENT_WORKING_DIRECTORY, TERMUX_RECEIVEDIR);
+                Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE);
+                executeIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, TERMUX_RECEIVEDIR);
                 executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
                 startService(executeIntent);
                 finish();
@@ -169,7 +173,7 @@ public class TermuxFileReceiverActivity extends Activity {
             return outFile;
         } catch (IOException e) {
             showErrorDialogAndQuit("Error saving file:\n\n" + e);
-            Log.e("termux", "Error saving file", e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "Error saving file", e);
             return null;
         }
     }
@@ -188,9 +192,9 @@ public class TermuxFileReceiverActivity extends Activity {
 
         final Uri urlOpenerProgramUri = new Uri.Builder().scheme("file").path(URL_OPENER_PROGRAM).build();
 
-        Intent executeIntent = new Intent(TermuxService.ACTION_EXECUTE, urlOpenerProgramUri);
+        Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, urlOpenerProgramUri);
         executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-        executeIntent.putExtra(TermuxService.EXTRA_ARGUMENTS, new String[]{url});
+        executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{url});
         startService(executeIntent);
         finish();
     }

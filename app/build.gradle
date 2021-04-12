@@ -7,18 +7,36 @@ android {
     ndkVersion project.properties.ndkVersion
 
     dependencies {
-        implementation "androidx.annotation:annotation:1.1.0"
-        implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation "androidx.annotation:annotation:1.2.0"
+        implementation "androidx.core:core:1.5.0-rc01"
         implementation "androidx.drawerlayout:drawerlayout:1.1.1"
+        implementation "androidx.preference:preference:1.1.1"
+        implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation "com.google.guava:guava:24.1-jre"
+        implementation "io.noties.markwon:core:$markwonVersion"
+        implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
+        implementation "io.noties.markwon:linkify:$markwonVersion"
+        implementation "io.noties.markwon:recycler:$markwonVersion"
+
         implementation project(":terminal-view")
+        implementation project(":termux-shared")
     }
 
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 108
-        versionName "0.108"
+        versionCode 109
+        versionName "0.109"
+
+        manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux"
+        manifestPlaceholders.TERMUX_APP_NAME = "Termux"
+        manifestPlaceholders.TERMUX_API_APP_NAME = "Termux:API"
+        manifestPlaceholders.TERMUX_BOOT_APP_NAME = "Termux:Boot"
+        manifestPlaceholders.TERMUX_FLOAT_APP_NAME = "Termux:Float"
+        manifestPlaceholders.TERMUX_STYLING_APP_NAME = "Termux:Styling"
+        manifestPlaceholders.TERMUX_TASKER_APP_NAME = "Termux:Tasker"
+        manifestPlaceholders.TERMUX_WIDGET_APP_NAME = "Termux:Widget"
 
         externalNativeBuild {
             ndkBuild {
@@ -76,8 +94,8 @@ android {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.robolectric:robolectric:4.4'
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.4"
 }
 
 task versionName {
@@ -135,7 +153,7 @@ clean {
     }
 }
 
-task downloadBootstraps(){
+task downloadBootstraps() {
     doLast {
         def version = "2021.02.19-r1"
         downloadBootstrap("aarch64", "1e3d80bd8cc8771715845ab4a1e67fc125d84c4deda3a1a435116fe4d1f86160", version)
