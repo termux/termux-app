@@ -555,13 +555,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
                 mTermuxSessionClient.termuxSessionListNotifyUpdated();
         }
 
-        if (mTermuxSessions.isEmpty() && mWakeLock == null) {
-            // Finish if there are no TermuxSessions left and the wake lock is not held, otherwise keep the service alive if
-            // holding wake lock since there may be daemon processes (e.g. sshd) running.
-            requestStopService();
-        } else {
-            updateNotification();
-        }
+        updateNotification();
     }
 
 
