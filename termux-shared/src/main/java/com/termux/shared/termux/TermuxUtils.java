@@ -14,12 +14,17 @@ import com.google.common.base.Joiner;
 import com.termux.shared.R;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.packages.PackageUtils;
+import com.termux.shared.shell.TermuxTask;
+
+import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +34,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TermuxUtils {
+
+    private static final String LOG_TAG = "TermuxUtils";
 
     /**
      * Get the {@link Context} for {@link TermuxConstants#TERMUX_PACKAGE_NAME} package.
@@ -280,6 +287,54 @@ public class TermuxUtils {
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_X11_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_X11_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
 
         markdownString.append("\n##\n");
+
+        return markdownString.toString();
+    }
+
+
+
+    /**
+     * Get a markdown {@link String} for APT info of the app.
+     *
+     * This will take a few seconds to run due to running {@code apt update} command.
+     *
+     * @param context The context for operations.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String geAPTInfoMarkdownString(@NonNull final Context context) {
+
+        String aptInfoScript = null;
+        InputStream inputStream = context.getResources().openRawResource(com.termux.shared.R.raw.apt_info_script);
+        try {
+            aptInfoScript = IOUtils.toString(inputStream, Charset.defaultCharset());
+        } catch (IOException e) {
+            Logger.logError(LOG_TAG, "Failed to get APT info script: " + e.getMessage());
+            return null;
+        }
+
+        IOUtils.closeQuietly(inputStream);
+
+        if (aptInfoScript == null || aptInfoScript.isEmpty()) {
+            Logger.logError(LOG_TAG, "The APT info script is null or empty");
+            return null;
+        }
+
+        aptInfoScript = aptInfoScript.replaceAll(Pattern.quote("@TERMUX_PREFIX@"), TermuxConstants.TERMUX_PREFIX_DIR_PATH);
+
+        ExecutionCommand executionCommand = new ExecutionCommand(1, TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash", null, aptInfoScript, null, true, false);
+        TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, true);
+        if (termuxTask == null || !executionCommand.isSuccessful() || executionCommand.exitCode != 0) {
+            Logger.logError(LOG_TAG, executionCommand.toString());
+            return null;
+        }
+
+        if (executionCommand.stderr != null && !executionCommand.stderr.isEmpty())
+            Logger.logError(LOG_TAG, executionCommand.toString());
+
+        StringBuilder markdownString = new StringBuilder();
+
+        markdownString.append("## ").append(TermuxConstants.TERMUX_APP_NAME).append(" APT Info\n\n");
+        markdownString.append(executionCommand.stdout);
 
         return markdownString.toString();
     }

@@ -420,6 +420,10 @@ public class TermuxTerminalViewClient implements TerminalViewClient {
         reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, true));
         reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(mActivity));
 
+        String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
+        if (termuxAptInfo != null)
+            reportString.append("\n\n").append(termuxAptInfo);
+
         ReportActivity.startReportActivity(mActivity, new ReportInfo(UserAction.REPORT_ISSUE_FROM_TRANSCRIPT, TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity), false));
     }
 
