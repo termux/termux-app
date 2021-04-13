@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.shared.shell.ShellUtils;
+import com.termux.shared.terminal.TermuxTerminalViewClientBase;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.activities.ReportActivity;
 import com.termux.app.models.ReportInfo;
@@ -35,7 +36,6 @@ import com.termux.shared.termux.TermuxUtils;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
-import com.termux.view.TerminalViewClient;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,7 +44,7 @@ import java.util.List;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
-public class TermuxTerminalViewClient implements TerminalViewClient {
+public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     final TermuxActivity mActivity;
 
@@ -438,43 +438,6 @@ public class TermuxTerminalViewClient implements TerminalViewClient {
         CharSequence paste = clipData.getItemAt(0).coerceToText(mActivity);
         if (!TextUtils.isEmpty(paste))
             session.getEmulator().paste(paste.toString());
-    }
-
-
-
-    @Override
-    public void logError(String tag, String message) {
-        Logger.logError(tag, message);
-    }
-
-    @Override
-    public void logWarn(String tag, String message) {
-        Logger.logWarn(tag, message);
-    }
-
-    @Override
-    public void logInfo(String tag, String message) {
-        Logger.logInfo(tag, message);
-    }
-
-    @Override
-    public void logDebug(String tag, String message) {
-        Logger.logDebug(tag, message);
-    }
-
-    @Override
-    public void logVerbose(String tag, String message) {
-        Logger.logVerbose(tag, message);
-    }
-
-    @Override
-    public void logStackTraceWithMessage(String tag, String message, Exception e) {
-        Logger.logStackTraceWithMessage(tag, message, e);
-    }
-
-    @Override
-    public void logStackTrace(String tag, Exception e) {
-        Logger.logStackTrace(tag, e);
     }
 
 }

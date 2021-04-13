@@ -20,7 +20,7 @@ subscribed_repositories() {
 			else
 				echo "#### sources.list.d/$(basename "$filename")"
 			fi
-			echo "\`$supl_sources\`"
+			echo "\`$supl_sources\`  "
 		fi
 	done < <(find "@TERMUX_PREFIX@/etc/apt/sources.list.d" -maxdepth 1 ! -type d)
 }
@@ -37,7 +37,7 @@ updatable_packages() {
 		if [ -z "$updatable" ];then
 			echo "All packages up to date"
 		else
-			echo "\`$updatable\`"
+			echo $'```\n'"$updatable"$'\n```\n'
 		fi
 	fi
 }
@@ -50,6 +50,7 @@ $(subscribed_repositories)
 
 
 ### Updatable Packages
+
 $(updatable_packages)
 ##
 
