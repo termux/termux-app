@@ -50,7 +50,7 @@ publishing {
         bar(MavenPublication) {
             groupId 'com.termux'
             artifactId 'termux-shared'
-            version '0.109'
+            version '0.108'
             artifact("$buildDir/outputs/aar/termux-shared-release.aar")
         }
     }
