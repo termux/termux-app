@@ -16,7 +16,7 @@ import com.termux.R;
 import com.termux.shared.shell.TermuxSession;
 import com.termux.shared.interact.DialogUtils;
 import com.termux.app.TermuxActivity;
-import com.termux.shared.shell.TermuxTerminalSessionClientBase;
+import com.termux.shared.terminal.TermuxTerminalSessionClientBase;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.TermuxService;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;

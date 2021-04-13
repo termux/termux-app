@@ -27,7 +27,7 @@ import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.shell.TermuxSession;
-import com.termux.shared.shell.TermuxTerminalSessionClientBase;
+import com.termux.shared.terminal.TermuxTerminalSessionClientBase;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.packages.PermissionUtils;
