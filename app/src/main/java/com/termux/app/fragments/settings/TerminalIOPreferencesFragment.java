@@ -3,6 +3,7 @@ package com.termux.app.fragments.settings;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.Keep;
 import androidx.preference.PreferenceDataStore;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -10,6 +11,7 @@ import androidx.preference.PreferenceManager;
 import com.termux.R;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 
+@Keep
 public class TerminalIOPreferencesFragment extends PreferenceFragmentCompat {
 
     @Override

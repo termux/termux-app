@@ -3,6 +3,7 @@ package com.termux.app.fragments.settings;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.Keep;
 import androidx.annotation.Nullable;
 import androidx.preference.ListPreference;
 import androidx.preference.PreferenceCategory;
@@ -14,6 +15,7 @@ import com.termux.R;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.logger.Logger;
 
+@Keep
 public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
 
     @Override
