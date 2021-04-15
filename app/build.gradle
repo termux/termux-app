@@ -26,8 +26,8 @@ android {
         applicationId "com.termux"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 109
-        versionName "0.109"
+        versionCode project.properties.termuxVersionCode.toInteger()
+        versionName project.properties.termuxVersion
 
         manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux"
         manifestPlaceholders.TERMUX_APP_NAME = "Termux"
