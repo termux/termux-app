@@ -53,6 +53,10 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
 
 publishing {
     publications {
@@ -60,6 +64,7 @@ publishing {
             groupId 'com.termux'
             artifactId 'terminal-emulator'
             version '0.109'
+            artifact(sourceJar)
             artifact("$buildDir/outputs/aar/terminal-emulator-release.aar")
         }
     }

@@ -29,7 +29,12 @@ android {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
 }
 
 publishing {
@@ -38,6 +43,7 @@ publishing {
             groupId 'com.termux'
             artifactId 'terminal-view'
             version '0.109'
+            artifact(sourceJar)
             artifact("$buildDir/outputs/aar/terminal-view-release.aar")
         }
     }

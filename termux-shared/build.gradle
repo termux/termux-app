@@ -45,12 +45,18 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
 
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
 publishing {
     publications {
         bar(MavenPublication) {
             groupId 'com.termux'
             artifactId 'termux-shared'
             version '0.109'
+            artifact(sourceJar)
             artifact("$buildDir/outputs/aar/termux-shared-release.aar")
         }
     }
