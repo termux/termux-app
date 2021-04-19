@@ -35,15 +35,23 @@ import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.textselection.TextSelectionCursorController;
 
-/** View displaying and interacting with a {@link TerminalSession}. */
+/**
+ * View displaying and interacting with a {@link TerminalSession}.
+ */
 public final class TerminalView extends View {
 
-    /** Log terminal view key and IME events. */
+    /**
+     * Log terminal view key and IME events.
+     */
     private static boolean TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
 
-    /** The currently displayed terminal session, whose emulator is {@link #mEmulator}. */
+    /**
+     * The currently displayed terminal session, whose emulator is {@link #mEmulator}.
+     */
     public TerminalSession mTermSession;
-    /** Our terminal emulator whose session is {@link #mTermSession}. */
+    /**
+     * Our terminal emulator whose session is {@link #mTermSession}.
+     */
     public TerminalEmulator mEmulator;
 
     public TerminalRenderer mRenderer;
@@ -52,24 +60,34 @@ public final class TerminalView extends View {
 
     private TextSelectionCursorController mTextSelectionCursorController;
 
-    /** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
+    /**
+     * The top row of text to display. Ranges from -activeTranscriptRows to 0.
+     */
     int mTopRow;
-    int[] mDefaultSelectors = new int[]{-1,-1,-1,-1};
+    int[] mDefaultSelectors = new int[]{-1, -1, -1, -1};
 
     float mScaleFactor = 1.f;
     final GestureAndScaleRecognizer mGestureRecognizer;
 
-    /** Keep track of where mouse touch event started which we report as mouse scroll. */
+    /**
+     * Keep track of where mouse touch event started which we report as mouse scroll.
+     */
     private int mMouseScrollStartX = -1, mMouseScrollStartY = -1;
-    /** Keep track of the time when a touch event leading to sending mouse scroll events started. */
+    /**
+     * Keep track of the time when a touch event leading to sending mouse scroll events started.
+     */
     private long mMouseStartDownTime = -1;
 
     final Scroller mScroller;
 
-    /** What was left in from scrolling movement. */
+    /**
+     * What was left in from scrolling movement.
+     */
     float mScrollRemainder;
 
-    /** If non-zero, this is the last unicode code point received if that was a combining character. */
+    /**
+     * If non-zero, this is the last unicode code point received if that was a combining character.
+     */
     int mCombiningAccent;
 
     private final boolean mAccessibilityEnabled;
@@ -211,7 +229,7 @@ public final class TerminalView extends View {
 
     /**
      * @param client The {@link TerminalViewClient} interface implementation to allow
-     *                           for communication between {@link TerminalView} and its client.
+     *               for communication between {@link TerminalView} and its client.
      */
     public void setTerminalViewClient(TerminalViewClient client) {
         this.mClient = client;
@@ -441,7 +459,9 @@ public final class TerminalView extends View {
         return true;
     }
 
-    /** Send a single mouse event code to the terminal. */
+    /**
+     * Send a single mouse event code to the terminal.
+     */
     void sendMouseEventCode(MotionEvent e, int button, boolean pressed) {
         int x = (int) (e.getX() / mRenderer.mFontWidth) + 1;
         int y = (int) ((e.getY() - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing) + 1;
@@ -458,7 +478,9 @@ public final class TerminalView extends View {
         mEmulator.sendMouseEvent(button, x, y, pressed);
     }
 
-    /** Perform a scroll, either from dragging the screen or by scrolling a mouse wheel. */
+    /**
+     * Perform a scroll, either from dragging the screen or by scrolling a mouse wheel.
+     */
     void doScroll(MotionEvent event, int rowsDown) {
         boolean up = rowsDown < 0;
         int amount = Math.abs(rowsDown);
@@ -476,7 +498,9 @@ public final class TerminalView extends View {
         }
     }
 
-    /** Overriding {@link View#onGenericMotionEvent(MotionEvent)}. */
+    /**
+     * Overriding {@link View#onGenericMotionEvent(MotionEvent)}.
+     */
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         if (mEmulator != null && event.isFromSource(InputDevice.SOURCE_MOUSE) && event.getAction() == MotionEvent.ACTION_SCROLL) {
@@ -546,7 +570,7 @@ public final class TerminalView extends View {
                 }
             }
         } else if (mClient.shouldUseCtrlSpaceWorkaround() &&
-                   keyCode == KeyEvent.KEYCODE_SPACE && event.isCtrlPressed()) {
+            keyCode == KeyEvent.KEYCODE_SPACE && event.isCtrlPressed()) {
             /* ctrl+space does not work on some ROMs without this workaround.
                However, this breaks it on devices where it works out of the box. */
             return onKeyDown(keyCode, event);
@@ -683,7 +707,9 @@ public final class TerminalView extends View {
         }
     }
 
-    /** Input the specified keyCode if applicable and return if the input was consumed. */
+    /**
+     * Input the specified keyCode if applicable and return if the input was consumed.
+     */
     public boolean handleKeyCode(int keyCode, int keyMod) {
         TerminalEmulator term = mTermSession.getEmulator();
         String code = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(), term.isKeypadApplicationMode());
@@ -725,7 +751,9 @@ public final class TerminalView extends View {
         updateSize();
     }
 
-    /** Check if the terminal size in rows and columns should be updated. */
+    /**
+     * Check if the terminal size in rows and columns should be updated.
+     */
     public void updateSize() {
         int viewWidth = getWidth();
         int viewHeight = getHeight();
@@ -798,8 +826,6 @@ public final class TerminalView extends View {
     }
 
 
-
-
     /**
      * Define functions required for AutoFill API
      */
@@ -822,8 +848,6 @@ public final class TerminalView extends View {
     public AutofillValue getAutofillValue() {
         return AutofillValue.forText("");
     }
-
-
 
 
     /**
@@ -917,8 +941,6 @@ public final class TerminalView extends View {
             mTextSelectionCursorController.onDetached();
         }
     }
-
-
 
 
     /**
