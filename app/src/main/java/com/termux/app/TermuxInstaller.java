@@ -62,10 +62,21 @@ final class TermuxInstaller {
             return;
         }
 
+        final String PREFIX_FILE_PATH = TermuxConstants.TERMUX_PREFIX_DIR_PATH;
         final File PREFIX_FILE = TermuxConstants.TERMUX_PREFIX_DIR;
-        if (PREFIX_FILE.isDirectory()) {
-            whenDone.run();
-            return;
+
+        // If prefix directory exists
+        if (FileUtils.directoryFileExists(PREFIX_FILE_PATH, false)) {
+             File[] PREFIX_FILE_LIST =  PREFIX_FILE.listFiles();
+            // If prefix directory is empty or only contains the tmp directory
+             if(PREFIX_FILE_LIST == null || PREFIX_FILE_LIST.length == 0 || (PREFIX_FILE_LIST.length == 1 && TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH.equals(PREFIX_FILE_LIST[0].getAbsolutePath()))) {
+                 Logger.logInfo(LOG_TAG, "The prefix directory \"" + PREFIX_FILE_PATH + "\" exists but is empty or only contains the tmp directory.");
+             } else {
+                 whenDone.run();
+                 return;
+             }
+        } else if (FileUtils.fileExists(PREFIX_FILE_PATH, false)) {
+            Logger.logInfo(LOG_TAG, "The prefix directory \"" + PREFIX_FILE_PATH + "\" does not exist but another file exists at its destination.");
         }
 
         final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
@@ -80,12 +91,19 @@ final class TermuxInstaller {
                     final String STAGING_PREFIX_PATH = TermuxConstants.TERMUX_STAGING_PREFIX_DIR_PATH;
                     final File STAGING_PREFIX_FILE = new File(STAGING_PREFIX_PATH);
 
-                    errmsg = FileUtils.clearDirectory(activity, "prefix staging directory", STAGING_PREFIX_PATH);
+                    // Delete prefix staging directory or any file at its destination
+                    errmsg = FileUtils.deleteFile(activity, "prefix staging directory", STAGING_PREFIX_PATH, true);
                     if (errmsg != null) {
                         throw new RuntimeException(errmsg);
                     }
 
-                    Logger.logInfo(LOG_TAG, "Extracting bootstrap zip to prefix staging directory \"" + TermuxConstants.TERMUX_STAGING_PREFIX_DIR_PATH + "\".");
+                    // Delete prefix directory or any file at its destination
+                    errmsg = FileUtils.deleteFile(activity, "prefix directory", PREFIX_FILE_PATH, true);
+                    if (errmsg != null) {
+                        throw new RuntimeException(errmsg);
+                    }
+
+                    Logger.logInfo(LOG_TAG, "Extracting bootstrap zip to prefix staging directory \"" + STAGING_PREFIX_PATH + "\".");
 
                     final byte[] buffer = new byte[8096];
                     final List<Pair<String, String>> symlinks = new ArrayList<>(50);
