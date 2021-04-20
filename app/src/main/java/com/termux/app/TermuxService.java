@@ -157,7 +157,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     public void onDestroy() {
         Logger.logVerbose(LOG_TAG, "onDestroy");
 
-        ShellUtils.clearTermuxTMPDIR(this);
+        ShellUtils.clearTermuxTMPDIR(this, true);
 
         actionReleaseWakeLock(false);
         if (!mWantsToStop)

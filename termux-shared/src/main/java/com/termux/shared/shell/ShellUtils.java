@@ -150,7 +150,10 @@ public class ShellUtils {
         return (lastSlash == -1) ? executable : executable.substring(lastSlash + 1);
     }
 
-    public static void clearTermuxTMPDIR(Context context) {
+    public static void clearTermuxTMPDIR(Context context, boolean onlyIfExists) {
+        if(onlyIfExists && !FileUtils.directoryFileExists(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, false))
+            return;
+
         String errmsg;
         errmsg = FileUtils.clearDirectory(context, "$TMPDIR", FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null, false));
         if (errmsg != null) {
