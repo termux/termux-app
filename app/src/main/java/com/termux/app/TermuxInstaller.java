@@ -65,8 +65,8 @@ final class TermuxInstaller {
         final String PREFIX_FILE_PATH = TermuxConstants.TERMUX_PREFIX_DIR_PATH;
         final File PREFIX_FILE = TermuxConstants.TERMUX_PREFIX_DIR;
 
-        // If prefix directory exists
-        if (FileUtils.directoryFileExists(PREFIX_FILE_PATH, false)) {
+        // If prefix directory exists, even if its a symlink to a valid directory and symlink is not broken/dangling
+        if (FileUtils.directoryFileExists(PREFIX_FILE_PATH, true)) {
              File[] PREFIX_FILE_LIST =  PREFIX_FILE.listFiles();
             // If prefix directory is empty or only contains the tmp directory
              if(PREFIX_FILE_LIST == null || PREFIX_FILE_LIST.length == 0 || (PREFIX_FILE_LIST.length == 1 && TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH.equals(PREFIX_FILE_LIST[0].getAbsolutePath()))) {
