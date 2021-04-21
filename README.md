@@ -25,16 +25,32 @@ Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
 
 ## Installation
 
-Termux application can be obtained from [F-Droid](https://f-droid.org/en/packages/com.termux/).
+Termux can be obtained through various sources listed below.
 
-Additionally we provide per-commit debug builds for those who want to try
-out the latest features or test their pull request. This build can be obtained
-from one of the workflow runs listed on [Github Actions](https://github.com/termux/termux-app/actions)
-page.
+The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [sharedUserId](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from F-Droid and another one from a different source. Android Package Manager will also normally not allow installation of APKs with a different signatures and you will get an error on installation but this restriction can be bypassed with root or with custom roms. If you wish to install from a different source, then you must uninstall any and all existing Termux app or its plugin APKs from your device first, then install all new APKs from the same new source.
 
-Signature keys of all offered builds are different. Before you switch the
-installation source, you will have to uninstall the Termux application and
-all currently installed plugins.
+Following is a list of Termux app and its plugins.
+
+- [Termux](https://github.com/termux/termux-app)
+- [Termux:API](https://github.com/termux/termux-api)
+- [Termux:Boot](https://github.com/termux/termux-boot)
+- [Termux:Float](https://github.com/termux/termux-float)
+- [Termux:Styling](https://github.com/termux/termux-styling)
+- [Termux:Tasker](https://github.com/termux/termux-tasker)
+- [Termux:Widget](https://github.com/termux/termux-widget)
+
+ If you wish to install Termux from a difference source, you must uninstall all the apps listed above before installing from new source. Go to `Android Settings` -> `Applications` and then look for the following apps. You can also use the search feature if its available on your device and search `termux` in the applications list. Even if you think you have not installed any of the plugins, its strongly suggesting to go through the application list in Android settings and double check if installation is failing.
+
+### F-Droid
+
+Termux application can be obtained from F-Droid [here](https://f-droid.org/en/packages/com.termux/). It usually takes a few days (or even a week or more) for updates to be available on F-Droid once an update has been released on Github. F-Droid releases are built and published by F-Droid once they detect a new Github release. The Termux maintainers **do not** have any control over building and publishing of Termux app on F-Droid. Moreover, the Termux maintainers also do not have access to the APK signing keys of F-Droid releases, so we cannot release an APK ourselves on Github that would be compatible with F-Droid releases.
+
+### Debug Builds
+
+For users who don't want to wait for F-Droid releases and want to try out the latest features immediately or want to test their pull requests can get the APKs from [Github Actions](https://github.com/termux/termux-app/actions) page from the workflow runs labeled `Build`. The APK will be listed under `Artifacts` section. These are published for each commit done to the repository. These APKs are [debuggable](https://developer.android.com/studio/debug) and are also not compatible with other sources.
+##
+
+
 
 ## Terminal resources
 
@@ -68,3 +84,12 @@ all currently installed plugins.
 
 - Android Terminal Emulator: Android terminal app which Termux terminal handling
   is based on. Inactive. [Source](https://github.com/jackpal/Android-Terminal-Emulator).
+##
+
+
+
+## For Devs and Contributors
+
+The [termux-shared](termux-shared) library was added in [`v0.109`](https://github.com/termux/termux-app/releases/tag/v0.109). It defines shared constants and utils of Termux app and its plugins. It was created to allow for removal of all hardcoded paths in Termux app. The termux plugins will hopefully use this in future as well. If you are contributing code that is using a constant or a util that may be shared, then define it in `termux-shared` library if it currently doesn't exist and reference it from there. Update the relevant changelogs as well. Pull requests using hardcoded values **will not** be accepted.
+
+The main Termux constants are defined by [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) class. It also contains information on how to fork Termux or build it with your own package name. Changing the package name will require building the bootstrap zip packages and other packages with the new `$PREFIX`, check [Building Packages](https://github.com/termux/termux-packages/wiki/Building-packages) for more info.
