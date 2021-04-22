@@ -55,7 +55,7 @@ publishing {
         bar(MavenPublication) {
             groupId 'com.termux'
             artifactId 'termux-shared'
-            version project.properties.termuxVersion
+            version "0.112"
             artifact(sourceJar)
             artifact("$buildDir/outputs/aar/termux-shared-release.aar")
         }
