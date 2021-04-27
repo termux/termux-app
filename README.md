@@ -21,6 +21,7 @@ Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
 - [Installation](#Installation)
 - [Uninstallation](#Uninstallation)
 - [Important Links](#Important-Links)
+- [For Devs and Contributors](#For-Devs-and-Contributors)
 ##
 
 
@@ -41,9 +42,9 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 
 ## Installation
 
-Termux can be obtained through various sources listed below.
+Termux can be obtained through various sources listed below for **only** Android `>= 7`. Support was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, old builds are available on [archive.org](https://archive.org/details/termux-repositories-legacy).
 
-The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [sharedUserId](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from F-Droid and another one from a different source. Android Package Manager will also normally not allow installation of APKs with a different signatures and you will get an error on installation but this restriction can be bypassed with root or with custom roms.
+The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [sharedUserId](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from F-Droid and another one from a different source. Android Package Manager will also normally not allow installation of APKs with a different signatures and you will get errors on installation like `App not installed`, `Failed to install due to an unknown error`, `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, `INSTALL_FAILED_SHARED_USER_INCOMPATIBLE`, `signatures do not match previously installed version`, etc. This restriction can be bypassed with root or with custom roms.
 
 If you wish to install from a different source, then you must uninstall **any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#Uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before uninstallation.
 
@@ -57,7 +58,7 @@ For users who don't want to wait for F-Droid releases and want to try out the la
 
 ### Google Playstore **(Deprecated)**
 
-**Termux and its plugins are no longer updated on playstore due to [android 10 issues](https://play.google.com/store/apps/details?id=com.termux).** There are currently no immediate plans to resume updates on playstore. **It is highly recommended to not install Termux from playstore for now.** Any current users **should switch** to a different source like F-Droid.
+**Termux and its plugins are no longer updated on [Google playstore](https://play.google.com/store/apps/details?id=com.termux) due to [android 10 issues](https://play.google.com/store/apps/details?id=com.termux).** The last version released for Android `>= 7` was `v0.101`. There are currently no immediate plans to resume updates on Google playstore. **It is highly recommended to not install Termux from playstore for now.** Any current users **should switch** to a different source like F-Droid.
 
 If for some reason you don't want to switch, then at least check [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management) to switch to a different mirror and then run `pkg upgrade` command to update all packages to the latest available versions if you want, or at least update `termux-tools` package with `pkg install termux-tools` command.
 ##
