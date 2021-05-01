@@ -157,7 +157,7 @@ public class ShellUtils {
         String errmsg;
         errmsg = FileUtils.clearDirectory(context, "$TMPDIR", FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null, false));
         if (errmsg != null) {
-            Logger.logErrorAndShowToast(context, errmsg);
+            Logger.logError(errmsg);
         }
     }
 
