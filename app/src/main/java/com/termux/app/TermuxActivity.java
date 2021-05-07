@@ -237,7 +237,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public void onResume() {
         super.onResume();
 
-        setSoftKeyboardState();
+        mTermuxTerminalViewClient.setSoftKeyboardState();
     }
 
     /**
@@ -418,8 +418,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private void setToggleKeyboardView() {
         findViewById(R.id.toggle_keyboard_button).setOnClickListener(v -> {
-            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+            TermuxTerminalViewClient.toggleSoftKeyboard(this);
             getDrawer().closeDrawers();
         });
 
@@ -429,19 +428,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         });
     }
 
-    private void setSoftKeyboardState() {
-        // If soft keyboard is to disabled
-        if (!mPreferences.getSoftKeyboardEnabled()) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        } else {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        }
 
-        // If soft keyboard is to be hidden on startup
-        if (mProperties.shouldSoftKeyboardBeHiddenOnStartup()) {
-            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        }
-    }
 
 
 
@@ -780,7 +767,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         setTerminalToolbarHeight();
 
-        setSoftKeyboardState();
+        mTermuxTerminalViewClient.setSoftKeyboardState();
 
         // To change the activity and drawer theme, activity needs to be recreated.
         // But this will destroy the activity, and will call the onCreate() again.

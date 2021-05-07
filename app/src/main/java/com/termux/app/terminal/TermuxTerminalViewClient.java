@@ -7,6 +7,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.inputmethodservice.InputMethodService;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -14,6 +15,7 @@ import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -36,6 +38,7 @@ import com.termux.shared.termux.TermuxUtils;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
+import com.termux.view.TerminalView;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,8 +125,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 mActivity.getDrawer().closeDrawers();
             } else if (unicodeChar == 'k'/* keyboard */) {
-                InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+                toggleSoftKeyboard(mActivity);
             } else if (unicodeChar == 'm'/* menu */) {
                 mActivity.getTerminalView().showContextMenu();
             } else if (unicodeChar == 'r'/* rename */) {
@@ -150,6 +152,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         return false;
 
     }
+
+
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent e) {
@@ -334,6 +338,58 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     public void changeFontSize(boolean increase) {
         mActivity.getPreferences().changeFontSize(increase);
         mActivity.getTerminalView().setTextSize(mActivity.getPreferences().getFontSize());
+    }
+
+
+    /**
+     * Toggle the soft keyboard. The {@link InputMethodManager#SHOW_FORCED} is passed as
+     * {@code showFlags} so that keyboard is forcefully shown if it needs to be enabled.
+     *
+     * This is also important for soft keyboard to be shown when a hardware keyboard is attached, and
+     * user has disabled the {@code Show on-screen keyboard while hardware keyboard is attached} toggle
+     * in Android "Language and Input" settings but the current soft keyboard app overrides the
+     * default implementation of {@link InputMethodService#onEvaluateInputViewShown()} and returns
+     * {@code true}.
+     */
+    public static void toggleSoftKeyboard(Context context) {
+        InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+    }
+
+    /**
+     * Show the soft keyboard. The {@code 0} value is passed as {@code flags} so that keyboard is
+     * forcefully shown.
+     *
+     * This is also important for soft keyboard to be shown on app startup when a hardware keyboard
+     * is attached, and user has disabled the {@code Show on-screen keyboard while hardware keyboard
+     * is attached} toggle in Android "Language and Input" settings but the current soft keyboard app
+     * overrides the default implementation of {@link InputMethodService#onEvaluateInputViewShown()}
+     * and returns {@code true}.
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:frameworks/base/core/java/android/inputmethodservice/InputMethodService.java;l=1751
+     *
+     * Also check {@link InputMethodService#onShowInputRequested(int, boolean)} which must return
+     * {@code true}, which can be done by failing its {@code ((flags&InputMethod.SHOW_EXPLICIT) == 0)}
+     * check by passing {@code 0} as {@code flags}.
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:frameworks/base/core/java/android/inputmethodservice/InputMethodService.java;l=2022
+     */
+    public static void showSoftKeyboard(Context context, TerminalView terminalView) {
+        InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(terminalView, 0);
+    }
+
+    public void setSoftKeyboardState() {
+        // If soft keyboard is to disabled
+        if (!mActivity.getPreferences().getSoftKeyboardEnabled()) {
+            mActivity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+        } else {
+            mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+            showSoftKeyboard(mActivity, mActivity.getTerminalView());
+        }
+
+        // If soft keyboard is to be hidden on startup
+        if (mActivity.getProperties().shouldSoftKeyboardBeHiddenOnStartup()) {
+            mActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        }
     }
 
 
