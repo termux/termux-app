@@ -223,6 +223,8 @@ public class TermuxUtils {
             appendPropertyToMarkdown(markdownString, "RELEASE", Build.VERSION.RELEASE);
         else
             appendPropertyToMarkdown(markdownString, "CODENAME", Build.VERSION.CODENAME);
+        appendPropertyToMarkdown(markdownString, "ID", Build.ID);
+        appendPropertyToMarkdown(markdownString, "DISPLAY", Build.DISPLAY);
         appendPropertyToMarkdown(markdownString, "INCREMENTAL", Build.VERSION.INCREMENTAL);
         appendPropertyToMarkdownIfSet(markdownString, "SECURITY_PATCH", systemProperties.getProperty("ro.build.version.security_patch"));
         appendPropertyToMarkdownIfSet(markdownString, "IS_DEBUGGABLE", systemProperties.getProperty("ro.debuggable"));
@@ -236,8 +238,6 @@ public class TermuxUtils {
         appendPropertyToMarkdown(markdownString, "BRAND", Build.BRAND);
         appendPropertyToMarkdown(markdownString, "MODEL", Build.MODEL);
         appendPropertyToMarkdown(markdownString, "PRODUCT", Build.PRODUCT);
-        appendPropertyToMarkdown(markdownString, "DISPLAY", Build.DISPLAY);
-        appendPropertyToMarkdown(markdownString, "ID", Build.ID);
         appendPropertyToMarkdown(markdownString, "BOARD", Build.BOARD);
         appendPropertyToMarkdown(markdownString, "HARDWARE", Build.HARDWARE);
         appendPropertyToMarkdown(markdownString, "DEVICE", Build.DEVICE);
