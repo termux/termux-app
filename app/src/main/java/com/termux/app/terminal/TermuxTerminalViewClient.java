@@ -1,6 +1,7 @@
 package com.termux.app.terminal;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
@@ -15,6 +16,7 @@ import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
@@ -38,7 +40,6 @@ import com.termux.shared.termux.TermuxUtils;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
-import com.termux.view.TerminalView;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,8 +76,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public void onSingleTapUp(MotionEvent e) {
-        InputMethodManager mgr = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.showSoftInput(mActivity.getTerminalView(), InputMethodManager.SHOW_IMPLICIT);
+        showSoftKeyboard(mActivity, mActivity.getTerminalView());
     }
 
     @Override
@@ -125,7 +125,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 mActivity.getDrawer().closeDrawers();
             } else if (unicodeChar == 'k'/* keyboard */) {
-                toggleSoftKeyboard(mActivity);
+                onToggleSoftKeyboardRequest();
             } else if (unicodeChar == 'm'/* menu */) {
                 mActivity.getTerminalView().showContextMenu();
             } else if (unicodeChar == 'r'/* rename */) {
@@ -372,23 +372,83 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      * check by passing {@code 0} as {@code flags}.
      * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:frameworks/base/core/java/android/inputmethodservice/InputMethodService.java;l=2022
      */
-    public static void showSoftKeyboard(Context context, TerminalView terminalView) {
+    public static void showSoftKeyboard(Context context, View view) {
         InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.showSoftInput(terminalView, 0);
+        inputMethodManager.showSoftInput(view, 0);
     }
 
-    public void setSoftKeyboardState() {
-        // If soft keyboard is to disabled
-        if (!mActivity.getPreferences().getSoftKeyboardEnabled()) {
-            mActivity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        } else {
-            mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-            showSoftKeyboard(mActivity, mActivity.getTerminalView());
-        }
+    public static void hideSoftKeyboard(Context context, View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
 
-        // If soft keyboard is to be hidden on startup
-        if (mActivity.getProperties().shouldSoftKeyboardBeHiddenOnStartup()) {
-            mActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    public static void disableSoftKeyboard(Activity activity, View view) {
+        hideSoftKeyboard(activity, view);
+        setDisableSoftKeyboardFlags(activity);
+    }
+
+    public static void setDisableSoftKeyboardFlags(Activity activity) {
+        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+    }
+
+    public static void clearDisableSoftKeyboardFlags(Activity activity) {
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+    }
+
+    public void setResizeTerminalViewForSoftKeyboardFlags() {
+        // TODO: The flag is deprecated for API 30 and WindowInset API should be used
+        // https://developer.android.com/reference/android/view/WindowManager.LayoutParams#SOFT_INPUT_ADJUST_RESIZE
+        // https://medium.com/androiddevelopers/animating-your-keyboard-fb776a8fb66d
+        // https://stackoverflow.com/a/65194077/14686958
+        mActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    }
+
+    /**
+     * Called when user requests the soft keyboard to be toggled via "KEYBOARD" toggle button in
+     * drawer or extra keys, or with ctrl+alt+k hardware keyboard shortcut.
+     */
+    public void onToggleSoftKeyboardRequest() {
+        // If soft keyboard is disabled by user for Termux
+        if (!mActivity.getPreferences().getSoftKeyboardEnabled()) {
+            disableSoftKeyboard(mActivity, mActivity.getTerminalView());
+        } else {
+            clearDisableSoftKeyboardFlags(mActivity);
+            toggleSoftKeyboard(mActivity);
+        }
+    }
+
+    public void setSoftKeyboardState(boolean isStartup) {
+        // If soft keyboard is disabled by user for Termux
+        if (!mActivity.getPreferences().getSoftKeyboardEnabled()) {
+            disableSoftKeyboard(mActivity, mActivity.getTerminalView());
+        } else {
+            // Set flag to automatically push up TerminalView when keyboard is opened instead of showing over it
+            setResizeTerminalViewForSoftKeyboardFlags();
+
+            // Clear any previous flags to disable soft keyboard in case setting updated
+            clearDisableSoftKeyboardFlags(mActivity);
+
+            // If soft keyboard is to be hidden on startup
+            if (isStartup && mActivity.getProperties().shouldSoftKeyboardBeHiddenOnStartup()) {
+                hideSoftKeyboard(mActivity, mActivity.getTerminalView());
+            } else {
+                // Force show soft keyboard
+                showSoftKeyboard(mActivity, mActivity.getTerminalView());
+
+                mActivity.getTerminalView().setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View view, boolean hasFocus) {
+                        if (hasFocus) {
+                            showSoftKeyboard(mActivity, mActivity.getTerminalView());
+                        } else {
+                            hideSoftKeyboard(mActivity, mActivity.getTerminalView());
+                        }
+                    }
+                });
+
+                // Request focus for TerminalView
+                mActivity.getTerminalView().requestFocus();
+            }
         }
     }
 

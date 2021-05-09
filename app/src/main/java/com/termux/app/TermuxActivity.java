@@ -25,7 +25,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -237,7 +236,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public void onResume() {
         super.onResume();
 
-        mTermuxTerminalViewClient.setSoftKeyboardState();
+        mTermuxTerminalViewClient.setSoftKeyboardState(true);
     }
 
     /**
@@ -418,7 +417,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private void setToggleKeyboardView() {
         findViewById(R.id.toggle_keyboard_button).setOnClickListener(v -> {
-            TermuxTerminalViewClient.toggleSoftKeyboard(this);
+            mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
             getDrawer().closeDrawers();
         });
 
@@ -446,8 +445,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         // Set {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value
         mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.getTerminalViewKeyLoggingEnabled());
-
-        mTerminalView.requestFocus();
 
         mTermuxTerminalSessionClient.checkForFontAndColors();
     }
@@ -677,6 +674,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return mTerminalView;
     }
 
+    public TermuxTerminalViewClient getTermuxTerminalViewClient() {
+        return mTermuxTerminalViewClient;
+    }
+
     public TermuxTerminalSessionClient getTermuxTerminalSessionClient() {
         return mTermuxTerminalSessionClient;
     }
@@ -767,7 +768,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         setTerminalToolbarHeight();
 
-        mTermuxTerminalViewClient.setSoftKeyboardState();
+        mTermuxTerminalViewClient.setSoftKeyboardState(true);
 
         // To change the activity and drawer theme, activity needs to be recreated.
         // But this will destroy the activity, and will call the onCreate() again.
