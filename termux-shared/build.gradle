@@ -6,6 +6,7 @@ android {
 
     dependencies {
         implementation "androidx.annotation:annotation:1.2.0"
+        implementation "androidx.core:core:1.5.0-rc01"
         implementation "com.google.guava:guava:24.1-jre"
         implementation "io.noties.markwon:core:$markwonVersion"
         implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
