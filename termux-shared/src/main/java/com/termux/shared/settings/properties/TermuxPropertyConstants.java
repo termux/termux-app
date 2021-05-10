@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.6.0
+ * Version: v0.7.0
  *
  * Changelog
  *
@@ -33,6 +33,9 @@ import java.util.Set;
  *
  * - 0.6.0 (2021-04-07)
  *      - Updated javadocs.
+ *
+ * - 0.7.0 (2021-05-09)
+ *      - Add `*SOFT_KEYBOARD_TOGGLE_BEHAVIOUR*`.
  */
 
 /**
@@ -166,6 +169,15 @@ public final class TermuxPropertyConstants {
 
 
 
+    /** Defines the key for whether toggle soft keyboard request will show/hide or enable/disable keyboard */
+    public static final String SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =  "soft-keyboard-toggle-behaviour"; // Default: "soft-keyboard-toggle-behaviour"
+
+    public static final String IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE = "show/hide";
+    public static final String IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE = "enable/disable";
+    public static final String DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR = IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE;
+
+
+
 
 
     /** Defines the set for keys loaded by termux
@@ -198,7 +210,8 @@ public final class TermuxPropertyConstants {
         // String
         KEY_DEFAULT_WORKING_DIRECTORY,
         KEY_EXTRA_KEYS,
-        KEY_EXTRA_KEYS_STYLE
+        KEY_EXTRA_KEYS_STYLE,
+        SOFT_KEYBOARD_TOGGLE_BEHAVIOUR
     ));
 
     /** Defines the set for keys loaded by termux that have default boolean behaviour

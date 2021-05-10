@@ -236,7 +236,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public void onResume() {
         super.onResume();
 
-        mTermuxTerminalViewClient.setSoftKeyboardState(true);
+        mTermuxTerminalViewClient.setSoftKeyboardState(true, false);
     }
 
     /**
@@ -768,7 +768,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         setTerminalToolbarHeight();
 
-        mTermuxTerminalViewClient.setSoftKeyboardState(true);
+        mTermuxTerminalViewClient.setSoftKeyboardState(false, true);
 
         // To change the activity and drawer theme, activity needs to be recreated.
         // But this will destroy the activity, and will call the onCreate() again.

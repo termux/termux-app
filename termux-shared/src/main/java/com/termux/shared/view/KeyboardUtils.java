@@ -19,7 +19,9 @@ public class KeyboardUtils {
 
     public static void setSoftKeyboardVisibility(@NonNull final Runnable showSoftKeyboardRunnable, final Activity activity, final View view, final boolean visible) {
         if (visible) {
-            view.postDelayed(showSoftKeyboardRunnable, 1000);
+            // A Runnable with a delay is used, otherwise soft keyboard may not automatically open
+            // on some devices, but still may fail
+            view.postDelayed(showSoftKeyboardRunnable, 500);
         } else {
             view.removeCallbacks(showSoftKeyboardRunnable);
             hideSoftKeyboard(activity, view);

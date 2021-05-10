@@ -211,6 +211,8 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
                 return (String) getExtraKeysInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_EXTRA_KEYS_STYLE:
                 return (String) getExtraKeysStyleInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.SOFT_KEYBOARD_TOGGLE_BEHAVIOUR:
+                return (String) getSoftKeyboardToggleBehaviourInternalPropertyValueFromValue(value);
             default:
                 // default boolean behaviour
                 if (TermuxPropertyConstants.TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
@@ -373,6 +375,16 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE);
     }
 
+    /**
+     * Returns the value itself if it is not {@code null}, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR}.
+     *
+     * @param value {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static String getSoftKeyboardToggleBehaviourInternalPropertyValueFromValue(String value) {
+        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR);
+    }
+
 
 
 
@@ -419,6 +431,10 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
     public String getDefaultWorkingDirectory() {
         return (String) getInternalPropertyValue(TermuxPropertyConstants.KEY_DEFAULT_WORKING_DIRECTORY, true);
+    }
+
+    public boolean shouldEnableDisableSoftKeyboardOnToggle() {
+        return (boolean) TermuxPropertyConstants.IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE.equals(getInternalPropertyValue(TermuxPropertyConstants.SOFT_KEYBOARD_TOGGLE_BEHAVIOUR, true));
     }
 
 
