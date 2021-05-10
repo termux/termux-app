@@ -181,38 +181,39 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
           - If the value is not null and does exist in MAP_*, then internal value returned by map will be used.
          */
         switch (key) {
-            // boolean
-            case TermuxPropertyConstants.KEY_USE_BACK_KEY_AS_ESCAPE_KEY:
-                return (boolean) getUseBackKeyAsEscapeKeyInternalPropertyValueFromValue(value);
+            /* boolean */
             case TermuxPropertyConstants.KEY_USE_BLACK_UI:
                 return (boolean) getUseBlackUIInternalPropertyValueFromValue(context, value);
-            case TermuxPropertyConstants.KEY_VIRTUAL_VOLUME_KEYS_DISABLED:
-                return (boolean) getVolumeKeysDisabledInternalPropertyValueFromValue(value);
 
-            // int
+            /* int */
             case TermuxPropertyConstants.KEY_BELL_BEHAVIOUR:
                 return (int) getBellBehaviourInternalPropertyValueFromValue(value);
 
-            // float
+            /* float */
             case TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR:
                 return (float) getTerminalToolbarHeightScaleFactorInternalPropertyValueFromValue(value);
 
-            // Integer (may be null)
+            /* Integer (may be null) */
             case TermuxPropertyConstants.KEY_SHORTCUT_CREATE_SESSION:
             case TermuxPropertyConstants.KEY_SHORTCUT_NEXT_SESSION:
             case TermuxPropertyConstants.KEY_SHORTCUT_PREVIOUS_SESSION:
             case TermuxPropertyConstants.KEY_SHORTCUT_RENAME_SESSION:
                 return (Integer) getCodePointForSessionShortcuts(key, value);
 
-            // String (may be null)
+            /* String (may be null) */
+            case TermuxPropertyConstants.KEY_BACK_KEY_BEHAVIOUR:
+                return (String) getBackKeyBehaviourInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_DEFAULT_WORKING_DIRECTORY:
                 return (String) getDefaultWorkingDirectoryInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_EXTRA_KEYS:
                 return (String) getExtraKeysInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_EXTRA_KEYS_STYLE:
                 return (String) getExtraKeysStyleInternalPropertyValueFromValue(value);
-            case TermuxPropertyConstants.SOFT_KEYBOARD_TOGGLE_BEHAVIOUR:
+            case TermuxPropertyConstants.KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR:
                 return (String) getSoftKeyboardToggleBehaviourInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_VOLUME_KEYS_BEHAVIOUR:
+                return (String) getVolumeKeysBehaviourInternalPropertyValueFromValue(value);
+
             default:
                 // default boolean behaviour
                 if (TermuxPropertyConstants.TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
@@ -230,15 +231,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
 
 
-    /**
-     * Returns {@code true} if value is not {@code null} and equals {@link TermuxPropertyConstants#VALUE_BACK_KEY_BEHAVIOUR_ESCAPE}, otherwise false.
-     *
-     * @param value The {@link String} value to convert.
-     * @return Returns the internal value for value.
-     */
-    public static boolean getUseBackKeyAsEscapeKeyInternalPropertyValueFromValue(String value) {
-        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.VALUE_BACK_KEY_BEHAVIOUR_BACK).equals(TermuxPropertyConstants.VALUE_BACK_KEY_BEHAVIOUR_ESCAPE);
-    }
+
 
     /**
      * Returns {@code true} or {@code false} if value is the literal string "true" or "false" respectively regardless of case.
@@ -250,17 +243,6 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
     public static boolean getUseBlackUIInternalPropertyValueFromValue(Context context, String value) {
         int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return SharedProperties.getBooleanValueForStringValue(value, nightMode == Configuration.UI_MODE_NIGHT_YES);
-    }
-
-    /**
-     * Returns {@code true} if value is not {@code null} and equals
-     * {@link TermuxPropertyConstants#VALUE_VOLUME_KEY_BEHAVIOUR_VOLUME}, otherwise {@code false}.
-     *
-     * @param value The {@link String} value to convert.
-     * @return Returns the internal value for value.
-     */
-    public static boolean getVolumeKeysDisabledInternalPropertyValueFromValue(String value) {
-        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.VALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL).equals(TermuxPropertyConstants.VALUE_VOLUME_KEY_BEHAVIOUR_VOLUME);
     }
 
     /**
@@ -337,6 +319,16 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
     }
 
     /**
+     * Returns the value itself if it is not {@code null}, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_BACK_KEY_BEHAVIOUR}.
+     *
+     * @param value {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static String getBackKeyBehaviourInternalPropertyValueFromValue(String value) {
+        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_BACK_KEY_BEHAVIOUR);
+    }
+
+    /**
      * Returns the path itself if a directory exists at it and is readable, otherwise returns
      *  {@link TermuxPropertyConstants#DEFAULT_IVALUE_DEFAULT_WORKING_DIRECTORY}.
      *
@@ -385,6 +377,15 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR);
     }
 
+    /**
+     * Returns the value itself if it is not {@code null}, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_VOLUME_KEYS_BEHAVIOUR}.
+     *
+     * @param value {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static String getVolumeKeysBehaviourInternalPropertyValueFromValue(String value) {
+        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_VOLUME_KEYS_BEHAVIOUR);
+    }
 
 
 
@@ -395,10 +396,6 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
     public boolean shouldSoftKeyboardBeHiddenOnStartup() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP, true);
-    }
-
-    public boolean isBackKeyTheEscapeKey() {
-        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_BACK_KEY_AS_ESCAPE_KEY, true);
     }
 
     public boolean isUsingBlackUI() {
@@ -417,10 +414,6 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_FULLSCREEN_WORKAROUND, true);
     }
 
-    public boolean areVirtualVolumeKeysDisabled() {
-        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_VIRTUAL_VOLUME_KEYS_DISABLED, true);
-    }
-
     public int getBellBehaviour() {
         return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_BELL_BEHAVIOUR, true);
     }
@@ -429,14 +422,21 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         return rangeTerminalToolbarHeightScaleFactorValue((float) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR, true));
     }
 
+    public boolean isBackKeyTheEscapeKey() {
+        return (boolean) TermuxPropertyConstants.IVALUE_BACK_KEY_BEHAVIOUR_ESCAPE.equals(getInternalPropertyValue(TermuxPropertyConstants.KEY_BACK_KEY_BEHAVIOUR, true));
+    }
+
     public String getDefaultWorkingDirectory() {
         return (String) getInternalPropertyValue(TermuxPropertyConstants.KEY_DEFAULT_WORKING_DIRECTORY, true);
     }
 
     public boolean shouldEnableDisableSoftKeyboardOnToggle() {
-        return (boolean) TermuxPropertyConstants.IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE.equals(getInternalPropertyValue(TermuxPropertyConstants.SOFT_KEYBOARD_TOGGLE_BEHAVIOUR, true));
+        return (boolean) TermuxPropertyConstants.IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE.equals(getInternalPropertyValue(TermuxPropertyConstants.KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR, true));
     }
 
+    public boolean areVirtualVolumeKeysDisabled() {
+        return (boolean) TermuxPropertyConstants.IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME.equals(getInternalPropertyValue(TermuxPropertyConstants.KEY_VOLUME_KEYS_BEHAVIOUR, true));
+    }
 
 
 

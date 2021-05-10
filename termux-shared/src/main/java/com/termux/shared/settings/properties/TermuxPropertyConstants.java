@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.7.0
+ * Version: v0.8.0
  *
  * Changelog
  *
@@ -36,6 +36,11 @@ import java.util.Set;
  *
  * - 0.7.0 (2021-05-09)
  *      - Add `*SOFT_KEYBOARD_TOGGLE_BEHAVIOUR*`.
+ *
+ * - 0.8.0 (2021-05-10)
+ *      - Change the `KEY_USE_BACK_KEY_AS_ESCAPE_KEY` and `KEY_VIRTUAL_VOLUME_KEYS_DISABLED` booleans
+ *          to `KEY_BACK_KEY_BEHAVIOUR` and `KEY_VOLUME_KEYS_BEHAVIOUR` String internal values.
+ *      - Renamed `SOFT_KEYBOARD_TOGGLE_BEHAVIOUR` to `KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR`.
  */
 
 /**
@@ -51,13 +56,7 @@ import java.util.Set;
  */
 public final class TermuxPropertyConstants {
 
-    /** Defines the key for whether to use back key as the escape key */
-    public static final String KEY_USE_BACK_KEY_AS_ESCAPE_KEY =  "back-key"; // Default: "back-key"
-
-    public static final String VALUE_BACK_KEY_BEHAVIOUR_BACK = "back";
-    public static final String VALUE_BACK_KEY_BEHAVIOUR_ESCAPE = "escape";
-
-
+    /* boolean */
 
     /** Defines the key for whether to enforce character based input to fix the issue where for some devices like Samsung, the letters might not appear until enter is pressed */
     public static final String KEY_ENFORCE_CHAR_BASED_INPUT =  "enforce-char-based-input"; // Default: "enforce-char-based-input"
@@ -89,13 +88,9 @@ public final class TermuxPropertyConstants {
 
 
 
-    /** Defines the key for whether virtual volume keys are disabled */
-    public static final String KEY_VIRTUAL_VOLUME_KEYS_DISABLED =  "volume-keys"; // Default: "volume-keys"
-
-    public static final String VALUE_VOLUME_KEY_BEHAVIOUR_VOLUME = "volume";
-    public static final String VALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL = "virtual";
 
 
+    /* int */
 
     /** Defines the key for the bell behaviour */
     public static final String KEY_BELL_BEHAVIOUR =  "bell-character"; // Default: "bell-character"
@@ -120,13 +115,21 @@ public final class TermuxPropertyConstants {
 
 
 
-    /** Defines the key for the bell behaviour */
+
+
+    /* float */
+
+    /** Defines the key for the terminal toolbar height */
     public static final String KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR =  "terminal-toolbar-height"; // Default: "terminal-toolbar-height"
     public static final float IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN = 0.4f;
     public static final float IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX = 3;
     public static final float DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR = 1;
 
 
+
+
+
+    /* Integer */
 
     /** Defines the key for create session shortcut */
     public static final String KEY_SHORTCUT_CREATE_SESSION =  "shortcut.create-session"; // Default: "shortcut.create-session"
@@ -153,6 +156,19 @@ public final class TermuxPropertyConstants {
 
 
 
+
+
+    /* String */
+
+    /** Defines the key for whether back key will behave as escape key or literal back key */
+    public static final String KEY_BACK_KEY_BEHAVIOUR =  "back-key"; // Default: "back-key"
+
+    public static final String IVALUE_BACK_KEY_BEHAVIOUR_BACK = "back";
+    public static final String IVALUE_BACK_KEY_BEHAVIOUR_ESCAPE = "escape";
+    public static final String DEFAULT_IVALUE_BACK_KEY_BEHAVIOUR = IVALUE_BACK_KEY_BEHAVIOUR_BACK;
+
+
+
     /** Defines the key for the default working directory */
     public static final String KEY_DEFAULT_WORKING_DIRECTORY =  "default-working-directory"; // Default: "default-working-directory"
     /** Defines the default working directory */
@@ -162,19 +178,29 @@ public final class TermuxPropertyConstants {
 
     /** Defines the key for extra keys */
     public static final String KEY_EXTRA_KEYS =  "extra-keys"; // Default: "extra-keys"
+    public static final String DEFAULT_IVALUE_EXTRA_KEYS = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";
+
     /** Defines the key for extra keys style */
     public static final String KEY_EXTRA_KEYS_STYLE =  "extra-keys-style"; // Default: "extra-keys-style"
-    public static final String DEFAULT_IVALUE_EXTRA_KEYS = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";
     public static final String DEFAULT_IVALUE_EXTRA_KEYS_STYLE = "default";
 
 
 
     /** Defines the key for whether toggle soft keyboard request will show/hide or enable/disable keyboard */
-    public static final String SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =  "soft-keyboard-toggle-behaviour"; // Default: "soft-keyboard-toggle-behaviour"
+    public static final String KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =  "soft-keyboard-toggle-behaviour"; // Default: "soft-keyboard-toggle-behaviour"
 
     public static final String IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE = "show/hide";
     public static final String IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE = "enable/disable";
     public static final String DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR = IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE;
+
+
+
+    /** Defines the key for whether volume keys will behave as virtual or literal volume keys */
+    public static final String KEY_VOLUME_KEYS_BEHAVIOUR =  "volume-keys"; // Default: "volume-keys"
+
+    public static final String IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL = "virtual";
+    public static final String IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME = "volume";
+    public static final String DEFAULT_IVALUE_VOLUME_KEYS_BEHAVIOUR = IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL;
 
 
 
@@ -184,35 +210,35 @@ public final class TermuxPropertyConstants {
      * Setting this to {@code null} will make {@link SharedProperties} throw an exception.
      * */
     public static final Set<String> TERMUX_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
-        // boolean
+        /* boolean */
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
-        KEY_USE_BACK_KEY_AS_ESCAPE_KEY,
         KEY_USE_BLACK_UI,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
-        KEY_VIRTUAL_VOLUME_KEYS_DISABLED,
         TermuxConstants.PROP_ALLOW_EXTERNAL_APPS,
 
-        // int
+        /* int */
         KEY_BELL_BEHAVIOUR,
 
-        // float
+        /* float */
         KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
 
-        // Integer
+        /* Integer */
         KEY_SHORTCUT_CREATE_SESSION,
         KEY_SHORTCUT_NEXT_SESSION,
         KEY_SHORTCUT_PREVIOUS_SESSION,
         KEY_SHORTCUT_RENAME_SESSION,
 
-        // String
+        /* String */
+        KEY_BACK_KEY_BEHAVIOUR,
         KEY_DEFAULT_WORKING_DIRECTORY,
         KEY_EXTRA_KEYS,
         KEY_EXTRA_KEYS_STYLE,
-        SOFT_KEYBOARD_TOGGLE_BEHAVIOUR
-    ));
+        KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR,
+        KEY_VOLUME_KEYS_BEHAVIOUR
+        ));
 
     /** Defines the set for keys loaded by termux that have default boolean behaviour
      * "true" -> true
