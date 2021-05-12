@@ -10,6 +10,12 @@
             app:summaryOn="@string/soft_keyboard_on"
             app:title="@string/soft_keyboard_title" />
 
+        <SwitchPreferenceCompat
+            app:key="soft_keyboard_enabled_only_if_no_hardware"
+            app:summaryOff="@string/soft_keyboard_enabled_only_if_no_hardware_off"
+            app:summaryOn="@string/soft_keyboard_enabled_only_if_no_hardware_on"
+            app:title="@string/soft_keyboard_enabled_only_if_no_hardware_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

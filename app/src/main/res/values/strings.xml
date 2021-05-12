@@ -151,8 +151,13 @@
         <string name="keyboard_header">Keyboard</string>
 
             <!-- Soft Keyboard -->
-            <string name="soft_keyboard_title">Soft Keyboard</string>
+            <string name="soft_keyboard_title">Soft Keyboard Enabled</string>
             <string name="soft_keyboard_off">Soft keyboard will be disabled.</string>
             <string name="soft_keyboard_on">Soft keyboard will be enabled. (Default)</string>
+
+            <!-- Soft Keyboard Only If No Hardware-->
+            <string name="soft_keyboard_enabled_only_if_no_hardware_title">Soft Keyboard If No Hardware</string>
+            <string name="soft_keyboard_enabled_only_if_no_hardware_off">Soft keyboard will be enabled even if hardware keyboard is connected. (Default)</string>
+            <string name="soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if no hardware keyboard is connected.</string>
 
 </resources>

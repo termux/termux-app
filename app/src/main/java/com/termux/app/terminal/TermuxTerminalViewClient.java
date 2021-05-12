@@ -80,7 +80,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         if (!KeyboardUtils.areDisableSoftKeyboardFlagsSet(mActivity))
             KeyboardUtils.showSoftKeyboard(mActivity, mActivity.getTerminalView());
         else
-            Logger.logVerbose(LOG_TAG, "Not showing keyboard onSingleTapUp since its disabled");
+            Logger.logVerbose(LOG_TAG, "Not showing soft keyboard onSingleTapUp since its disabled");
     }
 
     @Override
@@ -380,8 +380,10 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     }
 
     public void setSoftKeyboardState(boolean isStartup, boolean isReloadTermuxProperties) {
-        // If soft keyboard is disabled by user for Termux
-        if (!mActivity.getPreferences().getSoftKeyboardEnabled()) {
+        // If soft keyboard is disabled by user for Termux (check function docs for Termux behaviour info)
+        if (KeyboardUtils.shouldSoftKeyboardBeDisabled(mActivity,
+                mActivity.getPreferences().getSoftKeyboardEnabled(),
+                    mActivity.getPreferences().getSoftKeyboardEnabledOnlyIfNoHardware())) {
             Logger.logVerbose(LOG_TAG, "Maintaining disabled soft keyboard");
             KeyboardUtils.disableSoftKeyboard(mActivity, mActivity.getTerminalView());
         } else {
