@@ -246,7 +246,7 @@ final class TermuxInstaller {
         }.start();
     }
 
-    private static void ensureDirectoryExists(Context context, File directory) {
+    public static void ensureDirectoryExists(Context context, File directory) {
         String errmsg;
 
         errmsg = FileUtils.createDirectoryFile(context, directory.getAbsolutePath());
