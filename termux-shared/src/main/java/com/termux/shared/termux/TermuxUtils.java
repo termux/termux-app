@@ -227,6 +227,13 @@ public class TermuxUtils {
         appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(context));
         appendPropertyToMarkdown(markdownString,"IS_DEBUG_BUILD", PackageUtils.isAppForPackageADebugBuild(context));
 
+        String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(context);
+        Logger.logError("'" + signingCertificateSHA256Digest + "'");
+        if (signingCertificateSHA256Digest != null) {
+            appendPropertyToMarkdown(markdownString,"APK_RELEASE", getAPKRelease(signingCertificateSHA256Digest));
+            appendPropertyToMarkdown(markdownString,"SIGNING_CERTIFICATE_SHA256_DIGEST", signingCertificateSHA256Digest);
+        }
+
         return markdownString.toString();
     }
 
@@ -488,6 +495,21 @@ public class TermuxUtils {
         final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         return df.format(new Date());
+    }
+
+    public static String getAPKRelease(String signingCertificateSHA256Digest) {
+        if (signingCertificateSHA256Digest == null) return "null";
+
+        switch (signingCertificateSHA256Digest.toUpperCase()) {
+            case TermuxConstants.APK_RELEASE_FDROID_SIGNING_CERTIFICATE_SHA256_DIGEST:
+                return TermuxConstants.APK_RELEASE_FDROID;
+            case TermuxConstants.APK_RELEASE_GITHUB_DEBUG_BUILD_SIGNING_CERTIFICATE_SHA256_DIGEST:
+                return TermuxConstants.APK_RELEASE_GITHUB_DEBUG_BUILD;
+            case TermuxConstants.APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST:
+                return TermuxConstants.APK_RELEASE_GOOGLE_PLAYSTORE;
+            default:
+                return "Unknown";
+        }
     }
 
 }

@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /*
- * Version: v0.20.0
+ * Version: v0.21.0
  *
  * Changelog
  *
@@ -141,6 +141,11 @@ import java.util.List;
  * - 0.20.0 (2021-05-13)
  *      - Added `TERMUX_WIKI`, `TERMUX_WIKI_URL`, `TERMUX_PLUGIN_APP_NAMES_LIST`, `TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST`.
  *      - Added `TERMUX_SETTINGS_ACTIVITY_NAME`.
+ *
+ * - 0.21.0 (2021-05-13)
+ *      - Added `APK_RELEASE_FDROID`, `APK_RELEASE_FDROID_SIGNING_CERTIFICATE_SHA256_DIGEST`,
+ *      - Added `APK_RELEASE_GITHUB_DEBUG_BUILD`, `APK_RELEASE_GITHUB_DEBUG_BUILD_SIGNING_CERTIFICATE_SHA256_DIGEST`,
+ *      - Added `APK_RELEASE_GOOGLE_PLAYSTORE`, `APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST`.
  *
  */
 
@@ -346,6 +351,32 @@ public final class TermuxConstants {
         TERMUX_STYLING_PACKAGE_NAME,
         TERMUX_TASKER_PACKAGE_NAME,
         TERMUX_WIDGET_PACKAGE_NAME);
+
+
+
+
+
+    /*
+     * Termux APK releases.
+     */
+
+    /** F-Droid APK release */
+    public static final String APK_RELEASE_FDROID = "F-Droid"; // Default: "F-Droid"
+
+    /** F-Droid APK release signing certificate SHA-256 digest */
+    public static final String APK_RELEASE_FDROID_SIGNING_CERTIFICATE_SHA256_DIGEST = "228FB2CFE90831C1499EC3CCAF61E96E8E1CE70766B9474672CE427334D41C42"; // Default: "228FB2CFE90831C1499EC3CCAF61E96E8E1CE70766B9474672CE427334D41C42"
+
+    /** Github Debug Build APK release */
+    public static final String APK_RELEASE_GITHUB_DEBUG_BUILD = "Github Debug Build"; // Default: "Github Debug Build"
+
+    /** Github Debug Build APK release signing certificate SHA-256 digest */
+    public static final String APK_RELEASE_GITHUB_DEBUG_BUILD_SIGNING_CERTIFICATE_SHA256_DIGEST = "B6DA01480EEFD5FBF2CD3771B8D1021EC791304BDD6C4BF41D3FAABAD48EE5E1"; // Default: "B6DA01480EEFD5FBF2CD3771B8D1021EC791304BDD6C4BF41D3FAABAD48EE5E1"
+
+    /** Google Play Store APK release */
+    public static final String APK_RELEASE_GOOGLE_PLAYSTORE = "Google Play Store"; // Default: "Google Play Store"
+
+    /** Google Play Store APK release signing certificate SHA-256 digest */
+    public static final String APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST = "738F0A30A04D3C8A1BE304AF18D0779BCF3EA88FB60808F657A3521861C2EBF9"; // Default: "738F0A30A04D3C8A1BE304AF18D0779BCF3EA88FB60808F657A3521861C2EBF9"
 
 
 

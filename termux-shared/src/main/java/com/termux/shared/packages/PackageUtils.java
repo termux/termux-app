@@ -3,10 +3,14 @@ package com.termux.shared.packages;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 
+import com.termux.shared.data.DataUtils;
 import com.termux.shared.logger.Logger;
+
+import java.security.MessageDigest;
 
 public class PackageUtils {
 
@@ -32,8 +36,19 @@ public class PackageUtils {
      * @return Returns the {@link PackageInfo}. This will be {@code null} if an exception is raised.
      */
     public static PackageInfo getPackageInfoForPackage(@NonNull final Context context) {
+            return getPackageInfoForPackage(context, 0);
+    }
+
+    /**
+     * Get the {@link PackageInfo} for the package associated with the {@code context}.
+     *
+     * @param context The {@link Context} for the package.
+     * @param flags The flags to pass to {@link PackageManager#getPackageInfo(String, int)}.
+     * @return Returns the {@link PackageInfo}. This will be {@code null} if an exception is raised.
+     */
+    public static PackageInfo getPackageInfoForPackage(@NonNull final Context context, final int flags) {
         try {
-            return context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            return context.getPackageManager().getPackageInfo(context.getPackageName(), flags);
         } catch (final Exception e) {
             return null;
         }
@@ -102,6 +117,23 @@ public class PackageUtils {
     public static String getVersionNameForPackage(@NonNull final Context context) {
         try {
             return getPackageInfoForPackage(context).versionName;
+        } catch (final Exception e) {
+            return null;
+        }
+    }
+
+
+    /**
+     * Get the {@code SHA-256 digest} of signing certificate for the package associated with the {@code context}.
+     *
+     * @param context The {@link Context} for the package.
+     * @return Returns the{@code SHA-256 digest}. This will be {@code null} if an exception is raised.
+     */
+    public static String getSigningCertificateSHA256DigestForPackage(@NonNull final Context context) {
+        try {
+            PackageInfo packageInfo = getPackageInfoForPackage(context, PackageManager.GET_SIGNATURES);
+            if (packageInfo == null) return null;
+            return DataUtils.bytesToHex(MessageDigest.getInstance("SHA-256").digest(packageInfo.signatures[0].toByteArray()));
         } catch (final Exception e) {
             return null;
         }

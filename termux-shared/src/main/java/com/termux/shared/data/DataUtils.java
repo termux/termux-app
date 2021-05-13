@@ -10,6 +10,8 @@ public class DataUtils {
 
     public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 100 * 1024; // 100KB
 
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+
     public static String getTruncatedCommandOutput(String text, int maxLength, boolean fromEnd, boolean onNewline, boolean addPrefix) {
         if (text == null) return null;
 
@@ -43,7 +45,7 @@ public class DataUtils {
     /**
      * Get the {@code float} from a {@link String}.
      *
-     * @param value The {@link String value.
+     * @param value The {@link String} value.
      * @param def The default value if failed to read a valid value.
      * @return Returns the {@code float} value after parsing the {@link String} value, otherwise
      * returns default if failed to read a valid value, like in case of an exception.
@@ -62,7 +64,7 @@ public class DataUtils {
     /**
      * Get the {@code int} from a {@link String}.
      *
-     * @param value The {@link String value.
+     * @param value The {@link String} value.
      * @param def The default value if failed to read a valid value.
      * @return Returns the {@code int} value after parsing the {@link String} value, otherwise
      * returns default if failed to read a valid value, like in case of an exception.
@@ -76,6 +78,22 @@ public class DataUtils {
         catch (Exception e) {
             return def;
         }
+    }
+
+    /**
+     * Get the {@code hex string} from a {@link byte[]}.
+     *
+     * @param bytes The {@link byte[]} value.
+     * @return Returns the {@code hex string} value.
+     */
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     /**
