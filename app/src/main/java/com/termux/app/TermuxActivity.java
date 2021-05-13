@@ -225,7 +225,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         // If user changed the preference from {@link TermuxSettings} activity and returns, then
         // update the {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value.
-        mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.getTerminalViewKeyLoggingEnabled());
+        mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.isTerminalViewKeyLoggingEnabled());
 
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal.
@@ -353,7 +353,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private void setTerminalToolbarView(Bundle savedInstanceState) {
         final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
-        if (mPreferences.getShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         mTerminalToolbarDefaultHeight = layoutParams.height;
@@ -441,10 +441,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mTerminalView.setTerminalViewClient(mTermuxTerminalViewClient);
 
         mTerminalView.setTextSize(mPreferences.getFontSize());
-        mTerminalView.setKeepScreenOn(mPreferences.getKeepScreenOn());
+        mTerminalView.setKeepScreenOn(mPreferences.shouldKeepScreenOn());
 
         // Set {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value
-        mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.getTerminalViewKeyLoggingEnabled());
+        mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.isTerminalViewKeyLoggingEnabled());
 
         mTermuxTerminalSessionClient.checkForFontAndColors();
     }
@@ -508,7 +508,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXT_MENU_RESET_TERMINAL_ID, Menu.NONE, R.string.action_reset_terminal);
         menu.add(Menu.NONE, CONTEXT_MENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.action_kill_process, getCurrentSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXT_MENU_STYLING_ID, Menu.NONE, R.string.action_style_terminal);
-        menu.add(Menu.NONE, CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.action_toggle_keep_screen_on).setCheckable(true).setChecked(mPreferences.getKeepScreenOn());
+        menu.add(Menu.NONE, CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.action_toggle_keep_screen_on).setCheckable(true).setChecked(mPreferences.shouldKeepScreenOn());
         menu.add(Menu.NONE, CONTEXT_MENU_HELP_ID, Menu.NONE, R.string.action_open_help);
         menu.add(Menu.NONE, CONTEXT_MENU_SETTINGS_ID, Menu.NONE, R.string.action_open_settings);
         menu.add(Menu.NONE, CONTEXT_MENU_REPORT_ID, Menu.NONE, R.string.action_report_issue);

@@ -38,7 +38,7 @@ public class TermuxAppSharedPreferences {
 
 
 
-    public boolean getShowTerminalToolbar() {
+    public boolean shouldShowTerminalToolbar() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_SHOW_TERMINAL_TOOLBAR, TERMUX_APP.DEFAULT_VALUE_SHOW_TERMINAL_TOOLBAR);
     }
 
@@ -47,14 +47,14 @@ public class TermuxAppSharedPreferences {
     }
 
     public boolean toogleShowTerminalToolbar() {
-        boolean currentValue = getShowTerminalToolbar();
+        boolean currentValue = shouldShowTerminalToolbar();
         setShowTerminalToolbar(!currentValue);
         return !currentValue;
     }
 
 
 
-    public boolean getSoftKeyboardEnabled() {
+    public boolean isSoftKeyboardEnabled() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_SOFT_KEYBOARD_ENABLED, TERMUX_APP.DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED);
     }
 
@@ -62,7 +62,7 @@ public class TermuxAppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_SOFT_KEYBOARD_ENABLED, value, false);
     }
 
-    public boolean getSoftKeyboardEnabledOnlyIfNoHardware() {
+    public boolean isSoftKeyboardEnabledOnlyIfNoHardware() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE, TERMUX_APP.DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE);
     }
 
@@ -72,7 +72,7 @@ public class TermuxAppSharedPreferences {
 
 
 
-    public boolean getKeepScreenOn() {
+    public boolean shouldKeepScreenOn() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_KEEP_SCREEN_ON, TERMUX_APP.DEFAULT_VALUE_KEEP_SCREEN_ON);
     }
 
@@ -151,7 +151,7 @@ public class TermuxAppSharedPreferences {
 
 
 
-    public boolean getTerminalViewKeyLoggingEnabled() {
+    public boolean isTerminalViewKeyLoggingEnabled() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED, TERMUX_APP.DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED);
     }
 
@@ -161,7 +161,7 @@ public class TermuxAppSharedPreferences {
 
 
 
-    public boolean getPluginErrorNotificationsEnabled() {
+    public boolean arePluginErrorNotificationsEnabled() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED);
     }
 
@@ -171,7 +171,7 @@ public class TermuxAppSharedPreferences {
 
 
 
-    public boolean getCrashReportNotificationsEnabled() {
+    public boolean areCrashReportNotificationsEnabled() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED);
     }
 

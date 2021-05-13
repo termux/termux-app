@@ -141,7 +141,7 @@ public class PluginUtils {
 
         TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(context);
         // If user has disabled notifications for plugin, then just return
-        if (!preferences.getPluginErrorNotificationsEnabled() && !forceNotification)
+        if (!preferences.arePluginErrorNotificationsEnabled() && !forceNotification)
             return;
 
         // Flash the errmsg

@@ -76,7 +76,7 @@ public class PermissionUtils {
         
         if (!PermissionUtils.checkDisplayOverOtherAppsPermission(context)) {
             TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(context);
-            if (preferences.getPluginErrorNotificationsEnabled())
+            if (preferences.arePluginErrorNotificationsEnabled())
                 Logger.showToast(context, context.getString(R.string.error_display_over_other_apps_permission_not_granted), true);
             return false;
         } else {
