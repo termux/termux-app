@@ -2,13 +2,19 @@ package com.termux.shared.interact;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.text.Selection;
 import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.termux.shared.R;
 
 public final class DialogUtils {
 
@@ -61,11 +67,41 @@ public final class DialogUtils {
             builder.setNegativeButton(negativeButtonText, (dialog, which) -> onNegative.onTextSet(input.getText().toString()));
         }
 
-        if (onDismiss != null) builder.setOnDismissListener(onDismiss);
+        if (onDismiss != null)
+            builder.setOnDismissListener(onDismiss);
 
         dialogHolder[0] = builder.create();
         dialogHolder[0].setCanceledOnTouchOutside(false);
         dialogHolder[0].show();
+    }
+
+    public static void showMessage(Context context, String titleText, String messageText, final DialogInterface.OnDismissListener onDismiss) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.Theme_AppCompat_Light_Dialog)
+            .setPositiveButton(android.R.string.ok, null);
+
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+        View view = inflater.inflate(R.layout.dialog_show_message, null);
+        if (view != null) {
+            builder.setView(view);
+
+            TextView titleView = view.findViewById(R.id.dialog_title);
+            if (titleView != null)
+                titleView.setText(titleText);
+
+            TextView messageView = view.findViewById(R.id.dialog_message);
+            if (messageView != null)
+                messageView.setText(messageText);
+        }
+
+        if (onDismiss != null)
+            builder.setOnDismissListener(onDismiss);
+
+        builder.show();
+    }
+
+    public static void exitAppWithErrorMessage(Context context, String titleText, String messageText) {
+        showMessage(context, titleText, messageText, dialog -> System.exit(0));
     }
 
 }

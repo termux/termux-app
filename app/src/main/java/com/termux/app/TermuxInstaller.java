@@ -12,6 +12,7 @@ import android.view.WindowManager;
 
 import com.termux.R;
 import com.termux.shared.file.FileUtils;
+import com.termux.shared.interact.DialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 
@@ -57,8 +58,9 @@ final class TermuxInstaller {
         if (!isPrimaryUser) {
             String bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message, TermuxConstants.TERMUX_PREFIX_DIR_PATH);
             Logger.logError(LOG_TAG, bootstrapErrorMessage);
-            new AlertDialog.Builder(activity).setTitle(R.string.bootstrap_error_title).setMessage(bootstrapErrorMessage)
-                .setOnDismissListener(dialog -> System.exit(0)).setPositiveButton(android.R.string.ok, null).show();
+            DialogUtils.exitAppWithErrorMessage(activity,
+                activity.getString(R.string.bootstrap_error_title),
+                bootstrapErrorMessage);
             return;
         }
 
