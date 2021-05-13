@@ -61,7 +61,9 @@ public class NotificationUtils {
     public synchronized static int getNextNotificationId(final Context context) {
         if (context == null) return TermuxPreferenceConstants.TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID;
 
-        TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(context);
+        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
+        if (preferences == null) return TermuxPreferenceConstants.TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID;
+
         int lastNotificationId = preferences.getLastNotificationId();
 
         int nextNotificationId = lastNotificationId + 1;

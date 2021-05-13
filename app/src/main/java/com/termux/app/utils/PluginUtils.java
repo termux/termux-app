@@ -139,7 +139,9 @@ public class PluginUtils {
         }
 
 
-        TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(context);
+        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
+        if (preferences == null) return;
+
         // If user has disabled notifications for plugin, then just return
         if (!preferences.arePluginErrorNotificationsEnabled() && !forceNotification)
             return;

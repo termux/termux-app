@@ -35,8 +35,10 @@
                 android:id="@+id/dialog_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:autoLink="web|email"
                 android:textSize="14sp"
-                android:textColor="@android:color/tab_indicator_text"/>
+                android:textColor="@android:color/tab_indicator_text"
+                android:textColorLink="@android:color/black"/>
         </LinearLayout>
     </ScrollView>
 

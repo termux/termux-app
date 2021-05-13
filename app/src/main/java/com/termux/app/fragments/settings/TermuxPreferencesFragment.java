@@ -33,12 +33,12 @@ class TermuxPreferencesDataStore extends PreferenceDataStore {
 
     private TermuxPreferencesDataStore(Context context) {
         mContext = context;
-        mPreferences = new TermuxAppSharedPreferences(context);
+        mPreferences = TermuxAppSharedPreferences.build(context, true);
     }
 
     public static synchronized TermuxPreferencesDataStore getInstance(Context context) {
         if (mInstance == null) {
-            mInstance = new TermuxPreferencesDataStore(context.getApplicationContext());
+            mInstance = new TermuxPreferencesDataStore(context);
         }
         return mInstance;
     }

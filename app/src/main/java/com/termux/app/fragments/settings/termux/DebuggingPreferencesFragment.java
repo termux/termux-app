@@ -28,7 +28,7 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
         PreferenceCategory loggingCategory = findPreference("logging");
 
         if (loggingCategory != null) {
-            final ListPreference logLevelListPreference = setLogLevelListPreferenceData(findPreference("log_level"), getActivity());
+            final ListPreference logLevelListPreference = setLogLevelListPreferenceData(findPreference("log_level"), getContext());
             loggingCategory.addPreference(logLevelListPreference);
         }
     }
@@ -60,12 +60,12 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
     private DebuggingPreferencesDataStore(Context context) {
         mContext = context;
-        mPreferences = new TermuxAppSharedPreferences(context);
+        mPreferences = TermuxAppSharedPreferences.build(context, true);
     }
 
     public static synchronized DebuggingPreferencesDataStore getInstance(Context context) {
         if (mInstance == null) {
-            mInstance = new DebuggingPreferencesDataStore(context.getApplicationContext());
+            mInstance = new DebuggingPreferencesDataStore(context);
         }
         return mInstance;
     }
@@ -75,6 +75,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
     @Override
     @Nullable
     public String getString(String key, @Nullable String defValue) {
+        if (mPreferences == null) return null;
         if (key == null) return null;
 
         switch (key) {
@@ -87,6 +88,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public void putString(String key, @Nullable String value) {
+        if (mPreferences == null) return;
         if (key == null) return;
 
         switch (key) {
@@ -104,6 +106,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public void putBoolean(String key, boolean value) {
+        if (mPreferences == null) return;
         if (key == null) return;
 
         switch (key) {
@@ -123,6 +126,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public boolean getBoolean(String key, boolean defValue) {
+        if (mPreferences == null) return false;
         switch (key) {
             case "terminal_view_key_logging_enabled":
                 return mPreferences.isTerminalViewKeyLoggingEnabled();

@@ -743,8 +743,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
     private void setCurrentStoredTerminalSession(TerminalSession session) {
         if (session == null) return;
-        // Make the newly created session the current one to be displayed:
-        TermuxAppSharedPreferences preferences = new TermuxAppSharedPreferences(this);
+        // Make the newly created session the current one to be displayed
+        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(this);
+        if (preferences == null) return;
         preferences.setCurrentSession(session.mHandle);
     }
 

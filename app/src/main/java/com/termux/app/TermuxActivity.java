@@ -129,9 +129,15 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
      */
     private boolean mIsVisible;
 
+    /**
+     * The {@link TermuxActivity} is in an invalid state and must not be run.
+     */
+    private boolean mIsInvalidState;
+
     private int mNavBarHeight;
 
     private int mTerminalToolbarDefaultHeight;
+
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
@@ -159,8 +165,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         // notification with the crash details if it did
         CrashUtils.notifyCrash(this, LOG_TAG);
 
-        // Load termux shared preferences and properties
-        mPreferences = new TermuxAppSharedPreferences(this);
+        // Load termux shared properties
         mProperties = new TermuxAppSharedProperties(this);
 
         setActivityTheme();
@@ -168,6 +173,15 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_termux);
+
+        // Load termux shared preferences
+        // This will also fail if TermuxConstants.TERMUX_PACKAGE_NAME does not equal applicationId
+        mPreferences = TermuxAppSharedPreferences.build(this, true);
+        if (mPreferences == null) {
+            // An AlertDialog should have shown to kill the app, so we don't continue running activity code
+            mIsInvalidState = true;
+            return;
+        }
 
         View content = findViewById(android.R.id.content);
         content.setOnApplyWindowInsetsListener((v, insets) -> {
@@ -211,6 +225,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         Logger.logDebug(LOG_TAG, "onStart");
 
+        if (mIsInvalidState) return;
+
         mIsVisible = true;
 
         if (mTermuxService != null) {
@@ -235,6 +251,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     @Override
     public void onResume() {
         super.onResume();
+
+        Logger.logVerbose(LOG_TAG, "onResume");
+
+        if (mIsInvalidState) return;
 
         mTermuxTerminalViewClient.setSoftKeyboardState(true, false);
     }
@@ -302,6 +322,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         Logger.logDebug(LOG_TAG, "onStop");
 
+        if (mIsInvalidState) return;
+
         mIsVisible = false;
 
         // Store current session in shared preferences so that it can be restored later in
@@ -318,12 +340,19 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         Logger.logDebug(LOG_TAG, "onDestroy");
 
+        if (mIsInvalidState) return;
+
         if (mTermuxService != null) {
             // Do not leave service and session clients with references to activity.
             mTermuxService.unsetTermuxTerminalSessionClient();
             mTermuxService = null;
         }
-        unbindService(this);
+
+        try {
+            unbindService(this);
+        } catch (Exception e) {
+            // ignore.
+        }
     }
 
     @Override

@@ -33,12 +33,12 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
 
     private TerminalIOPreferencesDataStore(Context context) {
         mContext = context;
-        mPreferences = new TermuxAppSharedPreferences(context);
+        mPreferences = TermuxAppSharedPreferences.build(context, true);
     }
 
     public static synchronized TerminalIOPreferencesDataStore getInstance(Context context) {
         if (mInstance == null) {
-            mInstance = new TerminalIOPreferencesDataStore(context.getApplicationContext());
+            mInstance = new TerminalIOPreferencesDataStore(context);
         }
         return mInstance;
     }
@@ -47,6 +47,7 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public void putBoolean(String key, boolean value) {
+        if (mPreferences == null) return;
         if (key == null) return;
 
         switch (key) {
@@ -63,6 +64,8 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public boolean getBoolean(String key, boolean defValue) {
+        if (mPreferences == null) return false;
+
         switch (key) {
             case "soft_keyboard_enabled":
                 return mPreferences.isSoftKeyboardEnabled();

@@ -228,7 +228,6 @@ public class TermuxUtils {
         appendPropertyToMarkdown(markdownString,"IS_DEBUG_BUILD", PackageUtils.isAppForPackageADebugBuild(context));
 
         String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(context);
-        Logger.logError("'" + signingCertificateSHA256Digest + "'");
         if (signingCertificateSHA256Digest != null) {
             appendPropertyToMarkdown(markdownString,"APK_RELEASE", getAPKRelease(signingCertificateSHA256Digest));
             appendPropertyToMarkdown(markdownString,"SIGNING_CERTIFICATE_SHA256_DIGEST", signingCertificateSHA256Digest);
@@ -381,7 +380,7 @@ public class TermuxUtils {
      */
     public static String geAPTInfoMarkdownString(@NonNull final Context context) {
 
-        String aptInfoScript = null;
+        String aptInfoScript;
         InputStream inputStream = context.getResources().openRawResource(com.termux.shared.R.raw.apt_info_script);
         try {
             aptInfoScript = IOUtils.toString(inputStream, Charset.defaultCharset());

@@ -75,6 +75,15 @@ public final class DialogUtils {
         dialogHolder[0].show();
     }
 
+    /**
+     * Show a message in a dialog
+     *
+     * @param context The {@link Context} to use to start the dialog. An {@link Activity} {@link Context}
+     *                must be passed, otherwise exceptions will be thrown.
+     * @param titleText The title text of the dialog.
+     * @param messageText The message text of the dialog.
+     * @param onDismiss The {@link DialogInterface.OnDismissListener} to run when dialog is dismissed.
+     */
     public static void showMessage(Context context, String titleText, String messageText, final DialogInterface.OnDismissListener onDismiss) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.Theme_AppCompat_Light_Dialog)
