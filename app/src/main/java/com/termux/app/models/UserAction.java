@@ -2,8 +2,9 @@ package com.termux.app.models;
 
 public enum UserAction {
 
-    PLUGIN_EXECUTION_COMMAND("plugin execution command"),
+    ABOUT("about"),
     CRASH_REPORT("crash report"),
+    PLUGIN_EXECUTION_COMMAND("plugin execution command"),
     REPORT_ISSUE_FROM_TRANSCRIPT("report issue from transcript");
 
     private final String name;

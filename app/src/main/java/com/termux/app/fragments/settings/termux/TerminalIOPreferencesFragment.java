@@ -1,4 +1,4 @@
-package com.termux.app.fragments.settings;
+package com.termux.app.fragments.settings.termux;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -19,7 +19,7 @@ public class TerminalIOPreferencesFragment extends PreferenceFragmentCompat {
         PreferenceManager preferenceManager = getPreferenceManager();
         preferenceManager.setPreferenceDataStore(TerminalIOPreferencesDataStore.getInstance(getContext()));
 
-        setPreferencesFromResource(R.xml.terminal_io_preferences, rootKey);
+        setPreferencesFromResource(R.xml.termux_terminal_io_preferences, rootKey);
     }
 
 }
@@ -65,9 +65,9 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
     public boolean getBoolean(String key, boolean defValue) {
         switch (key) {
             case "soft_keyboard_enabled":
-                return mPreferences.getSoftKeyboardEnabled();
+                return mPreferences.isSoftKeyboardEnabled();
             case "soft_keyboard_enabled_only_if_no_hardware":
-                return mPreferences.getSoftKeyboardEnabledOnlyIfNoHardware();
+                return mPreferences.isSoftKeyboardEnabledOnlyIfNoHardware();
             default:
                 return false;
         }

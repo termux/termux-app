@@ -3,9 +3,11 @@ package com.termux.shared.termux;
 import android.annotation.SuppressLint;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 /*
- * Version: v0.19.0
+ * Version: v0.20.0
  *
  * Changelog
  *
@@ -135,6 +137,11 @@ import java.io.File;
  *      - Added `TERMUX_SERVICE.EXTRA_STDIN`.
  *      - Added `RUN_COMMAND_SERVICE.EXTRA_STDIN`.
  *      - Deprecated `TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE`.
+ *
+ * - 0.20.0 (2021-05-13)
+ *      - Added `TERMUX_WIKI`, `TERMUX_WIKI_URL`, `TERMUX_PLUGIN_APP_NAMES_LIST`, `TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST`.
+ *      - Added `TERMUX_SETTINGS_ACTIVITY_NAME`.
+ *
  */
 
 /**
@@ -193,6 +200,12 @@ public final class TermuxConstants {
 
     /** Termux support email mailto url */
     public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:termuxreports@groups.io"
+
+    /** Termux Wiki */
+    public static final String TERMUX_WIKI = "Termux Wiki"; // Default: "Termux Wiki"
+
+    /** Termux Wiki url */
+    public static final String TERMUX_WIKI_URL = "https://wiki.termux.com"; // Default: "https://wiki.termux.com"
 
     /** Termux Reddit subreddit */
     public static final String TERMUX_REDDIT_SUBREDDIT = "r/termux"; // Default: "r/termux"
@@ -309,6 +322,30 @@ public final class TermuxConstants {
     public static final String TERMUX_WIDGET_GITHUB_ISSUES_REPO_URL = TERMUX_WIDGET_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/termux-widget/issues"
     /** Termux Widget F-Droid package url */
     public static final String TERMUX_WIDGET_FDROID_PACKAGE_URL = FDROID_PACKAGES_BASE_URL + "/" + TERMUX_WIDGET_PACKAGE_NAME; // Default: "https://f-droid.org/en/packages/com.termux.widget"
+
+
+
+
+
+    /*
+     * Termux plugin apps lists.
+     */
+
+    public static final List<String> TERMUX_PLUGIN_APP_NAMES_LIST = Arrays.asList(
+        TERMUX_API_APP_NAME,
+        TERMUX_BOOT_APP_NAME,
+        TERMUX_FLOAT_APP_NAME,
+        TERMUX_STYLING_APP_NAME,
+        TERMUX_TASKER_APP_NAME,
+        TERMUX_WIDGET_APP_NAME);
+
+    public static final List<String> TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST = Arrays.asList(
+        TERMUX_API_PACKAGE_NAME,
+        TERMUX_BOOT_PACKAGE_NAME,
+        TERMUX_FLOAT_PACKAGE_NAME,
+        TERMUX_STYLING_PACKAGE_NAME,
+        TERMUX_TASKER_PACKAGE_NAME,
+        TERMUX_WIDGET_PACKAGE_NAME);
 
 
 
@@ -649,6 +686,13 @@ public final class TermuxConstants {
             public static final String EXTRA_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
 
         }
+
+
+
+
+
+        /** Termux app settings activity name. */
+        public static final String TERMUX_SETTINGS_ACTIVITY_NAME = TERMUX_PACKAGE_NAME + ".app.activities.SettingsActivity"; // Default: "com.termux.app.activities.SettingsActivity"
 
 
 

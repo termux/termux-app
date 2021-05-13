@@ -122,42 +122,55 @@
     <!-- Termux Settings -->
     <string name="title_activity_termux_settings">&TERMUX_APP_NAME; Settings</string>
 
-    <!-- Debugging Preferences -->
-    <string name="debugging_preferences">Debugging</string>
+    <!-- Termux App Preferences -->
+    <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
+    <string name="termux_preferences_summary">Preferences for &TERMUX_APP_NAME; app</string>
 
-        <!-- Logging Category -->
-        <string name="logging_header">Logging</string>
+        <!-- Debugging Preferences -->
+        <string name="termux_debugging_preferences_title">Debugging</string>
+        <string name="termux_debugging_preferences_summary">Preferences for debugging</string>
 
-            <!-- Terminal View Key Logging -->
-            <string name="terminal_view_key_logging_title">Terminal View Key Logging</string>
-            <string name="terminal_view_key_logging_off">Logs will not have entries for terminal view keys. (Default)</string>
-            <string name="terminal_view_key_logging_on">Logcat logs will have entries for terminal view keys. These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
+            <!-- Logging Category -->
+            <string name="termux_logging_header">Logging</string>
 
-            <!-- Plugin Error Notifications -->
-            <string name="plugin_error_notifications_title">Plugin Error Notifications</string>
-            <string name="plugin_error_notifications_off">Disable flashes and notifications for plugin errors.</string>
-            <string name="plugin_error_notifications_on">Show flashes and notifications for plugin errors. (Default)</string>
+                <!-- Log Level -->
+                <string name="termux_log_level_title">Log Level</string>
 
-            <!-- Crash Report Notifications -->
-            <string name="crash_report_notifications_title">Crash Report Notifications</string>
-            <string name="crash_report_notifications_off">Disable notifications for crash reports.</string>
-            <string name="crash_report_notifications_on">Show notifications for crash reports. (Default)</string>
+                <!-- Terminal View Key Logging -->
+                <string name="termux_terminal_view_key_logging_enabled_title">Terminal View Key Logging</string>
+                <string name="termux_terminal_view_key_logging_enabled_off">Logs will not have entries for terminal view keys. (Default)</string>
+                <string name="termux_terminal_view_key_logging_enabled_on">Logcat logs will have entries for terminal view keys. These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
+
+                <!-- Plugin Error Notifications -->
+                <string name="termux_plugin_error_notifications_enabled_title">Plugin Error Notifications</string>
+                <string name="termux_plugin_error_notifications_enabled_off">Disable flashes and notifications for plugin errors.</string>
+                <string name="termux_plugin_error_notifications_enabled_on">Show flashes and notifications for plugin errors. (Default)</string>
+
+                <!-- Crash Report Notifications -->
+                <string name="termux_crash_report_notifications_enabled_title">Crash Report Notifications</string>
+                <string name="termux_crash_report_notifications_enabled_off">Disable notifications for crash reports.</string>
+                <string name="termux_crash_report_notifications_enabled_on">Show notifications for crash reports. (Default)</string>
 
 
-    <!-- Terminal IO Preferences -->
-    <string name="terminal_io_preferences">Terminal I/O</string>
+        <!-- Terminal IO Preferences -->
+        <string name="termux_terminal_io_preferences_title">Terminal I/O</string>
+        <string name="termux_terminal_io_preferences_summary">Preferences for terminal I/O</string>
 
-        <!-- Keyboard Category -->
-        <string name="keyboard_header">Keyboard</string>
+            <!-- Keyboard Category -->
+            <string name="termux_keyboard_header">Keyboard</string>
 
-            <!-- Soft Keyboard -->
-            <string name="soft_keyboard_title">Soft Keyboard Enabled</string>
-            <string name="soft_keyboard_off">Soft keyboard will be disabled.</string>
-            <string name="soft_keyboard_on">Soft keyboard will be enabled. (Default)</string>
+                <!-- Soft Keyboard -->
+                <string name="termux_soft_keyboard_enabled_title">Soft Keyboard Enabled</string>
+                <string name="termux_soft_keyboard_enabled_off">Soft keyboard will be disabled.</string>
+                <string name="termux_soft_keyboard_enabled_on">Soft keyboard will be enabled. (Default)</string>
 
-            <!-- Soft Keyboard Only If No Hardware-->
-            <string name="soft_keyboard_enabled_only_if_no_hardware_title">Soft Keyboard If No Hardware</string>
-            <string name="soft_keyboard_enabled_only_if_no_hardware_off">Soft keyboard will be enabled even if hardware keyboard is connected. (Default)</string>
-            <string name="soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if no hardware keyboard is connected.</string>
+                <!-- Soft Keyboard Only If No Hardware-->
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">Soft Keyboard Only If No Hardware</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">Soft keyboard will be enabled even if hardware keyboard is connected. (Default)</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if no hardware keyboard is connected.</string>
+
+
+    <!-- About Preferences -->
+    <string name="about_preferences_title">About</string>
 
 </resources>

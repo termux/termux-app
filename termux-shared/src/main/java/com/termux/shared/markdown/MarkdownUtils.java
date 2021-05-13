@@ -179,7 +179,7 @@ public class MarkdownUtils {
                             .setFactory(Code.class, (configuration, props) -> new Object[]{
                                 new BackgroundColorSpan(ContextCompat.getColor(context, R.color.background_markdown_code_inline)),
                                 new TypefaceSpan("monospace"),
-                                new AbsoluteSizeSpan(8)
+                                new AbsoluteSizeSpan(48)
                             })
                             // NB! both ordered and bullet list items
                             .setFactory(ListItem.class, (configuration, props) -> new BulletSpan());

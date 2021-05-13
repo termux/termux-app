@@ -1,4 +1,4 @@
-package com.termux.app.fragments.settings;
+package com.termux.app.fragments.settings.termux;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -23,7 +23,7 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
         PreferenceManager preferenceManager = getPreferenceManager();
         preferenceManager.setPreferenceDataStore(DebuggingPreferencesDataStore.getInstance(getContext()));
 
-        setPreferencesFromResource(R.xml.debugging_preferences, rootKey);
+        setPreferencesFromResource(R.xml.termux_debugging_preferences, rootKey);
 
         PreferenceCategory loggingCategory = findPreference("logging");
 
@@ -125,11 +125,11 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
     public boolean getBoolean(String key, boolean defValue) {
         switch (key) {
             case "terminal_view_key_logging_enabled":
-                return mPreferences.getTerminalViewKeyLoggingEnabled();
+                return mPreferences.isTerminalViewKeyLoggingEnabled();
             case "plugin_error_notifications_enabled":
-                return mPreferences.getPluginErrorNotificationsEnabled();
+                return mPreferences.arePluginErrorNotificationsEnabled();
             case "crash_report_notifications_enabled":
-                return mPreferences.getCrashReportNotificationsEnabled();
+                return mPreferences.areCrashReportNotificationsEnabled();
             default:
                 return false;
         }

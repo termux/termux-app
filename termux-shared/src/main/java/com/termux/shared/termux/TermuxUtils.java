@@ -133,6 +133,38 @@ public class TermuxUtils {
     }
 
     /**
+     * Get a markdown {@link String} for the apps info of all/any termux plugin apps installed.
+     *
+     * @param currentPackageContext The context of current package.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getTermuxPluginAppsInfoMarkdownString(@NonNull final Context currentPackageContext) {
+        if (currentPackageContext == null) return "null";
+
+        StringBuilder markdownString = new StringBuilder();
+
+        List<String> termuxPluginAppPackageNamesList = TermuxConstants.TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST;
+
+        if (termuxPluginAppPackageNamesList != null) {
+            for (int i = 0; i < termuxPluginAppPackageNamesList.size(); i++) {
+                String termuxPluginAppPackageName = termuxPluginAppPackageNamesList.get(i);
+                Context termuxPluginAppContext = PackageUtils.getContextForPackage(currentPackageContext, termuxPluginAppPackageName);
+                // If the package context for the plugin app is not null, then assume its installed and get its info
+                if (termuxPluginAppContext != null) {
+                    if (i != 0)
+                        markdownString.append("\n\n");
+                    markdownString.append(TermuxUtils.getAppInfoMarkdownString(termuxPluginAppContext, false));
+                }
+            }
+        }
+
+        if (markdownString.toString().isEmpty())
+            return null;
+
+        return markdownString.toString();
+    }
+
+    /**
      * Get a markdown {@link String} for the app info. If the {@code context} passed is different
      * from the {@link TermuxConstants#TERMUX_PACKAGE_NAME} package context, then this function
      * must have been called by a different package like a plugin, so we return info for both packages
@@ -285,6 +317,45 @@ public class TermuxUtils {
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_ROOT_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_ROOT_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_UNSTABLE_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_X11_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_X11_PACKAGES_GITHUB_ISSUES_REPO_URL)).append("  ");
+
+        markdownString.append("\n##\n");
+
+        return markdownString.toString();
+    }
+
+    /**
+     * Get a markdown {@link String} for important links.
+     *
+     * @param context The context for operations.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getImportantLinksMarkdownString(@NonNull final Context context) {
+        if (context == null) return "null";
+
+        StringBuilder markdownString = new StringBuilder();
+
+        markdownString.append("## Important Links");
+
+        markdownString.append("\n\n### Github\n");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_APP_NAME, TermuxConstants.TERMUX_GITHUB_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_API_APP_NAME, TermuxConstants.TERMUX_API_GITHUB_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_BOOT_APP_NAME, TermuxConstants.TERMUX_BOOT_GITHUB_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_FLOAT_APP_NAME, TermuxConstants.TERMUX_FLOAT_GITHUB_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_STYLING_APP_NAME, TermuxConstants.TERMUX_STYLING_GITHUB_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_TASKER_APP_NAME, TermuxConstants.TERMUX_TASKER_GITHUB_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_WIDGET_APP_NAME, TermuxConstants.TERMUX_WIDGET_GITHUB_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_PACKAGES_GITHUB_REPO_URL)).append("  ");
+
+        markdownString.append("\n\n### Email\n");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_SUPPORT_EMAIL_URL, TermuxConstants.TERMUX_SUPPORT_EMAIL_MAILTO_URL)).append("  ");
+
+        markdownString.append("\n\n### Reddit\n");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_REDDIT_SUBREDDIT, TermuxConstants.TERMUX_REDDIT_SUBREDDIT_URL)).append("  ");
+
+        markdownString.append("\n\n### Wiki\n");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_WIKI, TermuxConstants.TERMUX_WIKI_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_APP_NAME, TermuxConstants.TERMUX_GITHUB_WIKI_REPO_URL)).append("  ");
+        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_PACKAGES_GITHUB_WIKI_REPO_URL)).append("  ");
 
         markdownString.append("\n##\n");
 
