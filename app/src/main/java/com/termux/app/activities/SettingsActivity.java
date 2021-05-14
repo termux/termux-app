@@ -69,19 +69,24 @@ public class SettingsActivity extends AppCompatActivity {
             Preference aboutPreference = findPreference("about");
             if (aboutPreference != null) {
                 aboutPreference.setOnPreferenceClickListener(preference -> {
-                    String title = "About";
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            String title = "About";
 
-                    StringBuilder aboutString = new StringBuilder();
-                    aboutString.append(TermuxUtils.getAppInfoMarkdownString(context, false));
+                            StringBuilder aboutString = new StringBuilder();
+                            aboutString.append(TermuxUtils.getAppInfoMarkdownString(context, false));
 
-                    String termuxPluginAppsInfo =  TermuxUtils.getTermuxPluginAppsInfoMarkdownString(context);
-                    if (termuxPluginAppsInfo != null)
-                        aboutString.append("\n\n").append(termuxPluginAppsInfo);
+                            String termuxPluginAppsInfo =  TermuxUtils.getTermuxPluginAppsInfoMarkdownString(context);
+                            if (termuxPluginAppsInfo != null)
+                                aboutString.append("\n\n").append(termuxPluginAppsInfo);
 
-                    aboutString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(context));
-                    aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(context));
+                            aboutString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(context));
+                            aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(context));
 
-                    ReportActivity.startReportActivity(context, new ReportInfo(UserAction.ABOUT, TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title, null, aboutString.toString(), null, false));
+                            ReportActivity.startReportActivity(context, new ReportInfo(UserAction.ABOUT, TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title, null, aboutString.toString(), null, false));
+                        }
+                    }.start();
 
                     return true;
                 });

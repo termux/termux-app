@@ -494,26 +494,34 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         TerminalSession session = mActivity.getCurrentSession();
         if (session == null) return;
 
-        String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, false, true);
+        final String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, false, true);
         if (transcriptText == null) return;
 
-        transcriptText = DataUtils.getTruncatedCommandOutput(transcriptText, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();
+        Logger.showToast(mActivity, mActivity.getString(R.string.msg_generating_report), true);
 
-        StringBuilder reportString = new StringBuilder();
+        new Thread() {
+            @Override
+            public void run() {
 
-        String title = TermuxConstants.TERMUX_APP_NAME + " Report Issue";
+                String transcriptTextTruncated = DataUtils.getTruncatedCommandOutput(transcriptText, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();
 
-        reportString.append("## Transcript\n");
-        reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptText, true));
+                StringBuilder reportString = new StringBuilder();
 
-        reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, true));
-        reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(mActivity));
+                String title = TermuxConstants.TERMUX_APP_NAME + " Report Issue";
 
-        String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
-        if (termuxAptInfo != null)
-            reportString.append("\n\n").append(termuxAptInfo);
+                reportString.append("## Transcript\n");
+                reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptTextTruncated, true));
 
-        ReportActivity.startReportActivity(mActivity, new ReportInfo(UserAction.REPORT_ISSUE_FROM_TRANSCRIPT, TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity), false));
+                reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, true));
+                reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(mActivity));
+
+                String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
+                if (termuxAptInfo != null)
+                    reportString.append("\n\n").append(termuxAptInfo);
+
+                ReportActivity.startReportActivity(mActivity, new ReportInfo(UserAction.REPORT_ISSUE_FROM_TRANSCRIPT, TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity), false));
+            }
+        }.start();
     }
 
     public void doPaste() {
