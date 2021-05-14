@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 
 import androidx.core.content.ContextCompat;
 
@@ -12,6 +13,8 @@ import com.termux.shared.data.DataUtils;
 import com.termux.shared.logger.Logger;
 
 public class ShareUtils {
+
+    private static final String LOG_TAG = "ShareUtils";
 
     /**
      * Open the system app chooser that allows the user to select which app to send the intent.
@@ -65,6 +68,23 @@ public class ShareUtils {
             clipboardManager.setPrimaryClip(ClipData.newPlainText(null, text));
             if (toastString != null && !toastString.isEmpty())
                 Logger.showToast(context, toastString, true);
+        }
+    }
+
+    /**
+     * Open a url.
+     *
+     * @param context The context for operations.
+     * @param url The url to open.
+     */
+    public static void openURL(final Context context, final String url) {
+        if (context == null || url == null || url.isEmpty()) return;
+        try {
+            Uri uri = Uri.parse(url);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            context.startActivity(intent);
+        } catch (Exception e) {
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to open the url \"" + url + "\"", e);
         }
     }
 

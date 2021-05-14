@@ -8,8 +8,14 @@
 
     <Preference
         app:key="about"
-        app:title="@string/about_preferences_title"
+        app:title="@string/about_preference_title"
         app:persistent="false"/>
     <!-- app:layout="@layout/preference_markdown_text" -->
+
+    <Preference
+        app:key="donate"
+        app:title="@string/donate_preference_title"
+        app:persistent="false"
+        app:isPreferenceVisible="false"/>
 
 </PreferenceScreen>

@@ -170,7 +170,10 @@
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if no hardware keyboard is connected.</string>
 
 
-    <!-- About Preferences -->
-    <string name="about_preferences_title">About</string>
+    <!-- About Preference -->
+    <string name="about_preference_title">About</string>
+
+    <!-- Donate Preference -->
+    <string name="donate_preference_title">Donate</string>
 
 </resources>
