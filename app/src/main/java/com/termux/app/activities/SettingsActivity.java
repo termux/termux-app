@@ -3,6 +3,7 @@ package com.termux.app.activities;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.Preference;
@@ -13,6 +14,7 @@ import com.termux.app.models.ReportInfo;
 import com.termux.app.models.UserAction;
 import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.packages.PackageUtils;
+import com.termux.shared.settings.preferences.TermuxTaskerAppSharedPreferences;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 
@@ -44,17 +46,29 @@ public class SettingsActivity extends AppCompatActivity {
     public static class RootPreferencesFragment extends PreferenceFragmentCompat {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            Context context = getContext();
+            if (context == null) return;
+
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-            configureAboutPreference();
-            configureDonatePreference();
+            configureTermuxTaskerPreference(context);
+            configureAboutPreference(context);
+            configureDonatePreference(context);
         }
 
-        private void configureAboutPreference() {
-            Context context = getContext();
-            Preference about = findPreference("about");
-            if (context != null && about != null) {
-                about.setOnPreferenceClickListener(preference -> {
+        private void configureTermuxTaskerPreference(@NonNull Context context) {
+            Preference termuxTaskerPrefernce = findPreference("termux_tasker");
+            if (termuxTaskerPrefernce != null) {
+                TermuxTaskerAppSharedPreferences preferences = TermuxTaskerAppSharedPreferences.build(context, false);
+                // If failed to get app preferences, then likely app is not installed, so do not show its preference
+                termuxTaskerPrefernce.setVisible(preferences != null);
+            }
+        }
+
+        private void configureAboutPreference(@NonNull Context context) {
+            Preference aboutPreference = findPreference("about");
+            if (aboutPreference != null) {
+                aboutPreference.setOnPreferenceClickListener(preference -> {
                     String title = "About";
 
                     StringBuilder aboutString = new StringBuilder();
@@ -74,10 +88,9 @@ public class SettingsActivity extends AppCompatActivity {
             }
         }
 
-        private void configureDonatePreference() {
-            Context context = getContext();
-            Preference donate = findPreference("donate");
-            if (context != null && donate != null) {
+        private void configureDonatePreference(@NonNull Context context) {
+            Preference donatePreference = findPreference("donate");
+            if (donatePreference != null) {
                 String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(context);
                 if (signingCertificateSHA256Digest != null) {
                     // If APK is a Google Playstore release, then do not show the donation link
@@ -85,14 +98,14 @@ public class SettingsActivity extends AppCompatActivity {
                     // Check Fund solicitations: https://pay.google.com/intl/en_in/about/policy/
                     String apkRelease = TermuxUtils.getAPKRelease(signingCertificateSHA256Digest);
                     if (apkRelease == null || apkRelease.equals(TermuxConstants.APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST)) {
-                        donate.setVisible(false);
+                        donatePreference.setVisible(false);
                         return;
                     } else {
-                        donate.setVisible(true);
+                        donatePreference.setVisible(true);
                     }
                 }
 
-                donate.setOnPreferenceClickListener(preference -> {
+                donatePreference.setOnPreferenceClickListener(preference -> {
                     ShareUtils.openURL(context, TermuxConstants.TERMUX_DONATE_URL);
                     return true;
                 });

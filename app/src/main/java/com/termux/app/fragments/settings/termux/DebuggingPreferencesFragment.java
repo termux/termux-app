@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.ListPreference;
 import androidx.preference.PreferenceCategory;
@@ -20,20 +21,32 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        Context context = getContext();
+        if (context == null) return;
+
         PreferenceManager preferenceManager = getPreferenceManager();
-        preferenceManager.setPreferenceDataStore(DebuggingPreferencesDataStore.getInstance(getContext()));
+        preferenceManager.setPreferenceDataStore(DebuggingPreferencesDataStore.getInstance(context));
 
         setPreferencesFromResource(R.xml.termux_debugging_preferences, rootKey);
 
-        PreferenceCategory loggingCategory = findPreference("logging");
+        configureLoggingPreferences(context);
+    }
 
-        if (loggingCategory != null) {
-            final ListPreference logLevelListPreference = setLogLevelListPreferenceData(findPreference("log_level"), getContext());
+    private void configureLoggingPreferences(@NonNull Context context) {
+        PreferenceCategory loggingCategory = findPreference("logging");
+        if (loggingCategory == null) return;
+
+        ListPreference logLevelListPreference = findPreference("log_level");
+        if (logLevelListPreference != null) {
+            TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context, true);
+            if (preferences == null) return;
+
+            setLogLevelListPreferenceData(logLevelListPreference, context, preferences.getLogLevel());
             loggingCategory.addPreference(logLevelListPreference);
         }
     }
 
-    protected ListPreference setLogLevelListPreferenceData(ListPreference logLevelListPreference, Context context) {
+    public static ListPreference setLogLevelListPreferenceData(ListPreference logLevelListPreference, Context context, int logLevel) {
         if (logLevelListPreference == null)
             logLevelListPreference = new ListPreference(context);
 
@@ -43,8 +56,8 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
         logLevelListPreference.setEntryValues(logLevels);
         logLevelListPreference.setEntries(logLevelLabels);
 
-        logLevelListPreference.setValue(String.valueOf(Logger.getLogLevel()));
-        logLevelListPreference.setDefaultValue(Logger.getLogLevel());
+        logLevelListPreference.setValue(String.valueOf(logLevel));
+        logLevelListPreference.setDefaultValue(Logger.DEFAULT_LOG_LEVEL);
 
         return logLevelListPreference;
     }
