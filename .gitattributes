@@ -1,5 +1,5 @@
 *           text=auto
-*.bat       eol=crlf
-*.gradle    eol=lf
-*.mk        eol=lf
-*.sh        eol=lf
+*.bat       text eol=crlf
+*.gradle    text eol=lf
+*.mk        text eol=lf
+*.sh        text eol=lf
