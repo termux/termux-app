@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.8.0
+ * Version: v0.9.0
  *
  * Changelog
  *
@@ -41,6 +41,10 @@ import java.util.Set;
  *      - Change the `KEY_USE_BACK_KEY_AS_ESCAPE_KEY` and `KEY_VIRTUAL_VOLUME_KEYS_DISABLED` booleans
  *          to `KEY_BACK_KEY_BEHAVIOUR` and `KEY_VOLUME_KEYS_BEHAVIOUR` String internal values.
  *      - Renamed `SOFT_KEYBOARD_TOGGLE_BEHAVIOUR` to `KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR`.
+ *
+ * - 0.9.0 (2021-05-14)
+ *      - Add `*KEY_TERMINAL_CURSOR_BLINK_RATE*`.
+ *
  */
 
 /**
@@ -112,6 +116,14 @@ public final class TermuxPropertyConstants {
             .put(VALUE_BELL_BEHAVIOUR_BEEP, IVALUE_BELL_BEHAVIOUR_BEEP)
             .put(VALUE_BELL_BEHAVIOUR_IGNORE, IVALUE_BELL_BEHAVIOUR_IGNORE)
             .build();
+
+
+
+    /** Defines the key for the terminal cursor blink rate */
+    public static final String KEY_TERMINAL_CURSOR_BLINK_RATE =  "terminal-cursor-blink-rate"; // Default: "terminal-cursor-blink-rate"
+    public static final int IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN = 100;
+    public static final int IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX = 2000;
+    public static final int DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE = 0;
 
 
 
@@ -221,6 +233,7 @@ public final class TermuxPropertyConstants {
 
         /* int */
         KEY_BELL_BEHAVIOUR,
+        KEY_TERMINAL_CURSOR_BLINK_RATE,
 
         /* float */
         KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,

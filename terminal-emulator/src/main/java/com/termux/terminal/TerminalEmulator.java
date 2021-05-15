@@ -108,8 +108,8 @@ public final class TerminalEmulator {
      * characters received when the cursor is at the right border of the page replace characters already on the page."
      */
     private static final int DECSET_BIT_AUTOWRAP = 1 << 3;
-    /** DECSET 25 - if the cursor should be visible, {@link #isShowingCursor()}. */
-    private static final int DECSET_BIT_SHOWING_CURSOR = 1 << 4;
+    /** DECSET 25 - if the cursor should be enabled, {@link #isCursorEnabled()}. */
+    private static final int DECSET_BIT_CURSOR_ENABLED = 1 << 4;
     private static final int DECSET_BIT_APPLICATION_KEYPAD = 1 << 5;
     /** DECSET 1000 - if to report mouse press&release events. */
     private static final int DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE = 1 << 6;
@@ -206,6 +206,18 @@ public final class TerminalEmulator {
     private boolean mAboutToAutoWrap;
 
     /**
+     * If the cursor blinking is enabled. It requires cursor itself to be enabled, which is controlled
+     * byt whether {@link #DECSET_BIT_CURSOR_ENABLED} bit is set or not.
+     */
+    private boolean mCursorBlinkingEnabled;
+
+    /**
+     * If currently cursor should be in a visible state or not if {@link #mCursorBlinkingEnabled}
+     * is {@code true}.
+     */
+    private boolean mCursorBlinkState;
+
+    /**
      * Current foreground and background colors. Can either be a color index in [0,259] or a truecolor (24-bit) value.
      * For a 24-bit value the top byte (0xff000000) is set.
      *
@@ -261,7 +273,7 @@ public final class TerminalEmulator {
             case 7:
                 return DECSET_BIT_AUTOWRAP;
             case 25:
-                return DECSET_BIT_SHOWING_CURSOR;
+                return DECSET_BIT_CURSOR_ENABLED;
             case 66:
                 return DECSET_BIT_APPLICATION_KEYPAD;
             case 69:
@@ -381,9 +393,27 @@ public final class TerminalEmulator {
         return isDecsetInternalBitSet(DECSET_BIT_REVERSE_VIDEO);
     }
 
-    public boolean isShowingCursor() {
-        return isDecsetInternalBitSet(DECSET_BIT_SHOWING_CURSOR);
+
+
+    public boolean isCursorEnabled() {
+        return isDecsetInternalBitSet(DECSET_BIT_CURSOR_ENABLED);
     }
+    public boolean shouldCursorBeVisible() {
+        if (!isCursorEnabled())
+            return false;
+        else
+            return mCursorBlinkingEnabled ? mCursorBlinkState : true;
+    }
+
+    public void setCursorBlinkingEnabled(boolean cursorBlinkingEnabled) {
+        this.mCursorBlinkingEnabled = cursorBlinkingEnabled;
+    }
+
+    public void setCursorBlinkState(boolean cursorBlinkState) {
+        this.mCursorBlinkState = cursorBlinkState;
+    }
+
+
 
     public boolean isKeypadApplicationMode() {
         return isDecsetInternalBitSet(DECSET_BIT_APPLICATION_KEYPAD);
@@ -1054,7 +1084,10 @@ public final class TerminalEmulator {
             case 8: // Auto-repeat Keys (DECARM). Do not implement.
             case 9: // X10 mouse reporting - outdated. Do not implement.
             case 12: // Control cursor blinking - ignore.
-            case 25: // Hide/show cursor - no action needed, renderer will check with isShowingCursor().
+            case 25: // Hide/show cursor - no action needed, renderer will check with shouldCursorBeVisible().
+                if (mClient != null)
+                    mClient.onTerminalCursorStateChange(setting);
+                break;
             case 40: // Allow 80 => 132 Mode, ignore.
             case 45: // TODO: Reverse wrap-around. Implement???
             case 66: // Application keypad (DECNKM).
@@ -2318,7 +2351,7 @@ public final class TerminalEmulator {
         mCurrentDecSetFlags = 0;
         // Initial wrap-around is not accurate but makes terminal more useful, especially on a small screen:
         setDecsetinternalBit(DECSET_BIT_AUTOWRAP, true);
-        setDecsetinternalBit(DECSET_BIT_SHOWING_CURSOR, true);
+        setDecsetinternalBit(DECSET_BIT_CURSOR_ENABLED, true);
         mSavedDecSetFlags = mSavedStateMain.mSavedDecFlags = mSavedStateAlt.mSavedDecFlags = mCurrentDecSetFlags;
 
         // XXX: Should we set terminal driver back to IUTF8 with termios?

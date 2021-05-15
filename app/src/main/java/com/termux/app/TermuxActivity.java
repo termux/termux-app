@@ -257,6 +257,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (mIsInvalidState) return;
 
         mTermuxTerminalViewClient.setSoftKeyboardState(true, false);
+
+        // Start terminal cursor blinking if enabled
+        mTermuxTerminalViewClient.setTerminalCursorBlinkerState(true);
     }
 
     /**
@@ -329,6 +332,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         // Store current session in shared preferences so that it can be restored later in
         // {@link #onStart} if needed.
         mTermuxTerminalSessionClient.setCurrentStoredSession();
+
+        // Stop terminal cursor blinking if enabled
+        mTermuxTerminalViewClient.setTerminalCursorBlinkerState(false);
 
         unregisterTermuxActivityBroadcastReceiever();
         getDrawer().closeDrawers();
@@ -798,6 +804,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         setTerminalToolbarHeight();
 
         mTermuxTerminalViewClient.setSoftKeyboardState(false, true);
+
+        mTermuxTerminalViewClient.setTerminalCursorBlinkerState(true);
+
 
         // To change the activity and drawer theme, activity needs to be recreated.
         // But this will destroy the activity, and will call the onCreate() again.

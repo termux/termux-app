@@ -188,6 +188,8 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             /* int */
             case TermuxPropertyConstants.KEY_BELL_BEHAVIOUR:
                 return (int) getBellBehaviourInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE:
+                return (int) getTerminalCursorBlinkRateInternalPropertyValueFromValue(value);
 
             /* float */
             case TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR:
@@ -255,6 +257,35 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      */
     public static int getBellBehaviourInternalPropertyValueFromValue(String value) {
         return SharedProperties.getDefaultIfNull(TermuxPropertyConstants.MAP_BELL_BEHAVIOUR.get(SharedProperties.toLowerCase(value)), TermuxPropertyConstants.DEFAULT_IVALUE_BELL_BEHAVIOUR);
+    }
+
+    /**
+     * Returns the int for the value if its not null and is between
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN} and
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX},
+     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR}.
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static float getTerminalCursorBlinkRateInternalPropertyValueFromValue(String value) {
+        return rangeTerminalCursorBlinkRateValue(DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE));
+    }
+
+    /**
+     * Returns the value itself if it is between
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN} and
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX},
+     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE}.
+     *
+     * @param value The value to clamp.
+     * @return Returns the clamped value.
+     */
+    public static int rangeTerminalCursorBlinkRateValue(int value) {
+        return (int) DataUtils.rangedOrDefault(value,
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE,
+            TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX);
     }
 
     /**
@@ -416,6 +447,10 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
     public int getBellBehaviour() {
         return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_BELL_BEHAVIOUR, true);
+    }
+
+    public int getTerminalCursorBlinkRate() {
+        return rangeTerminalCursorBlinkRateValue((int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE, true));
     }
 
     public float getTerminalToolbarHeightScaleFactor() {

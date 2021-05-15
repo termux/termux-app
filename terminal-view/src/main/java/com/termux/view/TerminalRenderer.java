@@ -61,7 +61,7 @@ public final class TerminalRenderer {
         final int columns = mEmulator.mColumns;
         final int cursorCol = mEmulator.getCursorCol();
         final int cursorRow = mEmulator.getCursorRow();
-        final boolean cursorVisible = mEmulator.isShowingCursor();
+        final boolean cursorVisible = mEmulator.shouldCursorBeVisible();
         final TerminalBuffer screen = mEmulator.getScreen();
         final int[] palette = mEmulator.mColors.mCurrentColors;
         final int cursorShape = mEmulator.getCursorStyle();

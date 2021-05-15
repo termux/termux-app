@@ -137,6 +137,19 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
             updateBackgroundColor();
     }
 
+    @Override
+    public void onTerminalCursorStateChange(boolean enabled) {
+        // Do not start cursor blinking thread if activity is not visible
+        if (enabled && !mActivity.isVisible()) {
+            Logger.logVerbose(LOG_TAG, "Ignoring call to start cursor blinking since activity is not visible");
+            return;
+        }
+
+        // If cursor is to enabled now, then start cursor blinking if blinking is enabled
+        // otherwise stop cursor blinking
+        mActivity.getTerminalView().setTerminalCursorBlinkerState(enabled, false);
+    }
+
 
 
     /** Try switching to session. */

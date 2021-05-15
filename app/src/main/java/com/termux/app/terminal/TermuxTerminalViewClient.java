@@ -427,6 +427,18 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
 
 
+    public void setTerminalCursorBlinkerState(boolean start) {
+        if (start) {
+            // Set/Update the cursor blinking rate
+            mActivity.getTerminalView().setTerminalCursorBlinkerRate(mActivity.getProperties().getTerminalCursorBlinkRate());
+        }
+
+        // Set the new state of cursor blinker
+        mActivity.getTerminalView().setTerminalCursorBlinkerState(start, true);
+    }
+
+
+
     public void shareSessionTranscript() {
         TerminalSession session = mActivity.getCurrentSession();
         if (session == null) return;

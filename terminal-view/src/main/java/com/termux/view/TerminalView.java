@@ -8,6 +8,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -51,6 +53,14 @@ public final class TerminalView extends View {
     public TerminalViewClient mClient;
 
     private TextSelectionCursorController mTextSelectionCursorController;
+
+    private Handler mTerminalCursorBlinkerHandler;
+    private TerminalCursorBlinkerThread mTerminalCursorBlinkerThread;
+    private int mTerminalCursorBlinkerRate;
+    public static final int TERMINAL_CURSOR_BLINK_RATE_MIN = 100;
+    public static final int TERMINAL_CURSOR_BLINK_RATE_MAX = 2000;
+
+    private boolean mRendering;
 
     /** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
     int mTopRow;
@@ -209,6 +219,8 @@ public final class TerminalView extends View {
         mAccessibilityEnabled = am.isEnabled();
     }
 
+
+
     /**
      * @param client The {@link TerminalViewClient} interface implementation to allow
      *                           for communication between {@link TerminalView} and its client.
@@ -218,13 +230,15 @@ public final class TerminalView extends View {
     }
 
     /**
-     * Sets terminal view key logging is enabled or not.
+     * Sets whether terminal view key logging is enabled or not.
      *
      * @param value The boolean value that defines the state.
      */
     public void setIsTerminalViewKeyLoggingEnabled(boolean value) {
         TERMINAL_VIEW_KEY_LOGGING_ENABLED = value;
     }
+
+
 
     /**
      * Attach a {@link TerminalSession} to this view.
@@ -755,7 +769,10 @@ public final class TerminalView extends View {
             if (mTextSelectionCursorController != null) {
                 mTextSelectionCursorController.getSelectors(sel);
             }
+
+            mRendering = true;
             mRenderer.render(mEmulator, canvas, mTopRow, sel[0], sel[1], sel[2], sel[3]);
+            mRendering = false;
 
             // render the text selection handles
             renderTextSelection();
@@ -799,7 +816,6 @@ public final class TerminalView extends View {
 
 
 
-
     /**
      * Define functions required for AutoFill API
      */
@@ -823,6 +839,98 @@ public final class TerminalView extends View {
         return AutofillValue.forText("");
     }
 
+
+
+    /**
+     * Set terminal cursor blinker rate. It must be between {@link #TERMINAL_CURSOR_BLINK_RATE_MIN}
+     * and {@link #TERMINAL_CURSOR_BLINK_RATE_MAX}.
+     *
+     * @param blinkRate The value to set.
+     */
+    public void setTerminalCursorBlinkerRate(int blinkRate) {
+        mTerminalCursorBlinkerRate = blinkRate;
+    }
+
+    /**
+     * Sets whether cursor blinking should be started or stopped. Cursor blinking will only be
+     * started if {@link #mTerminalCursorBlinkerRate} does not equal 0 and is between
+     * {@link #TERMINAL_CURSOR_BLINK_RATE_MIN} and {@link #TERMINAL_CURSOR_BLINK_RATE_MAX}.
+     *
+     * @param start If cursor blinking should be started or stopped.
+     * @param startOnlyIfCursorEnabled If set to {@code true}, then it will also be checked if the
+     *                                 cursor is even enabled by {@link TerminalEmulator} before
+     *                                 starting the cursor blinking thread.
+     */
+    public synchronized void setTerminalCursorBlinkerState(boolean start, boolean startOnlyIfCursorEnabled) {
+        // Stop any existing cursor blinker threads
+        stopTerminalCursorBlinkerThread();
+
+        if (mEmulator == null) return;
+
+        mEmulator.setCursorBlinkingEnabled(false);
+
+        if (start) {
+            // If cursor blinking is not enabled
+            if (mTerminalCursorBlinkerRate == 0) {
+                mClient.logVerbose(LOG_TAG, "Cursor blinking is not enabled");
+                return;
+            }
+            // If cursor blinking rate is not valid
+            else if (mTerminalCursorBlinkerRate < TERMINAL_CURSOR_BLINK_RATE_MIN || mTerminalCursorBlinkerRate > TERMINAL_CURSOR_BLINK_RATE_MAX) {
+                mClient.logError(LOG_TAG, "startCursorBlinkerThread: The cursor blink rate must be in between " + TERMINAL_CURSOR_BLINK_RATE_MIN + "-" + TERMINAL_CURSOR_BLINK_RATE_MAX + ": " + mTerminalCursorBlinkerRate);
+                return;
+            }
+            // If cursor is not enabled
+            else if (startOnlyIfCursorEnabled && ! mEmulator.isCursorEnabled()) {
+                mClient.logVerbose(LOG_TAG, "Ignoring call to start cursor blinking since cursor is not enabled");
+                return;
+            }
+
+            // Start cursor blinker thread
+            mClient.logVerbose(LOG_TAG, "Starting cursor blinker thread with the blink rate: " + mTerminalCursorBlinkerRate);
+            if (mTerminalCursorBlinkerHandler == null) mTerminalCursorBlinkerHandler = new Handler(Looper.getMainLooper());
+            mTerminalCursorBlinkerThread = new TerminalCursorBlinkerThread(mTerminalCursorBlinkerRate);
+            mEmulator.setCursorBlinkingEnabled(true);
+            mTerminalCursorBlinkerThread.run();
+        }
+    }
+
+    /**
+     * Stops the terminal cursor blinker thread
+     */
+    private void stopTerminalCursorBlinkerThread() {
+        if (mTerminalCursorBlinkerHandler != null && mTerminalCursorBlinkerThread != null) {
+            mClient.logVerbose(LOG_TAG, "Stopping cursor blinker thread");
+            mTerminalCursorBlinkerHandler.removeCallbacks(mTerminalCursorBlinkerThread);
+        }
+    }
+
+    private class TerminalCursorBlinkerThread implements Runnable {
+        int mBlinkRate;
+        boolean mCursorVisible;
+
+        public TerminalCursorBlinkerThread(int blinkRate) {
+            mBlinkRate = blinkRate;
+        }
+
+        public void run() {
+            try {
+                if (mEmulator != null) {
+                    mCursorVisible = !mCursorVisible;
+                    // Toggle the blink state and then invalidate() the view so
+                    // that onDraw() is called, which then calls TerminalRenderer.render()
+                    // which checks with TerminalEmulator.shouldCursorBeVisible() to decide whether
+                    // to draw the cursor or not
+                    mEmulator.setCursorBlinkState(mCursorVisible);
+                    if (!mRendering)
+                        invalidate();
+                }
+            } finally {
+                // Recall the Runnable after mBlinkRate milliseconds to toggle the blink state
+                mTerminalCursorBlinkerHandler.postDelayed(mTerminalCursorBlinkerThread, mBlinkRate);
+            }
+        }
+    }
 
 
 
@@ -917,7 +1025,6 @@ public final class TerminalView extends View {
             mTextSelectionCursorController.onDetached();
         }
     }
-
 
 
 
