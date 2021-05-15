@@ -19,7 +19,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
     protected final SharedProperties mSharedProperties;
     protected final File mPropertiesFile;
 
-    private static final String LOG_TAG = "TermuxSharedProperties";
+    public static final String LOG_TAG = "TermuxSharedProperties";
 
     public TermuxSharedProperties(@Nonnull Context context) {
         mContext = context;
@@ -76,12 +76,14 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @param cached If {@code true}, then the value is checked from the the {@link Properties} in-memory cache.
      *               Otherwise the {@link Properties} object is read directly from the file
      *               and value is checked from it.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
+     *                               was found in {@link Properties} but was invalid.
      * @return Returns the {@code true} if the {@link Properties} key {@link String} value equals "true",
      * regardless of case. If the key does not exist in the file or does not equal "true", then
      * {@code false} will be returned.
      */
-    public boolean isPropertyValueTrue(String key, boolean cached) {
-        return (boolean) SharedProperties.getBooleanValueForStringValue((String) getPropertyValue(key, null, cached), false);
+    public boolean isPropertyValueTrue(String key, boolean cached, boolean logErrorOnInvalidValue) {
+        return (boolean) SharedProperties.getBooleanValueForStringValue(key, (String) getPropertyValue(key, null, cached), false, logErrorOnInvalidValue, LOG_TAG);
     }
 
     /**
@@ -92,12 +94,14 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @param cached If {@code true}, then the value is checked from the the {@link Properties} in-memory cache.
      *               Otherwise the {@link Properties} object is read directly from the file
      *               and value is checked from it.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
+     *                               was found in {@link Properties} but was invalid.
      * @return Returns {@code true} if the {@link Properties} key {@link String} value equals "false",
      * regardless of case. If the key does not exist in the file or does not equal "false", then
      * {@code true} will be returned.
      */
-    public boolean isPropertyValueFalse(String key, boolean cached) {
-        return (boolean) SharedProperties.getInvertedBooleanValueForStringValue((String) getPropertyValue(key, null, cached), true);
+    public boolean isPropertyValueFalse(String key, boolean cached, boolean logErrorOnInvalidValue) {
+        return (boolean) SharedProperties.getInvertedBooleanValueForStringValue(key, (String) getPropertyValue(key, null, cached), true, logErrorOnInvalidValue, LOG_TAG);
     }
 
 
@@ -143,7 +147,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
                 // A null value can still be returned by
                 // {@link #getInternalPropertyValueFromValue(Context,String,String)} for some keys
                 value = getInternalPropertyValueFromValue(mContext, key, null);
-                Logger.logWarn(LOG_TAG, "The value for \"" + key + "\" not found in SharedProperties cahce, force returning default value: `" + value +  "`");
+                Logger.logWarn(LOG_TAG, "The value for \"" + key + "\" not found in SharedProperties cache, force returning default value: `" + value +  "`");
                 return value;
             }
         } else {
@@ -219,17 +223,15 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
             default:
                 // default boolean behaviour
                 if (TermuxPropertyConstants.TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
-                    return (boolean) SharedProperties.getBooleanValueForStringValue(value, false);
+                    return (boolean) SharedProperties.getBooleanValueForStringValue(key, value, false, true, LOG_TAG);
                 // default inverted boolean behaviour
                 else if (TermuxPropertyConstants.TERMUX_DEFAULT_INVERETED_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
-                    return (boolean) SharedProperties.getInvertedBooleanValueForStringValue(value, true);
+                    return (boolean) SharedProperties.getInvertedBooleanValueForStringValue(key, value, true, true, LOG_TAG);
                 // just use String object as is (may be null)
                 else
                     return value;
         }
     }
-
-
 
 
 
@@ -244,7 +246,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      */
     public static boolean getUseBlackUIInternalPropertyValueFromValue(Context context, String value) {
         int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return SharedProperties.getBooleanValueForStringValue(value, nightMode == Configuration.UI_MODE_NIGHT_YES);
+        return SharedProperties.getBooleanValueForStringValue(TermuxPropertyConstants.KEY_USE_BLACK_UI, value, nightMode == Configuration.UI_MODE_NIGHT_YES, true, LOG_TAG);
     }
 
     /**
@@ -256,7 +258,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static int getBellBehaviourInternalPropertyValueFromValue(String value) {
-        return SharedProperties.getDefaultIfNull(TermuxPropertyConstants.MAP_BELL_BEHAVIOUR.get(SharedProperties.toLowerCase(value)), TermuxPropertyConstants.DEFAULT_IVALUE_BELL_BEHAVIOUR);
+        return (int) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_BELL_BEHAVIOUR, TermuxPropertyConstants.MAP_BELL_BEHAVIOUR, SharedProperties.toLowerCase(value), TermuxPropertyConstants.DEFAULT_IVALUE_BELL_BEHAVIOUR, true, LOG_TAG);
     }
 
     /**
@@ -269,23 +271,12 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static float getTerminalCursorBlinkRateInternalPropertyValueFromValue(String value) {
-        return rangeTerminalCursorBlinkRateValue(DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE));
-    }
-
-    /**
-     * Returns the value itself if it is between
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN} and
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX},
-     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE}.
-     *
-     * @param value The value to clamp.
-     * @return Returns the clamped value.
-     */
-    public static int rangeTerminalCursorBlinkRateValue(int value) {
-        return (int) DataUtils.rangedOrDefault(value,
-            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE,
-            TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN,
-            TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX);
+        return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE,
+                    DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE),
+                    TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE,
+                    TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN,
+                    TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX,
+                    true, true, LOG_TAG);
     }
 
     /**
@@ -298,23 +289,12 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static float getTerminalToolbarHeightScaleFactorInternalPropertyValueFromValue(String value) {
-        return rangeTerminalToolbarHeightScaleFactorValue(DataUtils.getFloatFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR));
-    }
-
-    /**
-     * Returns the value itself if it is between
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN} and
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX},
-     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR}.
-     *
-     * @param value The value to clamp.
-     * @return Returns the clamped value.
-     */
-    public static float rangeTerminalToolbarHeightScaleFactorValue(float value) {
-        return DataUtils.rangedOrDefault(value,
+        return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
+            DataUtils.getFloatFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR),
             TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,
             TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN,
-            TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX);
+            TermuxPropertyConstants.IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX,
+            true, true, LOG_TAG);
     }
 
     /**
@@ -356,7 +336,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static String getBackKeyBehaviourInternalPropertyValueFromValue(String value) {
-        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_BACK_KEY_BEHAVIOUR);
+        return (String) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_BACK_KEY_BEHAVIOUR, TermuxPropertyConstants.MAP_BACK_KEY_BEHAVIOUR, SharedProperties.toLowerCase(value), TermuxPropertyConstants.DEFAULT_IVALUE_BACK_KEY_BEHAVIOUR, true, LOG_TAG);
     }
 
     /**
@@ -370,8 +350,9 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
         if (path == null || path.isEmpty()) return TermuxPropertyConstants.DEFAULT_IVALUE_DEFAULT_WORKING_DIRECTORY;
         File workDir = new File(path);
         if (!workDir.exists() || !workDir.isDirectory() || !workDir.canRead()) {
-            // Fallback to default directory if user configured working directory does not exist
-            // or is not a directory or is not readable.
+            // Fallback to default directory if user configured working directory does not exist,
+            // is not a directory or is not readable.
+            Logger.logError(LOG_TAG, "The path \"" + path + "\" for the key \"" + TermuxPropertyConstants.KEY_DEFAULT_WORKING_DIRECTORY + "\" does not exist, is not a directory or is not readable. Using default value \"" + TermuxPropertyConstants.DEFAULT_IVALUE_DEFAULT_WORKING_DIRECTORY + "\" instead.");
             return TermuxPropertyConstants.DEFAULT_IVALUE_DEFAULT_WORKING_DIRECTORY;
         } else {
             return path;
@@ -405,7 +386,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static String getSoftKeyboardToggleBehaviourInternalPropertyValueFromValue(String value) {
-        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR);
+        return (String) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR, TermuxPropertyConstants.MAP_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR, SharedProperties.toLowerCase(value), TermuxPropertyConstants.DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR, true, LOG_TAG);
     }
 
     /**
@@ -415,8 +396,9 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
      * @return Returns the internal value for value.
      */
     public static String getVolumeKeysBehaviourInternalPropertyValueFromValue(String value) {
-        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_VOLUME_KEYS_BEHAVIOUR);
+        return (String) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_VOLUME_KEYS_BEHAVIOUR, TermuxPropertyConstants.MAP_VOLUME_KEYS_BEHAVIOUR, SharedProperties.toLowerCase(value), TermuxPropertyConstants.DEFAULT_IVALUE_VOLUME_KEYS_BEHAVIOUR, true, LOG_TAG);
     }
+
 
 
 
@@ -450,11 +432,11 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
     }
 
     public int getTerminalCursorBlinkRate() {
-        return rangeTerminalCursorBlinkRateValue((int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE, true));
+        return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE, true);
     }
 
     public float getTerminalToolbarHeightScaleFactor() {
-        return rangeTerminalToolbarHeightScaleFactorValue((float) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR, true));
+        return (float) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR, true);
     }
 
     public boolean isBackKeyTheEscapeKey() {
@@ -472,6 +454,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
     public boolean areVirtualVolumeKeysDisabled() {
         return (boolean) TermuxPropertyConstants.IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME.equals(getInternalPropertyValue(TermuxPropertyConstants.KEY_VOLUME_KEYS_BEHAVIOUR, true));
     }
+
 
 
 

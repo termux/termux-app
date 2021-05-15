@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.9.0
+ * Version: v0.10.0
  *
  * Changelog
  *
@@ -44,6 +44,9 @@ import java.util.Set;
  *
  * - 0.9.0 (2021-05-14)
  *      - Add `*KEY_TERMINAL_CURSOR_BLINK_RATE*`.
+ *
+ * - 0.10.0 (2021-05-15)
+ *      - Add `MAP_BACK_KEY_BEHAVIOUR`, `MAP_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR`, `MAP_VOLUME_KEYS_BEHAVIOUR`.
  *
  */
 
@@ -179,6 +182,13 @@ public final class TermuxPropertyConstants {
     public static final String IVALUE_BACK_KEY_BEHAVIOUR_ESCAPE = "escape";
     public static final String DEFAULT_IVALUE_BACK_KEY_BEHAVIOUR = IVALUE_BACK_KEY_BEHAVIOUR_BACK;
 
+    /** Defines the bidirectional map for back key behaviour values and their internal values */
+    public static final ImmutableBiMap<String, String> MAP_BACK_KEY_BEHAVIOUR =
+        new ImmutableBiMap.Builder<String, String>()
+            .put(IVALUE_BACK_KEY_BEHAVIOUR_BACK, IVALUE_BACK_KEY_BEHAVIOUR_BACK)
+            .put(IVALUE_BACK_KEY_BEHAVIOUR_ESCAPE, IVALUE_BACK_KEY_BEHAVIOUR_ESCAPE)
+            .build();
+
 
 
     /** Defines the key for the default working directory */
@@ -205,6 +215,13 @@ public final class TermuxPropertyConstants {
     public static final String IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE = "enable/disable";
     public static final String DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR = IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE;
 
+    /** Defines the bidirectional map for toggle soft keyboard behaviour values and their internal values */
+    public static final ImmutableBiMap<String, String> MAP_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =
+        new ImmutableBiMap.Builder<String, String>()
+            .put(IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE, IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE)
+            .put(IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE, IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE)
+            .build();
+
 
 
     /** Defines the key for whether volume keys will behave as virtual or literal volume keys */
@@ -213,6 +230,13 @@ public final class TermuxPropertyConstants {
     public static final String IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL = "virtual";
     public static final String IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME = "volume";
     public static final String DEFAULT_IVALUE_VOLUME_KEYS_BEHAVIOUR = IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL;
+
+    /** Defines the bidirectional map for volume keys behaviour values and their internal values */
+    public static final ImmutableBiMap<String, String> MAP_VOLUME_KEYS_BEHAVIOUR =
+        new ImmutableBiMap.Builder<String, String>()
+            .put(IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL, IVALUE_VOLUME_KEY_BEHAVIOUR_VIRTUAL)
+            .put(IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME, IVALUE_VOLUME_KEY_BEHAVIOUR_VOLUME)
+            .build();
 
 
 

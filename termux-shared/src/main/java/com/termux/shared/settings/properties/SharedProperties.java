@@ -3,6 +3,7 @@ package com.termux.shared.settings.properties;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Primitives;
 import com.termux.shared.logger.Logger;
@@ -289,12 +290,14 @@ public class SharedProperties {
      * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File)}call.
      * @param propertiesFile The {@link File} to read the {@link Properties} from.
      * @param key The key to read.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
+     *                               was found in {@link Properties} but was invalid.
      * @return Returns the {@code true} if the {@link Properties} key {@link String} value equals "true",
      * regardless of case. If the key does not exist in the file or does not equal "true", then
      * {@code false} will be returned.
      */
-    public static boolean isPropertyValueTrue(Context context, File propertiesFile, String key) {
-        return (boolean) getBooleanValueForStringValue((String) getProperty(context, propertiesFile, key, null), false);
+    public static boolean isPropertyValueTrue(Context context, File propertiesFile, String key, boolean logErrorOnInvalidValue) {
+        return (boolean) getBooleanValueForStringValue(key, (String) getProperty(context, propertiesFile, key, null), false, logErrorOnInvalidValue, LOG_TAG);
     }
 
     /**
@@ -304,12 +307,14 @@ public class SharedProperties {
      * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File)} call.
      * @param propertiesFile The {@link File} to read the {@link Properties} from.
      * @param key The key to read.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
+     *                               was found in {@link Properties} but was invalid.
      * @return Returns the {@code true} if the {@link Properties} key {@link String} value equals "false",
      * regardless of case. If the key does not exist in the file or does not equal "false", then
      * {@code true} will be returned.
      */
-    public static boolean isPropertyValueFalse(Context context, File propertiesFile, String key) {
-        return (boolean) getInvertedBooleanValueForStringValue((String) getProperty(context, propertiesFile, key, null), true);
+    public static boolean isPropertyValueFalse(Context context, File propertiesFile, String key, boolean logErrorOnInvalidValue) {
+        return (boolean) getInvertedBooleanValueForStringValue(key, (String) getProperty(context, propertiesFile, key, null), true, logErrorOnInvalidValue, LOG_TAG);
     }
 
 
@@ -413,16 +418,20 @@ public class SharedProperties {
 
 
 
+
     /**
      * Get the boolean value for the {@link String} value.
      *
      * @param value The {@link String} value to convert.
      * @param def The default {@link boolean} value to return.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if {@code value}
+     *                               was not {@code null} and was invalid.
+     * @param logTag If log tag to use for logging errors.
      * @return Returns {@code true} or {@code false} if value is the literal string "true" or "false" respectively,
      * regardless of case. Otherwise returns default value.
      */
-    public static boolean getBooleanValueForStringValue(String value, boolean def) {
-        return (boolean) getDefaultIfNull(MAP_GENERIC_BOOLEAN.get(toLowerCase(value)), def);
+    public static boolean getBooleanValueForStringValue(String key, String value, boolean def, boolean logErrorOnInvalidValue, String logTag) {
+        return (boolean) getDefaultIfNotInMap(key, MAP_GENERIC_BOOLEAN, toLowerCase(value), def, logErrorOnInvalidValue, logTag);
     }
 
     /**
@@ -430,11 +439,107 @@ public class SharedProperties {
      *
      * @param value The {@link String} value to convert.
      * @param def The default {@link boolean} value to return.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if {@code value}
+     *                               was not {@code null} and was invalid.
+     * @param logTag If log tag to use for logging errors.
      * @return Returns {@code true} or {@code false} if value is the literal string "false" or "true" respectively,
      * regardless of case. Otherwise returns default value.
      */
-    public static boolean getInvertedBooleanValueForStringValue(String value, boolean def) {
-        return (boolean) getDefaultIfNull(MAP_GENERIC_INVERTED_BOOLEAN.get(toLowerCase(value)), def);
+    public static boolean getInvertedBooleanValueForStringValue(String key, String value, boolean def, boolean logErrorOnInvalidValue, String logTag) {
+        return (boolean) getDefaultIfNotInMap(key, MAP_GENERIC_INVERTED_BOOLEAN, toLowerCase(value), def, logErrorOnInvalidValue, logTag);
+    }
+
+    /**
+     * Get the value for the {@code inputValue} {@link Object} key from a {@link BiMap<>}, otherwise
+     * default value if key not found in {@code map}.
+     *
+     * @param key The shared properties {@link String} key value for which the value is being returned.
+     * @param map The {@link BiMap<>} value to get the value from.
+     * @param inputValue The {@link Object} key value of the map.
+     * @param defaultOutputValue The default {@link boolean} value to return if {@code inputValue} not found in map.
+     *            The default value must exist as a value in the {@link BiMap<>} passed.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if {@code inputValue}
+     *                               was not {@code null} and was not found in the map.
+     * @param logTag If log tag to use for logging errors.
+     * @return Returns the value for the {@code inputValue} key from the map if it exists. Otherwise
+     * returns default value.
+     */
+    public static Object getDefaultIfNotInMap(String key, @Nonnull BiMap<?, ?> map, Object inputValue, Object defaultOutputValue, boolean logErrorOnInvalidValue, String logTag) {
+        Object outputValue = map.get(inputValue);
+        if (outputValue == null) {
+            Object defaultInputValue = map.inverse().get(defaultOutputValue);
+            if (defaultInputValue == null)
+                Logger.logError(LOG_TAG, "The default output value \"" + defaultOutputValue + "\" for the key \"" + key + "\" does not exist as a value in the BiMap passed to getDefaultIfNotInMap(): " + map.values());
+
+            if (logErrorOnInvalidValue && inputValue != null) {
+                if (key != null)
+                    Logger.logError(logTag, "The value \"" + inputValue + "\" for the key \"" + key + "\" is invalid. Using default value \"" + defaultInputValue + "\" instead.");
+                else
+                    Logger.logError(logTag, "The value \"" + inputValue + "\" is invalid. Using default value \"" + defaultInputValue + "\" instead.");
+            }
+
+            return defaultOutputValue;
+        } else {
+            return outputValue;
+        }
+    }
+
+    /**
+     * Get the {@code int} {@code value} as is if between {@code min} and {@code max} (inclusive), otherwise
+     * return default value.
+     *
+     * @param key The shared properties {@link String} key value for which the value is being returned.
+     * @param value The {@code int} value to check.
+     * @param def The default {@code int} value if {@code value} not in range.
+     * @param min The min allowed {@code int} value.
+     * @param max The max allowed {@code int} value.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if {@code value}
+     *                               not in range.
+     * @param ignoreErrorIfValueZero If logging error should be ignored if value equals 0.
+     * @param logTag If log tag to use for logging errors.
+     * @return Returns the {@code value} as is if within range. Otherwise returns default value.
+     */
+    public static int getDefaultIfNotInRange(String key, int value, int def, int min, int max, boolean logErrorOnInvalidValue, boolean ignoreErrorIfValueZero, String logTag) {
+        if (value < min || value > max) {
+            if (logErrorOnInvalidValue && (!ignoreErrorIfValueZero || value != 0)) {
+                if (key != null)
+                    Logger.logError(logTag, "The value \"" + value + "\" for the key \"" + key + "\" is not within the range " + min +  "-" + max +  " (inclusive). Using default value \"" + def + "\" instead.");
+                else
+                    Logger.logError(logTag, "The value \"" + value + "\" is not within the range " + min +  "-" + max +  " (inclusive). Using default value \"" + def + "\" instead.");
+            }
+            return def;
+        } else {
+            return value;
+        }
+    }
+
+    /**
+     * Get the {@code float} {@code value} as is if between {@code min} and {@code max} (inclusive), otherwise
+     * return default value.
+     *
+     * @param key The shared properties {@link String} key value for which the value is being returned.
+     * @param value The {@code float} value to check.
+     * @param def The default {@code float} value if {@code value} not in range.
+     * @param min The min allowed {@code float} value.
+     * @param max The max allowed {@code float} value.
+     * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if {@code value}
+     *                               not in range.
+     * @param ignoreErrorIfValueZero If logging error should be ignored if value equals 0.
+     * @param logTag If log tag to use for logging errors.
+     * @return Returns the {@code value} as is if within range. Otherwise returns default value.
+     */
+    public static float getDefaultIfNotInRange(String key, float value, float def, float min, float max, boolean logErrorOnInvalidValue, boolean ignoreErrorIfValueZero, String logTag) {
+        if (value < min || value > max) {
+            if (logErrorOnInvalidValue && (!ignoreErrorIfValueZero || value != 0)) {
+                if (key != null)
+                    Logger.logError(logTag, "The value \"" + value + "\" for the key \"" + key + "\" is not within the range " + min +  "-" + max +  " (inclusive). Using default value \"" + def + "\" instead.");
+                else
+                    Logger.logError(logTag, "The value \"" + value + "\" is not within the range " + min +  "-" + max +  " (inclusive). Using default value \"" + def + "\" instead.");
+            }
+            return def;
+        } else {
+            return value;
+        }
     }
 
     /**

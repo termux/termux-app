@@ -322,7 +322,7 @@ public class PluginUtils {
      */
     public static String checkIfRunCommandServiceAllowExternalAppsPolicyIsViolated(final Context context) {
         String errmsg = null;
-        if (!SharedProperties.isPropertyValueTrue(context, TermuxPropertyConstants.getTermuxPropertiesFile(), TermuxConstants.PROP_ALLOW_EXTERNAL_APPS)) {
+        if (!SharedProperties.isPropertyValueTrue(context, TermuxPropertyConstants.getTermuxPropertiesFile(), TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true)) {
             errmsg = context.getString(R.string.error_run_command_service_allow_external_apps_ungranted);
         }
 

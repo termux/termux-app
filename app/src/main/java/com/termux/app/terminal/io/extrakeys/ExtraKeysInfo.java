@@ -1,5 +1,9 @@
 package com.termux.app.terminal.io.extrakeys;
 
+import com.termux.shared.logger.Logger;
+import com.termux.shared.settings.properties.TermuxPropertyConstants;
+import com.termux.shared.settings.properties.TermuxSharedProperties;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -238,6 +242,8 @@ public class ExtraKeysInfo {
             case "none":
                 return new CharDisplayMap();
             default:
+                if (!TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE.equals(style))
+                    Logger.logError(TermuxSharedProperties.LOG_TAG, "The style \"" + style + "\" for the key \"" + TermuxPropertyConstants.KEY_EXTRA_KEYS_STYLE + "\" is invalid. Using default style instead.");
                 return defaultCharDisplay;
         }
     }
