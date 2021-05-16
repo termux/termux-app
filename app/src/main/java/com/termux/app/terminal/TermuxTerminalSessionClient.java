@@ -37,19 +37,38 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
 
     private static final int MAX_SESSIONS = 8;
 
-    private final SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
-        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
+    private SoundPool mBellSoundPool;
 
-    private final int mBellSoundId;
+    private int mBellSoundId;
 
     private static final String LOG_TAG = "TermuxTerminalSessionClient";
 
     public TermuxTerminalSessionClient(TermuxActivity activity) {
         this.mActivity = activity;
-
-        mBellSoundId = mBellSoundPool.load(activity, R.raw.bell, 1);
     }
+
+    /**
+     * Should be called when mActivity.onResume() is called
+     */
+    public void onResume() {
+        // Just initialize the mBellSoundPool and load the sound, otherwise bell might not run
+        // the first time bell key is pressed and play() is called, since sound may not be loaded
+        // quickly enough before the call to play(). https://stackoverflow.com/questions/35435625
+        getBellSoundPool();
+    }
+
+    /**
+     * Should be called when mActivity.onStop() is called
+     */
+    public void onStop() {
+        // Release mBellSoundPool resources, specially to prevent exceptions like the following to be thrown
+        // java.util.concurrent.TimeoutException: android.media.SoundPool.finalize() timed out after 10 seconds
+        // Bell is not played in background anyways
+        // Related: https://stackoverflow.com/a/28708351/14686958
+        releaseBellSoundPool();
+    }
+
+
 
     @Override
     public void onTextChanged(TerminalSession changedSession) {
@@ -122,13 +141,12 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
                 BellHandler.getInstance(mActivity).doBell();
                 break;
             case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_BEEP:
-                mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
+                getBellSoundPool().play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
                 break;
             case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_IGNORE:
                 // Ignore the bell character.
                 break;
         }
-
     }
 
     @Override
@@ -148,6 +166,29 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         // If cursor is to enabled now, then start cursor blinking if blinking is enabled
         // otherwise stop cursor blinking
         mActivity.getTerminalView().setTerminalCursorBlinkerState(enabled, false);
+    }
+
+
+
+    /** Initialize and get mBellSoundPool */
+    private synchronized SoundPool getBellSoundPool() {
+        if (mBellSoundPool == null) {
+            mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
+                new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
+
+            mBellSoundId = mBellSoundPool.load(mActivity, R.raw.bell, 1);
+        }
+
+        return mBellSoundPool;
+    }
+
+    /** Release mBellSoundPool resources */
+    private synchronized void releaseBellSoundPool() {
+        if (mBellSoundPool != null) {
+            mBellSoundPool.release();
+            mBellSoundPool = null;
+        }
     }
 
 
