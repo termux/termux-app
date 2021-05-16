@@ -429,12 +429,15 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     public void setTerminalCursorBlinkerState(boolean start) {
         if (start) {
-            // Set/Update the cursor blinking rate
-            mActivity.getTerminalView().setTerminalCursorBlinkerRate(mActivity.getProperties().getTerminalCursorBlinkRate());
+            // If set/update the cursor blinking rate is successful, then enable cursor blinker
+            if (mActivity.getTerminalView().setTerminalCursorBlinkerRate(mActivity.getProperties().getTerminalCursorBlinkRate()))
+                mActivity.getTerminalView().setTerminalCursorBlinkerState(true, true);
+            else
+                Logger.logError(LOG_TAG,"Failed to start cursor blinker");
+        } else {
+            // Disable cursor blinker
+            mActivity.getTerminalView().setTerminalCursorBlinkerState(false, true);
         }
-
-        // Set the new state of cursor blinker
-        mActivity.getTerminalView().setTerminalCursorBlinkerState(start, true);
     }
 
 
@@ -455,7 +458,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             intent.putExtra(Intent.EXTRA_SUBJECT, mActivity.getString(R.string.title_share_transcript));
             mActivity.startActivity(Intent.createChooser(intent, mActivity.getString(R.string.title_share_transcript_with)));
         } catch (Exception e) {
-            Logger.logStackTraceWithMessage("Failed to get share session transcript of length " + transcriptText.length(), e);
+            Logger.logStackTraceWithMessage(LOG_TAG,"Failed to get share session transcript of length " + transcriptText.length(), e);
         }
     }
 
