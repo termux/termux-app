@@ -229,23 +229,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         mIsVisible = true;
 
-        if (mTermuxService != null) {
-            // The service has connected, but data may have changed since we were last in the foreground.
-            // Get the session stored in shared preferences stored by {@link #onStop} if its valid,
-            // otherwise get the last session currently running.
-            mTermuxTerminalSessionClient.setCurrentSession(mTermuxTerminalSessionClient.getCurrentStoredSessionOrLast());
-            termuxSessionListNotifyUpdated();
-        }
+        if (mTermuxTerminalSessionClient != null)
+            mTermuxTerminalSessionClient.onStart();
+
+        if (mTermuxTerminalViewClient != null)
+            mTermuxTerminalViewClient.onStart();
 
         registerTermuxActivityBroadcastReceiver();
-
-        // If user changed the preference from {@link TermuxSettings} activity and returns, then
-        // update the {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value.
-        mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.isTerminalViewKeyLoggingEnabled());
-
-        // The current terminal session may have changed while being away, force
-        // a refresh of the displayed terminal.
-        mTerminalView.onScreenUpdated();
     }
 
     @Override
@@ -256,11 +246,63 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         if (mIsInvalidState) return;
 
-        mTermuxTerminalViewClient.setSoftKeyboardState(true, false);
+        if (mTermuxTerminalSessionClient != null)
+            mTermuxTerminalSessionClient.onResume();
 
-        // Start terminal cursor blinking if enabled
-        mTermuxTerminalViewClient.setTerminalCursorBlinkerState(true);
+        if (mTermuxTerminalViewClient != null)
+            mTermuxTerminalViewClient.onResume();
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        Logger.logDebug(LOG_TAG, "onStop");
+
+        if (mIsInvalidState) return;
+
+        mIsVisible = false;
+
+        if (mTermuxTerminalSessionClient != null)
+            mTermuxTerminalSessionClient.onStop();
+
+        if (mTermuxTerminalViewClient != null)
+            mTermuxTerminalViewClient.onStop();
+
+        unregisterTermuxActivityBroadcastReceiever();
+        getDrawer().closeDrawers();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        Logger.logDebug(LOG_TAG, "onDestroy");
+
+        if (mIsInvalidState) return;
+
+        if (mTermuxService != null) {
+            // Do not leave service and session clients with references to activity.
+            mTermuxService.unsetTermuxTerminalSessionClient();
+            mTermuxService = null;
+        }
+
+        try {
+            unbindService(this);
+        } catch (Exception e) {
+            // ignore.
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        saveTerminalToolbarTextInput(savedInstanceState);
+    }
+
+
+
+
 
     /**
      * Part of the {@link ServiceConnection} interface. The service is bound with
@@ -319,53 +361,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         finishActivityIfNotFinishing();
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
 
-        Logger.logDebug(LOG_TAG, "onStop");
-
-        if (mIsInvalidState) return;
-
-        mIsVisible = false;
-
-        // Store current session in shared preferences so that it can be restored later in
-        // {@link #onStart} if needed.
-        mTermuxTerminalSessionClient.setCurrentStoredSession();
-
-        // Stop terminal cursor blinking if enabled
-        mTermuxTerminalViewClient.setTerminalCursorBlinkerState(false);
-
-        unregisterTermuxActivityBroadcastReceiever();
-        getDrawer().closeDrawers();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        Logger.logDebug(LOG_TAG, "onDestroy");
-
-        if (mIsInvalidState) return;
-
-        if (mTermuxService != null) {
-            // Do not leave service and session clients with references to activity.
-            mTermuxService.unsetTermuxTerminalSessionClient();
-            mTermuxService = null;
-        }
-
-        try {
-            unbindService(this);
-        } catch (Exception e) {
-            // ignore.
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-        saveTerminalToolbarTextInput(savedInstanceState);
-    }
 
 
 
@@ -382,6 +378,32 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             findViewById(R.id.left_drawer).setBackgroundColor(ContextCompat.getColor(this,
                 android.R.color.background_dark));
         }
+    }
+
+
+
+    private void setTermuxTerminalViewAndClients() {
+        // Set termux terminal view and session clients
+        mTermuxTerminalSessionClient = new TermuxTerminalSessionClient(this);
+        mTermuxTerminalViewClient = new TermuxTerminalViewClient(this, mTermuxTerminalSessionClient);
+
+        // Set termux terminal view
+        mTerminalView = findViewById(R.id.terminal_view);
+        mTerminalView.setTerminalViewClient(mTermuxTerminalViewClient);
+
+        if (mTermuxTerminalViewClient != null)
+            mTermuxTerminalViewClient.onCreate();
+
+        if (mTermuxTerminalSessionClient != null)
+            mTermuxTerminalSessionClient.onCreate();
+    }
+
+    private void setTermuxSessionsListView() {
+        ListView termuxSessionsListView = findViewById(R.id.terminal_sessions_list);
+        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getTermuxSessions());
+        termuxSessionsListView.setAdapter(mTermuxSessionListViewController);
+        termuxSessionsListView.setOnItemClickListener(mTermuxSessionListViewController);
+        termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
     }
 
 
@@ -460,36 +482,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             toggleTerminalToolbar();
             return true;
         });
-    }
-
-
-
-
-
-    private void setTermuxTerminalViewAndClients() {
-        // Set termux terminal view and session clients
-        mTermuxTerminalSessionClient = new TermuxTerminalSessionClient(this);
-        mTermuxTerminalViewClient = new TermuxTerminalViewClient(this, mTermuxTerminalSessionClient);
-
-        // Set termux terminal view
-        mTerminalView = findViewById(R.id.terminal_view);
-        mTerminalView.setTerminalViewClient(mTermuxTerminalViewClient);
-
-        mTerminalView.setTextSize(mPreferences.getFontSize());
-        mTerminalView.setKeepScreenOn(mPreferences.shouldKeepScreenOn());
-
-        // Set {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value
-        mTerminalView.setIsTerminalViewKeyLoggingEnabled(mPreferences.isTerminalViewKeyLoggingEnabled());
-
-        mTermuxTerminalSessionClient.checkForFontAndColors();
-    }
-
-    private void setTermuxSessionsListView() {
-        ListView termuxSessionsListView = findViewById(R.id.terminal_sessions_list);
-        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getTermuxSessions());
-        termuxSessionsListView.setAdapter(mTermuxSessionListViewController);
-        termuxSessionsListView.setOnItemClickListener(mTermuxSessionListViewController);
-        termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
     }
 
 
@@ -780,7 +772,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         return;
                     case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
                         Logger.logDebug(LOG_TAG, "Received intent to reload styling");
-                        reloadTermuxActivityStyling();
+                        reloadActivityStyling();
                         return;
                     default:
                 }
@@ -788,11 +780,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
     }
 
-    private void reloadTermuxActivityStyling() {
-        if (mTermuxTerminalSessionClient != null) {
-            mTermuxTerminalSessionClient.checkForFontAndColors();
-        }
-
+    private void reloadActivityStyling() {
         if (mProperties!= null) {
             mProperties.loadTermuxPropertiesFromDisk();
 
@@ -803,10 +791,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         setTerminalToolbarHeight();
 
-        mTermuxTerminalViewClient.setSoftKeyboardState(false, true);
+        if (mTermuxTerminalSessionClient != null)
+            mTermuxTerminalSessionClient.onReload();
 
-        mTermuxTerminalViewClient.setTerminalCursorBlinkerState(true);
-
+        if (mTermuxTerminalViewClient != null)
+            mTermuxTerminalViewClient.onReload();
 
         // To change the activity and drawer theme, activity needs to be recreated.
         // But this will destroy the activity, and will call the onCreate() again.

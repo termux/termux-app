@@ -48,6 +48,31 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
     /**
+     * Should be called when mActivity.onCreate() is called
+     */
+    public void onCreate() {
+        // Set terminal fonts and colors
+        checkForFontAndColors();
+    }
+
+    /**
+     * Should be called when mActivity.onStart() is called
+     */
+    public void onStart() {
+        // The service has connected, but data may have changed since we were last in the foreground.
+        // Get the session stored in shared preferences stored by {@link #onStop} if its valid,
+        // otherwise get the last session currently running.
+        if (mActivity.getTermuxService() != null) {
+            setCurrentSession(getCurrentStoredSessionOrLast());
+            termuxSessionListNotifyUpdated();
+        }
+
+        // The current terminal session may have changed while being away, force
+        // a refresh of the displayed terminal.
+        mActivity.getTerminalView().onScreenUpdated();
+    }
+
+    /**
      * Should be called when mActivity.onResume() is called
      */
     public void onResume() {
@@ -61,11 +86,23 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
      * Should be called when mActivity.onStop() is called
      */
     public void onStop() {
+        // Store current session in shared preferences so that it can be restored later in
+        // {@link #onStart} if needed.
+        setCurrentStoredSession();
+
         // Release mBellSoundPool resources, specially to prevent exceptions like the following to be thrown
         // java.util.concurrent.TimeoutException: android.media.SoundPool.finalize() timed out after 10 seconds
         // Bell is not played in background anyways
         // Related: https://stackoverflow.com/a/28708351/14686958
         releaseBellSoundPool();
+    }
+
+    /**
+     * Should be called when mActivity.reloadActivityStyling() is called
+     */
+    public void onReload() {
+        // Set terminal fonts and colors
+        checkForFontAndColors();
     }
 
 

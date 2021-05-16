@@ -63,6 +63,56 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         this.mTermuxTerminalSessionClient = termuxTerminalSessionClient;
     }
 
+    /**
+     * Should be called when mActivity.onCreate() is called
+     */
+    public void onCreate() {
+        mActivity.getTerminalView().setTextSize(mActivity.getPreferences().getFontSize());
+        mActivity.getTerminalView().setKeepScreenOn(mActivity.getPreferences().shouldKeepScreenOn());
+    }
+
+    /**
+     * Should be called when mActivity.onStart() is called
+     */
+    public void onStart() {
+
+        // Set {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value
+        // Also required if user changed the preference from {@link TermuxSettings} activity and returns
+        mActivity.getTerminalView().setIsTerminalViewKeyLoggingEnabled(mActivity.getPreferences().isTerminalViewKeyLoggingEnabled());
+    }
+
+    /**
+     * Should be called when mActivity.onResume() is called
+     */
+    public void onResume() {
+        // Show the soft keyboard if required
+        setSoftKeyboardState(true, false);
+
+        // Start terminal cursor blinking if enabled
+        setTerminalCursorBlinkerState(true);
+    }
+
+    /**
+     * Should be called when mActivity.onStop() is called
+     */
+    public void onStop() {
+        // Stop terminal cursor blinking if enabled
+        setTerminalCursorBlinkerState(false);
+    }
+
+    /**
+     * Should be called when mActivity.reloadActivityStyling() is called
+     */
+    public void onReload() {
+        // Show the soft keyboard if required
+        setSoftKeyboardState(false, true);
+
+        // Start terminal cursor blinking if enabled
+        setTerminalCursorBlinkerState(true);
+    }
+
+
+
     @Override
     public float onScale(float scale) {
         if (scale < 0.9f || scale > 1.1f) {
