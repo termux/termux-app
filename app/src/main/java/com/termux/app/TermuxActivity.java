@@ -33,6 +33,7 @@ import com.termux.R;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.activities.HelpActivity;
+import com.termux.app.activities.ContribActivity;
 import com.termux.app.activities.SettingsActivity;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionsListViewController;
@@ -539,6 +540,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         menu.add(Menu.NONE, CONTEXT_MENU_HELP_ID, Menu.NONE, R.string.action_open_help);
         menu.add(Menu.NONE, CONTEXT_MENU_SETTINGS_ID, Menu.NONE, R.string.action_open_settings);
         menu.add(Menu.NONE, CONTEXT_MENU_REPORT_ID, Menu.NONE, R.string.action_report_issue);
+        menu.add(Menu.NONE, CONTEXT_MENU_CONTRIBUTING_ID, Menu.NONE, R.string.action_contribute);
     }
 
     /** Hook system menu to show context menu instead. */
@@ -582,6 +584,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 return true;
             case CONTEXT_MENU_REPORT_ID:
                 mTermuxTerminalViewClient.reportIssueFromTranscript();
+                return true;
+            case CONTEXT_MENU_CONTRIBUTING_ID:
+                startAactivity(new Intent(this, ContibActivity.class));
                 return true;
             default:
                 return super.onContextItemSelected(item);
