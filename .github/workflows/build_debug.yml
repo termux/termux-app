@@ -33,4 +33,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: termux-app
-        path: $SIGNED_RELEASE_FILE
+        path: ${{ env.SIGNED_RELEASE_FILE }}
