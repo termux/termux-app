@@ -19,9 +19,18 @@ jobs:
         bash build_bootstrap.sh
     - name: Build
       run: |
-        ./gradlew assembleDebug
+        ./gradlew :app:assembleRelease
+  - uses: r0adkll/sign-android-release@v1
+    name: Sign app APK
+    id: sign_app
+    with:
+      releaseDirectory: app/build/outputs/apk/release
+      signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+      alias: ${{ secrets.ALIAS }}
+      keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+      keyPassword: ${{ secrets.KEY_PASSWORD }}
     - name: Store generated APK file
       uses: actions/upload-artifact@v2
       with:
         name: termux-app
-        path: ./app/build/outputs/apk/debug
+        path: $SIGNED_RELEASE_FILE

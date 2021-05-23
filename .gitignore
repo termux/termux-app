@@ -11,7 +11,7 @@ bootstrap-*
 .externalNativeBuild
 .cxx
 #*.zip
-
+app/release
 # Crashlytics configuations
 com_crashlytics_export_strings.xml
 
