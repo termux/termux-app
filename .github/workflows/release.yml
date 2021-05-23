@@ -13,7 +13,7 @@ jobs:
         uses: crazy-max/ghaction-virustotal@v2
         with:
           vt_api_key: ${{ secrets.VT_API_KEY }}
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.TOKEN }}
           update_release_body: true
           files: |
             .apk$
