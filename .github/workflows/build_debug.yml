@@ -14,6 +14,9 @@ jobs:
     steps:
     - name: Clone repository
       uses: actions/checkout@v2
+    - name: Build bootstrap
+      run: |
+        bash build_bootstrap.sh
     - name: Build
       run: |
         ./gradlew assembleDebug
