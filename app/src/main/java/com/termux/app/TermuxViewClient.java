@@ -217,7 +217,7 @@ public final class TermuxViewClient implements TerminalViewClient {
                 // Writing mode:
                 case 'q':
                 case 'k':
-                    mActivity.toggleShowExtraKeys();
+                    //mActivity.toggleShowExtraKeys();
                     break;
             }
 
