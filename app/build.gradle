@@ -105,7 +105,7 @@ clean {
 }
 allprojects {
     afterEvaluate { project ->
-        def propsFile = rootProject.file('keystore.properties')
+        def propsFile = rootProject.file('app/keystore.properties')
         def configName = 'release'
 
         if (propsFile.exists() && android.signingConfigs.hasProperty(configName)) {
