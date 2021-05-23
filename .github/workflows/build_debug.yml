@@ -17,24 +17,19 @@ jobs:
     - name: Build bootstrap
       run: |
         bash build_bootstrap.sh
+    - name: Prepare Keystore 
+      run: |   
+         echo "${{ secrets.SIGNING_KEY }}" > tel.jks.asc   
+         gpg -d --passphrase "${{ secrets.KEY_STORE_PASSWORD }}" --batch tel.jks.asc > app/tel.jks   
+         echo "${{ secrets.KEYSTORE_PROPERTIES }}" > keystore.properties.asc   
+         gpg -d --passphrase "${{ secrets.KEY_PASSWORD }}" --batch keystore.properties.asc > keystore.properties   
+         echo "${{ secrets.AGCONNECT_SERVICES }}" > agconnect-services.json.asc    
+         gpg -d --passphrase "${{ secrets.AGCONNECT_SERVICES_PASSPHRASE }}" --batch agconnect-services.json.asc > app/agconnect-services.json   
     - name: Build
       run: |
         ./gradlew :app:assembleRelease
-    - uses: r0adkll/sign-android-release@v1
-      name: Sign app APK
-      id: sign_app
-      with:
-        releaseDirectory: app/build/outputs/apk/release
-        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-        alias: ${{ secrets.ALIAS }}
-        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.KEY_PASSWORD }}
-    - name:  Move apks
-      run: |
-        mkdir signed
-        mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk signed/TEL-${{ GITHUB_RUN_NUMBER }}-arm64.apk
-    - name: Store generated APK file
-      uses: actions/upload-artifact@v2
-      with:
-        name: termux-app
-        path: signed
+    - name: Publish APK   
+      uses: actions/upload-artifact@v2   
+      with:   
+        name: app-release   
+        path: app/build/outputs/apk/release/
