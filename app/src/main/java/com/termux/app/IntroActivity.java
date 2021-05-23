@@ -16,18 +16,4 @@ import java.util.List;
 
 public class IntroActivity {
 
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-
-        super.onCreate(savedInstanceState);
-
-        
-    }
-
-    
-    @Override
-    public void onFinishButtonPressed() {
-       finish();
-    }
 }
