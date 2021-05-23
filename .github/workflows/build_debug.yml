@@ -29,8 +29,12 @@ jobs:
         alias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
         keyPassword: ${{ secrets.KEY_PASSWORD }}
+    - name:  Move apks
+      run: |
+        mkdir signed
+        mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk signed/TEL-${{ GITHUB_RUN_NUMBER }}-arm64.apk
     - name: Store generated APK file
       uses: actions/upload-artifact@v2
       with:
         name: termux-app
-        path: ${{ env.SIGNED_RELEASE_FILE }}
+        path: signed
