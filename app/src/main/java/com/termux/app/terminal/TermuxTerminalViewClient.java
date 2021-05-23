@@ -15,6 +15,7 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -464,8 +465,12 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 mActivity.getTerminalView().setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
                     public void onFocusChange(View view, boolean hasFocus) {
-                        // Force show soft keyboard if TerminalView has focus and close it if it doesn't
-                        KeyboardUtils.setSoftKeyboardVisibility(mShowSoftKeyboardRunnable, mActivity, mActivity.getTerminalView(), hasFocus);
+                        // Force show soft keyboard if TerminalView or toolbar text input view has
+                        // focus and close it if they don't
+                        boolean textInputViewHasFocus = false;
+                        final EditText textInputView =  mActivity.findViewById(R.id.terminal_toolbar_text_input);
+                        if (textInputView != null) textInputViewHasFocus = textInputView.hasFocus();
+                        KeyboardUtils.setSoftKeyboardVisibility(mShowSoftKeyboardRunnable, mActivity, mActivity.getTerminalView(), hasFocus || textInputViewHasFocus);
                     }
                 });
 
