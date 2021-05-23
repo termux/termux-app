@@ -45,13 +45,15 @@ android {
     }
 
     signingConfigs {
-        debug {
-            storeFile file('dev_keystore.jks')
-            keyAlias 'alias'
-            storePassword 'xrj45yWGLbsO7W0v'
-            keyPassword 'xrj45yWGLbsO7W0v'
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            v2SigningEnabled true
         }
     }
+
 
     buildTypes {
         release {
