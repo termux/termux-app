@@ -20,15 +20,15 @@ jobs:
     - name: Build
       run: |
         ./gradlew :app:assembleRelease
-  - uses: r0adkll/sign-android-release@v1
-    name: Sign app APK
-    id: sign_app
-    with:
-      releaseDirectory: app/build/outputs/apk/release
-      signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-      alias: ${{ secrets.ALIAS }}
-      keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-      keyPassword: ${{ secrets.KEY_PASSWORD }}
+    - uses: r0adkll/sign-android-release@v1
+      name: Sign app APK
+      id: sign_app
+      with:
+        releaseDirectory: app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+        alias: ${{ secrets.ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
     - name: Store generated APK file
       uses: actions/upload-artifact@v2
       with:
