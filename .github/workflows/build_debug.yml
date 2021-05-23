@@ -40,6 +40,6 @@ jobs:
         repo_token: "${{ secrets.TOKEN }}"
         automatic_release_tag: "beta"
         prerelease: true
-        title: "[BETA] TEL ${{ env.GITHUB_RUN_ID }}"
+        title: "[BETA] TEL #${env.GITHUB_RUN_NUMBER}"
         files: |
           *.apk
