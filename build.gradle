@@ -18,3 +18,12 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+signingConfigs {
+    release {
+        storeFile file(keystoreProperties['storeFile'])
+        storePassword keystoreProperties['storePassword']
+        keyAlias keystoreProperties['keyAlias']
+        keyPassword keystoreProperties['keyPassword']
+        v2SigningEnabled true
+    }
+}
