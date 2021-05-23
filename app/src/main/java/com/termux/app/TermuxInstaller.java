@@ -73,8 +73,8 @@ final class TermuxInstaller {
             whenDone.run();
             return;
         }
-        Intent intent = new Intent(activity, IntroActivity.class);
-        activity.startActivity(intent);
+        //Intent intent = new Intent(activity, IntroActivity.class);
+        //activity.startActivity(intent);
 
 
         final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
