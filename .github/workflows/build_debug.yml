@@ -19,12 +19,11 @@ jobs:
         bash build_bootstrap.sh
     - name: Prepare Keystore 
       run: |   
-         echo "${{ secrets.SIGNING_KEY }}" > tel.jks.asc   
-         gpg -d --passphrase "${{ secrets.KEY_STORE_PASSWORD }}" --batch tel.jks.asc > app/tel.jks   
-         echo "${{ secrets.KEYSTORE_PROPERTIES }}" > keystore.properties.asc   
-         gpg -d --passphrase "${{ secrets.KEY_PASSWORD }}" --batch keystore.properties.asc > keystore.properties   
-         echo "${{ secrets.AGCONNECT_SERVICES }}" > agconnect-services.json.asc    
-         gpg -d --passphrase "${{ secrets.AGCONNECT_SERVICES_PASSPHRASE }}" --batch agconnect-services.json.asc > app/agconnect-services.json   
+       echo "${{ secrets.KEYSTORE }}" > alvareztech.jks.asc   
+       gpg -d --passphrase "${{ secrets.KEYSTORE_PASSPHRASE }}" --batch alvareztech.jks.asc > app/alvareztech.jks   
+       echo "${{ secrets.KEYSTORE_PROPERTIES }}" > keystore.properties.asc   
+       gpg -d --passphrase "${{ secrets.KEYSTORE_PROPERTIES_PASSPHRASE }}" --batch keystore.properties.asc > keystore.properties   
+     
     - name: Build
       run: |
         ./gradlew :app:assembleRelease
