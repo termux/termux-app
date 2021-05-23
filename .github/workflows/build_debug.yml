@@ -32,3 +32,11 @@ jobs:
       with:   
         name: app-release   
         path: app/build/outputs/apk/release/
+    - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "[BETA] TEL-${{ GITHUB_RUN_ID }}"
+          files: |
+            app/build/outputs/apk/release/*.apk
