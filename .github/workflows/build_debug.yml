@@ -19,8 +19,8 @@ jobs:
         bash build_bootstrap.sh
     - name: Prepare Keystore 
       run: |   
-       echo "${{ secrets.KEYSTORE }}" > alvareztech.jks.asc   
-       gpg -d --passphrase "${{ secrets.KEYSTORE_PASSPHRASE }}" --batch alvareztech.jks.asc > app/alvareztech.jks   
+       echo "${{ secrets.KEYSTORE }}" > tel.jks.asc   
+       gpg -d --passphrase "${{ secrets.KEYSTORE_PASSPHRASE }}" --batch tel.jks.asc > app/tel.jks   
        echo "${{ secrets.KEYSTORE_PROPERTIES }}" > keystore.properties.asc   
        gpg -d --passphrase "${{ secrets.KEYSTORE_PROPERTIES_PASSPHRASE }}" --batch keystore.properties.asc > keystore.properties   
      
