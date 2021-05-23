@@ -28,11 +28,12 @@ jobs:
       run: |
         ./gradlew :app:assembleRelease
     - name: Rename
-      run |
+      run: |
         mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned.apk TEL-arm64.apk
         mv app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned.apk TEL-armeabi.apk
         mv app/build/outputs/apk/release/app-x86-release-unsigned.apk TEL-x86.apk
         mv app/build/outputs/apk/release/app-x86_64-release-unsigned.apk TEL-x86_x64.apk
+
     - name: Release
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
