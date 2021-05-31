@@ -120,14 +120,6 @@
                 <action android:name="android.intent.action.SEND" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="application/*" />
-                <data android:mimeType="audio/*" />
-                <data android:mimeType="image/*" />
-                <data android:mimeType="message/*" />
-                <data android:mimeType="multipart/*" />
-                <data android:mimeType="text/*" />
-                <data android:mimeType="video/*" />
             </intent-filter>
             <!-- Accept multiple file types to let Termux be usable as generic file viewer. -->
             <intent-filter tools:ignore="AppLinkUrlError">
