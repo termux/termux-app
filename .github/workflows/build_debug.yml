@@ -12,6 +12,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y.%m.%d')"
     - name: Clone repository
       uses: actions/checkout@v2
     - name: Build bootstrap
@@ -40,6 +43,6 @@ jobs:
         repo_token: "${{ secrets.TOKEN }}"
         automatic_release_tag: "beta"
         prerelease: true
-        title: "[BETA] TEL ${GITHUB_RUN_ID}"
+        title: "[BETA]TEL-${{ steps.date.outputs.date }}
         files: |
           *.apk
