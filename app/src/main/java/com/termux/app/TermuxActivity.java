@@ -130,6 +130,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private boolean mIsVisible;
 
     /**
+     * If onResume() was called after onCreate().
+     */
+    private boolean isOnResumeAfterOnCreate = false;
+
+    /**
      * The {@link TermuxActivity} is in an invalid state and must not be run.
      */
     private boolean mIsInvalidState;
@@ -160,6 +165,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public void onCreate(Bundle savedInstanceState) {
 
         Logger.logDebug(LOG_TAG, "onCreate");
+        isOnResumeAfterOnCreate = true;
 
         // Check if a crash happened on last run of the app and show a
         // notification with the crash details if it did
@@ -251,6 +257,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onResume();
+
+        isOnResumeAfterOnCreate = false;
     }
 
     @Override
@@ -689,6 +697,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     public boolean isVisible() {
         return mIsVisible;
+    }
+
+    public boolean isOnResumeAfterOnCreate() {
+        return isOnResumeAfterOnCreate;
     }
 
 
