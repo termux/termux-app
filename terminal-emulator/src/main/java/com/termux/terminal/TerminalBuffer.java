@@ -102,6 +102,28 @@ public final class TerminalBuffer {
         return builder.toString();
     }
 
+    public String getWordAtLocation(int x, int y) {
+        int y1 = y;
+        int y2 = y;
+        while (y1 > 0 && !getSelectedText(0, y1 - 1, mColumns, y2, true, true).contains("\n")) {
+            y1--;
+        }
+        while (y2 < mScreenRows && !getSelectedText(0, y1, mColumns, y2 + 1, true, true).contains("\n")) {
+            y2++;
+        }
+        String text = getSelectedText(0, y1, mColumns, y2, true, true);
+        int textOffset = (y - y1) * mColumns + x;
+        int x1 = text.lastIndexOf(' ', textOffset);
+        if (x1 == -1) {
+            x1 = 0;
+        }
+        int x2 = text.indexOf(' ', textOffset);
+        if (x2 == -1) {
+            x2 = text.length();
+        }
+        return text.substring(x1, x2);
+    }
+
     public int getActiveTranscriptRows() {
         return mActiveTranscriptRows;
     }
