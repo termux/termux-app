@@ -94,7 +94,7 @@ public final class TerminalView extends View {
             @Override
             public boolean onUp(MotionEvent event) {
                 mScrollRemainder = 0.0f;
-                if (mEmulator != null && mEmulator.isMouseTrackingActive() && !isSelectingText() && !scrolledWithFinger) {
+                if (mEmulator != null && mEmulator.isMouseTrackingActive() && !event.isFromSource(InputDevice.SOURCE_MOUSE) && !isSelectingText() && !scrolledWithFinger) {
                     // Quick event processing when mouse tracking is active - do not wait for check of double tapping
                     // for zooming.
                     sendMouseEventCode(event, TerminalEmulator.MOUSE_LEFT_BUTTON, true);
@@ -114,13 +114,8 @@ public final class TerminalView extends View {
                     return true;
                 }
                 requestFocus();
-                if (!mEmulator.isMouseTrackingActive()) {
-                    if (!event.isFromSource(InputDevice.SOURCE_MOUSE)) {
-                        mClient.onSingleTapUp(event);
-                        return true;
-                    }
-                }
-                return false;
+                mClient.onSingleTapUp(event);
+                return true;
             }
 
             @Override
@@ -550,7 +545,6 @@ public final class TerminalView extends View {
                         sendMouseEventCode(event, TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, true);
                         break;
                 }
-                return true;
             }
         }
 
@@ -1135,7 +1129,7 @@ public final class TerminalView extends View {
     /**
      * Define functions required for text selection and its handles.
      */
-    TextSelectionCursorController getTextSelectionCursorController() {
+    public TextSelectionCursorController getTextSelectionCursorController() {
         if (mTextSelectionCursorController == null) {
             mTextSelectionCursorController = new TextSelectionCursorController(this);
 

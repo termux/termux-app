@@ -102,6 +102,45 @@ public final class TerminalBuffer {
         return builder.toString();
     }
 
+    public String getWordAtLocation(int x, int y) {
+        // Set y1 and y2 to the lines where the wrapped line starts and ends.
+        // I.e. if a line that is wrapped to 3 lines starts at line 4, and this
+        // is called with y=5, then y1 would be set to 4 and y2 would be set to 6.
+        int y1 = y;
+        int y2 = y;
+        while (y1 > 0 && !getSelectedText(0, y1 - 1, mColumns, y, true, true).contains("\n")) {
+            y1--;
+        }
+        while (y2 < mScreenRows && !getSelectedText(0, y, mColumns, y2 + 1, true, true).contains("\n")) {
+            y2++;
+        }
+
+        // Get the text for the whole wrapped line
+        String text = getSelectedText(0, y1, mColumns, y2, true, true);
+        // The index of x in text
+        int textOffset = (y - y1) * mColumns + x;
+
+        if (textOffset >= text.length()) {
+          // The click was to the right of the last word on the line, so
+          // there's no word to return
+          return "";
+        }
+
+        // Set x1 and x2 to the indices of the last space before x and the
+        // first space after x in text respectively
+        int x1 = text.lastIndexOf(' ', textOffset);
+        int x2 = text.indexOf(' ', textOffset);
+        if (x2 == -1) {
+            x2 = text.length();
+        }
+
+        if (x1 == x2) {
+          // The click was on a space, so there's no word to return
+          return "";
+        }
+        return text.substring(x1 + 1, x2);
+    }
+
     public int getActiveTranscriptRows() {
         return mActiveTranscriptRows;
     }
