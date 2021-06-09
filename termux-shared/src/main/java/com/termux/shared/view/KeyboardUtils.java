@@ -102,7 +102,7 @@ public class KeyboardUtils {
             activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
-    public static void setResizeTerminalViewForSoftKeyboardFlags(final Activity activity) {
+    public static void setSoftInputModeAdjustResize(final Activity activity) {
         // TODO: The flag is deprecated for API 30 and WindowInset API should be used
         // https://developer.android.com/reference/android/view/WindowManager.LayoutParams#SOFT_INPUT_ADJUST_RESIZE
         // https://medium.com/androiddevelopers/animating-your-keyboard-fb776a8fb66d

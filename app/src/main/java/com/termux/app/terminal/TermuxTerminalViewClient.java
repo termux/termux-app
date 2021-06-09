@@ -79,10 +79,13 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      * Should be called when mActivity.onStart() is called
      */
     public void onStart() {
-
         // Set {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value
         // Also required if user changed the preference from {@link TermuxSettings} activity and returns
-        mActivity.getTerminalView().setIsTerminalViewKeyLoggingEnabled(mActivity.getPreferences().isTerminalViewKeyLoggingEnabled());
+        boolean isTerminalViewKeyLoggingEnabled = mActivity.getPreferences().isTerminalViewKeyLoggingEnabled();
+        mActivity.getTerminalView().setIsTerminalViewKeyLoggingEnabled(isTerminalViewKeyLoggingEnabled);
+
+        // Piggyback on the terminal view key logging toggle for now, should add a separate toggle in future
+        mActivity.getTermuxActivityRootView().setIsRootViewLoggingEnabled(isTerminalViewKeyLoggingEnabled);
     }
 
     /**
@@ -459,7 +462,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 mShowSoftKeyboardWithDelayOnce = true;
         } else {
             // Set flag to automatically push up TerminalView when keyboard is opened instead of showing over it
-            KeyboardUtils.setResizeTerminalViewForSoftKeyboardFlags(mActivity);
+            KeyboardUtils.setSoftInputModeAdjustResize(mActivity);
 
             // Clear any previous flags to disable soft keyboard in case setting updated
             KeyboardUtils.clearDisableSoftKeyboardFlags(mActivity);
