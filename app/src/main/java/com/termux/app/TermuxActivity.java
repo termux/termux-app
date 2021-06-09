@@ -846,6 +846,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onReload();
 
+        if (mTermuxService != null)
+            mTermuxService.setTerminalTranscriptRows();
+
         // To change the activity and drawer theme, activity needs to be recreated.
         // But this will destroy the activity, and will call the onCreate() again.
         // We need to investigate if enabling this is wise, since all stored variables and

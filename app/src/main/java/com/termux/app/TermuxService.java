@@ -20,6 +20,7 @@ import android.provider.Settings;
 import android.widget.ArrayAdapter;
 
 import com.termux.R;
+import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.utils.PluginUtils;
 import com.termux.shared.termux.TermuxConstants;
@@ -105,6 +106,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
     /** If the user has executed the {@link TERMUX_SERVICE#ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
+
+    public Integer mTerminalTranscriptRows;
 
     private static final String LOG_TAG = "TermuxService";
 
@@ -503,6 +506,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         // If the execution command was started for a plugin, only then will the stdout be set
         // Otherwise if command was manually started by the user like by adding a new terminal session,
         // then no need to set stdout
+        executionCommand.terminalTranscriptRows = getTerminalTranscriptRows();
         TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(), this, sessionName, executionCommand.isPluginExecutionCommand);
         if (newTermuxSession == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxSession command for:\n" + executionCommand.getCommandIdAndLabelLogString());
@@ -558,6 +562,19 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         }
 
         updateNotification();
+    }
+
+    /** Get the terminal transcript rows to be used for new {@link TermuxSession}. */
+    public Integer getTerminalTranscriptRows() {
+        if (mTerminalTranscriptRows == null)
+            setTerminalTranscriptRows();
+        return mTerminalTranscriptRows;
+    }
+
+    public void setTerminalTranscriptRows() {
+        // TermuxService only uses this termux property currently, so no need to load them all into
+        // an internal values map like TermuxActivity does
+        mTerminalTranscriptRows = TermuxAppSharedProperties.getTerminalTranscriptRows(this);
     }
 
 

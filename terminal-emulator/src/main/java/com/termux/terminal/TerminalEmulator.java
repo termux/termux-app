@@ -137,6 +137,11 @@ public final class TerminalEmulator {
     /** The number of character rows and columns in the terminal screen. */
     public int mRows, mColumns;
 
+    /** The number of terminal transcript rows that can be scrolled back to. */
+    public static final int TERMINAL_TRANSCRIPT_ROWS_MIN = 100;
+    public static final int TERMINAL_TRANSCRIPT_ROWS_MAX = 50000;
+    public static final int DEFAULT_TERMINAL_TRANSCRIPT_ROWS = 2000;
+
     /** The normal screen buffer. Stores the characters that appear on the screen of the emulated terminal. */
     private final TerminalBuffer mMainBuffer;
     /**
@@ -294,9 +299,9 @@ public final class TerminalEmulator {
         }
     }
 
-    public TerminalEmulator(TerminalOutput session, int columns, int rows, int transcriptRows, TerminalSessionClient client) {
+    public TerminalEmulator(TerminalOutput session, int columns, int rows, Integer transcriptRows, TerminalSessionClient client) {
         mSession = session;
-        mScreen = mMainBuffer = new TerminalBuffer(columns, transcriptRows, rows);
+        mScreen = mMainBuffer = new TerminalBuffer(columns, getTerminalTranscriptRows(transcriptRows), rows);
         mAltBuffer = new TerminalBuffer(columns, rows, rows);
         mClient = client;
         mRows = rows;
@@ -315,6 +320,13 @@ public final class TerminalEmulator {
 
     public boolean isAlternateBufferActive() {
         return mScreen == mAltBuffer;
+    }
+
+    private int getTerminalTranscriptRows(Integer transcriptRows) {
+        if (transcriptRows == null || transcriptRows < TERMINAL_TRANSCRIPT_ROWS_MIN || transcriptRows > TERMINAL_TRANSCRIPT_ROWS_MAX)
+            return DEFAULT_TERMINAL_TRANSCRIPT_ROWS;
+        else
+            return transcriptRows;
     }
 
     /**

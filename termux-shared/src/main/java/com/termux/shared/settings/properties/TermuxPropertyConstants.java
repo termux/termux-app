@@ -3,6 +3,7 @@ package com.termux.shared.settings.properties;
 import com.google.common.collect.ImmutableBiMap;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
+import com.termux.terminal.TerminalEmulator;
 import com.termux.view.TerminalView;
 
 import java.io.File;
@@ -11,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.10.0
+ * Version: v0.11.0
  *
  * Changelog
  *
@@ -48,6 +49,9 @@ import java.util.Set;
  *
  * - 0.10.0 (2021-05-15)
  *      - Add `MAP_BACK_KEY_BEHAVIOUR`, `MAP_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR`, `MAP_VOLUME_KEYS_BEHAVIOUR`.
+ *
+ * - 0.11.0 (2021-06-10)
+ *      - Add `*KEY_TERMINAL_TRANSCRIPT_ROWS*`.
  *
  */
 
@@ -128,6 +132,14 @@ public final class TermuxPropertyConstants {
     public static final int IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN = TerminalView.TERMINAL_CURSOR_BLINK_RATE_MIN;
     public static final int IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX = TerminalView.TERMINAL_CURSOR_BLINK_RATE_MAX;
     public static final int DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE = 0;
+
+
+
+    /** Defines the key for the terminal transcript rows */
+    public static final String KEY_TERMINAL_TRANSCRIPT_ROWS =  "terminal-transcript-rows"; // Default: "terminal-transcript-rows"
+    public static final int IVALUE_TERMINAL_TRANSCRIPT_ROWS_MIN = TerminalEmulator.TERMINAL_TRANSCRIPT_ROWS_MIN;
+    public static final int IVALUE_TERMINAL_TRANSCRIPT_ROWS_MAX = TerminalEmulator.TERMINAL_TRANSCRIPT_ROWS_MAX;
+    public static final int DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS = TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS;
 
 
 
@@ -259,6 +271,7 @@ public final class TermuxPropertyConstants {
         /* int */
         KEY_BELL_BEHAVIOUR,
         KEY_TERMINAL_CURSOR_BLINK_RATE,
+        KEY_TERMINAL_TRANSCRIPT_ROWS,
 
         /* float */
         KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR,

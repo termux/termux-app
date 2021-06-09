@@ -81,6 +81,10 @@ public class ExecutionCommand {
     public String workingDirectory;
 
 
+    /** The terminal transcript rows for the {@link ExecutionCommand}. */
+    public Integer terminalTranscriptRows;
+
+
     /** If the {@link ExecutionCommand} is a background or a foreground terminal session command. */
     public boolean inBackground;
     /** If the {@link ExecutionCommand} is meant to start a failsafe terminal session. */

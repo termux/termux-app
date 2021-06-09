@@ -74,14 +74,17 @@ public final class TerminalSession extends TerminalOutput {
     private final String mCwd;
     private final String[] mArgs;
     private final String[] mEnv;
+    private final Integer mTranscriptRows;
+
 
     private static final String LOG_TAG = "TerminalSession";
 
-    public TerminalSession(String shellPath, String cwd, String[] args, String[] env, TerminalSessionClient client) {
+    public TerminalSession(String shellPath, String cwd, String[] args, String[] env, Integer transcriptRows, TerminalSessionClient client) {
         this.mShellPath = shellPath;
         this.mCwd = cwd;
         this.mArgs = args;
         this.mEnv = env;
+        this.mTranscriptRows = transcriptRows;
         this.mClient = client;
     }
 
@@ -118,7 +121,7 @@ public final class TerminalSession extends TerminalOutput {
      * @param rows    The number of rows in the terminal window.
      */
     public void initializeEmulator(int columns, int rows) {
-        mEmulator = new TerminalEmulator(this, columns, rows, /* transcript= */2000, mClient);
+        mEmulator = new TerminalEmulator(this, columns, rows, mTranscriptRows, mClient);
 
         int[] processId = new int[1];
         mTerminalFileDescriptor = JNI.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns);

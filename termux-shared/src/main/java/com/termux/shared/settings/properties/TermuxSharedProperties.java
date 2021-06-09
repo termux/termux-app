@@ -13,7 +13,7 @@ import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
-public class TermuxSharedProperties implements SharedPropertiesParser {
+public class TermuxSharedProperties {
 
     protected final Context mContext;
     protected final SharedProperties mSharedProperties;
@@ -24,7 +24,7 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
     public TermuxSharedProperties(@Nonnull Context context) {
         mContext = context;
         mPropertiesFile = TermuxPropertyConstants.getTermuxPropertiesFile();
-        mSharedProperties = new SharedProperties(context, mPropertiesFile, TermuxPropertyConstants.TERMUX_PROPERTIES_LIST, this);
+        mSharedProperties = new SharedProperties(context, mPropertiesFile, TermuxPropertyConstants.TERMUX_PROPERTIES_LIST, new SharedPropertiesParserClient());
         loadTermuxPropertiesFromDisk();
     }
 
@@ -146,24 +146,47 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
                 // {@link #loadTermuxPropertiesFromDisk()} call
                 // A null value can still be returned by
                 // {@link #getInternalPropertyValueFromValue(Context,String,String)} for some keys
-                value = getInternalPropertyValueFromValue(mContext, key, null);
+                value = getInternalTermuxPropertyValueFromValue(mContext, key, null);
                 Logger.logWarn(LOG_TAG, "The value for \"" + key + "\" not found in SharedProperties cache, force returning default value: `" + value +  "`");
                 return value;
             }
         } else {
             // We get the property value directly from file and return its internal value
-            return getInternalPropertyValueFromValue(mContext, key, mSharedProperties.getProperty(key, false));
+            return getInternalTermuxPropertyValueFromValue(mContext, key, mSharedProperties.getProperty(key, false));
         }
     }
 
+
+
+
+
     /**
-     * Override the
-     * {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}
-     * interface function.
+     * Get the internal {@link Object} value for the key passed from the file returned by
+     * {@link TermuxPropertyConstants#getTermuxPropertiesFile()}. The {@link Properties} object is
+     * read directly from the file and internal value is returned for the property value against the key.
+     *
+     * @param context The context for operations.
+     * @param key The key for which the internal object is required.
+     * @return Returns the {@link Object} object. This will be {@code null} if key is not found or
+     * the object stored against the key is {@code null}.
      */
-    @Override
-    public Object getInternalPropertyValueFromValue(Context context, String key, String value) {
-        return getInternalTermuxPropertyValueFromValue(context, key, value);
+    public static Object getInternalPropertyValue(Context context, String key) {
+        return SharedProperties.getInternalProperty(context, TermuxPropertyConstants.getTermuxPropertiesFile(), key, new SharedPropertiesParserClient());
+    }
+
+    /**
+     * The class that implements the {@link SharedPropertiesParser} interface.
+     */
+    public static class SharedPropertiesParserClient implements SharedPropertiesParser {
+        /**
+         * Override the
+         * {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}
+         * interface function.
+         */
+        @Override
+        public Object getInternalPropertyValueFromValue(Context context, String key, String value) {
+            return getInternalTermuxPropertyValueFromValue(context, key, value);
+        }
     }
 
     /**
@@ -194,6 +217,8 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
                 return (int) getBellBehaviourInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE:
                 return (int) getTerminalCursorBlinkRateInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS:
+                return (int) getTerminalTranscriptRowsInternalPropertyValueFromValue(value);
 
             /* float */
             case TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR:
@@ -263,9 +288,9 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
     /**
      * Returns the int for the value if its not null and is between
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN} and
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX},
-     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR}.
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN} and
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX},
+     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
@@ -277,6 +302,24 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
                     TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN,
                     TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX,
                     true, true, LOG_TAG);
+    }
+
+    /**
+     * Returns the int for the value if its not null and is between
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TRANSCRIPT_ROWS_MIN} and
+     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TRANSCRIPT_ROWS_MAX},
+     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS}.
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static float getTerminalTranscriptRowsInternalPropertyValueFromValue(String value) {
+        return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS,
+            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS),
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS,
+            TermuxPropertyConstants.IVALUE_TERMINAL_TRANSCRIPT_ROWS_MIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_TRANSCRIPT_ROWS_MAX,
+            true, true, LOG_TAG);
     }
 
     /**
@@ -433,6 +476,10 @@ public class TermuxSharedProperties implements SharedPropertiesParser {
 
     public int getTerminalCursorBlinkRate() {
         return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE, true);
+    }
+
+    public int getTerminalTranscriptRows() {
+        return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS, true);
     }
 
     public float getTerminalToolbarHeightScaleFactor() {

@@ -5,7 +5,6 @@ import android.content.Context;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysInfo;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.settings.properties.SharedPropertiesParser;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;
 import com.termux.shared.settings.properties.TermuxSharedProperties;
 
@@ -17,7 +16,7 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-public class TermuxAppSharedProperties extends TermuxSharedProperties implements SharedPropertiesParser {
+public class TermuxAppSharedProperties extends TermuxSharedProperties {
 
     private ExtraKeysInfo mExtraKeysInfo;
     private List<KeyboardShortcut> mSessionShortcuts = new ArrayList<>();
@@ -94,6 +93,15 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties implements
 
     public ExtraKeysInfo getExtraKeysInfo() {
         return mExtraKeysInfo;
+    }
+
+
+
+    /**
+     * Load the {@link TermuxPropertyConstants#KEY_TERMINAL_TRANSCRIPT_ROWS} value from termux properties file on disk.
+     */
+    public static int getTerminalTranscriptRows(Context context) {
+        return  (int) TermuxSharedProperties.getInternalPropertyValue(context, TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS);
     }
 
 }
