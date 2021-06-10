@@ -173,6 +173,7 @@ final class TermuxInstaller {
                                     activity.finish();
                                 }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
                                 dialog.dismiss();
+                                FileUtils.deleteFile(activity, "prefix directory", PREFIX_FILE_PATH, true);
                                 TermuxInstaller.setupBootstrapIfNeeded(activity, whenDone);
                             }).show();
                         } catch (WindowManager.BadTokenException e1) {
