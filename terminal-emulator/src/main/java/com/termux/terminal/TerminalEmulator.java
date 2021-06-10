@@ -38,10 +38,6 @@ public final class TerminalEmulator {
     public static final int MOUSE_WHEELUP_BUTTON = 64;
     public static final int MOUSE_WHEELDOWN_BUTTON = 65;
 
-    public static final int CURSOR_STYLE_BLOCK = 0;
-    public static final int CURSOR_STYLE_UNDERLINE = 1;
-    public static final int CURSOR_STYLE_BAR = 2;
-
     /** Used for invalid data - http://en.wikipedia.org/wiki/Replacement_character#Replacement_character */
     public static final int UNICODE_REPLACEMENT_CHAR = 0xFFFD;
 
@@ -126,13 +122,13 @@ public final class TerminalEmulator {
     /** Not really DECSET bit... - http://www.vt100.net/docs/vt510-rm/DECSACE */
     private static final int DECSET_BIT_RECTANGULAR_CHANGEATTRIBUTE = 1 << 12;
 
+
     private String mTitle;
     private final Stack<String> mTitleStack = new Stack<>();
 
+
     /** The cursor position. Between (0,0) and (mRows-1, mColumns-1). */
     private int mCursorRow, mCursorCol;
-
-    private int mCursorStyle = CURSOR_STYLE_BLOCK;
 
     /** The number of character rows and columns in the terminal screen. */
     public int mRows, mColumns;
@@ -141,6 +137,19 @@ public final class TerminalEmulator {
     public static final int TERMINAL_TRANSCRIPT_ROWS_MIN = 100;
     public static final int TERMINAL_TRANSCRIPT_ROWS_MAX = 50000;
     public static final int DEFAULT_TERMINAL_TRANSCRIPT_ROWS = 2000;
+
+
+    /* The supported terminal cursor styles. */
+
+    public static final int TERMINAL_CURSOR_STYLE_BLOCK = 0;
+    public static final int TERMINAL_CURSOR_STYLE_UNDERLINE = 1;
+    public static final int TERMINAL_CURSOR_STYLE_BAR = 2;
+    public static final int DEFAULT_TERMINAL_CURSOR_STYLE = TERMINAL_CURSOR_STYLE_BLOCK;
+    public static final Integer[] TERMINAL_CURSOR_STYLES_LIST = new Integer[]{TERMINAL_CURSOR_STYLE_BLOCK, TERMINAL_CURSOR_STYLE_UNDERLINE, TERMINAL_CURSOR_STYLE_BAR};
+
+    /** The terminal cursor styles. */
+    private int mCursorStyle = DEFAULT_TERMINAL_CURSOR_STYLE;
+
 
     /** The normal screen buffer. Stores the characters that appear on the screen of the emulated terminal. */
     private final TerminalBuffer mMainBuffer;
@@ -312,6 +321,7 @@ public final class TerminalEmulator {
 
     public void updateTerminalSessionClient(TerminalSessionClient client) {
         mClient = client;
+        setCursorStyle();
     }
 
     public TerminalBuffer getScreen() {
@@ -396,9 +406,22 @@ public final class TerminalEmulator {
         return mCursorCol;
     }
 
-    /** {@link #CURSOR_STYLE_BAR}, {@link #CURSOR_STYLE_BLOCK} or {@link #CURSOR_STYLE_UNDERLINE} */
+    /** Get the terminal cursor style. It will be one of {@link #TERMINAL_CURSOR_STYLES_LIST} */
     public int getCursorStyle() {
         return mCursorStyle;
+    }
+
+    /** Set the terminal cursor style. */
+    public void setCursorStyle() {
+        Integer cursorStyle = null;
+
+        if (mClient != null)
+            cursorStyle = mClient.getTerminalCursorStyle();
+
+        if (cursorStyle == null || !Arrays.asList(TERMINAL_CURSOR_STYLES_LIST).contains(cursorStyle))
+            mCursorStyle = DEFAULT_TERMINAL_CURSOR_STYLE;
+        else
+            mCursorStyle = cursorStyle;
     }
 
     public boolean isReverseVideo() {
@@ -818,15 +841,15 @@ public final class TerminalEmulator {
                                     case 0: // Blinking block.
                                     case 1: // Blinking block.
                                     case 2: // Steady block.
-                                        mCursorStyle = CURSOR_STYLE_BLOCK;
+                                        mCursorStyle = TERMINAL_CURSOR_STYLE_BLOCK;
                                         break;
                                     case 3: // Blinking underline.
                                     case 4: // Steady underline.
-                                        mCursorStyle = CURSOR_STYLE_UNDERLINE;
+                                        mCursorStyle = TERMINAL_CURSOR_STYLE_UNDERLINE;
                                         break;
                                     case 5: // Blinking bar (xterm addition).
                                     case 6: // Steady bar (xterm addition).
-                                        mCursorStyle = CURSOR_STYLE_BAR;
+                                        mCursorStyle = TERMINAL_CURSOR_STYLE_BAR;
                                         break;
                                 }
                                 break;
@@ -2342,7 +2365,7 @@ public final class TerminalEmulator {
 
     /** Reset terminal state so user can interact with it regardless of present state. */
     public void reset() {
-        mCursorStyle = CURSOR_STYLE_BLOCK;
+        setCursorStyle();
         mArgIndex = 0;
         mContinueSequence = false;
         mEscapeState = ESC_NONE;

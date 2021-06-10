@@ -103,23 +103,23 @@ public class TerminalTest extends TerminalTestCase {
 	/** Test the cursor shape changes using DECSCUSR. */
 	public void testSetCursorStyle() throws Exception {
 		withTerminalSized(5, 5);
-		assertEquals(TerminalEmulator.CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
 		enterString("\033[3 q");
-		assertEquals(TerminalEmulator.CURSOR_STYLE_UNDERLINE, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE, mTerminal.getCursorStyle());
 		enterString("\033[5 q");
-		assertEquals(TerminalEmulator.CURSOR_STYLE_BAR, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR, mTerminal.getCursorStyle());
 		enterString("\033[0 q");
-		assertEquals(TerminalEmulator.CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
 		enterString("\033[6 q");
-		assertEquals(TerminalEmulator.CURSOR_STYLE_BAR, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR, mTerminal.getCursorStyle());
 		enterString("\033[4 q");
-		assertEquals(TerminalEmulator.CURSOR_STYLE_UNDERLINE, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE, mTerminal.getCursorStyle());
 		enterString("\033[1 q");
-		assertEquals(TerminalEmulator.CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
 		enterString("\033[4 q");
-		assertEquals(TerminalEmulator.CURSOR_STYLE_UNDERLINE, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE, mTerminal.getCursorStyle());
 		enterString("\033[2 q");
-		assertEquals(TerminalEmulator.CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
+		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
 	}
 
 	public void testPaste() {

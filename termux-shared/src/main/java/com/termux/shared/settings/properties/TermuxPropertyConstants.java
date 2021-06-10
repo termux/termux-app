@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.11.0
+ * Version: v0.12.0
  *
  * Changelog
  *
@@ -53,6 +53,8 @@ import java.util.Set;
  * - 0.11.0 (2021-06-10)
  *      - Add `*KEY_TERMINAL_TRANSCRIPT_ROWS*`.
  *
+ * - 0.12.0 (2021-06-10)
+ *      - Add `*KEY_TERMINAL_CURSOR_STYLE*`.
  */
 
 /**
@@ -132,6 +134,28 @@ public final class TermuxPropertyConstants {
     public static final int IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN = TerminalView.TERMINAL_CURSOR_BLINK_RATE_MIN;
     public static final int IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX = TerminalView.TERMINAL_CURSOR_BLINK_RATE_MAX;
     public static final int DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE = 0;
+
+
+
+    /** Defines the key for the terminal cursor style */
+    public static final String KEY_TERMINAL_CURSOR_STYLE =  "terminal-cursor-style"; // Default: "terminal-cursor-style"
+
+    public static final String VALUE_TERMINAL_CURSOR_STYLE_BLOCK = "block";
+    public static final String VALUE_TERMINAL_CURSOR_STYLE_UNDERLINE = "underline";
+    public static final String VALUE_TERMINAL_CURSOR_STYLE_BAR = "bar";
+
+    public static final int IVALUE_TERMINAL_CURSOR_STYLE_BLOCK = TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK;
+    public static final int IVALUE_TERMINAL_CURSOR_STYLE_UNDERLINE = TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE;
+    public static final int IVALUE_TERMINAL_CURSOR_STYLE_BAR = TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR;
+    public static final int DEFAULT_IVALUE_TERMINAL_CURSOR_STYLE = TerminalEmulator.DEFAULT_TERMINAL_CURSOR_STYLE;
+
+    /** Defines the bidirectional map for terminal cursor styles and their internal values */
+    public static final ImmutableBiMap<String, Integer> MAP_TERMINAL_CURSOR_STYLE =
+        new ImmutableBiMap.Builder<String, Integer>()
+            .put(VALUE_TERMINAL_CURSOR_STYLE_BLOCK, IVALUE_TERMINAL_CURSOR_STYLE_BLOCK)
+            .put(VALUE_TERMINAL_CURSOR_STYLE_UNDERLINE, IVALUE_TERMINAL_CURSOR_STYLE_UNDERLINE)
+            .put(VALUE_TERMINAL_CURSOR_STYLE_BAR, IVALUE_TERMINAL_CURSOR_STYLE_BAR)
+            .build();
 
 
 
@@ -271,6 +295,7 @@ public final class TermuxPropertyConstants {
         /* int */
         KEY_BELL_BEHAVIOUR,
         KEY_TERMINAL_CURSOR_BLINK_RATE,
+        KEY_TERMINAL_CURSOR_STYLE,
         KEY_TERMINAL_TRANSCRIPT_ROWS,
 
         /* float */

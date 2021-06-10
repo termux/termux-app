@@ -217,6 +217,8 @@ public class TermuxSharedProperties {
                 return (int) getBellBehaviourInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE:
                 return (int) getTerminalCursorBlinkRateInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_TERMINAL_CURSOR_STYLE:
+                return (int) getTerminalCursorStyleInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS:
                 return (int) getTerminalTranscriptRowsInternalPropertyValueFromValue(value);
 
@@ -277,7 +279,7 @@ public class TermuxSharedProperties {
     /**
      * Returns the internal value after mapping it based on
      * {@code TermuxPropertyConstants#MAP_BELL_BEHAVIOUR} if the value is not {@code null}
-     * and is valid, otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_BELL_BEHAVIOUR}.
+     * and is valid, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_BELL_BEHAVIOUR}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
@@ -288,14 +290,14 @@ public class TermuxSharedProperties {
 
     /**
      * Returns the int for the value if its not null and is between
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN} and
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX},
-     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE}.
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN} and
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX},
+     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
      */
-    public static float getTerminalCursorBlinkRateInternalPropertyValueFromValue(String value) {
+    public static int getTerminalCursorBlinkRateInternalPropertyValueFromValue(String value) {
         return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE,
                     DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE),
                     TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE,
@@ -305,15 +307,27 @@ public class TermuxSharedProperties {
     }
 
     /**
-     * Returns the int for the value if its not null and is between
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TRANSCRIPT_ROWS_MIN} and
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TRANSCRIPT_ROWS_MAX},
-     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS}.
+     * Returns the internal value after mapping it based on
+     * {@link TermuxPropertyConstants#MAP_TERMINAL_CURSOR_STYLE} if the value is not {@code null}
+     * and is valid, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_CURSOR_STYLE}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
      */
-    public static float getTerminalTranscriptRowsInternalPropertyValueFromValue(String value) {
+    public static int getTerminalCursorStyleInternalPropertyValueFromValue(String value) {
+        return (int) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_STYLE, TermuxPropertyConstants.MAP_TERMINAL_CURSOR_STYLE, SharedProperties.toLowerCase(value), TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_STYLE, true, LOG_TAG);
+    }
+
+    /**
+     * Returns the int for the value if its not null and is between
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_TRANSCRIPT_ROWS_MIN} and
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_TRANSCRIPT_ROWS_MAX},
+     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS}.
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static int getTerminalTranscriptRowsInternalPropertyValueFromValue(String value) {
         return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS,
             DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS),
             TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS,
@@ -324,9 +338,9 @@ public class TermuxSharedProperties {
 
     /**
      * Returns the int for the value if its not null and is between
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN} and
-     * {@code TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX},
-     * otherwise returns {@code TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR}.
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN} and
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX},
+     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
@@ -476,6 +490,10 @@ public class TermuxSharedProperties {
 
     public int getTerminalCursorBlinkRate() {
         return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE, true);
+    }
+
+    public int getTerminalCursorStyle() {
+        return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_STYLE, true);
     }
 
     public int getTerminalTranscriptRows() {

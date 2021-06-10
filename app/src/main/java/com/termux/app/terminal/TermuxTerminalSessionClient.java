@@ -207,6 +207,13 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
 
 
 
+    @Override
+    public Integer getTerminalCursorStyle() {
+        return mActivity.getProperties().getTerminalCursorStyle();
+    }
+
+
+
     /** Initialize and get mBellSoundPool */
     private synchronized SoundPool getBellSoundPool() {
         if (mBellSoundPool == null) {

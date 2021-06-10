@@ -40,6 +40,13 @@ public class TermuxTerminalSessionClientBase implements TerminalSessionClient {
 
 
     @Override
+    public Integer getTerminalCursorStyle() {
+        return null;
+    }
+
+
+
+    @Override
     public void logError(String tag, String message) {
         Logger.logError(tag, message);
     }
