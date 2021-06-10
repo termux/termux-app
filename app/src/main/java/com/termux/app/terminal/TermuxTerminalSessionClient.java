@@ -255,8 +255,10 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     void notifyOfSessionChange() {
         if (!mActivity.isVisible()) return;
 
-        TerminalSession session = mActivity.getCurrentSession();
-        mActivity.showToast(toToastTitle(session), false);
+        if (!mActivity.getProperties().areTerminalSessionChangeToastsDisabled()) {
+            TerminalSession session = mActivity.getCurrentSession();
+            mActivity.showToast(toToastTitle(session), false);
+        }
     }
 
     public void switchToSession(boolean forward) {

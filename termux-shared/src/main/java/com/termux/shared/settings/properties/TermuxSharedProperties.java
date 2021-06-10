@@ -460,6 +460,10 @@ public class TermuxSharedProperties {
 
 
 
+    public boolean areTerminalSessionChangeToastsDisabled() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST, true);
+    }
+
     public boolean isEnforcingCharBasedInput() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_ENFORCE_CHAR_BASED_INPUT, true);
     }
