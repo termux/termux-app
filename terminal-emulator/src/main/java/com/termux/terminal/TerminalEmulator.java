@@ -322,6 +322,7 @@ public final class TerminalEmulator {
     public void updateTerminalSessionClient(TerminalSessionClient client) {
         mClient = client;
         setCursorStyle();
+        setCursorBlinkState(true);
     }
 
     public TerminalBuffer getScreen() {

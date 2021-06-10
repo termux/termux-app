@@ -56,6 +56,8 @@ public interface TerminalViewClient {
     boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session);
 
 
+    void onEmulatorSet();
+
 
     void logError(String tag, String message);
 

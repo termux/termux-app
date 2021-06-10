@@ -755,6 +755,7 @@ public final class TerminalView extends View {
         if (mEmulator == null || (newColumns != mEmulator.mColumns || newRows != mEmulator.mRows)) {
             mTermSession.updateSize(newColumns, newRows);
             mEmulator = mTermSession.getEmulator();
+            mClient.onEmulatorSet();
 
             mTopRow = 0;
             scrollTo(0, 0);
@@ -880,7 +881,13 @@ public final class TerminalView extends View {
      * {@link #TERMINAL_CURSOR_BLINK_RATE_MIN} and {@link #TERMINAL_CURSOR_BLINK_RATE_MAX}.
      *
      * This should be called when the view holding this activity is resumed or stopped so that
-     * cursor blinker does not run when activity is not visible.
+     * cursor blinker does not run when activity is not visible. Ensure that {@link #mEmulator}
+     * is set when you call this to start cursor blinking by waiting for {@link TerminalViewClient#onEmulatorSet()}
+     * event after calling {@link #attachSession(TerminalSession)} for the first session added in the
+     * activity, otherwise blinking will not start. Do not call this directly after
+     * {@link #attachSession(TerminalSession)} since {@link #updateSize()} may return without
+     * setting {@link #mEmulator} since width/height may be 0. Its called again in
+     * {@link #onSizeChanged(int, int, int, int)}.
      *
      * It should also be called on the
      * {@link com.termux.terminal.TerminalSessionClient#onTerminalCursorStateChange(boolean)}
