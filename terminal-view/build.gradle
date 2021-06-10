@@ -42,7 +42,7 @@ publishing {
         bar(MavenPublication) {
             groupId 'com.termux'
             artifactId 'terminal-view'
-            version "0.113"
+            version "0.114"
             artifact(sourceJar)
             artifact("$buildDir/outputs/aar/terminal-view-release.aar")
         }
