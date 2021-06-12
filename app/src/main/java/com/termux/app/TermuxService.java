@@ -419,6 +419,11 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         TermuxTask newTermuxTask = TermuxTask.execute(this, executionCommand, this, false);
         if (newTermuxTask == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxTask command for:\n" + executionCommand.getCommandIdAndLabelLogString());
+            // If the execution command was started for a plugin, then process the error
+            if (executionCommand.isPluginExecutionCommand)
+                PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
+            else
+                Logger.logStackTracesWithMessage(LOG_TAG, "(" + executionCommand.errCode + ") " + executionCommand.errmsg, executionCommand.throwableList);
             return null;
         }
 
@@ -510,6 +515,11 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(), this, sessionName, executionCommand.isPluginExecutionCommand);
         if (newTermuxSession == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxSession command for:\n" + executionCommand.getCommandIdAndLabelLogString());
+            // If the execution command was started for a plugin, then process the error
+            if (executionCommand.isPluginExecutionCommand)
+                PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
+            else
+                Logger.logStackTracesWithMessage(LOG_TAG, "(" + executionCommand.errCode + ") " + executionCommand.errmsg, executionCommand.throwableList);
             return null;
         }
 

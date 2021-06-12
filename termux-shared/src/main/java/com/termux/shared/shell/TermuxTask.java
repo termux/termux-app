@@ -70,8 +70,11 @@ public final class TermuxTask {
 
         final String[] commandArray = ShellUtils.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
 
-        if (!executionCommand.setState(ExecutionState.EXECUTING))
+        if (!executionCommand.setState(ExecutionState.EXECUTING)) {
+            executionCommand.setStateFailed(ExecutionCommand.RESULT_CODE_FAILED, context.getString(R.string.error_failed_to_execute_termux_task_command, executionCommand.getCommandIdAndLabelLogString()), null);
+            TermuxTask.processTermuxTaskResult(null, executionCommand);
             return null;
+        }
 
         Logger.logDebug(LOG_TAG, executionCommand.toString());
 
