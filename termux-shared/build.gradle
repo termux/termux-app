@@ -52,25 +52,16 @@ task sourceJar(type: Jar) {
     classifier "sources"
 }
 
-publishing {
-    publications {
-        bar(MavenPublication) {
-            groupId 'com.termux'
-            artifactId 'termux-shared'
-            version "0.114"
-            artifact(sourceJar)
-            artifact("$buildDir/outputs/aar/termux-shared-release.aar")
-        }
-    }
-
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/termux/termux-app")
-
-            credentials {
-                username = System.getenv("GH_USERNAME")
-                password = System.getenv("GH_TOKEN")
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.termux'
+                artifactId = 'termux-shared'
+                version = '0.114'
+                artifact(sourceJar)
             }
         }
     }
