@@ -881,13 +881,16 @@ public final class TerminalView extends View {
      * {@link #TERMINAL_CURSOR_BLINK_RATE_MIN} and {@link #TERMINAL_CURSOR_BLINK_RATE_MAX}.
      *
      * This should be called when the view holding this activity is resumed or stopped so that
-     * cursor blinker does not run when activity is not visible. Ensure that {@link #mEmulator}
-     * is set when you call this to start cursor blinking by waiting for {@link TerminalViewClient#onEmulatorSet()}
-     * event after calling {@link #attachSession(TerminalSession)} for the first session added in the
-     * activity, otherwise blinking will not start. Do not call this directly after
-     * {@link #attachSession(TerminalSession)} since {@link #updateSize()} may return without
-     * setting {@link #mEmulator} since width/height may be 0. Its called again in
-     * {@link #onSizeChanged(int, int, int, int)}.
+     * cursor blinker does not run when activity is not visible. If you call this on onResume()
+     * to start cursor blinking, then ensure that {@link #mEmulator} is set, otherwise wait for the
+     * {@link TerminalViewClient#onEmulatorSet()} event after calling {@link #attachSession(TerminalSession)}
+     * for the first session added in the activity since blinking will not start if {@link #mEmulator}
+     * is not set, like if activity is started again after exiting it with double back press. Do not
+     * call this directly after {@link #attachSession(TerminalSession)} since {@link #updateSize()}
+     * may return without setting {@link #mEmulator} since width/height may be 0. Its called again in
+     * {@link #onSizeChanged(int, int, int, int)}. Calling on onResume() if emulator is already set
+     * is necessary, since onEmulatorSet() may not be called after activity is started after device
+     * display timeout with double tap and not power button.
      *
      * It should also be called on the
      * {@link com.termux.terminal.TerminalSessionClient#onTerminalCursorStateChange(boolean)}

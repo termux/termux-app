@@ -98,6 +98,15 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         setSoftKeyboardState(true, false);
 
         mTerminalCursorBlinkerStateAlreadySet = false;
+
+        if (mActivity.getTerminalView().mEmulator != null) {
+            // Start terminal cursor blinking if enabled
+            // If emulator is already set, then start blinker now, otherwise wait for onEmulatorSet()
+            // event to start it. This is needed since onEmulatorSet() may not be called after
+            // TermuxActivity is started after device display timeout with double tap and not power button.
+            setTerminalCursorBlinkerState(true);
+            mTerminalCursorBlinkerStateAlreadySet = true;
+        }
     }
 
     /**
