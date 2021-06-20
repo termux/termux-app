@@ -105,15 +105,6 @@
 
 
 
-    <!-- Termux Report And ShareUtils -->
-    <string name="action_copy">Copy</string>
-    <string name="action_share">Share</string>
-
-    <string name="title_share_with">Share With</string>
-    <string name="title_report_text">Report Text</string>
-
-
-
     <!-- Termux File Receiver -->
     <string name="title_file_received">Save file in ~/downloads/</string>
     <string name="action_file_received_edit">Edit</string>

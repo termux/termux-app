@@ -9,10 +9,10 @@ import android.content.Intent;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
-import com.termux.app.activities.ReportActivity;
+import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.file.FileUtils;
-import com.termux.app.models.ReportInfo;
+import com.termux.shared.models.ReportInfo;
 import com.termux.app.models.UserAction;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.settings.preferences.TermuxPreferenceConstants;
@@ -89,7 +89,7 @@ public class CrashUtils {
 
                 Logger.logDebug(logTag, "The crash log file at \"" + TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH +  "\" found. Sending \"" + title + "\" notification.");
 
-                Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.CRASH_REPORT, logTag, title, null, reportString, "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true));
+                Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.CRASH_REPORT.getName(), logTag, title, null, reportString, "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true));
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                 // Setup the notification channel if not already set up

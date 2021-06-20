@@ -11,16 +11,16 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
+import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.app.activities.ReportActivity;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
 import com.termux.shared.settings.properties.SharedProperties;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;
-import com.termux.app.models.ReportInfo;
+import com.termux.shared.models.ReportInfo;
 import com.termux.shared.models.ExecutionCommand;
 import com.termux.app.models.UserAction;
 import com.termux.shared.data.DataUtils;
@@ -159,7 +159,7 @@ public class PluginUtils {
         reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
         reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(context));
 
-        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND, logTag, title, null, reportString.toString(), null,true));
+        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND.getName(), logTag, title, null, reportString.toString(), null,true));
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Setup the notification channel if not already set up

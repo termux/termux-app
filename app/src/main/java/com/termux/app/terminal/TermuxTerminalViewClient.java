@@ -24,8 +24,8 @@ import com.termux.app.TermuxActivity;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.terminal.TermuxTerminalViewClientBase;
 import com.termux.shared.termux.TermuxConstants;
-import com.termux.app.activities.ReportActivity;
-import com.termux.app.models.ReportInfo;
+import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.models.ReportInfo;
 import com.termux.app.models.UserAction;
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
@@ -660,7 +660,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 if (termuxAptInfo != null)
                     reportString.append("\n\n").append(termuxAptInfo);
 
-                ReportActivity.startReportActivity(mActivity, new ReportInfo(UserAction.REPORT_ISSUE_FROM_TRANSCRIPT, TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity), false));
+                ReportActivity.startReportActivity(mActivity, new ReportInfo(UserAction.REPORT_ISSUE_FROM_TRANSCRIPT.getName(), TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity), false));
             }
         }.start();
     }

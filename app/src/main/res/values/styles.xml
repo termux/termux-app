@@ -44,15 +44,6 @@
     </style>
 
 
-    <style name="Theme.AppCompat.TermuxReportActivity" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimaryDark">#FF0000</item>
-    </style>
-
-    <style name="Toolbar.Title" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="android:textSize">14sp</item>
-    </style>
-
-
     <style name="TermuxAlertDialogStyle" parent="@android:style/Theme.Material.Light.Dialog.Alert">
         <!-- Seen in buttons on alert dialog: -->
         <item name="android:colorAccent">#212121</item>

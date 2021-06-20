@@ -74,6 +74,13 @@
 
 
 
+    <!-- ReportActivity -->
+    <string name="action_copy">Copy</string>
+    <string name="action_share">Share</string>
+    <string name="title_report_text">Report Text</string>
+
+
+
     <!-- ShareUtils -->
     <string name="title_share_with">Share With</string>
 

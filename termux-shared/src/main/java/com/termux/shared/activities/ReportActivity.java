@@ -1,4 +1,4 @@
-package com.termux.app.activities;
+package com.termux.shared.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -14,11 +14,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.termux.R;
+import com.termux.shared.R;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.interact.ShareUtils;
-import com.termux.app.models.ReportInfo;
+import com.termux.shared.models.ReportInfo;
 
 import org.commonmark.node.FencedCodeBlock;
 
