@@ -58,7 +58,7 @@ afterEvaluate {
             // Creates a Maven publication called "release".
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.github.termux'
+                groupId = 'com.termux'
                 artifactId = 'termux-shared'
                 version = '0.114'
                 artifact(sourceJar)
