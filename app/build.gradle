@@ -7,18 +7,36 @@ android {
     ndkVersion project.properties.ndkVersion
 
     dependencies {
-        implementation "androidx.annotation:annotation:1.1.0"
-        implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation "androidx.annotation:annotation:1.2.0"
+        implementation "androidx.core:core:1.5.0-rc01"
         implementation "androidx.drawerlayout:drawerlayout:1.1.1"
+        implementation "androidx.preference:preference:1.1.1"
+        implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation "com.google.guava:guava:24.1-jre"
+        implementation "io.noties.markwon:core:$markwonVersion"
+        implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
+        implementation "io.noties.markwon:linkify:$markwonVersion"
+        implementation "io.noties.markwon:recycler:$markwonVersion"
+
         implementation project(":terminal-view")
+        implementation project(":termux-shared")
     }
 
     defaultConfig {
         applicationId "com.termux"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 105
-        versionName "0.105"
+        versionCode 114
+        versionName "0.114"
+
+        manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux"
+        manifestPlaceholders.TERMUX_APP_NAME = "Termux"
+        manifestPlaceholders.TERMUX_API_APP_NAME = "Termux:API"
+        manifestPlaceholders.TERMUX_BOOT_APP_NAME = "Termux:Boot"
+        manifestPlaceholders.TERMUX_FLOAT_APP_NAME = "Termux:Float"
+        manifestPlaceholders.TERMUX_STYLING_APP_NAME = "Termux:Styling"
+        manifestPlaceholders.TERMUX_TASKER_APP_NAME = "Termux:Tasker"
+        manifestPlaceholders.TERMUX_WIDGET_APP_NAME = "Termux:Widget"
 
         externalNativeBuild {
             ndkBuild {
@@ -76,8 +94,8 @@ android {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.robolectric:robolectric:4.4'
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.4"
 }
 
 task versionName {
@@ -86,7 +104,7 @@ task versionName {
   }
 }
 
-def downloadBootstrap(String arch, String expectedChecksum, int version) {
+def downloadBootstrap(String arch, String expectedChecksum, String version) {
     def digest = java.security.MessageDigest.getInstance("SHA-256")
 
     def localUrl = "src/main/cpp/bootstrap-" + arch + ".zip"
@@ -108,7 +126,7 @@ def downloadBootstrap(String arch, String expectedChecksum, int version) {
         }
     }
 
-    def remoteUrl = "https://bintray.com/termux/bootstrap/download_file?file_path=bootstrap-" + arch + "-v" + version + ".zip"
+    def remoteUrl = "https://github.com/termux/termux-packages/releases/download/bootstrap-" + version + "/bootstrap-" + arch + ".zip"
     logger.quiet("Downloading " + remoteUrl + " ...")
 
     file.parentFile.mkdirs()
@@ -135,13 +153,13 @@ clean {
     }
 }
 
-task downloadBootstraps(){
+task downloadBootstraps() {
     doLast {
-        def version = 35
-        downloadBootstrap("aarch64", "6707cc641cde13dc2f24e819cd8ca3f1a9a003577523c25beff72690588594f5", version)
-        downloadBootstrap("arm",     "eadc9afb52900dc744fdb39ed0c3dbb87ad8ce6190b27946467df7aeab353fa7", version)
-        downloadBootstrap("i686",    "b674ef43c8388dd19e0d25b024b5792c8532ee0ddcc49f90c0716042724fa905", version)
-        downloadBootstrap("x86_64",  "86043eb76efededbdf5644686a899f4d762703fe18e23fb906a2482d593d7549", version)
+        def version = "2021.06.04-r1"
+        downloadBootstrap("aarch64", "115409ec8abe096080f9e6d9b2765e009c818b3e5aff0133792182009388b81e", version)
+        downloadBootstrap("arm",     "c289688d4f9aabd86240a4d3e25bd89c1a96641e0d085d9ee5a471e9f019e16f", version)
+        downloadBootstrap("i686",    "63cfb8e39cac20cecbe9e9890f49a30d7454d4c4dfa2b22b5d0cc6de1dc59726", version)
+        downloadBootstrap("x86_64",  "db47007825e65f8ed15fc46d6b8e3119b01ca4a9856d7c7e5604cf804e753ba2", version)
     }
 }
 

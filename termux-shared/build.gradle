@@ -1,0 +1,77 @@
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+android {
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+
+    dependencies {
+        implementation 'androidx.appcompat:appcompat:1.2.0'
+        implementation "androidx.annotation:annotation:1.2.0"
+        implementation "androidx.core:core:1.5.0-rc01"
+        implementation "com.google.guava:guava:24.1-jre"
+        implementation "io.noties.markwon:core:$markwonVersion"
+        implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
+        implementation "io.noties.markwon:linkify:$markwonVersion"
+        implementation "io.noties.markwon:recycler:$markwonVersion"
+
+        // Do not increment version higher than 2.5 or there
+        // will be runtime exceptions on android < 8
+        // due to missing classes like java.nio.file.Path.
+        implementation "commons-io:commons-io:2.5"
+
+        implementation project(":terminal-view")
+    }
+
+    defaultConfig {
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+}
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
+publishing {
+    publications {
+        bar(MavenPublication) {
+            groupId 'com.termux'
+            artifactId 'termux-shared'
+            version "0.114"
+            artifact(sourceJar)
+            artifact("$buildDir/outputs/aar/termux-shared-release.aar")
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/termux/termux-app")
+
+            credentials {
+                username = System.getenv("GH_USERNAME")
+                password = System.getenv("GH_TOKEN")
+            }
+        }
+    }
+}

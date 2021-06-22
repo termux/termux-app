@@ -88,7 +88,7 @@ static int create_subprocess(JNIEnv* env,
             struct dirent* entry;
             while ((entry = readdir(self_dir)) != NULL) {
                 int fd = atoi(entry->d_name);
-                if(fd > 2 && fd != self_dir_fd) close(fd);
+                if (fd > 2 && fd != self_dir_fd) close(fd);
             }
             closedir(self_dir);
         }
