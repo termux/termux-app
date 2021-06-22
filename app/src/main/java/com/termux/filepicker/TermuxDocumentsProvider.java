@@ -12,7 +12,7 @@ import android.provider.DocumentsProvider;
 import android.webkit.MimeTypeMap;
 
 import com.termux.R;
-import com.termux.app.TermuxService;
+import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,7 +22,7 @@ import java.util.LinkedList;
 
 /**
  * A document provider for the Storage Access Framework which exposes the files in the
- * $HOME/ folder to other apps.
+ * $HOME/ directory to other apps.
  * <p/>
  * Note that this replaces providing an activity matching the ACTION_GET_CONTENT intent:
  * <p/>
@@ -35,7 +35,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     private static final String ALL_MIME_TYPES = "*/*";
 
-    private static final File BASE_DIR = new File(TermuxService.HOME_PATH);
+    private static final File BASE_DIR = TermuxConstants.TERMUX_HOME_DIR;
 
 
     // The default columns to return information about a root if no specific
@@ -63,9 +63,9 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
     };
 
     @Override
-    public Cursor queryRoots(String[] projection) throws FileNotFoundException {
+    public Cursor queryRoots(String[] projection) {
         final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_ROOT_PROJECTION);
-        @SuppressWarnings("ConstantConditions") final String applicationName = getContext().getString(R.string.application_name);
+        final String applicationName = getContext().getString(R.string.application_name);
 
         final MatrixCursor.RowBuilder row = result.newRow();
         row.add(Root.COLUMN_ROOT_ID, getDocIdForFile(BASE_DIR));
@@ -75,7 +75,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Root.COLUMN_TITLE, applicationName);
         row.add(Root.COLUMN_MIME_TYPES, ALL_MIME_TYPES);
         row.add(Root.COLUMN_AVAILABLE_BYTES, BASE_DIR.getFreeSpace());
-        row.add(Root.COLUMN_ICON, R.drawable.ic_launcher);
+        row.add(Root.COLUMN_ICON, R.mipmap.ic_launcher);
         return result;
     }
 
@@ -167,11 +167,11 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         final int MAX_SEARCH_RESULTS = 50;
         while (!pending.isEmpty() && result.getCount() < MAX_SEARCH_RESULTS) {
             final File file = pending.removeFirst();
-            // Avoid folders outside the $HOME folders linked in to symlinks (to avoid e.g. search
+            // Avoid directories outside the $HOME directory linked with symlinks (to avoid e.g. search
             // through the whole SD card).
             boolean isInsideHome;
             try {
-                isInsideHome = file.getCanonicalPath().startsWith(TermuxService.HOME_PATH);
+                isInsideHome = file.getCanonicalPath().startsWith(TermuxConstants.TERMUX_HOME_DIR_PATH);
             } catch (IOException e) {
                 isInsideHome = true;
             }
@@ -262,7 +262,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Document.COLUMN_MIME_TYPE, mimeType);
         row.add(Document.COLUMN_LAST_MODIFIED, file.lastModified());
         row.add(Document.COLUMN_FLAGS, flags);
-        row.add(Document.COLUMN_ICON, R.drawable.ic_launcher);
+        row.add(Document.COLUMN_ICON, R.mipmap.ic_launcher);
     }
 
 }

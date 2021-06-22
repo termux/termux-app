@@ -6,7 +6,6 @@ import android.os.Message;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -31,41 +30,6 @@ import java.util.UUID;
  */
 public final class TerminalSession extends TerminalOutput {
 
-    /** Callback to be invoked when a {@link TerminalSession} changes. */
-    public interface SessionChangedCallback {
-        void onTextChanged(TerminalSession changedSession);
-
-        void onTitleChanged(TerminalSession changedSession);
-
-        void onSessionFinished(TerminalSession finishedSession);
-
-        void onClipboardText(TerminalSession session, String text);
-
-        void onBell(TerminalSession session);
-
-        void onColorsChanged(TerminalSession session);
-
-    }
-
-    private static FileDescriptor wrapFileDescriptor(int fileDescriptor) {
-        FileDescriptor result = new FileDescriptor();
-        try {
-            Field descriptorField;
-            try {
-                descriptorField = FileDescriptor.class.getDeclaredField("descriptor");
-            } catch (NoSuchFieldException e) {
-                // For desktop java:
-                descriptorField = FileDescriptor.class.getDeclaredField("fd");
-            }
-            descriptorField.setAccessible(true);
-            descriptorField.set(result, fileDescriptor);
-        } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
-            Log.wtf(EmulatorDebug.LOG_TAG, "Error accessing FileDescriptor#descriptor private field", e);
-            System.exit(1);
-        }
-        return result;
-    }
-
     private static final int MSG_NEW_INPUT = 1;
     private static final int MSG_PROCESS_EXITED = 4;
 
@@ -87,7 +51,7 @@ public final class TerminalSession extends TerminalOutput {
     private final byte[] mUtf8InputBuffer = new byte[5];
 
     /** Callback which gets notified when a session finishes or changes title. */
-    final SessionChangedCallback mChangeCallback;
+    TerminalSessionClient mClient;
 
     /** The pid of the shell process. 0 if not started and -1 if finished running. */
     int mShellPid;
@@ -104,52 +68,35 @@ public final class TerminalSession extends TerminalOutput {
     /** Set by the application for user identification of session, not by terminal. */
     public String mSessionName;
 
-    @SuppressLint("HandlerLeak")
-    final Handler mMainThreadHandler = new Handler() {
-        final byte[] mReceiveBuffer = new byte[4 * 1024];
-
-        @Override
-        public void handleMessage(Message msg) {
-            int bytesRead = mProcessToTerminalIOQueue.read(mReceiveBuffer, false);
-            if (bytesRead > 0) {
-                mEmulator.append(mReceiveBuffer, bytesRead);
-                notifyScreenUpdate();
-            }
-
-            if (msg.what == MSG_PROCESS_EXITED) {
-                int exitCode = (Integer) msg.obj;
-                cleanupResources(exitCode);
-                mChangeCallback.onSessionFinished(TerminalSession.this);
-
-                String exitDescription = "\r\n[Process completed";
-                if (exitCode > 0) {
-                    // Non-zero process exit.
-                    exitDescription += " (code " + exitCode + ")";
-                } else if (exitCode < 0) {
-                    // Negated signal.
-                    exitDescription += " (signal " + (-exitCode) + ")";
-                }
-                exitDescription += " - press Enter]";
-
-                byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
-                mEmulator.append(bytesToWrite, bytesToWrite.length);
-                notifyScreenUpdate();
-            }
-        }
-    };
+    final Handler mMainThreadHandler = new MainThreadHandler();
 
     private final String mShellPath;
     private final String mCwd;
     private final String[] mArgs;
     private final String[] mEnv;
+    private final Integer mTranscriptRows;
 
-    public TerminalSession(String shellPath, String cwd, String[] args, String[] env, SessionChangedCallback changeCallback) {
-        mChangeCallback = changeCallback;
 
+    private static final String LOG_TAG = "TerminalSession";
+
+    public TerminalSession(String shellPath, String cwd, String[] args, String[] env, Integer transcriptRows, TerminalSessionClient client) {
         this.mShellPath = shellPath;
         this.mCwd = cwd;
         this.mArgs = args;
         this.mEnv = env;
+        this.mTranscriptRows = transcriptRows;
+        this.mClient = client;
+    }
+
+    /**
+     * @param client The {@link TerminalSessionClient} interface implementation to allow
+     *               for communication between {@link TerminalSession} and its client.
+     */
+    public void updateTerminalSessionClient(TerminalSessionClient client) {
+        mClient = client;
+
+        if (mEmulator != null)
+            mEmulator.updateTerminalSessionClient(client);
     }
 
     /** Inform the attached pty of the new size and reflow or initialize the emulator. */
@@ -174,13 +121,13 @@ public final class TerminalSession extends TerminalOutput {
      * @param rows    The number of rows in the terminal window.
      */
     public void initializeEmulator(int columns, int rows) {
-        mEmulator = new TerminalEmulator(this, columns, rows, /* transcript= */2000);
+        mEmulator = new TerminalEmulator(this, columns, rows, mTranscriptRows, mClient);
 
         int[] processId = new int[1];
         mTerminalFileDescriptor = JNI.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns);
         mShellPid = processId[0];
 
-        final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor);
+        final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor, mClient);
 
         new Thread("TermSessionInputReader[pid=" + mShellPid + "]") {
             @Override
@@ -246,23 +193,23 @@ public final class TerminalSession extends TerminalOutput {
         } else if (codePoint <= /* 11 bits */0b11111111111) {
             /* 110xxxxx leading byte with leading 5 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b11000000 | (codePoint >> 6));
-			/* 10xxxxxx continuation byte with following 6 bits */
+            /* 10xxxxxx continuation byte with following 6 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b10000000 | (codePoint & 0b111111));
         } else if (codePoint <= /* 16 bits */0b1111111111111111) {
-			/* 1110xxxx leading byte with leading 4 bits */
+            /* 1110xxxx leading byte with leading 4 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b11100000 | (codePoint >> 12));
-			/* 10xxxxxx continuation byte with following 6 bits */
+            /* 10xxxxxx continuation byte with following 6 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b10000000 | ((codePoint >> 6) & 0b111111));
-			/* 10xxxxxx continuation byte with following 6 bits */
+            /* 10xxxxxx continuation byte with following 6 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b10000000 | (codePoint & 0b111111));
         } else { /* We have checked codePoint <= 1114111 above, so we have max 21 bits = 0b111111111111111111111 */
-			/* 11110xxx leading byte with leading 3 bits */
+            /* 11110xxx leading byte with leading 3 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b11110000 | (codePoint >> 18));
-			/* 10xxxxxx continuation byte with following 6 bits */
+            /* 10xxxxxx continuation byte with following 6 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b10000000 | ((codePoint >> 12) & 0b111111));
-			/* 10xxxxxx continuation byte with following 6 bits */
+            /* 10xxxxxx continuation byte with following 6 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b10000000 | ((codePoint >> 6) & 0b111111));
-			/* 10xxxxxx continuation byte with following 6 bits */
+            /* 10xxxxxx continuation byte with following 6 bits */
             mUtf8InputBuffer[bufferPosition++] = (byte) (0b10000000 | (codePoint & 0b111111));
         }
         write(mUtf8InputBuffer, 0, bufferPosition);
@@ -272,9 +219,9 @@ public final class TerminalSession extends TerminalOutput {
         return mEmulator;
     }
 
-    /** Notify the {@link #mChangeCallback} that the screen has changed. */
+    /** Notify the {@link #mClient} that the screen has changed. */
     protected void notifyScreenUpdate() {
-        mChangeCallback.onTextChanged(this);
+        mClient.onTextChanged(this);
     }
 
     /** Reset state for terminal emulator state. */
@@ -289,7 +236,7 @@ public final class TerminalSession extends TerminalOutput {
             try {
                 Os.kill(mShellPid, OsConstants.SIGKILL);
             } catch (ErrnoException e) {
-                Log.w("termux", "Failed sending SIGKILL: " + e.getMessage());
+                mClient.logWarn(LOG_TAG, "Failed sending SIGKILL: " + e.getMessage());
             }
         }
     }
@@ -309,7 +256,7 @@ public final class TerminalSession extends TerminalOutput {
 
     @Override
     public void titleChanged(String oldTitle, String newTitle) {
-        mChangeCallback.onTitleChanged(this);
+        mClient.onTitleChanged(this);
     }
 
     public synchronized boolean isRunning() {
@@ -323,17 +270,17 @@ public final class TerminalSession extends TerminalOutput {
 
     @Override
     public void clipboardText(String text) {
-        mChangeCallback.onClipboardText(this, text);
+        mClient.onClipboardText(this, text);
     }
 
     @Override
     public void onBell() {
-        mChangeCallback.onBell(this);
+        mClient.onBell(this);
     }
 
     @Override
     public void onColorsChanged() {
-        mChangeCallback.onColorsChanged(this);
+        mClient.onColorsChanged(this);
     }
 
     public int getPid() {
@@ -356,10 +303,65 @@ public final class TerminalSession extends TerminalOutput {
                 return outputPath;
             }
         } catch (IOException | SecurityException e) {
-            Log.e(EmulatorDebug.LOG_TAG, "Error getting current directory", e);
+            mClient.logStackTraceWithMessage(LOG_TAG, "Error getting current directory", e);
         }
         return null;
     }
 
+    private static FileDescriptor wrapFileDescriptor(int fileDescriptor, TerminalSessionClient client) {
+        FileDescriptor result = new FileDescriptor();
+        try {
+            Field descriptorField;
+            try {
+                descriptorField = FileDescriptor.class.getDeclaredField("descriptor");
+            } catch (NoSuchFieldException e) {
+                // For desktop java:
+                descriptorField = FileDescriptor.class.getDeclaredField("fd");
+            }
+            descriptorField.setAccessible(true);
+            descriptorField.set(result, fileDescriptor);
+        } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
+            client.logStackTraceWithMessage(LOG_TAG, "Error accessing FileDescriptor#descriptor private field", e);
+            System.exit(1);
+        }
+        return result;
+    }
+
+    @SuppressLint("HandlerLeak")
+    class MainThreadHandler extends Handler {
+
+        final byte[] mReceiveBuffer = new byte[4 * 1024];
+
+        @Override
+        public void handleMessage(Message msg) {
+            int bytesRead = mProcessToTerminalIOQueue.read(mReceiveBuffer, false);
+            if (bytesRead > 0) {
+                mEmulator.append(mReceiveBuffer, bytesRead);
+                notifyScreenUpdate();
+            }
+
+            if (msg.what == MSG_PROCESS_EXITED) {
+                int exitCode = (Integer) msg.obj;
+                cleanupResources(exitCode);
+
+                String exitDescription = "\r\n[Process completed";
+                if (exitCode > 0) {
+                    // Non-zero process exit.
+                    exitDescription += " (code " + exitCode + ")";
+                } else if (exitCode < 0) {
+                    // Negated signal.
+                    exitDescription += " (signal " + (-exitCode) + ")";
+                }
+                exitDescription += " - press Enter]";
+
+                byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
+                mEmulator.append(bytesToWrite, bytesToWrite.length);
+                notifyScreenUpdate();
+
+                mClient.onSessionFinished(TerminalSession.this);
+            }
+        }
+
+    }
 
 }

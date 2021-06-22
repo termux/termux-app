@@ -7,6 +7,7 @@ public abstract class TerminalOutput {
 
     /** Write a string using the UTF-8 encoding to the terminal client. */
     public final void write(String data) {
+        if (data == null) return;
         byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
         write(bytes, 0, bytes.length);
     }

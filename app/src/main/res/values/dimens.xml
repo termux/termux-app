@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <dimen name="content_padding">8dip</dimen>
+    <dimen name="content_padding_double">16dip</dimen>
+    <dimen name="content_padding_half">4dip</dimen>
+</resources>

@@ -61,7 +61,7 @@ public final class TerminalRenderer {
         final int columns = mEmulator.mColumns;
         final int cursorCol = mEmulator.getCursorCol();
         final int cursorRow = mEmulator.getCursorRow();
-        final boolean cursorVisible = mEmulator.isShowingCursor();
+        final boolean cursorVisible = mEmulator.shouldCursorBeVisible();
         final TerminalBuffer screen = mEmulator.getScreen();
         final int[] palette = mEmulator.mColors.mCurrentColors;
         final int cursorShape = mEmulator.getCursorStyle();
@@ -200,8 +200,8 @@ public final class TerminalRenderer {
         if (cursor != 0) {
             mTextPaint.setColor(cursor);
             float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
-            if (cursorStyle == TerminalEmulator.CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.;
-            else if (cursorStyle == TerminalEmulator.CURSOR_STYLE_BAR) right -= ((right - left) * 3) / 4.;
+            if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.;
+            else if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) right -= ((right - left) * 3) / 4.;
             canvas.drawRect(left, y - cursorHeight, right, y, mTextPaint);
         }
 
@@ -229,5 +229,13 @@ public final class TerminalRenderer {
         }
 
         if (savedMatrix) canvas.restore();
+    }
+
+    public float getFontWidth() {
+        return mFontWidth;
+    }
+
+    public int getFontLineSpacing() {
+        return mFontLineSpacing;
     }
 }

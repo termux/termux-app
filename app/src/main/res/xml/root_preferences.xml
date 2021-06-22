@@ -1,0 +1,28 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        app:key="termux"
+        app:title="@string/termux_preferences_title"
+        app:summary="@string/termux_preferences_summary"
+        app:fragment="com.termux.app.fragments.settings.TermuxPreferencesFragment"/>
+
+    <Preference
+        app:key="termux_tasker"
+        app:title="@string/termux_tasker_preferences_title"
+        app:summary="@string/termux_tasker_preferences_summary"
+        app:isPreferenceVisible="false"
+        app:fragment="com.termux.app.fragments.settings.TermuxTaskerPreferencesFragment"/>
+
+    <Preference
+        app:key="about"
+        app:title="@string/about_preference_title"
+        app:persistent="false"/>
+    <!-- app:layout="@layout/preference_markdown_text" -->
+
+    <Preference
+        app:key="donate"
+        app:title="@string/donate_preference_title"
+        app:persistent="false"
+        app:isPreferenceVisible="false"/>
+
+</PreferenceScreen>

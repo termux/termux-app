@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_markdown_code_inline">#1F000000</color>
+    <color name="background_markdown_code_block">#0F000000</color>
+    <color name="dark_red">#FF0000</color>
+</resources>
