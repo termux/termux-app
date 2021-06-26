@@ -90,10 +90,12 @@ public class MarkdownUtils {
 
         int maxCount = 0;
         int matchCount;
+        String match;
 
         Matcher matcher = backticksPattern.matcher(string);
         while(matcher.find()) {
-            matchCount = matcher.group(1).length();
+            match = matcher.group(1);
+            matchCount = match != null ? match.length() : 0;
             if (matchCount > maxCount)
                 maxCount = matchCount;
         }
