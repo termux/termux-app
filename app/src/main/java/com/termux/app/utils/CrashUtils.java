@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.termux.R;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.models.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.models.ReportInfo;
@@ -62,25 +63,25 @@ public class CrashUtils {
                 if (!FileUtils.regularFileExists(TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, false))
                     return;
 
-                String errmsg;
+                Error error;
                 StringBuilder reportStringBuilder = new StringBuilder();
 
                 // Read report string from crash log file
-                errmsg = FileUtils.readStringFromFile(context, "crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportStringBuilder, false);
-                if (errmsg != null) {
-                    Logger.logError(logTag, errmsg);
+                error = FileUtils.readStringFromFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportStringBuilder, false);
+                if (error != null) {
+                    Logger.logErrorExtended(logTag, error.toString());
                     return;
                 }
 
                 // Move crash log file to backup location if it exists
-                FileUtils.moveRegularFile(context, "crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, TermuxConstants.TERMUX_CRASH_LOG_BACKUP_FILE_PATH, true);
-                if (errmsg != null) {
-                    Logger.logError(logTag, errmsg);
+                error = FileUtils.moveRegularFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, TermuxConstants.TERMUX_CRASH_LOG_BACKUP_FILE_PATH, true);
+                if (error != null) {
+                    Logger.logErrorExtended(logTag, error.toString());
                 }
 
                 String reportString = reportStringBuilder.toString();
 
-                if (reportString == null || reportString.isEmpty())
+                if (reportString.isEmpty())
                     return;
 
                 // Send a notification to show the crash log which when clicked will open the {@link ReportActivity}

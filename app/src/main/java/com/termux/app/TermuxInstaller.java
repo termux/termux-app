@@ -14,6 +14,7 @@ import com.termux.R;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.interact.DialogUtils;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.models.errors.Error;
 import com.termux.shared.termux.TermuxConstants;
 
 import java.io.BufferedReader;
@@ -88,21 +89,21 @@ final class TermuxInstaller {
                 try {
                     Logger.logInfo(LOG_TAG, "Installing " + TermuxConstants.TERMUX_APP_NAME + " bootstrap packages.");
 
-                    String errmsg;
+                    Error error;
 
                     final String STAGING_PREFIX_PATH = TermuxConstants.TERMUX_STAGING_PREFIX_DIR_PATH;
                     final File STAGING_PREFIX_FILE = new File(STAGING_PREFIX_PATH);
 
                     // Delete prefix staging directory or any file at its destination
-                    errmsg = FileUtils.deleteFile(activity, "prefix staging directory", STAGING_PREFIX_PATH, true);
-                    if (errmsg != null) {
-                        throw new RuntimeException(errmsg);
+                    error = FileUtils.deleteFile("prefix staging directory", STAGING_PREFIX_PATH, true);
+                    if (error != null) {
+                        throw new RuntimeException(error.toString());
                     }
 
                     // Delete prefix directory or any file at its destination
-                    errmsg = FileUtils.deleteFile(activity, "prefix directory", PREFIX_FILE_PATH, true);
-                    if (errmsg != null) {
-                        throw new RuntimeException(errmsg);
+                    error = FileUtils.deleteFile("prefix directory", PREFIX_FILE_PATH, true);
+                    if (error != null) {
+                        throw new RuntimeException(error.toString());
                     }
 
                     Logger.logInfo(LOG_TAG, "Extracting bootstrap zip to prefix staging directory \"" + STAGING_PREFIX_PATH + "\".");
@@ -125,14 +126,14 @@ final class TermuxInstaller {
                                     String newPath = STAGING_PREFIX_PATH + "/" + parts[1];
                                     symlinks.add(Pair.create(oldPath, newPath));
 
-                                    ensureDirectoryExists(activity, new File(newPath).getParentFile());
+                                    ensureDirectoryExists(new File(newPath).getParentFile());
                                 }
                             } else {
                                 String zipEntryName = zipEntry.getName();
                                 File targetFile = new File(STAGING_PREFIX_PATH, zipEntryName);
                                 boolean isDirectory = zipEntry.isDirectory();
 
-                                ensureDirectoryExists(activity, isDirectory ? targetFile : targetFile.getParentFile());
+                                ensureDirectoryExists(isDirectory ? targetFile : targetFile.getParentFile());
 
                                 if (!isDirectory) {
                                     try (FileOutputStream outStream = new FileOutputStream(targetFile)) {
@@ -173,7 +174,7 @@ final class TermuxInstaller {
                                     activity.finish();
                                 }).setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
                                 dialog.dismiss();
-                                FileUtils.deleteFile(activity, "prefix directory", PREFIX_FILE_PATH, true);
+                                FileUtils.deleteFile("prefix directory", PREFIX_FILE_PATH, true);
                                 TermuxInstaller.setupBootstrapIfNeeded(activity, whenDone);
                             }).show();
                         } catch (WindowManager.BadTokenException e1) {
@@ -201,12 +202,13 @@ final class TermuxInstaller {
         new Thread() {
             public void run() {
                 try {
-                    String errmsg;
+                    Error error;
                     File storageDir = TermuxConstants.TERMUX_STORAGE_HOME_DIR;
 
-                    errmsg = FileUtils.clearDirectory(context, "~/storage", storageDir.getAbsolutePath());
-                    if (errmsg != null) {
-                        Logger.logErrorAndShowToast(context, LOG_TAG, errmsg);
+                    error = FileUtils.clearDirectory("~/storage", storageDir.getAbsolutePath());
+                    if (error != null) {
+                        Logger.logErrorAndShowToast(context, LOG_TAG, error.getMessage());
+                        Logger.logErrorExtended(LOG_TAG, error.toString());
                         return;
                     }
 
@@ -249,12 +251,12 @@ final class TermuxInstaller {
         }.start();
     }
 
-    private static void ensureDirectoryExists(Context context, File directory) {
-        String errmsg;
+    private static void ensureDirectoryExists(File directory) {
+        Error error;
 
-        errmsg = FileUtils.createDirectoryFile(context, directory.getAbsolutePath());
-        if (errmsg != null) {
-            throw new RuntimeException(errmsg);
+        error = FileUtils.createDirectoryFile(directory.getAbsolutePath());
+        if (error != null) {
+            throw new RuntimeException(error.toString());
         }
     }
 

@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.models.errors.Error;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 
@@ -57,7 +58,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         reportString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Crash Thread", thread.toString(), "-"));
         reportString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Crash Timestamp", TermuxUtils.getCurrentTimeStamp(), "-"));
 
-        reportString.append("\n\n").append(Logger.getStackTracesMarkdownString("Stacktrace", Logger.getStackTraceStringArray(throwable)));
+        reportString.append("\n\n").append(Logger.getStackTracesMarkdownString("Stacktrace", Logger.getStackTracesStringArray(throwable)));
         reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
         reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(context));
 
@@ -65,9 +66,9 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         Logger.logError(reportString.toString());
 
         // Write report string to crash log file
-        String errmsg = FileUtils.writeStringToFile(context, "crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportString.toString(), false);
-        if (errmsg != null) {
-            Logger.logError(LOG_TAG, errmsg);
+        Error error = FileUtils.writeStringToFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportString.toString(), false);
+        if (error != null) {
+            Logger.logErrorExtended(LOG_TAG, error.toString());
         }
     }
 

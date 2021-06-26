@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.termux.shared.models.errors.Error;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
@@ -150,14 +151,14 @@ public class ShellUtils {
         return (lastSlash == -1) ? executable : executable.substring(lastSlash + 1);
     }
 
-    public static void clearTermuxTMPDIR(Context context, boolean onlyIfExists) {
+    public static void clearTermuxTMPDIR(boolean onlyIfExists) {
         if(onlyIfExists && !FileUtils.directoryFileExists(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, false))
             return;
 
-        String errmsg;
-        errmsg = FileUtils.clearDirectory(context, "$TMPDIR", FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null, false));
-        if (errmsg != null) {
-            Logger.logError(errmsg);
+        Error error;
+        error = FileUtils.clearDirectory("$TMPDIR", FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null));
+        if (error != null) {
+            Logger.logErrorExtended(error.toString());
         }
     }
 

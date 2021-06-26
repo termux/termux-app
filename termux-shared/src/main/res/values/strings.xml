@@ -13,52 +13,7 @@
 
 <resources>
 
-    <!-- FileUtils -->
-    <string name="error_executable_required">Executable required.</string>
-    <string name="error_null_or_empty_parameter">The %1$s is to \"%2$s\" null or empty.</string>
-    <string name="error_null_or_empty_regular_file_path">The regular file path is null or empty.</string>
-    <string name="error_null_or_empty_regular_file">The regular file is null or empty.</string>
-    <string name="error_null_or_empty_executable_file_path">The executable file path is null or empty.</string>
-    <string name="error_null_or_empty_executable_file">The executable file is null or empty.</string>
-    <string name="error_null_or_empty_directory_file_path">The directory file path is null or empty.</string>
-    <string name="error_null_or_empty_directory_file">The directory file is null or empty.</string>
-
-    <string name="error_file_not_found_at_path">The %1$s is not found at path \"%2$s\".</string>
-    <string name="error_no_regular_file_found">Regular file not found at %1$s path.</string>
-    <string name="error_not_a_regular_file">The %1$s at path \"%2$s\" is not a regular file.</string>
-    <string name="error_non_regular_file_found">Non-regular file found at %1$s path.</string>
-    <string name="error_non_directory_file_found">Non-directory file found at %1$s path.</string>
-    <string name="error_non_symlink_file_found">Non-symlink file found at %1$s path.</string>
-    <string name="error_file_not_an_allowed_file_type">The %1$s found at path \"%2$s\" is not one of allowed file types \"%3$s\".</string>
-
-    <string name="error_validate_file_existence_and_permissions_failed_with_exception">Validating file existence and permissions of %1$s at path \"%2$s\" failed.\nException: %3$s</string>
-    <string name="error_validate_directory_existence_and_permissions_failed_with_exception">Validating directory existence and permissions of %1$s at path \"%2$s\" failed.\nException: %3$s</string>
-
-    <string name="error_creating_file_failed">Creating %1$s at path \"%2$s\" failed.</string>
-    <string name="error_creating_file_failed_with_exception">Creating %1$s at path \"%2$s\" failed.\nException: %3$s</string>
-
-    <string name="error_cannot_overwrite_a_non_symlink_file_type">Cannot overwrite %1$s while creating symlink at \"%2$s\" to \"%3$s\" since destination file type \"%4$s\" is not a symlink.</string>
-    <string name="error_creating_symlink_file_failed_with_exception">Creating %1$s at path \"%2$s\" to \"%3$s\" failed.\nException: %4$s</string>
-
-    <string name="error_copying_or_moving_file_failed_with_exception">%1$s from \"%2$s\" to \"%3$s\" failed.\nException: %4$s</string>
-    <string name="error_copying_or_moving_file_to_same_path">%1$s from \"%2$s\" to \"%3$s\" cannot be done since they point to the same path.</string>
-    <string name="error_cannot_overwrite_a_different_file_type">Cannot overwrite %1$s while %2$s it from \"%3$s\" to \"%4$s\" since destination file type \"%5$s\" is different from source file type \"%6$s\".</string>
-    <string name="error_cannot_move_directory_to_sub_directory_of_itself">Cannot move %1$s from \"%2$s\" to \"%3$s\" since destination is a subdirectory of the source.</string>
-
-    <string name="error_file_still_exists_after_deleting">The %1$s still exists after deleting it from \"%2$s\".</string>
-    <string name="error_deleting_file_failed">Deleting %1$s at path \"%2$s\" failed.</string>
-    <string name="error_deleting_file_failed_with_exception">Deleting %1$s at path \"%2$s\" failed.\nException: %3$s</string>
-    <string name="error_clearing_directory_failed_with_exception">Clearing %1$s at path \"%2$s\" failed.\nException: %3$s</string>
-
-    <string name="error_reading_string_to_file_failed_with_exception">Reading string from %1$s at path \"%2$s\" failed.\nException: %3$s</string>
-    <string name="error_writing_string_to_file_failed_with_exception">Writing string to %1$s at path \"%2$s\" failed.\nException: %3$s</string>
-    <string name="error_unsupported_charset">Unsupported charset \"%1$s\"</string>
-    <string name="error_checking_if_charset_supported_failed">Checking if charset \"%1$s\" is suppoted failed.\nException: %2$s</string>
-
-    <string name="error_invalid_file_permissions_string_to_check">The file permission string to check is invalid.</string>
-    <string name="error_file_not_readable">The %1$s at path is not readable. Permission Denied.</string>
-    <string name="error_file_not_writable">The %1$s at path is not writable. Permission Denied.</string>
-    <string name="error_file_not_executable">The %1$s at path is not executable. Permission Denied.</string>
+    <string name="msg_directory_absolute_path">%1$s Directory Absolute Path: \"%2$s\"</string>
 
 
 

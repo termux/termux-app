@@ -90,7 +90,7 @@ public class FileTypes {
             return getFileType(fileAttributes);
         } catch (Exception e) {
             // If not a ENOENT (No such file or directory) exception
-            if (!e.getMessage().contains("ENOENT"))
+            if (e.getMessage() != null && !e.getMessage().contains("ENOENT"))
                 Logger.logError("Failed to get file type for file at path \"" + filePath + "\": " + e.getMessage());
             return FileType.NO_EXIST;
         }
