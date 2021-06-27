@@ -2,6 +2,8 @@ package com.termux.shared.data;
 
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
+
 import java.util.LinkedHashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +25,7 @@ public class DataUtils {
         if (maxLength < 0 || text.length() < maxLength) return text;
 
         if (fromEnd) {
-            text = text.substring(0, Math.min(text.length(), maxLength));
+            text = text.substring(0, maxLength);
         } else {
             int cutOffIndex = text.length() - maxLength;
 
@@ -40,6 +42,21 @@ public class DataUtils {
             text = prefix + text;
 
         return text;
+    }
+
+    /**
+     * Replace a sub string in each item of a {@link String[]}.
+     *
+     * @param array The {@link String[]} to replace in.
+     * @param find The sub string to replace.
+     * @param replace The sub string to replace with.
+     */
+    public static void replaceSubStringsInStringArrayItems(String[] array, String find, String replace) {
+        if(array == null || array.length == 0) return;
+
+        for (int i = 0; i < array.length; i++) {
+            array[i] = array[i].replace(find, replace);
+        }
     }
 
     /**
@@ -139,10 +156,14 @@ public class DataUtils {
      * @param def The default {@link Object}.
      * @return Returns {@code object} if it is not {@code null}, otherwise returns {@code def}.
      */
-    public static <T> T getDefaultIfNull(@androidx.annotation.Nullable T object, @androidx.annotation.Nullable T def) {
+    public static <T> T getDefaultIfNull(@Nullable T object, @Nullable T def) {
         return (object == null) ? def : object;
     }
 
+    /** Check if a string is null or empty. */
+    public static boolean isNullOrEmpty(String string) {
+        return string == null || string.isEmpty();
+    }
 
 
     public static LinkedHashSet<CharSequence> extractUrls(String text) {

@@ -1,18 +1,23 @@
 package com.termux.app.utils;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
 import com.termux.R;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.file.TermuxFileUtils;
+import com.termux.shared.models.ResultConfig;
+import com.termux.shared.models.ResultData;
+import com.termux.shared.models.errors.Errno;
+import com.termux.shared.models.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
+import com.termux.shared.shell.ResultSender;
+import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.shared.logger.Logger;
@@ -29,12 +34,6 @@ import com.termux.shared.termux.TermuxUtils;
 
 public class PluginUtils {
 
-    /** Required file permissions for the executable file of execute intent. Executable file must have read and execute permissions */
-    public static final String PLUGIN_EXECUTABLE_FILE_PERMISSIONS = "r-x"; // Default: "r-x"
-    /** Required file permissions for the working directory of execute intent. Working directory must have read and write permissions.
-     * Execute permissions should be attempted to be set, but ignored if they are missing */
-    public static final String PLUGIN_WORKING_DIRECTORY_PERMISSIONS = "rwx"; // Default: "rwx"
-
     private static final String LOG_TAG = "PluginUtils";
 
     /**
@@ -43,8 +42,8 @@ public class PluginUtils {
      * The ExecutionCommand currentState must be greater or equal to
      * {@link ExecutionCommand.ExecutionState#EXECUTED}.
      * If the {@link ExecutionCommand#isPluginExecutionCommand} is {@code true} and
-     * {@link ExecutionCommand#pluginPendingIntent} is not {@code null}, then the result of commands
-     * are sent back to the {@link PendingIntent} creator.
+     * {@link ResultConfig#resultPendingIntent} or {@link ResultConfig#resultDirectoryPath}
+     * is not {@code null}, then the result of commands are sent back to the command caller.
      *
      * @param context The {@link Context} that will be used to send result intent to the {@link PendingIntent} creator.
      * @param logTag The log tag to use for logging.
@@ -54,31 +53,42 @@ public class PluginUtils {
         if (executionCommand == null) return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
+        Error error = null;
+        ResultData resultData = executionCommand.resultData;
 
         if (!executionCommand.hasExecuted()) {
-            Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandResult() since the execution command state is not higher than the ExecutionState.EXECUTED");
+            Logger.logWarn(logTag, executionCommand.getCommandIdAndLabelLogString() + ": Ignoring call to processPluginExecutionCommandResult() since the execution command state is not higher than the ExecutionState.EXECUTED");
             return;
         }
 
-        Logger.logDebug(LOG_TAG, executionCommand.toString());
+        boolean isPluginExecutionCommandWithPendingResult = executionCommand.isPluginExecutionCommandWithPendingResult();
 
-        boolean result = true;
+        // Log the output. ResultData should not be logged if pending result since ResultSender will do it
+        Logger.logDebugExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, !isPluginExecutionCommandWithPendingResult));
 
-        // If isPluginExecutionCommand is true and pluginPendingIntent is not null, then
-        // send pluginPendingIntent to its creator with the result
-        if (executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null) {
-            String errmsg = executionCommand.errmsg;
+        // If execution command was started by a plugin which expects the result back
+        if (isPluginExecutionCommandWithPendingResult) {
+            // Set variables which will be used by sendCommandResultData to send back the result
+            if (executionCommand.resultConfig.resultPendingIntent != null)
+                setPluginResultPendingIntentVariables(executionCommand);
+            if (executionCommand.resultConfig.resultDirectoryPath != null)
+                setPluginResultDirectoryVariables(executionCommand);
 
-            //Combine errmsg and stacktraces
-            if (executionCommand.isStateFailed()) {
-                errmsg = Logger.getMessageAndStackTracesString(executionCommand.errmsg, executionCommand.throwableList);
+            // Send result to caller
+            error = ResultSender.sendCommandResultData(context, logTag, executionCommand.getCommandIdAndLabelLogString(), executionCommand.resultConfig, executionCommand.resultData);
+            if (error != null) {
+                // error will be added to existing Errors
+                resultData.setStateFailed(error);
+                Logger.logDebugExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true));
+
+                // Flash and send notification for the error
+                Logger.showToast(context, ResultData.getErrorsListMinimalString(resultData), true);
+                sendPluginCommandErrorNotification(context, logTag, executionCommand, ResultData.getErrorsListMinimalString(resultData));
             }
 
-            // Send pluginPendingIntent to its creator
-            result = sendPluginExecutionCommandResultPendingIntent(context, logTag, executionCommand.getCommandIdAndLabelLogString(), executionCommand.stdout, executionCommand.stderr, executionCommand.exitCode, executionCommand.errCode, errmsg, executionCommand.pluginPendingIntent);
         }
 
-        if (!executionCommand.isStateFailed() && result)
+        if (!executionCommand.isStateFailed() && error == null)
             executionCommand.setState(ExecutionCommand.ExecutionState.SUCCESS);
     }
 
@@ -86,14 +96,13 @@ public class PluginUtils {
      * Process {@link ExecutionCommand} error.
      *
      * The ExecutionCommand currentState must be equal to {@link ExecutionCommand.ExecutionState#FAILED}.
-     * The {@link ExecutionCommand#errCode} must have been set to a value greater than
-     * {@link ExecutionCommand#RESULT_CODE_OK}.
-     * The {@link ExecutionCommand#errmsg} and any {@link ExecutionCommand#throwableList} must also
-     * be set with appropriate error info.
+     * The {@link ResultData#getErrCode()} must have been set to a value greater than
+     * {@link Errno#ERRNO_SUCCESS}.
+     * The {@link ResultData#errorsList} must also be set with appropriate error info.
      *
      * If the {@link ExecutionCommand#isPluginExecutionCommand} is {@code true} and
-     * {@link ExecutionCommand#pluginPendingIntent} is not {@code null}, then the errors of commands
-     * are sent back to the {@link PendingIntent} creator.
+     * {@link ResultConfig#resultPendingIntent} or {@link ResultConfig#resultDirectoryPath}
+     * is not {@code null}, then the errors of commands are sent back to the command caller.
      *
      * Otherwise if the {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED} is
      * enabled, then a flash and a notification will be shown for the error as well
@@ -112,44 +121,93 @@ public class PluginUtils {
         if (context == null || executionCommand == null) return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
+        Error error;
+        ResultData resultData = executionCommand.resultData;
 
         if (!executionCommand.isStateFailed()) {
-            Logger.logWarn(logTag, "Ignoring call to processPluginExecutionCommandError() since the execution command is not in ExecutionState.FAILED");
+            Logger.logWarn(logTag, executionCommand.getCommandIdAndLabelLogString() + ": Ignoring call to processPluginExecutionCommandError() since the execution command is not in ExecutionState.FAILED");
             return;
         }
 
-        // Log the error and any exception
-        Logger.logStackTracesWithMessage(logTag, "(" + executionCommand.errCode + ") " + executionCommand.errmsg, executionCommand.throwableList);
+        boolean isPluginExecutionCommandWithPendingResult = executionCommand.isPluginExecutionCommandWithPendingResult();
 
+        // Log the error and any exception. ResultData should not be logged if pending result since ResultSender will do it
+        Logger.logErrorExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, !isPluginExecutionCommandWithPendingResult));
 
-        // If isPluginExecutionCommand is true and pluginPendingIntent is not null, then
-        // send pluginPendingIntent to its creator with the errors
-        if (executionCommand.isPluginExecutionCommand && executionCommand.pluginPendingIntent != null) {
-            String errmsg = executionCommand.errmsg;
+        // If execution command was started by a plugin which expects the result back
+        if (isPluginExecutionCommandWithPendingResult) {
+            // Set variables which will be used by sendCommandResultData to send back the result
+            if (executionCommand.resultConfig.resultPendingIntent != null)
+                setPluginResultPendingIntentVariables(executionCommand);
+            if (executionCommand.resultConfig.resultDirectoryPath != null)
+                setPluginResultDirectoryVariables(executionCommand);
 
-            //Combine errmsg and stacktraces
-            if (executionCommand.isStateFailed()) {
-                errmsg = Logger.getMessageAndStackTracesString(executionCommand.errmsg, executionCommand.throwableList);
+            // Send result to caller
+            error = ResultSender.sendCommandResultData(context, logTag, executionCommand.getCommandIdAndLabelLogString(), executionCommand.resultConfig, executionCommand.resultData);
+            if (error != null) {
+                // error will be added to existing Errors
+                resultData.setStateFailed(error);
+                Logger.logErrorExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true));
+                forceNotification = true;
             }
-
-            sendPluginExecutionCommandResultPendingIntent(context, logTag, executionCommand.getCommandIdAndLabelLogString(), executionCommand.stdout, executionCommand.stderr, executionCommand.exitCode, executionCommand.errCode, errmsg, executionCommand.pluginPendingIntent);
 
             // No need to show notifications if a pending intent was sent, let the caller handle the result himself
             if (!forceNotification) return;
         }
 
-
         TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
         if (preferences == null) return;
 
-        // If user has disabled notifications for plugin, then just return
+        // If user has disabled notifications for plugin commands, then just return
         if (!preferences.arePluginErrorNotificationsEnabled() && !forceNotification)
             return;
 
-        // Flash the errmsg
-        Logger.showToast(context, executionCommand.errmsg, true);
+        // Flash and send notification for the error
+        Logger.showToast(context, ResultData.getErrorsListMinimalString(resultData), true);
+        sendPluginCommandErrorNotification(context, logTag, executionCommand, ResultData.getErrorsListMinimalString(resultData));
 
-        // Send a notification to show the errmsg which when clicked will open the {@link ReportActivity}
+    }
+
+    /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData)}
+     * to send back the result via {@link ResultConfig#resultPendingIntent}. */
+    public static void setPluginResultPendingIntentVariables(ExecutionCommand executionCommand) {
+        ResultConfig resultConfig = executionCommand.resultConfig;
+
+        resultConfig.resultBundleKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE;
+        resultConfig.resultStdoutKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT;
+        resultConfig.resultStdoutOriginalLengthKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT_ORIGINAL_LENGTH;
+        resultConfig.resultStderrKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDERR;
+        resultConfig.resultStderrOriginalLengthKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDERR_ORIGINAL_LENGTH;
+        resultConfig.resultExitCodeKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE;
+        resultConfig.resultErrCodeKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERR;
+        resultConfig.resultErrmsgKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG;
+    }
+
+    /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData)}
+     * to send back the result by writing it to files in {@link ResultConfig#resultDirectoryPath}. */
+    public static void setPluginResultDirectoryVariables(ExecutionCommand executionCommand) {
+        ResultConfig resultConfig = executionCommand.resultConfig;
+
+        resultConfig.resultDirectoryPath = TermuxFileUtils.getCanonicalPath(resultConfig.resultDirectoryPath, null, true);
+        resultConfig.resultDirectoryAllowedParentPath = TermuxFileUtils.getMatchedAllowedTermuxWorkingDirectoryParentPathForPath(resultConfig.resultDirectoryPath);
+
+        // Set default resultFileBasename if resultSingleFile is true to `<executable_basename>-<timestamp>.log`
+        if (resultConfig.resultSingleFile && resultConfig.resultFileBasename == null)
+            resultConfig.resultFileBasename = ShellUtils.getExecutableBasename(executionCommand.executable) + "-" + TermuxUtils.getCurrentMilliSecondLocalTimeStamp() + ".log";
+    }
+
+
+
+    /**
+     * Send an error notification for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
+     * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param executionCommand The {@link ExecutionCommand} that failed.
+     * @param notificationTextString The text of the notification.
+     */
+    public static void sendPluginCommandErrorNotification(Context context, String logTag, ExecutionCommand executionCommand, String notificationTextString) {
+        // Send a notification to show the error which when clicked will open the ReportActivity
         // to show the details of the error
         String title = TermuxConstants.TERMUX_APP_NAME + " Plugin Execution Command Error";
 
@@ -166,104 +224,19 @@ public class PluginUtils {
         setupPluginCommandErrorsNotificationChannel(context);
 
         // Use markdown in notification
-        CharSequence notificationText = MarkdownUtils.getSpannedMarkdownText(context, executionCommand.errmsg);
-        //CharSequence notificationText = executionCommand.errmsg;
+        CharSequence notificationTextCharSequence = MarkdownUtils.getSpannedMarkdownText(context, notificationTextString);
+        //CharSequence notificationTextCharSequence = notificationTextString;
 
         // Build the notification
-        Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title, notificationText, notificationText, pendingIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
-        if (builder == null)  return;
+        Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title, notificationTextCharSequence, notificationTextCharSequence, pendingIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
+        if (builder == null) return;
 
         // Send the notification
         int nextNotificationId = NotificationUtils.getNextNotificationId(context);
         NotificationManager notificationManager = NotificationUtils.getNotificationManager(context);
         if (notificationManager != null)
             notificationManager.notify(nextNotificationId, builder.build());
-
     }
-
-    /**
-     * Send {@link ExecutionCommand} result {@link PendingIntent} in the
-     * {@link TERMUX_SERVICE#EXTRA_PLUGIN_RESULT_BUNDLE} bundle.
-     *
-     *
-     * @param context The {@link Context} that will be used to send result intent to the {@link PendingIntent} creator.
-     * @param logTag The log tag to use for logging.
-     * @param label The label of {@link ExecutionCommand}.
-     * @param stdout The stdout of {@link ExecutionCommand}.
-     * @param stderr The stderr of {@link ExecutionCommand}.
-     * @param exitCode The exitCode of {@link ExecutionCommand}.
-     * @param errCode The errCode of {@link ExecutionCommand}.
-     * @param errmsg The errmsg of {@link ExecutionCommand}.
-     * @param pluginPendingIntent The pluginPendingIntent of {@link ExecutionCommand}.
-     * @return Returns {@code true} if pluginPendingIntent was successfully send, otherwise [@code false}.
-     */
-    public static boolean sendPluginExecutionCommandResultPendingIntent(Context context, String logTag, String label, String stdout, String stderr, Integer exitCode, Integer errCode, String errmsg, PendingIntent pluginPendingIntent) {
-        if (context == null || pluginPendingIntent == null) return false;
-
-        logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
-
-        Logger.logDebug(logTag,  "Sending execution result for Execution Command \"" + label +  "\" to " + pluginPendingIntent.getCreatorPackage());
-
-        String truncatedStdout = null;
-        String truncatedStderr = null;
-
-        String stdoutOriginalLength = (stdout == null) ? null: String.valueOf(stdout.length());
-        String stderrOriginalLength = (stderr == null) ? null: String.valueOf(stderr.length());
-
-        // Truncate stdout and stdout to max TRANSACTION_SIZE_LIMIT_IN_BYTES
-        if (stderr == null || stderr.isEmpty()) {
-            truncatedStdout = DataUtils.getTruncatedCommandOutput(stdout, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, false, false);
-        } else if (stdout == null || stdout.isEmpty()) {
-            truncatedStderr = DataUtils.getTruncatedCommandOutput(stderr, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, false, false);
-        } else {
-            truncatedStdout = DataUtils.getTruncatedCommandOutput(stdout, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 2, false, false, false);
-            truncatedStderr = DataUtils.getTruncatedCommandOutput(stderr, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 2, false, false, false);
-        }
-
-        if (truncatedStdout != null && truncatedStdout.length() < stdout.length()) {
-            Logger.logWarn(logTag, "Execution Result for Execution Command \"" + label +  "\" stdout length truncated from " + stdoutOriginalLength + " to " + truncatedStdout.length());
-            stdout = truncatedStdout;
-        }
-
-        if (truncatedStderr != null && truncatedStderr.length() < stderr.length()) {
-            Logger.logWarn(logTag, "Execution Result for Execution Command \"" + label +  "\" stderr length truncated from " + stderrOriginalLength + " to " + truncatedStderr.length());
-            stderr = truncatedStderr;
-        }
-
-        String errmsgOriginalLength = (errmsg == null) ? null: String.valueOf(errmsg.length());
-
-        // Truncate errmsg to max TRANSACTION_SIZE_LIMIT_IN_BYTES / 4
-        // trim from end to preserve start of stacktraces
-        String truncatedErrmsg = DataUtils.getTruncatedCommandOutput(errmsg, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES / 4, true, false, false);
-        if (truncatedErrmsg != null && truncatedErrmsg.length() < errmsg.length()) {
-            Logger.logWarn(logTag, "Execution Result for Execution Command \"" + label +  "\" errmsg length truncated from " + errmsgOriginalLength + " to " + truncatedErrmsg.length());
-            errmsg = truncatedErrmsg;
-        }
-
-
-        final Bundle resultBundle = new Bundle();
-        resultBundle.putString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT, stdout);
-        resultBundle.putString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDOUT_ORIGINAL_LENGTH, stdoutOriginalLength);
-        resultBundle.putString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDERR, stderr);
-        resultBundle.putString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_STDERR_ORIGINAL_LENGTH, stderrOriginalLength);
-        if (exitCode != null) resultBundle.putInt(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE, exitCode);
-        if (errCode != null) resultBundle.putInt(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERR, errCode);
-        resultBundle.putString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG, errmsg);
-
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE, resultBundle);
-
-        try {
-            pluginPendingIntent.send(context, Activity.RESULT_OK, resultIntent);
-        } catch (PendingIntent.CanceledException e) {
-            // The caller doesn't want the result? That's fine, just ignore
-            Logger.logDebug(logTag,  "The Execution Command \"" + label +  "\" creator " + pluginPendingIntent.getCreatorPackage() + " does not want the results anymore");
-        }
-
-        return true;
-    }
-
-
 
     /**
      * Get {@link Notification.Builder} for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
@@ -318,7 +291,7 @@ public class PluginUtils {
      * Check if {@link TermuxConstants#PROP_ALLOW_EXTERNAL_APPS} property is not set to "true".
      *
      * @param context The {@link Context} to get error string.
-     * @return Returns the {@code errmsg} if policy is violated, otherwise {@code null}.
+     * @return Returns the {@code error} if policy is violated, otherwise {@code null}.
      */
     public static String checkIfRunCommandServiceAllowExternalAppsPolicyIsViolated(final Context context) {
         String errmsg = null;

@@ -400,18 +400,18 @@ public class TermuxUtils {
 
         ExecutionCommand executionCommand = new ExecutionCommand(1, TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash", null, aptInfoScript, null, true, false);
         TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, true);
-        if (termuxTask == null || !executionCommand.isSuccessful() || executionCommand.exitCode != 0) {
+        if (termuxTask == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
             Logger.logError(LOG_TAG, executionCommand.toString());
             return null;
         }
 
-        if (executionCommand.stderr != null && !executionCommand.stderr.isEmpty())
+        if (!executionCommand.resultData.stderr.toString().isEmpty())
             Logger.logError(LOG_TAG, executionCommand.toString());
 
         StringBuilder markdownString = new StringBuilder();
 
         markdownString.append("## ").append(TermuxConstants.TERMUX_APP_NAME).append(" APT Info\n\n");
-        markdownString.append(executionCommand.stdout);
+        markdownString.append(executionCommand.resultData.stdout.toString());
 
         return markdownString.toString();
     }
@@ -493,6 +493,13 @@ public class TermuxUtils {
         @SuppressLint("SimpleDateFormat")
         final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return df.format(new Date());
+    }
+
+    public static String getCurrentMilliSecondLocalTimeStamp() {
+        @SuppressLint("SimpleDateFormat")
+        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS");
+        df.setTimeZone(TimeZone.getDefault());
         return df.format(new Date());
     }
 

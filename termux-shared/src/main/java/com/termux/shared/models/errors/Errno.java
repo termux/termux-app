@@ -17,9 +17,9 @@ public class Errno {
 
 
     public static final Errno ERRNO_SUCCESS = new Errno(TYPE, Activity.RESULT_OK, "Success");
+    public static final Errno ERRNO_CANCELLED = new Errno(TYPE, Activity.RESULT_CANCELED, "Cancelled");
     public static final Errno ERRNO_MINOR_FAILURES = new Errno(TYPE, Activity.RESULT_FIRST_USER, "Minor failure");
     public static final Errno ERRNO_FAILED = new Errno(TYPE, Activity.RESULT_FIRST_USER + 1, "Failed");
-    public static final Errno ERRNO_CANCELED = new Errno(TYPE, Activity.RESULT_FIRST_USER + 2, "Cancelled");
 
     /** The errno type. */
     protected String type;
