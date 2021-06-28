@@ -178,7 +178,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         // Check if a crash happened on last run of the app and show a
         // notification with the crash details if it did
-        CrashUtils.notifyCrash(this, LOG_TAG);
+        CrashUtils.notifyAppCrashOnLastRun(this, LOG_TAG);
 
         // Load termux shared properties
         mProperties = new TermuxAppSharedProperties(this);
