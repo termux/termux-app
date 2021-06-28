@@ -11,7 +11,6 @@ import com.termux.shared.R;
 import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.ResultData;
 import com.termux.shared.models.errors.Errno;
-import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.models.ExecutionCommand.ExecutionState;
 
@@ -54,6 +53,7 @@ public final class TermuxTask {
      *                           be called regardless of {@code isSynchronous} value but not if
      *                           {@code null} is returned by this method. This can
      *                           optionally be {@code null}.
+     * @param shellEnvironmentClient The {@link ShellEnvironmentClient} interface implementation.
      * @param isSynchronous If set to {@code true}, then the command will be executed in the
      *                      caller thread and results returned synchronously in the {@link ExecutionCommand}
      *                      sub object of the {@link TermuxTask} returned.
@@ -62,12 +62,17 @@ public final class TermuxTask {
      * @return Returns the {@link TermuxTask}. This will be {@code null} if failed to start the execution command.
      */
     public static TermuxTask execute(@NonNull final Context context, @NonNull ExecutionCommand executionCommand,
-                                     final TermuxTaskClient termuxTaskClient, final boolean isSynchronous) {
-        if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty()) executionCommand.workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
+                                     final TermuxTaskClient termuxTaskClient,
+                                     @NonNull final ShellEnvironmentClient shellEnvironmentClient,
+                                     final boolean isSynchronous) {
+        if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty())
+            executionCommand.workingDirectory = shellEnvironmentClient.getDefaultWorkingDirectoryPath();
+        if (executionCommand.workingDirectory.isEmpty())
+            executionCommand.workingDirectory = "/";
 
-        String[] env = ShellUtils.buildEnvironment(context, false, executionCommand.workingDirectory);
+        String[] env = shellEnvironmentClient.buildEnvironment(context, false, executionCommand.workingDirectory);
 
-        final String[] commandArray = ShellUtils.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
+        final String[] commandArray = shellEnvironmentClient.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
 
         if (!executionCommand.setState(ExecutionState.EXECUTING)) {
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), context.getString(R.string.error_failed_to_execute_termux_task_command, executionCommand.getCommandIdAndLabelLogString()));
@@ -254,10 +259,10 @@ public final class TermuxTask {
      * then the {@link TermuxTaskClient#onTermuxTaskExited(TermuxTask)} callback will be called.
      *
      * @param termuxTask The {@link TermuxTask}, which should be set if
-     *                  {@link #execute(Context, ExecutionCommand, TermuxTaskClient, boolean)}
+     *                  {@link #execute(Context, ExecutionCommand, TermuxTaskClient, ShellEnvironmentClient, boolean)}
      *                   successfully started the process.
      * @param executionCommand The {@link ExecutionCommand}, which should be set if
-     *                          {@link #execute(Context, ExecutionCommand, TermuxTaskClient, boolean)}
+     *                          {@link #execute(Context, ExecutionCommand, TermuxTaskClient, ShellEnvironmentClient, boolean)}
      *                          failed to start the process.
      */
     private static void processTermuxTaskResult(final TermuxTask termuxTask, ExecutionCommand executionCommand) {

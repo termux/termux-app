@@ -9,7 +9,6 @@ import com.termux.shared.R;
 import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.ResultData;
 import com.termux.shared.models.errors.Errno;
-import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -52,6 +51,7 @@ public class TermuxSession {
      * @param executionCommand The {@link ExecutionCommand} containing the information for execution command.
      * @param terminalSessionClient The {@link TerminalSessionClient} interface implementation.
      * @param termuxSessionClient The {@link TermuxSessionClient} interface implementation.
+     * @param shellEnvironmentClient The {@link ShellEnvironmentClient} interface implementation.
      * @param sessionName The optional {@link TerminalSession} name.
      * @param setStdoutOnExit If set to {@code true}, then the {@link ResultData#stdout}
      *                        available in the {@link TermuxSessionClient#onTermuxSessionExited(TermuxSession)}
@@ -64,16 +64,24 @@ public class TermuxSession {
      */
     public static TermuxSession execute(@NonNull final Context context, @NonNull ExecutionCommand executionCommand,
                                         @NonNull final TerminalSessionClient terminalSessionClient, final TermuxSessionClient termuxSessionClient,
+                                        @NonNull final ShellEnvironmentClient shellEnvironmentClient,
                                         final String sessionName, final boolean setStdoutOnExit) {
-        if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty()) executionCommand.workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
+        if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty())
+            executionCommand.workingDirectory = shellEnvironmentClient.getDefaultWorkingDirectoryPath();
+        if (executionCommand.workingDirectory.isEmpty())
+            executionCommand.workingDirectory = "/";
 
-        String[] environment = ShellUtils.buildEnvironment(context, executionCommand.isFailsafe, executionCommand.workingDirectory);
+        String[] environment = shellEnvironmentClient.buildEnvironment(context, executionCommand.isFailsafe, executionCommand.workingDirectory);
+
+        String defaultBinPath = shellEnvironmentClient.getDefaultBinPath();
+        if (defaultBinPath.isEmpty())
+            defaultBinPath = "/system/bin";
 
         boolean isLoginShell = false;
         if (executionCommand.executable == null) {
             if (!executionCommand.isFailsafe) {
                 for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
-                    File shellFile = new File(TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH, shellBinary);
+                    File shellFile = new File(defaultBinPath, shellBinary);
                     if (shellFile.canExecute()) {
                         executionCommand.executable = shellFile.getAbsolutePath();
                         break;
@@ -88,7 +96,7 @@ public class TermuxSession {
             isLoginShell = true;
         }
 
-        String[] processArgs = ShellUtils.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
+        String[] processArgs = shellEnvironmentClient.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
 
         executionCommand.executable = processArgs[0];
         String processName = (isLoginShell ? "-" : "") + ShellUtils.getExecutableBasename(executionCommand.executable);
@@ -199,10 +207,10 @@ public class TermuxSession {
      * callback will be called.
      *
      * @param termuxSession The {@link TermuxSession}, which should be set if
-     *                  {@link #execute(Context, ExecutionCommand, TerminalSessionClient, TermuxSessionClient, String, boolean)} 
+     *                  {@link #execute(Context, ExecutionCommand, TerminalSessionClient, TermuxSessionClient, ShellEnvironmentClient, String, boolean)}
      *                   successfully started the process.
      * @param executionCommand The {@link ExecutionCommand}, which should be set if
-     *                          {@link #execute(Context, ExecutionCommand, TerminalSessionClient, TermuxSessionClient, String, boolean)}
+     *                          {@link #execute(Context, ExecutionCommand, TerminalSessionClient, TermuxSessionClient, ShellEnvironmentClient, String, boolean)}
      *                          failed to start the process.
      */
     private static void processTermuxSessionResult(final TermuxSession termuxSession, ExecutionCommand executionCommand) {

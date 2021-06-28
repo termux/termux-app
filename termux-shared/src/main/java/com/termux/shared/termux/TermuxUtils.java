@@ -16,6 +16,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.packages.PackageUtils;
+import com.termux.shared.shell.TermuxShellEnvironmentClient;
 import com.termux.shared.shell.TermuxTask;
 
 import org.apache.commons.io.IOUtils;
@@ -399,7 +400,7 @@ public class TermuxUtils {
         aptInfoScript = aptInfoScript.replaceAll(Pattern.quote("@TERMUX_PREFIX@"), TermuxConstants.TERMUX_PREFIX_DIR_PATH);
 
         ExecutionCommand executionCommand = new ExecutionCommand(1, TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash", null, aptInfoScript, null, true, false);
-        TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, true);
+        TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
         if (termuxTask == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
             Logger.logError(LOG_TAG, executionCommand.toString());
             return null;
