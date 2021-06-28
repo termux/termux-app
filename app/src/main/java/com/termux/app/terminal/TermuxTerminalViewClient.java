@@ -245,6 +245,13 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent e) {
+        // If emulator is not set, like if bootstrap installation failed and user dismissed the error
+        // dialog, then just exit the activity, otherwise they will be stuck in a broken state.
+        if (keyCode == KeyEvent.KEYCODE_BACK && mActivity.getTerminalView().mEmulator == null) {
+            mActivity.finishActivityIfNotFinishing();
+            return true;
+        }
+
         return handleVirtualKeys(keyCode, e, false);
     }
 

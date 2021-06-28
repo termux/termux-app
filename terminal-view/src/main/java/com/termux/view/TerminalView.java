@@ -720,7 +720,10 @@ public final class TerminalView extends View {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
             mClient.logInfo(LOG_TAG, "onKeyUp(keyCode=" + keyCode + ", event=" + event + ")");
-        if (mEmulator == null) return true;
+
+        // Do not return for KEYCODE_BACK and send it to the client since user may be trying
+        // to exit the activity.
+        if (mEmulator == null && keyCode != KeyEvent.KEYCODE_BACK) return true;
 
         if (mClient.onKeyUp(keyCode, event)) {
             invalidate();
