@@ -205,6 +205,15 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         mActivity.getTerminalView().setTerminalCursorBlinkerState(enabled, false);
     }
 
+    /**
+     * Should be called when mActivity.onResetTerminalSession() is called
+     */
+    public void onResetTerminalSession() {
+        // Ensure blinker starts again after reset if cursor blinking was disabled before reset like
+        // with "tput civis" which would have called onTerminalCursorStateChange()
+        mActivity.getTerminalView().setTerminalCursorBlinkerState(true, true);
+    }
+
 
 
     @Override

@@ -611,7 +611,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 requestAutoFill();
                 return true;
             case CONTEXT_MENU_RESET_TERMINAL_ID:
-                resetSession(session);
+                onResetTerminalSession(session);
                 return true;
             case CONTEXT_MENU_KILL_PROCESS_ID:
                 showKillSessionDialog(session);
@@ -650,10 +650,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         b.show();
     }
 
-    private void resetSession(TerminalSession session) {
+    private void onResetTerminalSession(TerminalSession session) {
         if (session != null) {
             session.reset();
             showToast(getResources().getString(R.string.msg_terminal_reset), true);
+
+            if (mTermuxTerminalSessionClient != null)
+                mTermuxTerminalSessionClient.onResetTerminalSession();
         }
     }
 

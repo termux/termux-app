@@ -905,6 +905,10 @@ public final class TerminalView extends View {
      * to be shown. It should also be checked if activity is visible if blinker is to be started
      * before calling this.
      *
+     * It should also be called after terminal is reset with {@link TerminalSession#reset()} in case
+     * cursor blinker was disabled before reset due to call to
+     * {@link com.termux.terminal.TerminalSessionClient#onTerminalCursorStateChange(boolean)}.
+     *
      * How cursor blinker starting works is by registering a {@link Runnable} with the looper of
      * the main thread of the app which when run, toggles the cursor blinking state and re-registers
      * itself to be called with the delay set by {@link #mTerminalCursorBlinkerRate}. When cursor
