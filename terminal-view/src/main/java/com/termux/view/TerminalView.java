@@ -760,6 +760,10 @@ public final class TerminalView extends View {
             mEmulator = mTermSession.getEmulator();
             mClient.onEmulatorSet();
 
+            // Update mTerminalCursorBlinkerRunnable inner class mEmulator on session change
+            if (mTerminalCursorBlinkerRunnable != null)
+                mTerminalCursorBlinkerRunnable.setEmulator(mEmulator);
+
             mTopRow = 0;
             scrollTo(0, 0);
             invalidate();
@@ -966,7 +970,7 @@ public final class TerminalView extends View {
 
     private class TerminalCursorBlinkerRunnable implements Runnable {
 
-        private final TerminalEmulator mEmulator;
+        private TerminalEmulator mEmulator;
         private final int mBlinkRate;
 
         // Initialize with false so that initial blink state is visible after toggling
@@ -975,6 +979,10 @@ public final class TerminalView extends View {
         public TerminalCursorBlinkerRunnable(TerminalEmulator emulator, int blinkRate) {
             mEmulator = emulator;
             mBlinkRate = blinkRate;
+        }
+
+        public void setEmulator(TerminalEmulator emulator) {
+            mEmulator = emulator;
         }
 
         public void run() {
