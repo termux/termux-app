@@ -72,6 +72,13 @@ public final class TermuxPropertyConstants {
 
     /* boolean */
 
+    /** Defines the key for whether terminal view margin adjustment that is done to prevent soft
+     * keyboard from covering bottom part of terminal view on some devices is disabled or not.
+     * Margin adjustment may cause screen flickering on some devices and so should be disabled. */
+    public static final String KEY_DISABLE_TERMINAL_MARGIN_ADJUSTMENT =  "disable-terminal-margin-adjustment"; // Default: "disable-terminal-margin-adjustment"
+
+
+
     /** Defines the key for whether a toast will be shown when user changes the terminal session */
     public static final String KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST =  "disable-terminal-session-change-toast"; // Default: "disable-terminal-session-change-toast"
 
@@ -290,6 +297,7 @@ public final class TermuxPropertyConstants {
      * */
     public static final Set<String> TERMUX_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         /* boolean */
+        KEY_DISABLE_TERMINAL_MARGIN_ADJUSTMENT,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
@@ -329,6 +337,7 @@ public final class TermuxPropertyConstants {
      * default: false
      * */
     public static final Set<String> TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+        KEY_DISABLE_TERMINAL_MARGIN_ADJUSTMENT,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,

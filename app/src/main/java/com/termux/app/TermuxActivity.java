@@ -259,7 +259,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onStart();
 
-        addTermuxActivityRootViewGlobalLayoutListener();
+        if (!mProperties.isTerminalMarginAdjustmentDisabled())
+            addTermuxActivityRootViewGlobalLayoutListener();
 
         registerTermuxActivityBroadcastReceiver();
     }
