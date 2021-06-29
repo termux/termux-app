@@ -91,9 +91,12 @@ public class TermuxSession {
 
             if (executionCommand.executable == null) {
                 // Fall back to system shell as last resort:
+                // Do not start a login shell since $HOME/.profile, etc may cause startup failure if they are not valid
                 executionCommand.executable = "/system/bin/sh";
+            } else {
+                isLoginShell = true;
             }
-            isLoginShell = true;
+
         }
 
         String[] processArgs = shellEnvironmentClient.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
