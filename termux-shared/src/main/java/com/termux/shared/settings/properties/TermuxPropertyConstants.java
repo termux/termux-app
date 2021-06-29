@@ -94,6 +94,11 @@ public final class TermuxPropertyConstants {
 
 
 
+    /** Defines the key for whether url links in terminal transcript will automatically open on click or on tap */
+    public static final String KEY_TERMINAL_ONCLICK_URL_OPEN =  "terminal-onclick-url-open"; // Default: "terminal-onclick-url-open"
+
+
+
     /** Defines the key for whether to use black UI */
     public static final String KEY_USE_BLACK_UI =  "use-black-ui"; // Default: "use-black-ui"
 
@@ -301,6 +306,7 @@ public final class TermuxPropertyConstants {
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
+        KEY_TERMINAL_ONCLICK_URL_OPEN,
         KEY_USE_BLACK_UI,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
@@ -341,6 +347,7 @@ public final class TermuxPropertyConstants {
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
+        KEY_TERMINAL_ONCLICK_URL_OPEN,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,

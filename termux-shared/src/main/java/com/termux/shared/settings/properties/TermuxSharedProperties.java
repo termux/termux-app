@@ -476,6 +476,10 @@ public class TermuxSharedProperties {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP, true);
     }
 
+    public boolean shouldOpenTerminalTranscriptURLOnClick() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_ONCLICK_URL_OPEN, true);
+    }
+
     public boolean isUsingBlackUI() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_BLACK_UI, true);
     }
