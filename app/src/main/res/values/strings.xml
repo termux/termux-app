@@ -91,6 +91,11 @@
 
 
 
+    <!-- TermuxService -->
+    <string name="error_display_over_other_apps_permission_not_granted">&TERMUX_APP_NAME; requires \"Display over other apps\" permission to start terminal sessions from background on Android >= 10. Grants it from Settings -> Apps -> &TERMUX_APP_NAME; -> Advanced</string>
+
+
+
     <!-- Termux RunCommandService -->
     <string name="error_run_command_service_invalid_intent_action">Invalid intent action to RunCommandService: `%1$s`</string>
     <string name="error_run_command_service_mandatory_extra_missing">Mandatory extra missing to RunCommandService: \"%1$s\"</string>

@@ -640,8 +640,13 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         // For android >= 10, apps require Display over other apps permission to start foreground activities
         // from background (services). If it is not granted, then TermuxSessions that are started will
         // show in Termux notification but will not run until user manually clicks the notification.
-        if (PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(this)) {
+        if (PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(this, true)) {
             TermuxActivity.startTermuxActivity(this);
+        } else {
+            TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(this);
+            if (preferences == null) return;
+            if (preferences.arePluginErrorNotificationsEnabled())
+                Logger.showToast(this, this.getString(R.string.error_display_over_other_apps_permission_not_granted), true);
         }
     }
 

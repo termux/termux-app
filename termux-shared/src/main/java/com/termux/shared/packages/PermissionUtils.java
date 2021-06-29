@@ -13,9 +13,7 @@ import android.provider.Settings;
 import androidx.core.content.ContextCompat;
 
 import com.termux.shared.R;
-import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 
 import java.util.Arrays;
 
@@ -81,20 +79,16 @@ public class PermissionUtils {
         context.startActivityForResult(intent, requestCode);
     }
 
-    public static boolean validateDisplayOverOtherAppsPermissionForPostAndroid10(Context context) {
+    public static boolean validateDisplayOverOtherAppsPermissionForPostAndroid10(Context context, boolean logResults) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true;
         
         if (!PermissionUtils.checkDisplayOverOtherAppsPermission(context)) {
-            Logger.logWarn(LOG_TAG, TermuxConstants.TERMUX_APP_NAME + " App does not have Display over other apps (SYSTEM_ALERT_WINDOW) permission");
-
-            TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
-            if (preferences == null) return false;
-
-            if (preferences.arePluginErrorNotificationsEnabled())
-                Logger.showToast(context, context.getString(R.string.error_display_over_other_apps_permission_not_granted), true);
+            if (logResults)
+                Logger.logWarn(LOG_TAG, context.getPackageName() + " does not have Display over other apps (SYSTEM_ALERT_WINDOW) permission");
             return false;
         } else {
-            Logger.logDebug(LOG_TAG, TermuxConstants.TERMUX_APP_NAME + " App already has Display over other apps (SYSTEM_ALERT_WINDOW) permission");
+            if (logResults)
+                Logger.logDebug(LOG_TAG, context.getPackageName() + " already has Display over other apps (SYSTEM_ALERT_WINDOW) permission");
             return true;
         }
     }
