@@ -45,7 +45,7 @@ import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.app.settings.properties.TermuxAppSharedProperties;
-import com.termux.shared.interact.DialogUtils;
+import com.termux.shared.interact.TextInputDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.terminal.TerminalSession;
@@ -514,7 +514,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionClient.addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
-            DialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
+            TextInputDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
                 R.string.action_create_named_session_confirm, text -> mTermuxTerminalSessionClient.addNewSession(false, text),
                 R.string.action_new_session_failsafe, text -> mTermuxTerminalSessionClient.addNewSession(true, text),
                 -1, null, null);

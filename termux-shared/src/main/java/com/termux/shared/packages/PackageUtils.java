@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
-import com.termux.shared.interact.DialogUtils;
+import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 
@@ -55,7 +55,7 @@ public class PackageUtils {
             String errorMessage = context.getString(R.string.error_get_package_context_failed_message,
                 packageName, TermuxConstants.TERMUX_GITHUB_REPO_URL);
             Logger.logError(LOG_TAG, errorMessage);
-            DialogUtils.exitAppWithErrorMessage(context,
+            MessageDialogUtils.exitAppWithErrorMessage(context,
                 context.getString(R.string.error_get_package_context_failed_title),
                 errorMessage);
         }

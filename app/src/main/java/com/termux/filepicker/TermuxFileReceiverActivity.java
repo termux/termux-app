@@ -9,7 +9,7 @@ import android.provider.OpenableColumns;
 import android.util.Patterns;
 
 import com.termux.R;
-import com.termux.shared.interact.DialogUtils;
+import com.termux.shared.interact.TextInputDialogUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.TermuxService;
@@ -118,7 +118,7 @@ public class TermuxFileReceiverActivity extends Activity {
     }
 
     void promptNameAndSave(final InputStream in, final String attachmentFileName) {
-        DialogUtils.textInput(this, R.string.title_file_received, attachmentFileName, R.string.action_file_received_edit, text -> {
+        TextInputDialogUtils.textInput(this, R.string.title_file_received, attachmentFileName, R.string.action_file_received_edit, text -> {
             File outFile = saveStreamWithName(in, text);
             if (outFile == null) return;
 

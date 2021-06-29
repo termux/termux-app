@@ -13,7 +13,7 @@ import android.view.WindowManager;
 import com.termux.R;
 import com.termux.app.utils.CrashUtils;
 import com.termux.shared.file.FileUtils;
-import com.termux.shared.interact.DialogUtils;
+import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.termux.TermuxConstants;
@@ -60,7 +60,7 @@ final class TermuxInstaller {
         if (!isPrimaryUser) {
             String bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message, TermuxConstants.TERMUX_PREFIX_DIR_PATH);
             Logger.logError(LOG_TAG, bootstrapErrorMessage);
-            DialogUtils.exitAppWithErrorMessage(activity,
+            MessageDialogUtils.exitAppWithErrorMessage(activity,
                 activity.getString(R.string.bootstrap_error_title),
                 bootstrapErrorMessage);
             return;
