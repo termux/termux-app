@@ -16,6 +16,7 @@ import com.termux.app.models.UserAction;
 import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.settings.preferences.TermuxTaskerAppSharedPreferences;
+import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 
@@ -82,7 +83,7 @@ public class SettingsActivity extends AppCompatActivity {
                             if (termuxPluginAppsInfo != null)
                                 aboutString.append("\n\n").append(termuxPluginAppsInfo);
 
-                            aboutString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(context));
+                            aboutString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
                             aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(context));
 
                             ReportActivity.startReportActivity(context, new ReportInfo(UserAction.ABOUT.getName(), TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title, null, aboutString.toString(), null, false));

@@ -15,8 +15,8 @@ import com.termux.shared.models.ResultConfig;
 import com.termux.shared.models.ResultData;
 import com.termux.shared.models.errors.FunctionErrno;
 import com.termux.shared.models.errors.ResultSenderErrno;
+import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants.RESULT_SENDER;
-import com.termux.shared.termux.TermuxUtils;
 
 public class ResultSender {
 
@@ -235,7 +235,7 @@ public class ResultSender {
 
             // Write error or output to temp file
             // Check errCode file creation below for explanation for why temp file is used
-            String temp_filename = resultConfig.resultFileBasename + "-" + TermuxUtils.getCurrentMilliSecondLocalTimeStamp();
+            String temp_filename = resultConfig.resultFileBasename + "-" + AndroidUtils.getCurrentMilliSecondLocalTimeStamp();
             error = FileUtils.writeStringToFile(temp_filename, resultConfig.resultDirectoryPath + "/" + temp_filename,
                 null, error_or_output, false);
             if (error != null) {
@@ -312,7 +312,7 @@ public class ResultSender {
             // caller may otherwise read from an empty file in some cases.
 
             // Write errCode to temp file
-            String temp_filename = RESULT_SENDER.RESULT_FILE_ERR_PREFIX + "-" + TermuxUtils.getCurrentMilliSecondLocalTimeStamp();
+            String temp_filename = RESULT_SENDER.RESULT_FILE_ERR_PREFIX + "-" + AndroidUtils.getCurrentMilliSecondLocalTimeStamp();
             if (!resultConfig.resultFilesSuffix.isEmpty()) temp_filename = temp_filename + "-" + resultConfig.resultFilesSuffix;
             error = FileUtils.writeStringToFile(temp_filename, resultConfig.resultDirectoryPath + "/" + temp_filename,
                 null, String.valueOf(resultData.getErrCode()), false);

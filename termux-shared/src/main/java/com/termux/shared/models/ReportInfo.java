@@ -1,7 +1,7 @@
 package com.termux.shared.models;
 
 import com.termux.shared.markdown.MarkdownUtils;
-import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.termux.AndroidUtils;
 
 import java.io.Serializable;
 
@@ -34,7 +34,7 @@ public class ReportInfo implements Serializable {
         this.reportString = reportString;
         this.reportStringSuffix = reportStringSuffix;
         this.addReportInfoToMarkdown = addReportInfoToMarkdown;
-        this.reportTimestamp = TermuxUtils.getCurrentTimeStamp();
+        this.reportTimestamp = AndroidUtils.getCurrentTimeStamp();
     }
 
     /**

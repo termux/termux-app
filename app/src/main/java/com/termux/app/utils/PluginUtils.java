@@ -18,6 +18,7 @@ import com.termux.shared.models.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.shell.ResultSender;
 import com.termux.shared.shell.ShellUtils;
+import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.shared.logger.Logger;
@@ -193,7 +194,7 @@ public class PluginUtils {
 
         // Set default resultFileBasename if resultSingleFile is true to `<executable_basename>-<timestamp>.log`
         if (resultConfig.resultSingleFile && resultConfig.resultFileBasename == null)
-            resultConfig.resultFileBasename = ShellUtils.getExecutableBasename(executionCommand.executable) + "-" + TermuxUtils.getCurrentMilliSecondLocalTimeStamp() + ".log";
+            resultConfig.resultFileBasename = ShellUtils.getExecutableBasename(executionCommand.executable) + "-" + AndroidUtils.getCurrentMilliSecondLocalTimeStamp() + ".log";
     }
 
 
@@ -215,7 +216,7 @@ public class PluginUtils {
 
         reportString.append(ExecutionCommand.getExecutionCommandMarkdownString(executionCommand));
         reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
-        reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(context));
+        reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
         Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND.getName(), logTag, title, null, reportString.toString(), null,true));
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);

@@ -1,15 +1,11 @@
 package com.termux.shared.termux;
 
-import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
-
-import com.google.common.base.Joiner;
 
 import com.termux.shared.R;
 import com.termux.shared.logger.Logger;
@@ -21,17 +17,10 @@ import com.termux.shared.shell.TermuxTask;
 
 import org.apache.commons.io.IOUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Properties;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TermuxUtils {
@@ -117,8 +106,6 @@ public class TermuxUtils {
      * @param context The Context to send the broadcast.
      */
     public static void sendTermuxOpenedBroadcast(@NonNull Context context) {
-        if (context == null) return;
-
         Intent broadcast = new Intent(TermuxConstants.BROADCAST_TERMUX_OPENED);
         List<ResolveInfo> matches = context.getPackageManager().queryBroadcastReceivers(broadcast, 0);
 
@@ -139,7 +126,7 @@ public class TermuxUtils {
      * @param currentPackageContext The context of current package.
      * @return Returns the markdown {@link String}.
      */
-    public static String getTermuxPluginAppsInfoMarkdownString(@NonNull final Context currentPackageContext) {
+    public static String getTermuxPluginAppsInfoMarkdownString(final Context currentPackageContext) {
         if (currentPackageContext == null) return "null";
 
         StringBuilder markdownString = new StringBuilder();
@@ -154,7 +141,7 @@ public class TermuxUtils {
                 if (termuxPluginAppContext != null) {
                     if (i != 0)
                         markdownString.append("\n\n");
-                    markdownString.append(TermuxUtils.getAppInfoMarkdownString(termuxPluginAppContext, false));
+                    markdownString.append(getAppInfoMarkdownString(termuxPluginAppContext, false));
                 }
             }
         }
@@ -176,7 +163,7 @@ public class TermuxUtils {
      * {@link TermuxConstants#TERMUX_PACKAGE_NAME} package as well if its different from current package.
      * @return Returns the markdown {@link String}.
      */
-    public static String getAppInfoMarkdownString(@NonNull final Context currentPackageContext, final boolean returnTermuxPackageInfoToo) {
+    public static String getAppInfoMarkdownString(final Context currentPackageContext, final boolean returnTermuxPackageInfoToo) {
         if (currentPackageContext == null) return "null";
 
         StringBuilder markdownString = new StringBuilder();
@@ -202,7 +189,7 @@ public class TermuxUtils {
             markdownString.append("## ").append(currentAppName).append(" App Info\n");
         markdownString.append(getAppInfoMarkdownStringInner(currentPackageContext));
 
-        if (returnTermuxPackageInfoToo && !isTermuxPackage) {
+        if (returnTermuxPackageInfoToo && termuxPackageContext != null && !isTermuxPackage) {
             markdownString.append("\n\n## ").append(termuxAppName).append(" App Info\n");
             markdownString.append(getAppInfoMarkdownStringInner(termuxPackageContext));
         }
@@ -221,68 +208,13 @@ public class TermuxUtils {
     public static String getAppInfoMarkdownStringInner(@NonNull final Context context) {
         StringBuilder markdownString = new StringBuilder();
 
-        appendPropertyToMarkdown(markdownString,"APP_NAME", PackageUtils.getAppNameForPackage(context));
-        appendPropertyToMarkdown(markdownString,"PACKAGE_NAME", PackageUtils.getPackageNameForPackage(context));
-        appendPropertyToMarkdown(markdownString,"VERSION_NAME", PackageUtils.getVersionNameForPackage(context));
-        appendPropertyToMarkdown(markdownString,"VERSION_CODE", PackageUtils.getVersionCodeForPackage(context));
-        appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(context));
-        appendPropertyToMarkdown(markdownString,"IS_DEBUG_BUILD", PackageUtils.isAppForPackageADebugBuild(context));
+        markdownString.append((AndroidUtils.getAppInfoMarkdownString(context)));
 
         String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(context);
         if (signingCertificateSHA256Digest != null) {
-            appendPropertyToMarkdown(markdownString,"APK_RELEASE", getAPKRelease(signingCertificateSHA256Digest));
-            appendPropertyToMarkdown(markdownString,"SIGNING_CERTIFICATE_SHA256_DIGEST", signingCertificateSHA256Digest);
+            AndroidUtils.appendPropertyToMarkdown(markdownString,"APK_RELEASE", getAPKRelease(signingCertificateSHA256Digest));
+            AndroidUtils.appendPropertyToMarkdown(markdownString,"SIGNING_CERTIFICATE_SHA256_DIGEST", signingCertificateSHA256Digest);
         }
-
-        return markdownString.toString();
-    }
-
-    /**
-     * Get a markdown {@link String} for the device info.
-     *
-     * @param context The context for operations.
-     * @return Returns the markdown {@link String}.
-     */
-    public static String getDeviceInfoMarkdownString(@NonNull final Context context) {
-        if (context == null) return "null";
-
-        // Some properties cannot be read with {@link System#getProperty(String)} but can be read
-        // directly by running getprop command
-        Properties systemProperties = getSystemProperties();
-
-        StringBuilder markdownString = new StringBuilder();
-
-        markdownString.append("## Device Info");
-
-        markdownString.append("\n\n### Software\n");
-        appendPropertyToMarkdown(markdownString,"OS_VERSION", getSystemPropertyWithAndroidAPI("os.version"));
-        appendPropertyToMarkdown(markdownString, "SDK_INT", Build.VERSION.SDK_INT);
-        // If its a release version
-        if ("REL".equals(Build.VERSION.CODENAME))
-            appendPropertyToMarkdown(markdownString, "RELEASE", Build.VERSION.RELEASE);
-        else
-            appendPropertyToMarkdown(markdownString, "CODENAME", Build.VERSION.CODENAME);
-        appendPropertyToMarkdown(markdownString, "ID", Build.ID);
-        appendPropertyToMarkdown(markdownString, "DISPLAY", Build.DISPLAY);
-        appendPropertyToMarkdown(markdownString, "INCREMENTAL", Build.VERSION.INCREMENTAL);
-        appendPropertyToMarkdownIfSet(markdownString, "SECURITY_PATCH", systemProperties.getProperty("ro.build.version.security_patch"));
-        appendPropertyToMarkdownIfSet(markdownString, "IS_DEBUGGABLE", systemProperties.getProperty("ro.debuggable"));
-        appendPropertyToMarkdownIfSet(markdownString, "IS_EMULATOR", systemProperties.getProperty("ro.boot.qemu"));
-        appendPropertyToMarkdownIfSet(markdownString, "IS_TREBLE_ENABLED", systemProperties.getProperty("ro.treble.enabled"));
-        appendPropertyToMarkdown(markdownString, "TYPE", Build.TYPE);
-        appendPropertyToMarkdown(markdownString, "TAGS", Build.TAGS);
-
-        markdownString.append("\n\n### Hardware\n");
-        appendPropertyToMarkdown(markdownString, "MANUFACTURER", Build.MANUFACTURER);
-        appendPropertyToMarkdown(markdownString, "BRAND", Build.BRAND);
-        appendPropertyToMarkdown(markdownString, "MODEL", Build.MODEL);
-        appendPropertyToMarkdown(markdownString, "PRODUCT", Build.PRODUCT);
-        appendPropertyToMarkdown(markdownString, "BOARD", Build.BOARD);
-        appendPropertyToMarkdown(markdownString, "HARDWARE", Build.HARDWARE);
-        appendPropertyToMarkdown(markdownString, "DEVICE", Build.DEVICE);
-        appendPropertyToMarkdown(markdownString, "SUPPORTED_ABIS", Joiner.on(", ").skipNulls().join(Build.SUPPORTED_ABIS));
-
-        markdownString.append("\n##\n");
 
         return markdownString.toString();
     }
@@ -417,92 +349,6 @@ public class TermuxUtils {
         return markdownString.toString();
     }
 
-
-
-    public static Properties getSystemProperties() {
-        Properties systemProperties = new Properties();
-
-        // getprop commands returns values in the format `[key]: [value]`
-        // Regex matches string starting with a literal `[`,
-        // followed by one or more characters that do not match a closing square bracket as the key,
-        // followed by a literal `]: [`,
-        // followed by one or more characters as the value,
-        // followed by string ending with literal `]`
-        // multiline values will be ignored
-        Pattern propertiesPattern = Pattern.compile("^\\[([^]]+)]: \\[(.+)]$");
-
-        try {
-            Process process = new ProcessBuilder()
-                .command("/system/bin/getprop")
-                .redirectErrorStream(true)
-                .start();
-
-            InputStream inputStream = process.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            String line, key, value;
-
-            while ((line = bufferedReader.readLine()) != null) {
-                Matcher matcher = propertiesPattern.matcher(line);
-                if (matcher.matches()) {
-                    key = matcher.group(1);
-                    value = matcher.group(2);
-                    if (key != null && value != null && !key.isEmpty() && !value.isEmpty())
-                        systemProperties.put(key, value);
-                }
-            }
-
-            bufferedReader.close();
-            process.destroy();
-
-        } catch (IOException e) {
-            Logger.logStackTraceWithMessage("Failed to get run \"/system/bin/getprop\" to get system properties.", e);
-        }
-
-        //for (String key : systemProperties.stringPropertyNames()) {
-        //    Logger.logVerbose(key + ": " +  systemProperties.get(key));
-        //}
-
-        return systemProperties;
-    }
-
-    private static String getSystemPropertyWithAndroidAPI(@NonNull String property) {
-        try {
-            return System.getProperty(property);
-        } catch (Exception e) {
-            Logger.logVerbose("Failed to get system property \"" + property + "\":" + e.getMessage());
-            return null;
-        }
-    }
-
-    private static void appendPropertyToMarkdownIfSet(StringBuilder markdownString, String label, Object value) {
-        if (value == null) return;
-        if (value instanceof String && (((String) value).isEmpty()) || "REL".equals(value)) return;
-        markdownString.append("\n").append(getPropertyMarkdown(label, value));
-    }
-
-    private static void appendPropertyToMarkdown(StringBuilder markdownString, String label, Object value) {
-        markdownString.append("\n").append(getPropertyMarkdown(label, value));
-    }
-
-    private static String getPropertyMarkdown(String label, Object value) {
-        return MarkdownUtils.getSingleLineMarkdownStringEntry(label, value, "-");
-    }
-
-
-
-    public static String getCurrentTimeStamp() {
-        @SuppressLint("SimpleDateFormat")
-        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return df.format(new Date());
-    }
-
-    public static String getCurrentMilliSecondLocalTimeStamp() {
-        @SuppressLint("SimpleDateFormat")
-        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS");
-        df.setTimeZone(TimeZone.getDefault());
-        return df.format(new Date());
-    }
 
     public static String getAPKRelease(String signingCertificateSHA256Digest) {
         if (signingCertificateSHA256Digest == null) return "null";

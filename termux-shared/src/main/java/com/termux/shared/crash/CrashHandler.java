@@ -8,6 +8,7 @@ import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.errors.Error;
+import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 
@@ -56,11 +57,11 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
         reportString.append("## Crash Details\n");
         reportString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Crash Thread", thread.toString(), "-"));
-        reportString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Crash Timestamp", TermuxUtils.getCurrentTimeStamp(), "-"));
+        reportString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Crash Timestamp", AndroidUtils.getCurrentTimeStamp(), "-"));
 
         reportString.append("\n\n").append(Logger.getStackTracesMarkdownString("Stacktrace", Logger.getStackTracesStringArray(throwable)));
         reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
-        reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(context));
+        reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
         // Log report string to logcat
         Logger.logError(reportString.toString());

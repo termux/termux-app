@@ -24,6 +24,7 @@ import com.termux.app.TermuxActivity;
 import com.termux.shared.data.UrlUtils;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.terminal.TermuxTerminalViewClientBase;
+import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.models.ReportInfo;
@@ -664,7 +665,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptTextTruncated, true));
 
                 reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, true));
-                reportString.append("\n\n").append(TermuxUtils.getDeviceInfoMarkdownString(mActivity));
+                reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(mActivity));
 
                 String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
                 if (termuxAptInfo != null)
