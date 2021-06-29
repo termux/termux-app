@@ -203,6 +203,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mTermuxActivityRootView = findViewById(R.id.activity_termux_root_view);
         mTermuxActivityRootView.setActivity(this);
         mTermuxActivityBottomSpaceView = findViewById(R.id.activity_termux_bottom_space_view);
+        mTermuxActivityRootView.setOnApplyWindowInsetsListener(new TermuxActivityRootView.WindowInsetsListener());
 
         View content = findViewById(android.R.id.content);
         content.setOnApplyWindowInsetsListener((v, insets) -> {

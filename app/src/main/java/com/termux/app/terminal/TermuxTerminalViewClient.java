@@ -35,6 +35,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.view.KeyboardUtils;
+import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -88,6 +89,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
         // Piggyback on the terminal view key logging toggle for now, should add a separate toggle in future
         mActivity.getTermuxActivityRootView().setIsRootViewLoggingEnabled(isTerminalViewKeyLoggingEnabled);
+        ViewUtils.setIsViewUtilsLoggingEnabled(isTerminalViewKeyLoggingEnabled);
     }
 
     /**

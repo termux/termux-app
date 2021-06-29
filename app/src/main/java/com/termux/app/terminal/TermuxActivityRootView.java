@@ -7,11 +7,13 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowInsets;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.termux.app.TermuxActivity;
 import com.termux.shared.logger.Logger;
@@ -64,15 +66,18 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
     public TermuxActivity mActivity;
     public Integer marginBottom;
     public Integer lastMarginBottom;
+    public long lastMarginBottomTime;
+    public long lastMarginBottomExtraTime;
 
     /** Log root view events. */
     private boolean ROOT_VIEW_LOGGING_ENABLED = false;
 
     private static final String LOG_TAG = "TermuxActivityRootView";
 
+    private static int mStatusBarHeight;
+
     public TermuxActivityRootView(Context context) {
         super(context);
-
     }
 
     public TermuxActivityRootView(Context context, @Nullable AttributeSet attrs) {
@@ -118,10 +123,15 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         View bottomSpaceView = mActivity.getTermuxActivityBottomSpaceView();
         if (bottomSpaceView == null) return;
 
+        boolean root_view_logging_enabled = ROOT_VIEW_LOGGING_ENABLED;
+
+        if (root_view_logging_enabled)
+            Logger.logVerbose(LOG_TAG, ":\nonGlobalLayout:");
+
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
 
         // Get the position Rects of the bottom space view and the main window holding it
-        Rect[] windowAndViewRects = ViewUtils.getWindowAndViewRects(bottomSpaceView);
+        Rect[] windowAndViewRects = ViewUtils.getWindowAndViewRects(bottomSpaceView, mStatusBarHeight);
         if (windowAndViewRects == null)
             return;
 
@@ -129,12 +139,19 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         Rect bottomSpaceViewRect = windowAndViewRects[1];
 
         // If the bottomSpaceViewRect is inside the windowAvailableRect, then it must be completely visible
-        boolean isVisible = windowAvailableRect.contains(bottomSpaceViewRect);
+        //boolean isVisible = windowAvailableRect.contains(bottomSpaceViewRect); // rect.right comparison often fails in landscape
+        boolean isVisible = ViewUtils.isRectAbove(windowAvailableRect, bottomSpaceViewRect);
         boolean isVisibleBecauseMargin = (windowAvailableRect.bottom == bottomSpaceViewRect.bottom) && params.bottomMargin > 0;
-        boolean isVisibleBecauseExtraMargin = (bottomSpaceViewRect.bottom - windowAvailableRect.bottom) < 0;
+        boolean isVisibleBecauseExtraMargin = ((bottomSpaceViewRect.bottom - windowAvailableRect.bottom) < 0);
 
-        if (ROOT_VIEW_LOGGING_ENABLED)
-            Logger.logVerbose(LOG_TAG, "onGlobalLayout: windowAvailableRect " + windowAvailableRect.bottom + ", bottomSpaceViewRect " + bottomSpaceViewRect.bottom + ", diff " + (bottomSpaceViewRect.bottom - windowAvailableRect.bottom) + ", bottom " + params.bottomMargin + ", isVisible " + isVisible + ", isVisibleBecauseMargin " + isVisibleBecauseMargin + ", isVisibleBecauseExtraMargin " + isVisibleBecauseExtraMargin);
+        if (root_view_logging_enabled) {
+            Logger.logVerbose(LOG_TAG, "windowAvailableRect " + ViewUtils.toRectString(windowAvailableRect) + ", bottomSpaceViewRect " + ViewUtils.toRectString(bottomSpaceViewRect));
+            Logger.logVerbose(LOG_TAG, "windowAvailableRect.bottom " + windowAvailableRect.bottom +
+                ", bottomSpaceViewRect.bottom " +bottomSpaceViewRect.bottom +
+                ", diff " + (bottomSpaceViewRect.bottom - windowAvailableRect.bottom) + ", bottom " + params.bottomMargin +
+                ", isVisible " + windowAvailableRect.contains(bottomSpaceViewRect) + ", isRectAbove " + ViewUtils.isRectAbove(windowAvailableRect, bottomSpaceViewRect) +
+                ", isVisibleBecauseMargin " + isVisibleBecauseMargin + ", isVisibleBecauseExtraMargin " + isVisibleBecauseExtraMargin);
+        }
 
         // If the bottomSpaceViewRect is visible, then remove the margin if needed
         if (isVisible) {
@@ -148,15 +165,25 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             // set appropriate margins when views are changed quickly since some changes
             // may be missed.
             if (isVisibleBecauseMargin) {
-                if (ROOT_VIEW_LOGGING_ENABLED)
-                    Logger.logVerbose(LOG_TAG, "onGlobalLayout: Visible due to margin");
+                if (root_view_logging_enabled)
+                    Logger.logVerbose(LOG_TAG, "Visible due to margin");
+
                 // Once the view has been redrawn with new margin, we set margin back to 0 so that
                 // when next time onMeasure() is called, margin 0 is used. This is necessary for
                 // cases when view has been redrawn with new margin because bottom space view was
                 // hidden by keyboard and then view was redrawn again due to layout change (like
                 // keyboard symbol view is switched to), android will add margin below its new position
                 // if its greater than 0, which was already above the keyboard creating x2x margin.
-                marginBottom = 0;
+                // Adding time check since moving split screen divider in landscape causes jitter
+                // and prevents some infinite loops
+                if ((System.currentTimeMillis() - lastMarginBottomTime) > 40) {
+                    lastMarginBottomTime = System.currentTimeMillis();
+                    marginBottom = 0;
+                } else {
+                    if (root_view_logging_enabled)
+                        Logger.logVerbose(LOG_TAG, "Ignoring restoring marginBottom to 0 since called to quickly");
+                }
+
                 return;
             }
 
@@ -166,21 +193,28 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             // onGlobalLayout: windowAvailableRect 1408, bottomSpaceViewRect 1232, diff -176, bottom 0, isVisible true, isVisibleBecauseMargin false, isVisibleBecauseExtraMargin false
             // onGlobalLayout: Bottom margin already equals 0
             if (isVisibleBecauseExtraMargin) {
-                if (ROOT_VIEW_LOGGING_ENABLED)
-                    Logger.logVerbose(LOG_TAG, "onGlobalLayout: Resetting margin since visible due to extra margin");
-                setMargin = true;
-                // lastMarginBottom must be invalid. May also happen when keyboards are changed.
-                lastMarginBottom = null;
+                // Adding time check since prevents infinite loops, like in landscape mode in freeform mode in Taskbar
+                if ((System.currentTimeMillis() - lastMarginBottomExtraTime) > 40) {
+                    if (root_view_logging_enabled)
+                        Logger.logVerbose(LOG_TAG, "Resetting margin since visible due to extra margin");
+                    lastMarginBottomExtraTime = System.currentTimeMillis();
+                    // lastMarginBottom must be invalid. May also happen when keyboards are changed.
+                    lastMarginBottom = null;
+                    setMargin = true;
+                } else {
+                    if (root_view_logging_enabled)
+                        Logger.logVerbose(LOG_TAG, "Ignoring resetting margin since visible due to extra margin since called to quickly");
+                }
             }
 
             if (setMargin) {
-                if (ROOT_VIEW_LOGGING_ENABLED)
-                    Logger.logVerbose(LOG_TAG, "onGlobalLayout: Setting bottom margin to 0");
+                if (root_view_logging_enabled)
+                    Logger.logVerbose(LOG_TAG, "Setting bottom margin to 0");
                 params.setMargins(0, 0, 0, 0);
                 setLayoutParams(params);
             } else {
-                if (ROOT_VIEW_LOGGING_ENABLED)
-                    Logger.logVerbose(LOG_TAG, "onGlobalLayout: Bottom margin already equals 0");
+                if (root_view_logging_enabled)
+                    Logger.logVerbose(LOG_TAG, "Bottom margin already equals 0");
                 // This is done so that when next time onMeasure() is called, lastMarginBottom is used.
                 // This is done since we **expect** the keyboard to have same dimensions next time layout
                 // changes, so best set margin while view is drawn the first time, otherwise it will
@@ -193,8 +227,9 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         // ELse find the part of the extra keys/terminal that is hidden and add a margin accordingly
         else {
             int pxHidden = bottomSpaceViewRect.bottom - windowAvailableRect.bottom;
-            if (ROOT_VIEW_LOGGING_ENABLED)
-                Logger.logVerbose(LOG_TAG, "onGlobalLayout: pxHidden " + pxHidden + ", bottom " + params.bottomMargin);
+
+            if (root_view_logging_enabled)
+                Logger.logVerbose(LOG_TAG, "pxHidden " + pxHidden + ", bottom " + params.bottomMargin);
 
             boolean setMargin = params.bottomMargin != pxHidden;
 
@@ -205,22 +240,44 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             // onMeasure: Setting bottom margin to 176
             // onGlobalLayout: windowAvailableRect 1232, bottomSpaceViewRect 1408, diff 176, bottom 176, isVisible false, isVisibleBecauseMargin false, isVisibleBecauseExtraMargin false
             // onGlobalLayout: Bottom margin already equals 176
-            if ((bottomSpaceViewRect.bottom - windowAvailableRect.bottom) > 0) {
-                if (ROOT_VIEW_LOGGING_ENABLED)
-                    Logger.logVerbose(LOG_TAG, "onGlobalLayout: Force setting margin since not visible despite margin");
+            if (pxHidden > 0 && params.bottomMargin > 0) {
+                if (pxHidden != params.bottomMargin) {
+                    if (root_view_logging_enabled)
+                        Logger.logVerbose(LOG_TAG, "Force setting margin to 0 since not visible due to wrong margin");
+                    pxHidden = 0;
+                } else {
+                    if (root_view_logging_enabled)
+                        Logger.logVerbose(LOG_TAG, "Force setting margin since not visible despite required margin");
+                }
                 setMargin = true;
             }
 
+            if (pxHidden  < 0) {
+                if (root_view_logging_enabled)
+                    Logger.logVerbose(LOG_TAG, "Force setting margin to 0 since new margin is negative");
+                pxHidden = 0;
+            }
+
+
             if (setMargin) {
-                if (ROOT_VIEW_LOGGING_ENABLED)
-                    Logger.logVerbose(LOG_TAG, "onGlobalLayout: Setting bottom margin to " + pxHidden);
+                if (root_view_logging_enabled)
+                    Logger.logVerbose(LOG_TAG, "Setting bottom margin to " + pxHidden);
                 params.setMargins(0, 0, 0, pxHidden);
                 setLayoutParams(params);
                 lastMarginBottom = pxHidden;
             } else {
-                if (ROOT_VIEW_LOGGING_ENABLED)
-                    Logger.logVerbose(LOG_TAG, "onGlobalLayout: Bottom margin already equals " + pxHidden);
+                if (root_view_logging_enabled)
+                    Logger.logVerbose(LOG_TAG, "Bottom margin already equals " + pxHidden);
             }
+        }
+    }
+
+    public static class WindowInsetsListener implements View.OnApplyWindowInsetsListener {
+        @Override
+        public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+            mStatusBarHeight =  WindowInsetsCompat.toWindowInsetsCompat(insets).getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            // Let view window handle insets however it wants
+            return v.onApplyWindowInsets(insets);
         }
     }
 
