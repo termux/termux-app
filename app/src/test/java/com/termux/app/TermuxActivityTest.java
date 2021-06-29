@@ -1,6 +1,6 @@
 package com.termux.app;
 
-import com.termux.shared.data.DataUtils;
+import com.termux.shared.data.UrlUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,7 +13,7 @@ public class TermuxActivityTest {
     private void assertUrlsAre(String text, String... urls) {
         LinkedHashSet<String> expected = new LinkedHashSet<>();
         Collections.addAll(expected, urls);
-        Assert.assertEquals(expected, DataUtils.extractUrls(text));
+        Assert.assertEquals(expected, UrlUtils.extractUrls(text));
     }
 
     @Test
