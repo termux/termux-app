@@ -91,7 +91,13 @@ public class TermuxSession {
 
             if (executionCommand.executable == null) {
                 // Fall back to system shell as last resort:
-                // Do not start a login shell since $HOME/.profile, etc may cause startup failure if they are not valid
+                // Do not start a login shell since ~/.profile may cause startup failure if its invalid.
+                // /system/bin/sh is provided by mksh (not toybox) and does load .mkshrc but for android its set
+                // to /system/etc/mkshrc even though its default is ~/.mkshrc.
+                // So /system/etc/mkshrc must still be valid for failsafe session to start properly.
+                // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:external/mksh/src/main.c;l=663
+                // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:external/mksh/src/main.c;l=41
+                // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:external/mksh/Android.bp;l=114
                 executionCommand.executable = "/system/bin/sh";
             } else {
                 isLoginShell = true;
