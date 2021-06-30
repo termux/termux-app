@@ -8,7 +8,7 @@ android {
 
     dependencies {
         implementation "androidx.annotation:annotation:1.2.0"
-        implementation "androidx.core:core:1.5.0-rc01"
+        implementation "androidx.core:core:1.6.0-rc01"
         implementation "androidx.drawerlayout:drawerlayout:1.1.1"
         implementation "androidx.preference:preference:1.1.1"
         implementation "androidx.viewpager:viewpager:1.0.0"
