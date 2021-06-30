@@ -2,7 +2,7 @@ package com.termux.app;
 
 import android.app.Application;
 
-import com.termux.shared.crash.CrashHandler;
+import com.termux.shared.crash.TermuxCrashUtils;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.logger.Logger;
 
@@ -12,7 +12,7 @@ public class TermuxApplication extends Application {
         super.onCreate();
 
         // Set crash handler for the app
-        CrashHandler.setCrashHandler(this);
+        TermuxCrashUtils.setCrashHandler(this);
 
         // Set log level for the app
         setLogLevel();
