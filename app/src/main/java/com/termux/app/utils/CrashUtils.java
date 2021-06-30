@@ -15,6 +15,7 @@ import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.models.ReportInfo;
 import com.termux.app.models.UserAction;
+import com.termux.shared.notification.TermuxNotificationUtils;
 import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.settings.preferences.TermuxPreferenceConstants;
 import com.termux.shared.data.DataUtils;
@@ -131,7 +132,7 @@ public class CrashUtils {
         if (builder == null) return;
 
         // Send the notification
-        int nextNotificationId = NotificationUtils.getNextNotificationId(context);
+        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
         NotificationManager notificationManager = NotificationUtils.getNotificationManager(context);
         if (notificationManager != null)
             notificationManager.notify(nextNotificationId, builder.build());

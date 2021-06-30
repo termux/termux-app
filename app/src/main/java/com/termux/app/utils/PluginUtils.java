@@ -16,6 +16,7 @@ import com.termux.shared.models.ResultData;
 import com.termux.shared.models.errors.Errno;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
+import com.termux.shared.notification.TermuxNotificationUtils;
 import com.termux.shared.shell.ResultSender;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.termux.AndroidUtils;
@@ -233,7 +234,7 @@ public class PluginUtils {
         if (builder == null) return;
 
         // Send the notification
-        int nextNotificationId = NotificationUtils.getNextNotificationId(context);
+        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
         NotificationManager notificationManager = NotificationUtils.getNotificationManager(context);
         if (notificationManager != null)
             notificationManager.notify(nextNotificationId, builder.build());
