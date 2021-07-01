@@ -219,104 +219,53 @@ public class Logger {
 
 
 
-    public static void logStackTraceWithMessage(String tag, String message, Throwable throwable, boolean getSuppressed) {
-        Logger.logErrorExtended(tag, getMessageAndStackTraceString(message, throwable, getSuppressed));
-    }
-
     public static void logStackTraceWithMessage(String tag, String message, Throwable throwable) {
-        logStackTraceWithMessage(tag, message, throwable, true);
-    }
-
-    public static void logStackTraceWithMessage(String message, Throwable throwable, boolean getSuppressed) {
-        logStackTraceWithMessage(DEFAULT_LOG_TAG, message, throwable, getSuppressed);
+        Logger.logErrorExtended(tag, getMessageAndStackTraceString(message, throwable));
     }
 
     public static void logStackTraceWithMessage(String message, Throwable throwable) {
-        logStackTraceWithMessage(DEFAULT_LOG_TAG, message, throwable, true);
-    }
-
-
-    public static void logStackTrace(String tag, Throwable throwable, boolean getSuppressed) {
-        logStackTraceWithMessage(tag, null, throwable, getSuppressed);
+        logStackTraceWithMessage(DEFAULT_LOG_TAG, message, throwable);
     }
 
     public static void logStackTrace(String tag, Throwable throwable) {
-        logStackTraceWithMessage(tag, null, throwable, true);
-    }
-
-
-    public static void logStackTrace(Throwable throwable, boolean getSuppressed) {
-        logStackTraceWithMessage(DEFAULT_LOG_TAG, null, throwable, getSuppressed);
+        logStackTraceWithMessage(tag, null, throwable);
     }
 
     public static void logStackTrace(Throwable throwable) {
-        logStackTraceWithMessage(DEFAULT_LOG_TAG, null, throwable, true);
+        logStackTraceWithMessage(DEFAULT_LOG_TAG, null, throwable);
     }
 
 
-
-    public static void logStackTracesWithMessage(String tag, String message, List<Throwable> throwablesList, boolean getSuppressed) {
-        Logger.logErrorExtended(tag, getMessageAndStackTracesString(message, throwablesList, getSuppressed));
-    }
 
     public static void logStackTracesWithMessage(String tag, String message, List<Throwable> throwablesList) {
-        Logger.logErrorExtended(tag, getMessageAndStackTracesString(message, throwablesList, true));
+        Logger.logErrorExtended(tag, getMessageAndStackTracesString(message, throwablesList));
     }
 
 
 
     public static String getMessageAndStackTraceString(String message, Throwable throwable) {
-        return getMessageAndStackTraceString(message, throwable, true);
-    }
-
-    public static String getMessageAndStackTraceString(String message, Throwable throwable, boolean getSuppressed) {
         if (message == null && throwable == null)
             return null;
         else if (message != null && throwable != null)
-            return message + ":\n" + getStackTraceString(throwable, getSuppressed);
+            return message + ":\n" + getStackTraceString(throwable);
         else if (throwable == null)
             return message;
         else
-            return getStackTraceString(throwable, getSuppressed);
+            return getStackTraceString(throwable);
     }
-
-
 
     public static String getMessageAndStackTracesString(String message, List<Throwable> throwablesList) {
-        return getMessageAndStackTracesString(message, throwablesList, true);
-    }
-
-    public static String getMessageAndStackTracesString(String message, List<Throwable> throwablesList, boolean getSuppressed) {
         if (message == null && (throwablesList == null || throwablesList.size() == 0))
             return null;
         else if (message != null && (throwablesList != null && throwablesList.size() != 0))
-            return message + ":\n" + getStackTracesString(null, getStackTracesStringArray(throwablesList, getSuppressed));
+            return message + ":\n" + getStackTracesString(null, getStackTracesStringArray(throwablesList));
         else if (throwablesList == null || throwablesList.size() == 0)
             return message;
         else
-            return getStackTracesString(null, getStackTracesStringArray(throwablesList, getSuppressed));
+            return getStackTracesString(null, getStackTracesStringArray(throwablesList));
     }
 
 
-
-    public static String getStackTraceString(Throwable throwable, boolean getSuppressed) {
-        if (throwable == null) return null;
-
-        StringBuilder stackTraceString = new StringBuilder();
-        stackTraceString.append(getStackTraceString(throwable));
-
-        if (getSuppressed) {
-            Throwable[] suppressedThrowablesArray = throwable.getSuppressed();
-            if (suppressedThrowablesArray != null && suppressedThrowablesArray.length > 0) {
-                for (Throwable suppressedThrowable : suppressedThrowablesArray) {
-                    if (suppressedThrowable == null) continue;
-                    stackTraceString.append("\n\n").append(getStackTraceString(suppressedThrowable));
-                }
-            }
-        }
-
-        return stackTraceString.toString();
-    }
 
     public static String getStackTraceString(Throwable throwable) {
         if (throwable == null) return null;
@@ -339,25 +288,15 @@ public class Logger {
 
 
 
-    public static String[] getStackTracesStringArray(Throwable throwable, boolean getSuppressed) {
-        return getStackTracesStringArray(Collections.singletonList(throwable), getSuppressed);
-    }
-
     public static String[] getStackTracesStringArray(Throwable throwable) {
-        return getStackTracesStringArray(Collections.singletonList(throwable), true);
+        return getStackTracesStringArray(Collections.singletonList(throwable));
     }
 
     public static String[] getStackTracesStringArray(List<Throwable> throwablesList) {
-        return getStackTracesStringArray(throwablesList, true);
-
-    }
-
-    public static String[] getStackTracesStringArray(List<Throwable> throwablesList, boolean getSuppressed) {
         if (throwablesList == null) return null;
-
         final String[] stackTraceStringArray = new String[throwablesList.size()];
         for (int i = 0; i < throwablesList.size(); i++) {
-            stackTraceStringArray[i] = getStackTraceString(throwablesList.get(i), getSuppressed);
+            stackTraceStringArray[i] = getStackTraceString(throwablesList.get(i));
         }
         return stackTraceStringArray;
     }
@@ -415,7 +354,7 @@ public class Logger {
         else
             return  label + ": "  +  def;
     }
-    
+
 
 
     public static void showToast(final Context context, final String toastText, boolean longDuration) {
@@ -444,7 +383,7 @@ public class Logger {
             logLevelLabels[i] = getLogLevelLabel(context, Integer.parseInt(logLevels[i].toString()), addDefaultTag);
         }
 
-       return logLevelLabels;
+        return logLevelLabels;
     }
 
     public static String getLogLevelLabel(final Context context, final int logLevel, final boolean addDefaultTag) {
