@@ -38,7 +38,7 @@ jobs:
       with:
         name: termux-app-armeabi-v7a
         path: |
-          ./app/build/outputs/apk/debug/app-armeabi-v7a-debug
+          ./app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk
           ./app/build/outputs/apk/debug/output-metadata.json
     - name: Store generated x86_64 APK file
       uses: actions/upload-artifact@v2
