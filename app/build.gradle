@@ -44,10 +44,14 @@ android {
             }
         }
 
-        ndk {
-            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+        splits {
+            abi {
+                enable gradle.startParameter.taskNames.any { it.contains("Debug") }
+                reset ()
+                include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+                universalApk true
+            }
         }
-
     }
 
     signingConfigs {
