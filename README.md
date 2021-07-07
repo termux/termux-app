@@ -14,7 +14,7 @@ Quick how-to about Termux package management is available at [Package Management
 
 ***
 
-**@termux is looking for Termux Application maintainers for implementing new features, fixing bugs and reviewing pull requests since current one (@fornwall) is inactive.**
+**@termux is looking for Termux Application maintainers for implementing new features, fixing bugs and reviewing pull requests since the current one (@fornwall) is inactive.**
 
 Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
 
@@ -48,36 +48,36 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 
 Termux can be obtained through various sources listed below for **only** Android `>= 7`. Support was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, old builds are available on [archive.org](https://archive.org/details/termux-repositories-legacy).
 
-The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [sharedUserId](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from F-Droid and another one from a different source. Android Package Manager will also normally not allow installation of APKs with a different signatures and you will get errors on installation like `App not installed`, `Failed to install due to an unknown error`, `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, `INSTALL_FAILED_SHARED_USER_INCOMPATIBLE`, `signatures do not match previously installed version`, etc. This restriction can be bypassed with root or with custom roms.
+The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [sharedUserId](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from F-Droid and another one from a different source. Android Package Manager will also normally not allow installation of APKs with different signatures and you will get errors on installation like `App not installed`, `Failed to install due to an unknown error`, `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, `INSTALL_FAILED_SHARED_USER_INCOMPATIBLE`, `signatures do not match previously installed version`, etc. This restriction can be bypassed with root or with custom roms.
 
-If you wish to install from a different source, then you must uninstall **any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#Uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before uninstallation.
+If you wish to install from a different source, then you must uninstall **any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#Uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
 
 ### F-Droid
 
-Termux application can be obtained from F-Droid [here](https://f-droid.org/en/packages/com.termux/). It usually takes a few days (or even a week or more) for updates to be available on F-Droid once an update has been released on Github. F-Droid releases are built and published by F-Droid once they detect a new Github release. The Termux maintainers **do not** have any control over building and publishing of Termux app on F-Droid. Moreover, the Termux maintainers also do not have access to the APK signing keys of F-Droid releases, so we cannot release an APK ourselves on Github that would be compatible with F-Droid releases.
+Termux application can be obtained from F-Droid [here](https://f-droid.org/en/packages/com.termux/). It usually takes a few days (or even a week or more) for updates to be available on F-Droid once an update has been released on Github. F-Droid releases are built and published by F-Droid once they detect a new Github release. The Termux maintainers **do not** have any control over the building and publishing of the Termux app on F-Droid. Moreover, the Termux maintainers also do not have access to the APK signing keys of F-Droid releases, so we cannot release an APK ourselves on Github that would be compatible with F-Droid releases.
 
 ### Debug Builds
 
-For users who don't want to wait for F-Droid releases and want to try out the latest features immediately or want to test their pull requests can get the APKs from [Github Actions](https://github.com/termux/termux-app/actions) page from the workflow runs labeled `Build`. The APK will be listed under `Artifacts` section. These are published for each commit done to the repository. These APKs are [debuggable](https://developer.android.com/studio/debug) and are also not compatible with other sources.
+For users who don't want to wait for F-Droid releases and want to try out the latest features immediately or want to test their pull requests can get the APKs from [Github Actions](https://github.com/termux/termux-app/actions) page from the workflow runs labelled `Build`. The APK will be listed under `Artifacts` section. These are published for each commit done to the repository. These APKs are [debuggable](https://developer.android.com/studio/debug) and are also not compatible with other sources.
 
 ### Google Playstore **(Deprecated)**
 
 **Termux and its plugins are no longer updated on [Google playstore](https://play.google.com/store/apps/details?id=com.termux) due to [android 10 issues](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10).** The last version released for Android `>= 7` was `v0.101`. There are currently no immediate plans to resume updates on Google playstore. **It is highly recommended to not install Termux from playstore for now.** Any current users **should switch** to a different source like F-Droid.
 
-If for some reason you don't want to switch, then at least check [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management) to **change your mirror**, otherwise you will get **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands. After that, it is also **highly advisable** to run `pkg upgrade` command to update all packages to the latest available versions, or at least update `termux-tools` package with `pkg install termux-tools` command.
+If for some reason you don't want to switch, then at least check [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management) to **change your mirror**, otherwise, you will get **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands. After that, it is also **highly advisable** to run `pkg upgrade` command to update all packages to the latest available versions, or at least update `termux-tools` package with `pkg install termux-tools` command.
 ##
 
 
 
 ## Uninstallation
 
-Uninstallation may be required if a user doesn't want Termux installed in their device anymore or is switching to a different [install source](#Installation). You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before uninstallation.
+Uninstallation may be required if a user doesn't want Termux installed in their device anymore or is switching to a different [install source](#Installation). You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
 
 To uninstall Termux completely, you must uninstall **any and all existing Termux or its plugin app APKs** listed in [Termux App and Plugins](#Termux-App-and-Plugins).
 
-Go to `Android Settings` -> `Applications` and then look for those apps. You can also use the search feature if its available on your device and search `termux` in the applications list.
+Go to `Android Settings` -> `Applications` and then look for those apps. You can also use the search feature if it’s available on your device and search `termux` in the applications list.
 
-Even if you think you have not installed any of the plugins, its strongly suggesting to go through the application list in Android settings and double check.
+Even if you think you have not installed any of the plugins, it’s strongly suggesting to go through the application list in Android settings and double-check.
 ##
 
 
@@ -142,6 +142,7 @@ The main ones are the following.
 
 ## For Devs and Contributors
 
-The [termux-shared](termux-shared) library was added in [`v0.109`](https://github.com/termux/termux-app/releases/tag/v0.109). It defines shared constants and utils of Termux app and its plugins. It was created to allow for removal of all hardcoded paths in Termux app. The termux plugins will hopefully use this in future as well. If you are contributing code that is using a constant or a util that may be shared, then define it in `termux-shared` library if it currently doesn't exist and reference it from there. Update the relevant changelogs as well. Pull requests using hardcoded values **will/should not** be accepted.
+The [termux-shared](termux-shared) library was added in [`v0.109`](https://github.com/termux/termux-app/releases/tag/v0.109). It defines shared constants and utils of the Termux app and its plugins. It was created to allow for the removal of all hardcoded paths in the Termux app. The termux plugins will hopefully use this in future as well. If you are contributing code that is using a constant or a util that may be shared, then define it in `termux-shared` library if it currently doesn't exist and reference it from there. Update the relevant changelogs as well. Pull requests using hardcoded values **will/should not** be accepted.
 
 The main Termux constants are defined by [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) class. It also contains information on how to fork Termux or build it with your own package name. Changing the package name will require building the bootstrap zip packages and other packages with the new `$PREFIX`, check [Building Packages](https://github.com/termux/termux-packages/wiki/Building-packages) for more info.
+
