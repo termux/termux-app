@@ -13,6 +13,7 @@ import com.termux.R;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.file.TermuxFileUtils;
+import com.termux.shared.file.filesystem.FileType;
 import com.termux.shared.models.errors.Errno;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.termux.TermuxConstants;
@@ -75,8 +76,7 @@ public class RunCommandService extends Service {
             return Service.START_NOT_STICKY;
         }
 
-        executionCommand.executable = IntentUtils.getStringExtraIfSet(intent, RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH, null);
-
+        String executableExtra = executionCommand.executable = IntentUtils.getStringExtraIfSet(intent, RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH, null);
         executionCommand.arguments = IntentUtils.getStringArrayExtraIfSet(intent, RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS, null);
 
         /*
@@ -176,9 +176,17 @@ public class RunCommandService extends Service {
             }
         }
 
+        // If the executable passed as the extra was an applet for coreutils/busybox, then we must
+        // use it instead of the canonical path above since otherwise arguments would be passed to
+        // coreutils/busybox instead and command would fail. Broken symlinks would already have been
+        // validated so it should be fine to use it.
+        executableExtra = TermuxFileUtils.getExpandedTermuxPath(executableExtra);
+        if (FileUtils.getFileType(executableExtra, false) == FileType.SYMLINK) {
+            Logger.logVerbose(LOG_TAG, "The executableExtra path \"" + executableExtra + "\" is a symlink so using it instead of the canonical path \"" + executionCommand.executable + "\"");
+            executionCommand.executable = executableExtra;
+        }
 
-
-        executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(TermuxFileUtils.getExpandedTermuxPath(executionCommand.executable)).build();
+        executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(executionCommand.executable).build();
 
         Logger.logVerbose(LOG_TAG, executionCommand.toString());
 
