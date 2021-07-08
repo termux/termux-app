@@ -460,10 +460,6 @@ public class TermuxSharedProperties {
 
 
 
-    public boolean isTerminalMarginAdjustmentDisabled() {
-        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_TERMINAL_MARGIN_ADJUSTMENT, true);
-    }
-
     public boolean areTerminalSessionChangeToastsDisabled() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST, true);
     }
