@@ -484,7 +484,13 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     }
 
     public void setSoftKeyboardState(boolean isStartup, boolean isReloadTermuxProperties) {
-        boolean noRequestFocus = false;
+        boolean noShowKeyboard = false;
+
+        // Requesting terminal view focus is necessary regardless of if soft keyboard is to be
+        // disabled or hidden at startup, otherwise if hardware keyboard is attached and user
+        // starts typing on hardware keyboard without tapping on the terminal first, then a colour
+        // tint will be added to the terminal as highlight for the focussed view. Test with a light
+        // theme.
 
         // If soft keyboard is disabled by user for Termux (check function docs for Termux behaviour info)
         if (KeyboardUtils.shouldSoftKeyboardBeDisabled(mActivity,
@@ -492,7 +498,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             mActivity.getPreferences().isSoftKeyboardEnabledOnlyIfNoHardware())) {
             Logger.logVerbose(LOG_TAG, "Maintaining disabled soft keyboard");
             KeyboardUtils.disableSoftKeyboard(mActivity, mActivity.getTerminalView());
-            noRequestFocus = true;
+            mActivity.getTerminalView().requestFocus();
+            noShowKeyboard = true;
             // Delay is only required if onCreate() is called like when Termux app is exited with
             // double back press, not when Termux app is switched back from another app and keyboard
             // toggle is pressed to enable keyboard
@@ -508,10 +515,12 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             // If soft keyboard is to be hidden on startup
             if (isStartup && mActivity.getProperties().shouldSoftKeyboardBeHiddenOnStartup()) {
                 Logger.logVerbose(LOG_TAG, "Hiding soft keyboard on startup");
-                KeyboardUtils.hideSoftKeyboard(mActivity, mActivity.getTerminalView());
                 // Required to keep keyboard hidden when Termux app is switched back from another app
                 KeyboardUtils.setSoftKeyboardAlwaysHiddenFlags(mActivity);
-                noRequestFocus = true;
+
+                KeyboardUtils.hideSoftKeyboard(mActivity, mActivity.getTerminalView());
+                mActivity.getTerminalView().requestFocus();
+                noShowKeyboard = true;
                 // Required to keep keyboard hidden on app startup
                 mShowSoftKeyboardIgnoreOnce = true;
             }
@@ -541,7 +550,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
         // Do not force show soft keyboard if termux-reload-settings command was run with hardware keyboard
         // or soft keyboard is to be hidden or is disabled
-        if (!isReloadTermuxProperties && !noRequestFocus) {
+        if (!isReloadTermuxProperties && !noShowKeyboard) {
             // Request focus for TerminalView
             // Also show the keyboard, since onFocusChange will not be called if TerminalView already
             // had focus on startup to show the keyboard, like when opening url with context menu
