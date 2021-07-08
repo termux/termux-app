@@ -45,7 +45,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.termux'
                 artifactId = 'terminal-view'
-                version = '0.116'
+                version = '0.117'
                 artifact(sourceJar)
             }
         }
