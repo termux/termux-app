@@ -168,6 +168,20 @@
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if no hardware keyboard is connected.</string>
 
 
+        <!-- Terminal View Preferences -->
+        <string name="termux_terminal_view_preferences_title">Terminal View</string>
+        <string name="termux_terminal_view_preferences_summary">Preferences for terminal view</string>
+
+            <!-- View Category -->
+            <string name="termux_terminal_view_view_header">View</string>
+
+                <!-- Terminal View Margin Adjustment -->
+                <string name="termux_terminal_view_terminal_margin_adjustment_title">Terminal Margin Adjustment</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_off">Terminal margin adjustment will be disabled.</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_on">Terminal margin adjustment will be enabled. It should be enabled to try to fix the issue where soft keyboard covers part of extra keys/terminal view. If it causes screen flickering on your devices, then disable it. (Default)</string>
+
+
+
     <!-- Termux Tasker App Preferences -->
     <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;</string>
     <string name="termux_tasker_preferences_summary">Preferences for &TERMUX_TASKER_APP_NAME; app</string>
