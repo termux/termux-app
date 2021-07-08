@@ -326,9 +326,10 @@ public class FileUtils {
                     if (createDirectoryIfMissing && fileType == FileType.NO_EXIST) {
                         Logger.logVerbose(LOG_TAG, "Creating " + label + "directory file at path \"" + filePath + "\"");
                         // Create directory and update fileType if successful, otherwise return with error
-                        if (file.mkdirs())
-                            fileType = getFileType(filePath, false);
-                        else
+                        // It "might" be possible that mkdirs returns false even though directory was created
+                        boolean result = file.mkdirs();
+                        fileType = getFileType(filePath, false);
+                        if (!result && fileType != FileType.DIRECTORY)
                             return FileUtilsErrno.ERRNO_CREATING_FILE_FAILED.getError(label + "directory file", filePath);
                     }
 
