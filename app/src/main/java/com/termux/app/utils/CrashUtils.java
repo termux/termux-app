@@ -20,6 +20,7 @@ import com.termux.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.settings.preferences.TermuxPreferenceConstants;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxUtils;
 
 import com.termux.shared.termux.TermuxConstants;
@@ -86,7 +87,7 @@ public class CrashUtils {
 
                 Logger.logDebug(logTag, "A crash log file found at \"" + TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH +  "\".");
 
-                sendCrashReportNotification(context, logTag, reportString, false);
+                sendCrashReportNotification(context, logTag, reportString, false, false);
             }
         }.start();
     }
@@ -97,13 +98,15 @@ public class CrashUtils {
      *
      * @param context The {@link Context} for operations.
      * @param logTag The log tag to use for logging.
-     * @param reportString The text for the crash report.
+     * @param message The message for the crash report.
      * @param forceNotification If set to {@code true}, then a notification will be shown
      *                          regardless of if pending intent is {@code null} or
      *                          {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED}
      *                          is {@code false}.
+     * @param addAppAndDeviceInfo If set to {@code true}, then app and device info will be appended
+     *                            to the message.
      */
-    public static void sendCrashReportNotification(final Context context, String logTag, String reportString, boolean forceNotification) {
+    public static void sendCrashReportNotification(final Context context, String logTag, String message, boolean forceNotification, boolean addAppAndDeviceInfo) {
         if (context == null) return;
 
         TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
@@ -121,7 +124,14 @@ public class CrashUtils {
 
         Logger.logDebug(logTag, "Sending \"" + title + "\" notification.");
 
-        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.CRASH_REPORT.getName(), logTag, title, null, reportString, "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true));
+        StringBuilder reportString = new StringBuilder(message);
+
+        if (addAppAndDeviceInfo) {
+            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
+            reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
+        }
+
+        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.CRASH_REPORT.getName(), logTag, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true));
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Setup the notification channel if not already set up
