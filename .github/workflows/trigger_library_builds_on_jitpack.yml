@@ -12,11 +12,13 @@ jobs:
       - name: Set tag
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\/v/}
+      - name: Echo tag
+        run: echo "Triggering termux library builds on jitpack for '${{ steps.vars.outputs.tag }}' after waiting for 3 mins"
       - name: Trigger termux library builds on jitpack
         env:
           RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
         run: |
-          echo "Triggering termux library builds on jitpack for $RELEASE_VERSION"
-          curl --max-time 600 https://jitpack.io/com/termux/termux-app/terminal-emulator/$RELEASE_VERSION/terminal-emulator-$RELEASE_VERSION.pom
-          curl --max-time 600 https://jitpack.io/com/termux/termux-app/terminal-view/$RELEASE_VERSION/terminal-view-$RELEASE_VERSION.pom
-          curl --max-time 600 https://jitpack.io/com/termux/termux-app/termux-shared/$RELEASE_VERSION/termux-shared-$RELEASE_VERSION.pom
+          sleep 180 # It will take some time for the new tag to be detected by Jitpack
+          curl --max-time 600 --no-progress-meter https://jitpack.io/com/termux/termux-app/terminal-emulator/$RELEASE_VERSION/terminal-emulator-$RELEASE_VERSION.pom
+          curl --max-time 600 --no-progress-meter https://jitpack.io/com/termux/termux-app/terminal-view/$RELEASE_VERSION/terminal-view-$RELEASE_VERSION.pom
+          curl --max-time 600 --no-progress-meter https://jitpack.io/com/termux/termux-app/termux-shared/$RELEASE_VERSION/termux-shared-$RELEASE_VERSION.pom
