@@ -40,6 +40,17 @@ public class AndroidUtils {
         AndroidUtils.appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(context));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_DEBUG_BUILD", PackageUtils.isAppForPackageADebugBuild(context));
 
+        String filesDir = context.getFilesDir().getAbsolutePath();
+        if (!filesDir.equals("/data/user/0/" + context.getPackageName() + "/files") &&
+            !filesDir.equals("/data/data/" + context.getPackageName() + "/files"))
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"FILES_DIR", filesDir);
+
+        Long userId = PackageUtils.getSerialNumberForCurrentUser(context);
+        if (userId == null || userId != 0)
+            AndroidUtils.appendPropertyToMarkdown(markdownString,"USER_ID", userId);
+
+        AndroidUtils.appendPropertyToMarkdownIfSet(markdownString,"PROFILE_OWNER", PackageUtils.getProfileOwnerPackageNameForUser(context));
+
         return markdownString.toString();
     }
 
@@ -139,7 +150,7 @@ public class AndroidUtils {
         return systemProperties;
     }
 
-    private static String getSystemPropertyWithAndroidAPI(@NonNull String property) {
+    public static String getSystemPropertyWithAndroidAPI(@NonNull String property) {
         try {
             return System.getProperty(property);
         } catch (Exception e) {
@@ -148,17 +159,17 @@ public class AndroidUtils {
         }
     }
 
-    private static void appendPropertyToMarkdownIfSet(StringBuilder markdownString, String label, Object value) {
+    public static void appendPropertyToMarkdownIfSet(StringBuilder markdownString, String label, Object value) {
         if (value == null) return;
         if (value instanceof String && (((String) value).isEmpty()) || "REL".equals(value)) return;
         markdownString.append("\n").append(getPropertyMarkdown(label, value));
     }
 
-    static void appendPropertyToMarkdown(StringBuilder markdownString, String label, Object value) {
+    public static void appendPropertyToMarkdown(StringBuilder markdownString, String label, Object value) {
         markdownString.append("\n").append(getPropertyMarkdown(label, value));
     }
 
-    private static String getPropertyMarkdown(String label, Object value) {
+    public static String getPropertyMarkdown(String label, Object value) {
         return MarkdownUtils.getSingleLineMarkdownStringEntry(label, value, "-");
     }
 

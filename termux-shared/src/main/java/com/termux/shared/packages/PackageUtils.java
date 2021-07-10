@@ -1,9 +1,12 @@
 package com.termux.shared.packages;
 
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.UserManager;
 
 import androidx.annotation.NonNull;
 
@@ -14,6 +17,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 
 import java.security.MessageDigest;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -163,7 +167,7 @@ public class PackageUtils {
      * Get the {@code SHA-256 digest} of signing certificate for the package associated with the {@code context}.
      *
      * @param context The {@link Context} for the package.
-     * @return Returns the{@code SHA-256 digest}. This will be {@code null} if an exception is raised.
+     * @return Returns the {@code SHA-256 digest}. This will be {@code null} if an exception is raised.
      */
     @Nullable
     public static String getSigningCertificateSHA256DigestForPackage(@NonNull final Context context) {
@@ -182,6 +186,55 @@ public class PackageUtils {
         } catch (final Exception e) {
             return null;
         }
+    }
+
+
+
+    /**
+     * Get the serial number for the current user.
+     *
+     * @param context The {@link Context} for operations.
+     * @return Returns the serial number. This will be {@code null} if failed to get it.
+     */
+    @Nullable
+    public static Long getSerialNumberForCurrentUser(@NonNull Context context) {
+        UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+        if (userManager == null) return null;
+        return userManager.getSerialNumberForUser(android.os.Process.myUserHandle());
+    }
+
+    /**
+     * Check if the current user is the primary user. This is done by checking if the the serial
+     * number for the current user equals 0.
+     *
+     * @param context The {@link Context} for operations.
+     * @return Returns {@code true} if the current user is the primary user, otherwise [@code false}.
+     */
+    public static boolean isCurrentUserThePrimaryUser(@NonNull Context context) {
+        Long userId = getSerialNumberForCurrentUser(context);
+        return userId != null && userId == 0;
+    }
+
+    /**
+     * Get the profile owner package name for the current user.
+     *
+     * @param context The {@link Context} for operations.
+     * @return Returns the profile owner package name. This will be {@code null} if failed to get it
+     * or no profile owner for the current user.
+     */
+    @Nullable
+    public static String getProfileOwnerPackageNameForUser(@NonNull Context context) {
+        DevicePolicyManager devicePolicyManager = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        if (devicePolicyManager == null) return null;
+        List<ComponentName> activeAdmins = devicePolicyManager.getActiveAdmins();
+        if (activeAdmins != null){
+            for (ComponentName admin:activeAdmins){
+                String packageName = admin.getPackageName();
+                if(devicePolicyManager.isProfileOwnerApp(packageName))
+                    return packageName;
+            }
+        }
+        return null;
     }
 
 }

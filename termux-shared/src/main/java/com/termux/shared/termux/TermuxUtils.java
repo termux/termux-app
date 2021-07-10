@@ -8,9 +8,11 @@ import android.content.pm.ResolveInfo;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.R;
+import com.termux.shared.file.TermuxFileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.ExecutionCommand;
+import com.termux.shared.models.errors.Error;
 import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.shell.TermuxShellEnvironmentClient;
 import com.termux.shared.shell.TermuxTask;
@@ -209,6 +211,13 @@ public class TermuxUtils {
         StringBuilder markdownString = new StringBuilder();
 
         markdownString.append((AndroidUtils.getAppInfoMarkdownString(context)));
+
+        Error error;
+        error = TermuxFileUtils.isTermuxFilesDirectoryAccessible(context, true, true);
+        if (error != null) {
+            AndroidUtils.appendPropertyToMarkdown(markdownString, "TERMUX_FILES_DIR", TermuxConstants.TERMUX_FILES_DIR_PATH);
+            AndroidUtils.appendPropertyToMarkdown(markdownString, "IS_TERMUX_FILES_DIR_ACCESSIBLE", "false - " + Error.getMinimalErrorString(error));
+        }
 
         String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(context);
         if (signingCertificateSHA256Digest != null) {

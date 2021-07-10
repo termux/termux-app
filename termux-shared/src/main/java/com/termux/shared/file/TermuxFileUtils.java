@@ -1,6 +1,9 @@
 package com.termux.shared.file;
 
+import android.content.Context;
 import android.os.Environment;
+
+import androidx.annotation.NonNull;
 
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.termux.TermuxConstants;
@@ -9,6 +12,7 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 public class TermuxFileUtils {
+
     /**
      * Replace "$PREFIX/" or "~/" prefix with termux absolute paths.
      *
@@ -118,6 +122,43 @@ public class TermuxFileUtils {
             TermuxFileUtils.getMatchedAllowedTermuxWorkingDirectoryParentPathForPath(filePath), createDirectoryIfMissing,
             FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS, setPermissions, setMissingPermissionsOnly,
             ignoreErrorsIfPathIsInParentDirPath, ignoreIfNotExecutable);
+    }
+
+    /**
+     * Validate the existence and permissions of {@link TermuxConstants#TERMUX_FILES_DIR_PATH}.
+     *
+     * The directory will not be created manually but by calling {@link Context#getFilesDir()}
+     * so that android itself creates it. The `/data/data/[package_name]` directory cannot be
+     * created by an app itself. Note that the path returned by {@link Context#getFilesDir()} will
+     * be under `/data/user/[id]/[package_name]` instead of `/data/data/[package_name]`
+     * defined by default by {@link TermuxConstants#TERMUX_FILES_DIR_PATH}, where id will be 0 for
+     * primary user and a higher number for other users/profiles. If app is running under work profile
+     * or secondary user, then {@link TermuxConstants#TERMUX_FILES_DIR_PATH} will not be accessible
+     * and will not be automatically created, unless there is a bind mount from `/data/user/[id]`
+     * to `/data/data`, ideally in the right namespace.
+     *
+     * The permissions set to directory will be {@link FileUtils#APP_WORKING_DIRECTORY_PERMISSIONS}.
+     *
+     * https://source.android.com/devices/tech/admin/multi-user
+     *
+     * @param context The {@link Context} for operations.
+     * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
+     *                                 should be created if its missing.
+     * @param setMissingPermissions The {@code boolean} that decides if permissions are to be
+     *                              automatically set.
+     * @return Returns the {@code error} if path is not a directory file, failed to create it,
+     * or validating permissions failed, otherwise {@code null}.
+     */
+    public static Error isTermuxFilesDirectoryAccessible(@NonNull final Context context, boolean createDirectoryIfMissing, boolean setMissingPermissions) {
+        if (createDirectoryIfMissing)
+            context.getFilesDir();
+
+        if (setMissingPermissions)
+            FileUtils.setMissingFilePermissions("Termux files directory", TermuxConstants.TERMUX_FILES_DIR_PATH,
+                FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS);
+
+        return FileUtils.checkMissingFilePermissions("Termux files directory", TermuxConstants.TERMUX_FILES_DIR_PATH,
+            FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS, false);
     }
 
 }
