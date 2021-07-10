@@ -5,6 +5,7 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="colorPrimaryDark">#1f1f1f</item>
+        <item name"navigationBarColor">#1f1f1f</item>
     </style>
     <style name="Theme.Termux" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#991f1f1f</item>
