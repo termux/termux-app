@@ -43,6 +43,6 @@ jobs:
         repo_token: "${{ secrets.TOKEN }}"
         automatic_release_tag: "beta"
         prerelease: true
-        title: "[BETA]TEL-${{ steps.date.outputs.date }}
+        title: "[BETA]TEL-${{ steps.date.outputs.date }}"
         files: |
           *.apk
