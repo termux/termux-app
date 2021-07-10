@@ -69,6 +69,10 @@
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
 
+        <activity android:name=".app.IntroActivity"
+            android:theme="@style/Theme.Intro"
+            ></activity>
+
         
         <activity
             android:name="com.termux.app.TermuxHelpActivity"

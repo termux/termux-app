@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".app.IntroActivity"
+    android:background="#1f1f1f">
+
+    <Button
+        android:id="@+id/buttonOnBoardingAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:backgroundTint="@color/text_color"
+        android:textColor="#1f1f1f"
+        android:textSize="14sp"
+        app:cornerRadius="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+<androidx.viewpager2.widget.ViewPager2
+android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/onboardingViewPager" />
+<LinearLayout
+android:id="@+id/layoutOnboardingIndicators"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="20dp"
+    android:orientation="horizontal"
+    android:padding="15dp"
+    android:gravity="center"
+    app:layout_constraintBottom_toTopOf="@+id/buttonOnBoardingAction"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
