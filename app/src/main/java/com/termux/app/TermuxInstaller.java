@@ -74,7 +74,7 @@ final class TermuxInstaller {
             return;
         }
         Intent intent = new Intent(activity, IntroActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_TASK);
         activity.startActivity(intent);
 
 
