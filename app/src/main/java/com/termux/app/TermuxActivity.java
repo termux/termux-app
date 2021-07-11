@@ -312,7 +312,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.setStatusBarColor(Color.parseColor(mSettings.getStatusBarColor()));
+        window.setStatusBarColor(mSettings.getStatusBarColor());
         super.onCreate(bundle);
         setContentView(R.layout.drawer_layout);
 
@@ -459,11 +459,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
             }
         });
 
-        int color = Color.parseColor(mSettings.getBarColor());
+        int color = mSettings.getBarColor();
         viewPager.setBackgroundColor(color);
         viewPager2.setBackgroundColor(color);
         if(mSettings.isUseSystemWallpaper()){
-            getWindow().getDecorView().setBackgroundColor(Color.parseColor(mSettings.getBackgroundColor()));
+            getWindow().getDecorView().setBackgroundColor(mSettings.getBackgroundColor());
         }
 
 

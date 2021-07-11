@@ -3,6 +3,7 @@ package com.termux.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
@@ -99,10 +100,10 @@ final class TermuxPreferences {
     //ui
     private boolean useSystemWallpaper;
     private float statusTextSize;
-    private String statusTextColor;
-    private String barColor;
-    private String backgroundColor;
-    private String statusBarColor;
+    private int statusTextColor;
+    private int barColor;
+    private int backgroundColor;
+    private int statusBarColor;
     private boolean runBackground;
     /**
      * If value is not in the range [min, max], set it to either min or max.
@@ -217,10 +218,10 @@ final class TermuxPreferences {
 
     public boolean isUseSystemWallpaper(){return useSystemWallpaper;}
     public float getStatusTextSize(){return statusTextSize;}
-    public String getStatusTextColor(){return statusTextColor;}
-    public String getBarColor(){return barColor; }
-    public String getBackgroundColor(){return backgroundColor;}
-    public String getStatusBarColor(){return statusBarColor;}
+    public int getStatusTextColor(){return statusTextColor;}
+    public int getBarColor(){return barColor; }
+    public int getBackgroundColor(){return backgroundColor;}
+    public int getStatusBarColor(){return statusBarColor;}
     public boolean isRunBackground(){return runBackground;}
     void reloadFromProperties(Context context) {
 
@@ -272,14 +273,14 @@ final class TermuxPreferences {
             barHeight = Float.parseFloat(themeProps.getProperty("bar-height","1.5"));
         }catch(Exception e){}
 
-        backgroundColor = themeProps.getProperty("background-color","#991f1f1f");
+        backgroundColor = parseColor(themeProps.getProperty("background-color","#991f1f1f"),"#991f1f1f");
         useSystemWallpaper = "true".equals(themeProps.getProperty("use-system-wallpaper","true"));
         try{
             statusTextSize = Float.parseFloat(themeProps.getProperty("status-text-size","12"));
         }catch(Exception e){}
-        statusTextColor = themeProps.getProperty("status-text-color","#c0b18b");
-        barColor = themeProps.getProperty("bar-color","#1f1f1f");
-        statusBarColor = themeProps.getProperty("statusbar-color","#00000000");
+        statusTextColor = parseColor(themeProps.getProperty("status-text-color","#c0b18b"), "#c0b18b");
+        barColor = parseColor(themeProps.getProperty("bar-color","#1f1f1f"), "#1f1f1f");
+        statusBarColor = parseColor(themeProps.getProperty("statusbar-color","#00000000"), "#00000000");
         try{
             textSize = Float.parseFloat(themeProps.getProperty("sb-text-size","10"));
         }catch(Exception e){}
@@ -388,4 +389,17 @@ final class TermuxPreferences {
         shortcuts.add(new KeyboardShortcut(codePoint, shortcutAction));
     }
 
+    private int parseColor(String colorString, String defaultString){
+        int color = 0;
+        try{
+            color = Color.parseColor(colorString);
+        }catch(Exception e){
+            try{
+                color = Color.parseColor(defaultString);
+            }catch (Exception f){
+                color = Color.parseColor("#1f1f1f");
+            }
+        }
+        return color;
+    }
 }

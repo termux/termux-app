@@ -55,12 +55,11 @@ public class StatusView extends GridLayout {
     }
     public void setLineText(int line, String text){
         float size = 12;
-        String colorStr = "#c0b18b";
+        int color = Color.parseColor("#c0b18b");
         if(settings != null){
             size = settings.getStatusTextSize();
-            colorStr = settings.getStatusTextColor();
+            color = settings.getStatusTextColor();
         }
-       int color = Color.parseColor(colorStr);
         if(lines.size()<=line){
             for(int i=lines.size();i<=line;i++){
                 TextView textView = new TextView(getContext());
