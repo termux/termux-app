@@ -66,7 +66,7 @@
     <string name="intro_5_text">TEL is like a baby, very young and still under heavy development. Do not expect it to be stable until it reaches version 1.0. Read the wiki if you experience any problems.</string>
     <string name="intro_5_title">It\'s a TEL</string>
 
-    <string name="intro_finish_text">You need a stable WIFI connection to finish the setup. Sit back and hydrate yourself, since this can take a while.</string>
+    <string name="intro_finish_text">You need a stable Wi-Fi connection to finish the setup. Sit back and hydrate yourself, since this can take a while.</string>
     <string name="intro_finish_title">Let\'s Go</string>
     <string name="intro_finish_button">Finish Installation</string>
 </resources>
