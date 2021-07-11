@@ -302,6 +302,10 @@ public final class ExtraKeysView extends GridLayout {
                         case MotionEvent.ACTION_DOWN:
                             longPressCount = 0;
                             v.setBackgroundColor(BUTTON_PRESSED_COLOR);
+                            if (scheduledExecutor != null) {
+                                scheduledExecutor.shutdownNow();
+                                scheduledExecutor = null;
+                            }
                             if (Arrays.asList("UP", "DOWN", "LEFT", "RIGHT", "BKSP", "DEL").contains(buttonInfo.getKey())) {
                                 // autorepeat
                                 scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
