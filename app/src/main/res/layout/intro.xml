@@ -9,20 +9,21 @@
 
     <Button
         android:id="@+id/buttonOnBoardingAction"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
+
         android:backgroundTint="@color/text_color"
+        android:fontFamily="@font/font"
         android:textColor="#1f1f1f"
         android:textSize="14sp"
-        app:cornerRadius="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-<androidx.viewpager2.widget.ViewPager2
-android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/onboardingViewPager" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/onboardingViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 <LinearLayout
 android:id="@+id/layoutOnboardingIndicators"
     android:layout_width="0dp"

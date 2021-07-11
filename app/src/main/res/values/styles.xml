@@ -6,6 +6,14 @@
         <item name="windowNoTitle">true</item>
         <item name="colorPrimaryDark">#1f1f1f</item>
         <item name="android:navigationBarColor">#1f1f1f</item>
+        <item name="android:textViewStyle">@style/TextViewStyle</item>
+    </style>
+    <style name="TextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/font</item>
+    </style>
+
+    <style name="ButtonStyle" parent="android:style/Widget.Button">
+        <item name="android:fontFamily">@font/font</item>
     </style>
     <style name="Theme.Termux" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#991f1f1f</item>
@@ -25,6 +33,9 @@
         <!-- https://developer.android.com/training/tv/start/start.html#transition-color -->
         <item name="android:windowAllowReturnTransitionOverlap">true</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle</item>
+        <item name="android:buttonStyle">@style/ButtonStyle</item>
     </style>
 
     <style name="TermuxAlertDialogStyle" parent="@android:style/Theme.Material.Light.Dialog.Alert">

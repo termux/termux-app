@@ -1,6 +1,7 @@
 package com.termux.app;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 
@@ -23,6 +24,7 @@ public class IntroActivity extends AppCompatActivity {
     private IntroAdapter onboardingAdapter;
     private LinearLayout layoutOnboardingIndicator;
     private Button buttonOnboardingAction;
+    ViewPager2 onboardingViewPager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,7 +32,7 @@ public class IntroActivity extends AppCompatActivity {
         layoutOnboardingIndicator = findViewById(R.id.layoutOnboardingIndicators);
         buttonOnboardingAction = findViewById(R.id.buttonOnBoardingAction);
         setOnboardingItem();
-        ViewPager2 onboardingViewPager = findViewById(R.id.onboardingViewPager);
+        onboardingViewPager = findViewById(R.id.onboardingViewPager);
         onboardingViewPager.setAdapter(onboardingAdapter);
         setOnboadingIndicator();
         setCurrentOnboardingIndicators(0);
@@ -47,7 +49,7 @@ public class IntroActivity extends AppCompatActivity {
                 if (onboardingViewPager.getCurrentItem() + 1 < onboardingAdapter.getItemCount()) {
                     onboardingViewPager.setCurrentItem(onboardingViewPager.getCurrentItem() + 1);
                 } else {
-                    finish();
+                    finishAndRemoveTask();
                 }
             }
         });
@@ -84,6 +86,16 @@ public class IntroActivity extends AppCompatActivity {
             buttonOnboardingAction.setText("Next");
         }
     }
+    @Override
+    public void onBackPressed() {
+        Log.d("INTRO", "click: "+onboardingViewPager.getCurrentItem() );
+        if (onboardingViewPager.getCurrentItem() > 0) {
+            Log.d("INTRO", ">0" );
+            onboardingViewPager.setCurrentItem(onboardingViewPager.getCurrentItem() -1);
+        }
+    }
+
+
     private void setOnboardingItem() {
         List<IntroItem> onBoardingItems = new ArrayList<>();
         IntroItem item1 = new IntroItem();

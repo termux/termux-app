@@ -30,11 +30,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:autoSizeMaxTextSize="100sp"
+        android:autoSizeMinTextSize="1sp"
+        android:autoSizeStepGranularity="2sp"
+        android:autoSizeTextType="uniform"
         android:gravity="center"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
         android:textAlignment="center"
-        android:textColor="@color/text_color"
-
-        android:autoSizeTextType="uniform" />
+        android:textColor="@color/text_color" />
     </LinearLayout>

@@ -49,22 +49,20 @@
 	        android:label="@string/application_name"
 	        android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
             android:launchMode="singleTask"
+            android:clearTaskOnLaunch="true"
             android:resizeableActivity="true"
             android:resumeWhilePausing="true"
 	        android:windowSoftInputMode="adjustResize|stateAlwaysVisible"
             android:excludeFromRecents="true"
+            android:stateNotNeeded="true"
             android:taskAffinity=".TermuxActivity"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.MONKEY"/>
-                <category android:name="android.intent.category.LAUNCHER_APP" />
             </intent-filter>
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
