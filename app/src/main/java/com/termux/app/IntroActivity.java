@@ -89,12 +89,12 @@ public class IntroActivity extends AppCompatActivity {
         IntroItem item1 = new IntroItem();
         item1.setTitle(getString(R.string.intro_1_title));
         item1.setDescription(getString(R.string.intro_1_text));
-        item1.setImage(R.mipmap.ic_launcher);
+        item1.setImage(R.drawable.ic_launcher);
 
         IntroItem item2 = new IntroItem();
         item2.setTitle(getString(R.string.intro_2_title));
         item2.setDescription(getString(R.string.intro_2_text));
-        item2.setImage(R.drawable.ic_undraw_meditation);
+        item2.setImage(R.drawable.ic_undraw_mindfulness);
 
         IntroItem item3 = new IntroItem();
         item3.setTitle(getString(R.string.intro_3_title));

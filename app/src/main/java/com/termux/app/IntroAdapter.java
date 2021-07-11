@@ -1,5 +1,8 @@
 package com.termux.app;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +48,17 @@ public class IntroAdapter extends RecyclerView.Adapter<IntroAdapter.OnboardingVi
             textTitle.setText(onBoardingItem.getTitle());
             textDescription.setText(onBoardingItem.getDescription());
             imageOnboarding.setImageResource(onBoardingItem.getImage());
+            if(onBoardingItem.getTitle() == imageOnboarding.getContext().getString(R.string.intro_3_title)){
+                imageOnboarding.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse(imageOnboarding.getContext().getString(R.string.telegram)));
+                        imageOnboarding.getContext().startActivity(i);
+                    }
+                });
+            }
+
         }
     }
 }

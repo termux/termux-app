@@ -35,5 +35,6 @@
         android:paddingRight="20dp"
         android:textAlignment="center"
         android:textColor="@color/text_color"
-        android:textSize="15sp" />
+
+        android:autoSizeTextType="uniform" />
     </LinearLayout>
