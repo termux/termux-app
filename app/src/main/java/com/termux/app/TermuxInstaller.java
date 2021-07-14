@@ -58,8 +58,8 @@ final class TermuxInstaller {
         String bootstrapErrorMessage;
         Error filesDirectoryAccessibleError;
 
-        // This will also call Context.getFilesDir(), which should ensure that TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH
-        // is created if it does not already exist, like if it was not already created by android
+        // This will also call Context.getFilesDir(), which should ensure that TERMUX_FILES_DIR_PATH
+        // is created if it does not already exist
         filesDirectoryAccessibleError = TermuxFileUtils.isTermuxFilesDirectoryAccessible(activity, true, true);
         boolean isFilesDirectoryAccessible = filesDirectoryAccessibleError == null;
 
@@ -79,9 +79,9 @@ final class TermuxInstaller {
             bootstrapErrorMessage = Error.getMinimalErrorString(filesDirectoryAccessibleError) + "\nTERMUX_FILES_DIR: " + MarkdownUtils.getMarkdownCodeForString(TermuxConstants.TERMUX_FILES_DIR_PATH, false);
             Logger.logError(LOG_TAG, bootstrapErrorMessage);
             CrashUtils.sendCrashReportNotification(activity, LOG_TAG, "## Bootstrap Error\n\n" + bootstrapErrorMessage, true, true);
-            MessageDialogUtils.exitAppWithErrorMessage(activity,
+            MessageDialogUtils.showMessage(activity,
                 activity.getString(R.string.bootstrap_error_title),
-                bootstrapErrorMessage);
+                bootstrapErrorMessage, null);
             return;
         }
 

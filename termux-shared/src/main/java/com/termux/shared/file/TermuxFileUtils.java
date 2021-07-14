@@ -128,8 +128,13 @@ public class TermuxFileUtils {
      * Validate the existence and permissions of {@link TermuxConstants#TERMUX_FILES_DIR_PATH}.
      *
      * The directory will not be created manually but by calling {@link Context#getFilesDir()}
-     * so that android itself creates it. The `/data/data/[package_name]` directory cannot be
-     * created by an app itself. Note that the path returned by {@link Context#getFilesDir()} will
+     * so that android itself creates it. However, the call will not create its parent package
+     * data directory `/data/user/0/[package_name]` if it does not already exist and a `logcat`
+     * error will be logged by android.
+     * {@code Failed to ensure /data/user/0/<package_name>/files: mkdir failed: ENOENT (No such file or directory)}
+     * An android app likely can't create the package data directory since its parent `/data/user/0`
+     * is owned by `system` user and is normally create at app install or update time and not at app startup.
+     * Note that the path returned by {@link Context#getFilesDir()} will
      * be under `/data/user/[id]/[package_name]` instead of `/data/data/[package_name]`
      * defined by default by {@link TermuxConstants#TERMUX_FILES_DIR_PATH}, where id will be 0 for
      * primary user and a higher number for other users/profiles. If app is running under work profile
