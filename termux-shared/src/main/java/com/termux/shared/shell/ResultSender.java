@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
+import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
@@ -206,7 +207,11 @@ public class ResultSender {
                 try {
                     if (DataUtils.isNullOrEmpty(resultConfig.resultFileErrorFormat)) {
                         error_or_output = String.format(RESULT_SENDER.FORMAT_FAILED_ERR__ERRMSG__STDOUT__STDERR__EXIT_CODE,
-                            resultData.getErrCode(), resultDataErrmsg, resultDataStdout, resultDataStderr, resultDataExitCode);
+                            MarkdownUtils.getMarkdownCodeForString(String.valueOf(resultData.getErrCode()), false),
+                            MarkdownUtils.getMarkdownCodeForString(resultDataErrmsg, true),
+                            MarkdownUtils.getMarkdownCodeForString(resultDataStdout, true),
+                            MarkdownUtils.getMarkdownCodeForString(resultDataStderr, true),
+                            MarkdownUtils.getMarkdownCodeForString(resultDataExitCode, false));
                     } else {
                         error_or_output = String.format(resultConfig.resultFileErrorFormat,
                             resultData.getErrCode(), resultDataErrmsg, resultDataStdout, resultDataStderr, resultDataExitCode);
@@ -221,11 +226,17 @@ public class ResultSender {
                         if (resultDataStderr.isEmpty() && resultDataExitCode.equals("0"))
                             error_or_output = String.format(RESULT_SENDER.FORMAT_SUCCESS_STDOUT, resultDataStdout);
                         else if (resultDataStderr.isEmpty())
-                            error_or_output = String.format(RESULT_SENDER.FORMAT_SUCCESS_STDOUT__EXIT_CODE, resultDataStdout, resultDataExitCode);
+                            error_or_output = String.format(RESULT_SENDER.FORMAT_SUCCESS_STDOUT__EXIT_CODE,
+                                resultDataStdout,
+                                MarkdownUtils.getMarkdownCodeForString(resultDataExitCode, false));
                         else
-                            error_or_output = String.format(RESULT_SENDER.FORMAT_SUCCESS_STDOUT__STDERR__EXIT_CODE, resultDataStdout, resultDataStderr, resultDataExitCode);
+                            error_or_output = String.format(RESULT_SENDER.FORMAT_SUCCESS_STDOUT__STDERR__EXIT_CODE,
+                                MarkdownUtils.getMarkdownCodeForString(resultDataStdout, true),
+                                MarkdownUtils.getMarkdownCodeForString(resultDataStderr, true),
+                                MarkdownUtils.getMarkdownCodeForString(resultDataExitCode, false));
                     } else {
-                        error_or_output = String.format(resultConfig.resultFileOutputFormat, resultDataStdout, resultDataStderr, resultDataExitCode);
+                        error_or_output = String.format(resultConfig.resultFileOutputFormat,
+                            resultDataStdout, resultDataStderr, resultDataExitCode);
                     }
                 } catch (Exception e) {
                     error = ResultSenderErrno.ERROR_FORMAT_RESULT_OUTPUT_FAILED_WITH_EXCEPTION.getError(e.getMessage());
