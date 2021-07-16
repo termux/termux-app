@@ -95,6 +95,13 @@ android {
             includeAndroidResources = true
         }
     }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+
 }
 
 dependencies {
