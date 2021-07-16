@@ -1,5 +1,5 @@
 plugins {
-  id "com.android.application"
+    id "com.android.application"
 }
 
 android {
@@ -102,6 +102,16 @@ android {
         }
     }
 
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == "debug") {
+                def abi = output.getFilter(com.android.build.OutputFile.ABI)
+                def releaseTag = System.getenv("RELEASE_TAG")
+                outputFileName = new File("termux-app-" + (abi ? abi : "universal") + (releaseTag ? "-" + releaseTag : "") + "-debug.apk")
+            }
+        }
+    }
+
 }
 
 dependencies {
@@ -110,9 +120,9 @@ dependencies {
 }
 
 task versionName {
-  doLast {
-    print android.defaultConfig.versionName
-  }
+    doLast {
+        print android.defaultConfig.versionName
+    }
 }
 
 def downloadBootstrap(String arch, String expectedChecksum, String version) {
@@ -175,7 +185,7 @@ task downloadBootstraps() {
 }
 
 afterEvaluate {
-  android.applicationVariants.all { variant ->
-    variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
-  }
+    android.applicationVariants.all { variant ->
+        variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
+    }
 }

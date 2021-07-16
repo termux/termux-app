@@ -1,0 +1,36 @@
+name: Attach Debug APKs To Release
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Set tag
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
+      - name: Clone repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.GITHUB_REF }}
+      - name: Build
+        env:
+          RELEASE_TAG: ${{ steps.vars.outputs.tag }}
+        run: ./gradlew assembleDebug
+      - name: Attach debug APKs to release
+        env:
+          RELEASE_TAG: ${{ steps.vars.outputs.tag }}
+        run: >-
+          hub release edit
+          -m ""
+          -a ./app/build/outputs/apk/debug/termux-app-universal-$RELEASE_TAG-debug.apk
+          -a ./app/build/outputs/apk/debug/termux-app-arm64-v8a-$RELEASE_TAG-debug.apk
+          -a ./app/build/outputs/apk/debug/termux-app-armeabi-v7a-$RELEASE_TAG-debug.apk
+          -a ./app/build/outputs/apk/debug/termux-app-x86_64-$RELEASE_TAG-debug.apk
+          -a ./app/build/outputs/apk/debug/termux-app-x86-$RELEASE_TAG-debug.apk
+          $RELEASE_TAG

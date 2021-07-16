@@ -24,33 +24,33 @@ jobs:
       with:
         name: termux-app-universal
         path: |
-            ./app/build/outputs/apk/debug/app-universal-debug.apk
+            ./app/build/outputs/apk/debug/termux-app-universal-debug.apk
             ./app/build/outputs/apk/debug/output-metadata.json
     - name: Store generated arm64-v8a APK file
       uses: actions/upload-artifact@v2
       with:
         name: termux-app-arm64-v8a
         path: |
-          ./app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
+          ./app/build/outputs/apk/debug/termux-app-arm64-v8a-debug.apk
           ./app/build/outputs/apk/debug/output-metadata.json
     - name: Store generated armeabi-v7a APK file
       uses: actions/upload-artifact@v2
       with:
         name: termux-app-armeabi-v7a
         path: |
-          ./app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk
+          ./app/build/outputs/apk/debug/termux-app-armeabi-v7a-debug.apk
           ./app/build/outputs/apk/debug/output-metadata.json
     - name: Store generated x86_64 APK file
       uses: actions/upload-artifact@v2
       with:
         name: termux-app-x86_64
         path: |
-          ./app/build/outputs/apk/debug/app-x86_64-debug.apk
+          ./app/build/outputs/apk/debug/termux-app-x86_64-debug.apk
           ./app/build/outputs/apk/debug/output-metadata.json
     - name: Store generated x86 APK file
       uses: actions/upload-artifact@v2
       with:
         name: termux-app-x86
         path: |
-          ./app/build/outputs/apk/debug/app-x86-debug.apk
+          ./app/build/outputs/apk/debug/termux-app-x86-debug.apk
           ./app/build/outputs/apk/debug/output-metadata.json
