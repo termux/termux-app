@@ -37,9 +37,13 @@ public abstract class TerminalTestCase extends TestCase {
 		}
 
 		@Override
-		public void clipboardText(String text) {
+		public void onCopyTextToClipboard(String text) {
 			clipboardPuts.add(text);
 		}
+
+        @Override
+        public void onPasteTextFromClipboard() {
+        }
 
 		@Override
 		public void onBell() {

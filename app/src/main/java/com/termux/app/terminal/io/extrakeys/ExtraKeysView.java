@@ -28,6 +28,7 @@ import android.widget.GridLayout;
 import android.widget.PopupWindow;
 
 import com.termux.R;
+import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.view.TerminalView;
 
@@ -45,6 +46,7 @@ public final class ExtraKeysView extends GridLayout {
     private static final int BUTTON_PRESSED_COLOR = 0xFF7F7F7F;
 
     TermuxTerminalViewClient mTermuxTerminalViewClient;
+    TermuxTerminalSessionClient mTermuxTerminalSessionClient;
 
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -89,6 +91,9 @@ public final class ExtraKeysView extends GridLayout {
         } else if ("DRAWER".equals(keyName)) {
             DrawerLayout drawer = view.findViewById(R.id.drawer_layout);
             drawer.openDrawer(Gravity.LEFT);
+        } else if ("PASTE".equals(keyName)) {
+            if(mTermuxTerminalSessionClient != null)
+                mTermuxTerminalSessionClient.onPasteTextFromClipboard(null);
         } else if (keyCodesForString.containsKey(keyName)) {
             Integer keyCode = keyCodesForString.get(keyName);
             if (keyCode == null) return;
@@ -387,6 +392,10 @@ public final class ExtraKeysView extends GridLayout {
 
     public void setTermuxTerminalViewClient(TermuxTerminalViewClient termuxTerminalViewClient) {
         this.mTermuxTerminalViewClient = termuxTerminalViewClient;
+    }
+
+    public void setTermuxTerminalSessionClient(TermuxTerminalSessionClient termuxTerminalSessionClient) {
+        this.mTermuxTerminalSessionClient = termuxTerminalSessionClient;
     }
 
 }

@@ -45,6 +45,7 @@ public class TerminalToolbarViewPager {
                 layout = inflater.inflate(R.layout.view_terminal_toolbar_extra_keys, collection, false);
                 ExtraKeysView extraKeysView = (ExtraKeysView) layout;
                 extraKeysView.setTermuxTerminalViewClient(mActivity.getTermuxTerminalViewClient());
+                extraKeysView.setTermuxTerminalSessionClient(mActivity.getTermuxTerminalSessionClient());
                 mActivity.setExtraKeysView(extraKeysView);
                 extraKeysView.reload(mActivity.getProperties().getExtraKeysInfo());
 

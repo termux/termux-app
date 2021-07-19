@@ -138,17 +138,12 @@ public class TextSelectionCursorController implements CursorController {
                 switch (item.getItemId()) {
                     case ACTION_COPY:
                         String selectedText = terminalView.mEmulator.getSelectedText(mSelX1, mSelY1, mSelX2, mSelY2).trim();
-                        terminalView.mTermSession.clipboardText(selectedText);
+                        terminalView.mTermSession.onCopyTextToClipboard(selectedText);
                         terminalView.stopTextSelectionMode();
                         break;
                     case ACTION_PASTE:
                         terminalView.stopTextSelectionMode();
-                        ClipboardManager clipboard = (ClipboardManager) terminalView.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                        ClipData clipData = clipboard.getPrimaryClip();
-                        if (clipData != null) {
-                            CharSequence paste = clipData.getItemAt(0).coerceToText(terminalView.getContext());
-                            if (!TextUtils.isEmpty(paste)) terminalView.mEmulator.paste(paste.toString());
-                        }
+                        terminalView.mTermSession.onPasteTextFromClipboard();
                         break;
                     case ACTION_MORE:
                         terminalView.stopTextSelectionMode(); //we stop text selection first, otherwise handles will show above popup

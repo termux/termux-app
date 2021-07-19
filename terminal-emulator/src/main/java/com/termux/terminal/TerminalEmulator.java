@@ -1980,7 +1980,7 @@ public final class TerminalEmulator {
                 int startIndex = textParameter.indexOf(";") + 1;
                 try {
                     String clipboardText = new String(Base64.decode(textParameter.substring(startIndex), 0), StandardCharsets.UTF_8);
-                    mSession.clipboardText(clipboardText);
+                    mSession.onCopyTextToClipboard(clipboardText);
                 } catch (Exception e) {
                     mClient.logError(LOG_TAG, "OSC Manipulate selection, invalid string '" + textParameter + "");
                 }
