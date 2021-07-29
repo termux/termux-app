@@ -186,6 +186,11 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         return mActivity.getProperties().isUsingCtrlSpaceWorkaround();
     }
 
+    @Override
+    public boolean isTerminalViewSelected() {
+        return mActivity.getTerminalToolbarViewPager() == null || mActivity.isTerminalViewSelected();
+    }
+
 
 
     @Override

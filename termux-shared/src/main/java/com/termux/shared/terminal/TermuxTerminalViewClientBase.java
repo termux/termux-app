@@ -34,6 +34,11 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
     }
 
     @Override
+    public boolean isTerminalViewSelected() {
+        return true;
+    }
+
+    @Override
     public void copyModeChanged(boolean copyMode) {
     }
 

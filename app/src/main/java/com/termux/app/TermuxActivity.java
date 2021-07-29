@@ -452,7 +452,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 
     private void setTerminalToolbarView(Bundle savedInstanceState) {
-        final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
+        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
@@ -469,8 +469,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     private void setTerminalToolbarHeight() {
-        final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
+        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (terminalToolbarViewPager == null) return;
+
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         layoutParams.height = (int) Math.round(mTerminalToolbarDefaultHeight *
             (mProperties.getExtraKeysInfo() == null ? 0 : mProperties.getExtraKeysInfo().getMatrix().length) *
@@ -479,13 +480,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     public void toggleTerminalToolbar() {
-        final ViewPager terminalToolbarViewPager = findViewById(R.id.terminal_toolbar_view_pager);
+        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (terminalToolbarViewPager == null) return;
 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
         terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
-        if (showNow && terminalToolbarViewPager.getCurrentItem() == 1) {
+        if (showNow && isTerminalToolbarTextInputViewSelected()) {
             // Focus the text input view if just revealed.
             findViewById(R.id.terminal_toolbar_text_input).requestFocus();
         }
@@ -743,6 +744,20 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public DrawerLayout getDrawer() {
         return (DrawerLayout) findViewById(R.id.drawer_layout);
     }
+
+
+    public ViewPager getTerminalToolbarViewPager() {
+        return (ViewPager) findViewById(R.id.terminal_toolbar_view_pager);
+    }
+
+    public boolean isTerminalViewSelected() {
+        return getTerminalToolbarViewPager().getCurrentItem() == 0;
+    }
+
+    public boolean isTerminalToolbarTextInputViewSelected() {
+        return getTerminalToolbarViewPager().getCurrentItem() == 1;
+    }
+
 
     public void termuxSessionListNotifyUpdated() {
         mTermuxSessionListViewController.notifyDataSetChanged();
