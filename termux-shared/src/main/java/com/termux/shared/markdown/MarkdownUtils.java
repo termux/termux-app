@@ -119,9 +119,9 @@ public class MarkdownUtils {
             return "**" + label + "**: " + def + "\n";
     }
 
-    public static String getLinkMarkdownString(String label, Object object) {
-        if (object != null)
-            return "[" + label + "](" + object +  ")";
+    public static String getLinkMarkdownString(String label, String url) {
+        if (url != null)
+            return "[" + label.replaceAll("]", "\\\\]") + "](" + url.replaceAll("\\)", "\\\\)") +  ")";
         else
             return label;
     }
