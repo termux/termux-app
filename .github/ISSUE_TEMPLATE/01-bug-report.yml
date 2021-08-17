@@ -6,7 +6,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        This is a bug tracker of the Termux app. If you have issues with a package inside the app, then please open an issue at [termux-packages](https://github.com/termux/termux-packages) instead. Use search before you open an issue to check whether your issue has been already reported and perhaps solved.
+        This is a bug tracker of the Termux app. If you have issues with a package inside the app, then please open an issue at [termux-packages](https://github.com/termux/termux-packages) instead.
+
+        Use search before you open an issue to check whether your issue has been already reported and perhaps solved.
 
         Android versions 5.x and 6.x are not supported anymore.
 
@@ -22,7 +24,9 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: Steps to reproduce the behavior. Please post all necessary commands that are needed to reproduce the issue.
+      label: Steps to reproduce the behavior.
+      description: |
+        Please post all necessary commands that are needed to reproduce the issue.
     validations:
       required: true
   - type: textarea
