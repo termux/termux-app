@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Want ask questions about the project?
+    url: https://github.com/termux/termux-app/discussions
+    about: Join GitHub Discussions

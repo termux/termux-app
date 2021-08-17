@@ -1,0 +1,19 @@
+name: "Feature request"
+description: "Suggest a new feature for Termux application"
+title: "[Feature]: "
+labels: ["feature request"]
+body:
+  - type: textarea
+    attributes:
+      label: Feature description
+      description: Describe the feature and why you want it.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: |
+        Does another app/terminal emulator have this feature?
+        Provide links to more background information.
+    validations:
+      required: true
