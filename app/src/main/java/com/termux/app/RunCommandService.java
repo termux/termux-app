@@ -73,7 +73,7 @@ public class RunCommandService extends Service {
             errmsg = this.getString(R.string.error_run_command_service_invalid_intent_action, intent.getAction());
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
-            return Service.START_NOT_STICKY;
+            return stopService();
         }
 
         String executableExtra = executionCommand.executable = IntentUtils.getStringExtraIfSet(intent, RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH, null);
@@ -125,7 +125,7 @@ public class RunCommandService extends Service {
         if (errmsg != null) {
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, true);
-            return Service.START_NOT_STICKY;
+            return stopService();
         }
 
 
@@ -135,7 +135,7 @@ public class RunCommandService extends Service {
             errmsg  = this.getString(R.string.error_run_command_service_mandatory_extra_missing, RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH);
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
-            return Service.START_NOT_STICKY;
+            return stopService();
         }
 
         // Get canonical path of executable
@@ -150,7 +150,7 @@ public class RunCommandService extends Service {
             error.appendMessage("\n" + this.getString(R.string.msg_executable_absolute_path, executionCommand.executable));
             executionCommand.setStateFailed(error);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
-            return Service.START_NOT_STICKY;
+            return stopService();
         }
 
 
@@ -172,7 +172,7 @@ public class RunCommandService extends Service {
                 error.appendMessage("\n" + this.getString(R.string.msg_working_directory_absolute_path, executionCommand.workingDirectory));
                 executionCommand.setStateFailed(error);
                 PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
-                return Service.START_NOT_STICKY;
+                return stopService();
             }
         }
 
@@ -219,8 +219,11 @@ public class RunCommandService extends Service {
             this.startService(execIntent);
         }
 
-        runStopForeground();
+        return stopService();
+    }
 
+    private int stopService() {
+        runStopForeground();
         return Service.START_NOT_STICKY;
     }
 
