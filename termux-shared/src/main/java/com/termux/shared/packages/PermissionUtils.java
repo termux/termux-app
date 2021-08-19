@@ -63,7 +63,11 @@ public class PermissionUtils {
             result = ContextCompat.checkSelfPermission(activity, permission);
             if (result != PackageManager.PERMISSION_GRANTED) {
                 Logger.logDebug(LOG_TAG, "Requesting Permissions: " + Arrays.toString(permissions));
-                activity.requestPermissions(new String[]{permission}, requestCode);
+                try {
+                    activity.requestPermissions(new String[]{permission}, requestCode);
+                } catch (Exception e) {
+                    Logger.logStackTraceWithMessage(LOG_TAG, "Failed to request permissions with request code " + requestCode + ": " + Arrays.toString(permissions), e);
+                }
             }
         }
     }
