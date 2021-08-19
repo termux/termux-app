@@ -49,6 +49,29 @@ public class IntentUtils {
         return value;
     }
 
+    /**
+     * Get an {@link Integer} from an {@link Intent} stored as a {@link String} extra if its not
+     * {@code null} or empty.
+     *
+     * @param intent The {@link Intent} to get the extra from.
+     * @param key The {@link String} key name.
+     * @param def The default value if extra is not set.
+     * @return Returns the {@link Integer} extra if set, otherwise {@code null}.
+     */
+    public static Integer getIntegerExtraIfSet(@NonNull Intent intent, String key, Integer def) {
+        try {
+            String value = intent.getStringExtra(key);
+            if (value == null || value.isEmpty()) {
+                return def;
+            }
+
+            return Integer.parseInt(value);
+        }
+        catch (Exception e) {
+            return def;
+        }
+    }
+
 
 
     /**

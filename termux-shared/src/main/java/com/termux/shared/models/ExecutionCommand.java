@@ -83,6 +83,12 @@ public class ExecutionCommand {
     /** If the {@link ExecutionCommand} is meant to start a failsafe terminal session. */
     public boolean isFailsafe;
 
+    /**
+     * The {@link ExecutionCommand} custom log level for background {@link com.termux.shared.shell.TermuxTask}
+     * commands. By default, @link com.termux.shared.shell.StreamGobbler} only logs if {@link Logger}
+     * `CURRENT_LOG_LEVEL` is >= {@link Logger#LOG_LEVEL_VERBOSE}.
+     */
+    public Integer backgroundCustomLogLevel;
 
     /** The session action of foreground commands. */
     public String sessionAction;
@@ -264,6 +270,9 @@ public class ExecutionCommand {
         logString.append("\n").append(executionCommand.getInBackgroundLogString());
         logString.append("\n").append(executionCommand.getIsFailsafeLogString());
 
+        if (executionCommand.inBackground && (!ignoreNull || executionCommand.backgroundCustomLogLevel != null))
+            logString.append("\n").append(executionCommand.getBackgroundCustomLogLevelLogString());
+
         if (!ignoreNull || executionCommand.sessionAction != null)
             logString.append("\n").append(executionCommand.getSessionActionLogString());
 
@@ -346,6 +355,10 @@ public class ExecutionCommand {
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Working Directory", executionCommand.workingDirectory, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("inBackground", executionCommand.inBackground, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("isFailsafe", executionCommand.isFailsafe, "-"));
+
+        if (executionCommand.inBackground && executionCommand.backgroundCustomLogLevel != null)
+            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Background Custom Log Level", executionCommand.backgroundCustomLogLevel, "-"));
+
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Session Action", executionCommand.sessionAction, "-"));
 
 
@@ -416,6 +429,10 @@ public class ExecutionCommand {
 
     public String getIsFailsafeLogString() {
         return "isFailsafe: `" + isFailsafe + "`";
+    }
+
+    public String getBackgroundCustomLogLevelLogString() {
+        return "Background Custom Log Level: `" + backgroundCustomLogLevel + "`";
     }
 
     public String getSessionActionLogString() {

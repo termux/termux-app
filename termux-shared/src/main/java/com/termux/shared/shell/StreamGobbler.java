@@ -87,6 +87,8 @@ public class StreamGobbler extends Thread {
     private final OnLineListener lineListener;
     @Nullable
     private final OnStreamClosedListener streamClosedListener;
+    @Nullable
+    private final Integer mLlogLevel;
     private volatile boolean active = true;
     private volatile boolean calledOnClose = false;
 
@@ -102,9 +104,13 @@ public class StreamGobbler extends Thread {
      * @param shell Name of the shell
      * @param inputStream InputStream to read from
      * @param outputList {@literal List<String>} to write to, or null
+     * @param logLevel The custom log level to use for logging by command output. If set to
+     *                 {@code null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
      */
     @AnyThread
-    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream, @Nullable List<String> outputList) {
+    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream,
+                         @Nullable List<String> outputList,
+                         @Nullable Integer logLevel) {
         super("Gobbler#" + incThreadCounter());
         this.shell = shell;
         this.inputStream = inputStream;
@@ -114,6 +120,8 @@ public class StreamGobbler extends Thread {
         listWriter = outputList;
         stringWriter = null;
         lineListener = null;
+
+        mLlogLevel = logLevel;
     }
 
     /**
@@ -128,9 +136,13 @@ public class StreamGobbler extends Thread {
      * @param shell Name of the shell
      * @param inputStream InputStream to read from
      * @param outputString {@literal List<String>} to write to, or null
+     * @param logLevel The custom log level to use for logging by command output. If set to
+     *                 {@code null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
      */
     @AnyThread
-    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream, @Nullable StringBuilder outputString) {
+    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream,
+                         @Nullable StringBuilder outputString,
+                         @Nullable Integer logLevel) {
         super("Gobbler#" + incThreadCounter());
         this.shell = shell;
         this.inputStream = inputStream;
@@ -140,6 +152,8 @@ public class StreamGobbler extends Thread {
         listWriter = null;
         stringWriter = outputString;
         lineListener = null;
+
+        mLlogLevel = logLevel;
     }
 
     /**
@@ -153,9 +167,14 @@ public class StreamGobbler extends Thread {
      * @param inputStream InputStream to read from
      * @param onLineListener OnLineListener callback
      * @param onStreamClosedListener OnStreamClosedListener callback
+     * @param logLevel The custom log level to use for logging by command output. If set to
+     *                 {@code null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
      */
     @AnyThread
-    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream, @Nullable OnLineListener onLineListener, @Nullable OnStreamClosedListener onStreamClosedListener) {
+    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream,
+                         @Nullable OnLineListener onLineListener,
+                         @Nullable OnStreamClosedListener onStreamClosedListener,
+                         @Nullable Integer logLevel) {
         super("Gobbler#" + incThreadCounter());
         this.shell = shell;
         this.inputStream = inputStream;
@@ -165,21 +184,30 @@ public class StreamGobbler extends Thread {
         listWriter = null;
         stringWriter = null;
         lineListener = onLineListener;
+
+        mLlogLevel = logLevel;
     }
 
     @Override
     public void run() {
+        String defaultLogTag = Logger.DEFAULT_LOG_TAG;
+        int currentLogLevel = Logger.getLogLevel();
+
+        int customLogLevel;
+        if (mLlogLevel != null && mLlogLevel >= Logger.LOG_LEVEL_OFF) {
+            customLogLevel = mLlogLevel;
+            Logger.logVerbose(LOG_TAG, "Using custom log level: " + customLogLevel + ", current log level: " + currentLogLevel);
+        } else {
+            customLogLevel = Logger.LOG_LEVEL_VERBOSE;
+        }
+
         // keep reading the InputStream until it ends (or an error occurs)
         // optionally pausing when a command is executed that consumes the InputStream itself
-        int currentLogLevel = Logger.getLogLevel();
-        int logLevelVerbose = Logger.LOG_LEVEL_VERBOSE;
-
         try {
             String line;
             while ((line = reader.readLine()) != null) {
-
-                if (currentLogLevel >= logLevelVerbose)
-                    Logger.logVerbose(LOG_TAG, String.format(Locale.ENGLISH, "[%s] %s", shell, line)); // This will get truncated by LOGGER_ENTRY_MAX_LEN, likely 4KB
+                if (customLogLevel >= currentLogLevel)
+                    Logger.logVerboseForce(defaultLogTag + "Command", String.format(Locale.ENGLISH, "[%s] %s", shell, line)); // This will get truncated by LOGGER_ENTRY_MAX_LEN, likely 4KB
 
                 if (stringWriter != null) stringWriter.append(line).append("\n");
                 if (listWriter != null) listWriter.add(line);

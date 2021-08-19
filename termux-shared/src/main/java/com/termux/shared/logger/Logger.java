@@ -50,16 +50,16 @@ public class Logger {
 
 
 
-    public static void logMessage(int logLevel, String tag, String message) {
-        if (logLevel == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+    public static void logMessage(int logPriority, String tag, String message) {
+        if (logPriority == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.e(getFullTag(tag), message);
-        else if (logLevel == Log.WARN && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+        else if (logPriority == Log.WARN && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.w(getFullTag(tag), message);
-        else if (logLevel == Log.INFO && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
+        else if (logPriority == Log.INFO && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
             Log.i(getFullTag(tag), message);
-        else if (logLevel == Log.DEBUG && CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
+        else if (logPriority == Log.DEBUG && CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
             Log.d(getFullTag(tag), message);
-        else if (logLevel == Log.VERBOSE && CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE)
+        else if (logPriority == Log.VERBOSE && CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE)
             Log.v(getFullTag(tag), message);
     }
 
@@ -185,6 +185,10 @@ public class Logger {
 
     public static void logVerboseExtended(String message) {
         logExtendedMessage(Log.VERBOSE, DEFAULT_LOG_TAG, message);
+    }
+
+    public static void logVerboseForce(String tag, String message) {
+        Log.v(tag, message);
     }
 
 
