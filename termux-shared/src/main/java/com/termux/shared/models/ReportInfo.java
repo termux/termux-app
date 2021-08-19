@@ -34,7 +34,7 @@ public class ReportInfo implements Serializable {
         this.reportString = reportString;
         this.reportStringSuffix = reportStringSuffix;
         this.addReportInfoToMarkdown = addReportInfoToMarkdown;
-        this.reportTimestamp = AndroidUtils.getCurrentTimeStamp();
+        this.reportTimestamp = AndroidUtils.getCurrentMilliSecondUTCTimeStamp();
     }
 
     /**

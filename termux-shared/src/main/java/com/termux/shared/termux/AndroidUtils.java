@@ -182,6 +182,13 @@ public class AndroidUtils {
         return df.format(new Date());
     }
 
+    public static String getCurrentMilliSecondUTCTimeStamp() {
+        @SuppressLint("SimpleDateFormat")
+        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return df.format(new Date());
+    }
+
     public static String getCurrentMilliSecondLocalTimeStamp() {
         @SuppressLint("SimpleDateFormat")
         final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS");
