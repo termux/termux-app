@@ -247,7 +247,7 @@ public class RunCommandService extends Service {
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
             TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_LOW,
             TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, null, null,
-            null, NotificationUtils.NOTIFICATION_MODE_SILENT);
+            null, null, NotificationUtils.NOTIFICATION_MODE_SILENT);
         if (builder == null)  return null;
 
         // No need to show a timestamp:

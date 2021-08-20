@@ -220,7 +220,8 @@ public class PluginUtils {
         reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
         Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND.getName(), logTag, title, null, reportString.toString(), null,true));
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent deleteIntent = null;
 
         // Setup the notification channel if not already set up
         setupPluginCommandErrorsNotificationChannel(context);
@@ -230,7 +231,8 @@ public class PluginUtils {
         //CharSequence notificationTextCharSequence = notificationTextString;
 
         // Build the notification
-        Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title, notificationTextCharSequence, notificationTextCharSequence, pendingIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
+        Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title,
+            notificationTextCharSequence, notificationTextCharSequence, contentIntent, deleteIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
         if (builder == null) return;
 
         // Send the notification
@@ -248,16 +250,19 @@ public class PluginUtils {
      * @param title The title for the notification.
      * @param notificationText The second line text of the notification.
      * @param notificationBigText The full text of the notification that may optionally be styled.
-     * @param pendingIntent The {@link PendingIntent} which should be sent when notification is clicked.
+     * @param contentIntent The {@link PendingIntent} which should be sent when notification is clicked.
+     * @param deleteIntent The {@link PendingIntent} which should be sent when notification is deleted.
      * @param notificationMode The notification mode. It must be one of {@code NotificationUtils.NOTIFICATION_MODE_*}.
      * @return Returns the {@link Notification.Builder}.
      */
     @Nullable
-    public static Notification.Builder getPluginCommandErrorsNotificationBuilder(final Context context, final CharSequence title, final CharSequence notificationText, final CharSequence notificationBigText, final PendingIntent pendingIntent, final int notificationMode) {
+    public static Notification.Builder getPluginCommandErrorsNotificationBuilder(
+        final Context context, final CharSequence title, final CharSequence notificationText,
+        final CharSequence notificationBigText, final PendingIntent contentIntent, final PendingIntent deleteIntent, final int notificationMode) {
 
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(context,
             TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
-            title, notificationText, notificationBigText, pendingIntent, notificationMode);
+            title, notificationText, notificationBigText, contentIntent, deleteIntent, notificationMode);
 
         if (builder == null)  return null;
 
