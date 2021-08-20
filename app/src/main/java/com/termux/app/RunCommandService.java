@@ -189,7 +189,7 @@ public class RunCommandService extends Service {
 
         executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(executionCommand.executable).build();
 
-        Logger.logVerbose(LOG_TAG, executionCommand.toString());
+        Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
         // Create execution intent with the action TERMUX_SERVICE#ACTION_SERVICE_EXECUTE to be sent to the TERMUX_SERVICE
         Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executionCommand.executableUri);

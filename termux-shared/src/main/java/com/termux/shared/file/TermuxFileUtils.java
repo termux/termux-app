@@ -264,7 +264,7 @@ public class TermuxFileUtils {
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
         TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
         if (termuxTask == null || !executionCommand.isSuccessful()) {
-            Logger.logError(LOG_TAG, executionCommand.toString());
+            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             return null;
         }
 
@@ -275,7 +275,7 @@ public class TermuxFileUtils {
 
         boolean stderrSet = !executionCommand.resultData.stderr.toString().isEmpty();
         if (executionCommand.resultData.exitCode != 0 || stderrSet) {
-            Logger.logError(LOG_TAG, executionCommand.toString());
+            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             if (stderrSet)
                 statOutput.append("\n").append(executionCommand.resultData.stderr.toString());
             statOutput.append("\n").append("exit code: ").append(executionCommand.resultData.exitCode.toString());

@@ -345,12 +345,12 @@ public class TermuxUtils {
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
         TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
         if (termuxTask == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
-            Logger.logError(LOG_TAG, executionCommand.toString());
+            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             return null;
         }
 
         if (!executionCommand.resultData.stderr.toString().isEmpty())
-            Logger.logError(LOG_TAG, executionCommand.toString());
+            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
 
         StringBuilder markdownString = new StringBuilder();
 
@@ -403,7 +403,7 @@ public class TermuxUtils {
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
         TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
         if (termuxTask == null || !executionCommand.isSuccessful()) {
-            Logger.logError(LOG_TAG, executionCommand.toString());
+            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             return null;
         }
 
@@ -414,7 +414,7 @@ public class TermuxUtils {
 
         boolean stderrSet = !executionCommand.resultData.stderr.toString().isEmpty();
         if (executionCommand.resultData.exitCode != 0 || stderrSet) {
-            Logger.logError(LOG_TAG, executionCommand.toString());
+            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             if (stderrSet)
                 logcatOutput.append("\n").append(executionCommand.resultData.stderr.toString());
             logcatOutput.append("\n").append("exit code: ").append(executionCommand.resultData.exitCode.toString());

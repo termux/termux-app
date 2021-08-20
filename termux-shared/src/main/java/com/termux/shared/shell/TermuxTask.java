@@ -83,7 +83,7 @@ public final class TermuxTask {
 
         // No need to log stdin if logging is disabled, like for app internal scripts
         int customLogLevel = Logger.isLogLevelValid(executionCommand.backgroundCustomLogLevel) ? executionCommand.backgroundCustomLogLevel: Logger.LOG_LEVEL_VERBOSE;
-        Logger.logDebug(LOG_TAG, ExecutionCommand.getExecutionInputLogString(executionCommand, true, customLogLevel >= Logger.getLogLevel()));
+        Logger.logDebugExtended(LOG_TAG, ExecutionCommand.getExecutionInputLogString(executionCommand, true, customLogLevel >= Logger.getLogLevel()));
 
         String taskName = ShellUtils.getExecutableBasename(executionCommand.executable);
 

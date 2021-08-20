@@ -427,7 +427,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         }
 
         if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
-            Logger.logVerbose(LOG_TAG, executionCommand.toString());
+            Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
         TermuxTask newTermuxTask = TermuxTask.execute(this, executionCommand, this, new TermuxShellEnvironmentClient(), false);
         if (newTermuxTask == null) {
@@ -519,7 +519,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         }
 
         if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
-            Logger.logVerbose(LOG_TAG, executionCommand.toString());
+            Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
         // If the execution command was started for a plugin, only then will the stdout be set
         // Otherwise if command was manually started by the user like by adding a new terminal session,
