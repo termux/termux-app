@@ -341,6 +341,7 @@ public class TermuxUtils {
         aptInfoScript = aptInfoScript.replaceAll(Pattern.quote("@TERMUX_PREFIX@"), TermuxConstants.TERMUX_PREFIX_DIR_PATH);
 
         ExecutionCommand executionCommand = new ExecutionCommand(1, TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash", null, aptInfoScript, null, true, false);
+        executionCommand.commandLabel = "APT Info Command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
         TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
         if (termuxTask == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
@@ -398,6 +399,7 @@ public class TermuxUtils {
         // Run script
         // Logging must be disabled for output of logcat command itself in StreamGobbler
         ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null, logcatScript + "\n", "/", true, true);
+        executionCommand.commandLabel = "Logcat dump command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
         TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
         if (termuxTask == null || !executionCommand.isSuccessful()) {

@@ -260,6 +260,7 @@ public class TermuxFileUtils {
 
         // Run script
         ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null, statScript.toString() + "\n", "/", true, true);
+        executionCommand.commandLabel = TermuxConstants.TERMUX_APP_NAME + " Files Stat Command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
         TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
         if (termuxTask == null || !executionCommand.isSuccessful()) {
