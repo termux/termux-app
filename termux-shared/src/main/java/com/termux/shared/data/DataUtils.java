@@ -4,6 +4,10 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 public class DataUtils {
 
     public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 100 * 1024; // 100KB
@@ -170,6 +174,23 @@ public class DataUtils {
     /** Check if a string is null or empty. */
     public static boolean isNullOrEmpty(String string) {
         return string == null || string.isEmpty();
+    }
+
+
+
+    /** Get size of a serializable object. */
+    public static long getSerializedSize(Serializable object) {
+        if (object == null) return 0;
+        try {
+            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteOutputStream);
+            objectOutputStream.writeObject(object);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+            return byteOutputStream.toByteArray().length;
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
 }

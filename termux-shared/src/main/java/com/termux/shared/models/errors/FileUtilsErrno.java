@@ -56,6 +56,7 @@ public class FileUtilsErrno extends Errno {
     public static final Errno ERRNO_DELETING_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 301, "Deleting %1$s at path \"%2$s\" failed.\nException: %3$s");
     public static final Errno ERRNO_CLEARING_DIRECTORY_FAILED_WITH_EXCEPTION = new Errno(TYPE, 302, "Clearing %1$s at path \"%2$s\" failed.\nException: %3$s");
     public static final Errno ERRNO_FILE_STILL_EXISTS_AFTER_DELETING = new Errno(TYPE, 303, "The %1$s still exists after deleting it from \"%2$s\".");
+    public static final Errno ERRNO_DELETING_FILES_OLDER_THAN_X_DAYS_FAILED_WITH_EXCEPTION = new Errno(TYPE, 304, "Deleting %1$s under directory at path \"%2$s\" old than %3$s days failed.\nException: %4$s");
 
 
 
@@ -64,6 +65,8 @@ public class FileUtilsErrno extends Errno {
     public static final Errno ERRNO_WRITING_STRING_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 351, "Writing string to %1$s at path \"%2$s\" failed.\nException: %3$s");
     public static final Errno ERRNO_UNSUPPORTED_CHARSET = new Errno(TYPE, 352, "Unsupported charset \"%1$s\"");
     public static final Errno ERRNO_CHECKING_IF_CHARSET_SUPPORTED_FAILED = new Errno(TYPE, 353, "Checking if charset \"%1$s\" is supported failed.\nException: %2$s");
+    public static final Errno ERRNO_READING_SERIALIZABLE_OBJECT_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 354, "Reading serializable object from %1$s at path \"%2$s\" failed.\nException: %3$s");
+    public static final Errno ERRNO_WRITING_SERIALIZABLE_OBJECT_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 355, "Writing serializable object to %1$s at path \"%2$s\" failed.\nException: %3$s");
 
 
 
