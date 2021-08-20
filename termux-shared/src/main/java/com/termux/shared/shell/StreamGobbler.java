@@ -194,7 +194,7 @@ public class StreamGobbler extends Thread {
         int currentLogLevel = Logger.getLogLevel();
 
         int customLogLevel;
-        if (mLlogLevel != null && mLlogLevel >= Logger.LOG_LEVEL_OFF) {
+        if (Logger.isLogLevelValid(mLlogLevel)) {
             customLogLevel = mLlogLevel;
             Logger.logVerbose(LOG_TAG, "Using custom log level: " + customLogLevel + ", current log level: " + currentLogLevel);
         } else {

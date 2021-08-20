@@ -8,6 +8,7 @@ import android.system.OsConstants;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.R;
+import com.termux.shared.data.DataUtils;
 import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.ResultData;
 import com.termux.shared.models.errors.Errno;
@@ -80,7 +81,9 @@ public final class TermuxTask {
             return null;
         }
 
-        Logger.logDebug(LOG_TAG, executionCommand.toString());
+        // No need to log stdin if logging is disabled, like for app internal scripts
+        int customLogLevel = Logger.isLogLevelValid(executionCommand.backgroundCustomLogLevel) ? executionCommand.backgroundCustomLogLevel: Logger.LOG_LEVEL_VERBOSE;
+        Logger.logDebug(LOG_TAG, ExecutionCommand.getExecutionInputLogString(executionCommand, true, customLogLevel >= Logger.getLogLevel()));
 
         String taskName = ShellUtils.getExecutableBasename(executionCommand.executable);
 
@@ -146,7 +149,7 @@ public final class TermuxTask {
         STDOUT.start();
         STDERR.start();
 
-        if (mExecutionCommand.stdin != null && !mExecutionCommand.stdin.isEmpty()) {
+        if (!DataUtils.isNullOrEmpty(mExecutionCommand.stdin)) {
             try {
                 STDIN.write((mExecutionCommand.stdin + "\n").getBytes(StandardCharsets.UTF_8));
                 STDIN.flush();

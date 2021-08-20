@@ -26,6 +26,7 @@ public class Logger {
     public static final int LOG_LEVEL_VERBOSE = 3; // start logging verbose messages
 
     public static final int DEFAULT_LOG_LEVEL = LOG_LEVEL_NORMAL;
+    public static final int MAX_LOG_LEVEL = LOG_LEVEL_VERBOSE;
     private static int CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
 
     /**
@@ -413,7 +414,7 @@ public class Logger {
     }
 
     public static int setLogLevel(Context context, int logLevel) {
-        if (logLevel >= LOG_LEVEL_OFF && logLevel <= LOG_LEVEL_VERBOSE)
+        if (isLogLevelValid(logLevel))
             CURRENT_LOG_LEVEL = logLevel;
         else
             CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
@@ -429,6 +430,10 @@ public class Logger {
             return tag;
         else
             return DEFAULT_LOG_TAG + ":" + tag;
+    }
+
+    public static boolean isLogLevelValid(Integer logLevel) {
+        return (logLevel != null && logLevel >= LOG_LEVEL_OFF && logLevel <= MAX_LOG_LEVEL);
     }
 
 }
