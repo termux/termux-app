@@ -132,7 +132,10 @@ public class CrashUtils {
         }
 
         Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.CRASH_REPORT.getName(), logTag, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true));
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Must ensure result code for PendingIntents and id for notification are unique otherwise will override previous
+        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, nextNotificationId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent deleteIntent = null;
 
         // Setup the notification channel if not already set up
@@ -144,7 +147,6 @@ public class CrashUtils {
         if (builder == null) return;
 
         // Send the notification
-        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
         NotificationManager notificationManager = NotificationUtils.getNotificationManager(context);
         if (notificationManager != null)
             notificationManager.notify(nextNotificationId, builder.build());

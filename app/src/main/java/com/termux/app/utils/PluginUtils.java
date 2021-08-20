@@ -220,7 +220,10 @@ public class PluginUtils {
         reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
         Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND.getName(), logTag, title, null, reportString.toString(), null,true));
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Must ensure result code for PendingIntents and id for notification are unique otherwise will override previous
+        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, nextNotificationId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent deleteIntent = null;
 
         // Setup the notification channel if not already set up
@@ -236,7 +239,6 @@ public class PluginUtils {
         if (builder == null) return;
 
         // Send the notification
-        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
         NotificationManager notificationManager = NotificationUtils.getNotificationManager(context);
         if (notificationManager != null)
             notificationManager.notify(nextNotificationId, builder.build());
