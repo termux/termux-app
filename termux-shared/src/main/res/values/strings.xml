@@ -55,7 +55,7 @@
 
 
     <!-- TermuxUtils -->
-    <string name="msg_report_issue">If you want to report this issue, then copy its text from the options menu (3-dots on top right) and post an issue on one of the following links.\n\nIf you are posting a Termux app crash report, then please provide details on what you were doing that caused the crash and how to reproduce it, if possible.\n\nIf you are posting an issue on Github, then post it in the repository at which the report belongs at. You may optionally remove any device specific info that you consider private or don\'t want to share or that is not relevant to the issue.</string>
+    <string name="msg_report_issue">If you want to report this issue, then copy its text from the options menu (3-dots on top right) and post an issue on one of the following links.\n\nIf you are posting a Termux app crash report, then please provide details on what you were doing that caused the crash and how to reproduce it, if possible.\n\nIf you are posting an issue on Github, then post it in the repository at which the report belongs at. Issues opened or emails sent with **(partial) screenshots** instead of copied text or a file of this report **will likely be automatically closed/deleted**. You may optionally remove any device specific info that you consider private or don\'t want to share or that is not relevant to the issue.</string>
 
 
 
