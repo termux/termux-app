@@ -4,12 +4,13 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
+import android.os.Environment;
 
 import androidx.annotation.Nullable;
 
 import com.termux.R;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.file.FileUtils;
 import com.termux.shared.file.TermuxFileUtils;
 import com.termux.shared.models.ResultConfig;
 import com.termux.shared.models.ResultData;
@@ -219,12 +220,23 @@ public class PluginUtils {
         reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
         reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
-        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.PLUGIN_EXECUTION_COMMAND.getName(), logTag, title, null, reportString.toString(), null,true));
+        String userActionName = UserAction.PLUGIN_EXECUTION_COMMAND.getName();
+        ReportActivity.NewInstanceResult result = ReportActivity.newInstance(context,
+            new ReportInfo(userActionName, logTag, title, null,
+                reportString.toString(), null,true,
+                userActionName,
+                Environment.getExternalStorageDirectory() + "/" +
+                    FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
+        if (result.contentIntent == null) return;
 
         // Must ensure result code for PendingIntents and id for notification are unique otherwise will override previous
         int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
-        PendingIntent contentIntent = PendingIntent.getActivity(context, nextNotificationId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(context, nextNotificationId, result.contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         PendingIntent deleteIntent = null;
+        if (result.deleteIntent != null)
+            deleteIntent = PendingIntent.getBroadcast(context, nextNotificationId, result.deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Setup the notification channel if not already set up
         setupPluginCommandErrorsNotificationChannel(context);

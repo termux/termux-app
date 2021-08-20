@@ -4,7 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
+import android.os.Environment;
 
 import androidx.annotation.Nullable;
 
@@ -131,12 +131,23 @@ public class CrashUtils {
             reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
         }
 
-        Intent notificationIntent = ReportActivity.newInstance(context, new ReportInfo(UserAction.CRASH_REPORT.getName(), logTag, title, null, reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true));
+        String userActionName = UserAction.CRASH_REPORT.getName();
+        ReportActivity.NewInstanceResult result = ReportActivity.newInstance(context, new ReportInfo(userActionName,
+            logTag, title, null, reportString.toString(),
+            "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true,
+            userActionName,
+            Environment.getExternalStorageDirectory() + "/" +
+                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
+        if (result.contentIntent == null) return;
 
         // Must ensure result code for PendingIntents and id for notification are unique otherwise will override previous
         int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
-        PendingIntent contentIntent = PendingIntent.getActivity(context, nextNotificationId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(context, nextNotificationId, result.contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         PendingIntent deleteIntent = null;
+        if (result.deleteIntent != null)
+            deleteIntent = PendingIntent.getBroadcast(context, nextNotificationId, result.deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Setup the notification channel if not already set up
         setupCrashReportsNotificationChannel(context);

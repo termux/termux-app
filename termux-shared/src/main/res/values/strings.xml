@@ -31,12 +31,16 @@
     <!-- ReportActivity -->
     <string name="action_copy">Copy</string>
     <string name="action_share">Share</string>
+    <string name="action_save_to_file">Save To File</string>
     <string name="title_report_text">Report Text</string>
+    <string name="msg_report_truncated">**Report Truncated**\n\nReport is too large to view here. Use `Save To File` option from options menu (3-dots on top right) and view it in an external text editor app.\n\n##\n\n</string>
 
 
 
     <!-- ShareUtils -->
     <string name="title_share_with">Share With</string>
+    <string name="msg_storage_permission_not_granted">The storage permission not granted."</string>
+    <string name="msg_file_saved_successfully">The %1$s file saved successfully at \"%2$s\""</string>
 
 
 

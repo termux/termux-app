@@ -168,6 +168,8 @@
 
         <receiver android:name=".app.TermuxOpenReceiver" />
 
+        <receiver android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver"  android:exported="false" />
+
         <provider
             android:name=".app.TermuxOpenReceiver$ContentProvider"
             android:authorities="${TERMUX_PACKAGE_NAME}.files"

@@ -2,6 +2,7 @@ package com.termux.app.activities;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -11,6 +12,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.termux.R;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.file.FileUtils;
 import com.termux.shared.models.ReportInfo;
 import com.termux.app.models.UserAction;
 import com.termux.shared.interact.ShareUtils;
@@ -86,7 +88,13 @@ public class SettingsActivity extends AppCompatActivity {
                             aboutString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
                             aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(context));
 
-                            ReportActivity.startReportActivity(context, new ReportInfo(UserAction.ABOUT.getName(), TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title, null, aboutString.toString(), null, false));
+                            String userActionName = UserAction.ABOUT.getName();
+                            ReportActivity.startReportActivity(context, new ReportInfo(userActionName,
+                                TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title, null,
+                                aboutString.toString(), null, false,
+                                userActionName,
+                                Environment.getExternalStorageDirectory() + "/" +
+                                    FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
                         }
                     }.start();
 

@@ -14,26 +14,35 @@ public class ReportInfo implements Serializable {
     /** The report title. */
     public final String reportTitle;
     /** The markdown report text prefix. Will not be part of copy and share operations, etc. */
-    public final String reportStringPrefix;
+    public String reportStringPrefix;
     /** The markdown report text. */
-    public final String reportString;
+    public String reportString;
     /** The markdown report text suffix. Will not be part of copy and share operations, etc. */
-    public final String reportStringSuffix;
+    public String reportStringSuffix;
     /** If set to {@code true}, then report, app and device info will be added to the report when
      * markdown is generated.
      */
-    public final boolean addReportInfoToMarkdown;
+    public final boolean addReportInfoHeaderToMarkdown;
     /** The timestamp for the report. */
     public final String reportTimestamp;
 
-    public ReportInfo(String userAction, String sender, String reportTitle, String reportStringPrefix, String reportString, String reportStringSuffix, boolean addReportInfoToMarkdown) {
+    /** The label for the report file to save if user selects menu_item_save_report_to_file. */
+    public final String reportSaveFileLabel;
+    /** The path for the report file to save if user selects menu_item_save_report_to_file. */
+    public final String reportSaveFilePath;
+
+    public ReportInfo(String userAction, String sender, String reportTitle, String reportStringPrefix,
+                      String reportString, String reportStringSuffix, boolean addReportInfoHeaderToMarkdown,
+                      String reportSaveFileLabel, String reportSaveFilePath) {
         this.userAction = userAction;
         this.sender = sender;
         this.reportTitle = reportTitle;
         this.reportStringPrefix = reportStringPrefix;
         this.reportString = reportString;
         this.reportStringSuffix = reportStringSuffix;
-        this.addReportInfoToMarkdown = addReportInfoToMarkdown;
+        this.addReportInfoHeaderToMarkdown = addReportInfoHeaderToMarkdown;
+        this.reportSaveFileLabel = reportSaveFileLabel;
+        this.reportSaveFilePath = reportSaveFilePath;
         this.reportTimestamp = AndroidUtils.getCurrentMilliSecondUTCTimeStamp();
     }
 
@@ -48,7 +57,7 @@ public class ReportInfo implements Serializable {
 
         StringBuilder markdownString = new StringBuilder();
 
-        if (reportInfo.addReportInfoToMarkdown) {
+        if (reportInfo.addReportInfoHeaderToMarkdown) {
             markdownString.append("## Report Info\n\n");
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User Action", reportInfo.userAction, "-"));
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Sender", reportInfo.sender, "-"));
