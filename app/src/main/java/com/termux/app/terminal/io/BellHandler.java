@@ -1,14 +1,20 @@
 package com.termux.app.terminal.io;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
+
+import com.termux.shared.logger.Logger;
 
 public class BellHandler {
     private static BellHandler instance = null;
     private static final Object lock = new Object();
+
+    private static final String LOG_TAG = "BellHandler";
 
     public static BellHandler getInstance(Context context) {
         if (instance == null) {
@@ -34,7 +40,17 @@ public class BellHandler {
             @Override
             public void run() {
                 if (vibrator != null) {
-                    vibrator.vibrate(DURATION);
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            vibrator.vibrate(VibrationEffect.createOneShot(DURATION, VibrationEffect.DEFAULT_AMPLITUDE));
+                        } else {
+                            vibrator.vibrate(DURATION);
+                        }
+                    } catch (Exception e) {
+                        // Issue on samsung devices on android 8
+                        // java.lang.NullPointerException: Attempt to read from field 'android.os.VibrationEffect com.android.server.VibratorService$Vibration.mEffect' on a null object reference
+                        Logger.logStackTraceWithMessage(LOG_TAG, "Failed to run vibrator", e);
+                    }
                 }
             }
         };
