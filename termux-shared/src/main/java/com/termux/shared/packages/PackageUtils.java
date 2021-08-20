@@ -124,13 +124,25 @@ public class PackageUtils {
     }
 
     /**
-     * Get the {@code versionName} for the package associated with the {@code context}.
+     * Check if the app associated with the {@code context} has {@link ApplicationInfo#FLAG_DEBUGGABLE}
+     * set.
      *
      * @param context The {@link Context} for the package.
      * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
      */
     public static Boolean isAppForPackageADebugBuild(@NonNull final Context context) {
         return ( 0 != ( context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE ) );
+    }
+
+    /**
+     * Check if the app associated with the {@code context} has {@link ApplicationInfo#FLAG_EXTERNAL_STORAGE}
+     * set.
+     *
+     * @param context The {@link Context} for the package.
+     * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
+     */
+    public static Boolean isAppInstalledOnExternalStorage(@NonNull final Context context) {
+        return ( 0 != ( context.getApplicationInfo().flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE ) );
     }
 
     /**

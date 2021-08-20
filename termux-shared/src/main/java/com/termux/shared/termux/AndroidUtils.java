@@ -40,6 +40,10 @@ public class AndroidUtils {
         AndroidUtils.appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(context));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_DEBUG_BUILD", PackageUtils.isAppForPackageADebugBuild(context));
 
+        if (PackageUtils.isAppInstalledOnExternalStorage(context)) {
+            AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_INSTALLED_ON_EXTERNAL_STORAGE", true);
+        }
+
         String filesDir = context.getFilesDir().getAbsolutePath();
         if (!filesDir.equals("/data/user/0/" + context.getPackageName() + "/files") &&
             !filesDir.equals("/data/data/" + context.getPackageName() + "/files"))

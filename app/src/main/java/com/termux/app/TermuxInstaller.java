@@ -19,6 +19,7 @@ import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -58,7 +59,7 @@ final class TermuxInstaller {
         String bootstrapErrorMessage;
         Error filesDirectoryAccessibleError;
 
-        // This will also call Context.getFilesDir(), which should ensure that TERMUX_FILES_DIR_PATH
+        // This will also call Context.getFilesDir(), which should ensure that termux files directory
         // is created if it does not already exist
         filesDirectoryAccessibleError = TermuxFileUtils.isTermuxFilesDirectoryAccessible(activity, true, true);
         boolean isFilesDirectoryAccessible = filesDirectoryAccessibleError == null;
@@ -67,8 +68,9 @@ final class TermuxInstaller {
         // account has the expected file system paths. Verify that:
         if (!PackageUtils.isCurrentUserThePrimaryUser(activity)) {
             bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message, MarkdownUtils.getMarkdownCodeForString(TermuxConstants.TERMUX_PREFIX_DIR_PATH, false));
+            Logger.logError(LOG_TAG, "isFilesDirectoryAccessible: " + isFilesDirectoryAccessible);
             Logger.logError(LOG_TAG, bootstrapErrorMessage);
-            CrashUtils.sendCrashReportNotification(activity, LOG_TAG, "## Bootstrap Error\n\n" + bootstrapErrorMessage, true, true);
+            sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
             MessageDialogUtils.exitAppWithErrorMessage(activity,
                 activity.getString(R.string.bootstrap_error_title),
                 bootstrapErrorMessage);
@@ -78,7 +80,7 @@ final class TermuxInstaller {
         if (!isFilesDirectoryAccessible) {
             bootstrapErrorMessage = Error.getMinimalErrorString(filesDirectoryAccessibleError) + "\nTERMUX_FILES_DIR: " + MarkdownUtils.getMarkdownCodeForString(TermuxConstants.TERMUX_FILES_DIR_PATH, false);
             Logger.logError(LOG_TAG, bootstrapErrorMessage);
-            CrashUtils.sendCrashReportNotification(activity, LOG_TAG, "## Bootstrap Error\n\n" + bootstrapErrorMessage, true, true);
+            sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
             MessageDialogUtils.showMessage(activity,
                 activity.getString(R.string.bootstrap_error_title),
                 bootstrapErrorMessage, null);
@@ -216,7 +218,7 @@ final class TermuxInstaller {
         Logger.logErrorExtended(LOG_TAG, "Bootstrap Error:\n" + message);
 
         // Send a notification with the exception so that the user knows why bootstrap setup failed
-        CrashUtils.sendCrashReportNotification(activity, LOG_TAG, "## Bootstrap Error\n\n" + message, true, true);
+        sendBootstrapCrashReportNotification(activity, message);
 
         activity.runOnUiThread(() -> {
             try {
@@ -234,6 +236,13 @@ final class TermuxInstaller {
                 // Activity already dismissed - ignore.
             }
         });
+    }
+
+    private static void sendBootstrapCrashReportNotification(Activity activity, String message) {
+        CrashUtils.sendCrashReportNotification(activity, LOG_TAG,
+            "## Bootstrap Error\n\n" + message + "\n\n" +
+                TermuxUtils.getTermuxDebugMarkdownString(activity),
+            true, true);
     }
 
     static void setupStorageSymlinks(final Context context) {

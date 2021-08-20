@@ -24,6 +24,7 @@ import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.shared.data.UrlUtils;
 import com.termux.shared.file.FileUtils;
+import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.terminal.TermuxTerminalViewClientBase;
 import com.termux.shared.termux.AndroidUtils;
@@ -665,6 +666,14 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         final String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, false, true);
         if (transcriptText == null) return;
 
+        MessageDialogUtils.showMessage(mActivity, TermuxConstants.TERMUX_APP_NAME + " Report Issue",
+            mActivity.getString(R.string.msg_add_termux_debug_info),
+            mActivity.getString(R.string.action_yes), (dialog, which) -> reportIssueFromTranscript(transcriptText, true),
+            mActivity.getString(R.string.action_no), (dialog, which) -> reportIssueFromTranscript(transcriptText, false),
+            null);
+    }
+
+    private void reportIssueFromTranscript(String transcriptText, boolean addTermuxDebugInfo) {
         Logger.showToast(mActivity, mActivity.getString(R.string.msg_generating_report), true);
 
         new Thread() {
@@ -684,6 +693,12 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
                 if (termuxAptInfo != null)
                     reportString.append("\n\n").append(termuxAptInfo);
+
+                if (addTermuxDebugInfo) {
+                    String termuxDebugInfo = TermuxUtils.getTermuxDebugMarkdownString(mActivity);
+                    if (termuxDebugInfo != null)
+                        reportString.append("\n\n").append(termuxDebugInfo);
+                }
 
                 String userActionName = UserAction.REPORT_ISSUE_FROM_TRANSCRIPT.getName();
                 ReportActivity.startReportActivity(mActivity,

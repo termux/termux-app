@@ -5,13 +5,22 @@ import android.os.Environment;
 
 import androidx.annotation.NonNull;
 
+import com.termux.shared.logger.Logger;
+import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.errors.Error;
+import com.termux.shared.shell.TermuxShellEnvironmentClient;
+import com.termux.shared.shell.TermuxTask;
+import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxUtils;
 
 import java.io.File;
 import java.util.regex.Pattern;
 
 public class TermuxFileUtils {
+
+    private static final String LOG_TAG = "TermuxFileUtils";
 
     /**
      * Replace "$PREFIX/" or "~/" prefix with termux absolute paths.
@@ -126,25 +135,74 @@ public class TermuxFileUtils {
 
     /**
      * Validate the existence and permissions of {@link TermuxConstants#TERMUX_FILES_DIR_PATH}.
+     * This is required because binaries compiled for termux are hard coded with
+     * {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} and the path must be accessible.
      *
-     * The directory will not be created manually but by calling {@link Context#getFilesDir()}
+     * The permissions set to directory will be {@link FileUtils#APP_WORKING_DIRECTORY_PERMISSIONS}.
+     *
+     * This function does not create the directory manually but by calling {@link Context#getFilesDir()}
      * so that android itself creates it. However, the call will not create its parent package
      * data directory `/data/user/0/[package_name]` if it does not already exist and a `logcat`
      * error will be logged by android.
      * {@code Failed to ensure /data/user/0/<package_name>/files: mkdir failed: ENOENT (No such file or directory)}
-     * An android app likely can't create the package data directory since its parent `/data/user/0`
-     * is owned by `system` user and is normally create at app install or update time and not at app startup.
-     * Note that the path returned by {@link Context#getFilesDir()} will
+     * An android app normally can't create the package data directory since its parent `/data/user/0`
+     * is owned by `system` user and is normally created at app install or update time and not at app startup.
+     *
+     * Note that the path returned by {@link Context#getFilesDir()} may
      * be under `/data/user/[id]/[package_name]` instead of `/data/data/[package_name]`
-     * defined by default by {@link TermuxConstants#TERMUX_FILES_DIR_PATH}, where id will be 0 for
+     * defined by default by {@link TermuxConstants#TERMUX_FILES_DIR_PATH} where id will be 0 for
      * primary user and a higher number for other users/profiles. If app is running under work profile
      * or secondary user, then {@link TermuxConstants#TERMUX_FILES_DIR_PATH} will not be accessible
-     * and will not be automatically created, unless there is a bind mount from `/data/user/[id]`
-     * to `/data/data`, ideally in the right namespace.
-     *
-     * The permissions set to directory will be {@link FileUtils#APP_WORKING_DIRECTORY_PERMISSIONS}.
-     *
+     * and will not be automatically created, unless there is a bind mount from `/data/data` to
+     * `/data/user/[id]`, ideally in the right namespace.
      * https://source.android.com/devices/tech/admin/multi-user
+     *
+     *
+     * On Android version `<=10`, the `/data/user/0` is a symlink to `/data/data` directory.
+     * https://cs.android.com/android/platform/superproject/+/android-10.0.0_r47:system/core/rootdir/init.rc;l=589
+     * {@code
+     * symlink /data/data /data/user/0
+     * }
+     *
+     * {@code
+     * /system/bin/ls -lhd /data/data /data/user/0
+     * drwxrwx--x 179 system system 8.0K 2021-xx-xx xx:xx /data/data
+     * lrwxrwxrwx   1 root   root     10 2021-xx-xx xx:xx /data/user/0 -> /data/data
+     * }
+     *
+     * On Android version `>=11`, the `/data/data` directory is bind mounted at `/data/user/0`.
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:system/core/rootdir/init.rc;l=705
+     * https://cs.android.com/android/_/android/platform/system/core/+/3cca270e95ca8d8bc8b800e2b5d7da1825fd7100
+     * {@code
+     * # Unlink /data/user/0 if we previously symlink it to /data/data
+     * rm /data/user/0
+     *
+     * # Bind mount /data/user/0 to /data/data
+     * mkdir /data/user/0 0700 system system encryption=None
+     * mount none /data/data /data/user/0 bind rec
+     * }
+     *
+     * {@code
+     * /system/bin/grep -E '( /data )|( /data/data )|( /data/user/[0-9]+ )' /proc/self/mountinfo 2>&1 | /system/bin/grep -v '/data_mirror' 2>&1
+     * 87 32 253:5 / /data rw,nosuid,nodev,noatime shared:27 - ext4 /dev/block/dm-5 rw,seclabel,resgid=1065,errors=panic
+     * 91 87 253:5 /data /data/user/0 rw,nosuid,nodev,noatime shared:27 - ext4 /dev/block/dm-5 rw,seclabel,resgid=1065,errors=panic
+     * }
+     *
+     * The column 4 defines the root of the mount within the filesystem.
+     * Basically, `/dev/block/dm-5/` is mounted at `/data` and `/dev/block/dm-5/data` is mounted at
+     * `/data/user/0`.
+     * https://www.kernel.org/doc/Documentation/filesystems/proc.txt (section 3.5)
+     * https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt
+     * https://unix.stackexchange.com/a/571959
+     *
+     *
+     * Also note that running `/system/bin/ls -lhd /data/user/0/com.termux` as secondary user will result
+     * in `ls: /data/user/0/com.termux: Permission denied` where `0` is primary user id but running
+     * `/system/bin/ls -lhd /data/user/10/com.termux` will result in
+     * `drwx------ 6 u10_a149 u10_a149 4.0K 2021-xx-xx xx:xx /data/user/10/com.termux` where `10` is
+     * secondary user id. So can't stat directory (not contents) of primary user from secondary user
+     * but can the other way around. However, this is happening on android 10 avd, but not on android
+     * 11 avd.
      *
      * @param context The {@link Context} for operations.
      * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
@@ -164,6 +222,73 @@ public class TermuxFileUtils {
 
         return FileUtils.checkMissingFilePermissions("Termux files directory", TermuxConstants.TERMUX_FILES_DIR_PATH,
             FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS, false);
+    }
+
+    /**
+     * Get a markdown {@link String} for stat output for various Termux app files paths.
+     *
+     * @param context The context for operations.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getTermuxFilesDirStatMarkdownString(@NonNull final Context context) {
+        Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(context);
+        if (termuxPackageContext == null) return null;
+
+        // Also ensures that termux files directory is created if it does not already exist
+        String filesDir = termuxPackageContext.getFilesDir().getAbsolutePath();
+
+        // Build script
+        StringBuilder statScript = new StringBuilder();
+        statScript
+            .append("echo 'ls info:'\n")
+            .append("/system/bin/ls -lhd")
+            .append(" '/data/data'")
+            .append(" '/data/user/0'")
+            .append(" '" + TermuxConstants.TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH + "'")
+            .append(" '/data/user/0/" + TermuxConstants.TERMUX_PACKAGE_NAME + "'")
+            .append(" '" + TermuxConstants.TERMUX_FILES_DIR_PATH + "'")
+            .append(" '" + filesDir + "'")
+            .append(" '/data/user/0/" + TermuxConstants.TERMUX_PACKAGE_NAME + "/files'")
+            .append(" '/data/user/" + TermuxConstants.TERMUX_PACKAGE_NAME + "/files'")
+            .append(" '" + TermuxConstants.TERMUX_STAGING_PREFIX_DIR_PATH + "'")
+            .append(" '" + TermuxConstants.TERMUX_PREFIX_DIR_PATH + "'")
+            .append(" '" + TermuxConstants.TERMUX_HOME_DIR_PATH + "'")
+            .append(" '" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/login'")
+            .append(" 2>&1")
+            .append("\necho; echo 'mount info:'\n")
+            .append("/system/bin/grep -E '( /data )|( /data/data )|( /data/user/[0-9]+ )' /proc/self/mountinfo 2>&1 | /system/bin/grep -v '/data_mirror' 2>&1");
+
+        // Run script
+        ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null, statScript.toString() + "\n", "/", true, true);
+        executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
+        TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
+        if (termuxTask == null || !executionCommand.isSuccessful()) {
+            Logger.logError(LOG_TAG, executionCommand.toString());
+            return null;
+        }
+
+        // Build script output
+        StringBuilder statOutput = new StringBuilder();
+        statOutput.append("$ ").append(statScript.toString());
+        statOutput.append("\n\n").append(executionCommand.resultData.stdout.toString());
+
+        boolean stderrSet = !executionCommand.resultData.stderr.toString().isEmpty();
+        if (executionCommand.resultData.exitCode != 0 || stderrSet) {
+            Logger.logError(LOG_TAG, executionCommand.toString());
+            if (stderrSet)
+                statOutput.append("\n").append(executionCommand.resultData.stderr.toString());
+            statOutput.append("\n").append("exit code: ").append(executionCommand.resultData.exitCode.toString());
+        }
+
+        // Build markdown output
+        StringBuilder markdownString = new StringBuilder();
+        markdownString.append("## ").append(TermuxConstants.TERMUX_APP_NAME).append(" Files Info\n\n");
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"TERMUX_REQUIRED_FILES_DIR_PATH ($PREFIX)", TermuxConstants.TERMUX_FILES_DIR_PATH);
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"ANDROID_ASSIGNED_FILES_DIR_PATH", filesDir);
+        markdownString.append("\n\n").append(MarkdownUtils.getMarkdownCodeForString(statOutput.toString(), true));
+        markdownString.append("\n##\n");
+
+        return markdownString.toString();
     }
 
 }
