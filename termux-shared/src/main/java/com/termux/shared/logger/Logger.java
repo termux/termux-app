@@ -436,4 +436,11 @@ public class Logger {
         return (logLevel != null && logLevel >= LOG_LEVEL_OFF && logLevel <= MAX_LOG_LEVEL);
     }
 
+    /** Check if custom log level is valid and >= {@link #CURRENT_LOG_LEVEL}. If custom log level is
+     * not valid then {@link #LOG_LEVEL_VERBOSE} must be >= {@link #CURRENT_LOG_LEVEL}. */
+    public static boolean shouldEnableLoggingForCustomLogLevel(Integer customLogLevel) {
+        customLogLevel = Logger.isLogLevelValid(customLogLevel) ? customLogLevel: Logger.LOG_LEVEL_VERBOSE;
+        return (customLogLevel >= CURRENT_LOG_LEVEL);
+    }
+
 }

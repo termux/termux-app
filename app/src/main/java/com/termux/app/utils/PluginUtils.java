@@ -65,9 +65,12 @@ public class PluginUtils {
         }
 
         boolean isPluginExecutionCommandWithPendingResult = executionCommand.isPluginExecutionCommandWithPendingResult();
+        boolean isExecutionCommandLoggingEnabled = Logger.shouldEnableLoggingForCustomLogLevel(executionCommand.backgroundCustomLogLevel);
 
         // Log the output. ResultData should not be logged if pending result since ResultSender will do it
-        Logger.logDebugExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, !isPluginExecutionCommandWithPendingResult));
+        // or if logging is disabled
+        Logger.logDebugExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true,
+            !isPluginExecutionCommandWithPendingResult, isExecutionCommandLoggingEnabled));
 
         // If execution command was started by a plugin which expects the result back
         if (isPluginExecutionCommandWithPendingResult) {
@@ -78,11 +81,12 @@ public class PluginUtils {
                 setPluginResultDirectoryVariables(executionCommand);
 
             // Send result to caller
-            error = ResultSender.sendCommandResultData(context, logTag, executionCommand.getCommandIdAndLabelLogString(), executionCommand.resultConfig, executionCommand.resultData);
+            error = ResultSender.sendCommandResultData(context, logTag, executionCommand.getCommandIdAndLabelLogString(),
+                executionCommand.resultConfig, executionCommand.resultData, isExecutionCommandLoggingEnabled);
             if (error != null) {
                 // error will be added to existing Errors
                 resultData.setStateFailed(error);
-                Logger.logDebugExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true));
+                Logger.logDebugExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true, isExecutionCommandLoggingEnabled));
 
                 // Flash and send notification for the error
                 Logger.showToast(context, ResultData.getErrorsListMinimalString(resultData), true);
@@ -133,9 +137,11 @@ public class PluginUtils {
         }
 
         boolean isPluginExecutionCommandWithPendingResult = executionCommand.isPluginExecutionCommandWithPendingResult();
+        boolean isExecutionCommandLoggingEnabled = Logger.shouldEnableLoggingForCustomLogLevel(executionCommand.backgroundCustomLogLevel);
 
         // Log the error and any exception. ResultData should not be logged if pending result since ResultSender will do it
-        Logger.logErrorExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, !isPluginExecutionCommandWithPendingResult));
+        Logger.logErrorExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true,
+            !isPluginExecutionCommandWithPendingResult, isExecutionCommandLoggingEnabled));
 
         // If execution command was started by a plugin which expects the result back
         if (isPluginExecutionCommandWithPendingResult) {
@@ -146,11 +152,12 @@ public class PluginUtils {
                 setPluginResultDirectoryVariables(executionCommand);
 
             // Send result to caller
-            error = ResultSender.sendCommandResultData(context, logTag, executionCommand.getCommandIdAndLabelLogString(), executionCommand.resultConfig, executionCommand.resultData);
+            error = ResultSender.sendCommandResultData(context, logTag, executionCommand.getCommandIdAndLabelLogString(),
+                executionCommand.resultConfig, executionCommand.resultData, isExecutionCommandLoggingEnabled);
             if (error != null) {
                 // error will be added to existing Errors
                 resultData.setStateFailed(error);
-                Logger.logErrorExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true));
+                Logger.logErrorExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true, isExecutionCommandLoggingEnabled));
                 forceNotification = true;
             }
 
@@ -171,7 +178,7 @@ public class PluginUtils {
 
     }
 
-    /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData)}
+    /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData, boolean)}
      * to send back the result via {@link ResultConfig#resultPendingIntent}. */
     public static void setPluginResultPendingIntentVariables(ExecutionCommand executionCommand) {
         ResultConfig resultConfig = executionCommand.resultConfig;
@@ -186,7 +193,7 @@ public class PluginUtils {
         resultConfig.resultErrmsgKey = TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG;
     }
 
-    /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData)}
+    /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData, boolean)}
      * to send back the result by writing it to files in {@link ResultConfig#resultDirectoryPath}. */
     public static void setPluginResultDirectoryVariables(ExecutionCommand executionCommand) {
         ResultConfig resultConfig = executionCommand.resultConfig;

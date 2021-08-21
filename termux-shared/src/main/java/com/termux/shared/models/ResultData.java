@@ -133,16 +133,18 @@ public class ResultData implements Serializable {
      * Get a log friendly {@link String} for {@link ResultData} parameters.
      *
      * @param resultData The {@link ResultData} to convert.
-     * @param ignoreNull Set to {@code true} if non-critical {@code null} values are to be ignored.
+     * @param logStdoutAndStderr Set to {@code true} if {@link #stdout} and {@link #stderr} should be logged.
      * @return Returns the log friendly {@link String}.
      */
-    public static String getResultDataLogString(final ResultData resultData, boolean ignoreNull) {
+    public static String getResultDataLogString(final ResultData resultData, boolean logStdoutAndStderr) {
         if (resultData == null) return "null";
 
         StringBuilder logString = new StringBuilder();
 
-        logString.append("\n").append(resultData.getStdoutLogString());
-        logString.append("\n").append(resultData.getStderrLogString());
+        if (logStdoutAndStderr) {
+            logString.append("\n").append(resultData.getStdoutLogString());
+            logString.append("\n").append(resultData.getStderrLogString());
+        }
         logString.append("\n").append(resultData.getExitCodeLogString());
 
         logString.append("\n\n").append(getErrorsListLogString(resultData));

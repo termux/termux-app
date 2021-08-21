@@ -85,8 +85,10 @@ public class ExecutionCommand {
 
     /**
      * The {@link ExecutionCommand} custom log level for background {@link com.termux.shared.shell.TermuxTask}
-     * commands. By default, @link com.termux.shared.shell.StreamGobbler} only logs if {@link Logger}
-     * `CURRENT_LOG_LEVEL` is >= {@link Logger#LOG_LEVEL_VERBOSE}.
+     * commands. By default, @link com.termux.shared.shell.StreamGobbler} only logs stdout and
+     * stderr if {@link Logger} `CURRENT_LOG_LEVEL` is >= {@link Logger#LOG_LEVEL_VERBOSE} and
+     * {@link com.termux.shared.shell.TermuxTask} only logs stdin if `CURRENT_LOG_LEVEL` is >=
+     * {@link Logger#LOG_LEVEL_DEBUG}.
      */
     public Integer backgroundCustomLogLevel;
 
@@ -242,7 +244,7 @@ public class ExecutionCommand {
         if (!hasExecuted())
             return getExecutionInputLogString(this, true, true);
         else {
-            return getExecutionOutputLogString(this, true, true);
+            return getExecutionOutputLogString(this, true, true, true);
         }
     }
 
@@ -298,9 +300,10 @@ public class ExecutionCommand {
      * @param executionCommand The {@link ExecutionCommand} to convert.
      * @param ignoreNull Set to {@code true} if non-critical {@code null} values are to be ignored.
      * @param logResultData Set to {@code true} if {@link #resultData} should be logged.
+     * @param logStdoutAndStderr Set to {@code true} if {@link ResultData#stdout} and {@link ResultData#stderr} should be logged.
      * @return Returns the log friendly {@link String}.
      */
-    public static String getExecutionOutputLogString(final ExecutionCommand executionCommand, boolean ignoreNull, boolean logResultData) {
+    public static String getExecutionOutputLogString(final ExecutionCommand executionCommand, boolean ignoreNull, boolean logResultData, boolean logStdoutAndStderr) {
         if (executionCommand == null) return "null";
 
         StringBuilder logString = new StringBuilder();
@@ -311,7 +314,7 @@ public class ExecutionCommand {
         logString.append("\n").append(executionCommand.getCurrentStateLogString());
 
         if (logResultData)
-            logString.append("\n").append(ResultData.getResultDataLogString(executionCommand.resultData, ignoreNull));
+            logString.append("\n").append(ResultData.getResultDataLogString(executionCommand.resultData, logStdoutAndStderr));
 
         return logString.toString();
     }
@@ -328,7 +331,7 @@ public class ExecutionCommand {
         StringBuilder logString = new StringBuilder();
 
         logString.append(getExecutionInputLogString(executionCommand, false, true));
-        logString.append(getExecutionOutputLogString(executionCommand, false, true));
+        logString.append(getExecutionOutputLogString(executionCommand, false, true, true));
 
         logString.append("\n").append(executionCommand.getCommandDescriptionLogString());
         logString.append("\n").append(executionCommand.getCommandHelpLogString());

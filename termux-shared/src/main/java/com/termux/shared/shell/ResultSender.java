@@ -34,22 +34,24 @@ public class ResultSender {
      * @param label The label for the command.
      * @param resultConfig The {@link ResultConfig} object containing information on how to send the result.
      * @param resultData The {@link ResultData} object containing result data.
+     * @param logStdoutAndStderr Set to {@code true} if {@link ResultData#stdout} and {@link ResultData#stderr}
+     *                           should be logged.
      * @return Returns the {@link Error} if failed to send the result, otherwise {@code null}.
      */
-    public static Error sendCommandResultData(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData) {
+    public static Error sendCommandResultData(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData, boolean logStdoutAndStderr) {
         if (context == null || resultConfig == null || resultData == null)
             return FunctionErrno.ERRNO_NULL_OR_EMPTY_PARAMETERS.getError("context, resultConfig or resultData", "sendCommandResultData");
 
         Error error;
 
         if (resultConfig.resultPendingIntent != null) {
-            error = sendCommandResultDataWithPendingIntent(context, logTag, label, resultConfig, resultData);
+            error = sendCommandResultDataWithPendingIntent(context, logTag, label, resultConfig, resultData, logStdoutAndStderr);
             if (error != null || resultConfig.resultDirectoryPath == null)
                 return error;
         }
 
         if (resultConfig.resultDirectoryPath != null) {
-            return sendCommandResultDataToDirectory(context, logTag, label, resultConfig, resultData);
+            return sendCommandResultDataToDirectory(context, logTag, label, resultConfig, resultData, logStdoutAndStderr);
         } else {
             return FunctionErrno.ERRNO_UNSET_PARAMETERS.getError("resultConfig.resultPendingIntent or resultConfig.resultDirectoryPath", "sendCommandResultData");
         }
@@ -63,15 +65,17 @@ public class ResultSender {
      * @param label The label for the command.
      * @param resultConfig The {@link ResultConfig} object containing information on how to send the result.
      * @param resultData The {@link ResultData} object containing result data.
+     * @param logStdoutAndStderr Set to {@code true} if {@link ResultData#stdout} and {@link ResultData#stderr}
+     *                           should be logged.
      * @return Returns the {@link Error} if failed to send the result, otherwise {@code null}.
      */
-    public static Error sendCommandResultDataWithPendingIntent(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData) {
+    public static Error sendCommandResultDataWithPendingIntent(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData, boolean logStdoutAndStderr) {
         if (context == null || resultConfig == null || resultData == null || resultConfig.resultPendingIntent == null || resultConfig.resultBundleKey == null)
             return FunctionErrno.ERRNO_NULL_OR_EMPTY_PARAMETER.getError("context, resultConfig, resultData, resultConfig.resultPendingIntent or resultConfig.resultBundleKey", "sendCommandResultDataWithPendingIntent");
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
-        Logger.logDebugExtended(logTag, "Sending result for command \"" + label + "\":\n" + resultConfig.toString() + "\n" + resultData.toString());
+        Logger.logDebugExtended(logTag, "Sending result for command \"" + label + "\":\n" + resultConfig.toString() + "\n" + ResultData.getResultDataLogString(resultData, logStdoutAndStderr));
 
         String resultDataStdout = resultData.stdout.toString();
         String resultDataStderr = resultData.stderr.toString();
@@ -152,9 +156,11 @@ public class ResultSender {
      * @param label The label for the command.
      * @param resultConfig The {@link ResultConfig} object containing information on how to send the result.
      * @param resultData The {@link ResultData} object containing result data.
+     * @param logStdoutAndStderr Set to {@code true} if {@link ResultData#stdout} and {@link ResultData#stderr}
+     *                           should be logged.
      * @return Returns the {@link Error} if failed to send the result, otherwise {@code null}.
      */
-    public static Error sendCommandResultDataToDirectory(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData) {
+    public static Error sendCommandResultDataToDirectory(Context context, String logTag, String label, ResultConfig resultConfig, ResultData resultData, boolean logStdoutAndStderr) {
         if (context == null || resultConfig == null || resultData == null || DataUtils.isNullOrEmpty(resultConfig.resultDirectoryPath))
             return FunctionErrno.ERRNO_NULL_OR_EMPTY_PARAMETER.getError("context, resultConfig, resultData or resultConfig.resultDirectoryPath", "sendCommandResultDataToDirectory");
 
@@ -177,7 +183,7 @@ public class ResultSender {
 
         resultConfig.resultDirectoryPath = FileUtils.getCanonicalPath(resultConfig.resultDirectoryPath, null);
 
-        Logger.logDebugExtended(logTag, "Writing result for command \"" + label + "\":\n" + resultConfig.toString() + "\n" + resultData.toString());
+        Logger.logDebugExtended(logTag, "Writing result for command \"" + label + "\":\n" + resultConfig.toString() + "\n" + ResultData.getResultDataLogString(resultData, logStdoutAndStderr));
 
         // If resultDirectoryPath is not a directory, or is not readable or writable, then just return
         // Creation of missing directory and setting of read, write and execute permissions are
