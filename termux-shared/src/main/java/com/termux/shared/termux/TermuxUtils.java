@@ -368,7 +368,7 @@ public class TermuxUtils {
      * @return Returns the markdown {@link String}.
      */
     public static String getTermuxDebugMarkdownString(@NonNull final Context context) {
-        String statInfo = TermuxFileUtils.getTermuxFilesDirStatMarkdownString(context);
+        String statInfo = TermuxFileUtils.getTermuxFilesStatMarkdownString(context);
         String logcatInfo = getLogcatDumpMarkdownString(context);
 
         if (statInfo != null && logcatInfo != null)

@@ -230,7 +230,7 @@ public class TermuxFileUtils {
      * @param context The context for operations.
      * @return Returns the markdown {@link String}.
      */
-    public static String getTermuxFilesDirStatMarkdownString(@NonNull final Context context) {
+    public static String getTermuxFilesStatMarkdownString(@NonNull final Context context) {
         Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(context);
         if (termuxPackageContext == null) return null;
 
@@ -241,7 +241,7 @@ public class TermuxFileUtils {
         StringBuilder statScript = new StringBuilder();
         statScript
             .append("echo 'ls info:'\n")
-            .append("/system/bin/ls -lhd")
+            .append("/system/bin/ls -lhdZ")
             .append(" '/data/data'")
             .append(" '/data/user/0'")
             .append(" '" + TermuxConstants.TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH + "'")
