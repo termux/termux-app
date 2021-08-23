@@ -173,6 +173,7 @@ public class ExtraKeysConstants {
     public static final ExtraKeyDisplayMap CONTROL_CHARS_ALIASES = new ExtraKeyDisplayMap() {{
         put("ESCAPE", "ESC");
         put("CONTROL", "CTRL");
+        put("SHFT", "SHIFT");
         put("RETURN", "ENTER"); // Technically different keys, but most applications won't see the difference
         put("FUNCTION", "FN");
         // no alias for ALT

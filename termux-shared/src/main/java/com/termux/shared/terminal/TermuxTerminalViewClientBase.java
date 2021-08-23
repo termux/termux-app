@@ -67,6 +67,12 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
         return false;
     }
 
+    public boolean readShiftKey() {
+        return false;
+    }
+
+
+
     @Override
     public boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session) {
         return false;
