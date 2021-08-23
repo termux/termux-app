@@ -302,6 +302,11 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         return readExtraKeysSpecialButton(SpecialButton.SHIFT);
     }
 
+    @Override
+    public boolean readFnKey() {
+        return readExtraKeysSpecialButton(SpecialButton.FN);
+    }
+
     public boolean readExtraKeysSpecialButton(SpecialButton specialButton) {
         if (mActivity.getExtraKeysView() == null) return false;
         Boolean state = mActivity.getExtraKeysView().readSpecialButton(specialButton, true);

@@ -599,6 +599,7 @@ public final class TerminalView extends View {
         final boolean controlDown = event.isCtrlPressed() || mClient.readControlKey();
         final boolean leftAltDown = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0 || mClient.readAltKey();
         final boolean shiftDown = event.isShiftPressed() || mClient.readShiftKey();
+        final boolean fnDown = event.isFunctionPressed() || mClient.readFnKey();
         final boolean rightAltDownFromEvent = (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
 
         int keyMod = 0;
@@ -606,7 +607,8 @@ public final class TerminalView extends View {
         if (event.isAltPressed() || leftAltDown) keyMod |= KeyHandler.KEYMOD_ALT;
         if (shiftDown) keyMod |= KeyHandler.KEYMOD_SHIFT;
         if (event.isNumLockOn()) keyMod |= KeyHandler.KEYMOD_NUM_LOCK;
-        if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod)) {
+        // https://github.com/termux/termux-app/issues/731
+        if (!fnDown && handleKeyCode(keyCode, keyMod)) {
             if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "handleKeyCode() took key event");
             return true;
         }
@@ -622,6 +624,7 @@ public final class TerminalView extends View {
         int effectiveMetaState = event.getMetaState() & ~bitsToClear;
 
         if (shiftDown) effectiveMetaState |= KeyEvent.META_SHIFT_ON | KeyEvent.META_SHIFT_LEFT_ON;
+        if (fnDown) effectiveMetaState |= KeyEvent.META_FUNCTION_ON;
 
         int result = event.getUnicodeChar(effectiveMetaState);
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
