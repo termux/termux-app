@@ -44,7 +44,7 @@ import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
-import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
+import com.termux.shared.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.interact.TextInputDialogUtils;
 import com.termux.shared.logger.Logger;

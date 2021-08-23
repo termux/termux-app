@@ -11,7 +11,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.termux.R;
 import com.termux.app.TermuxActivity;
-import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
+import com.termux.shared.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.terminal.TerminalSession;
 
 public class TerminalToolbarViewPager {
@@ -44,8 +44,8 @@ public class TerminalToolbarViewPager {
             if (position == 0) {
                 layout = inflater.inflate(R.layout.view_terminal_toolbar_extra_keys, collection, false);
                 ExtraKeysView extraKeysView = (ExtraKeysView) layout;
-                extraKeysView.setTermuxTerminalViewClient(mActivity.getTermuxTerminalViewClient());
-                extraKeysView.setTermuxTerminalSessionClient(mActivity.getTermuxTerminalSessionClient());
+                extraKeysView.setExtraKeysViewClient(new TermuxTerminalExtraKeys(mActivity.getTerminalView(),
+                    mActivity.getTermuxTerminalViewClient(), mActivity.getTermuxTerminalSessionClient()));
                 mActivity.setExtraKeysView(extraKeysView);
                 extraKeysView.reload(mActivity.getProperties().getExtraKeysInfo());
 
