@@ -423,7 +423,7 @@ public class TermuxSharedProperties {
      * @return Returns the internal value for value.
      */
     public static String getExtraKeysInternalPropertyValueFromValue(String value) {
-        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS);
+        return SharedProperties.getDefaultIfNullOrEmpty(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS);
     }
 
     /**
@@ -433,7 +433,7 @@ public class TermuxSharedProperties {
      * @return Returns the internal value for value.
      */
     public static String getExtraKeysStyleInternalPropertyValueFromValue(String value) {
-        return SharedProperties.getDefaultIfNull(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE);
+        return SharedProperties.getDefaultIfNullOrEmpty(value, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE);
     }
 
     /**
