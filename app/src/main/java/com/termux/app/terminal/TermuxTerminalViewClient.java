@@ -216,7 +216,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
             mTermuxTerminalSessionClient.removeFinishedSession(currentSession);
             return true;
-        } else if (e.isCtrlPressed() && e.isAltPressed()) {
+        } else if (!mActivity.getProperties().areHardwareKeyboardShortcutsDisabled() &&
+            e.isCtrlPressed() && e.isAltPressed()) {
             // Get the unmodified code point:
             int unicodeChar = e.getUnicodeChar(0);
 

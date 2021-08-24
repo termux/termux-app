@@ -72,6 +72,10 @@ public final class TermuxPropertyConstants {
 
     /* boolean */
 
+    /** Defines the key for whether hardware keyboard shortcuts are enabled. */
+    public static final String KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS =  "disable-hardware-keyboard-shortcuts"; // Default: "disable-hardware-keyboard-shortcuts"
+
+
     /** Defines the key for whether a toast will be shown when user changes the terminal session */
     public static final String KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST =  "disable-terminal-session-change-toast"; // Default: "disable-terminal-session-change-toast"
 
@@ -295,6 +299,7 @@ public final class TermuxPropertyConstants {
      * */
     public static final Set<String> TERMUX_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         /* boolean */
+        KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
@@ -335,6 +340,7 @@ public final class TermuxPropertyConstants {
      * default: false
      * */
     public static final Set<String> TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+        KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
