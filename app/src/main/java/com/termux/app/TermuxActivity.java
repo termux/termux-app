@@ -361,7 +361,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                         Bundle bundle = getIntent().getExtras();
                         boolean launchFailsafe = false;
                         if (bundle != null) {
-                            launchFailsafe = bundle.getBoolean(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
+                            launchFailsafe = bundle.getBoolean(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                         }
                         mTermuxTerminalSessionClient.addNewSession(launchFailsafe, null);
                     } catch (WindowManager.BadTokenException e) {
@@ -376,7 +376,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             Intent i = getIntent();
             if (i != null && Intent.ACTION_RUN.equals(i.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
-                boolean isFailSafe = i.getBooleanExtra(TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION, false);
+                boolean isFailSafe = i.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                 mTermuxTerminalSessionClient.addNewSession(isFailSafe, null);
             } else {
                 mTermuxTerminalSessionClient.setCurrentSession(mTermuxTerminalSessionClient.getCurrentStoredSessionOrLast());

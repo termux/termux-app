@@ -12,7 +12,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /*
- * Version: v0.25.0
+ * Version: v0.26.0
  *
  * Changelog
  *
@@ -178,6 +178,10 @@ import java.util.List;
  *          `EXTRA_BACKGROUND_CUSTOM_LOG_LEVEL`.
  *      - Added following to `TERMUX_APP.RUN_COMMAND_SERVICE`:
  *          `EXTRA_BACKGROUND_CUSTOM_LOG_LEVEL`.
+ *
+ * - 0.26.0 (2021-08-25)
+ *      - Changed `TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION` to `TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION`.
+ *
  */
 
 /**
@@ -763,8 +767,8 @@ public final class TermuxConstants {
          */
         public static final class TERMUX_ACTIVITY {
 
-            /** Intent action to start termux failsafe session */
-            public static final String ACTION_FAILSAFE_SESSION = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.failsafe_session"; // Default: "com.termux.app.failsafe_session"
+            /** Intent extra for if termux failsafe session needs to be started and is used by {@link TERMUX_ACTIVITY} and {@link TERMUX_SERVICE#ACTION_STOP_SERVICE} */
+            public static final String EXTRA_FAILSAFE_SESSION = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.failsafe_session"; // Default: "com.termux.app.failsafe_session"
 
 
             /** Intent action to make termux request storage permissions */
