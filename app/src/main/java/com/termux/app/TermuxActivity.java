@@ -29,6 +29,7 @@ import android.view.autofill.AutofillManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.termux.R;
@@ -49,6 +50,7 @@ import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.interact.TextInputDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 import com.termux.app.utils.CrashUtils;
@@ -203,6 +205,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             mIsInvalidState = true;
             return;
         }
+
+        setMargins();
 
         mTermuxActivityRootView = findViewById(R.id.activity_termux_root_view);
         mTermuxActivityRootView.setActivity(this);
@@ -414,6 +418,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 android.R.color.background_dark));
             ((ImageButton) findViewById(R.id.settings_button)).setColorFilter(Color.WHITE);
         }
+    }
+
+    private void setMargins() {
+        RelativeLayout relativeLayout = findViewById(R.id.activity_termux_root_relative_layout);
+        int marginHorizontal = mProperties.getTerminalMarginHorizontal();
+        int marginVertical = mProperties.getTerminalMarginVertical();
+        ViewUtils.setLayoutMarginsInDp(relativeLayout, marginHorizontal, marginVertical, marginHorizontal, marginVertical);
     }
 
 
@@ -873,6 +884,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
         }
 
+        setMargins();
         setTerminalToolbarHeight();
 
         if (mTermuxTerminalSessionClient != null)

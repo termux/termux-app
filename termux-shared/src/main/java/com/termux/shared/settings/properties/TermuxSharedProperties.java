@@ -219,6 +219,10 @@ public class TermuxSharedProperties {
                 return (int) getTerminalCursorBlinkRateInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_CURSOR_STYLE:
                 return (int) getTerminalCursorStyleInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_TERMINAL_MARGIN_HORIZONTAL:
+                return (int) getTerminalMarginHorizontalInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_TERMINAL_MARGIN_VERTICAL:
+                return (int) getTerminalMarginVerticalInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS:
                 return (int) getTerminalTranscriptRowsInternalPropertyValueFromValue(value);
 
@@ -316,6 +320,42 @@ public class TermuxSharedProperties {
      */
     public static int getTerminalCursorStyleInternalPropertyValueFromValue(String value) {
         return (int) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_STYLE, TermuxPropertyConstants.MAP_TERMINAL_CURSOR_STYLE, SharedProperties.toLowerCase(value), TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_STYLE, true, LOG_TAG);
+    }
+
+    /**
+     * Returns the int for the value if its not null and is between
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_HORIZONTAL_MIN} and
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_HORIZONTAL_MAX},
+     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_HORIZONTAL_MARGIN}.
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static int getTerminalMarginHorizontalInternalPropertyValueFromValue(String value) {
+        return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_MARGIN_HORIZONTAL,
+            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_HORIZONTAL_MARGIN),
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_HORIZONTAL_MARGIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_MARGIN_HORIZONTAL_MIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_MARGIN_HORIZONTAL_MAX,
+            true, true, LOG_TAG);
+    }
+
+    /**
+     * Returns the int for the value if its not null and is between
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_VERTICAL_MIN} and
+     * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_VERTICAL_MAX},
+     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_VERTICAL_MARGIN}.
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static int getTerminalMarginVerticalInternalPropertyValueFromValue(String value) {
+        return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_MARGIN_VERTICAL,
+            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_VERTICAL_MARGIN),
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_VERTICAL_MARGIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_MARGIN_VERTICAL_MIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_MARGIN_VERTICAL_MAX,
+            true, true, LOG_TAG);
     }
 
     /**
@@ -506,6 +546,14 @@ public class TermuxSharedProperties {
 
     public int getTerminalCursorStyle() {
         return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_STYLE, true);
+    }
+
+    public int getTerminalMarginHorizontal() {
+        return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_MARGIN_HORIZONTAL, true);
+    }
+
+    public int getTerminalMarginVertical() {
+        return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_MARGIN_VERTICAL, true);
     }
 
     public int getTerminalTranscriptRows() {
