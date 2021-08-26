@@ -764,6 +764,10 @@ public final class TerminalView extends View {
 
         if (mTermSession == null) return;
 
+        // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
+        if (mEmulator != null)
+            mEmulator.setCursorBlinkState(true);
+
         final boolean controlDown = controlDownFromEvent || mClient.readControlKey();
         final boolean altDown = leftAltDownFromEvent || mClient.readAltKey();
 
