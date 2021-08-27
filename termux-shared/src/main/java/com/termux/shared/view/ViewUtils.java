@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -216,6 +217,20 @@ public class ViewUtils {
     /** Convert value in device independent pixels (dp) to pixels (px) units. */
     public static int dpToPx(Context context, int dp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
+    }
+
+
+    public static void setLayoutMarginsInDp(@NonNull View view, int left, int top, int right, int bottom) {
+        Context context = view.getContext();
+        setLayoutMarginsInPixels(view, dpToPx(context, left), dpToPx(context, top), dpToPx(context, right), dpToPx(context, bottom));
+    }
+
+    public static void setLayoutMarginsInPixels(@NonNull View view, int left, int top, int right, int bottom) {
+        if (view.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            params.setMargins(left, top, right, bottom);
+            view.setLayoutParams(params);
+        }
     }
 
 }

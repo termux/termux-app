@@ -54,6 +54,11 @@ public interface TerminalViewClient {
 
     boolean readAltKey();
 
+    boolean readShiftKey();
+
+    boolean readFnKey();
+
+
 
     boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session);
 

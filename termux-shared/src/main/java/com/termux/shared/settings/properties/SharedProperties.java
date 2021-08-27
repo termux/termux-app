@@ -554,6 +554,17 @@ public class SharedProperties {
     }
 
     /**
+     * Get the {@link String} object itself if it is not {@code null} or empty, otherwise default.
+     *
+     * @param object The {@link String} to check.
+     * @param def The default {@link String}.
+     * @return Returns {@code object} if it is not {@code null}, otherwise returns {@code def}.
+     */
+    public static String getDefaultIfNullOrEmpty(@androidx.annotation.Nullable String object, @androidx.annotation.Nullable String def) {
+        return (object == null || object.isEmpty()) ? def : object;
+    }
+
+    /**
      * Covert the {@link String} value to lowercase.
      *
      * @param value The {@link String} value to convert.

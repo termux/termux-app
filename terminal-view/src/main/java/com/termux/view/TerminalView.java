@@ -271,6 +271,10 @@ public final class TerminalView extends View {
                 // Some keyboards seems do not reset the internal state on TYPE_NULL.
                 // Affects mostly Samsung stock keyboards.
                 // https://github.com/termux/termux-app/issues/686
+                // However, this is not a valid value as per AOSP since `InputType.TYPE_CLASS_*` is
+                // not set and it logs a warning:
+                // W/InputAttributes: Unexpected input class: inputType=0x00080090 imeOptions=0x02000000
+                // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:packages/inputmethods/LatinIME/java/src/com/android/inputmethod/latin/InputAttributes.java;l=79
                 outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
             } else {
                 // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
@@ -345,6 +349,10 @@ public final class TerminalView extends View {
                     } else {
                         codePoint = firstChar;
                     }
+
+                    // Check onKeyDown() for details.
+                    if (mClient.readShiftKey())
+                        codePoint = Character.toUpperCase(codePoint);
 
                     boolean ctrlHeld = false;
                     if (codePoint <= 31 && codePoint != 27) {
@@ -576,6 +584,102 @@ public final class TerminalView extends View {
         return super.onKeyPreIme(keyCode, event);
     }
 
+    /**
+     * Key presses in software keyboards will generally NOT trigger this listener, although some
+     * may elect to do so in some situations. Do not rely on this to catch software key presses.
+     * Gboard calls this when shouldEnforceCharBasedInput() is disabled (InputType.TYPE_NULL) instead
+     * of calling commitText(), with deviceId=-1. However, Hacker's Keyboard, OpenBoard, LG Keyboard
+     * call commitText().
+     *
+     * This function may also be called directly without android calling it, like by
+     * `TerminalExtraKeys` which generates a KeyEvent manually which uses {@link KeyCharacterMap#VIRTUAL_KEYBOARD}
+     * as the device (deviceId=-1), as does Gboard. That would normally use mappings defined in
+     * `/system/usr/keychars/Virtual.kcm`. You can run `dumpsys input` to find the `KeyCharacterMapFile`
+     * used by virtual keyboard or hardware keyboard. Note that virtual keyboard device is not the
+     * same as software keyboard, like Gboard, etc. Its a fake device used for generating events and
+     * for testing.
+     *
+     * We handle shift key in `commitText()` to convert codepoint to uppercase case there with a
+     * call to {@link Character#toUpperCase(int)}, but here we instead rely on getUnicodeChar() for
+     * conversion of keyCode, for both hardware keyboard shift key (via effectiveMetaState) and
+     * `mClient.readShiftKey()`, based on value in kcm files.
+     * This may result in different behaviour depending on keyboard and android kcm files set for the
+     * InputDevice for the event passed to this function. This will likely be an issue for non-english
+     * languages since `Virtual.kcm` in english only by default or at least in AOSP. For both hardware
+     * shift key (via effectiveMetaState) and `mClient.readShiftKey()`, `getUnicodeChar()` is used
+     * for shift specific behaviour which usually is to uppercase.
+     *
+     * For fn key on hardware keyboard, android checks kcm files for hardware keyboards, which is
+     * `Generic.kcm` by default, unless a vendor specific one is defined. The event passed will have
+     * {@link KeyEvent#META_FUNCTION_ON} set. If the kcm file only defines a single character or unicode
+     * code point `\\uxxxx`, then only one event is passed with that value. However, if kcm defines
+     * a `fallback` key for fn or others, like `key DPAD_UP { ... fn: fallback PAGE_UP }`, then
+     * android will first pass an event with original key `DPAD_UP` and {@link KeyEvent#META_FUNCTION_ON}
+     * set. But this function will not consume it and android will pass another event with `PAGE_UP`
+     * and {@link KeyEvent#META_FUNCTION_ON} not set, which will be consumed.
+     *
+     * Now there are some other issues as well, firstly ctrl and alt flags are not passed to
+     * `getUnicodeChar()`, so modified key values in kcm are not used. Secondly, if the kcm file
+     * for other modifiers like shift or fn define a non-alphabet, like { fn: '\u0015' } to act as
+     * DPAD_LEFT, the `getUnicodeChar()` will correctly return `21` as the code point but action will
+     * not happen because the `handleKeyCode()` function that transforms DPAD_LEFT to `\033[D`
+     * escape sequence for the terminal to perform the left action would not be called since its
+     * called before `getUnicodeChar()` and terminal will instead get `21 0x15 Negative Acknowledgement`.
+     * The solution to such issues is calling `getUnicodeChar()` before the call to `handleKeyCode()`
+     * if user has defined a custom kcm file, like done in POC mentioned in #2237. Note that
+     * Hacker's Keyboard calls `commitText()` so don't test fn/shift with it for this function.
+     * https://github.com/termux/termux-app/pull/2237
+     * https://github.com/agnostic-apollo/termux-app/blob/terminal-code-point-custom-mapping/terminal-view/src/main/java/com/termux/view/TerminalView.java
+     *
+     * Key Character Map (kcm) and Key Layout (kl) files info:
+     * https://source.android.com/devices/input/key-character-map-files
+     * https://source.android.com/devices/input/key-layout-files
+     * https://source.android.com/devices/input/keyboard-devices
+     * AOSP kcm and kl files:
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/data/keyboards
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/packages/InputDevices/res/raw
+     *
+     * KeyCodes:
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/core/java/android/view/KeyEvent.java
+     * https://cs.android.com/android/platform/superproject/+/master:frameworks/native/include/android/keycodes.h
+     *
+     * `dumpsys input`:
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/services/inputflinger/reader/EventHub.cpp;l=1917
+     *
+     * Loading of keymap:
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/services/inputflinger/reader/EventHub.cpp;l=1644
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/libs/input/Keyboard.cpp;l=41
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/libs/input/InputDevice.cpp
+     * OVERLAY keymaps for hardware keyboards may be combined as well:
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/libs/input/KeyCharacterMap.cpp;l=165
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/libs/input/KeyCharacterMap.cpp;l=831
+     *
+     * Parse kcm file:
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/libs/input/KeyCharacterMap.cpp;l=727
+     * Parse key value:
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/libs/input/KeyCharacterMap.cpp;l=981
+     *
+     * `KeyEvent.getUnicodeChar()`
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/core/java/android/view/KeyEvent.java;l=2716
+     * https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/view/KeyCharacterMap.java;l=368
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/core/jni/android_view_KeyCharacterMap.cpp;l=117
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/native/libs/input/KeyCharacterMap.cpp;l=231
+     *
+     * Keyboard layouts advertised by applications, like for hardware keyboards via #ACTION_QUERY_KEYBOARD_LAYOUTS
+     * Config is stored in `/data/system/input-manager-state.xml`
+     * https://github.com/ris58h/custom-keyboard-layout
+     * Loading from apps:
+     * https://cs.android.com/android/platform/superproject/+/master:frameworks/base/services/core/java/com/android/server/input/InputManagerService.java;l=1221
+     * Set:
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/core/java/android/hardware/input/InputManager.java;l=89
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/core/java/android/hardware/input/InputManager.java;l=543
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:packages/apps/Settings/src/com/android/settings/inputmethod/KeyboardLayoutDialogFragment.java;l=167
+     * https://cs.android.com/android/platform/superproject/+/master:frameworks/base/services/core/java/com/android/server/input/InputManagerService.java;l=1385
+     * https://cs.android.com/android/platform/superproject/+/master:frameworks/base/services/core/java/com/android/server/input/PersistentDataStore.java
+     * Get overlay keyboard layout
+     * https://cs.android.com/android/platform/superproject/+/master:frameworks/base/services/core/java/com/android/server/input/InputManagerService.java;l=2158
+     * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/services/core/jni/com_android_server_input_InputManagerService.cpp;l=616
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
@@ -598,13 +702,15 @@ public final class TerminalView extends View {
         final int metaState = event.getMetaState();
         final boolean controlDown = event.isCtrlPressed() || mClient.readControlKey();
         final boolean leftAltDown = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0 || mClient.readAltKey();
+        final boolean shiftDown = event.isShiftPressed() || mClient.readShiftKey();
         final boolean rightAltDownFromEvent = (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
 
         int keyMod = 0;
         if (controlDown) keyMod |= KeyHandler.KEYMOD_CTRL;
         if (event.isAltPressed() || leftAltDown) keyMod |= KeyHandler.KEYMOD_ALT;
-        if (event.isShiftPressed()) keyMod |= KeyHandler.KEYMOD_SHIFT;
+        if (shiftDown) keyMod |= KeyHandler.KEYMOD_SHIFT;
         if (event.isNumLockOn()) keyMod |= KeyHandler.KEYMOD_NUM_LOCK;
+        // https://github.com/termux/termux-app/issues/731
         if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod)) {
             if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "handleKeyCode() took key event");
             return true;
@@ -619,6 +725,9 @@ public final class TerminalView extends View {
             bitsToClear |= KeyEvent.META_ALT_ON | KeyEvent.META_ALT_LEFT_ON;
         }
         int effectiveMetaState = event.getMetaState() & ~bitsToClear;
+
+        if (shiftDown) effectiveMetaState |= KeyEvent.META_SHIFT_ON | KeyEvent.META_SHIFT_LEFT_ON;
+        if (mClient.readFnKey()) effectiveMetaState |= KeyEvent.META_FUNCTION_ON;
 
         int result = event.getUnicodeChar(effectiveMetaState);
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
@@ -654,6 +763,10 @@ public final class TerminalView extends View {
         }
 
         if (mTermSession == null) return;
+
+        // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
+        if (mEmulator != null)
+            mEmulator.setCursorBlinkState(true);
 
         final boolean controlDown = controlDownFromEvent || mClient.readControlKey();
         final boolean altDown = leftAltDownFromEvent || mClient.readAltKey();

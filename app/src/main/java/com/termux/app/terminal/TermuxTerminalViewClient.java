@@ -27,13 +27,13 @@ import com.termux.shared.file.FileUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.terminal.TermuxTerminalViewClientBase;
+import com.termux.shared.terminal.io.extrakeys.SpecialButton;
 import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.models.ReportInfo;
 import com.termux.app.models.UserAction;
 import com.termux.app.terminal.io.KeyboardShortcut;
-import com.termux.app.terminal.io.extrakeys.ExtraKeysView;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.logger.Logger;
@@ -73,6 +73,10 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     public TermuxTerminalViewClient(TermuxActivity activity, TermuxTerminalSessionClient termuxTerminalSessionClient) {
         this.mActivity = activity;
         this.mTermuxTerminalSessionClient = termuxTerminalSessionClient;
+    }
+
+    public TermuxActivity getActivity() {
+        return mActivity;
     }
 
     /**
@@ -212,7 +216,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
             mTermuxTerminalSessionClient.removeFinishedSession(currentSession);
             return true;
-        } else if (e.isCtrlPressed() && e.isAltPressed()) {
+        } else if (!mActivity.getProperties().areHardwareKeyboardShortcutsDisabled() &&
+            e.isCtrlPressed() && e.isAltPressed()) {
             // Get the unmodified code point:
             int unicodeChar = e.getUnicodeChar(0);
 
@@ -289,12 +294,32 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public boolean readControlKey() {
-        return (mActivity.getExtraKeysView() != null && mActivity.getExtraKeysView().readSpecialButton(ExtraKeysView.SpecialButton.CTRL)) || mVirtualControlKeyDown;
+        return readExtraKeysSpecialButton(SpecialButton.CTRL) || mVirtualControlKeyDown;
     }
 
     @Override
     public boolean readAltKey() {
-        return (mActivity.getExtraKeysView() != null && mActivity.getExtraKeysView().readSpecialButton(ExtraKeysView.SpecialButton.ALT));
+        return readExtraKeysSpecialButton(SpecialButton.ALT);
+    }
+
+    @Override
+    public boolean readShiftKey() {
+        return readExtraKeysSpecialButton(SpecialButton.SHIFT);
+    }
+
+    @Override
+    public boolean readFnKey() {
+        return readExtraKeysSpecialButton(SpecialButton.FN);
+    }
+
+    public boolean readExtraKeysSpecialButton(SpecialButton specialButton) {
+        if (mActivity.getExtraKeysView() == null) return false;
+        Boolean state = mActivity.getExtraKeysView().readSpecialButton(specialButton, true);
+        if (state == null) {
+            Logger.logError(LOG_TAG,"Failed to read an unregistered " + specialButton + " special button value from extra keys.");
+            return false;
+        }
+        return state;
     }
 
     @Override

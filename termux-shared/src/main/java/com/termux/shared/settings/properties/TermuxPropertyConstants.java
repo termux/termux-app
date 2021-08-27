@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.12.0
+ * Version: v0.13.0
  *
  * Changelog
  *
@@ -55,6 +55,9 @@ import java.util.Set;
  *
  * - 0.12.0 (2021-06-10)
  *      - Add `*KEY_TERMINAL_CURSOR_STYLE*`.
+ *
+ * - 0.13.0 (2021-08-25)
+ *      - Add `*KEY_TERMINAL_MARGIN_HORIZONTAL*` and `*KEY_TERMINAL_MARGIN_VERTICAL*`.
  */
 
 /**
@@ -71,6 +74,10 @@ import java.util.Set;
 public final class TermuxPropertyConstants {
 
     /* boolean */
+
+    /** Defines the key for whether hardware keyboard shortcuts are enabled. */
+    public static final String KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS =  "disable-hardware-keyboard-shortcuts"; // Default: "disable-hardware-keyboard-shortcuts"
+
 
     /** Defines the key for whether a toast will be shown when user changes the terminal session */
     public static final String KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST =  "disable-terminal-session-change-toast"; // Default: "disable-terminal-session-change-toast"
@@ -166,6 +173,20 @@ public final class TermuxPropertyConstants {
             .put(VALUE_TERMINAL_CURSOR_STYLE_UNDERLINE, IVALUE_TERMINAL_CURSOR_STYLE_UNDERLINE)
             .put(VALUE_TERMINAL_CURSOR_STYLE_BAR, IVALUE_TERMINAL_CURSOR_STYLE_BAR)
             .build();
+
+
+
+    /** Defines the key for the terminal margin on left and right in dp units */
+    public static final String KEY_TERMINAL_MARGIN_HORIZONTAL =  "terminal-margin-horizontal"; // Default: "terminal-margin-horizontal"
+    public static final int IVALUE_TERMINAL_MARGIN_HORIZONTAL_MIN = 0;
+    public static final int IVALUE_TERMINAL_MARGIN_HORIZONTAL_MAX = 100;
+    public static final int DEFAULT_IVALUE_TERMINAL_HORIZONTAL_MARGIN = 3;
+
+    /** Defines the key for the terminal margin on top and bottom in dp units */
+    public static final String KEY_TERMINAL_MARGIN_VERTICAL =  "terminal-margin-vertical"; // Default: "terminal-margin-vertical"
+    public static final int IVALUE_TERMINAL_MARGIN_VERTICAL_MIN = 0;
+    public static final int IVALUE_TERMINAL_MARGIN_VERTICAL_MAX = 100;
+    public static final int DEFAULT_IVALUE_TERMINAL_VERTICAL_MARGIN = 0;
 
 
 
@@ -295,6 +316,7 @@ public final class TermuxPropertyConstants {
      * */
     public static final Set<String> TERMUX_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         /* boolean */
+        KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
@@ -309,6 +331,8 @@ public final class TermuxPropertyConstants {
         KEY_BELL_BEHAVIOUR,
         KEY_TERMINAL_CURSOR_BLINK_RATE,
         KEY_TERMINAL_CURSOR_STYLE,
+        KEY_TERMINAL_MARGIN_HORIZONTAL,
+        KEY_TERMINAL_MARGIN_VERTICAL,
         KEY_TERMINAL_TRANSCRIPT_ROWS,
 
         /* float */
@@ -335,6 +359,7 @@ public final class TermuxPropertyConstants {
      * default: false
      * */
     public static final Set<String> TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+        KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,

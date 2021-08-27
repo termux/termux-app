@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.termux.app.terminal.io.extrakeys.ExtraKeysView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.termux.shared.terminal.io.extrakeys.ExtraKeysView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/terminal_toolbar_extra_keys"
     style="?android:attr/buttonBarStyle"
     android:layout_width="match_parent"
