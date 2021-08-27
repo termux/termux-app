@@ -1,7 +1,6 @@
 package com.termux.filepicker;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +8,9 @@ import android.provider.OpenableColumns;
 import android.util.Patterns;
 
 import com.termux.R;
+import com.termux.shared.data.DataUtils;
+import com.termux.shared.data.IntentUtils;
+import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.interact.TextInputDialogUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
@@ -39,6 +41,8 @@ public class TermuxFileReceiverActivity extends Activity {
      */
     boolean mFinishOnDismissNameDialog = true;
 
+    private static final String API_TAG = TermuxConstants.TERMUX_APP_NAME + "FileReceiver";
+
     private static final String LOG_TAG = "TermuxFileReceiverActivity";
 
     static boolean isSharedTextAnUrl(String sharedText) {
@@ -55,44 +59,66 @@ public class TermuxFileReceiverActivity extends Activity {
         final String type = intent.getType();
         final String scheme = intent.getScheme();
 
+        Logger.logVerbose(LOG_TAG, "Intent Received:\n" + IntentUtils.getIntentString(intent));
+
+        final String sharedTitle = IntentUtils.getStringExtraIfSet(intent, Intent.EXTRA_TITLE, null);
+
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             final String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
             final Uri sharedUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
 
-            if (sharedText != null) {
+            if (sharedUri != null) {
+                handleContentUri(sharedUri, sharedTitle);
+            } else if (sharedText != null) {
                 if (isSharedTextAnUrl(sharedText)) {
                     handleUrlAndFinish(sharedText);
                 } else {
-                    String subject = intent.getStringExtra(Intent.EXTRA_SUBJECT);
-                    if (subject == null) subject = intent.getStringExtra(Intent.EXTRA_TITLE);
+                    String subject = IntentUtils.getStringExtraIfSet(intent, Intent.EXTRA_SUBJECT, null);
+                    if (subject == null) subject = sharedTitle;
                     if (subject != null) subject += ".txt";
                     promptNameAndSave(new ByteArrayInputStream(sharedText.getBytes(StandardCharsets.UTF_8)), subject);
                 }
-            } else if (sharedUri != null) {
-                handleContentUri(sharedUri, intent.getStringExtra(Intent.EXTRA_TITLE));
             } else {
                 showErrorDialogAndQuit("Send action without content - nothing to save.");
             }
-        } else if ("content".equals(scheme)) {
-            handleContentUri(intent.getData(), intent.getStringExtra(Intent.EXTRA_TITLE));
-        } else if ("file".equals(scheme)) {
-            // When e.g. clicking on a downloaded apk:
-            String path = intent.getData().getPath();
-            File file = new File(path);
-            try {
-                FileInputStream in = new FileInputStream(file);
-                promptNameAndSave(in, file.getName());
-            } catch (FileNotFoundException e) {
-                showErrorDialogAndQuit("Cannot open file: " + e.getMessage() + ".");
-            }
         } else {
-            showErrorDialogAndQuit("Unable to receive any file or URL.");
+            Uri dataUri = intent.getData();
+
+            if (dataUri == null) {
+                showErrorDialogAndQuit("Data uri not passed.");
+                return;
+            }
+
+            if ("content".equals(scheme)) {
+                handleContentUri(dataUri, sharedTitle);
+            } else if ("file".equals(scheme)) {
+                // When e.g. clicking on a downloaded apk:
+                String path = dataUri.getPath();
+                if (DataUtils.isNullOrEmpty(path)) {
+                    showErrorDialogAndQuit("File path from data uri is null, empty or invalid.");
+                    return;
+                }
+
+                File file = new File(path);
+                try {
+                    FileInputStream in = new FileInputStream(file);
+                    promptNameAndSave(in, file.getName());
+                } catch (FileNotFoundException e) {
+                    showErrorDialogAndQuit("Cannot open file: " + e.getMessage() + ".");
+                }
+            } else {
+                showErrorDialogAndQuit("Unable to receive any file or URL.");
+            }
         }
     }
 
     void showErrorDialogAndQuit(String message) {
         mFinishOnDismissNameDialog = false;
-        new AlertDialog.Builder(this).setMessage(message).setOnDismissListener(dialog -> finish()).setPositiveButton(android.R.string.ok, (dialog, which) -> finish()).show();
+        MessageDialogUtils.showMessage(this,
+            API_TAG, message,
+            null, (dialog, which) -> finish(),
+            null, null,
+            dialog -> finish());
     }
 
     void handleContentUri(final Uri uri, String subjectFromIntent) {
@@ -157,10 +183,17 @@ public class TermuxFileReceiverActivity extends Activity {
 
     public File saveStreamWithName(InputStream in, String attachmentFileName) {
         File receiveDir = new File(TERMUX_RECEIVEDIR);
+
+        if (DataUtils.isNullOrEmpty(attachmentFileName)) {
+            showErrorDialogAndQuit("File name cannot be null or empty");
+            return null;
+        }
+
         if (!receiveDir.isDirectory() && !receiveDir.mkdirs()) {
             showErrorDialogAndQuit("Cannot create directory: " + receiveDir.getAbsolutePath());
             return null;
         }
+
         try {
             final File outFile = new File(receiveDir, attachmentFileName);
             try (FileOutputStream f = new FileOutputStream(outFile)) {
@@ -182,7 +215,7 @@ public class TermuxFileReceiverActivity extends Activity {
         final File urlOpenerProgramFile = new File(URL_OPENER_PROGRAM);
         if (!urlOpenerProgramFile.isFile()) {
             showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-url-opener\n\n"
-                + "Create this file as a script or a symlink - it will be called with the shared URL as only argument.");
+                + "Create this file as a script or a symlink - it will be called with the shared URL as the first argument.");
             return;
         }
 
