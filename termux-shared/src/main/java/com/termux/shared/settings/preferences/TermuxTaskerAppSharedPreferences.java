@@ -52,7 +52,7 @@ public class TermuxTaskerAppSharedPreferences {
      *                {@link TermuxConstants#TERMUX_TASKER_PACKAGE_NAME}.
      * @param exitAppOnError If {@code true} and failed to get package context, then a dialog will
      *                       be shown which when dismissed will exit the app.
-     * @return Returns the {@link TermuxAppSharedPreferences}. This will {@code null} if an exception is raised.
+     * @return Returns the {@link TermuxTaskerAppSharedPreferences}. This will {@code null} if an exception is raised.
      */
     public static  TermuxTaskerAppSharedPreferences build(@NonNull final Context context, final boolean exitAppOnError) {
         Context termuxTaskerPackageContext = PackageUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_TASKER_PACKAGE_NAME, exitAppOnError);

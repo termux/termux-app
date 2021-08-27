@@ -1,7 +1,7 @@
 package com.termux.shared.settings.preferences;
 
 /*
- * Version: v0.11.0
+ * Version: v0.12.0
  *
  * Changelog
  *
@@ -48,6 +48,11 @@ package com.termux.shared.settings.preferences;
  * - 0.11.0 (2021-07-08)
  *      - Added following to `TERMUX_APP`:
  *          `KEY_DISABLE_TERMINAL_MARGIN_ADJUSTMENT`.
+ *
+ * - 0.12.0 (2021-08-27)
+ *      - Added `TERMUX_API_APP.KEY_LOG_LEVEL`, `TERMUX_BOOT_APP.KEY_LOG_LEVEL`,
+ *          `TERMUX_FLOAT_APP.KEY_LOG_LEVEL`, `TERMUX_STYLING_APP.KEY_LOG_LEVEL`,
+ *          `TERMUX_Widget_APP.KEY_LOG_LEVEL`.
  */
 
 /**
@@ -115,7 +120,7 @@ public final class TermuxPreferenceConstants {
 
 
         /**
-         * Defines the key for current termux log level.
+         * Defines the key for current log level.
          */
         public static final String KEY_LOG_LEVEL = "log_level";
 
@@ -147,13 +152,85 @@ public final class TermuxPreferenceConstants {
 
     }
 
+
+
+    /**
+     * Termux API app constants.
+     */
+    public static final class TERMUX_API_APP {
+
+        /**
+         * Defines the key for current log level.
+         */
+        public static final String KEY_LOG_LEVEL = "log_level";
+
+    }
+
+
+
+    /**
+     * Termux Boot app constants.
+     */
+    public static final class TERMUX_BOOT_APP {
+
+        /**
+         * Defines the key for current log level.
+         */
+        public static final String KEY_LOG_LEVEL = "log_level";
+
+    }
+
+
+
+    /**
+     * Termux Float app constants.
+     */
+    public static final class TERMUX_FLOAT_APP {
+
+        /**
+         * Defines the key for current log level.
+         */
+        public static final String KEY_LOG_LEVEL = "log_level";
+
+    }
+
+
+
+    /**
+     * Termux Styling app constants.
+     */
+    public static final class TERMUX_STYLING_APP {
+
+        /**
+         * Defines the key for current log level.
+         */
+        public static final String KEY_LOG_LEVEL = "log_level";
+
+    }
+
+
+
     /**
      * Termux Tasker app constants.
      */
     public static final class TERMUX_TASKER_APP {
 
         /**
-         * Defines the key for current termux log level.
+         * Defines the key for current log level.
+         */
+        public static final String KEY_LOG_LEVEL = "log_level";
+
+    }
+
+
+
+    /**
+     * Termux Widget app constants.
+     */
+    public static final class TERMUX_WIDGET_APP {
+
+        /**
+         * Defines the key for current log level.
          */
         public static final String KEY_LOG_LEVEL = "log_level";
 

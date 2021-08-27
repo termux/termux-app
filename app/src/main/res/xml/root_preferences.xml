@@ -7,6 +7,13 @@
         app:fragment="com.termux.app.fragments.settings.TermuxPreferencesFragment"/>
 
     <Preference
+        app:key="termux_api"
+        app:title="@string/termux_api_preferences_title"
+        app:summary="@string/termux_api_preferences_summary"
+        app:isPreferenceVisible="false"
+        app:fragment="com.termux.app.fragments.settings.TermuxAPIPreferencesFragment"/>
+
+    <Preference
         app:key="termux_tasker"
         app:title="@string/termux_tasker_preferences_title"
         app:summary="@string/termux_tasker_preferences_summary"
