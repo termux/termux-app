@@ -105,6 +105,8 @@ final class TermuxPreferences {
     private int backgroundColor;
     private int statusBarColor;
     private boolean runBackground;
+    private int navigationBarColor;
+
     /**
      * If value is not in the range [min, max], set it to either min or max.
      */
@@ -214,6 +216,9 @@ final class TermuxPreferences {
     public float getBarHeight(){
         return barHeight;
     }
+    public int getNavigationBarColor(){
+        return navigationBarColor;
+    }
 
 
     public boolean isUseSystemWallpaper(){return useSystemWallpaper;}
@@ -281,7 +286,8 @@ final class TermuxPreferences {
         statusTextColor = parseColor(themeProps.getProperty("status-text-color","#c0b18b"), "#c0b18b");
         barColor = parseColor(themeProps.getProperty("bar-color","#1f1f1f"), "#1f1f1f");
         statusBarColor = parseColor(themeProps.getProperty("statusbar-color","#00000000"), "#00000000");
-        try{
+        navigationBarColor = parseColor(themeProps.getProperty("navigation-color","#1f1f1f"), "#1f1f1f");
+         try{
             textSize = Float.parseFloat(themeProps.getProperty("sb-text-size","10"));
         }catch(Exception e){}
 
