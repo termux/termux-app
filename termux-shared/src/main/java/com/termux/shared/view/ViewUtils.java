@@ -173,7 +173,9 @@ public class ViewUtils {
     /**
      * Get device display size.
      *
-     * @param context The {@link Context} to check with.
+     * @param context The {@link Context} to check with. It must be {@link Activity} context, otherwise
+     *                android will throw:
+     *                `java.lang.IllegalArgumentException: Used non-visual Context to obtain an instance of WindowManager. Please use an Activity or a ContextWrapper around one instead.`
      * @param activitySize The set to {@link true}, then size returned will be that of the activity
      *                     and can be smaller than physical display size in multi-window mode.
      * @return Returns the display size as {@link Point}.

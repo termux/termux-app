@@ -21,7 +21,6 @@ public class TermuxAppSharedPreferences {
     private final Context mContext;
     private final SharedPreferences mSharedPreferences;
 
-
     private int MIN_FONTSIZE;
     private int MAX_FONTSIZE;
     private int DEFAULT_FONTSIZE;
@@ -129,21 +128,33 @@ public class TermuxAppSharedPreferences {
 
 
 
-    private void setFontVariables(Context context) {
+    public static int[] getDefaultFontSizes(Context context) {
         float dipInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
+
+        int[] sizes = new int[3];
 
         // This is a bit arbitrary and sub-optimal. We want to give a sensible default for minimum font size
         // to prevent invisible text due to zoom be mistake:
-        MIN_FONTSIZE = (int) (4f * dipInPixels);
+        sizes[1] = (int) (4f * dipInPixels); // min
 
         // http://www.google.com/design/spec/style/typography.html#typography-line-height
         int defaultFontSize = Math.round(12 * dipInPixels);
         // Make it divisible by 2 since that is the minimal adjustment step:
         if (defaultFontSize % 2 == 1) defaultFontSize--;
 
-        DEFAULT_FONTSIZE = defaultFontSize;
+        sizes[0] = defaultFontSize; // default
 
-        MAX_FONTSIZE = 256;
+        sizes[2] = 256; // max
+
+        return sizes;
+    }
+
+    public void setFontVariables(Context context) {
+        int[] sizes = getDefaultFontSizes(context);
+
+        DEFAULT_FONTSIZE = sizes[0];
+        MIN_FONTSIZE = sizes[1];
+        MAX_FONTSIZE = sizes[2];
     }
 
     public int getFontSize() {
@@ -156,7 +167,6 @@ public class TermuxAppSharedPreferences {
     }
 
     public void changeFontSize(boolean increase) {
-
         int fontSize = getFontSize();
 
         fontSize += (increase ? 1 : -1) * 2;

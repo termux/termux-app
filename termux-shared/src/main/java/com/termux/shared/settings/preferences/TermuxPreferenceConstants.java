@@ -1,7 +1,7 @@
 package com.termux.shared.settings.preferences;
 
 /*
- * Version: v0.12.0
+ * Version: v0.13.0
  *
  * Changelog
  *
@@ -53,6 +53,11 @@ package com.termux.shared.settings.preferences;
  *      - Added `TERMUX_API_APP.KEY_LOG_LEVEL`, `TERMUX_BOOT_APP.KEY_LOG_LEVEL`,
  *          `TERMUX_FLOAT_APP.KEY_LOG_LEVEL`, `TERMUX_STYLING_APP.KEY_LOG_LEVEL`,
  *          `TERMUX_Widget_APP.KEY_LOG_LEVEL`.
+ *
+ * - 0.13.0 (2021-09-02)
+ *      - Added following to `TERMUX_FLOAT_APP`:
+ *          `KEY_WINDOW_X`, `KEY_WINDOW_Y`, `KEY_WINDOW_WIDTH`, `KEY_WINDOW_HEIGHT`, `KEY_FONTSIZE`,
+ *          `KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED`.
  */
 
 /**
@@ -188,9 +193,40 @@ public final class TermuxPreferenceConstants {
     public static final class TERMUX_FLOAT_APP {
 
         /**
+         * The float window x coordinate.
+         */
+        public static final String KEY_WINDOW_X = "window_x";
+
+        /**
+         * The float window y coordinate.
+         */
+        public static final String KEY_WINDOW_Y = "window_y";
+
+        /**
+         * The float window width.
+         */
+        public static final String KEY_WINDOW_WIDTH = "window_width";
+
+        /**
+         * The float window height.
+         */
+        public static final String KEY_WINDOW_HEIGHT = "window_height";
+
+        /**
+         * Defines the key for font size of termux terminal view.
+         */
+        public static final String KEY_FONTSIZE = "fontsize";
+
+        /**
          * Defines the key for current log level.
          */
         public static final String KEY_LOG_LEVEL = "log_level";
+
+        /**
+         * Defines the key for whether termux terminal view key logging is enabled or not
+         */
+        public static final String KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED = "terminal_view_key_logging_enabled";
+        public static final boolean DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
 
     }
 

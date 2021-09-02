@@ -732,7 +732,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         // Build the notification
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
             TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID, priority,
-            getText(R.string.application_name), notificationText, null,
+            TermuxConstants.TERMUX_APP_NAME, notificationText, null,
             contentIntent, null, NotificationUtils.NOTIFICATION_MODE_SILENT);
         if (builder == null)  return null;
 
