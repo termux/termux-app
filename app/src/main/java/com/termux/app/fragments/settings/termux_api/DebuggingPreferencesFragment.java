@@ -41,7 +41,7 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
             if (preferences == null) return;
 
             com.termux.app.fragments.settings.termux.DebuggingPreferencesFragment.
-                setLogLevelListPreferenceData(logLevelListPreference, context, preferences.getLogLevel());
+                setLogLevelListPreferenceData(logLevelListPreference, context, preferences.getLogLevel(true));
             loggingCategory.addPreference(logLevelListPreference);
         }
     }
@@ -76,7 +76,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
         switch (key) {
             case "log_level":
-                return String.valueOf(mPreferences.getLogLevel());
+                return String.valueOf(mPreferences.getLogLevel(true));
             default:
                 return null;
         }
@@ -90,7 +90,7 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
         switch (key) {
             case "log_level":
                 if (value != null) {
-                    mPreferences.setLogLevel(mContext, Integer.parseInt(value));
+                    mPreferences.setLogLevel(mContext, Integer.parseInt(value), true);
                 }
                 break;
             default:
