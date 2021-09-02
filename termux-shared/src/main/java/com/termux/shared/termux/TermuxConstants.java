@@ -12,7 +12,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /*
- * Version: v0.26.0
+ * Version: v0.27.0
  *
  * Changelog
  *
@@ -182,6 +182,11 @@ import java.util.List;
  * - 0.26.0 (2021-08-25)
  *      - Changed `TERMUX_ACTIVITY.ACTION_FAILSAFE_SESSION` to `TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION`.
  *
+ * - 0.27.0 (2021-09-02)
+ *      - Added `TERMUX_FLOAT_APP_NOTIFICATION_CHANNEL_ID`, `TERMUX_FLOAT_APP_NOTIFICATION_CHANNEL_NAME`,
+ *          `TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE_NAME`.
+ *      - Added following to `TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE`:
+ *          `ACTION_STOP_SERVICE`, `ACTION_SHOW`, `ACTION_HIDE`.
  */
 
 /**
@@ -719,6 +724,14 @@ public final class TermuxConstants {
     public static final String TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME = TermuxConstants.TERMUX_APP_NAME + " Crash Reports";
 
 
+    /** Termux app notification channel id used by {@link TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE} */
+    public static final String TERMUX_FLOAT_APP_NOTIFICATION_CHANNEL_ID = "termux_float_notification_channel";
+    /** Termux app notification channel name used by {@link TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE} */
+    public static final String TERMUX_FLOAT_APP_NOTIFICATION_CHANNEL_NAME = TermuxConstants.TERMUX_FLOAT_APP_NAME + " App";
+    /** Termux app unique notification id used by {@link TERMUX_APP.TERMUX_SERVICE} */
+    public static final int TERMUX_FLOAT_APP_NOTIFICATION_ID = 1339;
+
+
 
 
 
@@ -1061,7 +1074,37 @@ public final class TermuxConstants {
 
 
     /**
-     * Termux:Styling app constants.
+     * Termux Float app constants.
+     */
+    public static final class TERMUX_FLOAT_APP {
+
+        /** Termux Float app core service name. */
+        public static final String TERMUX_FLOAT_SERVICE_NAME = TERMUX_FLOAT_PACKAGE_NAME + ".TermuxFloatService"; // Default: "com.termux.window.TermuxFloatService"
+
+        /**
+         * Termux Float app core service.
+         */
+        public static final class TERMUX_FLOAT_SERVICE {
+
+            /** Intent action to stop TERMUX_FLOAT_SERVICE */
+            public static final String ACTION_STOP_SERVICE = TERMUX_FLOAT_PACKAGE_NAME + ".stop_service"; // Default: "com.termux.window.stop_service"
+
+            /** Intent action to show float window */
+            public static final String ACTION_SHOW = TERMUX_FLOAT_PACKAGE_NAME + ".show"; // Default: "com.termux.window.show"
+
+            /** Intent action to hide float window */
+            public static final String ACTION_HIDE = TERMUX_FLOAT_PACKAGE_NAME + ".hide"; // Default: "com.termux.window.hide"
+
+        }
+
+    }
+
+
+
+
+
+    /**
+     * Termux Styling app constants.
      */
     public static final class TERMUX_STYLING {
 
