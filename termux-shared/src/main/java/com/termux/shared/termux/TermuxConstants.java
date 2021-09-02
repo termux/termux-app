@@ -12,7 +12,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /*
- * Version: v0.27.0
+ * Version: v0.28.0
  *
  * Changelog
  *
@@ -187,6 +187,9 @@ import java.util.List;
  *          `TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE_NAME`.
  *      - Added following to `TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE`:
  *          `ACTION_STOP_SERVICE`, `ACTION_SHOW`, `ACTION_HIDE`.
+ *
+ * - 0.28.0 (2021-09-02)
+ *      - Added `TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE*` and `TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE*`.
  */
 
 /**
@@ -638,6 +641,17 @@ public final class TermuxConstants {
     public static final String TERMUX_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.termux/files/home/.config/termux/termux.properties"
     /** Termux app termux.properties secondary file */
     public static final File TERMUX_PROPERTIES_SECONDARY_FILE = new File(TERMUX_PROPERTIES_SECONDARY_FILE_PATH);
+
+
+    /** Termux Float app termux.properties primary file path */
+    public static final String TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/termux.float.properties"; // Default: "/data/data/com.termux/files/home/.termux/termux.float.properties"
+    /** Termux Float app termux.properties primary file */
+    public static final File TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE = new File(TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH);
+
+    /** Termux Float app termux.properties secondary file path */
+    public static final String TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/termux.float.properties"; // Default: "/data/data/com.termux/files/home/.config/termux/termux.float.properties"
+    /** Termux Float app termux.properties secondary file */
+    public static final File TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE = new File(TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH);
 
 
     /** Termux app and Termux:Styling colors.properties file path */

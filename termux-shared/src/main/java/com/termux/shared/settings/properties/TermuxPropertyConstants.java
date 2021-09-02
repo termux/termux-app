@@ -1,5 +1,7 @@
 package com.termux.shared.settings.properties;
 
+import androidx.annotation.NonNull;
+
 import com.google.common.collect.ImmutableBiMap;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
@@ -12,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.13.0
+ * Version: v0.14.0
  *
  * Changelog
  *
@@ -58,6 +60,9 @@ import java.util.Set;
  *
  * - 0.13.0 (2021-08-25)
  *      - Add `*KEY_TERMINAL_MARGIN_HORIZONTAL*` and `*KEY_TERMINAL_MARGIN_VERTICAL*`.
+ *
+ * - 0.14.0 (2021-09-02)
+ *      - Add `getTermuxFloatPropertiesFile()`.
  */
 
 /**
@@ -390,11 +395,28 @@ public final class TermuxPropertyConstants {
      * @return Returns the {@link File} object for termux properties.
      */
     public static File getTermuxPropertiesFile() {
-        String[] possiblePropertiesFileLocations = {
+        return getPropertiesFile(new String[]{
             TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH,
             TermuxConstants.TERMUX_PROPERTIES_SECONDARY_FILE_PATH
-        };
+        });
+    }
 
+    /** Returns the first {@link File} found at
+     * {@link TermuxConstants#TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH} or
+     * {@link TermuxConstants#TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH}
+     * from which termux properties can be loaded.
+     * If the {@link File} found is not a regular file or is not readable then null is returned.
+     *
+     * @return Returns the {@link File} object for termux properties.
+     */
+    public static File getTermuxFloatPropertiesFile() {
+        return getPropertiesFile(new String[]{
+            TermuxConstants.TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH,
+            TermuxConstants.TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH
+        });
+    }
+
+    public static File getPropertiesFile(@NonNull String[] possiblePropertiesFileLocations) {
         File propertiesFile = new File(possiblePropertiesFileLocations[0]);
         int i = 0;
         while (!propertiesFile.exists() && i < possiblePropertiesFileLocations.length) {
@@ -405,7 +427,7 @@ public final class TermuxPropertyConstants {
         if (propertiesFile.isFile() && propertiesFile.canRead()) {
             return propertiesFile;
         } else {
-            Logger.logDebug("No readable termux.properties file found");
+            Logger.logDebug("No readable properties file found at: " + Arrays.toString(possiblePropertiesFileLocations));
             return null;
         }
     }

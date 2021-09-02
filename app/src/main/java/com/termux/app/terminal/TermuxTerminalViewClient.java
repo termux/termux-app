@@ -140,7 +140,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     }
 
     /**
-     * Should be called when {@link com.termux.view.TerminalView#mEmulator}
+     * Should be called when {@link com.termux.view.TerminalView#mEmulator} is set
      */
     @Override
     public void onEmulatorSet() {

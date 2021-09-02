@@ -9,6 +9,7 @@ import com.termux.shared.terminal.io.extrakeys.ExtraKeysInfo;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;
 import com.termux.shared.settings.properties.TermuxSharedProperties;
+import com.termux.shared.termux.TermuxConstants;
 
 import org.json.JSONException;
 
@@ -26,7 +27,8 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
     private static final String LOG_TAG = "TermuxAppSharedProperties";
 
     public TermuxAppSharedProperties(@Nonnull Context context) {
-        super(context);
+        super(context, TermuxConstants.TERMUX_APP_NAME, TermuxPropertyConstants.getTermuxPropertiesFile(),
+            TermuxPropertyConstants.TERMUX_PROPERTIES_LIST, new SharedPropertiesParserClient());
     }
 
     /**
@@ -110,7 +112,8 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
      * Load the {@link TermuxPropertyConstants#KEY_TERMINAL_TRANSCRIPT_ROWS} value from termux properties file on disk.
      */
     public static int getTerminalTranscriptRows(Context context) {
-        return  (int) TermuxSharedProperties.getInternalPropertyValue(context, TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS);
+        return  (int) TermuxSharedProperties.getInternalPropertyValue(context, TermuxPropertyConstants.getTermuxPropertiesFile(),
+            TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS, new SharedPropertiesParserClient());
     }
 
 }

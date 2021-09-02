@@ -20,7 +20,7 @@ import com.termux.shared.terminal.TermuxTerminalSessionClientBase;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.app.TermuxService;
 import com.termux.shared.settings.properties.TermuxPropertyConstants;
-import com.termux.app.terminal.io.BellHandler;
+import com.termux.shared.terminal.io.BellHandler;
 import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;

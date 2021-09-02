@@ -1,4 +1,4 @@
-package com.termux.app.terminal.io;
+package com.termux.shared.terminal.io;
 
 import android.content.Context;
 import android.os.Build;

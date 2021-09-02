@@ -3,6 +3,8 @@ package com.termux.shared.settings.properties;
 import android.content.Context;
 import android.content.res.Configuration;
 
+import androidx.annotation.NonNull;
+
 import com.termux.shared.logger.Logger;
 import com.termux.shared.data.DataUtils;
 
@@ -10,21 +12,25 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-public class TermuxSharedProperties {
+public abstract class TermuxSharedProperties {
 
     protected final Context mContext;
-    protected final SharedProperties mSharedProperties;
+    protected final String mLabel;
     protected final File mPropertiesFile;
+    protected final SharedProperties mSharedProperties;
 
     public static final String LOG_TAG = "TermuxSharedProperties";
 
-    public TermuxSharedProperties(@Nonnull Context context) {
+    public TermuxSharedProperties(@Nonnull Context context, @NonNull String label, File propertiesFile,
+                                  @NonNull Set<String> propertiesList, @NonNull SharedPropertiesParser sharedPropertiesParser) {
         mContext = context;
-        mPropertiesFile = TermuxPropertyConstants.getTermuxPropertiesFile();
-        mSharedProperties = new SharedProperties(context, mPropertiesFile, TermuxPropertyConstants.TERMUX_PROPERTIES_LIST, new SharedPropertiesParserClient());
+        mLabel = label;
+        mPropertiesFile = propertiesFile;
+        mSharedProperties = new SharedProperties(context, mPropertiesFile, propertiesList, sharedPropertiesParser);
         loadTermuxPropertiesFromDisk();
     }
 
@@ -162,7 +168,7 @@ public class TermuxSharedProperties {
 
     /**
      * Get the internal {@link Object} value for the key passed from the file returned by
-     * {@link TermuxPropertyConstants#getTermuxPropertiesFile()}. The {@link Properties} object is
+     * {@code propertiesFile}. The {@link Properties} object is
      * read directly from the file and internal value is returned for the property value against the key.
      *
      * @param context The context for operations.
@@ -170,8 +176,9 @@ public class TermuxSharedProperties {
      * @return Returns the {@link Object} object. This will be {@code null} if key is not found or
      * the object stored against the key is {@code null}.
      */
-    public static Object getInternalPropertyValue(Context context, String key) {
-        return SharedProperties.getInternalProperty(context, TermuxPropertyConstants.getTermuxPropertiesFile(), key, new SharedPropertiesParserClient());
+    public static Object getInternalPropertyValue(Context context, File propertiesFile, String key,
+                                                  @NonNull SharedPropertiesParser sharedPropertiesParser) {
+        return SharedProperties.getInternalProperty(context, propertiesFile, key, sharedPropertiesParser);
     }
 
     /**
@@ -588,7 +595,7 @@ public class TermuxSharedProperties {
         Properties properties = getProperties(true);
         StringBuilder propertiesDump = new StringBuilder();
 
-        propertiesDump.append("Termux Properties:");
+        propertiesDump.append(mLabel).append(" Termux Properties:");
         if (properties != null) {
             for (String key : properties.stringPropertyNames()) {
                 propertiesDump.append("\n").append(key).append(": `").append(properties.get(key)).append("`");
@@ -604,7 +611,7 @@ public class TermuxSharedProperties {
         HashMap<String, Object> internalProperties = (HashMap<String, Object>) getInternalProperties();
         StringBuilder internalPropertiesDump = new StringBuilder();
 
-        internalPropertiesDump.append("Termux Internal Properties:");
+        internalPropertiesDump.append(mLabel).append(" Internal Properties:");
         if (internalProperties != null) {
             for (String key : internalProperties.keySet()) {
                 internalPropertiesDump.append("\n").append(key).append(": `").append(internalProperties.get(key)).append("`");
