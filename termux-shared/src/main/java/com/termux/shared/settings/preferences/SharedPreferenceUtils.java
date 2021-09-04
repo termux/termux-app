@@ -245,17 +245,22 @@ public class SharedPreferenceUtils {
      * @param sharedPreferences The {@link SharedPreferences} to get the value from.
      * @param key The key for the value.
      * @param def The default value if failed to read a valid value.
+     * @param defIfEmpty If set to {@code true}, then {@code def} will be returned if value is empty.
      * @return Returns the {@code String} value stored in {@link SharedPreferences}, otherwise returns
      * default if failed to read a valid value, like in case of an exception.
      */
-    public static String getString(SharedPreferences sharedPreferences, String key, String def) {
+    public static String getString(SharedPreferences sharedPreferences, String key, String def, boolean defIfEmpty) {
         if (sharedPreferences == null) {
             Logger.logError(LOG_TAG, "Error getting String value for the \"" + key + "\" key from null shared preferences. Returning default value \"" + def + "\".");
             return def;
         }
 
         try {
-            return sharedPreferences.getString(key, def);
+            String value = sharedPreferences.getString(key, def);
+            if (defIfEmpty && (value == null || value.isEmpty()))
+                return def;
+            else
+                return value;
         }
         catch (ClassCastException e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error getting String value for the \"" + key + "\" key from shared preferences. Returning default value \"" + def + "\".", e);

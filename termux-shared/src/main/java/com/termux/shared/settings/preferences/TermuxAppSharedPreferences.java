@@ -178,7 +178,7 @@ public class TermuxAppSharedPreferences {
 
 
     public String getCurrentSession() {
-        return SharedPreferenceUtils.getString(mSharedPreferences, TERMUX_APP.KEY_CURRENT_SESSION, null);
+        return SharedPreferenceUtils.getString(mSharedPreferences, TERMUX_APP.KEY_CURRENT_SESSION, null, true);
     }
 
     public void setCurrentSession(String value) {
