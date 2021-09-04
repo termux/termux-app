@@ -257,12 +257,18 @@ public abstract class TermuxSharedProperties {
                 return (String) getVolumeKeysBehaviourInternalPropertyValueFromValue(value);
 
             default:
-                // default boolean behaviour
-                if (TermuxPropertyConstants.TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
+                // default false boolean behaviour
+                if (TermuxPropertyConstants.TERMUX_DEFAULT_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
                     return (boolean) SharedProperties.getBooleanValueForStringValue(key, value, false, true, LOG_TAG);
-                // default inverted boolean behaviour
-                else if (TermuxPropertyConstants.TERMUX_DEFAULT_INVERETED_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
-                    return (boolean) SharedProperties.getInvertedBooleanValueForStringValue(key, value, true, true, LOG_TAG);
+                // default true boolean behaviour
+                if (TermuxPropertyConstants.TERMUX_DEFAULT_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
+                    return (boolean) SharedProperties.getBooleanValueForStringValue(key, value, true, true, LOG_TAG);
+                // default inverted false boolean behaviour
+                //else if (TermuxPropertyConstants.TERMUX_DEFAULT_INVERETED_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
+                //    return (boolean) SharedProperties.getInvertedBooleanValueForStringValue(key, value, false, true, LOG_TAG);
+                // default inverted true boolean behaviour
+                // else if (TermuxPropertyConstants.TERMUX_DEFAULT_INVERETED_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST.contains(key))
+                //    return (boolean) SharedProperties.getInvertedBooleanValueForStringValue(key, value, true, true, LOG_TAG);
                 // just use String object as is (may be null)
                 else
                     return value;
@@ -515,6 +521,10 @@ public abstract class TermuxSharedProperties {
 
     public boolean isEnforcingCharBasedInput() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_ENFORCE_CHAR_BASED_INPUT, true);
+    }
+
+    public boolean shouldExtraKeysTextBeAllCaps() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_EXTRA_KEYS_TEXT_ALL_CAPS, true);
     }
 
     public boolean shouldSoftKeyboardBeHiddenOnStartup() {

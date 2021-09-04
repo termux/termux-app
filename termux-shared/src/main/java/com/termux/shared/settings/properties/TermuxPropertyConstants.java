@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /*
- * Version: v0.14.0
+ * Version: v0.15.0
  *
  * Changelog
  *
@@ -63,6 +63,9 @@ import java.util.Set;
  *
  * - 0.14.0 (2021-09-02)
  *      - Add `getTermuxFloatPropertiesFile()`.
+ *
+ * - 0.15.0 (2021-09-05)
+ *      - Add `KEY_EXTRA_KEYS_TEXT_ALL_CAPS`.
  */
 
 /**
@@ -91,6 +94,11 @@ public final class TermuxPropertyConstants {
 
     /** Defines the key for whether to enforce character based input to fix the issue where for some devices like Samsung, the letters might not appear until enter is pressed */
     public static final String KEY_ENFORCE_CHAR_BASED_INPUT =  "enforce-char-based-input"; // Default: "enforce-char-based-input"
+
+
+
+    /** Defines the key for whether text for the extra keys buttons should be all capitalized automatically */
+    public static final String KEY_EXTRA_KEYS_TEXT_ALL_CAPS =  "extra-keys-text-all-caps"; // Default: "extra-keys-text-all-caps"
 
 
 
@@ -324,6 +332,7 @@ public final class TermuxPropertyConstants {
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
+        KEY_EXTRA_KEYS_TEXT_ALL_CAPS,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
         KEY_USE_BLACK_UI,
@@ -358,12 +367,12 @@ public final class TermuxPropertyConstants {
         KEY_VOLUME_KEYS_BEHAVIOUR
         ));
 
-    /** Defines the set for keys loaded by termux that have default boolean behaviour
+    /** Defines the set for keys loaded by termux that have default boolean behaviour with false as default.
      * "true" -> true
      * "false" -> false
      * default: false
-     * */
-    public static final Set<String> TERMUX_DEFAULT_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+     */
+    public static final Set<String> TERMUX_DEFAULT_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
@@ -375,13 +384,31 @@ public final class TermuxPropertyConstants {
         TermuxConstants.PROP_ALLOW_EXTERNAL_APPS
     ));
 
-    /** Defines the set for keys loaded by termux that have default inverted boolean behaviour
+    /** Defines the set for keys loaded by termux that have default boolean behaviour with true as default.
+     * "true" -> true
+     * "false" -> false
+     * default: true
+     */
+    public static final Set<String> TERMUX_DEFAULT_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+        KEY_EXTRA_KEYS_TEXT_ALL_CAPS
+    ));
+
+    /** Defines the set for keys loaded by termux that have default inverted boolean behaviour with false as default.
+     * "false" -> true
+     * "true" -> false
+     * default: false
+     */
+    public static final Set<String> TERMUX_DEFAULT_INVERETED_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+    ));
+
+    /** Defines the set for keys loaded by termux that have default inverted boolean behaviour with true as default.
      * "false" -> true
      * "true" -> false
      * default: true
-     * */
-    public static final Set<String> TERMUX_DEFAULT_INVERETED_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+     */
+    public static final Set<String> TERMUX_DEFAULT_INVERETED_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
     ));
+
 
 
 

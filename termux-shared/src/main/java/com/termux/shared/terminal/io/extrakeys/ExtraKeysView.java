@@ -163,6 +163,9 @@ public final class ExtraKeysView extends GridLayout {
      * {@link #DEFAULT_BUTTON_ACTIVE_BACKGROUND_COLOR}. */
     private int mButtonActiveBackgroundColor;
 
+    /** Defines whether text for the extra keys button should be all capitalized automatically. */
+    private boolean mButtonTextAllCaps = true;
+
 
     /**
      * Defines the duration in milliseconds before a press turns into a long press. The default
@@ -305,6 +308,11 @@ public final class ExtraKeysView extends GridLayout {
         mButtonActiveBackgroundColor = buttonActiveBackgroundColor;
     }
 
+    /** Set {@link #mButtonTextAllCaps}. */
+    public void setButtonTextAllCaps(boolean buttonTextAllCaps) {
+        mButtonTextAllCaps = buttonTextAllCaps;
+    }
+
 
     /** Get {@link #mLongPressTimeout}. */
     public int getLongPressTimeout() {
@@ -382,6 +390,7 @@ public final class ExtraKeysView extends GridLayout {
 
                 button.setText(buttonInfo.getDisplay());
                 button.setTextColor(mButtonTextColor);
+                button.setAllCaps(mButtonTextAllCaps);
                 button.setPadding(0, 0, 0, 0);
 
                 button.setOnClickListener(view -> {
@@ -564,6 +573,7 @@ public final class ExtraKeysView extends GridLayout {
             button.setTextColor(mButtonTextColor);
         }
         button.setText(extraButton.getDisplay());
+        button.setAllCaps(mButtonTextAllCaps);
         button.setPadding(0, 0, 0, 0);
         button.setMinHeight(0);
         button.setMinWidth(0);

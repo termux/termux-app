@@ -880,6 +880,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             mProperties.loadTermuxPropertiesFromDisk();
 
             if (mExtraKeysView != null) {
+                mExtraKeysView.setButtonTextAllCaps(mProperties.shouldExtraKeysTextBeAllCaps());
                 mExtraKeysView.reload(mProperties.getExtraKeysInfo());
             }
         }
