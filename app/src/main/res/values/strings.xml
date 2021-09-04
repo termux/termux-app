@@ -31,7 +31,9 @@
     <string name="bootstrap_error_body">&TERMUX_APP_NAME; was unable to install the bootstrap packages.</string>
     <string name="bootstrap_error_abort">Abort</string>
     <string name="bootstrap_error_try_again">Try again</string>
-    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; can only be run as the primary user.\nBootstrap binaries compiled for &TERMUX_APP_NAME; have hardcoded $PREFIX path and cannot be installed under any path other than %1$s.</string>
+    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; can only be run as the primary user.
+        \nBootstrap binaries compiled for &TERMUX_APP_NAME; have hardcoded $PREFIX path and cannot be installed
+        under any path other than %1$s.</string>
 
 
 
@@ -93,14 +95,17 @@
 
 
     <!-- TermuxService -->
-    <string name="error_display_over_other_apps_permission_not_granted">&TERMUX_APP_NAME; requires \"Display over other apps\" permission to start terminal sessions from background on Android >= 10. Grants it from Settings -> Apps -> &TERMUX_APP_NAME; -> Advanced</string>
+    <string name="error_display_over_other_apps_permission_not_granted">&TERMUX_APP_NAME; requires
+        \"Display over other apps\" permission to start terminal sessions from background on Android >= 10.
+        Grants it from Settings -> Apps -> &TERMUX_APP_NAME; -> Advanced</string>
 
 
 
     <!-- Termux RunCommandService -->
     <string name="error_run_command_service_invalid_intent_action">Invalid intent action to RunCommandService: `%1$s`</string>
     <string name="error_run_command_service_mandatory_extra_missing">Mandatory extra missing to RunCommandService: \"%1$s\"</string>
-    <string name="error_run_command_service_allow_external_apps_ungranted">RunCommandService requires `allow-external-apps` property to be set to `true` in `&TERMUX_PROPERTIES_PRIMARY_PATH_SHORT;` file.</string>
+    <string name="error_run_command_service_allow_external_apps_ungranted">RunCommandService requires `allow-external-apps`
+        property to be set to `true` in `&TERMUX_PROPERTIES_PRIMARY_PATH_SHORT;` file.</string>
     <string name="error_run_command_service_api_help">Visit %1$s for more info on RUN_COMMAND Intent usage.</string>
 
 
@@ -138,7 +143,8 @@
                 <!-- Terminal View Key Logging -->
                 <string name="termux_terminal_view_key_logging_enabled_title">Terminal View Key Logging</string>
                 <string name="termux_terminal_view_key_logging_enabled_off">Logs will not have entries for terminal view keys. (Default)</string>
-                <string name="termux_terminal_view_key_logging_enabled_on">Logcat logs will have entries for terminal view keys. These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
+                <string name="termux_terminal_view_key_logging_enabled_on">Logcat logs will have entries for terminal view keys.
+                    These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
 
                 <!-- Plugin Error Notifications -->
                 <string name="termux_plugin_error_notifications_enabled_title">Plugin Error Notifications</string>
@@ -165,8 +171,10 @@
 
                 <!-- Soft Keyboard Only If No Hardware-->
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">Soft Keyboard Only If No Hardware</string>
-                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">Soft keyboard will be enabled even if hardware keyboard is connected. (Default)</string>
-                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if no hardware keyboard is connected.</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">Soft keyboard will be enabled even if
+                    hardware keyboard is connected. (Default)</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if
+                    no hardware keyboard is connected.</string>
 
 
         <!-- Terminal View Preferences -->
@@ -179,7 +187,9 @@
                 <!-- Terminal View Margin Adjustment -->
                 <string name="termux_terminal_view_terminal_margin_adjustment_title">Terminal Margin Adjustment</string>
                 <string name="termux_terminal_view_terminal_margin_adjustment_off">Terminal margin adjustment will be disabled.</string>
-                <string name="termux_terminal_view_terminal_margin_adjustment_on">Terminal margin adjustment will be enabled. It should be enabled to try to fix the issue where soft keyboard covers part of extra keys/terminal view. If it causes screen flickering on your devices, then disable it. (Default)</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_on">Terminal margin adjustment will be enabled.
+                    It should be enabled to try to fix the issue where soft keyboard covers part of extra keys/terminal view.
+                    If it causes screen flickering on your devices, then disable it. (Default)</string>
 
 
 
