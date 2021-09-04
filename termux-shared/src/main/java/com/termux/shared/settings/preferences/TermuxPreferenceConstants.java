@@ -1,7 +1,7 @@
 package com.termux.shared.settings.preferences;
 
 /*
- * Version: v0.13.0
+ * Version: v0.14.0
  *
  * Changelog
  *
@@ -58,6 +58,9 @@ package com.termux.shared.settings.preferences;
  *      - Added following to `TERMUX_FLOAT_APP`:
  *          `KEY_WINDOW_X`, `KEY_WINDOW_Y`, `KEY_WINDOW_WIDTH`, `KEY_WINDOW_HEIGHT`, `KEY_FONTSIZE`,
  *          `KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED`.
+ *
+ * - 0.14.0 (2021-09-04)
+ *      - Added `TERMUX_WIDGET_APP.KEY_TOKEN`.
  */
 
 /**
@@ -269,6 +272,11 @@ public final class TermuxPreferenceConstants {
          * Defines the key for current log level.
          */
         public static final String KEY_LOG_LEVEL = "log_level";
+
+        /**
+         * Defines the key for current token for shortcuts.
+         */
+        public static final String KEY_TOKEN = "token";
 
     }
 

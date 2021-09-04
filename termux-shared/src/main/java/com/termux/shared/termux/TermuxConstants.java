@@ -12,7 +12,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /*
- * Version: v0.28.0
+ * Version: v0.29.0
  *
  * Changelog
  *
@@ -190,6 +190,14 @@ import java.util.List;
  *
  * - 0.28.0 (2021-09-02)
  *      - Added `TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE*` and `TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE*`.
+ *
+ * - 0.29.0 (2021-09-04)
+ *      - Added `TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_BASENAME`, `TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_BASENAME`,
+ *          `TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_PATH`, `TERMUX_SHORTCUT_SCRIPT_ICONS_DIR`.
+ *      - Added following to `TERMUX_WIDGET.TERMUX_WIDGET_PROVIDER`:
+ *          `ACTION_WIDGET_ITEM_CLICKED`, `ACTION_REFRESH_WIDGET`, `EXTRA_FILE_CLICKED`.
+ *      - Changed naming convention of `TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE.ACTION_*`.
+ *      - Fixed wrong path set for `TERMUX_SHORTCUT_SCRIPTS_DIR_PATH`.
  */
 
 /**
@@ -687,16 +695,30 @@ public final class TermuxConstants {
 
     /** Termux app directory path to store foreground scripts that can be run by the termux launcher
      * widget provided by Termux:Widget */
-    public static final String TERMUX_SHORTCUT_SCRIPTS_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/shortcuts"; // Default: "/data/data/com.termux/files/home/.termux/shortcuts"
+    public static final String TERMUX_SHORTCUT_SCRIPTS_DIR_PATH = TERMUX_HOME_DIR_PATH + "/.shortcuts"; // Default: "/data/data/com.termux/files/home/.shortcuts"
     /** Termux app directory to store foreground scripts that can be run by the termux launcher widget provided by Termux:Widget */
     public static final File TERMUX_SHORTCUT_SCRIPTS_DIR = new File(TERMUX_SHORTCUT_SCRIPTS_DIR_PATH);
 
 
+    /** Termux app directory basename that stores background scripts that can be run by the termux
+     * launcher widget provided by Termux:Widget */
+    public static final String TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_BASENAME =  "tasks"; // Default: "tasks"
     /** Termux app directory path to store background scripts that can be run by the termux launcher
      * widget provided by Termux:Widget */
-    public static final String TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/shortcuts/tasks"; // Default: "/data/data/com.termux/files/home/.termux/shortcuts/tasks"
+    public static final String TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_PATH = TERMUX_SHORTCUT_SCRIPTS_DIR_PATH + "/" + TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_BASENAME; // Default: "/data/data/com.termux/files/home/.shortcuts/tasks"
     /** Termux app directory to store background scripts that can be run by the termux launcher widget provided by Termux:Widget */
     public static final File TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR = new File(TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_PATH);
+
+
+    /** Termux app directory basename that stores icons for the foreground and background scripts
+     * that can be run by the termux launcher widget provided by Termux:Widget */
+    public static final String TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_BASENAME =  "icons"; // Default: "icons"
+    /** Termux app directory path to store icons for the foreground and background scripts that can
+     * be run by the termux launcher widget provided by Termux:Widget */
+    public static final String TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_PATH = TERMUX_SHORTCUT_SCRIPTS_DIR_PATH + "/" + TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_BASENAME; // Default: "/data/data/com.termux/files/home/.shortcuts/icons"
+    /** Termux app directory to store icons for the foreground and background scripts that can be
+     * run by the termux launcher widget provided by Termux:Widget */
+    public static final File TERMUX_SHORTCUT_SCRIPT_ICONS_DIR = new File(TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_PATH);
 
 
     /** Termux app directory path to store scripts to be run by 3rd party twofortyfouram locale plugin
@@ -1100,14 +1122,14 @@ public final class TermuxConstants {
          */
         public static final class TERMUX_FLOAT_SERVICE {
 
-            /** Intent action to stop TERMUX_FLOAT_SERVICE */
-            public static final String ACTION_STOP_SERVICE = TERMUX_FLOAT_PACKAGE_NAME + ".stop_service"; // Default: "com.termux.window.stop_service"
+            /** Intent action to stop TERMUX_FLOAT_SERVICE. */
+            public static final String ACTION_STOP_SERVICE = TERMUX_FLOAT_PACKAGE_NAME + ".ACTION_STOP_SERVICE"; // Default: "com.termux.float.ACTION_STOP_SERVICE"
 
-            /** Intent action to show float window */
-            public static final String ACTION_SHOW = TERMUX_FLOAT_PACKAGE_NAME + ".show"; // Default: "com.termux.window.show"
+            /** Intent action to show float window. */
+            public static final String ACTION_SHOW = TERMUX_FLOAT_PACKAGE_NAME + ".ACTION_SHOW"; // Default: "com.termux.float.ACTION_SHOW"
 
-            /** Intent action to hide float window */
-            public static final String ACTION_HIDE = TERMUX_FLOAT_PACKAGE_NAME + ".hide"; // Default: "com.termux.window.hide"
+            /** Intent action to hide float window. */
+            public static final String ACTION_HIDE = TERMUX_FLOAT_PACKAGE_NAME + ".ACTION_HIDE"; // Default: "com.termux.float.ACTION_HIDE"
 
         }
 
@@ -1126,5 +1148,38 @@ public final class TermuxConstants {
         public static final String TERMUX_STYLING_ACTIVITY_NAME = TERMUX_STYLING_PACKAGE_NAME + ".TermuxStyleActivity"; // Default: "com.termux.styling.TermuxStyleActivity"
 
     }
+
+
+
+
+
+    /**
+     * Termux Widget app constants.
+     */
+    public static final class TERMUX_WIDGET {
+
+        /**  Intent {@code String} extra for the token of the Termux Widget app shortcuts. */
+        public static final String EXTRA_TOKEN_NAME = TERMUX_PACKAGE_NAME + ".shortcut.token"; // Default: "com.termux.shortcut.token"
+
+        /**
+         * Termux Widget app {@link android.appwidget.AppWidgetProvider} class.
+         */
+        public static final class TERMUX_WIDGET_PROVIDER {
+
+            /** Intent action for if an item is clicked in the widget. */
+            public static final String ACTION_WIDGET_ITEM_CLICKED = TERMUX_WIDGET_PACKAGE_NAME + ".ACTION_WIDGET_ITEM_CLICKED"; // Default: "com.termux.widget.ACTION_WIDGET_ITEM_CLICKED"
+
+
+            /** Intent action to refresh files in the widget. */
+            public static final String ACTION_REFRESH_WIDGET = TERMUX_WIDGET_PACKAGE_NAME + ".ACTION_REFRESH_WIDGET"; // Default: "com.termux.widget.ACTION_REFRESH_WIDGET"
+
+
+            /**  Intent {@code String} extra for the file clicked for the TERMUX_WIDGET_PROVIDER.ACTION_WIDGET_ITEM_CLICKED intent. */
+            public static final String EXTRA_FILE_CLICKED = TERMUX_WIDGET_PACKAGE_NAME + ".EXTRA_FILE_CLICKED"; // Default: "com.termux.widget.EXTRA_FILE_CLICKED"
+
+        }
+
+    }
+
 
 }

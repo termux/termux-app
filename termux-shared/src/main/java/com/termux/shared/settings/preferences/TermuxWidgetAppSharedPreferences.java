@@ -11,6 +11,8 @@ import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_WIDGET_APP;
 import com.termux.shared.termux.TermuxConstants;
 
+import java.util.UUID;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -70,6 +72,23 @@ public class TermuxWidgetAppSharedPreferences {
     private static SharedPreferences getPrivateAndMultiProcessSharedPreferences(Context context) {
         if (context == null) return null;
         return SharedPreferenceUtils.getPrivateAndMultiProcessSharedPreferences(context, TermuxConstants.TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
+    }
+
+
+
+    public static String getGeneratedToken(@NonNull Context context) {
+        TermuxWidgetAppSharedPreferences preferences = TermuxWidgetAppSharedPreferences.build(context, true);
+        if (preferences == null) return null;
+        return preferences.getGeneratedToken();
+    }
+
+    public String getGeneratedToken() {
+        String token =  SharedPreferenceUtils.getString(mSharedPreferences, TERMUX_WIDGET_APP.KEY_TOKEN, null, true);
+        if (token == null) {
+            token = UUID.randomUUID().toString();
+            SharedPreferenceUtils.setString(mSharedPreferences, TERMUX_WIDGET_APP.KEY_TOKEN, token, false);
+        }
+        return token;
     }
 
 
