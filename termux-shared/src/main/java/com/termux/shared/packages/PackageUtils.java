@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.UserManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
@@ -18,8 +19,6 @@ import com.termux.shared.termux.TermuxConstants;
 
 import java.security.MessageDigest;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 public class PackageUtils {
 

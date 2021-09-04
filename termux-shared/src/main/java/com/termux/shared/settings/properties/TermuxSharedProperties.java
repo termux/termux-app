@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 public abstract class TermuxSharedProperties {
 
     protected final Context mContext;
@@ -25,7 +23,7 @@ public abstract class TermuxSharedProperties {
 
     public static final String LOG_TAG = "TermuxSharedProperties";
 
-    public TermuxSharedProperties(@Nonnull Context context, @NonNull String label, File propertiesFile,
+    public TermuxSharedProperties(@NonNull Context context, @NonNull String label, File propertiesFile,
                                   @NonNull Set<String> propertiesList, @NonNull SharedPropertiesParser sharedPropertiesParser) {
         mContext = context;
         mLabel = label;

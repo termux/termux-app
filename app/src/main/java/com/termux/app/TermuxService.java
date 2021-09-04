@@ -19,6 +19,8 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.widget.ArrayAdapter;
 
+import androidx.annotation.Nullable;
+
 import com.termux.R;
 import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.app.terminal.TermuxTerminalSessionClient;
@@ -46,8 +48,6 @@ import com.termux.terminal.TerminalSessionClient;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * A service holding a list of {@link TermuxSession} in {@link #mTermuxSessions} and background {@link TermuxTask}

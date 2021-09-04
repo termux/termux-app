@@ -44,14 +44,6 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.Termux">
 
-        <!--
-         This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8
-             mark the app with "This app is optimized to run in full screen."
-        -->
-        <meta-data
-            android:name="android.max_aspect"
-            android:value="10.0" />
-
         <activity
             android:name=".app.TermuxActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
@@ -143,6 +135,7 @@
             </intent-filter>
         </activity>
 
+
         <provider
             android:name=".filepicker.TermuxDocumentsProvider"
             android:authorities="${TERMUX_PACKAGE_NAME}.documents"
@@ -154,9 +147,23 @@
             </intent-filter>
         </provider>
 
+        <provider
+            android:name=".app.TermuxOpenReceiver$ContentProvider"
+            android:authorities="${TERMUX_PACKAGE_NAME}.files"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
+
+
+        <receiver android:name=".app.TermuxOpenReceiver" android:exported="false" />
+
+        <receiver android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver" android:exported="false" />
+
+
         <service
             android:name=".app.TermuxService"
             android:exported="false" />
+
         <service
             android:name=".app.RunCommandService"
             android:exported="true"
@@ -166,23 +173,19 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".app.TermuxOpenReceiver" />
 
-        <receiver android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver"  android:exported="false" />
-
-        <provider
-            android:name=".app.TermuxOpenReceiver$ContentProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.files"
-            android:exported="true"
-            android:grantUriPermissions="true"
-            android:readPermission="android.permission.permRead" />
-
+        <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
+        app with "This app is optimized to run in full screen." -->
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="10.0" />
         <meta-data
             android:name="com.sec.android.support.multiwindow"
             android:value="true" />
         <meta-data
             android:name="com.samsung.android.multidisplay.keep_process_alive"
             android:value="true" />
+
     </application>
 
 </manifest>

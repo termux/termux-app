@@ -2,6 +2,8 @@ package com.termux.app.settings.properties;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.termux.app.terminal.io.KeyboardShortcut;
 import com.termux.shared.terminal.io.extrakeys.ExtraKeysConstants;
 import com.termux.shared.terminal.io.extrakeys.ExtraKeysConstants.EXTRA_KEY_DISPLAY_MAPS;
@@ -17,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
 public class TermuxAppSharedProperties extends TermuxSharedProperties {
 
     private ExtraKeysInfo mExtraKeysInfo;
@@ -26,7 +26,7 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
 
     private static final String LOG_TAG = "TermuxAppSharedProperties";
 
-    public TermuxAppSharedProperties(@Nonnull Context context) {
+    public TermuxAppSharedProperties(@NonNull Context context) {
         super(context, TermuxConstants.TERMUX_APP_NAME, TermuxPropertyConstants.getTermuxPropertiesFile(),
             TermuxPropertyConstants.TERMUX_PROPERTIES_LIST, new SharedPropertiesParserClient());
     }

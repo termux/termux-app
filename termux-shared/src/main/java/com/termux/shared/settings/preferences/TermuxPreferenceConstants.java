@@ -163,7 +163,7 @@ public final class TermuxPreferenceConstants {
 
 
     /**
-     * Termux API app constants.
+     * Termux:API app constants.
      */
     public static final class TERMUX_API_APP {
 
@@ -177,7 +177,7 @@ public final class TermuxPreferenceConstants {
 
 
     /**
-     * Termux Boot app constants.
+     * Termux:Boot app constants.
      */
     public static final class TERMUX_BOOT_APP {
 
@@ -191,7 +191,7 @@ public final class TermuxPreferenceConstants {
 
 
     /**
-     * Termux Float app constants.
+     * Termux:Float app constants.
      */
     public static final class TERMUX_FLOAT_APP {
 
@@ -236,7 +236,7 @@ public final class TermuxPreferenceConstants {
 
 
     /**
-     * Termux Styling app constants.
+     * Termux:Styling app constants.
      */
     public static final class TERMUX_STYLING_APP {
 
@@ -250,7 +250,7 @@ public final class TermuxPreferenceConstants {
 
 
     /**
-     * Termux Tasker app constants.
+     * Termux:Tasker app constants.
      */
     public static final class TERMUX_TASKER_APP {
 
@@ -264,7 +264,7 @@ public final class TermuxPreferenceConstants {
 
 
     /**
-     * Termux Widget app constants.
+     * Termux:Widget app constants.
      */
     public static final class TERMUX_WIDGET_APP {
 

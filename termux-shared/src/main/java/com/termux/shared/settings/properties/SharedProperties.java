@@ -3,6 +3,9 @@ package com.termux.shared.settings.properties;
 import android.content.Context;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Primitives;
@@ -16,9 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * An implementation similar to android's {@link android.content.SharedPreferences} interface for
@@ -90,7 +90,7 @@ public class SharedProperties {
      *                       {@code propertiesFile} will be read by {@link #loadPropertiesFromDisk()}
      * @param sharedPropertiesParser The implementation of the {@link SharedPropertiesParser} interface.
      */
-    public SharedProperties(@Nonnull Context context, @Nullable File propertiesFile, Set<String> propertiesList, @Nonnull SharedPropertiesParser sharedPropertiesParser) {
+    public SharedProperties(@NonNull Context context, @Nullable File propertiesFile, Set<String> propertiesList, @NonNull SharedPropertiesParser sharedPropertiesParser) {
         mContext = context;
         mPropertiesFile = propertiesFile;
         mPropertiesList = propertiesList;
@@ -275,7 +275,7 @@ public class SharedProperties {
      * @return Returns the {@link String} Object returned by the call to
      * {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}.
      */
-    public static Object getInternalProperty(Context context, File propertiesFile, String key, @Nonnull SharedPropertiesParser sharedPropertiesParser) {
+    public static Object getInternalProperty(Context context, File propertiesFile, String key, @NonNull SharedPropertiesParser sharedPropertiesParser) {
         String value = (String) getDefaultIfNull(getPropertiesFromFile(context, propertiesFile), new Properties()).get(key);
 
         // Call the {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}
@@ -464,7 +464,7 @@ public class SharedProperties {
      * @return Returns the value for the {@code inputValue} key from the map if it exists. Otherwise
      * returns default value.
      */
-    public static Object getDefaultIfNotInMap(String key, @Nonnull BiMap<?, ?> map, Object inputValue, Object defaultOutputValue, boolean logErrorOnInvalidValue, String logTag) {
+    public static Object getDefaultIfNotInMap(String key, @NonNull BiMap<?, ?> map, Object inputValue, Object defaultOutputValue, boolean logErrorOnInvalidValue, String logTag) {
         Object outputValue = map.get(inputValue);
         if (outputValue == null) {
             Object defaultInputValue = map.inverse().get(defaultOutputValue);
@@ -549,7 +549,7 @@ public class SharedProperties {
      * @param def The default {@link Object}.
      * @return Returns {@code object} if it is not {@code null}, otherwise returns {@code def}.
      */
-    public static <T> T getDefaultIfNull(@androidx.annotation.Nullable T object, @androidx.annotation.Nullable T def) {
+    public static <T> T getDefaultIfNull(@Nullable T object, @Nullable T def) {
         return (object == null) ? def : object;
     }
 
@@ -560,7 +560,7 @@ public class SharedProperties {
      * @param def The default {@link String}.
      * @return Returns {@code object} if it is not {@code null}, otherwise returns {@code def}.
      */
-    public static String getDefaultIfNullOrEmpty(@androidx.annotation.Nullable String object, @androidx.annotation.Nullable String def) {
+    public static String getDefaultIfNullOrEmpty(@Nullable String object, @Nullable String def) {
         return (object == null || object.isEmpty()) ? def : object;
     }
 

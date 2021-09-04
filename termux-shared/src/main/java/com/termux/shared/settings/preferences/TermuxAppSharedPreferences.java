@@ -6,15 +6,13 @@ import android.content.SharedPreferences;
 import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class TermuxAppSharedPreferences {
 
@@ -27,7 +25,7 @@ public class TermuxAppSharedPreferences {
 
     private static final String LOG_TAG = "TermuxAppSharedPreferences";
 
-    private TermuxAppSharedPreferences(@Nonnull Context context) {
+    private TermuxAppSharedPreferences(@NonNull Context context) {
         mContext = context;
         mSharedPreferences = getPrivateSharedPreferences(mContext);
 
