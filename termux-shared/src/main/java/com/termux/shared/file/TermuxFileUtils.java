@@ -9,6 +9,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.errors.Error;
+import com.termux.shared.models.errors.FileUtilsErrno;
 import com.termux.shared.shell.TermuxShellEnvironmentClient;
 import com.termux.shared.shell.TermuxTask;
 import com.termux.shared.termux.AndroidUtils;
@@ -134,7 +135,9 @@ public class TermuxFileUtils {
     }
 
     /**
-     * Validate the existence and permissions of {@link TermuxConstants#TERMUX_FILES_DIR_PATH}.
+     * Validate if {@link TermuxConstants#TERMUX_FILES_DIR_PATH} exists and has
+     * {@link FileUtils#APP_WORKING_DIRECTORY_PERMISSIONS} permissions.
+     *
      * This is required because binaries compiled for termux are hard coded with
      * {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} and the path must be accessible.
      *
@@ -216,12 +219,55 @@ public class TermuxFileUtils {
         if (createDirectoryIfMissing)
             context.getFilesDir();
 
+        if (!FileUtils.directoryFileExists(TermuxConstants.TERMUX_FILES_DIR_PATH, true))
+            return FileUtilsErrno.ERRNO_FILE_NOT_FOUND_AT_PATH.getError("termux files directory", TermuxConstants.TERMUX_FILES_DIR_PATH);
+
         if (setMissingPermissions)
-            FileUtils.setMissingFilePermissions("Termux files directory", TermuxConstants.TERMUX_FILES_DIR_PATH,
+            FileUtils.setMissingFilePermissions("termux files directory", TermuxConstants.TERMUX_FILES_DIR_PATH,
                 FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS);
 
-        return FileUtils.checkMissingFilePermissions("Termux files directory", TermuxConstants.TERMUX_FILES_DIR_PATH,
+        return FileUtils.checkMissingFilePermissions("termux files directory", TermuxConstants.TERMUX_FILES_DIR_PATH,
             FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS, false);
+    }
+
+    /**
+     * Validate if {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} exists and has
+     * {@link FileUtils#APP_WORKING_DIRECTORY_PERMISSIONS} permissions.
+     * .
+     *
+     * The {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} directory would not exist if termux has
+     * not been installed or the bootstrap setup has not been run or if it was deleted by the user.
+     *
+     * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
+     *                                 should be created if its missing.
+     * @param setMissingPermissions The {@code boolean} that decides if permissions are to be
+     *                              automatically set.
+     * @return Returns the {@code error} if path is not a directory file, failed to create it,
+     * or validating permissions failed, otherwise {@code null}.
+     */
+    public static Error isTermuxPrefixDirectoryAccessible(boolean createDirectoryIfMissing, boolean setMissingPermissions) {
+           return FileUtils.validateDirectoryFileExistenceAndPermissions("termux prefix directory", TermuxConstants.TERMUX_PREFIX_DIR_PATH,
+                null, createDirectoryIfMissing,
+                FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS, setMissingPermissions, true,
+                false, false);
+    }
+
+    /**
+     * Validate if {@link TermuxConstants#TERMUX_STAGING_PREFIX_DIR_PATH} exists and has
+     * {@link FileUtils#APP_WORKING_DIRECTORY_PERMISSIONS} permissions.
+     *
+     * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
+     *                                 should be created if its missing.
+     * @param setMissingPermissions The {@code boolean} that decides if permissions are to be
+     *                              automatically set.
+     * @return Returns the {@code error} if path is not a directory file, failed to create it,
+     * or validating permissions failed, otherwise {@code null}.
+     */
+    public static Error isTermuxPrefixStagingDirectoryAccessible(boolean createDirectoryIfMissing, boolean setMissingPermissions) {
+        return FileUtils.validateDirectoryFileExistenceAndPermissions("termux prefix staging directory", TermuxConstants.TERMUX_STAGING_PREFIX_DIR_PATH,
+            null, createDirectoryIfMissing,
+            FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS, setMissingPermissions, true,
+            false, false);
     }
 
     /**
