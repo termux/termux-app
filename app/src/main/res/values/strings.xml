@@ -211,6 +211,12 @@
 
 
 
+    <!-- Termux Widget App Preferences -->
+    <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;</string>
+    <string name="termux_widget_preferences_summary">Preferences for &TERMUX_WIDGET_APP_NAME; app</string>
+
+
+
     <!-- About Preference -->
     <string name="about_preference_title">About</string>
 

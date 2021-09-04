@@ -28,6 +28,13 @@
         app:fragment="com.termux.app.fragments.settings.TermuxTaskerPreferencesFragment"/>
 
     <Preference
+        app:key="termux_widget"
+        app:title="@string/termux_widget_preferences_title"
+        app:summary="@string/termux_widget_preferences_summary"
+        app:isPreferenceVisible="false"
+        app:fragment="com.termux.app.fragments.settings.TermuxWidgetPreferencesFragment"/>
+
+    <Preference
         app:key="about"
         app:title="@string/about_preference_title"
         app:persistent="false"/>

@@ -20,6 +20,7 @@ import com.termux.shared.packages.PackageUtils;
 import com.termux.shared.settings.preferences.TermuxAPIAppSharedPreferences;
 import com.termux.shared.settings.preferences.TermuxFloatAppSharedPreferences;
 import com.termux.shared.settings.preferences.TermuxTaskerAppSharedPreferences;
+import com.termux.shared.settings.preferences.TermuxWidgetAppSharedPreferences;
 import com.termux.shared.termux.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
@@ -60,6 +61,7 @@ public class SettingsActivity extends AppCompatActivity {
             configureTermuxAPIPreference(context);
             configureTermuxFloatPreference(context);
             configureTermuxTaskerPreference(context);
+            configureTermuxWidgetPreference(context);
             configureAboutPreference(context);
             configureDonatePreference(context);
         }
@@ -88,6 +90,15 @@ public class SettingsActivity extends AppCompatActivity {
                 TermuxTaskerAppSharedPreferences preferences = TermuxTaskerAppSharedPreferences.build(context, false);
                 // If failed to get app preferences, then likely app is not installed, so do not show its preference
                 termuxTaskerPreference.setVisible(preferences != null);
+            }
+        }
+
+        private void configureTermuxWidgetPreference(@NonNull Context context) {
+            Preference termuxWidgetPreference = findPreference("termux_widget");
+            if (termuxWidgetPreference != null) {
+                TermuxWidgetAppSharedPreferences preferences = TermuxWidgetAppSharedPreferences.build(context, false);
+                // If failed to get app preferences, then likely app is not installed, so do not show its preference
+                termuxWidgetPreference.setVisible(preferences != null);
             }
         }
 
