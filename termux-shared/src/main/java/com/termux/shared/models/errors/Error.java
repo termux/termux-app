@@ -12,6 +12,8 @@ import java.util.List;
 
 public class Error implements Serializable {
 
+    /** The optional error label. */
+    private String label;
     /** The error type. */
     private String type;
     /** The error code. */
@@ -76,7 +78,18 @@ public class Error implements Serializable {
             this.code = Errno.ERRNO_SUCCESS.getCode();
 
         this.message = message;
-        this.throwablesList = throwablesList;
+
+        if (throwablesList != null)
+            this.throwablesList = throwablesList;
+    }
+
+    public Error setLabel(String label) {
+        this.label = label;
+        return this;
+    }
+
+    public String getLabel() {
+        return label;
     }
 
 

@@ -1,5 +1,8 @@
 package com.termux.shared.models.errors;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** The {@link Class} that defines FileUtils error messages and codes. */
 public class FileUtilsErrno extends Errno {
 
@@ -18,19 +21,20 @@ public class FileUtilsErrno extends Errno {
 
 
     /* Errors for invalid or not found files at path (150-200) */
-    public static final Errno ERRNO_FILE_NOT_FOUND_AT_PATH = new Errno(TYPE, 150, "The %1$s is not found at path \"%2$s\".");
+    public static final Errno ERRNO_FILE_NOT_FOUND_AT_PATH = new Errno(TYPE, 150, "The %1$s not found at path \"%2$s\".");
+    public static final Errno ERRNO_FILE_NOT_FOUND_AT_PATH_SHORT = new Errno(TYPE, 151, "The %1$s not found at path.");
 
-    public static final Errno ERRNO_NO_REGULAR_FILE_FOUND = new Errno(TYPE, 151, "Regular file not found at %1$s path.");
-    public static final Errno ERRNO_NOT_A_REGULAR_FILE = new Errno(TYPE, 152, "The %1$s at path \"%2$s\" is not a regular file.");
+    public static final Errno ERRNO_NON_REGULAR_FILE_FOUND = new Errno(TYPE, 152, "Non-regular file found at %1$s path \"%2$s\".");
+    public static final Errno ERRNO_NON_REGULAR_FILE_FOUND_SHORT = new Errno(TYPE, 153, "Non-regular file found at %1$s path.");
+    public static final Errno ERRNO_NON_DIRECTORY_FILE_FOUND = new Errno(TYPE, 154, "Non-directory file found at %1$s path \"%2$s\".");
+    public static final Errno ERRNO_NON_DIRECTORY_FILE_FOUND_SHORT = new Errno(TYPE, 155, "Non-directory file found at %1$s path.");
+    public static final Errno ERRNO_NON_SYMLINK_FILE_FOUND = new Errno(TYPE, 156, "Non-symlink file found at %1$s path \"%2$s\".");
+    public static final Errno ERRNO_NON_SYMLINK_FILE_FOUND_SHORT = new Errno(TYPE, 157, "Non-symlink file found at %1$s path.");
 
-    public static final Errno ERRNO_NON_REGULAR_FILE_FOUND = new Errno(TYPE, 153, "Non-regular file found at %1$s path.");
-    public static final Errno ERRNO_NON_DIRECTORY_FILE_FOUND = new Errno(TYPE, 154, "Non-directory file found at %1$s path.");
-    public static final Errno ERRNO_NON_SYMLINK_FILE_FOUND = new Errno(TYPE, 155, "Non-symlink file found at %1$s path.");
+    public static final Errno ERRNO_FILE_NOT_AN_ALLOWED_FILE_TYPE = new Errno(TYPE, 158, "The %1$s found at path \"%2$s\" is not one of allowed file types \"%3$s\".");
 
-    public static final Errno ERRNO_FILE_NOT_AN_ALLOWED_FILE_TYPE = new Errno(TYPE, 156, "The %1$s found at path \"%2$s\" is not one of allowed file types \"%3$s\".");
-
-    public static final Errno ERRNO_VALIDATE_FILE_EXISTENCE_AND_PERMISSIONS_FAILED_WITH_EXCEPTION = new Errno(TYPE, 157, "Validating file existence and permissions of %1$s at path \"%2$s\" failed.\nException: %3$s");
-    public static final Errno ERRNO_VALIDATE_DIRECTORY_EXISTENCE_AND_PERMISSIONS_FAILED_WITH_EXCEPTION = new Errno(TYPE, 158, "Validating directory existence and permissions of %1$s at path \"%2$s\" failed.\nException: %3$s");
+    public static final Errno ERRNO_VALIDATE_FILE_EXISTENCE_AND_PERMISSIONS_FAILED_WITH_EXCEPTION = new Errno(TYPE, 159, "Validating file existence and permissions of %1$s at path \"%2$s\" failed.\nException: %3$s");
+    public static final Errno ERRNO_VALIDATE_DIRECTORY_EXISTENCE_AND_PERMISSIONS_FAILED_WITH_EXCEPTION = new Errno(TYPE, 160, "Validating directory existence and permissions of %1$s at path \"%2$s\" failed.\nException: %3$s");
 
 
 
@@ -72,13 +76,31 @@ public class FileUtilsErrno extends Errno {
 
     /* Errors for invalid file permissions (400-450) */
     public static final Errno ERRNO_INVALID_FILE_PERMISSIONS_STRING_TO_CHECK = new Errno(TYPE, 400, "The file permission string to check is invalid.");
-    public static final Errno ERRNO_FILE_NOT_READABLE = new Errno(TYPE, 401, "The %1$s at path is not readable. Permission Denied.");
-    public static final Errno ERRNO_FILE_NOT_WRITABLE = new Errno(TYPE, 402, "The %1$s at path is not writable. Permission Denied.");
-    public static final Errno ERRNO_FILE_NOT_EXECUTABLE = new Errno(TYPE, 403, "The %1$s at path is not executable. Permission Denied.");
+    public static final Errno ERRNO_FILE_NOT_READABLE = new Errno(TYPE, 401, "The %1$s at path \"%2$s\" is not readable. Permission Denied.");
+    public static final Errno ERRNO_FILE_NOT_READABLE_SHORT = new Errno(TYPE, 402, "The %1$s at path is not readable. Permission Denied.");
+    public static final Errno ERRNO_FILE_NOT_WRITABLE = new Errno(TYPE, 403, "The %1$s at path \"%2$s\" is not writable. Permission Denied.");
+    public static final Errno ERRNO_FILE_NOT_WRITABLE_SHORT = new Errno(TYPE, 404, "The %1$s at path is not writable. Permission Denied.");
+    public static final Errno ERRNO_FILE_NOT_EXECUTABLE = new Errno(TYPE, 405, "The %1$s at path \"%2$s\" is not executable. Permission Denied.");
+    public static final Errno ERRNO_FILE_NOT_EXECUTABLE_SHORT = new Errno(TYPE, 406, "The %1$s at path is not executable. Permission Denied.");
 
 
     FileUtilsErrno(final String type, final int code, final String message) {
         super(type, code, message);
     }
+
+
+
+    /** Defines the {@link Errno} mapping to get a shorter version of {@link FileUtilsErrno}. */
+    public static Map<Errno, Errno> ERRNO_SHORT_MAPPING = new HashMap<Errno, Errno>() {{
+        put(ERRNO_FILE_NOT_FOUND_AT_PATH, ERRNO_FILE_NOT_FOUND_AT_PATH_SHORT);
+
+        put(ERRNO_NON_REGULAR_FILE_FOUND, ERRNO_NON_REGULAR_FILE_FOUND_SHORT);
+        put(ERRNO_NON_DIRECTORY_FILE_FOUND, ERRNO_NON_DIRECTORY_FILE_FOUND_SHORT);
+        put(ERRNO_NON_SYMLINK_FILE_FOUND, ERRNO_NON_SYMLINK_FILE_FOUND_SHORT);
+
+        put(ERRNO_FILE_NOT_READABLE, ERRNO_FILE_NOT_READABLE_SHORT);
+        put(ERRNO_FILE_NOT_WRITABLE, ERRNO_FILE_NOT_WRITABLE_SHORT);
+        put(ERRNO_FILE_NOT_EXECUTABLE, ERRNO_FILE_NOT_EXECUTABLE_SHORT);
+    }};
 
 }

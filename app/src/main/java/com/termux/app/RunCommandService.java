@@ -148,7 +148,6 @@ public class RunCommandService extends Service {
             FileUtils.APP_EXECUTABLE_FILE_PERMISSIONS, true, true,
             false);
         if (error != null) {
-            error.appendMessage("\n" + this.getString(R.string.msg_executable_absolute_path, executionCommand.executable));
             executionCommand.setStateFailed(error);
             PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
             return stopService();
@@ -170,7 +169,6 @@ public class RunCommandService extends Service {
                 true, true, true,
                 false, true);
             if (error != null) {
-                error.appendMessage("\n" + this.getString(R.string.msg_working_directory_absolute_path, executionCommand.workingDirectory));
                 executionCommand.setStateFailed(error);
                 PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
                 return stopService();

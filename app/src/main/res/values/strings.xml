@@ -111,12 +111,6 @@
 
 
 
-    <!-- Termux Execution Commands -->
-    <string name="msg_executable_absolute_path">Executable Absolute Path: \"%1$s\"</string>
-    <string name="msg_working_directory_absolute_path">Working Directory Absolute Path: \"%1$s\"</string>
-
-
-
     <!-- Termux File Receiver -->
     <string name="title_file_received">Save file in ~/downloads/</string>
     <string name="action_file_received_edit">Edit</string>

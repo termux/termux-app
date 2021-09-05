@@ -8,10 +8,13 @@ import com.termux.shared.logger.Logger;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /** The {@link Class} that defines error messages and codes. */
 public class Errno {
+
+    private static final HashMap<String, Errno> map = new HashMap<>();
 
     public static final String TYPE = "Error";
 
@@ -35,6 +38,7 @@ public class Errno {
         this.type = type;
         this.code = code;
         this.message = message;
+        map.put(type + ":" + code, this);
     }
 
     @NonNull
@@ -56,6 +60,17 @@ public class Errno {
         return code;
     }
 
+    /**
+     * Get the {@link Errno} of a specific type and code.
+     *
+     * @param type The unique type of the {@link Errno}.
+     * @param code The unique code of the {@link Errno}.
+     */
+    public static Errno valueOf(String type, Integer code) {
+        if (type == null || type.isEmpty() || code == null) return null;
+        return map.get(type + ":" + code);
+    }
+
 
 
     public Error getError() {
@@ -73,12 +88,18 @@ public class Errno {
     }
 
     public Error getError(Throwable throwable, Object... args) {
-        return getError(Collections.singletonList(throwable), args);
+        if (throwable == null)
+            return getError(args);
+        else
+            return getError(Collections.singletonList(throwable), args);
     }
 
     public Error getError(List<Throwable> throwablesList, Object... args) {
         try {
-            return new Error(getType(), getCode(), String.format(getMessage(), args), throwablesList);
+            if (throwablesList == null)
+                return new Error(getType(), getCode(), String.format(getMessage(), args));
+            else
+                return new Error(getType(), getCode(), String.format(getMessage(), args), throwablesList);
         } catch (Exception e) {
             Logger.logWarn(LOG_TAG, "Exception raised while calling String.format() for error message of errno " + this + " with args" + Arrays.toString(args) + "\n" + e.getMessage());
             // Return unformatted message as a backup
