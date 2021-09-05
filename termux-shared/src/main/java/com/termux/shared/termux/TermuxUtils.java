@@ -533,4 +533,16 @@ public class TermuxUtils {
         }
     }
 
+
+    /**
+     * Get a process id of the main app process of the {@link TermuxConstants#TERMUX_PACKAGE_NAME}
+     * package.
+     *
+     * @param context The context for operations.
+     * @return Returns the process if found and running, otherwise {@code null}.
+     */
+    public static String getTermuxAppPID(final Context context) {
+        return PackageUtils.getPackagePID(context, TermuxConstants.TERMUX_PACKAGE_NAME);
+    }
+
 }

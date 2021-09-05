@@ -20,6 +20,11 @@ import java.util.List;
 
 public class TermuxShellUtils {
 
+    public static String TERMUX_VERSION_NAME;
+    public static String TERMUX_IS_DEBUG_BUILD;
+    public static String TERMUX_APK_RELEASE;
+    public static String TERMUX_APP_PID;
+
     public static String getDefaultWorkingDirectoryPath() {
         return TermuxConstants.TERMUX_HOME_DIR_PATH;
     }
@@ -36,13 +41,16 @@ public class TermuxShellUtils {
 
         List<String> environment = new ArrayList<>();
 
-        // This function may be called by a different package like a plugin, so we get version for Termux package via its context
-        Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
-        if (termuxPackageContext != null) {
-            String termuxVersionName = PackageUtils.getVersionNameForPackage(termuxPackageContext);
-            if (termuxVersionName != null)
-                environment.add("TERMUX_VERSION=" + termuxVersionName);
-        }
+        loadTermuxEnvVariables(currentPackageContext);
+
+        if (TERMUX_VERSION_NAME != null)
+            environment.add("TERMUX_VERSION=" + TERMUX_VERSION_NAME);
+        if (TERMUX_IS_DEBUG_BUILD != null)
+            environment.add("TERMUX_IS_DEBUG_BUILD=" + TERMUX_IS_DEBUG_BUILD);
+        if (TERMUX_APK_RELEASE != null)
+            environment.add("TERMUX_APK_RELEASE=" + TERMUX_APK_RELEASE);
+        if (TERMUX_APP_PID != null)
+            environment.add("TERMUX_APP_PID=" + TERMUX_APP_PID);
 
         environment.add("TERM=xterm-256color");
         environment.add("COLORTERM=truecolor");
@@ -144,6 +152,23 @@ public class TermuxShellUtils {
         error = FileUtils.clearDirectory("$TMPDIR", FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null));
         if (error != null) {
             Logger.logErrorExtended(error.toString());
+        }
+    }
+
+    public static void loadTermuxEnvVariables(Context currentPackageContext) {
+        TERMUX_VERSION_NAME = TERMUX_IS_DEBUG_BUILD = TERMUX_APK_RELEASE = TERMUX_APP_PID = null;
+
+        // This function may be called by a different package like a plugin, so we get version for Termux package via its context
+        Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
+        if (termuxPackageContext != null) {
+            TERMUX_VERSION_NAME = PackageUtils.getVersionNameForPackage(termuxPackageContext);
+            TERMUX_IS_DEBUG_BUILD = PackageUtils.isAppForPackageADebugBuild(termuxPackageContext) ? "1" : "0";
+
+            String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(termuxPackageContext);
+            if (signingCertificateSHA256Digest != null)
+                TERMUX_APK_RELEASE = TermuxUtils.getAPKRelease(signingCertificateSHA256Digest).replaceAll("[^a-zA-Z]", "_").toUpperCase();
+
+            TERMUX_APP_PID = TermuxUtils.getTermuxAppPID(currentPackageContext);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.termux.shared.packages;
 
+import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -243,6 +244,32 @@ public class PackageUtils {
                 String packageName = admin.getPackageName();
                 if(devicePolicyManager.isProfileOwnerApp(packageName))
                     return packageName;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the process id of the main app process of a package. This will work for sharedUserId. Note
+     * that some apps have multiple processes for the app like with `android:process=":background"`
+     * attribute in AndroidManifest.xml.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the process.
+     * @return Returns the process if found and running, otherwise {@code null}.
+     */
+    @Nullable
+    public static String getPackagePID(final Context context, String packageName) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager != null) {
+            List<ActivityManager.RunningAppProcessInfo> processInfos = activityManager.getRunningAppProcesses();
+            if (processInfos != null) {
+                ActivityManager.RunningAppProcessInfo processInfo;
+                for (int i = 0; i < processInfos.size(); i++) {
+                    processInfo = processInfos.get(i);
+                    if (processInfo.processName.equals(packageName))
+                        return String.valueOf(processInfo.pid);
+                }
             }
         }
         return null;
