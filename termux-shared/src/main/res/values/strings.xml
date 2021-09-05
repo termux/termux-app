@@ -43,6 +43,7 @@
 
     <!-- ShareUtils -->
     <string name="title_share_with">Share With</string>
+    <string name="title_open_url_with">Open URL With</string>
     <string name="msg_storage_permission_not_granted">The storage permission not granted."</string>
     <string name="msg_file_saved_successfully">The %1$s file saved successfully at \"%2$s\""</string>
 

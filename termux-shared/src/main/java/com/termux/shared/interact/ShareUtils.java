@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
+import com.termux.shared.data.IntentUtils;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.models.errors.Error;
@@ -39,7 +40,11 @@ public class ShareUtils {
         chooserIntent.putExtra(Intent.EXTRA_INTENT, intent);
         chooserIntent.putExtra(Intent.EXTRA_TITLE, title);
         chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(chooserIntent);
+        try {
+            context.startActivity(chooserIntent);
+        } catch (Exception e) {
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to open system chooser for:\n" + IntentUtils.getIntentString(chooserIntent), e);
+        }
     }
 
     /**
@@ -88,12 +93,13 @@ public class ShareUtils {
      */
     public static void openURL(final Context context, final String url) {
         if (context == null || url == null || url.isEmpty()) return;
+        Uri uri = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         try {
-            Uri uri = Uri.parse(url);
-            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             context.startActivity(intent);
         } catch (Exception e) {
-            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to open the url \"" + url + "\"", e);
+            // If no activity found to handle intent, show system chooser
+            openSystemAppChooser(context, intent, context.getString(R.string.title_open_url_with));
         }
     }
 
