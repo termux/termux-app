@@ -1,7 +1,7 @@
 package com.termux.shared.settings.preferences;
 
 /*
- * Version: v0.14.0
+ * Version: v0.15.0
  *
  * Changelog
  *
@@ -61,6 +61,10 @@ package com.termux.shared.settings.preferences;
  *
  * - 0.14.0 (2021-09-04)
  *      - Added `TERMUX_WIDGET_APP.KEY_TOKEN`.
+ *
+ * - 0.15.0 (2021-09-05)
+ *      - Added following to `TERMUX_TASKER_APP`:
+ *          `KEY_LAST_PENDING_INTENT_REQUEST_CODE` and `DEFAULT_VALUE_KEY_LAST_PENDING_INTENT_REQUEST_CODE`.
  */
 
 /**
@@ -258,6 +262,13 @@ public final class TermuxPreferenceConstants {
          * Defines the key for current log level.
          */
         public static final String KEY_LOG_LEVEL = "log_level";
+
+
+        /**
+         * Defines the key for last used PendingIntent request code.
+         */
+        public static final String KEY_LAST_PENDING_INTENT_REQUEST_CODE = "last_pending_intent_request_code";
+        public static final int DEFAULT_VALUE_KEY_LAST_PENDING_INTENT_REQUEST_CODE = 0;
 
     }
 

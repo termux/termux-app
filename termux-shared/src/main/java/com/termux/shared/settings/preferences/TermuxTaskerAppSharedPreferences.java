@@ -84,4 +84,14 @@ public class TermuxTaskerAppSharedPreferences {
         SharedPreferenceUtils.setInt(mSharedPreferences, TERMUX_TASKER_APP.KEY_LOG_LEVEL, logLevel, commitToFile);
     }
 
+
+
+    public int getLastPendingIntentRequestCode() {
+        return SharedPreferenceUtils.getInt(mSharedPreferences, TERMUX_TASKER_APP.KEY_LAST_PENDING_INTENT_REQUEST_CODE, TERMUX_TASKER_APP.DEFAULT_VALUE_KEY_LAST_PENDING_INTENT_REQUEST_CODE);
+    }
+
+    public void setLastPendingIntentRequestCode(int lastPendingIntentRequestCode) {
+        SharedPreferenceUtils.setInt(mSharedPreferences, TERMUX_TASKER_APP.KEY_LAST_PENDING_INTENT_REQUEST_CODE, lastPendingIntentRequestCode, false);
+    }
+
 }
