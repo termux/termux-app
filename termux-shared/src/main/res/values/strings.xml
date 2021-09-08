@@ -19,6 +19,7 @@
 
 
     <!-- PackageUtils -->
+    <string name="error_app_not_installed_or_disabled_warning">The %1$s (%2$s) app is not installed or is disabled."</string>
     <string name="error_get_package_context_failed_title">Failed To Get Package Context</string>
     <string name="error_get_package_context_failed_message">Failed to get package context for the \"%1$s\" package.
         This may be because the app package is not installed or it has different APK signature from the current app.
@@ -74,7 +75,6 @@
         even result in **temporary or permanent** ban. Check %1$s/wiki/Hacking for details.</string>
 
     <string name="msg_termux_app_required_by_app">The &TERMUX_APP_NAME; is required by the %1$s app to run termux commands."</string>
-    <string name="error_termux_app_not_installed_or_disabled_warning">The &TERMUX_APP_NAME; app is not installed or is disabled."</string>
     <string name="error_termux_app_package_context_not_accessible">The &TERMUX_APP_NAME; app (package context) is not accessible."</string>
     <string name="error_termux_prefix_dir_path_not_accessible">The &TERMUX_APP_NAME; app $PREFIX directory is not accessible by the %1$s app.
         This may be because you have not installed or setup &TERMUX_APP_NAME; app or

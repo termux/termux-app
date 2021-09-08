@@ -130,7 +130,7 @@ public class PackageUtils {
      * @param context The {@link Context} for the package.
      * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
      */
-    public static Boolean isAppForPackageADebugBuild(@NonNull final Context context) {
+    public static Boolean isAppForPackageADebuggableBuild(@NonNull final Context context) {
         return ( 0 != ( context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE ) );
     }
 
@@ -273,6 +273,49 @@ public class PackageUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Check if app is installed and enabled. This can be used by external apps that don't
+     * share `sharedUserId` with the an app.
+     *
+     * If your third-party app is targeting sdk `30` (android `11`), then it needs to add package
+     * name to the `queries` element or request `QUERY_ALL_PACKAGES` permission in its
+     * `AndroidManifest.xml`. Otherwise it will get `PackageSetting{...... package_name/......} BLOCKED`
+     * errors in `logcat` and `RUN_COMMAND` won't work.
+     * Check [package-visibility](https://developer.android.com/training/basics/intents/package-visibility#package-name),
+     * `QUERY_ALL_PACKAGES` [googleplay policy](https://support.google.com/googleplay/android-developer/answer/10158779
+     * and this [article](https://medium.com/androiddevelopers/working-with-package-visibility-dc252829de2d) for more info.
+     *
+     * {@code
+     * <manifest
+     *     <queries>
+     *         <package android:name="package_name" />
+     *    </queries>
+     * </manifest>
+     * }
+     *
+     * @param context The context for operations.
+     * @return Returns {@code errmsg} if {@code packageName} is not installed or disabled, otherwise {@code null}.
+     */
+    public static String isAppInstalled(@NonNull final Context context, String appName, String packageName) {
+        String errmsg = null;
+
+        PackageManager packageManager = context.getPackageManager();
+
+        ApplicationInfo applicationInfo;
+        try {
+            applicationInfo = packageManager.getApplicationInfo(packageName, 0);
+        } catch (final PackageManager.NameNotFoundException e) {
+            applicationInfo = null;
+        }
+        boolean isAppEnabled = (applicationInfo != null && applicationInfo.enabled);
+
+        // If app is not installed or is disabled
+        if (!isAppEnabled)
+            errmsg = context.getString(R.string.error_app_not_installed_or_disabled_warning, appName, packageName);
+
+        return errmsg;
     }
 
 }

@@ -124,27 +124,12 @@ public class TermuxUtils {
      * </manifest>
      * }
      *
-     * @param currentPackageContext The context of current package.
-     * @return Returns {@code errmsg} if termux package is not installed or disabled, otherwise {@code null}.
+     * @param context The context for operations.
+     * @return Returns {@code errmsg} if {@link TermuxConstants#TERMUX_PACKAGE_NAME} is not installed
+     * or disabled, otherwise {@code null}.
      */
-    public static String isTermuxAppInstalled(@NonNull final Context currentPackageContext) {
-        String errmsg = null;
-
-        PackageManager packageManager = currentPackageContext.getPackageManager();
-
-        ApplicationInfo applicationInfo;
-        try {
-            applicationInfo = packageManager.getApplicationInfo(TermuxConstants.TERMUX_PACKAGE_NAME, 0);
-        } catch (final PackageManager.NameNotFoundException e) {
-            applicationInfo = null;
-        }
-        boolean termuxAppEnabled = (applicationInfo != null && applicationInfo.enabled);
-
-        // If Termux app is not installed or is disabled
-        if (!termuxAppEnabled)
-            errmsg = currentPackageContext.getString(R.string.error_termux_app_not_installed_or_disabled_warning);
-
-        return errmsg;
+    public static String isTermuxAppInstalled(@NonNull final Context context) {
+        return PackageUtils.isAppInstalled(context, TermuxConstants.TERMUX_APP_NAME, TermuxConstants.TERMUX_PACKAGE_NAME);
     }
 
     /**
@@ -524,8 +509,8 @@ public class TermuxUtils {
         switch (signingCertificateSHA256Digest.toUpperCase()) {
             case TermuxConstants.APK_RELEASE_FDROID_SIGNING_CERTIFICATE_SHA256_DIGEST:
                 return TermuxConstants.APK_RELEASE_FDROID;
-            case TermuxConstants.APK_RELEASE_GITHUB_DEBUG_BUILD_SIGNING_CERTIFICATE_SHA256_DIGEST:
-                return TermuxConstants.APK_RELEASE_GITHUB_DEBUG_BUILD;
+            case TermuxConstants.APK_RELEASE_GITHUB_SIGNING_CERTIFICATE_SHA256_DIGEST:
+                return TermuxConstants.APK_RELEASE_GITHUB;
             case TermuxConstants.APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST:
                 return TermuxConstants.APK_RELEASE_GOOGLE_PLAYSTORE;
             default:
