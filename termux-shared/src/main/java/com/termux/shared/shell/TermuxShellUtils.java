@@ -25,6 +25,8 @@ public class TermuxShellUtils {
     public static String TERMUX_APP_PID;
     public static String TERMUX_APK_RELEASE;
 
+    public static String TERMUX_API_VERSION_NAME;
+
     public static String getDefaultWorkingDirectoryPath() {
         return TermuxConstants.TERMUX_HOME_DIR_PATH;
     }
@@ -51,6 +53,9 @@ public class TermuxShellUtils {
             environment.add("TERMUX_APP_PID=" + TERMUX_APP_PID);
         if (TERMUX_APK_RELEASE != null)
             environment.add("TERMUX_APK_RELEASE=" + TERMUX_APK_RELEASE);
+
+        if (TERMUX_API_VERSION_NAME != null)
+            environment.add("TERMUX_API_VERSION=" + TERMUX_API_VERSION_NAME);
 
         environment.add("TERM=xterm-256color");
         environment.add("COLORTERM=truecolor");
@@ -180,6 +185,16 @@ public class TermuxShellUtils {
             }
         }
 
+
+        TERMUX_API_VERSION_NAME = null;
+
+        // Check if Termux:API app is installed and not disabled
+        if (TermuxUtils.isTermuxAPIAppInstalled(currentPackageContext) == null) {
+            // This function may be called by a different package like a plugin, so we get version for Termux:API package via its context
+            Context termuxAPIPackageContext = TermuxUtils.getTermuxAPIPackageContext(currentPackageContext);
+            if (termuxAPIPackageContext != null)
+                TERMUX_API_VERSION_NAME = PackageUtils.getVersionNameForPackage(termuxAPIPackageContext);
+        }
     }
 
 }

@@ -133,6 +133,18 @@ public class TermuxUtils {
     }
 
     /**
+     * Check if Termux:API app is installed and enabled. This can be used by external apps that don't
+     * share `sharedUserId` with the Termux:API app.
+     *
+     * @param context The context for operations.
+     * @return Returns {@code errmsg} if {@link TermuxConstants#TERMUX_API_PACKAGE_NAME} is not installed
+     * or disabled, otherwise {@code null}.
+     */
+    public static String isTermuxAPIAppInstalled(@NonNull final Context context) {
+        return PackageUtils.isAppInstalled(context, TermuxConstants.TERMUX_API_APP_NAME, TermuxConstants.TERMUX_API_PACKAGE_NAME);
+    }
+
+    /**
      * Check if Termux app is installed and accessible. This can only be used by apps that share
      * `sharedUserId` with the Termux app.
      *
