@@ -2,6 +2,7 @@ package com.termux.shared.interact;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -97,9 +98,11 @@ public class ShareUtils {
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         try {
             context.startActivity(intent);
-        } catch (Exception e) {
+        } catch (ActivityNotFoundException e) {
             // If no activity found to handle intent, show system chooser
             openSystemAppChooser(context, intent, context.getString(R.string.title_open_url_with));
+        } catch (Exception e) {
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to open url \"" + url + "\"", e);
         }
     }
 
