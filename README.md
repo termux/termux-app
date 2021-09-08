@@ -84,7 +84,7 @@ You can backup all your data under `$HOME/` and `$PREFIX/` before changing insta
 
 There is currently no work being done to solve android `10` issues and *working* updates will not be resumed on Google Play Store any time soon. We will continue targeting sdk `28` for now. So there is not much point in staying on Play Store builds and waiting for updates to be resumed. If for some reason you don't want to move to `F-Droid` or `Github` sources for now, then at least check [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management) to **change your mirror**, otherwise, you will get **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands. After that, it is also **highly advisable** to run `pkg upgrade` command to update all packages to the latest available versions, or at least update `termux-tools` package with `pkg install termux-tools` command.
 
-If you plan on staying on Play Store sources in future as well, they you may want to **disable automatic updates in Play Store** for Termux apps, since if and when updates to disable Termux apps are released, then **you will not be able to downgrade** and **will be forced** to move since apps won't work anymore. Only a way to backup `termux-app` data may be provided.
+If you plan on staying on Play Store sources in future as well, then you may want to **disable automatic updates in Play Store** for Termux apps, since if and when updates to disable Termux apps are released, then **you will not be able to downgrade** and **will be forced** to move since apps won't work anymore. Only a way to backup `termux-app` data may be provided.
 
 #### Why Disable?
 
