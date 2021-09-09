@@ -12,7 +12,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /*
- * Version: v0.30.0
+ * Version: v0.31.0
  *
  * Changelog
  *
@@ -203,6 +203,10 @@ import java.util.List;
  *      - Changed `APK_RELEASE_GITHUB_DEBUG_BUILD`to `APK_RELEASE_GITHUB` and
  *          `APK_RELEASE_GITHUB_DEBUG_BUILD_SIGNING_CERTIFICATE_SHA256_DIGEST` to
  *          `APK_RELEASE_GITHUB_SIGNING_CERTIFICATE_SHA256_DIGEST`.
+ *
+ * - 0.31.0 (2021-09-09)
+ *      - Added following to `TERMUX_APP.TERMUX_SERVICE`:
+ *          `MIN_VALUE_EXTRA_SESSION_ACTION` and `MAX_VALUE_EXTRA_SESSION_ACTION`.
  */
 
 /**
@@ -948,6 +952,11 @@ public final class TermuxConstants {
              */
             public static final int VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY = 3;
 
+            /** The minimum allowed value for {@link #EXTRA_SESSION_ACTION}. */
+            public static final int MIN_VALUE_EXTRA_SESSION_ACTION = VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY;
+
+            /** The maximum allowed value for {@link #EXTRA_SESSION_ACTION}. */
+            public static final int MAX_VALUE_EXTRA_SESSION_ACTION = VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY;
 
 
             /** Intent {@code Bundle} extra to store result of execute command that is sent back for the
