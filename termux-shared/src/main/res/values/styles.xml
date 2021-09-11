@@ -4,6 +4,10 @@
         <item name="colorPrimaryDark">#FF0000</item>
     </style>
 
+    <style name="Theme.AppCompat.TermuxTextIOActivity" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimaryDark">#FF0000</item>
+    </style>
+
     <style name="Toolbar.Title" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:textSize">14sp</item>
     </style>

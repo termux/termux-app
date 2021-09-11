@@ -33,9 +33,6 @@
 
 
     <!-- ReportActivity -->
-    <string name="action_copy">Copy</string>
-    <string name="action_share">Share</string>
-    <string name="action_save_to_file">Save To File</string>
     <string name="title_report_text">Report Text</string>
     <string name="msg_report_truncated">**Report Truncated**\n\nReport is too large to view here.
         Use `Save To File` option from options menu (3-dots on top right) and view it in an external text editor app.\n\n##\n\n</string>
@@ -87,6 +84,10 @@
     <!-- Miscellaneous -->
     <string name="action_yes">Yes</string>
     <string name="action_no">No</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_share">Share</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save_to_file">Save To File</string>
 
 
 

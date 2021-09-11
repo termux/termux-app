@@ -1,0 +1,93 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        layout="@layout/partial_toolbar"
+        android:id="@+id/partial_toolbar"/>
+
+    <TextView
+        android:id="@+id/text_io_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/content_padding"
+        android:gravity="start|center_vertical"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:visibility="invisible" />
+
+    <View
+        android:id="@+id/text_io_label_separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="@dimen/content_padding"
+        android:background="@android:color/darker_gray"
+        android:visibility="invisible" />
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- id must be assigned to scroll views to restore scroll position automatically on activity resume -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/text_io_nested_scroll_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="@dimen/content_padding_half"
+            android:fillViewport="true"
+            app:layout_constraintBottom_toTopOf="@+id/text_io_text_character_usage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <HorizontalScrollView
+                    android:id="@+id/text_io_horizontal_scroll_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fillViewport="true">
+
+                    <LinearLayout
+                        android:id="@+id/text_io_text_linear_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <EditText
+                            android:id="@+id/text_io_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="start|top"
+                            android:inputType="textMultiLine"
+                            android:importantForAutofill="no"
+                            tools:ignore="LabelFor" />
+                    </LinearLayout>
+
+                </HorizontalScrollView>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <TextView
+            android:id="@+id/text_io_text_character_usage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingEnd="@dimen/content_padding_half"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:gravity="end|center_vertical"
+            android:textSize="12sp"
+            android:textColor="@android:color/black"
+            android:visibility="invisible" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
