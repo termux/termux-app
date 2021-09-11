@@ -10,6 +10,8 @@ import java.io.Serializable;
 
 public class DataUtils {
 
+    /** Max safe limit of data size to prevent TransactionTooLargeException when transferring data
+     * inside or to other apps via transactions. */
     public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 100 * 1024; // 100KB
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
@@ -169,6 +171,17 @@ public class DataUtils {
      */
     public static <T> T getDefaultIfNull(@Nullable T object, @Nullable T def) {
         return (object == null) ? def : object;
+    }
+
+    /**
+     * Get the {@link String} itself if it is not {@code null} or empty, otherwise default.
+     *
+     * @param value The {@link String} to check.
+     * @param def The default {@link String}.
+     * @return Returns {@code value} if it is not {@code null} or empty, otherwise returns {@code def}.
+     */
+    public static String getDefaultIfUnset(@Nullable String value, String def) {
+        return (value == null || value.isEmpty()) ? def : value;
     }
 
     /** Check if a string is null or empty. */
