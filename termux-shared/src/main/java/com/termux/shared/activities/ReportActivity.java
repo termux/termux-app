@@ -35,7 +35,7 @@ import io.noties.markwon.recycler.MarkwonAdapter;
 import io.noties.markwon.recycler.SimpleEntry;
 
 /**
- * An activity to show reports in markdown format as per CommonMark spec.
+ * An activity to show reports in markdown format as per CommonMark spec based on config passed as {@link ReportInfo}.
  * Add Following to `AndroidManifest.xml` to use in an app:
  * {@code `<activity android:name="com.termux.shared.activities.ReportActivity" android:theme="@style/Theme.AppCompat.TermuxReportActivity" android:documentLaunchMode="intoExisting" />` }
  * and
@@ -60,10 +60,10 @@ public class ReportActivity extends AppCompatActivity {
 
     public static final int ACTIVITY_TEXT_SIZE_LIMIT_IN_BYTES = 1000 * 1024; // 1MB
 
-    ReportInfo mReportInfo;
-    String mReportInfoFilePath;
-    String mReportActivityMarkdownString;
-    Bundle mBundle;
+    private ReportInfo mReportInfo;
+    private String mReportInfoFilePath;
+    private String mReportActivityMarkdownString;
+    private Bundle mBundle;
 
     private static final String LOG_TAG = "ReportActivity";
 
@@ -111,7 +111,7 @@ public class ReportActivity extends AppCompatActivity {
         }
 
         mReportInfo = null;
-        mReportInfoFilePath =null;
+        mReportInfoFilePath = null;
 
         if (mBundle.containsKey(EXTRA_REPORT_INFO_OBJECT_FILE_PATH)) {
             mReportInfoFilePath = mBundle.getString(EXTRA_REPORT_INFO_OBJECT_FILE_PATH);
@@ -300,7 +300,7 @@ public class ReportActivity extends AppCompatActivity {
      * Start the {@link ReportActivity}.
      *
      * @param context The {@link Context} for operations.
-     * @param reportInfo The {@link ReportInfo} contain info that needs to be displayed.
+     * @param reportInfo The {@link ReportInfo} containing info that needs to be displayed.
      */
     public static void startReportActivity(@NonNull final Context context, @NonNull ReportInfo reportInfo) {
         NewInstanceResult result = newInstance(context, reportInfo);
@@ -321,7 +321,7 @@ public class ReportActivity extends AppCompatActivity {
      * incrementally or at app startup.
      *
      * @param context The {@link Context} for operations.
-     * @param reportInfo The {@link ReportInfo} contain info that needs to be displayed.
+     * @param reportInfo The {@link ReportInfo} containing info that needs to be displayed.
      * @return Returns {@link NewInstanceResult}.
      */
     @NonNull

@@ -5,6 +5,9 @@ import com.termux.shared.termux.AndroidUtils;
 
 import java.io.Serializable;
 
+/**
+ * An object that stored info for {@link com.termux.shared.activities.ReportActivity}.
+ */
 public class ReportInfo implements Serializable {
 
     /** The user action that was being processed for which the report was generated. */
