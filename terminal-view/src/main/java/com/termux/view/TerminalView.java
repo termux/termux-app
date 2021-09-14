@@ -466,10 +466,31 @@ public final class TerminalView extends View {
         return true;
     }
 
+    /**
+     * Get the zero indexed column and row of the terminal view for the
+     * position of the event.
+     *
+     * @param event The event with the position to get the column and row for.
+     * @param relativeToScroll If true the column number will take the scroll
+     * position into account. E.g. if scrolled 3 lines up and the event
+     * position is in the top left, column will be -3 if relativeToScroll is
+     * true and 0 if relativeToScroll is false.
+     * @return Array with the column and row.
+     */
+    public int[] getColumnAndRow(MotionEvent event, boolean relativeToScroll) {
+        int column = (int) (event.getX() / mRenderer.mFontWidth);
+        int row = (int) ((event.getY() - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
+        if (relativeToScroll) {
+            row += mTopRow;
+        }
+        return new int[] { column, row };
+    }
+
     /** Send a single mouse event code to the terminal. */
     void sendMouseEventCode(MotionEvent e, int button, boolean pressed) {
-        int x = (int) (e.getX() / mRenderer.mFontWidth) + 1;
-        int y = (int) ((e.getY() - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing) + 1;
+        int[] columnAndRow = getColumnAndRow(e, false);
+        int x = columnAndRow[0] + 1;
+        int y = columnAndRow[1] + 1;
         if (pressed && (button == TerminalEmulator.MOUSE_WHEELDOWN_BUTTON || button == TerminalEmulator.MOUSE_WHEELUP_BUTTON)) {
             if (mMouseStartDownTime == e.getDownTime()) {
                 x = mMouseScrollStartX;
@@ -1129,7 +1150,7 @@ public final class TerminalView extends View {
     /**
      * Define functions required for text selection and its handles.
      */
-    public TextSelectionCursorController getTextSelectionCursorController() {
+    TextSelectionCursorController getTextSelectionCursorController() {
         if (mTextSelectionCursorController == null) {
             mTextSelectionCursorController = new TextSelectionCursorController(this);
 

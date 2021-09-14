@@ -88,19 +88,10 @@ public class TextSelectionCursorController implements CursorController {
         }
     }
 
-    public int[] getXAndYFromEvent(MotionEvent event) {
-        int cx = (int) (event.getX() / terminalView.mRenderer.getFontWidth());
-        final boolean eventFromMouse = event.isFromSource(InputDevice.SOURCE_MOUSE);
-        // Offset for finger:
-        final int SELECT_TEXT_OFFSET_Y = eventFromMouse ? 0 : -40;
-        int cy = (int) ((event.getY() + SELECT_TEXT_OFFSET_Y) / terminalView.mRenderer.getFontLineSpacing()) + terminalView.getTopRow();
-        return new int[] { cx, cy };
-    }
-
     public void setInitialTextSelectionPosition(MotionEvent event) {
-        int[] xAndY = getXAndYFromEvent(event);
-        mSelX1 = mSelX2 = xAndY[0];
-        mSelY1 = mSelY2 = xAndY[1];
+        int[] columnAndRow = terminalView.getColumnAndRow(event, true);
+        mSelX1 = mSelX2 = columnAndRow[0];
+        mSelY1 = mSelY2 = columnAndRow[1];
 
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
         if (!" ".equals(screen.getSelectedText(mSelX1, mSelY1, mSelX1, mSelY1))) {
