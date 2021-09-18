@@ -44,6 +44,7 @@ jobs:
       with:
         repo_token: "${{ secrets.TOKEN }}"
         automatic_release_tag: "stable"
+        prerelease: false
         title: "TEL-${{ steps.date.outputs.date }}"
         files: |
           *.apk
