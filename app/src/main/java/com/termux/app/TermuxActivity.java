@@ -191,7 +191,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection,
                 }
                 checkForFontAndColors();
                 mSettings.reloadFromProperties(TermuxActivity.this);
-                TermuxActivity.getWindow().setNavigationBarColor(mSettings.getNavigationBarColor());
+                
                 if (mExtraKeysView != null) {
                     mExtraKeysView.reload(mSettings.mExtraKeys);
                 }
