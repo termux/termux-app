@@ -2,6 +2,7 @@ package com.termux.app;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -23,7 +24,7 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     /** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
     boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
-
+    private SuggestionBarCallback suggestionBarCallback;
     public TermuxViewClient(TermuxActivity activity) {
         this.mActivity = activity;
     }
@@ -38,6 +39,9 @@ public final class TermuxViewClient implements TerminalViewClient {
         return scale;
     }
 
+    public void setSuggestionBarCallback(SuggestionBarCallback callback){
+        suggestionBarCallback=callback;
+    }
     @Override
     public void onSingleTapUp(MotionEvent e) {
         InputMethodManager mgr = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -57,6 +61,8 @@ public final class TermuxViewClient implements TerminalViewClient {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession currentSession) {
+        suggestionBarCallback.reloadSuggestionBar(keyCode == KeyEvent.KEYCODE_DEL,keyCode == KeyEvent.KEYCODE_ENTER);
+
         if (handleVirtualKeys(keyCode, e, true)) return true;
 
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
@@ -211,7 +217,7 @@ public final class TermuxViewClient implements TerminalViewClient {
                 // Writing mode:
                 case 'q':
                 case 'k':
-                    mActivity.toggleShowExtraKeys();
+                    //mActivity.toggleShowExtraKeys();
                     break;
             }
 
@@ -253,6 +259,13 @@ public final class TermuxViewClient implements TerminalViewClient {
             }
         }
 
+        if(suggestionBarCallback != null && !ctrlDown){
+            char[] chars = Character.toChars(codePoint);
+            if(chars.length == 1){
+                suggestionBarCallback.reloadSuggestionBar(chars[0]);
+            }
+
+        }
         return false;
     }
 

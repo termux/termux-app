@@ -15,4 +15,3 @@ All addon updates get merged and build automatically.
 
 ### Bugs & Issues:
 Feel free to add issues or pull requests, but keep in mind that the important things go first.
-

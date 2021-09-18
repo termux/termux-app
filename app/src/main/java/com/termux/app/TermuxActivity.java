@@ -2,9 +2,9 @@ package com.termux.app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.WallpaperManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -37,7 +38,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
+import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -67,6 +70,7 @@ import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
@@ -81,7 +85,7 @@ import androidx.viewpager.widget.ViewPager;
  * </ul>
  * about memory leaks.
  */
-public final class TermuxActivity extends Activity implements ServiceConnection {
+public final class TermuxActivity extends Activity implements ServiceConnection, SuggestionBarCallback {
 
     public static final String TERMUX_FAILSAFE_SESSION_ACTION = "com.termux.app.failsafe_session";
 
@@ -93,19 +97,34 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private static final int CONTEXTMENU_STYLING_ID = 6;
     private static final int CONTEXTMENU_HELP_ID = 8;
     private static final int CONTEXTMENU_TOGGLE_KEEP_SCREEN_ON = 9;
+    private static final int CONTEXTMENU_AUTOFILL_ID = 10;
 
     private static final int MAX_SESSIONS = 8;
 
     private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
 
     private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
+    private static final String RESTART_ACTION = "com.termux.app.restart";
+    private static final String APP_CACHE_ACTION = "com.termux.app.app_cache";
+    private static final String API_ACTION = "com.termux.app.api";
+    private static final String API_DATA = "com.termux.app.api_data";
+    private static final String WRITE_STATUS = "com.termux.app.status";
+    private static final String INTRO_ACTION = "com.termux.app.intro";
+
+    private static final String BROADCAST_TERMUX_OPENED = "com.termux.app.OPENED";
 
     /** The main view of the activity showing the terminal. Initialized in onCreate(). */
     @SuppressWarnings("NullableProblems")
     @NonNull
     TerminalView mTerminalView;
 
+    TermuxViewClient mTermuxViewClient;
+
     ExtraKeysView mExtraKeysView;
+
+    SuggestionBarView mSuggestionBarView;
+
+    StatusView mStatusView;
 
     TermuxPreferences mSettings;
 
@@ -130,12 +149,37 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     boolean mIsUsingBlackUI;
 
+    int mNavBarHeight;
+
     final SoundPool mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
         new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()).build();
     int mBellSoundId;
 
-    private final BroadcastReceiver mBroadcastReceiever = new BroadcastReceiver() {
+    public void reloadSuggestionBar(char inputChar){
+        String input = mTerminalView.getCurrentInput(inputChar);
+        if(input == null){
+            input = "";
+        }
+
+        mSuggestionBarView.reloadWithInput(input,mTerminalView);
+    }
+    public void reloadSuggestionBar(boolean delete, boolean enter){
+        if(enter){
+            mSuggestionBarView.reloadWithInput("",mTerminalView);
+        }else{
+            String input = mTerminalView.getCurrentInput();
+            if(input == null){
+                input = "";
+            }
+            else if(delete && input.length() > 0){
+                input = input.substring(0,input.length()-1);
+            }
+            mSuggestionBarView.reloadWithInput(input,mTerminalView);
+        }
+
+    }
+    private final BroadcastReceiver reloadStyleBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mIsVisible) {
@@ -144,18 +188,65 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     if (ensureStoragePermissionGranted())
                         TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
                     return;
-                }else if ("apps-cache".equals(whatToReload)) {
-                    TermuxInstaller.setupAppListCache(TermuxActivity.this);
-                }else if ("restart".equals(whatToReload)){
-                    ProcessPhoenix.triggerRebirth(TermuxActivity.this);
                 }
                 checkForFontAndColors();
                 mSettings.reloadFromProperties(TermuxActivity.this);
-
+                
                 if (mExtraKeysView != null) {
-                    mExtraKeysView.reload(mSettings.mExtraKeys, ExtraKeysView.defaultCharDisplay);
+                    mExtraKeysView.reload(mSettings.mExtraKeys);
+                }
+                if (mSuggestionBarView != null) {
+                    mSuggestionBarView.reload(mSettings);
                 }
             }
+        }
+    };
+
+    private final BroadcastReceiver restartBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ProcessPhoenix.triggerRebirth(TermuxActivity.this);
+        }
+    };
+    private final BroadcastReceiver appCacheBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            TermuxInstaller.setupAppListCache(TermuxActivity.this);
+        }
+    };
+
+    private final BroadcastReceiver statusBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String text = intent.getStringExtra("text");
+            int line = 0;
+            try{
+                line = Integer.parseInt(intent.getStringExtra("line"));
+            }
+            catch(Exception e){
+            }
+            String delete = intent.getStringExtra("delete");
+            if(delete != null){
+                mStatusView.deleteUntil(line);
+            }else{
+                mStatusView.setLineText(line,text);
+            }
+
+        }
+    };
+    private final BroadcastReceiver apiBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String apiAction = intent.getStringExtra(RELOAD_STYLE_ACTION);
+            String apiData = intent.getStringExtra(API_DATA);
+        }
+    };
+    private final BroadcastReceiver introBroadcastReceiver =  new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Intent intent2 = new Intent(getApplicationContext(), IntroActivity.class);
+            intent2.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_TASK);
+            getApplicationContext().startActivity(intent2);
         }
     };
 
@@ -176,7 +267,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             if (session != null && session.getEmulator() != null) {
                 session.getEmulator().mColors.reset();
             }
-            updateBackgroundColor();
+            //updateBackgroundColor();
 
             final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
             mTerminalView.setTypeface(newTypeface);
@@ -205,36 +296,61 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     @Override
     public void onCreate(Bundle bundle) {
         mSettings = new TermuxPreferences(this);
-        mIsUsingBlackUI = mSettings.isUsingBlackUI();
-        if (mIsUsingBlackUI) {
-            this.setTheme(R.style.Theme_Termux_Black);
-        } else {
-            this.setTheme(R.style.Theme_Termux);
+        int blackTheme = R.style.Theme_Termux_Black;
+        int normalTheme = R.style.Theme_Termux;
+        if(mSettings.isUseSystemWallpaper()){
+            blackTheme = R.style.Theme_Wallpaper_Black;
+            normalTheme = R.style.Theme_Wallpaper;
         }
 
+        mIsUsingBlackUI = mSettings.isUsingBlackUI();
+        if (mIsUsingBlackUI) {
+            this.setTheme(blackTheme);
+        } else {
+            this.setTheme(normalTheme);
+        }
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.setStatusBarColor(mSettings.getStatusBarColor());
         super.onCreate(bundle);
-
         setContentView(R.layout.drawer_layout);
 
+        View content = findViewById(android.R.id.content);
+        content.setOnApplyWindowInsetsListener((v, insets) -> {
+            mNavBarHeight = insets.getSystemWindowInsetBottom();
+            return insets;
+        });
+
+        if (mSettings.isUsingFullScreen()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         if (mIsUsingBlackUI) {
             findViewById(R.id.left_drawer).setBackgroundColor(
                 getResources().getColor(android.R.color.background_dark)
             );
         }
-
+        mStatusView = findViewById(R.id.status_view);
+        mStatusView.setSettings(mSettings);
         mTerminalView = findViewById(R.id.terminal_view);
-        mTerminalView.setOnKeyListener(new TermuxViewClient(this));
+        mTermuxViewClient = new TermuxViewClient(this);
+        mTerminalView.setOnKeyListener(mTermuxViewClient);
 
         mTerminalView.setTextSize(mSettings.getFontSize());
         mTerminalView.setKeepScreenOn(mSettings.isScreenAlwaysOn());
         mTerminalView.requestFocus();
 
+        mTerminalView.setSplitChar(mSettings.getInputChar());
+
+
+        mTermuxViewClient.setSuggestionBarCallback(this);
         final ViewPager viewPager = findViewById(R.id.viewpager);
+
         if (mSettings.mShowExtraKeys) viewPager.setVisibility(View.VISIBLE);
 
 
         ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
-        layoutParams.height = layoutParams.height * mSettings.mExtraKeys.length;
+        layoutParams.height = layoutParams.height * (mSettings.mExtraKeys == null ? 0 : mSettings.mExtraKeys.getMatrix().length);
         viewPager.setLayoutParams(layoutParams);
 
         viewPager.setAdapter(new PagerAdapter() {
@@ -255,7 +371,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 View layout;
                 if (position == 0) {
                     layout = mExtraKeysView = (ExtraKeysView) inflater.inflate(R.layout.extra_keys_main, collection, false);
-                    mExtraKeysView.reload(mSettings.mExtraKeys, ExtraKeysView.defaultCharDisplay);
+                    mExtraKeysView.reload(mSettings.mExtraKeys);
+
+                    // apply extra keys fix if enabled in prefs
+                    if (mSettings.isUsingFullScreen() && mSettings.isUsingFullScreenWorkAround()) {
+                        FullScreenWorkAround.apply(TermuxActivity.this);
+                    }
+
                 } else {
                     layout = inflater.inflate(R.layout.extra_keys_right, collection, false);
                     final EditText editText = layout.findViewById(R.id.text_input);
@@ -296,6 +418,55 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             }
         });
 
+        final ViewPager viewPager2 = findViewById(R.id.viewpager2);
+        ViewGroup.LayoutParams layoutParams2 = viewPager2.getLayoutParams();
+        layoutParams2.height = Math.round(layoutParams2.height * mSettings.getBarHeight());
+        viewPager2.setLayoutParams(layoutParams2);
+        final SuggestionBarCallback suggestionBarCallback = this;
+        viewPager2.setAdapter(new PagerAdapter() {
+            @Override
+            public int getCount() {
+                return 1;//count of pages to scroll through
+            }
+
+            @Override
+            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+                return view == object;
+            }
+
+            @NonNull
+            @Override
+            public Object instantiateItem(@NonNull ViewGroup collection, int position) {
+                LayoutInflater inflater = LayoutInflater.from(TermuxActivity.this);
+                View layout;
+                layout = mSuggestionBarView = (SuggestionBarView) inflater.inflate(R.layout.suggestion_bar, collection, false);
+                mSuggestionBarView.reload(mSettings);
+                mTermuxViewClient.setSuggestionBarCallback(suggestionBarCallback);
+                collection.addView(layout);
+                return layout;
+            }
+
+            @Override
+            public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
+                collection.removeView((View) view);
+            }
+        });
+
+        viewPager2.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                mTerminalView.requestFocus();
+            }
+        });
+
+        int color = mSettings.getBarColor();
+        viewPager.setBackgroundColor(color);
+        viewPager2.setBackgroundColor(color);
+        if(mSettings.isUseSystemWallpaper()){
+            getWindow().getDecorView().setBackgroundColor(mSettings.getBackgroundColor());
+        }
+
+
         View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
@@ -311,6 +482,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             getDrawer().closeDrawers();
         });
 
+
         registerForContextMenu(mTerminalView);
 
         Intent serviceIntent = new Intent(this, TermuxService.class);
@@ -322,17 +494,30 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         checkForFontAndColors();
 
         mBellSoundId = mBellSoundPool.load(this, R.raw.bell, 1);
-        // Update app cache
         TermuxInstaller.setupAppListCache(TermuxActivity.this);
+
+        sendOpenedBroadcast();
     }
 
-    void toggleShowExtraKeys() {
-        final ViewPager viewPager = findViewById(R.id.viewpager);
-        final boolean showNow = mSettings.toggleShowExtraKeys(TermuxActivity.this);
-        viewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
-        if (showNow && viewPager.getCurrentItem() == 1) {
-            // Focus the text input view if just revealed.
-            findViewById(R.id.text_input).requestFocus();
+    public int getNavBarHeight() {
+        return mNavBarHeight;
+    }
+
+    /**
+     * Send a broadcast notifying Termux app has been opened
+     */
+    void sendOpenedBroadcast() {
+        Intent broadcast = new Intent(BROADCAST_TERMUX_OPENED);
+        List<ResolveInfo> matches = getPackageManager().queryBroadcastReceivers(broadcast, 0);
+
+        // send broadcast to registered Termux receivers
+        // this technique is needed to work around broadcast changes that Oreo introduced
+        for (ResolveInfo info : matches) {
+            Intent explicitBroadcast = new Intent(broadcast);
+            ComponentName cname = new ComponentName(info.activityInfo.applicationInfo.packageName,
+                                                    info.activityInfo.name);
+            explicitBroadcast.setComponent(cname);
+            sendBroadcast(explicitBroadcast);
         }
     }
 
@@ -355,12 +540,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             @Override
             public void onTitleChanged(TerminalSession updatedSession) {
                 if (!mIsVisible) return;
-                if (updatedSession != getCurrentTermSession()) {
+                /*if (updatedSession != getCurrentTermSession()) {
                     // Only show toast for other sessions than the current one, since the user
                     // probably consciously caused the title change to change in the current session
                     // and don't want an annoying toast for that.
                     showToast(toToastTitle(updatedSession), false);
-                }
+                }*/
                 mListViewAdapter.notifyDataSetChanged();
             }
 
@@ -375,8 +560,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     // Show toast for non-current sessions that exit.
                     int indexOfSession = mTermService.getSessions().indexOf(finishedSession);
                     // Verify that session was not removed before we got told about it finishing:
-                    if (indexOfSession >= 0)
-                        showToast(toToastTitle(finishedSession) + " - exited", true);
+                    /*if (indexOfSession >= 0)
+                        showToast(toToastTitle(finishedSession) + " - exited", true);*/
                 }
 
                 if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
@@ -420,10 +605,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 }
 
             }
-
-            @Override
+             @Override
             public void onColorsChanged(TerminalSession changedSession) {
-                if (getCurrentTermSession() == changedSession) updateBackgroundColor();
+                //if (getCurrentTermSession() == changedSession) updateBackgroundColor();
             }
         };
 
@@ -559,8 +743,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             mListViewAdapter.notifyDataSetChanged();
         }
 
-        registerReceiver(mBroadcastReceiever, new IntentFilter(RELOAD_STYLE_ACTION));
-
+        registerReceiver(reloadStyleBroadcastReceiver, new IntentFilter(RELOAD_STYLE_ACTION));
+        registerReceiver(appCacheBroadcastReceiver, new IntentFilter(APP_CACHE_ACTION));
+        registerReceiver(restartBroadcastReceiver, new IntentFilter(RESTART_ACTION));
+        registerReceiver(statusBroadcastReceiver, new IntentFilter(WRITE_STATUS));
+        registerReceiver(introBroadcastReceiver,new IntentFilter(INTRO_ACTION));
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal:
         mTerminalView.onScreenUpdated();
@@ -572,7 +759,11 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         mIsVisible = false;
         TerminalSession currentSession = getCurrentTermSession();
         if (currentSession != null) TermuxPreferences.storeCurrentSession(this, currentSession);
-        unregisterReceiver(mBroadcastReceiever);
+        unregisterReceiver(reloadStyleBroadcastReceiver);
+        unregisterReceiver(appCacheBroadcastReceiver);
+        unregisterReceiver(restartBroadcastReceiver);
+        unregisterReceiver(statusBroadcastReceiver);
+        unregisterReceiver(introBroadcastReceiver);
         getDrawer().closeDrawers();
     }
 
@@ -580,9 +771,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     public void onBackPressed() {
         if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
             getDrawer().closeDrawers();
-        } else {
+        } /*else {
             finish();
-        }
+        }*/
     }
 
     @Override
@@ -606,7 +797,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
             TerminalSession currentSession = getCurrentTermSession();
-            String workingDirectory = (currentSession == null) ? null : currentSession.getCwd();
+
+            String workingDirectory;
+            if (currentSession == null) {
+                workingDirectory = mSettings.mDefaultWorkingDir;
+            } else {
+                workingDirectory = currentSession.getCwd();
+            }
+
             TerminalSession newSession = mTermService.createTermSession(null, null, workingDirectory, failSafe);
             if (sessionName != null) {
                 newSession.mSessionName = sessionName;
@@ -620,7 +818,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     void switchToSession(TerminalSession session) {
         if (mTerminalView.attachSession(session)) {
             noteSessionInfo();
-            updateBackgroundColor();
+            //updateBackgroundColor();
         }
     }
 
@@ -643,7 +841,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (!mIsVisible) return;
         TerminalSession session = getCurrentTermSession();
         final int indexOfSession = mTermService.getSessions().indexOf(session);
-        showToast(toToastTitle(session), false);
+       // showToast(toToastTitle(session), false);
         mListViewAdapter.notifyDataSetChanged();
         final ListView lv = findViewById(R.id.left_drawer_list);
         lv.setItemChecked(indexOfSession, true);
@@ -657,6 +855,12 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         menu.add(Menu.NONE, CONTEXTMENU_SELECT_URL_ID, Menu.NONE, R.string.select_url);
         menu.add(Menu.NONE, CONTEXTMENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.select_all_and_share);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AutofillManager autofillManager = getSystemService(AutofillManager.class);
+            if (autofillManager != null && autofillManager.isEnabled()) {
+                menu.add(Menu.NONE, CONTEXTMENU_AUTOFILL_ID, Menu.NONE, R.string.autofill_password);
+            }
+        }
         menu.add(Menu.NONE, CONTEXTMENU_RESET_TERMINAL_ID, Menu.NONE, R.string.reset_terminal);
         menu.add(Menu.NONE, CONTEXTMENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.kill_process, getCurrentTermSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXTMENU_STYLING_ID, Menu.NONE, R.string.style_terminal);
@@ -759,7 +963,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     void showUrlSelection() {
-        String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptText();
+        String text = getCurrentTermSession().getEmulator().getScreen().getTranscriptTextWithFullLinesJoined();
         LinkedHashSet<CharSequence> urlSet = extractUrls(text);
         if (urlSet.isEmpty()) {
             new AlertDialog.Builder(this).setMessage(R.string.select_url_no_found).show();
@@ -855,7 +1059,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     // The startActivity() call is not documented to throw IllegalArgumentException.
                     // However, crash reporting shows that it sometimes does, so catch it here.
                     new AlertDialog.Builder(this).setMessage(R.string.styling_not_installed)
-                        .setPositiveButton(R.string.styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=com.termux.styling")))).setNegativeButton(android.R.string.cancel, null).show();
+                        .setPositiveButton(R.string.styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://f-droid.org/en/packages/com.termux.styling/")))).setNegativeButton(android.R.string.cancel, null).show();
                 }
                 return true;
             }
@@ -871,6 +1075,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                     mSettings.setScreenAlwaysOn(this, true);
                 }
                 return true;
+            }
+            case CONTEXTMENU_AUTOFILL_ID: {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    AutofillManager autofillManager = getSystemService(AutofillManager.class);
+                    if (autofillManager != null && autofillManager.isEnabled()) {
+                        autofillManager.requestAutofill(mTerminalView);
+                    }
+                }
             }
             default:
                 return super.onContextItemSelected(item);

@@ -75,7 +75,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Root.COLUMN_TITLE, applicationName);
         row.add(Root.COLUMN_MIME_TYPES, ALL_MIME_TYPES);
         row.add(Root.COLUMN_AVAILABLE_BYTES, BASE_DIR.getFreeSpace());
-        row.add(Root.COLUMN_ICON, R.drawable.ic_launcher);
+        row.add(Root.COLUMN_ICON, R.mipmap.ic_launcher);
         return result;
     }
 
@@ -91,9 +91,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
         final File parent = getFileForDocId(parentDocumentId);
         for (File file : parent.listFiles()) {
-            if (!file.getName().startsWith(".")) {
-                includeFile(result, null, file);
-            }
+            includeFile(result, null, file);
         }
         return result;
     }
@@ -177,8 +175,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
             } catch (IOException e) {
                 isInsideHome = true;
             }
-            final boolean isHidden = file.getName().startsWith(".");
-            if (isInsideHome && !isHidden) {
+            if (isInsideHome) {
                 if (file.isDirectory()) {
                     Collections.addAll(pending, file.listFiles());
                 } else {
@@ -265,7 +262,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Document.COLUMN_MIME_TYPE, mimeType);
         row.add(Document.COLUMN_LAST_MODIFIED, file.lastModified());
         row.add(Document.COLUMN_FLAGS, flags);
-        row.add(Document.COLUMN_ICON, R.drawable.ic_launcher);
+        row.add(Document.COLUMN_ICON, R.mipmap.ic_launcher);
     }
 
 }

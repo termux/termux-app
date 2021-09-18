@@ -1,9 +1,15 @@
 ---
 name: Bug report
-about: Create a report to help us improve TEL
+about: Create a report to help us improve Termux application
 
 ---
 
+<!--
+IMPORTANT:
+
+1. Support of Android 5.x - 6.x is finished.
+2. Fill the template AFTER comments.
+-->
 
 **Problem description**
 <!--
@@ -24,6 +30,6 @@ A clear and concise description of what you expected to happen.
 
 **Additional information**
 
-* TEL application version:
-* Android OS version + vendor:
+* Termux application version:
+* Android OS version:
 * Device model:

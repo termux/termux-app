@@ -63,7 +63,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments";
 
     public static final String EXTRA_CURRENT_WORKING_DIRECTORY = "com.termux.execute.cwd";
-    private static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
+    public static final String EXTRA_EXECUTE_IN_BACKGROUND = "com.termux.execute.background";
 
     /** This service is only bound from inside the same process and never uses IPC. */
     class LocalBinder extends Binder {
@@ -94,6 +94,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
     /** If the user has executed the {@link #ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
 
+    private TermuxPreferences settings;
     @SuppressLint("Wakelock")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -106,7 +107,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         } else if (ACTION_LOCK_WAKE.equals(action)) {
             if (mWakeLock == null) {
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, EmulatorDebug.LOG_TAG);
+                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, EmulatorDebug.LOG_TAG + ":service-wakelock");
                 mWakeLock.acquire();
 
                 // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
@@ -185,8 +186,13 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
     @Override
     public void onCreate() {
-        setupNotificationChannel();
-        startForeground(NOTIFICATION_ID, buildNotification());
+        settings = new TermuxPreferences(getApplicationContext());
+
+        if(settings.isRunBackground()){
+            setupNotificationChannel();
+            startForeground(NOTIFICATION_ID, buildNotification());
+        }
+
     }
 
     /** Update the shown foreground service notification after making any changes that affect it. */
@@ -194,7 +200,7 @@ public final class TermuxService extends Service implements SessionChangedCallba
         if (mWakeLock == null && mTerminalSessions.isEmpty() && mBackgroundTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             stopSelf();
-        } else {
+        } else if(settings.isRunBackground()){
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, buildNotification());
         }
     }

@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.termux.BuildConfig;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -138,7 +140,9 @@ public final class BackgroundJob {
 
         List<String> environment = new ArrayList<>();
 
+        environment.add("TERMUX_VERSION=" + BuildConfig.VERSION_NAME);
         environment.add("TERM=xterm-256color");
+        environment.add("COLORTERM=truecolor");
         environment.add("HOME=" + TermuxService.HOME_PATH);
         environment.add("PREFIX=" + TermuxService.PREFIX_PATH);
         environment.add("BOOTCLASSPATH=" + System.getenv("BOOTCLASSPATH"));
@@ -147,37 +151,25 @@ public final class BackgroundJob {
         // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
         // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
         environment.add("EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE"));
-        // ANDROID_RUNTIME_ROOT and ANDROID_TZDATA_ROOT are required for `am` to run on Android Q
+
+        // These variables are needed if running on Android 10 and higher.
+        addToEnvIfPresent(environment, "ANDROID_ART_ROOT");
+        addToEnvIfPresent(environment, "DEX2OATBOOTCLASSPATH");
+        addToEnvIfPresent(environment, "ANDROID_I18N_ROOT");
         addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
         addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
+
         if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             environment.add("PATH= " + System.getenv("PATH"));
         } else {
-            if (shouldAddLdLibraryPath()) {
-                environment.add("LD_LIBRARY_PATH=" + TermuxService.PREFIX_PATH + "/lib");
-            }
             environment.add("LANG=en_US.UTF-8");
-            environment.add("PATH=" + TermuxService.PREFIX_PATH + "/bin:" + TermuxService.PREFIX_PATH + "/bin/applets");
+            environment.add("PATH=" + TermuxService.PREFIX_PATH + "/bin");
             environment.add("PWD=" + cwd);
             environment.add("TMPDIR=" + TermuxService.PREFIX_PATH + "/tmp");
         }
 
         return environment.toArray(new String[0]);
-    }
-
-    private static boolean shouldAddLdLibraryPath() {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(TermuxService.PREFIX_PATH + "/etc/apt/sources.list")))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (!line.startsWith("#") && line.contains("//termux.net stable")) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error trying to read sources.list", e);
-        }
-        return false;
     }
 
     public static int getPid(Process p) {

@@ -6,12 +6,14 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Environment;
 import android.os.UserManager;
 import android.system.Os;
 import android.util.Log;
 import android.util.Pair;
 import android.view.WindowManager;
+
 
 import com.termux.R;
 import com.termux.terminal.EmulatorDebug;
@@ -57,6 +59,7 @@ final class TermuxInstaller {
     static void setupIfNeeded(final Activity activity, final Runnable whenDone) {
         // Termux can only be run as the primary user (device owner) since only that
         // account has the expected file system paths. Verify that:
+
         UserManager um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
         boolean isPrimaryUser = um.getSerialNumberForUser(android.os.Process.myUserHandle()) == 0;
         if (!isPrimaryUser) {
@@ -70,6 +73,10 @@ final class TermuxInstaller {
             whenDone.run();
             return;
         }
+        Intent intent = new Intent(activity, IntroActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.startActivity(intent);
+
 
         final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
         new Thread() {
@@ -128,7 +135,12 @@ final class TermuxInstaller {
                     if (symlinks.isEmpty())
                         throw new RuntimeException("No SYMLINKS.txt encountered");
                     for (Pair<String, String> symlink : symlinks) {
-                        Os.symlink(symlink.first, symlink.second);
+                        Log.e(EmulatorDebug.LOG_TAG,symlink.first +"###"+ symlink.second);
+                        try{
+                            Os.symlink(symlink.first, symlink.second);
+                        }catch(final android.system.ErrnoException e){
+                            Log.e(EmulatorDebug.LOG_TAG,"symlink exists:"+symlink.first);
+                        }
                     }
 
                     if (!STAGING_PREFIX_FILE.renameTo(PREFIX_FILE)) {
@@ -302,5 +314,7 @@ final class TermuxInstaller {
             }
         }.start();
     }
+
+
 
 }

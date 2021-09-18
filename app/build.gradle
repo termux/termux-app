@@ -3,50 +3,61 @@ plugins {
 }
 
 android {
-    compileSdkVersion 28
-    ndkVersion '21.0.6113669'
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    ndkVersion project.properties.ndkVersion
 
+
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
     dependencies {
         implementation "androidx.annotation:annotation:1.1.0"
         implementation "androidx.viewpager:viewpager:1.0.0"
-        implementation "androidx.drawerlayout:drawerlayout:1.0.0"
+        implementation "androidx.drawerlayout:drawerlayout:1.1.1"
         implementation project(":terminal-view")
         implementation 'com.jakewharton:process-phoenix:2.0.0'
+        implementation 'me.xdrop:fuzzywuzzy:1.3.1'
+        implementation "androidx.viewpager2:viewpager2:1.0.0"
+        implementation "com.google.android.material:material:1.3.0"
     }
 
     defaultConfig {
         applicationId "com.termux"
-        minSdkVersion 24
-        targetSdkVersion 28
-        versionCode 94
-        versionName "0.94"
-
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        versionCode 1001
+        versionName "0.1"
         externalNativeBuild {
             ndkBuild {
                 cFlags "-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
             }
         }
+    }
 
-        ndk {
-            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+    splits {
+        abi {
+            enable true
+
+            reset ()
+            include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
 
     }
 
     signingConfigs {
-        debug {
-            storeFile file('dev_keystore.jks')
-            keyAlias 'alias'
-            storePassword 'xrj45yWGLbsO7W0v'
-            keyPassword 'xrj45yWGLbsO7W0v'
+        release {
+            
+            v2SigningEnabled true
         }
     }
+
 
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
 
         debug {
@@ -65,6 +76,10 @@ android {
         }
     }
 
+    lintOptions {
+        disable 'ProtectedPermissions'
+    }
+
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -73,8 +88,9 @@ android {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13'
-    testImplementation 'org.robolectric:robolectric:4.3.1'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.robolectric:robolectric:4.4'
 }
 
 task versionName {
@@ -88,5 +104,20 @@ clean {
         def tree = fileTree(new File(projectDir, 'src/main/cpp'))
         tree.include 'bootstrap-*.zip'
         tree.each { it.delete() }
+    }
+}
+allprojects {
+    afterEvaluate { project ->
+        def propsFile = rootProject.file('app/keystore.properties')
+        def configName = 'release'
+
+        if (propsFile.exists() && android.signingConfigs.hasProperty(configName)) {
+            def props = new Properties()
+            props.load(new FileInputStream(propsFile))
+            android.signingConfigs[configName].storeFile = file(props['storeFile'])
+            android.signingConfigs[configName].storePassword = props['storePassword']
+            android.signingConfigs[configName].keyAlias = props['keyAlias']
+            android.signingConfigs[configName].keyPassword = props['keyPassword']
+        }
     }
 }

@@ -14,6 +14,12 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
 
+    <permission android:name="com.termux.permission.RUN_COMMAND"
+        android:label="@string/run_command_permission_label"
+        android:description="@string/run_command_permission_description"
+        android:icon="@mipmap/ic_launcher"
+        android:protectionLevel="dangerous" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -21,6 +27,9 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 
     <application
         android:extractNativeLibs="true"
@@ -37,22 +46,32 @@
 
         <activity
             android:name="com.termux.app.TermuxActivity"
-	    android:label="@string/application_name"
-	    android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+	        android:label="@string/application_name"
+	        android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
             android:launchMode="singleTask"
+            android:clearTaskOnLaunch="true"
             android:resizeableActivity="true"
-	    android:windowSoftInputMode="adjustResize|stateAlwaysVisible" >
+            android:resumeWhilePausing="true"
+	        android:windowSoftInputMode="adjustResize|stateAlwaysVisible"
+            android:excludeFromRecents="true"
+            android:stateNotNeeded="true"
+            android:taskAffinity=".TermuxActivity"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
 
+        <activity android:name=".app.IntroActivity"
+            android:theme="@style/Theme.Intro"
+            ></activity>
+
+        
         <activity
             android:name="com.termux.app.TermuxHelpActivity"
             android:exported="false"
@@ -80,29 +99,21 @@
                 <data android:mimeType="text/*" />
                 <data android:mimeType="video/*" />
             </intent-filter>
-            <!-- Be more restrictive for viewing files, restricting ourselves to text files. -->
+            <!-- Accept multiple file types to let Termux be usable as generic file viewer. -->
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/*" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="image/*" />
                 <data android:mimeType="text/*" />
-                <data android:mimeType="application/json" />
-                <data android:mimeType="application/*xml*" />
-                <data android:mimeType="application/*latex*" />
-                <data android:mimeType="application/javascript" />
+                <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
 
         <activity-alias
             android:name=".HomeActivity"
             android:targetActivity="com.termux.app.TermuxActivity">
-
-            <!-- Launch activity automatically on boot on Android Things devices -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.IOT_LAUNCHER"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.HOME" />
-            </intent-filter>
         </activity-alias>
 
         <provider
@@ -125,7 +136,16 @@
             </intent-filter>
         </service>
 
-        <receiver android:name="com.termux.app.TermuxOpenReceiver" />
+        <service
+            android:name=".app.RunCommandService"
+            android:exported="true"
+            android:permission="com.termux.permission.RUN_COMMAND" >
+            <intent-filter>
+                <action android:name="com.termux.RUN_COMMAND" />
+            </intent-filter>
+        </service>
+
+        <receiver android:name=".app.TermuxOpenReceiver" />
 
         <provider android:authorities="com.termux.files"
                   android:readPermission="android.permission.permRead"

@@ -748,7 +748,7 @@ public final class TerminalEmulator {
                                 value = (mScreen == mAltBuffer) ? 1 : 2;
                             } else {
                                 int internalBit = mapDecSetBitToInternalBit(mode);
-                                if (internalBit == -1) {
+                                if (internalBit != -1) {
                                     value = isDecsetInternalBitSet(internalBit) ? 1 : 2; // 1=set, 2=reset.
                                 } else {
                                     Log.e(EmulatorDebug.LOG_TAG, "Got DECRQM for unrecognized private DEC mode=" + mode);

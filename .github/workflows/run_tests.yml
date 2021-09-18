@@ -1,6 +1,14 @@
 name: Unit tests
 
-on: push
+on:
+  push:
+    branches:
+      - master
+      - android-10
+  pull_request:
+    branches:
+      - master
+      - android-10
 
 jobs:
   testing:

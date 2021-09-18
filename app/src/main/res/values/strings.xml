@@ -2,6 +2,8 @@
 <resources>
     <string name="application_name">TEL</string>
     <string name="shared_user_label">TEL user</string>
+    <string name="run_command_permission_label">Run commands in Termux environment</string>
+    <string name="run_command_permission_description">execute arbitrary commands within Termux environment</string>
     <string name="new_session">New session</string>
     <string name="new_session_failsafe">Failsafe</string>
     <string name="toggle_soft_keyboard">Keyboard</string>
@@ -10,6 +12,7 @@
     <string name="share_transcript_title">Terminal transcript</string>
     <string name="help">Help</string>
     <string name="toggle_keep_screen_on">Keep screen on</string>
+    <string name="autofill_password">Autofill password</string>
 
     <string name="bootstrap_installer_body">Installing…</string>
     <string name="bootstrap_error_title">Unable to install</string>
@@ -50,4 +53,20 @@
     <string name="file_received_open_folder_button">Open folder</string>
     <string name="termux_permission_description">Allows application to execute arbitrary shell command within TEL.</string>
     <string name="termux_permission_label">TEL Service Permission</string>
+
+    <string name="intro_1_text">To Termux Expert Launcher, the most powerful Launcher for Android!</string>
+    <string name="intro_1_title">Welcome</string>
+    <string name="intro_2_text">TEL wants be the perfect command line launcher specifically suited for you. We are working hard to make it as customizable as possible. TEL lets you use your phone faster and more comfortable with a clean and modern look, just how you need it.</string>
+    <string name="intro_2_title">Inspiration</string>
+    <string name="intro_3_text">Our community is steadily growing. Click the image above to join the Telegram group and share your scripts or ask for help.</string>
+    <string name="intro_3_title">Community</string>
+    <string name="telegram">https://t.me/termux_expert_launcher</string>
+    <string name="intro_4_text">This launcher is based on Termux. If you do not know how to handle a UNIX shell, get familiar with it first! If you want a launcher only looking like a terminal, please use T-UI instead.</string>
+    <string name="intro_4_title">Warning</string>
+    <string name="intro_5_text">TEL is like a baby, very young and still under heavy development. Do not expect it to be stable until it reaches version 1.0. Read the wiki if you experience any problems.</string>
+    <string name="intro_5_title">It\'s a TEL</string>
+
+    <string name="intro_finish_text">You need a stable Wi-Fi connection to finish the setup. Sit back and hydrate yourself, since this can take a while.</string>
+    <string name="intro_finish_title">Let\'s Go</string>
+    <string name="intro_finish_button">Finish Installation</string>
 </resources>

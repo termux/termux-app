@@ -5,10 +5,11 @@ env:
   global:
   - ANDROID_API=28
   - ANDROID_BUILD_API=28.0.3
-  - NDK_API=21.0.6113669
+  - NDK_API=21.3.6528147
   - REPO=t-e-l/tel
   - APK_NAME=TEL-${TRAVIS_BUILD_NUMBER}
   - DEV_NAME=DEV-BUILD-${TRAVIS_BUILD_NUMBER}
+  - STATUS_NAME=DEV-STATUS-BUILD-${TRAVIS_BUILD_NUMBER}
 android:
   components:
   - tools
@@ -40,14 +41,30 @@ before_install:
 - echo y | sdkmanager "platforms;android-${ANDROID_API}"
 - echo y | sdkmanager "ndk-bundle"
 - echo y | sdkmanager "ndk;${NDK_API}"
-- cd bootstrap && bash build_bootstrap.sh && cd ..
+- bash build_bootstrap.sh
 before_deploy:
 - find . -name '*.apk'
-- mv ./app/build/outputs/apk/release/app-release-unsigned.apk app-release.apk
+- find . -name 'bootstrap-*.zip'
+- mv ./app/build/outputs/apk/release/app-arm64-v8a-release-unsigned.apk app-arm64-release.apk
 - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore.jks -storepass
-  $keystore_password -keypass $keystore_alias_password app-release.apk $keystore_alias
-- jarsigner -verify app-release.apk
-- "${ANDROID_HOME}build-tools/${ANDROID_BUILD_API}/zipalign -v 4 app-release.apk ${APK_NAME}.apk"
+  $keystore_password -keypass $keystore_alias_password app-arm64-release.apk $keystore_alias
+- jarsigner -verify app-arm64-release.apk
+- "${ANDROID_HOME}build-tools/${ANDROID_BUILD_API}/zipalign -v 4 app-arm64-release.apk ${APK_NAME}-arm64.apk"
+- mv ./app/build/outputs/apk/release/app-x86_64-release-unsigned.apk app-x86_64-release.apk
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore.jks -storepass
+  $keystore_password -keypass $keystore_alias_password app-x86_64-release.apk $keystore_alias
+- jarsigner -verify app-x86_64-release.apk
+- "${ANDROID_HOME}build-tools/${ANDROID_BUILD_API}/zipalign -v 4 app-x86_64-release.apk ${APK_NAME}-x86_64.apk"
+- mv ./app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned.apk app-armeabi-release.apk
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore.jks -storepass
+  $keystore_password -keypass $keystore_alias_password app-armeabi-release.apk $keystore_alias
+- jarsigner -verify app-armeabi-release.apk
+- "${ANDROID_HOME}build-tools/${ANDROID_BUILD_API}/zipalign -v 4 app-armeabi-release.apk ${APK_NAME}-armeabi.apk"
+- mv ./app/build/outputs/apk/release/app-x86-release-unsigned.apk app-x86-release.apk
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore.jks -storepass
+  $keystore_password -keypass $keystore_alias_password app-x86-release.apk $keystore_alias
+- jarsigner -verify app-x86-release.apk
+- "${ANDROID_HOME}build-tools/${ANDROID_BUILD_API}/zipalign -v 4 app-x86-release.apk ${APK_NAME}-x86.apk"
 - git config --local user.name "v1nc"
 - git config --local user.email "github@reckendrees.systems"
 - git tag "TEL-${TRAVIS_BUILD_NUMBER}"
@@ -64,7 +81,11 @@ deploy:
   - provider: releases
     api_key:
       secure: BiJyG4KWJNgtPa7C5cEHcj2LMhBvUp6yyXAFNrfPJ2ZdSewyoDlJHJmyPk3htRtwmYPdiXDWEOj9LV10851MZCKB+c/cyQY9m5/5Zlr15qYtfIIWvX/0RPHt3qUMRw+8b6UNE8xNenq4jzLMDTnkvs3RkrXBbpTR4Iiu/POCWvBUMiOcB0MeLXosVkgoNrPol2ovQXL6yw8QihzbfdfquirObdF4MdES10LDZBJfiw8A+6+IzwqBSLONbbtM9scxN1FnIG1PGcxHKPugD6TbtUmUoqjWFzxrU/Hrb1dK7zZYaEzX8kESV8R7F/I+cvKj+kcAb1/FOMCdAafB6axyZ/Bl1YoW9EyK7OAV4EUdAhATXymRbBbzYI99uce5cniJlmgahWx+mI89I7VKmmpwKppiLnF3ZrrXOESxYomy8g9CtoHBIjeicc/hwmU03BkzQjSu48EVmU5o+FjpkOCJ249qLikNVX+MsBPKjDanx2uuSjZDv/skLyMv4sSY1rEUVrAxTxkhT6x8BywJ9QO/I+kyo4rl/d70iElKW6JapiGDr8mOMgOYxBVtENTdEzDy845WB2wZopZ6bOKkm9hD/1sKvIP/bgMhEYli3FyY5NMz8fsWUVu+uW+AO6Aecve/PkLzbVerZWXmoYzKoMB7k9kwEnwO3NSiA6+UxteiGeo=
-    file: ${APK_NAME}.apk
+    file: 
+      - ${APK_NAME}-arm64.apk
+      - ${APK_NAME}-x86_64.apk
+      - ${APK_NAME}-armeabi.apk
+      - ${APK_NAME}-x86.apk
     name: ${DEV_NAME}
     tag_name: ${DEV_NAME}
     body: |
@@ -77,3 +98,31 @@ deploy:
     on:
       repo: ${REPO}
       branch: dev
+  - provider: releases
+    api_key:
+      secure: BiJyG4KWJNgtPa7C5cEHcj2LMhBvUp6yyXAFNrfPJ2ZdSewyoDlJHJmyPk3htRtwmYPdiXDWEOj9LV10851MZCKB+c/cyQY9m5/5Zlr15qYtfIIWvX/0RPHt3qUMRw+8b6UNE8xNenq4jzLMDTnkvs3RkrXBbpTR4Iiu/POCWvBUMiOcB0MeLXosVkgoNrPol2ovQXL6yw8QihzbfdfquirObdF4MdES10LDZBJfiw8A+6+IzwqBSLONbbtM9scxN1FnIG1PGcxHKPugD6TbtUmUoqjWFzxrU/Hrb1dK7zZYaEzX8kESV8R7F/I+cvKj+kcAb1/FOMCdAafB6axyZ/Bl1YoW9EyK7OAV4EUdAhATXymRbBbzYI99uce5cniJlmgahWx+mI89I7VKmmpwKppiLnF3ZrrXOESxYomy8g9CtoHBIjeicc/hwmU03BkzQjSu48EVmU5o+FjpkOCJ249qLikNVX+MsBPKjDanx2uuSjZDv/skLyMv4sSY1rEUVrAxTxkhT6x8BywJ9QO/I+kyo4rl/d70iElKW6JapiGDr8mOMgOYxBVtENTdEzDy845WB2wZopZ6bOKkm9hD/1sKvIP/bgMhEYli3FyY5NMz8fsWUVu+uW+AO6Aecve/PkLzbVerZWXmoYzKoMB7k9kwEnwO3NSiA6+UxteiGeo=
+    file: ${APK_NAME}.apk
+    name: ${BAR_NAME}
+    tag_name: ${BAR_NAME}
+    skip_cleanup: true
+    prerelease: true
+    on:
+      repo: ${REPO}
+      branch: suggestion_bar
+  - provider: releases
+    api_key:
+      secure: BiJyG4KWJNgtPa7C5cEHcj2LMhBvUp6yyXAFNrfPJ2ZdSewyoDlJHJmyPk3htRtwmYPdiXDWEOj9LV10851MZCKB+c/cyQY9m5/5Zlr15qYtfIIWvX/0RPHt3qUMRw+8b6UNE8xNenq4jzLMDTnkvs3RkrXBbpTR4Iiu/POCWvBUMiOcB0MeLXosVkgoNrPol2ovQXL6yw8QihzbfdfquirObdF4MdES10LDZBJfiw8A+6+IzwqBSLONbbtM9scxN1FnIG1PGcxHKPugD6TbtUmUoqjWFzxrU/Hrb1dK7zZYaEzX8kESV8R7F/I+cvKj+kcAb1/FOMCdAafB6axyZ/Bl1YoW9EyK7OAV4EUdAhATXymRbBbzYI99uce5cniJlmgahWx+mI89I7VKmmpwKppiLnF3ZrrXOESxYomy8g9CtoHBIjeicc/hwmU03BkzQjSu48EVmU5o+FjpkOCJ249qLikNVX+MsBPKjDanx2uuSjZDv/skLyMv4sSY1rEUVrAxTxkhT6x8BywJ9QO/I+kyo4rl/d70iElKW6JapiGDr8mOMgOYxBVtENTdEzDy845WB2wZopZ6bOKkm9hD/1sKvIP/bgMhEYli3FyY5NMz8fsWUVu+uW+AO6Aecve/PkLzbVerZWXmoYzKoMB7k9kwEnwO3NSiA6+UxteiGeo=
+    file: ${APK_NAME}.apk
+    name: ${STATUS_NAME}
+    tag_name: ${STATUS_NAME}
+    body: |
+      DEV-${STATUS_NAME}
+      This is a dev build!
+      Dont use it!
+      Dont ask anybody about it!
+    skip_cleanup: true
+    prerelease: true
+    on:
+      repo: ${REPO}
+      branch: status
+

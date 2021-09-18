@@ -2,6 +2,8 @@ package com.termux.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
@@ -9,6 +11,7 @@ import android.widget.Toast;
 import com.termux.terminal.TerminalSession;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,12 +19,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import androidx.annotation.IntDef;
+
+import static com.termux.terminal.EmulatorDebug.LOG_TAG;
 
 final class TermuxPreferences {
 
@@ -58,9 +68,12 @@ final class TermuxPreferences {
     private static final String CURRENT_SESSION_KEY = "current_session";
     private static final String SCREEN_ALWAYS_ON_KEY = "screen_always_on";
 
-    private String mUseDarkUI;
+    private boolean mUseDarkUI;
     private boolean mScreenAlwaysOn;
     private int mFontSize;
+
+    private boolean mUseFullScreen;
+    private boolean mUseFullScreenWorkAround;
 
     @AsciiBellBehaviour
     int mBellBehaviour = BELL_VIBRATE;
@@ -68,10 +81,31 @@ final class TermuxPreferences {
     boolean mBackIsEscape;
     boolean mDisableVolumeVirtualKeys;
     boolean mShowExtraKeys;
+    String mDefaultWorkingDir;
 
-    String[][] mExtraKeys;
+    ExtraKeysInfos mExtraKeys;
 
     final List<KeyboardShortcut> shortcuts = new ArrayList<>();
+
+    //suggestionbar
+    private int buttonCount = 5;
+    private char inputChar = ' ';
+    private boolean bAndW = false;
+    private boolean showIcons = true;
+    private int searchTolerance = 80;
+    private float textSize = 10;
+    private float barHeight = 1;
+    private ArrayList<String> defaultButtons;
+
+    //ui
+    private boolean useSystemWallpaper;
+    private float statusTextSize;
+    private int statusTextColor;
+    private int barColor;
+    private int backgroundColor;
+    private int statusBarColor;
+    private boolean runBackground;
+    private int navigationBarColor;
 
     /**
      * If value is not in the range [min, max], set it to either min or max.
@@ -103,7 +137,7 @@ final class TermuxPreferences {
         } catch (NumberFormatException | ClassCastException e) {
             mFontSize = defaultFontSize;
         }
-        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE); 
+        mFontSize = clamp(mFontSize, MIN_FONTSIZE, MAX_FONTSIZE);
     }
 
     boolean toggleShowExtraKeys(Context context) {
@@ -129,7 +163,15 @@ final class TermuxPreferences {
     }
 
     boolean isUsingBlackUI() {
-        return mUseDarkUI.toLowerCase().equals("true");
+        return mUseDarkUI;
+    }
+
+    boolean isUsingFullScreen() {
+        return mUseFullScreen;
+    }
+
+    boolean isUsingFullScreenWorkAround() {
+        return mUseFullScreenWorkAround;
     }
 
     void setScreenAlwaysOn(Context context, boolean newValue) {
@@ -149,8 +191,107 @@ final class TermuxPreferences {
         }
         return null;
     }
-    
+
+    public int getButtonCount(){
+        return buttonCount;
+    }
+    public char getInputChar(){
+        return inputChar;
+    }
+    public boolean getBandW(){
+        return bAndW;
+    }
+    public boolean isShowIcons(){
+        return showIcons;
+    }
+    public float getTextSize(){
+        return textSize;
+    }
+    public int getSearchTolerance(){
+        return searchTolerance;
+    }
+    public ArrayList<String> getDefaultButtons(){
+        return defaultButtons;
+    }
+    public float getBarHeight(){
+        return barHeight;
+    }
+    public int getNavigationBarColor(){
+        return navigationBarColor;
+    }
+
+
+    public boolean isUseSystemWallpaper(){return useSystemWallpaper;}
+    public float getStatusTextSize(){return statusTextSize;}
+    public int getStatusTextColor(){return statusTextColor;}
+    public int getBarColor(){return barColor; }
+    public int getBackgroundColor(){return backgroundColor;}
+    public int getStatusBarColor(){return statusBarColor;}
+    public boolean isRunBackground(){return runBackground;}
     void reloadFromProperties(Context context) {
+
+        //UI Settings:
+        File uiFile = new File(TermuxService.HOME_PATH+"/.tel/configs/settings.conf");
+        Properties uiProps = new Properties();
+        try {
+            if (uiFile.isFile() && uiFile.canRead()) {
+                try (FileInputStream in = new FileInputStream(uiFile)) {
+                    uiProps.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Could not open properties file settings.conf: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("termux", "Error loading props", e);
+        }
+        String inputCharString = uiProps.getProperty("input-char"," ");
+        if(inputCharString.length()> 0 && !inputCharString.toLowerCase().equals("space")){
+            inputChar= inputCharString.charAt(0);
+        }else{
+            inputChar = ' ';
+        }
+        try{
+            buttonCount = Integer.parseInt(uiProps.getProperty("button-count","5"));
+        }catch(Exception e){}
+        try{
+            searchTolerance = Integer.parseInt(uiProps.getProperty("search-tolerance","70"));
+        }catch(Exception e){}
+
+        String defaultButtonString = uiProps.getProperty("default-buttons","telegram");
+        defaultButtons = new ArrayList<String>(Arrays.asList(defaultButtonString.split(",")));
+        runBackground = "true".equals(uiProps.getProperty("run-in-background","true"));
+        //Theme Settings:
+        File themeFile = new File(TermuxService.HOME_PATH+"/.tel/configs/theme.conf");
+        Properties themeProps = new Properties();
+        try {
+            if (themeFile.isFile() && themeFile.canRead()) {
+                try (FileInputStream in = new FileInputStream(themeFile)) {
+                    themeProps.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Could not open properties file theme.conf: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("termux", "Error loading props", e);
+        }
+        bAndW = "true".equals(themeProps.getProperty("black-and-white-icons","false"));
+        showIcons = "true".equals(themeProps.getProperty("show-icons","true"));
+        try{
+            barHeight = Float.parseFloat(themeProps.getProperty("bar-height","1.5"));
+        }catch(Exception e){}
+
+        backgroundColor = parseColor(themeProps.getProperty("background-color","#991f1f1f"),"#991f1f1f");
+        useSystemWallpaper = "true".equals(themeProps.getProperty("use-system-wallpaper","true"));
+        try{
+            statusTextSize = Float.parseFloat(themeProps.getProperty("status-text-size","12"));
+        }catch(Exception e){}
+        statusTextColor = parseColor(themeProps.getProperty("status-text-color","#c0b18b"), "#c0b18b");
+        barColor = parseColor(themeProps.getProperty("bar-color","#1f1f1f"), "#1f1f1f");
+        statusBarColor = parseColor(themeProps.getProperty("statusbar-color","#00000000"), "#00000000");
+        navigationBarColor = parseColor(themeProps.getProperty("navigation-color","#1f1f1f"), "#1f1f1f");
+         try{
+            textSize = Float.parseFloat(themeProps.getProperty("sb-text-size","10"));
+        }catch(Exception e){}
+
+        //Termux Settings:
         File propsFile = new File(TermuxService.HOME_PATH + "/.termux/termux.properties");
         if (!propsFile.exists())
             propsFile = new File(TermuxService.HOME_PATH + "/.config/termux/termux.properties");
@@ -162,8 +303,8 @@ final class TermuxPreferences {
                     props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
                 }
             }
-        } catch (IOException e) {
-            Toast.makeText(context, "Could not open properties file termux.properties.", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(context, "Could not open properties file termux.properties: " + e.getMessage(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
         }
 
@@ -179,27 +320,50 @@ final class TermuxPreferences {
                 break;
         }
 
-        mUseDarkUI = props.getProperty("use-black-ui", "false");
+        switch (props.getProperty("use-black-ui", "").toLowerCase()) {
+            case "true":
+                mUseDarkUI = true;
+                break;
+            case "false":
+                mUseDarkUI = false;
+                break;
+            default:
+                int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+                mUseDarkUI = nightMode == Configuration.UI_MODE_NIGHT_YES;
+        }
+
+        mUseFullScreen = "true".equals(props.getProperty("fullscreen", "false").toLowerCase());
+        mUseFullScreenWorkAround = "true".equals(props.getProperty("use-fullscreen-workaround", "false").toLowerCase());
+
+        mDefaultWorkingDir = props.getProperty("default-working-directory", TermuxService.HOME_PATH);
+        File workDir = new File(mDefaultWorkingDir);
+        if (!workDir.exists() || !workDir.isDirectory()) {
+            // Fallback to home directory if user configured working directory is not exist
+            // or is a regular file.
+            mDefaultWorkingDir = TermuxService.HOME_PATH;
+        }
+
+        String defaultExtraKeys = "[[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]";
 
         try {
-            JSONArray arr = new JSONArray(props.getProperty("extra-keys", "[['ESC', 'TAB', 'CTRL', 'ALT', '-', 'DOWN', 'UP']]"));
-
-            mExtraKeys = new String[arr.length()][];
-            for (int i = 0; i < arr.length(); i++) {
-                JSONArray line = arr.getJSONArray(i);
-                mExtraKeys[i] = new String[line.length()];
-                for (int j = 0; j < line.length(); j++) {
-                    mExtraKeys[i][j] = line.getString(j);
-                }
-            }
+            String extrakeyProp = props.getProperty("extra-keys", defaultExtraKeys);
+            String extraKeysStyle = props.getProperty("extra-keys-style", "default");
+            mExtraKeys = new ExtraKeysInfos(extrakeyProp, extraKeysStyle);
         } catch (JSONException e) {
             Toast.makeText(context, "Could not load the extra-keys property from the config: " + e.toString(), Toast.LENGTH_LONG).show();
             Log.e("termux", "Error loading props", e);
-            mExtraKeys = new String[0][];
+
+            try {
+                mExtraKeys = new ExtraKeysInfos(defaultExtraKeys, "default");
+            } catch (JSONException e2) {
+                e2.printStackTrace();
+                Toast.makeText(context, "Can't create default extra keys", Toast.LENGTH_LONG).show();
+                mExtraKeys = null;
+            }
         }
 
         mBackIsEscape = "escape".equals(props.getProperty("back-key", "back"));
-        mDisableVolumeVirtualKeys = "volume".equals(props.getProperty("volume-keys", "virtual"));
+        mDisableVolumeVirtualKeys = "volume".equals(props.getProperty("volume-keys", "volume"));
 
         shortcuts.clear();
         parseAction("shortcut.create-session", SHORTCUT_ACTION_CREATE_SESSION, props);
@@ -231,4 +395,17 @@ final class TermuxPreferences {
         shortcuts.add(new KeyboardShortcut(codePoint, shortcutAction));
     }
 
+    private int parseColor(String colorString, String defaultString){
+        int color = 0;
+        try{
+            color = Color.parseColor(colorString);
+        }catch(Exception e){
+            try{
+                color = Color.parseColor(defaultString);
+            }catch (Exception f){
+                color = Color.parseColor("#1f1f1f");
+            }
+        }
+        return color;
+    }
 }

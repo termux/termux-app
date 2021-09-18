@@ -12,13 +12,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y.%m.%d')"
     - name: Clone repository
       uses: actions/checkout@v2
+    - name: Build bootstrap
+      run: |
+        bash build_bootstrap.sh
+    - name: Prepare Keystore 
+      run: |   
+       echo "${{ secrets.KEYSTORE }}" > tel.jks.asc   
+       echo "${{ secrets.KEYSTORE_PASS }}" | gpg -d --passphrase-fd 0 --batch tel.jks.asc > app/tel.jks   
+       echo "${{ secrets.KEYSTORE_PROP }}" > keystore.properties.asc   
+       gpg -d --passphrase "${{ secrets.KEYSTORE_PROP_PASS }}" --batch keystore.properties.asc > app/keystore.properties   
+     
     - name: Build
       run: |
-        ./gradlew assembleDebug
-    - name: Store generated APK file
-      uses: actions/upload-artifact@v2
+        ./gradlew :app:assembleRelease
+    - name: Rename
+      run: |
+        mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned.apk TEL-arm64.apk
+        mv app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned.apk TEL-armeabi.apk
+        mv app/build/outputs/apk/release/app-x86-release-unsigned.apk TEL-x86.apk
+        mv app/build/outputs/apk/release/app-x86_64-release-unsigned.apk TEL-x86_x64.apk
+
+    - name: Release
+      uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        name: termux-app
-        path: ./app/build/outputs/apk/debug
+        repo_token: "${{ secrets.TOKEN }}"
+        automatic_release_tag: "beta"
+        prerelease: true
+        title: "[BETA]TEL-${{ steps.date.outputs.date }}"
+        files: |
+          *.apk

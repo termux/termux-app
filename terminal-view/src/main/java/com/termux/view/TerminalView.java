@@ -31,11 +31,14 @@ import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
+import android.view.autofill.AutofillValue;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.PopupWindow;
 import android.widget.Scroller;
+
+import androidx.annotation.RequiresApi;
 
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.KeyHandler;
@@ -43,6 +46,11 @@ import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.WcWidth;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
@@ -70,7 +78,6 @@ public final class TerminalView extends View {
     final int[] mTempCoords = new int[2];
     Rect mTempRect;
     private SelectionModifierCursorController mSelectionModifierCursorController;
-
     float mScaleFactor = 1.f;
     final GestureAndScaleRecognizer mGestureRecognizer;
 
@@ -89,6 +96,7 @@ public final class TerminalView extends View {
 
     private boolean mAccessibilityEnabled;
 
+    private char splitChar = ' ';
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
         super(context, attributes);
         mGestureRecognizer = new GestureAndScaleRecognizer(context, new GestureAndScaleRecognizer.Listener() {
@@ -246,14 +254,23 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
-        //
-        // Previous keyboard issues:
-        // https://github.com/termux/termux-packages/issues/25
-        // https://github.com/termux/termux-app/issues/87.
-        // https://github.com/termux/termux-app/issues/126.
-        // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
-        outAttrs.inputType = InputType.TYPE_NULL;
+        Properties props = getProperties();
+
+        if (props.getProperty("enforce-char-based-input", "false").equals("true")) {
+            // Some keyboards seems do not reset the internal state on TYPE_NULL.
+            // Affects mostly Samsung stock keyboards.
+            // https://github.com/termux/termux-app/issues/686
+            outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        } else {
+            // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
+            //
+            // Previous keyboard issues:
+            // https://github.com/termux/termux-packages/issues/25
+            // https://github.com/termux/termux-app/issues/87.
+            // https://github.com/termux/termux-app/issues/126.
+            // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
+            outAttrs.inputType = InputType.TYPE_NULL;
+        }
 
         // Note that IME_ACTION_NONE cannot be used as that makes it impossible to input newlines using the on-screen
         // keyboard on Android TV (see https://github.com/termux/termux-app/issues/221).
@@ -368,6 +385,7 @@ public final class TerminalView extends View {
     }
 
     public void onScreenUpdated() {
+
         if (mEmulator == null) return;
 
         int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
@@ -483,6 +501,7 @@ public final class TerminalView extends View {
     @Override
     @TargetApi(23)
     public boolean onTouchEvent(MotionEvent ev) {
+
         if (mEmulator == null) return true;
         final int action = ev.getAction();
 
@@ -519,8 +538,11 @@ public final class TerminalView extends View {
         return true;
     }
 
+
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
+        Properties props = getProperties();
+
         if (LOG_KEY_EVENTS)
             Log.i(EmulatorDebug.LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -536,6 +558,11 @@ public final class TerminalView extends View {
                         return onKeyUp(keyCode, event);
                 }
             }
+        } else if (props.getProperty("ctrl-space-workaround", "false").equals("true") &&
+                   keyCode == KeyEvent.KEYCODE_SPACE && event.isCtrlPressed()) {
+            /* ctrl + space does not work on some ROMs without this workaround.
+               However, this breaks it on devices where it works out of the box. */
+            return onKeyDown(keyCode, event);
         }
         return super.onKeyPreIme(keyCode, event);
     }
@@ -558,14 +585,15 @@ public final class TerminalView extends View {
         }
 
         final int metaState = event.getMetaState();
-        final boolean controlDownFromEvent = event.isCtrlPressed();
-        final boolean leftAltDownFromEvent = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0;
+        final boolean controlDown = event.isCtrlPressed() || mClient.readControlKey();
+        final boolean leftAltDown = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0 || mClient.readAltKey();
         final boolean rightAltDownFromEvent = (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
 
         int keyMod = 0;
-        if (controlDownFromEvent) keyMod |= KeyHandler.KEYMOD_CTRL;
-        if (event.isAltPressed()) keyMod |= KeyHandler.KEYMOD_ALT;
+        if (controlDown) keyMod |= KeyHandler.KEYMOD_CTRL;
+        if (event.isAltPressed() || leftAltDown) keyMod |= KeyHandler.KEYMOD_ALT;
         if (event.isShiftPressed()) keyMod |= KeyHandler.KEYMOD_SHIFT;
+        if (event.isNumLockOn()) keyMod |= KeyHandler.KEYMOD_NUM_LOCK;
         if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod)) {
             if (LOG_KEY_EVENTS) Log.i(EmulatorDebug.LOG_TAG, "handleKeyCode() took key event");
             return true;
@@ -592,7 +620,7 @@ public final class TerminalView extends View {
         if ((result & KeyCharacterMap.COMBINING_ACCENT) != 0) {
             // If entered combining accent previously, write it out:
             if (mCombiningAccent != 0)
-                inputCodePoint(mCombiningAccent, controlDownFromEvent, leftAltDownFromEvent);
+                inputCodePoint(mCombiningAccent, controlDown, leftAltDown);
             mCombiningAccent = result & KeyCharacterMap.COMBINING_ACCENT_MASK;
         } else {
             if (mCombiningAccent != 0) {
@@ -600,7 +628,7 @@ public final class TerminalView extends View {
                 if (combinedChar > 0) result = combinedChar;
                 mCombiningAccent = 0;
             }
-            inputCodePoint(result, controlDownFromEvent, leftAltDownFromEvent);
+            inputCodePoint(result, controlDown, leftAltDown);
         }
 
         if (mCombiningAccent != oldCombiningAccent) invalidate();
@@ -608,7 +636,7 @@ public final class TerminalView extends View {
         return true;
     }
 
-    void inputCodePoint(int codePoint, boolean controlDownFromEvent, boolean leftAltDownFromEvent) {
+    public void inputCodePoint(int codePoint, boolean controlDownFromEvent, boolean leftAltDownFromEvent) {
         if (LOG_KEY_EVENTS) {
             Log.i(EmulatorDebug.LOG_TAG, "inputCodePoint(codePoint=" + codePoint + ", controlDownFromEvent=" + controlDownFromEvent + ", leftAltDownFromEvent="
                 + leftAltDownFromEvent + ")");
@@ -674,7 +702,57 @@ public final class TerminalView extends View {
         mTermSession.write(code);
         return true;
     }
+    
+    public void setSplitChar(char splitChar){
+        this.splitChar = splitChar;
+    }
 
+    public String getCurrentInput(char currentChar){
+        int row = mEmulator.getCursorRow();
+        int cut = mEmulator.getCursorCol();
+        String originalText = mEmulator.getScreen().getSelectedText(0,row,99,row);
+        if(originalText.indexOf(splitChar) >=0){
+            if(cut >=originalText.length()){
+                originalText = originalText+currentChar;
+            }else if(cut > 0){
+                originalText = originalText.substring(0,cut) + currentChar+originalText.substring(cut);
+            }else if(cut == 0){
+                originalText = originalText+ currentChar;
+            }else{
+                Log.e("TEL_SB","col smaller than zero!");
+            }
+            String text = originalText.substring(originalText.indexOf(splitChar)+1);
+            text = text.replaceAll("[^a-zA-Z ]", "");
+            text = text.replaceAll(" {2,}", " ");
+            return text.trim();
+        }
+        return null;
+    }
+    public String getCurrentInput(){
+        int row = mEmulator.getCursorRow();
+        String text = mEmulator.getScreen().getSelectedText(0,row,99,row);
+        if(text.indexOf(splitChar) >=0){
+            text = text.substring(text.indexOf(splitChar)+1);
+            text = text.replaceAll("[^a-zA-Z ]", "");
+            text = text.replaceAll(" {2,}", " ");
+            return text.trim();
+        }
+        return null;
+        /*does only read input from the line of the cursor
+        String[] cmds = mTermSession.getEmulator().getScreen().getTranscriptText().split("\n");*/
+    }
+
+
+
+    public void clearInputLine(){
+        KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
+        String input = getCurrentInput();
+        if(input!=null){
+            int width = input.length()+10;
+            for (int i = 0; i < width; i++) onKeyDown(KeyEvent.KEYCODE_DEL,deleteKey);
+        }
+        
+    }
     /**
      * Called when a key is released in the view.
      *
@@ -973,12 +1051,12 @@ public final class TerminalView extends View {
             return mContainer.isShowing();
         }
 
-        private void checkChangedOrientation() {
-            if (!mIsDragging) {
+        private void checkChangedOrientation(int posX, boolean force) {
+            if (!mIsDragging && !force) {
                 return;
             }
             long millis = SystemClock.currentThreadTimeMillis();
-            if (millis - mLastTime < 50) {
+            if (millis - mLastTime < 50 && !force) {
                 return;
             }
             mLastTime = millis;
@@ -1003,10 +1081,7 @@ public final class TerminalView extends View {
                 return;
             }
 
-            final int[] coords = mTempCoords;
-            hostView.getLocationInWindow(coords);
-            final int posX = coords[0] + mPointX;
-            if (posX < clip.left) {
+            if (posX - mHandleWidth < clip.left) {
                 changeOrientation(RIGHT);
             } else if (posX + mHandleWidth > clip.right) {
                 changeOrientation(LEFT);
@@ -1050,13 +1125,14 @@ public final class TerminalView extends View {
                 posY >= clip.top && posY <= clip.bottom;
         }
 
-        private void moveTo(int x, int y) {
-            mPointX = x;
+        private void moveTo(int x, int y, boolean forceOrientationCheck) {
+            float oldHotspotX = mHotspotX;
+            checkChangedOrientation(x, forceOrientationCheck);
+            mPointX = (int) (x - (isShowing() ? oldHotspotX : mHotspotX));
             mPointY = y;
-            checkChangedOrientation();
             if (isPositionVisible()) {
                 int[] coords = null;
-                if (mContainer.isShowing()) {
+                if (isShowing()) {
                     coords = mTempCoords;
                     TerminalView.this.getLocationInWindow(coords);
                     int x1 = coords[0] + mPointX;
@@ -1138,10 +1214,10 @@ public final class TerminalView extends View {
             return mIsDragging;
         }
 
-        void positionAtCursor(final int cx, final int cy) {
-            int left = (int) (getPointX(cx) - mHotspotX);
+        void positionAtCursor(final int cx, final int cy, boolean forceOrientationCheck) {
+            int left = getPointX(cx);
             int bottom = getPointY(cy + 1);
-            moveTo(left, bottom);
+            moveTo(left, bottom, forceOrientationCheck);
         }
     }
 
@@ -1162,14 +1238,13 @@ public final class TerminalView extends View {
 
         public void show() {
             mIsShowing = true;
-            updatePosition();
-            mStartHandle.show();
-            mEndHandle.show();
+            mStartHandle.positionAtCursor(mSelX1, mSelY1, true);
+            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, true);
 
             final ActionMode.Callback callback = new ActionMode.Callback() {
                 @Override
                 public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    int show = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
+                    int show = MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
 
                     ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
                     menu.add(Menu.NONE, 1, Menu.NONE, R.string.copy_text).setShowAsAction(show);
@@ -1240,7 +1315,7 @@ public final class TerminalView extends View {
                 public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
                     int x1 = Math.round(mSelX1 * mRenderer.mFontWidth);
                     int x2 = Math.round(mSelX2 * mRenderer.mFontWidth);
-                    int y1 = Math.round((mSelY1 - mTopRow) * mRenderer.mFontLineSpacing);
+                    int y1 = Math.round((mSelY1 - 1 - mTopRow) * mRenderer.mFontLineSpacing);
                     int y2 = Math.round((mSelY2 + 1 - mTopRow) * mRenderer.mFontLineSpacing);
 
 
@@ -1395,9 +1470,9 @@ public final class TerminalView extends View {
                 return;
             }
 
-            mStartHandle.positionAtCursor(mSelX1, mSelY1);
+            mStartHandle.positionAtCursor(mSelX1, mSelY1, false);
 
-            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2); //bug
+            mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, false);
 
             if (mActionMode != null) {
                 mActionMode.invalidate();
@@ -1514,5 +1589,53 @@ public final class TerminalView extends View {
                     showFloatingToolbar();
             }
         }
+    }
+
+    private Properties getProperties() {
+        File propsFile;
+        Properties props = new Properties();
+        String possiblePropLocations[] = {
+            getContext().getFilesDir() + "/home/.termux/termux.properties",
+            getContext().getFilesDir() + "/home/.config/termux/termux.properties"
+        };
+
+        propsFile = new File(possiblePropLocations[0]);
+        int i = 0;
+        while (!propsFile.exists() && i < possiblePropLocations.length) {
+            propsFile = new File(possiblePropLocations[i]);
+            i += 1;
+        }
+
+        try {
+            if (propsFile.isFile() && propsFile.canRead()) {
+                try (FileInputStream in = new FileInputStream(propsFile)) {
+                    props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception e) {
+            Log.e("termux", "Error loading props", e);
+        }
+
+        return props;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void autofill(AutofillValue value) {
+        if (value.isText()) {
+            mTermSession.write(value.getTextValue().toString());
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public int getAutofillType() {
+        return AUTOFILL_TYPE_TEXT;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public AutofillValue getAutofillValue() {
+        return AutofillValue.forText("");
     }
 }

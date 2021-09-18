@@ -4,11 +4,21 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
+    <com.termux.app.StatusView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/status_view"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:foregroundGravity="center"
+        android:orientation="vertical" />
+
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_above="@+id/viewpager"
+        android:layout_above="@+id/viewpager2"
+        android:layout_below="@+id/status_view"
+        android:background="@android:color/transparent"
         android:layout_height="match_parent">
 
         <com.termux.view.TerminalView
@@ -19,7 +29,10 @@
             android:layout_marginLeft="3dp"
             android:focusableInTouchMode="true"
             android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
-            android:scrollbars="vertical" />
+            android:scrollbars="vertical"
+            android:importantForAutofill="no"
+            android:layout_alignParentTop="true"
+            android:autofillHints="password" />
 
         <LinearLayout
             android:id="@+id/left_drawer"
@@ -70,9 +83,20 @@
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewpager"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="37.5dp"
+        android:layout_alignParentBottom="true"
         android:background="@android:drawable/screen_background_dark_transparent"
-        android:layout_alignParentBottom="true" />
+        android:visibility="gone" >
+
+    </androidx.viewpager.widget.ViewPager>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager2"
+        android:layout_width="match_parent"
+        android:layout_height="37.5dp"
+        android:layout_above="@id/viewpager"
+        android:background="@android:drawable/screen_background_dark_transparent"
+        android:visibility="visible" />
+
 </RelativeLayout>
