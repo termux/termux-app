@@ -43,8 +43,7 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.TOKEN }}"
-        automatic_release_tag: "beta"
-        prerelease: true
-        title: "[BETA]TEL-${{ steps.date.outputs.date }}"
+        automatic_release_tag: "stable"
+        title: "TEL-${{ steps.date.outputs.date }}"
         files: |
           *.apk
