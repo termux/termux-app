@@ -7,7 +7,7 @@ The `termux-shared` library is released under [GPLv3 only](https://www.gnu.org/l
 - [`src/main/java/com/termux/shared/termux/TermuxConstants.java`](src/main/java/com/termux/shared/termux/TermuxConstants.java).
 - [`src/main/java/com/termux/shared/settings/properties/TermuxPropertyConstants.java`](src/main/java/com/termux/shared/settings/properties/TermuxPropertyConstants.java).
 
-- [`src/main/java/com/termux/shared/activities/ReportActivity.java`](src/main/java/com/termux/shared/activities/ReportActivity.java).
+- [`src/main/java/com/termux/shared/activities/*`](src/main/java/com/termux/shared/activities).
 
 - [`src/main/java/com/termux/shared/crash/CrashHandler.java`](src/main/java/com/termux/shared/crash/CrashHandler.java).
 
