@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
 import java.nio.file.LinkOption;
 import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -144,7 +145,21 @@ public class FileUtils {
      * @return Returns {@code true} if path in {@code dirPath}, otherwise returns {@code false}.
      */
     public static boolean isPathInDirPath(String path, final String dirPath, final boolean ensureUnder) {
-        if (path == null || dirPath == null) return false;
+       return isPathInDirPaths(path, Collections.singletonList(dirPath), ensureUnder);
+    }
+
+    /**
+     * Determines whether path is in one of the {@code dirPaths}. The {@code dirPaths} are not
+     * canonicalized and only normalized.
+     *
+     * @param path The {@code path} to check.
+     * @param dirPaths The {@code directory paths} to check in.
+     * @param ensureUnder If set to {@code true}, then it will be ensured that {@code path} is
+     *                    under the directories and does not equal it.
+     * @return Returns {@code true} if path in {@code dirPaths}, otherwise returns {@code false}.
+     */
+    public static boolean isPathInDirPaths(String path, final List<String> dirPaths, final boolean ensureUnder) {
+        if (path == null || path.isEmpty() || dirPaths == null || dirPaths.size() < 1) return false;
 
         try {
             path = new File(path).getCanonicalPath();
@@ -152,12 +167,20 @@ public class FileUtils {
             return false;
         }
 
-        String normalizedDirPath = normalizePath(dirPath);
+        boolean isPathInDirPaths;
 
-        if (ensureUnder)
-            return !path.equals(normalizedDirPath) && path.startsWith(normalizedDirPath + "/");
-        else
-            return path.startsWith(normalizedDirPath + "/");
+        for (String dirPath : dirPaths) {
+            String normalizedDirPath = normalizePath(dirPath);
+
+            if (ensureUnder)
+                isPathInDirPaths = !path.equals(normalizedDirPath) && path.startsWith(normalizedDirPath + "/");
+            else
+                isPathInDirPaths = path.startsWith(normalizedDirPath + "/");
+
+            if (isPathInDirPaths) return true;
+        }
+
+        return false;
     }
 
 
