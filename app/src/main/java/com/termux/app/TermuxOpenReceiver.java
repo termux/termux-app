@@ -13,6 +13,7 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
 
+import com.termux.app.utils.PluginUtils;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
@@ -188,6 +189,12 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 // See https://support.google.com/faqs/answer/7496913:
                 if (!(path.startsWith(TermuxConstants.TERMUX_FILES_DIR_PATH) || path.startsWith(storagePath))) {
                     throw new IllegalArgumentException("Invalid path: " + path);
+                }
+
+                // If "allow-external-apps" property to not set to "true", then throw exception
+                String errmsg = PluginUtils.checkIfAllowExternalAppsPolicyIsViolated(getContext(), LOG_TAG);
+                if (errmsg != null) {
+                    throw new IllegalArgumentException(errmsg);
                 }
 
                 // Do not allow apps with RUN_COMMAND permission to modify termux apps properties files,

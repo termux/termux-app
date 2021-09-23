@@ -9,7 +9,6 @@
     <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
     <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
     <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
-    <!ENTITY TERMUX_PROPERTIES_PRIMARY_PATH_SHORT "~/.termux/termux.properties">
     ]>
 
 <resources>
@@ -105,8 +104,6 @@
     <!-- Termux RunCommandService -->
     <string name="error_run_command_service_invalid_intent_action">Invalid intent action to RunCommandService: `%1$s`</string>
     <string name="error_run_command_service_mandatory_extra_missing">Mandatory extra missing to RunCommandService: \"%1$s\"</string>
-    <string name="error_run_command_service_allow_external_apps_ungranted">RunCommandService requires `allow-external-apps`
-        property to be set to `true` in `&TERMUX_PROPERTIES_PRIMARY_PATH_SHORT;` file.</string>
     <string name="error_run_command_service_api_help">Visit %1$s for more info on RUN_COMMAND Intent usage.</string>
 
 
@@ -115,6 +112,12 @@
     <string name="title_file_received">Save file in ~/downloads/</string>
     <string name="action_file_received_edit">Edit</string>
     <string name="action_file_received_open_directory">Open directory</string>
+
+
+
+    <!-- Miscellaneous -->
+    <string name="error_allow_external_apps_ungranted">%1$s requires `allow-external-apps`
+        property to be set to `true` in `%2$s` file.</string>
 
 
 

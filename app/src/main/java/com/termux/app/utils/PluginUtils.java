@@ -321,10 +321,12 @@ public class PluginUtils {
      * @param context The {@link Context} to get error string.
      * @return Returns the {@code error} if policy is violated, otherwise {@code null}.
      */
-    public static String checkIfRunCommandServiceAllowExternalAppsPolicyIsViolated(final Context context) {
+    public static String checkIfAllowExternalAppsPolicyIsViolated(final Context context, String apiName) {
         String errmsg = null;
-        if (!SharedProperties.isPropertyValueTrue(context, TermuxPropertyConstants.getTermuxPropertiesFile(), TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true)) {
-            errmsg = context.getString(R.string.error_run_command_service_allow_external_apps_ungranted);
+        if (!SharedProperties.isPropertyValueTrue(context, TermuxPropertyConstants.getTermuxPropertiesFile(),
+            TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true)) {
+            errmsg = context.getString(R.string.error_allow_external_apps_ungranted, apiName,
+                TermuxFileUtils.getUnExpandedTermuxPath(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH));
         }
 
         return errmsg;
