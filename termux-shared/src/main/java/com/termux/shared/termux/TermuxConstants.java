@@ -12,7 +12,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /*
- * Version: v0.31.0
+ * Version: v0.32.0
  *
  * Changelog
  *
@@ -207,6 +207,10 @@ import java.util.List;
  * - 0.31.0 (2021-09-09)
  *      - Added following to `TERMUX_APP.TERMUX_SERVICE`:
  *          `MIN_VALUE_EXTRA_SESSION_ACTION` and `MAX_VALUE_EXTRA_SESSION_ACTION`.
+ *
+ * - 0.32.0 (2021-09-23)
+ *      - Added `TERMUX_API.TERMUX_API_ACTIVITY_NAME`, `TERMUX_TASKER.TERMUX_TASKER_ACTIVITY_NAME`
+ *          and `TERMUX_WIDGET.TERMUX_WIDGET_ACTIVITY_NAME`.
  */
 
 /**
@@ -1124,6 +1128,20 @@ public final class TermuxConstants {
 
 
     /**
+     * Termux:API app constants.
+     */
+    public static final class TERMUX_API {
+
+        /** Termux:API app core activity name. */
+        public static final String TERMUX_API_ACTIVITY_NAME = TERMUX_API_PACKAGE_NAME + ".activities.TermuxAPIActivity"; // Default: "com.termux.tasker.activities.TermuxAPIActivity"
+
+    }
+
+
+
+
+
+    /**
      * Termux:Float app constants.
      */
     public static final class TERMUX_FLOAT_APP {
@@ -1168,9 +1186,27 @@ public final class TermuxConstants {
 
 
     /**
+     * Termux:Tasker app constants.
+     */
+    public static final class TERMUX_TASKER {
+
+        /** Termux:Tasker app core activity name. */
+        public static final String TERMUX_TASKER_ACTIVITY_NAME = TERMUX_TASKER_PACKAGE_NAME + ".activities.TermuxTaskerActivity"; // Default: "com.termux.tasker.activities.TermuxTaskerActivity"
+
+    }
+
+
+
+
+
+    /**
      * Termux:Widget app constants.
      */
     public static final class TERMUX_WIDGET {
+
+        /** Termux:Widget app core activity name. */
+        public static final String TERMUX_WIDGET_ACTIVITY_NAME = TERMUX_WIDGET_PACKAGE_NAME + ".activities.TermuxWidgetActivity"; // Default: "com.termux.widget.activities.TermuxWidgetActivity"
+
 
         /**  Intent {@code String} extra for the token of the Termux:Widget app shortcuts. */
         public static final String EXTRA_TOKEN_NAME = TERMUX_PACKAGE_NAME + ".shortcut.token"; // Default: "com.termux.shortcut.token"
