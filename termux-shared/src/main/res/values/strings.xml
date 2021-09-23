@@ -24,6 +24,10 @@
     <string name="error_get_package_context_failed_message">Failed to get package context for the \"%1$s\" package.
         This may be because the app package is not installed or it has different APK signature from the current app.
         Check install instruction at %2$s for more details.</string>
+    <string name="error_get_component_state_failed">Failed to get %1$s/%2$s component state"</string>
+    <string name="error_enable_component_failed">Failed to enable %1$s/%2$s component"</string>
+    <string name="error_disable_component_failed">Failed to enable %1$s/%2$s component"</string>
+
 
 
 
@@ -88,6 +92,17 @@
     <string name="action_share">Share</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_save_to_file">Save To File</string>
+
+
+
+    <!-- Launcher Icons -->
+    <string name="action_enable_launcher_icon">Enable Launcher Icon</string>
+    <string name="action_disable_launcher_icon">Disable Launcher Icon</string>
+    <string name="msg_enabling_launcher_icon">Enabling %1$s app launcher icon"</string>
+    <string name="msg_disabling_launcher_icon">Disabling %1$s app launcher icon"</string>
+    <string name="setting_launcher_icon_title">Launcher Icon Enabled</string>
+    <string name="setting_launcher_icon_enabled_off">Launcher Icon will be disabled.</string>
+    <string name="setting_launcher_icon_enabled_on">Launcher Icon will be enabled. (Default)</string>
 
 
 

@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -249,6 +250,8 @@ public class PackageUtils {
         return null;
     }
 
+
+
     /**
      * Get the process id of the main app process of a package. This will work for sharedUserId. Note
      * that some apps have multiple processes for the app like with `android:process=":background"`
@@ -274,6 +277,8 @@ public class PackageUtils {
         }
         return null;
     }
+
+
 
     /**
      * Check if app is installed and enabled. This can be used by external apps that don't
@@ -316,6 +321,99 @@ public class PackageUtils {
             errmsg = context.getString(R.string.error_app_not_installed_or_disabled_warning, appName, packageName);
 
         return errmsg;
+    }
+
+
+
+    /**
+     * Enable or disable a {@link ComponentName} with a call to
+     * {@link PackageManager#setComponentEnabledSetting(ComponentName, int, int)}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the component.
+     * @param className The {@link Class} name of the component.
+     * @param state If component should be enabled or disabled.
+     * @param toastString If this is not {@code null} or empty, then a toast before setting state.
+     * @param showErrorMessage If an error message toast should be shown.
+     * @return Returns the errmsg if failed to set state, otherwise {@code null}.
+     */
+    @Nullable
+    public static String setComponentState(@NonNull final Context context, @NonNull String packageName,
+                                         @NonNull String className, boolean state, String toastString,
+                                         boolean showErrorMessage) {
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            if (packageManager != null) {
+                ComponentName componentName = new ComponentName(packageName, className);
+                if (toastString != null) Logger.showToast(context, toastString, true);
+                packageManager.setComponentEnabledSetting(componentName,
+                    state ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+            }
+            return null;
+        } catch (final Exception e) {
+            String errmsg = context.getString(
+                state ? R.string.error_enable_component_failed : R.string.error_disable_component_failed,
+                packageName, className) + ": " + e.getMessage();
+            if (showErrorMessage)
+                Logger.showToast(context, errmsg, true);
+            return errmsg;
+        }
+    }
+
+    /**
+     * Check if state of a {@link ComponentName} is {@link PackageManager#COMPONENT_ENABLED_STATE_DISABLED}
+     * with a call to {@link PackageManager#getComponentEnabledSetting(ComponentName)}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the component.
+     * @param className The {@link Class} name of the component.
+     * @param logErrorMessage If an error message should be logged.
+     * @return Returns {@code true} if disabled, {@code false} if not and {@code null} if failed to
+     * get the state.
+     */
+    public static Boolean isComponentDisabled(@NonNull final Context context, @NonNull String packageName,
+                                           @NonNull String className, boolean logErrorMessage) {
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            if (packageManager != null) {
+                ComponentName componentName = new ComponentName(packageName, className);
+                // Will throw IllegalArgumentException: Unknown component: ComponentInfo{} if app
+                // for context is not installed or component does not exist.
+                return packageManager.getComponentEnabledSetting(componentName) == PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+            }
+        } catch (final Exception e) {
+            if (logErrorMessage)
+                Logger.logStackTraceWithMessage(LOG_TAG, context.getString(R.string.error_get_component_state_failed, packageName, className), e);
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if an {@link android.app.Activity} {@link ComponentName} can be called by calling
+     * {@link PackageManager#queryIntentActivities(Intent, int)}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the component.
+     * @param className The {@link Class} name of the component.
+     * @param flags The flags to filter results.
+     * @return Returns {@code true} if it exists, otherwise {@code false}.
+     */
+    public static boolean doesActivityComponentExist(@NonNull final Context context, @NonNull String packageName,
+                                              @NonNull String className, int flags) {
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            if (packageManager != null) {
+                Intent intent = new Intent();
+                intent.setClassName(packageName, className);
+                return packageManager.queryIntentActivities(intent, flags).size() > 0;
+            }
+        } catch (final Exception e) {
+            // ignore
+        }
+
+        return false;
     }
 
 }
