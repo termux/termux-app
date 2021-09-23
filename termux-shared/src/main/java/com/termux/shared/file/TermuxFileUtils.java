@@ -17,11 +17,30 @@ import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class TermuxFileUtils {
 
     private static final String LOG_TAG = "TermuxFileUtils";
+
+    /**
+     * Replace "$PREFIX/" or "~/" prefix with termux absolute paths.
+     *
+     * @param paths The {@code paths} to expand.
+     * @return Returns the {@code expand paths}.
+     */
+    public static List<String> getExpandedTermuxPaths(List<String> paths) {
+        if (paths == null) return null;
+        List<String> expandedPaths = new ArrayList<>();
+
+        for (int i = 0; i < paths.size(); i++) {
+            expandedPaths.add(getExpandedTermuxPath(paths.get(i)));
+        }
+
+        return expandedPaths;
+    }
 
     /**
      * Replace "$PREFIX/" or "~/" prefix with termux absolute paths.
@@ -38,6 +57,23 @@ public class TermuxFileUtils {
         }
 
         return path;
+    }
+
+    /**
+     * Replace termux absolute paths with "$PREFIX/" or "~/" prefix.
+     *
+     * @param paths The {@code paths} to unexpand.
+     * @return Returns the {@code unexpand paths}.
+     */
+    public static List<String> getUnExpandedTermuxPaths(List<String> paths) {
+        if (paths == null) return null;
+        List<String> unExpandedPaths = new ArrayList<>();
+
+        for (int i = 0; i < paths.size(); i++) {
+            unExpandedPaths.add(getUnExpandedTermuxPath(paths.get(i)));
+        }
+
+        return unExpandedPaths;
     }
 
     /**
