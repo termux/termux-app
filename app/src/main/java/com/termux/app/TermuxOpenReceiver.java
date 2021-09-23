@@ -189,6 +189,16 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 if (!(path.startsWith(TermuxConstants.TERMUX_FILES_DIR_PATH) || path.startsWith(storagePath))) {
                     throw new IllegalArgumentException("Invalid path: " + path);
                 }
+
+                // Do not allow apps with RUN_COMMAND permission to modify termux apps properties files,
+                // including allow-external-apps
+                if (TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH.equals(path) ||
+                    TermuxConstants.TERMUX_PROPERTIES_SECONDARY_FILE_PATH.equals(path) ||
+                    TermuxConstants.TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH.equals(path) ||
+                    TermuxConstants.TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH.equals(path)) {
+                    mode = "r";
+                }
+
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
