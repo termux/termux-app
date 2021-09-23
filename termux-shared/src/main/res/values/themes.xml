@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.MaterialComponents.DayNight.TermuxPrimaryActivity" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/red_400</item>
+        <item name="colorPrimaryVariant">@color/red_800</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/grey_900</item>
+        <item name="colorSecondaryVariant">@color/black</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+
+        <!-- Text color. -->
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorLink">@color/grey_800</item>
+        <item name="android:textColorSecondary">@color/white</item>
+    </style>
+
+    <style name="Theme.AppCompat.TermuxReportActivity" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimaryDark">#FF0000</item>
+    </style>
+
+    <style name="Theme.AppCompat.TermuxTextIOActivity" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimaryDark">#FF0000</item>
+    </style>
+
+    <style name="Toolbar.Title" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="ViewDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">@dimen/activity_vertical_margin</item>
+        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
+        <item name="android:background">?android:attr/listDivider</item>
+    </style>
+</resources>
