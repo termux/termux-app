@@ -191,9 +191,8 @@ public class MarkdownUtils {
     }
 
     public static Spanned getSpannedMarkdownText(Context context, String string) {
-
+        if (context == null || string == null) return null;
         final Markwon markwon = getSpannedMarkwonBuilder(context);
-
         return markwon.toMarkdown(string);
     }
 
