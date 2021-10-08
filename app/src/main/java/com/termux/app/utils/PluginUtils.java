@@ -18,6 +18,7 @@ import com.termux.shared.models.errors.Errno;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.notification.TermuxNotificationUtils;
+import com.termux.shared.settings.preferences.TermuxPreferenceConstants;
 import com.termux.shared.shell.ResultSender;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.termux.AndroidUtils;
@@ -89,8 +90,12 @@ public class PluginUtils {
                 Logger.logDebugExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true, isExecutionCommandLoggingEnabled));
 
                 // Flash and send notification for the error
-                Logger.showToast(context, ResultData.getErrorsListMinimalString(resultData), true);
-                sendPluginCommandErrorNotification(context, logTag, executionCommand, ResultData.getErrorsListMinimalString(resultData));
+                sendPluginCommandErrorNotification(context, logTag, null,
+                    ResultData.getErrorsListMinimalString(resultData),
+                    ExecutionCommand.getExecutionCommandMarkdownString(executionCommand),
+                    false, true, TermuxUtils.AppInfoMode.TERMUX_AND_CALLING_PACKAGE,
+                    executionCommand.resultConfig.resultPendingIntent != null ? executionCommand.resultConfig.resultPendingIntent.getCreatorPackage(): null,
+                    true);
             }
 
         }
@@ -165,17 +170,13 @@ public class PluginUtils {
             if (!forceNotification) return;
         }
 
-        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
-        if (preferences == null) return;
-
-        // If user has disabled notifications for plugin commands, then just return
-        if (!preferences.arePluginErrorNotificationsEnabled() && !forceNotification)
-            return;
-
         // Flash and send notification for the error
-        Logger.showToast(context, ResultData.getErrorsListMinimalString(resultData), true);
-        sendPluginCommandErrorNotification(context, logTag, executionCommand, ResultData.getErrorsListMinimalString(resultData));
-
+        sendPluginCommandErrorNotification(context, logTag, null,
+            ResultData.getErrorsListMinimalString(resultData),
+            ExecutionCommand.getExecutionCommandMarkdownString(executionCommand),
+            forceNotification, true, TermuxUtils.AppInfoMode.TERMUX_AND_CALLING_PACKAGE,
+            executionCommand.resultConfig.resultPendingIntent != null ? executionCommand.resultConfig.resultPendingIntent.getCreatorPackage(): null,
+            true);
     }
 
     /** Set variables which will be used by {@link ResultSender#sendCommandResultData(Context, String, String, ResultConfig, ResultData, boolean)}
@@ -213,23 +214,60 @@ public class PluginUtils {
      * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
-     * @param executionCommand The {@link ExecutionCommand} that failed.
+     * @param title The title for the error report and notification.
      * @param notificationTextString The text of the notification.
+     * @param message The message for the error report.
+     * @param forceNotification If set to {@code true}, then a notification will be shown
+     *                          regardless of if pending intent is {@code null} or
+     *                          {@link TermuxPreferenceConstants.TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
+     *                          is {@code false}.
+     * @param showToast If set to {@code true}, then a toast will be shown for {@code notificationTextString}.
+     * @param appInfoMode The {@link TermuxUtils.AppInfoMode} to use to add app info to the message.
+     *                    Set to {@code null} if app info should not be appended to the message.
+     * @param callingPackageName The optional package name of the app for which the plugin command
+     *                           was run.
+     * @param addDeviceInfo If set to {@code true}, then device info should be appended to the message.
      */
-    public static void sendPluginCommandErrorNotification(Context context, String logTag, ExecutionCommand executionCommand, String notificationTextString) {
+    public static void sendPluginCommandErrorNotification(Context context, String logTag,
+                                                          CharSequence title,
+                                                          String notificationTextString,
+                                                          String message, boolean forceNotification,
+                                                          boolean showToast,
+                                                          TermuxUtils.AppInfoMode appInfoMode,
+                                                          String callingPackageName,
+                                                          boolean addDeviceInfo) {
+        if (context == null) return;
+
+        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
+        if (preferences == null) return;
+
+        // If user has disabled notifications for plugin commands, then just return
+        if (!preferences.arePluginErrorNotificationsEnabled() && !forceNotification)
+            return;
+
+        logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
+
+        if (showToast)
+            Logger.showToast(context, notificationTextString, true);
+
         // Send a notification to show the error which when clicked will open the ReportActivity
         // to show the details of the error
-        String title = TermuxConstants.TERMUX_APP_NAME + " Plugin Execution Command Error";
+        if (title == null || title.toString().isEmpty())
+            title = TermuxConstants.TERMUX_APP_NAME + " Plugin Execution Command Error";
 
-        StringBuilder reportString = new StringBuilder();
+        Logger.logDebug(logTag, "Sending \"" + title + "\" notification.");
 
-        reportString.append(ExecutionCommand.getExecutionCommandMarkdownString(executionCommand));
-        reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
-        reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
+        StringBuilder reportString = new StringBuilder(message);
+
+        if (appInfoMode != null)
+            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, appInfoMode, callingPackageName));
+
+        if (addDeviceInfo)
+            reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
         String userActionName = UserAction.PLUGIN_EXECUTION_COMMAND.getName();
         ReportActivity.NewInstanceResult result = ReportActivity.newInstance(context,
-            new ReportInfo(userActionName, logTag, title, null,
+            new ReportInfo(userActionName, logTag, title.toString(), null,
                 reportString.toString(), null,true,
                 userActionName,
                 Environment.getExternalStorageDirectory() + "/" +
@@ -254,7 +292,8 @@ public class PluginUtils {
 
         // Build the notification
         Notification.Builder builder = getPluginCommandErrorsNotificationBuilder(context, title,
-            notificationTextCharSequence, notificationTextCharSequence, contentIntent, deleteIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
+            notificationTextCharSequence, notificationTextCharSequence, contentIntent, deleteIntent,
+            NotificationUtils.NOTIFICATION_MODE_VIBRATE);
         if (builder == null) return;
 
         // Send the notification
