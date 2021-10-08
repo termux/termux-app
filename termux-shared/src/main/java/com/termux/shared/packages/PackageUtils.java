@@ -68,6 +68,8 @@ public class PackageUtils {
         return packageContext;
     }
 
+
+
     /**
      * Get the {@link PackageInfo} for the package associated with the {@code context}.
      *
@@ -75,7 +77,7 @@ public class PackageUtils {
      * @return Returns the {@link PackageInfo}. This will be {@code null} if an exception is raised.
      */
     public static PackageInfo getPackageInfoForPackage(@NonNull final Context context) {
-            return getPackageInfoForPackage(context, 0);
+        return getPackageInfoForPackage(context, context.getPackageName());
     }
 
     /**
@@ -87,12 +89,75 @@ public class PackageUtils {
      */
     @Nullable
     public static PackageInfo getPackageInfoForPackage(@NonNull final Context context, final int flags) {
+        return getPackageInfoForPackage(context, context.getPackageName(), flags);
+    }
+
+    /**
+     * Get the {@link PackageInfo} for the package associated with the {@code packageName}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the package.
+     * @return Returns the {@link PackageInfo}. This will be {@code null} if an exception is raised.
+     */
+    public static PackageInfo getPackageInfoForPackage(@NonNull final Context context, @NonNull final String packageName) {
+        return getPackageInfoForPackage(context, packageName, 0);
+    }
+
+    /**
+     * Get the {@link PackageInfo} for the package associated with the {@code packageName}.
+     *
+     * Also check {@link #isAppInstalled(Context, String, String) if targetting targeting sdk
+     * `30` (android `11`) since {@link PackageManager.NameNotFoundException} may be thrown.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the package.
+     * @param flags The flags to pass to {@link PackageManager#getPackageInfo(String, int)}.
+     * @return Returns the {@link PackageInfo}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static PackageInfo getPackageInfoForPackage(@NonNull final Context context, @NonNull final String packageName, final int flags) {
         try {
-            return context.getPackageManager().getPackageInfo(context.getPackageName(), flags);
+            return context.getPackageManager().getPackageInfo(packageName, flags);
         } catch (final Exception e) {
             return null;
         }
     }
+
+
+
+    /**
+     * Get the {@link ApplicationInfo} for the {@code packageName}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the package.
+     * @return Returns the {@link ApplicationInfo}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static ApplicationInfo getApplicationInfoForPackage(@NonNull final Context context, @NonNull final String packageName) {
+        return getApplicationInfoForPackage(context, packageName, 0);
+    }
+
+    /**
+     * Get the {@link ApplicationInfo} for the {@code packageName}.
+     *
+     * Also check {@link #isAppInstalled(Context, String, String) if targetting targeting sdk
+     * `30` (android `11`) since {@link PackageManager.NameNotFoundException} may be thrown.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the package.
+     * @param flags The flags to pass to {@link PackageManager#getApplicationInfo(String, int)}.
+     * @return Returns the {@link ApplicationInfo}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static ApplicationInfo getApplicationInfoForPackage(@NonNull final Context context, @NonNull final String packageName, final int flags) {
+        try {
+            return context.getPackageManager().getApplicationInfo(packageName, flags);
+        } catch (final Exception e) {
+            return null;
+        }
+    }
+
+
 
     /**
      * Get the app name for the package associated with the {@code context}.
@@ -101,8 +166,21 @@ public class PackageUtils {
      * @return Returns the {@code android:name} attribute.
      */
     public static String getAppNameForPackage(@NonNull final Context context) {
-        return context.getApplicationInfo().loadLabel(context.getPackageManager()).toString();
+        return getAppNameForPackage(context, context.getApplicationInfo());
     }
+
+    /**
+     * Get the app name for the package associated with the {@code applicationInfo}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the {@code android:name} attribute.
+     */
+    public static String getAppNameForPackage(@NonNull final Context context, @NonNull final ApplicationInfo applicationInfo) {
+        return applicationInfo.loadLabel(context.getPackageManager()).toString();
+    }
+
+
 
     /**
      * Get the package name for the package associated with the {@code context}.
@@ -111,8 +189,20 @@ public class PackageUtils {
      * @return Returns the package name.
      */
     public static String getPackageNameForPackage(@NonNull final Context context) {
-        return context.getApplicationInfo().packageName;
+        return getPackageNameForPackage(context.getApplicationInfo());
     }
+
+    /**
+     * Get the package name for the package associated with the {@code applicationInfo}.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the package name.
+     */
+    public static String getPackageNameForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        return applicationInfo.packageName;
+    }
+
+
 
     /**
      * Get the {@code targetSdkVersion} for the package associated with the {@code context}.
@@ -121,8 +211,20 @@ public class PackageUtils {
      * @return Returns the {@code targetSdkVersion}.
      */
     public static int getTargetSDKForPackage(@NonNull final Context context) {
-        return context.getApplicationInfo().targetSdkVersion;
+        return getTargetSDKForPackage(context.getApplicationInfo());
     }
+
+    /**
+     * Get the {@code targetSdkVersion} for the package associated with the {@code applicationInfo}.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the {@code targetSdkVersion}.
+     */
+    public static int getTargetSDKForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        return applicationInfo.targetSdkVersion;
+    }
+
+
 
     /**
      * Check if the app associated with the {@code context} has {@link ApplicationInfo#FLAG_DEBUGGABLE}
@@ -132,8 +234,21 @@ public class PackageUtils {
      * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
      */
     public static Boolean isAppForPackageADebuggableBuild(@NonNull final Context context) {
-        return ( 0 != ( context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE ) );
+        return isAppForPackageADebuggableBuild(context.getApplicationInfo());
     }
+
+    /**
+     * Check if the app associated with the {@code applicationInfo} has {@link ApplicationInfo#FLAG_DEBUGGABLE}
+     * set.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
+     */
+    public static Boolean isAppForPackageADebuggableBuild(@NonNull final ApplicationInfo applicationInfo) {
+        return ( 0 != ( applicationInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE ) );
+    }
+
+
 
     /**
      * Check if the app associated with the {@code context} has {@link ApplicationInfo#FLAG_EXTERNAL_STORAGE}
@@ -143,8 +258,21 @@ public class PackageUtils {
      * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
      */
     public static Boolean isAppInstalledOnExternalStorage(@NonNull final Context context) {
-        return ( 0 != ( context.getApplicationInfo().flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE ) );
+        return isAppInstalledOnExternalStorage(context.getApplicationInfo());
     }
+
+    /**
+     * Check if the app associated with the {@code applicationInfo} has {@link ApplicationInfo#FLAG_EXTERNAL_STORAGE}
+     * set.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
+     */
+    public static Boolean isAppInstalledOnExternalStorage(@NonNull final ApplicationInfo applicationInfo) {
+        return ( 0 != ( applicationInfo.flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE ) );
+    }
+
+
 
     /**
      * Get the {@code versionCode} for the package associated with the {@code context}.
@@ -154,12 +282,26 @@ public class PackageUtils {
      */
     @Nullable
     public static Integer getVersionCodeForPackage(@NonNull final Context context) {
+        return getVersionCodeForPackage(context, context.getPackageName());
+    }
+
+    /**
+     * Get the {@code versionCode} for the {@code packageName}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the package.
+     * @return Returns the {@code versionCode}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static Integer getVersionCodeForPackage(@NonNull final Context context, @NonNull final String packageName) {
         try {
-            return getPackageInfoForPackage(context).versionCode;
+            return getPackageInfoForPackage(context, packageName).versionCode;
         } catch (final Exception e) {
             return null;
         }
     }
+
+
 
     /**
      * Get the {@code versionName} for the package associated with the {@code context}.
@@ -169,12 +311,25 @@ public class PackageUtils {
      */
     @Nullable
     public static String getVersionNameForPackage(@NonNull final Context context) {
+        return getVersionNameForPackage(context, context.getPackageName());
+    }
+    /**
+     * Get the {@code versionName} for the {@code packageName}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the package.
+     * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static String getVersionNameForPackage(@NonNull final Context context, @NonNull final String packageName) {
         try {
-            return getPackageInfoForPackage(context).versionName;
+            return getPackageInfoForPackage(context, packageName).versionName;
         } catch (final Exception e) {
             return null;
         }
     }
+
+
 
     /**
      * Get the {@code SHA-256 digest} of signing certificate for the package associated with the {@code context}.
@@ -184,16 +339,28 @@ public class PackageUtils {
      */
     @Nullable
     public static String getSigningCertificateSHA256DigestForPackage(@NonNull final Context context) {
+        return getSigningCertificateSHA256DigestForPackage(context, context.getPackageName());
+    }
+
+    /**
+     * Get the {@code SHA-256 digest} of signing certificate for the {@code packageName}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the package.
+     * @return Returns the {@code SHA-256 digest}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static String getSigningCertificateSHA256DigestForPackage(@NonNull final Context context, @NonNull final String packageName) {
         try {
             /*
-            * Todo: We may need AndroidManifest queries entries if package is installed but with a different signature on android 11
-            * https://developer.android.com/training/package-visibility
-            * Need a device that allows (manual) installation of apk with mismatched signature of
-            * sharedUserId apps to test. Currently, if its done, PackageManager just doesn't load
-            * the package and removes its apk automatically if its installed as a user app instead of system app
-            * W/PackageManager: Failed to parse /path/to/com.termux.tasker.apk: Signature mismatch for shared user: SharedUserSetting{xxxxxxx com.termux/10xxx}
-            */
-            PackageInfo packageInfo = getPackageInfoForPackage(context, PackageManager.GET_SIGNATURES);
+             * Todo: We may need AndroidManifest queries entries if package is installed but with a different signature on android 11
+             * https://developer.android.com/training/package-visibility
+             * Need a device that allows (manual) installation of apk with mismatched signature of
+             * sharedUserId apps to test. Currently, if its done, PackageManager just doesn't load
+             * the package and removes its apk automatically if its installed as a user app instead of system app
+             * W/PackageManager: Failed to parse /path/to/com.termux.tasker.apk: Signature mismatch for shared user: SharedUserSetting{xxxxxxx com.termux/10xxx}
+             */
+            PackageInfo packageInfo = getPackageInfoForPackage(context, packageName, PackageManager.GET_SIGNATURES);
             if (packageInfo == null) return null;
             return DataUtils.bytesToHex(MessageDigest.getInstance("SHA-256").digest(packageInfo.signatures[0].toByteArray()));
         } catch (final Exception e) {
@@ -287,7 +454,8 @@ public class PackageUtils {
      * If your third-party app is targeting sdk `30` (android `11`), then it needs to add package
      * name to the `queries` element or request `QUERY_ALL_PACKAGES` permission in its
      * `AndroidManifest.xml`. Otherwise it will get `PackageSetting{...... package_name/......} BLOCKED`
-     * errors in `logcat` and `RUN_COMMAND` won't work.
+     * errors in `logcat` and  {@link PackageManager.NameNotFoundException} may be thrown.
+     * `RUN_COMMAND` intent won't work either.
      * Check [package-visibility](https://developer.android.com/training/basics/intents/package-visibility#package-name),
      * `QUERY_ALL_PACKAGES` [googleplay policy](https://support.google.com/googleplay/android-developer/answer/10158779
      * and this [article](https://medium.com/androiddevelopers/working-with-package-visibility-dc252829de2d) for more info.
@@ -295,25 +463,24 @@ public class PackageUtils {
      * {@code
      * <manifest
      *     <queries>
-     *         <package android:name="package_name" />
+     *         <package android:name="com.termux" />
      *    </queries>
+     *
+     *    <application
+     *        ....
+     *    </application>
      * </manifest>
      * }
      *
      * @param context The context for operations.
+     * @param appName The name of the app.
+     * @param packageName The package name of the package.
      * @return Returns {@code errmsg} if {@code packageName} is not installed or disabled, otherwise {@code null}.
      */
     public static String isAppInstalled(@NonNull final Context context, String appName, String packageName) {
         String errmsg = null;
 
-        PackageManager packageManager = context.getPackageManager();
-
-        ApplicationInfo applicationInfo;
-        try {
-            applicationInfo = packageManager.getApplicationInfo(packageName, 0);
-        } catch (final PackageManager.NameNotFoundException e) {
-            applicationInfo = null;
-        }
+        ApplicationInfo applicationInfo = getApplicationInfoForPackage(context, packageName);
         boolean isAppEnabled = (applicationInfo != null && applicationInfo.enabled);
 
         // If app is not installed or is disabled

@@ -2,6 +2,7 @@ package com.termux.shared.termux;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,9 @@ public class AndroidUtils {
 
     /**
      * Get a markdown {@link String} for the app info for the package associated with the {@code context}.
+     * This will contain additional info about the app in addition to the one returned by
+     * {@link #getAppInfoMarkdownString(Context, String)}, which will be got via the {@code context}
+     * object.
      *
      * @param context The context for operations for the package.
      * @return Returns the markdown {@link String}.
@@ -33,27 +37,49 @@ public class AndroidUtils {
     public static String getAppInfoMarkdownString(@NonNull final Context context) {
         StringBuilder markdownString = new StringBuilder();
 
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"APP_NAME", PackageUtils.getAppNameForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"PACKAGE_NAME", PackageUtils.getPackageNameForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_NAME", PackageUtils.getVersionNameForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_CODE", PackageUtils.getVersionCodeForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(context));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_DEBUGGABLE_BUILD", PackageUtils.isAppForPackageADebuggableBuild(context));
-
-        if (PackageUtils.isAppInstalledOnExternalStorage(context)) {
-            AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_INSTALLED_ON_EXTERNAL_STORAGE", true);
-        }
+        String appInfo = getAppInfoMarkdownString(context, context.getPackageName());
+        if (appInfo == null)
+            return markdownString.toString();
+        else
+            markdownString.append(appInfo);
 
         String filesDir = context.getFilesDir().getAbsolutePath();
         if (!filesDir.equals("/data/user/0/" + context.getPackageName() + "/files") &&
             !filesDir.equals("/data/data/" + context.getPackageName() + "/files"))
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"FILES_DIR", filesDir);
+            AndroidUtils.appendPropertyToMarkdown(markdownString,"FILES_DIR", filesDir);
 
         Long userId = PackageUtils.getSerialNumberForCurrentUser(context);
         if (userId == null || userId != 0)
             AndroidUtils.appendPropertyToMarkdown(markdownString,"USER_ID", userId);
 
         AndroidUtils.appendPropertyToMarkdownIfSet(markdownString,"PROFILE_OWNER", PackageUtils.getProfileOwnerPackageNameForUser(context));
+
+        return markdownString.toString();
+    }
+
+    /**
+     * Get a markdown {@link String} for the app info for the {@code packageName}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param packageName The package name of the package.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getAppInfoMarkdownString(@NonNull final Context context, @NonNull final String packageName) {
+        ApplicationInfo applicationInfo = PackageUtils.getApplicationInfoForPackage(context, packageName);
+        if (applicationInfo == null) return null;
+
+        StringBuilder markdownString = new StringBuilder();
+
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"APP_NAME", PackageUtils.getAppNameForPackage(context, applicationInfo));
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"PACKAGE_NAME", PackageUtils.getPackageNameForPackage(applicationInfo));
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_NAME", PackageUtils.getVersionNameForPackage(context, packageName));
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_CODE", PackageUtils.getVersionCodeForPackage(context, packageName));
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(applicationInfo));
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_DEBUGGABLE_BUILD", PackageUtils.isAppForPackageADebuggableBuild(applicationInfo));
+
+        if (PackageUtils.isAppInstalledOnExternalStorage(applicationInfo)) {
+            AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_INSTALLED_ON_EXTERNAL_STORAGE", true);
+        }
 
         return markdownString.toString();
     }
