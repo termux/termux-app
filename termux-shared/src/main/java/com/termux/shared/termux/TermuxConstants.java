@@ -12,7 +12,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /*
- * Version: v0.32.0
+ * Version: v0.33.0
  *
  * Changelog
  *
@@ -211,6 +211,9 @@ import java.util.List;
  * - 0.32.0 (2021-09-23)
  *      - Added `TERMUX_API.TERMUX_API_ACTIVITY_NAME`, `TERMUX_TASKER.TERMUX_TASKER_ACTIVITY_NAME`
  *          and `TERMUX_WIDGET.TERMUX_WIDGET_ACTIVITY_NAME`.
+ *
+ * - 0.33.0 (2021-10-08)
+ *      - Added `TERMUX_PROPERTIES_FILE_PATHS_LIST` and `TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST`.
  */
 
 /**
@@ -653,26 +656,45 @@ public final class TermuxConstants {
     public static final String TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_WIDGET_PACKAGE_NAME + "_preferences"; // Default: "com.termux.widget_preferences"
 
 
-    /** Termux app termux.properties primary file path */
+
+    /** Termux app properties primary file path */
     public static final String TERMUX_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.termux/files/home/.termux/termux.properties"
-    /** Termux app termux.properties primary file */
+    /** Termux app properties primary file */
     public static final File TERMUX_PROPERTIES_PRIMARY_FILE = new File(TERMUX_PROPERTIES_PRIMARY_FILE_PATH);
 
-    /** Termux app termux.properties secondary file path */
+    /** Termux app properties secondary file path */
     public static final String TERMUX_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.termux/files/home/.config/termux/termux.properties"
-    /** Termux app termux.properties secondary file */
+    /** Termux app properties secondary file */
     public static final File TERMUX_PROPERTIES_SECONDARY_FILE = new File(TERMUX_PROPERTIES_SECONDARY_FILE_PATH);
 
+    /** Termux app properties file paths list. **DO NOT** allow these files to be modified by
+     * {@link android.content.ContentProvider} exposed to external apps, since they may silently
+     * modify the values for security properties like {@link #PROP_ALLOW_EXTERNAL_APPS} set by users
+     * without their explicit consent. */
+    public static final List<String> TERMUX_PROPERTIES_FILE_PATHS_LIST = Arrays.asList(
+        TERMUX_PROPERTIES_PRIMARY_FILE_PATH,
+        TERMUX_PROPERTIES_SECONDARY_FILE_PATH);
 
-    /** Termux:Float app termux.properties primary file path */
+
+
+    /** Termux:Float app properties primary file path */
     public static final String TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/termux.float.properties"; // Default: "/data/data/com.termux/files/home/.termux/termux.float.properties"
-    /** Termux:Float app termux.properties primary file */
+    /** Termux:Float app properties primary file */
     public static final File TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE = new File(TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH);
 
-    /** Termux:Float app termux.properties secondary file path */
+    /** Termux:Float app properties secondary file path */
     public static final String TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/termux.float.properties"; // Default: "/data/data/com.termux/files/home/.config/termux/termux.float.properties"
-    /** Termux:Float app termux.properties secondary file */
+    /** Termux:Float app properties secondary file */
     public static final File TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE = new File(TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH);
+
+    /** Termux:Float app properties file paths list. **DO NOT** allow these files to be modified by
+     * {@link android.content.ContentProvider} exposed to external apps, since they may silently
+     * modify the values for security properties like {@link #PROP_ALLOW_EXTERNAL_APPS} set by users
+     * without their explicit consent. */
+    public static final List<String> TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST = Arrays.asList(
+        TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH,
+        TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH);
+
 
 
     /** Termux app and Termux:Styling colors.properties file path */

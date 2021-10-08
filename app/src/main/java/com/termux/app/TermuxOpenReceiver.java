@@ -184,25 +184,25 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             File file = new File(uri.getPath());
             try {
                 String path = file.getCanonicalPath();
-                Logger.logDebug(LOG_TAG, "Open file request received for \"" + path + "\" with mode \"" + mode + "\"");
+                String callingPackage = getCallingPackage();
+                Logger.logDebug(LOG_TAG, "Open file request received from " + callingPackage + " for \"" + path + "\" with mode \"" + mode + "\"");
                 String storagePath = Environment.getExternalStorageDirectory().getCanonicalPath();
                 // See https://support.google.com/faqs/answer/7496913:
                 if (!(path.startsWith(TermuxConstants.TERMUX_FILES_DIR_PATH) || path.startsWith(storagePath))) {
                     throw new IllegalArgumentException("Invalid path: " + path);
                 }
 
-                // If "allow-external-apps" property to not set to "true", then throw exception
+                // If TermuxConstants.PROP_ALLOW_EXTERNAL_APPS property to not set to "true", then throw exception
                 String errmsg = PluginUtils.checkIfAllowExternalAppsPolicyIsViolated(getContext(), LOG_TAG);
                 if (errmsg != null) {
                     throw new IllegalArgumentException(errmsg);
                 }
 
-                // Do not allow apps with RUN_COMMAND permission to modify termux apps properties files,
-                // including allow-external-apps
-                if (TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH.equals(path) ||
-                    TermuxConstants.TERMUX_PROPERTIES_SECONDARY_FILE_PATH.equals(path) ||
-                    TermuxConstants.TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH.equals(path) ||
-                    TermuxConstants.TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH.equals(path)) {
+                // **DO NOT** allow these files to be modified by ContentProvider exposed to external
+                // apps, since they may silently modify the values for security properties like
+                // TermuxConstants.PROP_ALLOW_EXTERNAL_APPS set by users without their explicit consent.
+                if (TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST.contains(path) ||
+                    TermuxConstants.TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST.contains(path)) {
                     mode = "r";
                 }
 

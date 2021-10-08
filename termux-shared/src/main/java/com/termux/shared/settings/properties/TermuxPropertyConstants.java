@@ -1,8 +1,8 @@
 package com.termux.shared.settings.properties;
 
-import androidx.annotation.NonNull;
-
 import com.google.common.collect.ImmutableBiMap;
+import com.termux.shared.file.FileUtils;
+import com.termux.shared.file.filesystem.FileType;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalEmulator;
@@ -11,6 +11,7 @@ import com.termux.view.TerminalView;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -80,6 +81,8 @@ import java.util.Set;
  * {@link TermuxConstants#TERMUX_PROPERTIES_SECONDARY_FILE_PATH}
  */
 public final class TermuxPropertyConstants {
+
+    private static final String LOG_TAG = "TermuxPropertyConstants";
 
     /* boolean */
 
@@ -413,50 +416,54 @@ public final class TermuxPropertyConstants {
 
 
 
-    /** Returns the first {@link File} found at
-     * {@link TermuxConstants#TERMUX_PROPERTIES_PRIMARY_FILE_PATH} or
-     * {@link TermuxConstants#TERMUX_PROPERTIES_SECONDARY_FILE_PATH}
-     * from which termux properties can be loaded.
-     * If the {@link File} found is not a regular file or is not readable then null is returned.
+    /** Returns the first {@link File} found in
+     * {@link TermuxConstants#TERMUX_PROPERTIES_FILE_PATHS_LIST} via a call to
+     * {@link #getPropertiesFile(List)}.
      *
-     * @return Returns the {@link File} object for termux properties.
+     * @return Returns the {@link File} object for Termux app properties.
      */
     public static File getTermuxPropertiesFile() {
-        return getPropertiesFile(new String[]{
-            TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH,
-            TermuxConstants.TERMUX_PROPERTIES_SECONDARY_FILE_PATH
-        });
+        return getPropertiesFile(TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST);
     }
 
-    /** Returns the first {@link File} found at
-     * {@link TermuxConstants#TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH} or
-     * {@link TermuxConstants#TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH}
-     * from which termux properties can be loaded.
-     * If the {@link File} found is not a regular file or is not readable then null is returned.
+    /** Returns the first {@link File} found in
+     * {@link TermuxConstants#TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST} via a call to
+     * {@link #getPropertiesFile(List)}.
      *
-     * @return Returns the {@link File} object for termux properties.
+     * @return Returns the {@link File} object for Termux:Float app properties.
      */
     public static File getTermuxFloatPropertiesFile() {
-        return getPropertiesFile(new String[]{
-            TermuxConstants.TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH,
-            TermuxConstants.TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH
-        });
+        return getPropertiesFile(TermuxConstants.TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST);
     }
 
-    public static File getPropertiesFile(@NonNull String[] possiblePropertiesFileLocations) {
-        File propertiesFile = new File(possiblePropertiesFileLocations[0]);
-        int i = 0;
-        while (!propertiesFile.exists() && i < possiblePropertiesFileLocations.length) {
-            propertiesFile = new File(possiblePropertiesFileLocations[i]);
-            i += 1;
+    /** Returns the first {@link File} found in
+     * {@code propertiesFilePaths} from which app properties can be loaded. If the {@link File} found
+     * is not a regular file or is not readable, then {@code null} is returned. Symlinks **will not**
+     * be followed for potential security reasons.
+     *
+     * @return Returns the {@link File} object for Termux:Float app properties.
+     */
+    public static File getPropertiesFile(List<String> propertiesFilePaths) {
+        if (propertiesFilePaths == null || propertiesFilePaths.size() == 0)
+            return null;
+
+        for(String propertiesFilePath : propertiesFilePaths) {
+            File propertiesFile = new File(propertiesFilePath);
+
+            // Symlinks **will not** be followed.
+            FileType fileType = FileUtils.getFileType(propertiesFilePath, false);
+            if (fileType == FileType.REGULAR) {
+                if (propertiesFile.canRead())
+                    return propertiesFile;
+                else
+                    Logger.logWarn(LOG_TAG, "Ignoring properties file at \"" + propertiesFilePath + "\" since it is not readable");
+            } else if (fileType != FileType.NO_EXIST) {
+                Logger.logWarn(LOG_TAG, "Ignoring properties file at \"" + propertiesFilePath + "\" of type: \"" + fileType.getName() + "\"");
+            }
         }
 
-        if (propertiesFile.isFile() && propertiesFile.canRead()) {
-            return propertiesFile;
-        } else {
-            Logger.logDebug("No readable properties file found at: " + Arrays.toString(possiblePropertiesFileLocations));
-            return null;
-        }
+        Logger.logDebug(LOG_TAG, "No readable properties file found at: " + propertiesFilePaths);
+        return null;
     }
 
 }
