@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.termux.shared.R;
+import com.termux.shared.data.DataUtils;
 import com.termux.shared.termux.TermuxConstants;
 
 import java.io.IOException;
@@ -363,7 +364,7 @@ public class Logger {
 
 
     public static void showToast(final Context context, final String toastText, boolean longDuration) {
-        if (context == null) return;
+        if (context == null || DataUtils.isNullOrEmpty(toastText)) return;
 
         new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, toastText, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show());
     }
