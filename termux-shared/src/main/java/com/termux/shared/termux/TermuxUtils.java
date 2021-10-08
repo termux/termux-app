@@ -8,8 +8,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.termux.shared.R;
+import com.termux.shared.data.DataUtils;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.file.TermuxFileUtils;
 import com.termux.shared.logger.Logger;
@@ -29,6 +31,18 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class TermuxUtils {
+
+    /** The modes used by {@link #getAppInfoMarkdownString(Context, AppInfoMode, String)}. */
+    public enum AppInfoMode {
+        /** Get info for Termux app only. */
+        TERMUX_PACKAGE,
+        /** Get info for Termux app and its plugins listed in {@link TermuxConstants#TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST}. */
+        TERMUX_AND_PLUGIN_PACKAGES,
+        /* Get info for all the Termux app plugins listed in {@link TermuxConstants#TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST}. */
+        TERMUX_PLUGIN_PACKAGES,
+        /* Get info for Termux app and the calling package that called a Termux API. */
+        TERMUX_AND_CALLING_PACKAGE,
+    }
 
     private static final String LOG_TAG = "TermuxUtils";
 
@@ -157,7 +171,7 @@ public class TermuxUtils {
      *
      * @param currentPackageContext The context of current package.
      * @return Returns {@code errmsg} if failed to get termux package {@link Context} or
-     *         {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} is accessible, otherwise {@code null}.
+     * {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} is accessible, otherwise {@code null}.
      */
     public static String isTermuxAppAccessible(@NonNull final Context currentPackageContext) {
         String errmsg = isTermuxAppInstalled(currentPackageContext);
@@ -204,6 +218,82 @@ public class TermuxUtils {
             explicitBroadcast.setComponent(cname);
             context.sendBroadcast(explicitBroadcast);
         }
+    }
+
+
+
+    /**
+     * Wrapper for {@link #getAppInfoMarkdownString(Context, AppInfoMode, String)}.
+     *
+     * @param currentPackageContext The context of current package.
+     * @param appInfoMode The {@link AppInfoMode} to decide the app info required.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getAppInfoMarkdownString(final Context currentPackageContext, final AppInfoMode appInfoMode) {
+        return getAppInfoMarkdownString(currentPackageContext, appInfoMode, null);
+    }
+
+    /**
+     * Get a markdown {@link String} for the apps info of termux app, its installed plugin apps or
+     * external apps that called a Termux API depending on {@link AppInfoMode} passed.
+     *
+     * Also check {@link PackageUtils#isAppInstalled(Context, String, String) if targetting targeting
+     * sdk `30` (android `11`) since {@link PackageManager.NameNotFoundException} may be thrown while
+     * getting info of {@code callingPackageName} app.
+     *
+     * @param currentPackageContext The context of current package.
+     * @param appInfoMode The {@link AppInfoMode} to decide the app info required.
+     * @param callingPackageName The optional package name for a plugin or external app.
+     * @return Returns the markdown {@link String}.
+     */
+    public static String getAppInfoMarkdownString(final Context currentPackageContext, final AppInfoMode appInfoMode, @Nullable String callingPackageName) {
+        if (appInfoMode == null) return null;
+
+        StringBuilder appInfo = new StringBuilder();
+        switch (appInfoMode) {
+            case TERMUX_PACKAGE:
+                return getAppInfoMarkdownString(currentPackageContext, false);
+
+            case TERMUX_AND_PLUGIN_PACKAGES:
+                appInfo.append(TermuxUtils.getAppInfoMarkdownString(currentPackageContext, false));
+
+                String termuxPluginAppsInfo =  TermuxUtils.getTermuxPluginAppsInfoMarkdownString(currentPackageContext);
+                if (termuxPluginAppsInfo != null)
+                    appInfo.append("\n\n").append(termuxPluginAppsInfo);
+                return appInfo.toString();
+
+            case TERMUX_PLUGIN_PACKAGES:
+                return TermuxUtils.getTermuxPluginAppsInfoMarkdownString(currentPackageContext);
+
+            case TERMUX_AND_CALLING_PACKAGE:
+                appInfo.append(TermuxUtils.getAppInfoMarkdownString(currentPackageContext, false));
+                if (!DataUtils.isNullOrEmpty(callingPackageName)) {
+                    String callingPackageAppInfo;
+                    if (TermuxConstants.TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST.contains(callingPackageName)) {
+                        Context termuxPluginAppContext = PackageUtils.getContextForPackage(currentPackageContext, callingPackageName);
+                        if (termuxPluginAppContext != null)
+                            callingPackageAppInfo = getAppInfoMarkdownString(termuxPluginAppContext, false);
+                        else
+                            callingPackageAppInfo = AndroidUtils.getAppInfoMarkdownString(currentPackageContext, callingPackageName);
+                    } else {
+                        callingPackageAppInfo = AndroidUtils.getAppInfoMarkdownString(currentPackageContext, callingPackageName);
+                    }
+
+                    if (callingPackageAppInfo != null) {
+                        ApplicationInfo applicationInfo = PackageUtils.getApplicationInfoForPackage(currentPackageContext, callingPackageName);
+                        if (applicationInfo != null) {
+                            appInfo.append("\n\n## ").append(PackageUtils.getAppNameForPackage(currentPackageContext, applicationInfo)).append(" App Info\n");
+                            appInfo.append(callingPackageAppInfo);
+                            appInfo.append("\n##\n");
+                        }
+                    }
+                }
+                return appInfo.toString();
+
+            default:
+                return null;
+        }
+
     }
 
     /**
@@ -274,13 +364,14 @@ public class TermuxUtils {
         else
             markdownString.append("## ").append(currentAppName).append(" App Info\n");
         markdownString.append(getAppInfoMarkdownStringInner(currentPackageContext));
+        markdownString.append("\n##\n");
 
         if (returnTermuxPackageInfoToo && termuxPackageContext != null && !isTermuxPackage) {
             markdownString.append("\n\n## ").append(termuxAppName).append(" App Info\n");
             markdownString.append(getAppInfoMarkdownStringInner(termuxPackageContext));
+            markdownString.append("\n##\n");
         }
 
-        markdownString.append("\n##\n");
 
         return markdownString.toString();
     }

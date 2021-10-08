@@ -112,12 +112,7 @@ public class SettingsActivity extends AppCompatActivity {
                             String title = "About";
 
                             StringBuilder aboutString = new StringBuilder();
-                            aboutString.append(TermuxUtils.getAppInfoMarkdownString(context, false));
-
-                            String termuxPluginAppsInfo =  TermuxUtils.getTermuxPluginAppsInfoMarkdownString(context);
-                            if (termuxPluginAppsInfo != null)
-                                aboutString.append("\n\n").append(termuxPluginAppsInfo);
-
+                            aboutString.append(TermuxUtils.getAppInfoMarkdownString(context, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGES));
                             aboutString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
                             aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(context));
 
