@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.termux.R;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.file.FileUtils;
@@ -87,7 +88,7 @@ public class CrashUtils {
 
                 Logger.logDebug(logTag, "A crash log file found at \"" + TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH +  "\".");
 
-                sendCrashReportNotification(context, logTag, reportString, false, false);
+                sendCrashReportNotification(context, logTag, null, null, reportString, false, false, null, false);
             }
         }.start();
     }
@@ -98,15 +99,25 @@ public class CrashUtils {
      *
      * @param context The {@link Context} for operations.
      * @param logTag The log tag to use for logging.
+     * @param title The title for the crash report and notification.
+     * @param notificationTextString The text of the notification.
      * @param message The message for the crash report.
      * @param forceNotification If set to {@code true}, then a notification will be shown
      *                          regardless of if pending intent is {@code null} or
      *                          {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED}
      *                          is {@code false}.
-     * @param addAppAndDeviceInfo If set to {@code true}, then app and device info will be appended
-     *                            to the message.
+     * @param showToast If set to {@code true}, then a toast will be shown for {@code notificationTextString}.
+     * @param appInfoMode The {@link TermuxUtils.AppInfoMode} to use to add app info to the message.
+     *                    Set to {@code null} if app info should not be appended to the message.
+     * @param addDeviceInfo If set to {@code true}, then device info should be appended to the message.
      */
-    public static void sendCrashReportNotification(final Context context, String logTag, String message, boolean forceNotification, boolean addAppAndDeviceInfo) {
+    public static void sendCrashReportNotification(final Context context, String logTag,
+                                                   CharSequence title,
+                                                   String notificationTextString,
+                                                   String message, boolean forceNotification,
+                                                   boolean showToast,
+                                                   TermuxUtils.AppInfoMode appInfoMode,
+                                                   boolean addDeviceInfo) {
         if (context == null) return;
 
         TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
@@ -118,22 +129,27 @@ public class CrashUtils {
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
+        if (showToast)
+            Logger.showToast(context, notificationTextString, true);
+
         // Send a notification to show the crash log which when clicked will open the {@link ReportActivity}
         // to show the details of the crash
-        String title = TermuxConstants.TERMUX_APP_NAME + " Crash Report";
+        if (title == null || title.toString().isEmpty())
+            title = TermuxConstants.TERMUX_APP_NAME + " Crash Report";
 
         Logger.logDebug(logTag, "Sending \"" + title + "\" notification.");
 
         StringBuilder reportString = new StringBuilder(message);
 
-        if (addAppAndDeviceInfo) {
-            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
+        if (appInfoMode != null)
+            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, appInfoMode));
+
+        if (addDeviceInfo)
             reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
-        }
 
         String userActionName = UserAction.CRASH_REPORT.getName();
         ReportActivity.NewInstanceResult result = ReportActivity.newInstance(context, new ReportInfo(userActionName,
-            logTag, title, null, reportString.toString(),
+            logTag, title.toString(), null, reportString.toString(),
             "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true,
             userActionName,
             Environment.getExternalStorageDirectory() + "/" +
@@ -152,9 +168,14 @@ public class CrashUtils {
         // Setup the notification channel if not already set up
         setupCrashReportsNotificationChannel(context);
 
+        // Use markdown in notification
+        CharSequence notificationTextCharSequence = MarkdownUtils.getSpannedMarkdownText(context, notificationTextString);
+        //CharSequence notificationTextCharSequence = notificationTextString;
+
         // Build the notification
-        Notification.Builder builder = getCrashReportsNotificationBuilder(context, title, null,
-            null, contentIntent, deleteIntent, NotificationUtils.NOTIFICATION_MODE_VIBRATE);
+        Notification.Builder builder = getCrashReportsNotificationBuilder(context, title,
+            notificationTextCharSequence, notificationTextCharSequence, contentIntent, deleteIntent,
+            NotificationUtils.NOTIFICATION_MODE_VIBRATE);
         if (builder == null) return;
 
         // Send the notification
