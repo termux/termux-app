@@ -148,12 +148,16 @@ public class CrashUtils {
             reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
         String userActionName = UserAction.CRASH_REPORT.getName();
-        ReportActivity.NewInstanceResult result = ReportActivity.newInstance(context, new ReportInfo(userActionName,
-            logTag, title.toString(), null, reportString.toString(),
-            "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true,
-            userActionName,
+
+        ReportInfo reportInfo = new ReportInfo(userActionName, logTag, title.toString());
+        reportInfo.setReportString(reportString.toString());
+        reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(context));
+        reportInfo.setAddReportInfoHeaderToMarkdown(true);
+        reportInfo.setReportSaveFileLabelAndPath(userActionName,
             Environment.getExternalStorageDirectory() + "/" +
-                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
+                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+
+        ReportActivity.NewInstanceResult result = ReportActivity.newInstance(context, reportInfo);
         if (result.contentIntent == null) return;
 
         // Must ensure result code for PendingIntents and id for notification are unique otherwise will override previous

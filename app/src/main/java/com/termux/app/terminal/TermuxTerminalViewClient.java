@@ -743,14 +743,16 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 }
 
                 String userActionName = UserAction.REPORT_ISSUE_FROM_TRANSCRIPT.getName();
-                ReportActivity.startReportActivity(mActivity,
-                    new ReportInfo(userActionName,
-                        TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null,
-                        reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity),
-                        false,
-                        userActionName,
-                        Environment.getExternalStorageDirectory() + "/" +
-                            FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
+
+                ReportInfo reportInfo = new ReportInfo(userActionName,
+                    TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title);
+                reportInfo.setReportString(reportString.toString());
+                reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity));
+                reportInfo.setReportSaveFileLabelAndPath(userActionName,
+                    Environment.getExternalStorageDirectory() + "/" +
+                        FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+
+                ReportActivity.startReportActivity(mActivity, reportInfo);
             }
         }.start();
     }

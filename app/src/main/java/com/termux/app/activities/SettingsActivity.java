@@ -117,12 +117,15 @@ public class SettingsActivity extends AppCompatActivity {
                             aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(context));
 
                             String userActionName = UserAction.ABOUT.getName();
-                            ReportActivity.startReportActivity(context, new ReportInfo(userActionName,
-                                TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title, null,
-                                aboutString.toString(), null, false,
-                                userActionName,
+
+                            ReportInfo reportInfo = new ReportInfo(userActionName,
+                                TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title);
+                            reportInfo.setReportString(aboutString.toString());
+                            reportInfo.setReportSaveFileLabelAndPath(userActionName,
                                 Environment.getExternalStorageDirectory() + "/" +
-                                    FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
+                                    FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+
+                            ReportActivity.startReportActivity(context, reportInfo);
                         }
                     }.start();
 
