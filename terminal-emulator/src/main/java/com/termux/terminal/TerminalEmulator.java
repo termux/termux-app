@@ -796,7 +796,6 @@ public final class TerminalEmulator {
                             int columnsToDelete = Math.min(getArg0(1), columnsAfterCursor);
                             int columnsToMove = columnsAfterCursor - columnsToDelete;
                             mScreen.blockCopy(mCursorCol + columnsToDelete, 0, columnsToMove, mRows, mCursorCol, 0);
-                            blockClear(mCursorRow + columnsToMove, 0, columnsToDelete, mRows);
                         } else {
                             unknownSequence(b);
                         }
