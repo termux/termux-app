@@ -236,7 +236,7 @@ public final class TerminalSession extends TerminalOutput {
             try {
                 Os.kill(mShellPid, OsConstants.SIGKILL);
             } catch (ErrnoException e) {
-                mClient.logWarn(LOG_TAG, "Failed sending SIGKILL: " + e.getMessage());
+                Logger.logWarn(mClient, LOG_TAG, "Failed sending SIGKILL: " + e.getMessage());
             }
         }
     }
@@ -308,7 +308,7 @@ public final class TerminalSession extends TerminalOutput {
                 return outputPath;
             }
         } catch (IOException | SecurityException e) {
-            mClient.logStackTraceWithMessage(LOG_TAG, "Error getting current directory", e);
+            Logger.logStackTraceWithMessage(mClient, LOG_TAG, "Error getting current directory", e);
         }
         return null;
     }
@@ -326,7 +326,7 @@ public final class TerminalSession extends TerminalOutput {
             descriptorField.setAccessible(true);
             descriptorField.set(result, fileDescriptor);
         } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
-            client.logStackTraceWithMessage(LOG_TAG, "Error accessing FileDescriptor#descriptor private field", e);
+            Logger.logStackTraceWithMessage(client, LOG_TAG, "Error accessing FileDescriptor#descriptor private field", e);
             System.exit(1);
         }
         return result;
