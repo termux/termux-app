@@ -935,10 +935,17 @@ public final class TerminalEmulator {
                     for (String part : dcs.substring(2).split(";")) {
                         if (part.length() % 2 == 0) {
                             StringBuilder transBuffer = new StringBuilder();
+                            char c;
                             for (int i = 0; i < part.length(); i += 2) {
-                                char c = (char) Long.decode("0x" + part.charAt(i) + "" + part.charAt(i + 1)).longValue();
+                                try {
+                                    c = (char) Long.decode("0x" + part.charAt(i) + "" + part.charAt(i + 1)).longValue();
+                                } catch (NumberFormatException e) {
+                                    Logger.logStackTraceWithMessage(mClient, LOG_TAG, "Invalid device termcap/terminfo encoded name \"" + part + "\"", e);
+                                    continue;
+                                }
                                 transBuffer.append(c);
                             }
+
                             String trans = transBuffer.toString();
                             String responseValue;
                             switch (trans) {
