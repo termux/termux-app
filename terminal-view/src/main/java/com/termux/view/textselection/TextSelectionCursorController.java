@@ -183,14 +183,19 @@ public class TextSelectionCursorController implements CursorController {
                 int y1 = Math.round((mSelY1 - 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
                 int y2 = Math.round((mSelY2 + 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
 
-
                 if (x1 > x2) {
                     int tmp = x1;
                     x1 = x2;
                     x2 = tmp;
                 }
 
-                outRect.set(x1, y1 + mHandleHeight, x2, y2 + mHandleHeight);
+                int terminalBottom = terminalView.getBottom();
+                int top = y1 + mHandleHeight;
+                int bottom = y2 + mHandleHeight;
+                if (top > terminalBottom) top = terminalBottom;
+                if (bottom > terminalBottom) bottom = terminalBottom;
+
+                outRect.set(x1, top, x2, bottom);
             }
         }, ActionMode.TYPE_FLOATING);
     }
