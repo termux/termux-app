@@ -45,4 +45,21 @@ public class ScreenBufferTest extends TerminalTestCase {
 		withTerminalSized(5, 3).enterString("ABC\r\nFG");
 		assertEquals("ABC\nFG", mTerminal.getScreen().getSelectedText(0, 0, 1, 1, true, true));
 	}
+
+	public void testGetWordAtLocation() {
+		withTerminalSized(5, 3).enterString("ABCDEFGHIJ\r\nKLMNO");
+		assertEquals("ABCDEFGHIJKLMNO", mTerminal.getScreen().getWordAtLocation(0, 0));
+		assertEquals("ABCDEFGHIJKLMNO", mTerminal.getScreen().getWordAtLocation(4, 1));
+		assertEquals("ABCDEFGHIJKLMNO", mTerminal.getScreen().getWordAtLocation(4, 2));
+
+		withTerminalSized(5, 3).enterString("ABC DEF GHI ");
+		assertEquals("ABC", mTerminal.getScreen().getWordAtLocation(0, 0));
+		assertEquals("", mTerminal.getScreen().getWordAtLocation(3, 0));
+		assertEquals("DEF", mTerminal.getScreen().getWordAtLocation(4, 0));
+		assertEquals("DEF", mTerminal.getScreen().getWordAtLocation(0, 1));
+		assertEquals("DEF", mTerminal.getScreen().getWordAtLocation(1, 1));
+		assertEquals("GHI", mTerminal.getScreen().getWordAtLocation(0, 2));
+		assertEquals("", mTerminal.getScreen().getWordAtLocation(1, 2));
+		assertEquals("", mTerminal.getScreen().getWordAtLocation(2, 2));
+	}
 }

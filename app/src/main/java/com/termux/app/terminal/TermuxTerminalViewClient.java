@@ -25,6 +25,7 @@ import com.termux.app.TermuxActivity;
 import com.termux.shared.data.UrlUtils;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.interact.MessageDialogUtils;
+import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.terminal.TermuxTerminalViewClientBase;
 import com.termux.shared.terminal.io.extrakeys.SpecialButton;
@@ -42,6 +43,7 @@ import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.view.KeyboardUtils;
 import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.KeyHandler;
+import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 
@@ -172,10 +174,26 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public void onSingleTapUp(MotionEvent e) {
-        if (!KeyboardUtils.areDisableSoftKeyboardFlagsSet(mActivity))
-            KeyboardUtils.showSoftKeyboard(mActivity, mActivity.getTerminalView());
-        else
-            Logger.logVerbose(LOG_TAG, "Not showing soft keyboard onSingleTapUp since its disabled");
+        TerminalEmulator term = mActivity.getCurrentSession().getEmulator();
+
+        if (mActivity.getProperties().shouldOpenTerminalTranscriptURLOnClick()) {
+            int[] columnAndRow = mActivity.getTerminalView().getColumnAndRow(e, true);
+            String wordAtTap = term.getScreen().getWordAtLocation(columnAndRow[0], columnAndRow[1]);
+            LinkedHashSet<CharSequence> urlSet = UrlUtils.extractUrls(wordAtTap);
+
+            if (!urlSet.isEmpty()) {
+                String url = (String) urlSet.iterator().next();
+                ShareUtils.openURL(mActivity, url);
+                return;
+            }
+        }
+
+        if (!term.isMouseTrackingActive() && !e.isFromSource(InputDevice.SOURCE_MOUSE)) {
+            if (!KeyboardUtils.areDisableSoftKeyboardFlagsSet(mActivity))
+                KeyboardUtils.showSoftKeyboard(mActivity, mActivity.getTerminalView());
+            else
+                Logger.logVerbose(LOG_TAG, "Not showing soft keyboard onSingleTapUp since its disabled");
+        }
     }
 
     @Override
@@ -670,13 +688,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             lv.setOnItemLongClickListener((parent, view, position, id) -> {
                 dialog.dismiss();
                 String url = (String) urls[position];
-                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                try {
-                    mActivity.startActivity(i, null);
-                } catch (ActivityNotFoundException e) {
-                    // If no applications match, Android displays a system message.
-                    mActivity.startActivity(Intent.createChooser(i, null));
-                }
+                ShareUtils.openURL(mActivity, url);
                 return true;
             });
         });
