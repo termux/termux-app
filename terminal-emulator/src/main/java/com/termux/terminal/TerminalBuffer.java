@@ -93,8 +93,11 @@ public final class TerminalBuffer {
                     if (c != ' ') lastPrintingCharIndex = i;
                 }
             }
-            if (lastPrintingCharIndex != -1)
-                builder.append(line, x1Index, lastPrintingCharIndex - x1Index + 1);
+
+            int len = lastPrintingCharIndex - x1Index + 1;
+            if (lastPrintingCharIndex != -1 && len > 0)
+                builder.append(line, x1Index, len);
+
             boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
             if ((!joinBackLines || !rowLineWrap) && (!joinFullLines || !lineFillsWidth)
                 && row < selY2 && row < mScreenRows - 1) builder.append('\n');
