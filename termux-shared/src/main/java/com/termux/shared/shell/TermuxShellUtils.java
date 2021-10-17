@@ -150,6 +150,11 @@ public class TermuxShellUtils {
     }
 
     public static void clearTermuxTMPDIR(boolean onlyIfExists) {
+        // Existence check before clearing may be required since clearDirectory() will automatically
+        // re-create empty directory if doesn't exist, which should not be done for things like
+        // termux-reset (d6eb5e35). Moreover, TMPDIR must be a directory and not a symlink, this can
+        // also allow users who don't want TMPDIR to be cleared automatically on termux exit, since
+        // it may remove files still being used by background processes (#1159).
         if(onlyIfExists && !FileUtils.directoryFileExists(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, false))
             return;
 
