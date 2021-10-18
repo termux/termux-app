@@ -205,6 +205,28 @@ public class PackageUtils {
 
 
     /**
+     * Get the uid for the package associated with the {@code context}.
+     *
+     * @param context The {@link Context} for the package.
+     * @return Returns the uid.
+     */
+    public static int getUidForPackage(@NonNull final Context context) {
+        return getUidForPackage(context.getApplicationInfo());
+    }
+
+    /**
+     * Get the uid for the package associated with the {@code applicationInfo}.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the uid.
+     */
+    public static int getUidForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        return applicationInfo.uid;
+    }
+
+
+
+    /**
      * Get the {@code targetSdkVersion} for the package associated with the {@code context}.
      *
      * @param context The {@link Context} for the package.

@@ -74,6 +74,7 @@ public class AndroidUtils {
         AndroidUtils.appendPropertyToMarkdown(markdownString,"PACKAGE_NAME", PackageUtils.getPackageNameForPackage(applicationInfo));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_NAME", PackageUtils.getVersionNameForPackage(context, packageName));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_CODE", PackageUtils.getVersionCodeForPackage(context, packageName));
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"UID", PackageUtils.getUidForPackage(applicationInfo));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(applicationInfo));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_DEBUGGABLE_BUILD", PackageUtils.isAppForPackageADebuggableBuild(applicationInfo));
 
