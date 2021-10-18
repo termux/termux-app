@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.UserHandle;
 import android.os.UserManager;
 
 import androidx.annotation.NonNull;
@@ -409,16 +410,16 @@ public class PackageUtils {
 
 
     /**
-     * Get the serial number for the current user.
+     * Get the serial number for the user for the package associated with the {@code context}.
      *
-     * @param context The {@link Context} for operations.
+     * @param context The {@link Context} for the package.
      * @return Returns the serial number. This will be {@code null} if failed to get it.
      */
     @Nullable
-    public static Long getSerialNumberForCurrentUser(@NonNull Context context) {
+    public static Long getUserIdForPackage(@NonNull Context context) {
         UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
         if (userManager == null) return null;
-        return userManager.getSerialNumberForUser(android.os.Process.myUserHandle());
+        return userManager.getSerialNumberForUser(UserHandle.getUserHandleForUid(getUidForPackage(context)));
     }
 
     /**
@@ -429,7 +430,7 @@ public class PackageUtils {
      * @return Returns {@code true} if the current user is the primary user, otherwise [@code false}.
      */
     public static boolean isCurrentUserThePrimaryUser(@NonNull Context context) {
-        Long userId = getSerialNumberForCurrentUser(context);
+        Long userId = getUserIdForPackage(context);
         return userId != null && userId == 0;
     }
 

@@ -49,7 +49,7 @@ public class AndroidUtils {
             !filesDir.equals("/data/data/" + context.getPackageName() + "/files"))
             AndroidUtils.appendPropertyToMarkdown(markdownString,"FILES_DIR", filesDir);
 
-        Long userId = PackageUtils.getSerialNumberForCurrentUser(context);
+        Long userId = PackageUtils.getUserIdForPackage(context);
         if (userId == null || userId != 0)
             AndroidUtils.appendPropertyToMarkdown(markdownString,"USER_ID", userId);
 
