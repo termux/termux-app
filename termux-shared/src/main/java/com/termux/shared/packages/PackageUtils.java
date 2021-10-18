@@ -316,11 +316,18 @@ public class PackageUtils {
      */
     @Nullable
     public static Integer getVersionCodeForPackage(@NonNull final Context context, @NonNull final String packageName) {
-        try {
-            return getPackageInfoForPackage(context, packageName).versionCode;
-        } catch (final Exception e) {
-            return null;
-        }
+        return getVersionCodeForPackage(getPackageInfoForPackage(context, packageName));
+    }
+
+    /**
+     * Get the {@code versionCode} for the {@code packageName}.
+     *
+     * @param packageInfo The {@link PackageInfo} for the package.
+     * @return Returns the {@code versionCode}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static Integer getVersionCodeForPackage(@Nullable final PackageInfo packageInfo) {
+        return packageInfo != null? packageInfo.versionCode : null;
     }
 
 
@@ -335,6 +342,7 @@ public class PackageUtils {
     public static String getVersionNameForPackage(@NonNull final Context context) {
         return getVersionNameForPackage(context, context.getPackageName());
     }
+
     /**
      * Get the {@code versionName} for the {@code packageName}.
      *
@@ -344,11 +352,19 @@ public class PackageUtils {
      */
     @Nullable
     public static String getVersionNameForPackage(@NonNull final Context context, @NonNull final String packageName) {
-        try {
-            return getPackageInfoForPackage(context, packageName).versionName;
-        } catch (final Exception e) {
-            return null;
-        }
+        return getVersionNameForPackage(getPackageInfoForPackage(context, packageName));
+    }
+
+    /**
+     * Get the {@code versionName} for the {@code packageName}.
+     *
+     * @param packageInfo The {@link PackageInfo} for the package.
+     * @return Returns the {@code versionName}. This will be {@code null} if an {@code packageInfo}
+     * is {@code null}.
+     */
+    @Nullable
+    public static String getVersionNameForPackage(@Nullable final PackageInfo packageInfo) {
+        return packageInfo != null? packageInfo.versionName : null;
     }
 
 

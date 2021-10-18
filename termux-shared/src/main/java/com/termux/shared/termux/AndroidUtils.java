@@ -3,6 +3,7 @@ package com.termux.shared.termux;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
@@ -65,6 +66,8 @@ public class AndroidUtils {
      * @return Returns the markdown {@link String}.
      */
     public static String getAppInfoMarkdownString(@NonNull final Context context, @NonNull final String packageName) {
+        PackageInfo packageInfo = PackageUtils.getPackageInfoForPackage(context, packageName);
+        if (packageInfo == null) return null;
         ApplicationInfo applicationInfo = PackageUtils.getApplicationInfoForPackage(context, packageName);
         if (applicationInfo == null) return null;
 
@@ -72,8 +75,8 @@ public class AndroidUtils {
 
         AndroidUtils.appendPropertyToMarkdown(markdownString,"APP_NAME", PackageUtils.getAppNameForPackage(context, applicationInfo));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"PACKAGE_NAME", PackageUtils.getPackageNameForPackage(applicationInfo));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_NAME", PackageUtils.getVersionNameForPackage(context, packageName));
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_CODE", PackageUtils.getVersionCodeForPackage(context, packageName));
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_NAME", PackageUtils.getVersionNameForPackage(packageInfo));
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"VERSION_CODE", PackageUtils.getVersionCodeForPackage(packageInfo));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"UID", PackageUtils.getUidForPackage(applicationInfo));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"TARGET_SDK", PackageUtils.getTargetSDKForPackage(applicationInfo));
         AndroidUtils.appendPropertyToMarkdown(markdownString,"IS_DEBUGGABLE_BUILD", PackageUtils.isAppForPackageADebuggableBuild(applicationInfo));
