@@ -8,7 +8,7 @@ import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.errors.Error;
-import com.termux.shared.termux.AndroidUtils;
+import com.termux.shared.android.AndroidUtils;
 
 import java.nio.charset.Charset;
 

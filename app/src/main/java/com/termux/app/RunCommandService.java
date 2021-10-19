@@ -12,7 +12,7 @@ import android.os.IBinder;
 import com.termux.R;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.data.IntentUtils;
-import com.termux.shared.file.TermuxFileUtils;
+import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.file.filesystem.FileType;
 import com.termux.shared.models.errors.Errno;
 import com.termux.shared.models.errors.Error;

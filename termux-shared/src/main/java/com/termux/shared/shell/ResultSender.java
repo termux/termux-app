@@ -16,7 +16,7 @@ import com.termux.shared.models.ResultConfig;
 import com.termux.shared.models.ResultData;
 import com.termux.shared.models.errors.FunctionErrno;
 import com.termux.shared.models.errors.ResultSenderErrno;
-import com.termux.shared.termux.AndroidUtils;
+import com.termux.shared.android.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants.RESULT_SENDER;
 
 public class ResultSender {

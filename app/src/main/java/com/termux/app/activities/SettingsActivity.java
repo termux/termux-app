@@ -17,11 +17,11 @@ import com.termux.shared.models.ReportInfo;
 import com.termux.app.models.UserAction;
 import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.packages.PackageUtils;
-import com.termux.shared.settings.preferences.TermuxAPIAppSharedPreferences;
-import com.termux.shared.settings.preferences.TermuxFloatAppSharedPreferences;
-import com.termux.shared.settings.preferences.TermuxTaskerAppSharedPreferences;
-import com.termux.shared.settings.preferences.TermuxWidgetAppSharedPreferences;
-import com.termux.shared.termux.AndroidUtils;
+import com.termux.shared.termux.settings.preferences.TermuxAPIAppSharedPreferences;
+import com.termux.shared.termux.settings.preferences.TermuxFloatAppSharedPreferences;
+import com.termux.shared.termux.settings.preferences.TermuxTaskerAppSharedPreferences;
+import com.termux.shared.termux.settings.preferences.TermuxWidgetAppSharedPreferences;
+import com.termux.shared.android.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 

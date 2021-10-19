@@ -11,15 +11,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.shared.R;
+import com.termux.shared.android.AndroidUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.file.FileUtils;
-import com.termux.shared.file.TermuxFileUtils;
+import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.packages.PackageUtils;
-import com.termux.shared.shell.TermuxShellEnvironmentClient;
+import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
 import com.termux.shared.shell.TermuxTask;
 
 import org.apache.commons.io.IOUtils;

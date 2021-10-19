@@ -12,7 +12,7 @@ import android.view.WindowManager;
 import com.termux.R;
 import com.termux.app.utils.CrashUtils;
 import com.termux.shared.file.FileUtils;
-import com.termux.shared.file.TermuxFileUtils;
+import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
