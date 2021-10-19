@@ -1,55 +1,12 @@
-The `termux-shared` library is released under [GPLv3 only](https://www.gnu.org/licenses/gpl-3.0.html) license.
+The `termux-shared` library is released under [MIT](https://opensource.org/licenses/MIT) license.
 
 ### Exceptions
 
-#### [MIT License](https://opensource.org/licenses/MIT)
+#### [GPLv3 only](https://www.gnu.org/licenses/gpl-3.0.html)
 
-- [`src/main/java/com/termux/shared/termux/TermuxConstants.java`](src/main/java/com/termux/shared/termux/TermuxConstants.java).
-- [`src/main/java/com/termux/shared/settings/properties/TermuxPropertyConstants.java`](src/main/java/com/termux/shared/settings/properties/TermuxPropertyConstants.java).
+- [`src/main/java/com/termux/shared/termux/*`](src/main/java/com/termux/shared/termux).
 
-- [`src/main/java/com/termux/shared/activities/*`](src/main/java/com/termux/shared/activities).
-
-- [`src/main/java/com/termux/shared/crash/CrashHandler.java`](src/main/java/com/termux/shared/crash/CrashHandler.java).
-
-- [`src/main/java/com/termux/shared/data/DataUtils.java`](src/main/java/com/termux/shared/data/DataUtils.java).
-- [`src/main/java/com/termux/shared/data/IntentUtils.java`](src/main/java/com/termux/shared/data/IntentUtils.java).
-
-- [`src/main/java/com/termux/shared/file/filesystem/FileType.java`](src/main/java/com/termux/shared/file/filesystem/FileType.java).
-- [`src/main/java/com/termux/shared/file/filesystem/FileTypes.java`](src/main/java/com/termux/shared/file/filesystem/FileTypes.java).
-- [`src/main/java/com/termux/shared/file/filesystem/NativeDispatcher.java`](src/main/java/com/termux/shared/file/filesystem/NativeDispatcher.java).
-- [`src/main/java/com/termux/shared/file/tests/FileUtilsTests.java`](src/main/java/com/termux/shared/file/tests/FileUtilsTests.java).
-- [`src/main/java/com/termux/shared/file/FileUtils.java`](src/main/java/com/termux/shared/file/FileUtils.java).
-
-- [`src/main/java/com/termux/shared/interact/ShareUtils.java`](src/main/java/com/termux/shared/interact/ShareUtils.java).
-- [`src/main/java/com/termux/shared/interact/MessageDialogUtils.java`](src/main/java/com/termux/shared/interact/MessageDialogUtils.java).
-
-- [`src/main/java/com/termux/shared/logger/Logger.java`](src/main/java/com/termux/shared/logger/Logger.java).
-
-- [`src/main/java/com/termux/shared/markdown/MarkdownUtils.java`](src/main/java/com/termux/shared/markdown/MarkdownUtils.java).
-
-- [`src/main/java/com/termux/shared/models/*`](src/main/java/com/termux/shared/models).
-
-- [`src/main/java/com/termux/shared/notification/NotificationUtils.java`](src/main/java/com/termux/shared/notification/NotificationUtils.java).
-
-- [`src/main/java/com/termux/shared/settings/preferences/SharedPreferenceUtils.java`](src/main/java/com/termux/shared/settings/preferences/SharedPreferenceUtils.java).
-
-- [`src/main/java/com/termux/shared/settings/properties/SharedPropertiesParser.java`](src/main/java/com/termux/shared/settings/properties/SharedPropertiesParser.java).
-- [`src/main/java/com/termux/shared/settings/properties/SharedProperties.java`](src/main/java/com/termux/shared/settings/properties/SharedProperties.java).
-
-- [`src/main/java/com/termux/shared/shell/ResultSender.java`](src/main/java/com/termux/shared/shell/ResultSender.java).
-- [`src/main/java/com/termux/shared/shell/ShellEnvironmentClient.java`](src/main/java/com/termux/shared/shell/ShellEnvironmentClient.java).
-- [`src/main/java/com/termux/shared/shell/ShellUtils.java`](src/main/java/com/termux/shared/shell/ShellUtils.java).
-- [`src/main/java/com/termux/shared/shell/TermuxTask.java`](src/main/java/com/termux/shared/shell/TermuxTask.java).
-
-- [`src/main/java/com/termux/shared/termux/AndroidUtils.java`](src/main/java/com/termux/shared/termux/AndroidUtils.java).
-
-- [`src/main/java/com/termux/shared/view/KeyboardUtils.java`](src/main/java/com/termux/shared/view/KeyboardUtils.java).
-- [`src/main/java/com/termux/shared/view/ViewUtils.java`](src/main/java/com/termux/shared/view/ViewUtils.java).
-
-- [`src/main/res/drawable/*`](src/main/res/drawable).
-- [`src/main/res/layout/*`](src/main/res/layout).
-- [`src/main/res/menu/*`](src/main/res/menu).
-- [`src/main/res/values/*`](src/main/res/values).
+The `GPLv3 only` license applies to all files unless specifically specified by a file/directory, like the [`src/main/java/com/termux/shared/termux/TermuxConstants.java`](src/main/java/com/termux/shared/termux/TermuxConstants.java) and [`src/main/java/com/termux/shared/termux/settings/properties/TermuxPropertyConstants.java`](src/main/java/com/termux/shared/termux/settings/properties/TermuxPropertyConstants.java) files are released under the `MIT` license.
 ##
 
 
@@ -59,7 +16,7 @@ The `termux-shared` library is released under [GPLv3 only](https://www.gnu.org/l
 ##
 
 
-#### [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+#### [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 - [`src/main/java/com/termux/shared/shell/StreamGobbler.java`](src/main/java/com/termux/shared/shell/StreamGobbler.java) uses code from [libsuperuser ](https://github.com/Chainfire/libsuperuser).
 ##

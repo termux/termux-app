@@ -17,6 +17,7 @@ import java.util.Set;
 
 /*
  * Version: v0.15.0
+ * SPDX-License-Identifier: MIT
  *
  * Changelog
  *

@@ -13,6 +13,7 @@ import java.util.List;
 
 /*
  * Version: v0.33.0
+ * SPDX-License-Identifier: MIT
  *
  * Changelog
  *
