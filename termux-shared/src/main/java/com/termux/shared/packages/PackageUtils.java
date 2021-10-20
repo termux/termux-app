@@ -254,9 +254,9 @@ public class PackageUtils {
      * set.
      *
      * @param context The {@link Context} for the package.
-     * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
+     * @return Returns {@code true} if app is debuggable, otherwise {@code false}.
      */
-    public static Boolean isAppForPackageADebuggableBuild(@NonNull final Context context) {
+    public static boolean isAppForPackageADebuggableBuild(@NonNull final Context context) {
         return isAppForPackageADebuggableBuild(context.getApplicationInfo());
     }
 
@@ -265,9 +265,9 @@ public class PackageUtils {
      * set.
      *
      * @param applicationInfo The {@link ApplicationInfo} for the package.
-     * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
+     * @return Returns {@code true} if app is debuggable, otherwise {@code false}.
      */
-    public static Boolean isAppForPackageADebuggableBuild(@NonNull final ApplicationInfo applicationInfo) {
+    public static boolean isAppForPackageADebuggableBuild(@NonNull final ApplicationInfo applicationInfo) {
         return ( 0 != ( applicationInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE ) );
     }
 
@@ -278,9 +278,9 @@ public class PackageUtils {
      * set.
      *
      * @param context The {@link Context} for the package.
-     * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
+     * @return Returns {@code true} if app is installed on external storage, otherwise {@code false}.
      */
-    public static Boolean isAppInstalledOnExternalStorage(@NonNull final Context context) {
+    public static boolean isAppInstalledOnExternalStorage(@NonNull final Context context) {
         return isAppInstalledOnExternalStorage(context.getApplicationInfo());
     }
 
@@ -289,9 +289,9 @@ public class PackageUtils {
      * set.
      *
      * @param applicationInfo The {@link ApplicationInfo} for the package.
-     * @return Returns the {@code versionName}. This will be {@code null} if an exception is raised.
+     * @return Returns {@code true} if app is installed on external storage, otherwise {@code false}.
      */
-    public static Boolean isAppInstalledOnExternalStorage(@NonNull final ApplicationInfo applicationInfo) {
+    public static boolean isAppInstalledOnExternalStorage(@NonNull final ApplicationInfo applicationInfo) {
         return ( 0 != ( applicationInfo.flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE ) );
     }
 
@@ -328,7 +328,7 @@ public class PackageUtils {
      */
     @Nullable
     public static Integer getVersionCodeForPackage(@Nullable final PackageInfo packageInfo) {
-        return packageInfo != null? packageInfo.versionCode : null;
+        return packageInfo != null ? packageInfo.versionCode : null;
     }
 
 
@@ -365,7 +365,7 @@ public class PackageUtils {
      */
     @Nullable
     public static String getVersionNameForPackage(@Nullable final PackageInfo packageInfo) {
-        return packageInfo != null? packageInfo.versionName : null;
+        return packageInfo != null ? packageInfo.versionName : null;
     }
 
 
