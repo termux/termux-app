@@ -105,7 +105,7 @@ public class FileUtils {
         path = path.replaceAll("\\./", "");
 
         if (path.endsWith("/")) {
-            path = path.substring(0, path.length() - 1);
+            path = path.replaceAll("/+$", "");
         }
 
         return path;
