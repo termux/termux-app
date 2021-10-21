@@ -36,9 +36,11 @@
 
 
 
-
     <!-- PermissionUtils -->
-    <string name="message_sudo_please_grant_permissions">Please grant permissions on next screen</string>
+    <string name="message_sudo_please_grant_permissions">Please grant requested permission(s)</string>
+    <string name="error_failed_to_request_permissions">Failed to request permissions with request code %1$d: %2$s</string>
+    <string name="error_attempted_to_check_for_permissions_not_requested">Attempted to check for permissions that have not been requested in app manifest: %1$s</string>
+    <string name="error_attempted_to_ask_for_permissions_not_requested">Attempted to ask for permissions that have not been requested in app manifest: %1$s</string>
 
 
 
