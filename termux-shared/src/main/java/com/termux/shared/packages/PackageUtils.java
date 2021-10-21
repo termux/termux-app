@@ -18,8 +18,10 @@ import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.reflection.ReflectionUtils;
 import com.termux.shared.termux.TermuxConstants;
 
+import java.lang.reflect.Field;
 import java.security.MessageDigest;
 import java.util.List;
 
@@ -158,6 +160,63 @@ public class PackageUtils {
         }
     }
 
+    /**
+     * Get the {@code privateFlags} {@link Field} of the {@link ApplicationInfo} class.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the private flags or {@code null} if an exception was raised.
+     */
+    @Nullable
+    public static Integer getApplicationInfoPrivateFlagsForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        ReflectionUtils.bypassHiddenAPIReflectionRestrictions();
+        try {
+            return (Integer) ReflectionUtils.invokeField(ApplicationInfo.class, "privateFlags", applicationInfo).value;
+        } catch (Exception e) {
+            // ClassCastException may be thrown
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to get privateFlags field value for ApplicationInfo class", e);
+            return null;
+        }
+    }
+
+    /**
+     * Get the {@code privateFlags} {@link Field} of the {@link ApplicationInfo} class.
+     *
+     * @param fieldName The name of the field to get.
+     * @return Returns the field value or {@code null} if an exception was raised.
+     */
+    @Nullable
+    public static Integer getApplicationInfoStaticIntFieldValue(@NonNull String fieldName) {
+        ReflectionUtils.bypassHiddenAPIReflectionRestrictions();
+        try {
+            return (Integer) ReflectionUtils.invokeField(ApplicationInfo.class, fieldName, null).value;
+        } catch (Exception e) {
+            // ClassCastException may be thrown
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to get \"" + fieldName + "\" field value for ApplicationInfo class", e);
+            return null;
+        }
+    }
+
+    /**
+     * Check if the app associated with the {@code applicationInfo} has a specific flag set.
+     *
+     * @param flagToCheckName The name of the field for the flag to check.
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns {@code true} if app has flag is set, otherwise {@code false}. This will be
+     * {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static Boolean isApplicationInfoPrivateFlagSetForPackage(@NonNull String flagToCheckName, @NonNull final ApplicationInfo applicationInfo) {
+        Integer privateFlags = getApplicationInfoPrivateFlagsForPackage(applicationInfo);
+        if (privateFlags == null) return null;
+
+        Integer flagToCheck = getApplicationInfoStaticIntFieldValue(flagToCheckName);
+        if (flagToCheck == null) return null;
+
+        return ( 0 != ( privateFlags & flagToCheck ) );
+    }
+
+
+
 
 
     /**
@@ -293,6 +352,36 @@ public class PackageUtils {
      */
     public static boolean isAppInstalledOnExternalStorage(@NonNull final ApplicationInfo applicationInfo) {
         return ( 0 != ( applicationInfo.flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE ) );
+    }
+
+
+
+    /**
+     * Check if the app associated with the {@code context} has
+     * ApplicationInfo.PRIVATE_FLAG_REQUEST_LEGACY_EXTERNAL_STORAGE (requestLegacyExternalStorage)
+     * set to {@code true} in app manifest.
+     *
+     * @param context The {@link Context} for the package.
+     * @return Returns {@code true} if app has requested legacy external storage, otherwise
+     * {@code false}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static Boolean hasRequestedLegacyExternalStorage(@NonNull final Context context) {
+        return hasRequestedLegacyExternalStorage(context.getApplicationInfo());
+    }
+
+    /**
+     * Check if the app associated with the {@code applicationInfo} has
+     * ApplicationInfo.PRIVATE_FLAG_REQUEST_LEGACY_EXTERNAL_STORAGE (requestLegacyExternalStorage)
+     * set to {@code true} in app manifest.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns {@code true} if app has requested legacy external storage, otherwise
+     * {@code false}. This will be {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static Boolean hasRequestedLegacyExternalStorage(@NonNull final ApplicationInfo applicationInfo) {
+        return isApplicationInfoPrivateFlagSetForPackage("PRIVATE_FLAG_REQUEST_LEGACY_EXTERNAL_STORAGE", applicationInfo);
     }
 
 
@@ -545,8 +634,8 @@ public class PackageUtils {
      */
     @Nullable
     public static String setComponentState(@NonNull final Context context, @NonNull String packageName,
-                                         @NonNull String className, boolean state, String toastString,
-                                         boolean showErrorMessage) {
+                                           @NonNull String className, boolean state, String toastString,
+                                           boolean showErrorMessage) {
         try {
             PackageManager packageManager = context.getPackageManager();
             if (packageManager != null) {
@@ -579,7 +668,7 @@ public class PackageUtils {
      * get the state.
      */
     public static Boolean isComponentDisabled(@NonNull final Context context, @NonNull String packageName,
-                                           @NonNull String className, boolean logErrorMessage) {
+                                              @NonNull String className, boolean logErrorMessage) {
         try {
             PackageManager packageManager = context.getPackageManager();
             if (packageManager != null) {
@@ -607,7 +696,7 @@ public class PackageUtils {
      * @return Returns {@code true} if it exists, otherwise {@code false}.
      */
     public static boolean doesActivityComponentExist(@NonNull final Context context, @NonNull String packageName,
-                                              @NonNull String className, int flags) {
+                                                     @NonNull String className, int flags) {
         try {
             PackageManager packageManager = context.getPackageManager();
             if (packageManager != null) {
