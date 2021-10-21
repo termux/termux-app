@@ -183,16 +183,46 @@ public abstract class TermuxSharedProperties {
      * The class that implements the {@link SharedPropertiesParser} interface.
      */
     public static class SharedPropertiesParserClient implements SharedPropertiesParser {
+        @NonNull
+        @Override
+        public Properties preProcessPropertiesOnReadFromDisk(@NonNull Context context, @NonNull Properties properties) {
+            return replaceUseBlackUIProperty(properties);
+        }
+
         /**
          * Override the
          * {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}
          * interface function.
          */
         @Override
-        public Object getInternalPropertyValueFromValue(Context context, String key, String value) {
+        public Object getInternalPropertyValueFromValue(@NonNull Context context, String key, String value) {
             return getInternalTermuxPropertyValueFromValue(context, key, value);
         }
     }
+
+    @NonNull
+    public static Properties replaceUseBlackUIProperty(@NonNull Properties properties) {
+        String useBlackUIStringValue = properties.getProperty(TermuxPropertyConstants.KEY_USE_BLACK_UI);
+        if (useBlackUIStringValue == null) return properties;
+
+        Logger.logWarn(LOG_TAG, "Removing deprecated property " + TermuxPropertyConstants.KEY_USE_BLACK_UI + "=" + useBlackUIStringValue);
+        properties.remove(TermuxPropertyConstants.KEY_USE_BLACK_UI);
+
+        // If KEY_NIGHT_MODE is not set
+        if (properties.getProperty(TermuxPropertyConstants.KEY_NIGHT_MODE) == null) {
+            Boolean useBlackUI = SharedProperties.getBooleanValueForStringValue(useBlackUIStringValue);
+            if (useBlackUI != null) {
+                String termuxAppTheme = useBlackUI ? TermuxPropertyConstants.IVALUE_NIGHT_MODE_TRUE :
+                    TermuxPropertyConstants.IVALUE_NIGHT_MODE_FALSE;
+                Logger.logWarn(LOG_TAG, "Replacing deprecated property " + TermuxPropertyConstants.KEY_USE_BLACK_UI + "=" + useBlackUI + " with " + TermuxPropertyConstants.KEY_NIGHT_MODE + "=" + termuxAppTheme);
+                properties.put(TermuxPropertyConstants.KEY_NIGHT_MODE, termuxAppTheme);
+            }
+        }
+
+        return properties;
+    }
+
+
 
     /**
      * A static function that should return the internal termux {@link Object} for a key/value pair
@@ -213,10 +243,6 @@ public abstract class TermuxSharedProperties {
           - If the value is not null and does exist in MAP_*, then internal value returned by map will be used.
          */
         switch (key) {
-            /* boolean */
-            case TermuxPropertyConstants.KEY_USE_BLACK_UI:
-                return (boolean) getUseBlackUIInternalPropertyValueFromValue(context, value);
-
             /* int */
             case TermuxPropertyConstants.KEY_BELL_BEHAVIOUR:
                 return (int) getBellBehaviourInternalPropertyValueFromValue(value);
@@ -251,6 +277,8 @@ public abstract class TermuxSharedProperties {
                 return (String) getExtraKeysInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_EXTRA_KEYS_STYLE:
                 return (String) getExtraKeysStyleInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_NIGHT_MODE:
+                return (String) getNightModeInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR:
                 return (String) getSoftKeyboardToggleBehaviourInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_VOLUME_KEYS_BEHAVIOUR:
@@ -280,18 +308,6 @@ public abstract class TermuxSharedProperties {
 
 
     /**
-     * Returns {@code true} or {@code false} if value is the literal string "true" or "false" respectively regardless of case.
-     * Otherwise returns {@code true} if the night mode is currently enabled in the system.
-     *
-     * @param value The {@link String} value to convert.
-     * @return Returns the internal value for value.
-     */
-    public static boolean getUseBlackUIInternalPropertyValueFromValue(Context context, String value) {
-        int nightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return SharedProperties.getBooleanValueForStringValue(TermuxPropertyConstants.KEY_USE_BLACK_UI, value, nightMode == Configuration.UI_MODE_NIGHT_YES, true, LOG_TAG);
-    }
-
-    /**
      * Returns the internal value after mapping it based on
      * {@code TermuxPropertyConstants#MAP_BELL_BEHAVIOUR} if the value is not {@code null}
      * and is valid, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_BELL_BEHAVIOUR}.
@@ -314,11 +330,11 @@ public abstract class TermuxSharedProperties {
      */
     public static int getTerminalCursorBlinkRateInternalPropertyValueFromValue(String value) {
         return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE,
-                    DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE),
-                    TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE,
-                    TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN,
-                    TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX,
-                    true, true, LOG_TAG);
+            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE),
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE,
+            TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN,
+            TermuxPropertyConstants.IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX,
+            true, true, LOG_TAG);
     }
 
     /**
@@ -488,6 +504,18 @@ public abstract class TermuxSharedProperties {
     }
 
     /**
+     * Returns the value itself if it is not {@code null}, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_NIGHT_MODE}.
+     *
+     * @param value {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static String getNightModeInternalPropertyValueFromValue(String value) {
+        return (String) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_NIGHT_MODE,
+            TermuxPropertyConstants.MAP_NIGHT_MODE, SharedProperties.toLowerCase(value),
+            TermuxPropertyConstants.DEFAULT_IVALUE_NIGHT_MODE, true, LOG_TAG);
+    }
+
+    /**
      * Returns the value itself if it is not {@code null}, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR}.
      *
      * @param value {@link String} value to convert.
@@ -533,10 +561,6 @@ public abstract class TermuxSharedProperties {
 
     public boolean shouldOpenTerminalTranscriptURLOnClick() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_ONCLICK_URL_OPEN, true);
-    }
-
-    public boolean isUsingBlackUI() {
-        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_BLACK_UI, true);
     }
 
     public boolean isUsingCtrlSpaceWorkaround() {
@@ -585,6 +609,16 @@ public abstract class TermuxSharedProperties {
 
     public String getDefaultWorkingDirectory() {
         return (String) getInternalPropertyValue(TermuxPropertyConstants.KEY_DEFAULT_WORKING_DIRECTORY, true);
+    }
+
+    public String getNightMode() {
+        return (String) getInternalPropertyValue(TermuxPropertyConstants.KEY_NIGHT_MODE, true);
+    }
+
+    /** Get the {@link TermuxPropertyConstants#KEY_NIGHT_MODE} value from the properties file on disk. */
+    public static String getNightMode(Context context) {
+        return (String) TermuxSharedProperties.getTermuxInternalPropertyValue(context,
+            TermuxPropertyConstants.KEY_NIGHT_MODE);
     }
 
     public boolean shouldEnableDisableSoftKeyboardOnToggle() {

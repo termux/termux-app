@@ -49,6 +49,7 @@ import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.theme.ThemeUtils;
 import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -406,7 +407,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 
     private void setActivityTheme() {
-        if (mProperties.isUsingBlackUI()) {
+        if (ThemeUtils.shouldEnableDarkTheme(this, mProperties.getNightMode())) {
             this.setTheme(R.style.Theme_Termux_Black);
         } else {
             this.setTheme(R.style.Theme_Termux);
@@ -414,7 +415,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     private void setDrawerTheme() {
-        if (mProperties.isUsingBlackUI()) {
+        if (ThemeUtils.shouldEnableDarkTheme(this, mProperties.getNightMode())) {
             findViewById(R.id.left_drawer).setBackgroundColor(ContextCompat.getColor(this,
                 android.R.color.background_dark));
             ((ImageButton) findViewById(R.id.settings_button)).setColorFilter(Color.WHITE);

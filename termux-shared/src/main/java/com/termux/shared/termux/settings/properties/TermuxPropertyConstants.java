@@ -1,6 +1,7 @@
 package com.termux.shared.termux.settings.properties;
 
 import com.google.common.collect.ImmutableBiMap;
+import com.termux.shared.models.theme.NightMode;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.file.filesystem.FileType;
 import com.termux.shared.settings.properties.SharedProperties;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * Version: v0.15.0
+ * Version: v0.16.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -69,6 +70,9 @@ import java.util.Set;
  *
  * - 0.15.0 (2021-09-05)
  *      - Add `KEY_EXTRA_KEYS_TEXT_ALL_CAPS`.
+ *
+ * - 0.16.0 (2021-10-21)
+ *      - Add `KEY_NIGHT_MODE`.
  */
 
 /**
@@ -118,6 +122,7 @@ public final class TermuxPropertyConstants {
 
 
     /** Defines the key for whether to use black UI */
+    @Deprecated
     public static final String KEY_USE_BLACK_UI =  "use-black-ui"; // Default: "use-black-ui"
 
 
@@ -295,6 +300,24 @@ public final class TermuxPropertyConstants {
 
 
 
+    /** Defines the key for {@link NightMode}. */
+    public static final String KEY_NIGHT_MODE = "night-mode"; // Default: "night-mode"
+
+    public static final String IVALUE_NIGHT_MODE_TRUE = NightMode.TRUE.getName();
+    public static final String IVALUE_NIGHT_MODE_FALSE = NightMode.FALSE.getName();
+    public static final String IVALUE_NIGHT_MODE_SYSTEM = NightMode.SYSTEM.getName();
+    public static final String DEFAULT_IVALUE_NIGHT_MODE = IVALUE_NIGHT_MODE_SYSTEM;
+
+    /** Defines the bidirectional map for {@link NightMode} values and their internal values */
+    public static final ImmutableBiMap<String, String> MAP_NIGHT_MODE =
+        new ImmutableBiMap.Builder<String, String>()
+            .put(IVALUE_NIGHT_MODE_TRUE, IVALUE_NIGHT_MODE_TRUE)
+            .put(IVALUE_NIGHT_MODE_FALSE, IVALUE_NIGHT_MODE_FALSE)
+            .put(IVALUE_NIGHT_MODE_SYSTEM, IVALUE_NIGHT_MODE_SYSTEM)
+            .build();
+
+
+
     /** Defines the key for whether toggle soft keyboard request will show/hide or enable/disable keyboard */
     public static final String KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =  "soft-keyboard-toggle-behaviour"; // Default: "soft-keyboard-toggle-behaviour"
 
@@ -340,7 +363,6 @@ public final class TermuxPropertyConstants {
         KEY_EXTRA_KEYS_TEXT_ALL_CAPS,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
-        KEY_USE_BLACK_UI,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
@@ -368,9 +390,10 @@ public final class TermuxPropertyConstants {
         KEY_DEFAULT_WORKING_DIRECTORY,
         KEY_EXTRA_KEYS,
         KEY_EXTRA_KEYS_STYLE,
+        KEY_NIGHT_MODE,
         KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR,
         KEY_VOLUME_KEYS_BEHAVIOUR
-        ));
+    ));
 
     /** Defines the set for keys loaded by termux that have default boolean behaviour with false as default.
      * "true" -> true
