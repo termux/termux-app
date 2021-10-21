@@ -160,7 +160,7 @@ public class SharedProperties {
                 if (mProperties == null) mProperties = new Properties();
                 return getPropertiesCopy(mProperties);
             } else {
-                return getPropertiesFromFile(mContext, mPropertiesFile);
+                return getPropertiesFromFile(mContext, mPropertiesFile, mSharedPropertiesParser);
             }
         }
     }
@@ -227,7 +227,7 @@ public class SharedProperties {
      * @return Returns the {@link Properties} object. It will be {@code null} if an exception is
      * raised while reading the file.
      */
-    public static Properties getPropertiesFromFile(Context context, File propertiesFile) {
+    public static Properties getPropertiesFromFile(Context context, File propertiesFile, @Nullable SharedPropertiesParser sharedPropertiesParser) {
         Properties properties = new Properties();
 
         if (propertiesFile == null) {
@@ -247,28 +247,38 @@ public class SharedProperties {
             return null;
         }
 
-        return properties;
+        if (sharedPropertiesParser != null && context != null)
+            return sharedPropertiesParser.preProcessPropertiesOnReadFromDisk(context, properties);
+        else
+            return properties;
+    }
+
+
+
+    public static String getProperty(Context context, File propertiesFile, String key, String def) {
+        return getProperty(context, propertiesFile, key, def, null);
     }
 
     /**
      * A static function to get the {@link String} value for the {@link Properties} key read from
      * the propertiesFile file.
      *
-     * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File)} call.
+     * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File,SharedPropertiesParser)} call.
      * @param propertiesFile The {@link File} to read the {@link Properties} from.
      * @param key The key to read.
      * @param def The default value.
+     * @param sharedPropertiesParser The implementation of the {@link SharedPropertiesParser} interface.
      * @return Returns the {@link String} object. This will be {@code null} if key is not found.
      */
-    public static String getProperty(Context context, File propertiesFile, String key, String def) {
-        return (String) getDefaultIfNull(getDefaultIfNull(getPropertiesFromFile(context, propertiesFile), new Properties()).get(key), def);
+    public static String getProperty(Context context, File propertiesFile, String key, String def, @Nullable SharedPropertiesParser sharedPropertiesParser) {
+        return (String) getDefaultIfNull(getDefaultIfNull(getPropertiesFromFile(context, propertiesFile, sharedPropertiesParser), new Properties()).get(key), def);
     }
 
     /**
      * A static function to get the internal {@link Object} value for the {@link String} value for
      * the {@link Properties} key read from the propertiesFile file.
      *
-     * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File)} call.
+     * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File,SharedPropertiesParser)} call.
      * @param propertiesFile The {@link File} to read the {@link Properties} from.
      * @param key The key to read.
      * @param sharedPropertiesParser The implementation of the {@link SharedPropertiesParser} interface.
@@ -276,45 +286,57 @@ public class SharedProperties {
      * {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}.
      */
     public static Object getInternalProperty(Context context, File propertiesFile, String key, @NonNull SharedPropertiesParser sharedPropertiesParser) {
-        String value = (String) getDefaultIfNull(getPropertiesFromFile(context, propertiesFile), new Properties()).get(key);
+        String value = (String) getDefaultIfNull(getPropertiesFromFile(context, propertiesFile, sharedPropertiesParser), new Properties()).get(key);
 
         // Call the {@link SharedPropertiesParser#getInternalPropertyValueFromValue(Context,String,String)}
         // interface method to get the internal value to return.
         return sharedPropertiesParser.getInternalPropertyValueFromValue(context, key, value);
     }
 
+
+    public static boolean isPropertyValueTrue(Context context, File propertiesFile, String key, boolean logErrorOnInvalidValue) {
+        return isPropertyValueTrue(context, propertiesFile, key, logErrorOnInvalidValue, null);
+    }
+
     /**
      * A static function to check if the value is {@code true} for {@link Properties} key read from
      * the propertiesFile file.
      *
-     * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File)}call.
+     * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File,SharedPropertiesParser)} call.
      * @param propertiesFile The {@link File} to read the {@link Properties} from.
      * @param key The key to read.
      * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
      *                               was found in {@link Properties} but was invalid.
+     * @param sharedPropertiesParser The implementation of the {@link SharedPropertiesParser} interface.
      * @return Returns the {@code true} if the {@link Properties} key {@link String} value equals "true",
      * regardless of case. If the key does not exist in the file or does not equal "true", then
      * {@code false} will be returned.
      */
-    public static boolean isPropertyValueTrue(Context context, File propertiesFile, String key, boolean logErrorOnInvalidValue) {
-        return (boolean) getBooleanValueForStringValue(key, (String) getProperty(context, propertiesFile, key, null), false, logErrorOnInvalidValue, LOG_TAG);
+    public static boolean isPropertyValueTrue(Context context, File propertiesFile, String key, boolean logErrorOnInvalidValue, @Nullable SharedPropertiesParser sharedPropertiesParser) {
+        return (boolean) getBooleanValueForStringValue(key, (String) getProperty(context, propertiesFile, key, null, sharedPropertiesParser), false, logErrorOnInvalidValue, LOG_TAG);
+    }
+
+
+    public static boolean isPropertyValueFalse(Context context, File propertiesFile, String key, boolean logErrorOnInvalidValue) {
+        return isPropertyValueFalse(context, propertiesFile, key, logErrorOnInvalidValue, null);
     }
 
     /**
      * A static function to check if the value is {@code false} for {@link Properties} key read from
      * the propertiesFile file.
      *
-     * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File)} call.
+     * @param context The {@link Context} for the {@link #getPropertiesFromFile(Context,File,SharedPropertiesParser)} call.
      * @param propertiesFile The {@link File} to read the {@link Properties} from.
      * @param key The key to read.
      * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
      *                               was found in {@link Properties} but was invalid.
+     * @param sharedPropertiesParser The implementation of the {@link SharedPropertiesParser} interface.
      * @return Returns the {@code true} if the {@link Properties} key {@link String} value equals "false",
      * regardless of case. If the key does not exist in the file or does not equal "false", then
      * {@code true} will be returned.
      */
-    public static boolean isPropertyValueFalse(Context context, File propertiesFile, String key, boolean logErrorOnInvalidValue) {
-        return (boolean) getInvertedBooleanValueForStringValue(key, (String) getProperty(context, propertiesFile, key, null), true, logErrorOnInvalidValue, LOG_TAG);
+    public static boolean isPropertyValueFalse(Context context, File propertiesFile, String key, boolean logErrorOnInvalidValue, @Nullable SharedPropertiesParser sharedPropertiesParser) {
+        return (boolean) getInvertedBooleanValueForStringValue(key, (String) getProperty(context, propertiesFile, key, null, sharedPropertiesParser), true, logErrorOnInvalidValue, LOG_TAG);
     }
 
 
@@ -418,6 +440,17 @@ public class SharedProperties {
 
 
 
+
+    /**
+     * Get the boolean value for the {@link String} value.
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns {@code true} or {@code false} if value is the literal string "true" or "false" respectively,
+     * regardless of case. Otherwise returns {@code null}.
+     */
+    public static Boolean getBooleanValueForStringValue(String value) {
+        return MAP_GENERIC_BOOLEAN.get(toLowerCase(value));
+    }
 
     /**
      * Get the boolean value for the {@link String} value.
