@@ -65,7 +65,7 @@ public class FileUtilsErrno extends Errno {
 
 
     /* Errors for file reading and writing (350-400) */
-    public static final Errno ERRNO_READING_STRING_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 350, "Reading string from %1$s at path \"%2$s\" failed.\nException: %3$s");
+    public static final Errno ERRNO_READING_STRING_FROM_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 350, "Reading string from %1$s at path \"%2$s\" failed.\nException: %3$s");
     public static final Errno ERRNO_WRITING_STRING_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 351, "Writing string to %1$s at path \"%2$s\" failed.\nException: %3$s");
     public static final Errno ERRNO_UNSUPPORTED_CHARSET = new Errno(TYPE, 352, "Unsupported charset \"%1$s\"");
     public static final Errno ERRNO_CHECKING_IF_CHARSET_SUPPORTED_FAILED = new Errno(TYPE, 353, "Checking if charset \"%1$s\" is supported failed.\nException: %2$s");
