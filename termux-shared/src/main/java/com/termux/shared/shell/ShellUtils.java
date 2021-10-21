@@ -1,5 +1,6 @@
 package com.termux.shared.shell;
 
+import com.termux.shared.file.FileUtils;
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
@@ -23,9 +24,7 @@ public class ShellUtils {
     }
 
     public static String getExecutableBasename(String executable) {
-        if (executable == null) return null;
-        int lastSlash = executable.lastIndexOf('/');
-        return (lastSlash == -1) ? executable : executable.substring(lastSlash + 1);
+        return FileUtils.getFileBasename(executable);
     }
 
     public static String getTerminalSessionTranscriptText(TerminalSession terminalSession, boolean linesJoined, boolean trim) {

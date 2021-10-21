@@ -117,7 +117,7 @@ public class FileUtils {
      * @param fileName The name to sanitize.
      * @param sanitizeWhitespaces If set to {@code true}, then white space characters ` \t\n` will be
      *                            converted.
-     * @param sanitizeWhitespaces If set to {@code true}, then file name will be converted to lowe case.
+     * @param toLower If set to {@code true}, then file name will be converted to lower case.
      * @return Returns the {@code sanitized name}.
      */
     public static String sanitizeFileName(String fileName, boolean sanitizeWhitespaces, boolean toLower) {
@@ -1853,6 +1853,44 @@ public class FileUtils {
             return shortErrno.getError(DataUtils.getDefaultIfNull(error.getLabel(), "file"));
         else
             return shortErrno.getError(throwables, error.getLabel(), "file");
+    }
+
+
+    /**
+     * Get file dirname for file at {@code filePath}.
+     *
+     * @param filePath The {@code path} for file.
+     * @return Returns the file dirname if not {@code null}.
+     */
+    public static String getFileDirname(String filePath) {
+        if (DataUtils.isNullOrEmpty(filePath)) return null;
+        int lastSlash = filePath.lastIndexOf('/');
+        return (lastSlash == -1) ? null : filePath.substring(0, lastSlash);
+    }
+
+    /**
+     * Get file basename for file at {@code filePath}.
+     *
+     * @param filePath The {@code path} for file.
+     * @return Returns the file basename if not {@code null}.
+     */
+    public static String getFileBasename(String filePath) {
+        if (DataUtils.isNullOrEmpty(filePath)) return null;
+        int lastSlash = filePath.lastIndexOf('/');
+        return (lastSlash == -1) ? filePath : filePath.substring(lastSlash + 1);
+    }
+
+    /**
+     * Get file basename for file at {@code filePath} without extension.
+     *
+     * @param filePath The {@code path} for file.
+     * @return Returns the file basename without extension if not {@code null}.
+     */
+    public static String getFileBasenameWithoutExtension(String filePath) {
+        String fileBasename = getFileBasename(filePath);
+        if (DataUtils.isNullOrEmpty(fileBasename)) return null;
+        int lastDot = fileBasename.lastIndexOf('.');
+        return (lastDot == -1) ? fileBasename : fileBasename.substring(0, lastDot);
     }
 
 }
