@@ -221,6 +221,20 @@ public class FileUtils {
     }
 
     /**
+     * Checks whether a regular or directory file exists at {@code filePath}.
+     *
+     * @param filePath The {@code path} for regular file to check.
+     * @param followLinks The {@code boolean} that decides if symlinks will be followed while
+     *                       finding if file exists. Check {@link #getFileType(String, boolean)}
+     *                       for details.
+     * @return Returns {@code true} if regular or directory file exists, otherwise {@code false}.
+     */
+    public static boolean regularOrDirectoryFileExists(final String filePath, final boolean followLinks) {
+        FileType fileType = getFileType(filePath, followLinks);
+        return fileType == FileType.REGULAR || fileType == FileType.DIRECTORY;
+    }
+
+    /**
      * Checks whether any file exists at {@code filePath}.
      *
      * @param filePath The {@code path} for file to check.
