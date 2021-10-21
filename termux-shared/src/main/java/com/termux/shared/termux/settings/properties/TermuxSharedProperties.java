@@ -167,7 +167,7 @@ public abstract class TermuxSharedProperties {
 
     /**
      * Get the internal {@link Object} value for the key passed from the file returned by
-     * {@code propertiesFile}. The {@link Properties} object is
+     * {@link TermuxPropertyConstants#getTermuxPropertiesFile()}. The {@link Properties} object is
      * read directly from the file and internal value is returned for the property value against the key.
      *
      * @param context The context for operations.
@@ -175,9 +175,8 @@ public abstract class TermuxSharedProperties {
      * @return Returns the {@link Object} object. This will be {@code null} if key is not found or
      * the object stored against the key is {@code null}.
      */
-    public static Object getInternalPropertyValue(Context context, File propertiesFile, String key,
-                                                  @NonNull SharedPropertiesParser sharedPropertiesParser) {
-        return SharedProperties.getInternalProperty(context, propertiesFile, key, sharedPropertiesParser);
+    public static Object getTermuxInternalPropertyValue(Context context, String key) {
+        return SharedProperties.getInternalProperty(context, TermuxPropertyConstants.getTermuxPropertiesFile(), key, new SharedPropertiesParserClient());
     }
 
     /**
