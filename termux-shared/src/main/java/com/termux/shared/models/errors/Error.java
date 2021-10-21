@@ -1,5 +1,7 @@
 package com.termux.shared.models.errors;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.termux.shared.logger.Logger;
@@ -171,6 +173,26 @@ public class Error implements Serializable {
         return getErrorLogString(this);
     }
 
+
+
+    /**
+     * Log the {@link Error} and show a toast for the minimal {@link String} for the {@link Error}.
+     *
+     * @param context The {@link Context} for operations.
+     * @param logTag The log tag to use for logging.
+     * @param error The {@link Error} to convert.
+     */
+    public static void logErrorAndShowToast(Context context, String logTag, Error error) {
+        if (error == null) return;
+        error.logErrorAndShowToast(context, logTag);
+    }
+
+    public void logErrorAndShowToast(Context context, String logTag) {
+        Logger.logErrorExtended(logTag, getErrorLogString());
+        Logger.showToast(context, getMinimalErrorLogString(), true);
+    }
+
+
     /**
      * Get a log friendly {@link String} for {@link Error} error parameters.
      *
@@ -179,13 +201,16 @@ public class Error implements Serializable {
      */
     public static String getErrorLogString(final Error error) {
         if (error == null) return "null";
+        return error.getErrorLogString();
+    }
 
+    public String getErrorLogString() {
         StringBuilder logString = new StringBuilder();
 
-        logString.append(error.getCodeString());
-        logString.append("\n").append(error.getTypeAndMessageLogString());
-        if (error.throwablesList != null)
-            logString.append("\n").append(error.geStackTracesLogString());
+        logString.append(getCodeString());
+        logString.append("\n").append(getTypeAndMessageLogString());
+        if (this.throwablesList != null)
+            logString.append("\n").append(geStackTracesLogString());
 
         return logString.toString();
     }
@@ -198,11 +223,14 @@ public class Error implements Serializable {
      */
     public static String getMinimalErrorLogString(final Error error) {
         if (error == null) return "null";
+        return error.getMinimalErrorLogString();
+    }
 
+    public String getMinimalErrorLogString() {
         StringBuilder logString = new StringBuilder();
 
-        logString.append(error.getCodeString());
-        logString.append(error.getTypeAndMessageLogString());
+        logString.append(getCodeString());
+        logString.append(getTypeAndMessageLogString());
 
         return logString.toString();
     }
@@ -215,11 +243,14 @@ public class Error implements Serializable {
      */
     public static String getMinimalErrorString(final Error error) {
         if (error == null) return "null";
+        return error.getMinimalErrorString();
+    }
 
+    public String getMinimalErrorString() {
         StringBuilder logString = new StringBuilder();
 
-        logString.append("(").append(error.getCode()).append(") ");
-        logString.append(error.getType()).append(": ").append(error.getMessage());
+        logString.append("(").append(getCode()).append(") ");
+        logString.append(getType()).append(": ").append(getMessage());
 
         return logString.toString();
     }
@@ -232,12 +263,16 @@ public class Error implements Serializable {
      */
     public static String getErrorMarkdownString(final Error error) {
         if (error == null) return "null";
+        return error.getErrorMarkdownString();
+    }
 
+    public String getErrorMarkdownString() {
         StringBuilder markdownString = new StringBuilder();
 
-        markdownString.append(MarkdownUtils.getSingleLineMarkdownStringEntry("Error Code", error.getCode(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry((Errno.TYPE.equals(error.getType()) ? "Error Message" : "Error Message (" + error.getType() + ")"), error.message, "-"));
-        markdownString.append("\n\n").append(error.geStackTracesMarkdownString());
+        markdownString.append(MarkdownUtils.getSingleLineMarkdownStringEntry("Error Code", getCode(), "-"));
+        markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry(
+            (Errno.TYPE.equals(getType()) ? "Error Message" : "Error Message (" + getType() + ")"), message, "-"));
+        markdownString.append("\n\n").append(geStackTracesMarkdownString());
 
         return markdownString.toString();
     }
