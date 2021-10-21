@@ -195,9 +195,20 @@ public class Logger {
 
 
 
-    public static void logErrorAndShowToast(Context context, String tag, String message) {
-        if (context == null) return;
+    public static void logInfoAndShowToast(Context context, String tag, String message) {
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL) {
+            logInfo(tag, message);
+            showToast(context, message, true);
+        }
+    }
 
+    public static void logInfoAndShowToast(Context context, String message) {
+        logInfoAndShowToast(context, DEFAULT_LOG_TAG, message);
+    }
+
+
+
+    public static void logErrorAndShowToast(Context context, String tag, String message) {
         if (CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL) {
             logError(tag, message);
             showToast(context, message, true);
@@ -211,8 +222,6 @@ public class Logger {
 
 
     public static void logDebugAndShowToast(Context context, String tag, String message) {
-        if (context == null) return;
-
         if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
             logDebug(tag, message);
             showToast(context, message, true);
