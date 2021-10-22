@@ -2,6 +2,7 @@ package com.termux.app;
 
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.webkit.MimeTypeMap;
 
 import com.termux.app.utils.PluginUtils;
 import com.termux.shared.data.IntentUtils;
+import com.termux.shared.data.UriUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 
@@ -37,8 +39,8 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         Logger.logVerbose(LOG_TAG, "Intent Received:\n" + IntentUtils.getIntentString(intent));
+        Logger.logVerbose(LOG_TAG, "uri: \"" + data + "\", path: \"" + data.getPath() + "\", fragment: \"" + data.getFragment() + "\"");
 
-        final String filePath = data.getPath();
         final String contentTypeExtra = intent.getStringExtra("content-type");
         final boolean useChooser = intent.getBooleanExtra("chooser", false);
         final String intentAction = intent.getAction() == null ? Intent.ACTION_VIEW : intent.getAction();
@@ -52,8 +54,8 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 break;
         }
 
-        final boolean isExternalUrl = data.getScheme() != null && !data.getScheme().equals("file");
-        if (isExternalUrl) {
+        String scheme = data.getScheme();
+        if (scheme != null && !ContentResolver.SCHEME_FILE.equals(scheme)) {
             Intent urlIntent = new Intent(intentAction, data);
             if (intentAction.equals(Intent.ACTION_SEND)) {
                 urlIntent.putExtra(Intent.EXTRA_TEXT, data.toString());
@@ -69,6 +71,9 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             }
             return;
         }
+
+        // Get full path including fragment (anything after last "#")
+        String filePath = UriUtils.getUriFilePath(data);
 
         final File fileToShare = new File(filePath);
         if (!(fileToShare.isFile() && fileToShare.canRead())) {
@@ -93,7 +98,8 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             contentTypeToUse = contentTypeExtra;
         }
 
-        Uri uriToShare = Uri.parse("content://" + TermuxConstants.TERMUX_FILE_SHARE_URI_AUTHORITY + fileToShare.getAbsolutePath());
+        // Do not create Uri with Uri.parse() and use Uri.Builder().path(), check UriUtils.getUriFilePath().
+        Uri uriToShare = UriUtils.getContentUri(TermuxConstants.TERMUX_FILE_SHARE_URI_AUTHORITY, fileToShare.getAbsolutePath());
 
         if (Intent.ACTION_SEND.equals(intentAction)) {
             sendIntent.putExtra(Intent.EXTRA_STREAM, uriToShare);
@@ -184,8 +190,8 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             File file = new File(uri.getPath());
             try {
                 String path = file.getCanonicalPath();
-                String callingPackage = getCallingPackage();
-                Logger.logDebug(LOG_TAG, "Open file request received from " + callingPackage + " for \"" + path + "\" with mode \"" + mode + "\"");
+                String callingPackageName = getCallingPackage();
+                Logger.logDebug(LOG_TAG, "Open file request received from " + callingPackageName + " for \"" + path + "\" with mode \"" + mode + "\"");
                 String storagePath = Environment.getExternalStorageDirectory().getCanonicalPath();
                 // See https://support.google.com/faqs/answer/7496913:
                 if (!(path.startsWith(TermuxConstants.TERMUX_FILES_DIR_PATH) || path.startsWith(storagePath))) {
