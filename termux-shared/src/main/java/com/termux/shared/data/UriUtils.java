@@ -5,6 +5,8 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.termux.shared.file.FileUtils;
+
 public class UriUtils {
 
     /**
@@ -28,6 +30,28 @@ public class UriUtils {
         if (DataUtils.isNullOrEmpty(path)) return null;
         String fragment = uri.getFragment();
         return path + (DataUtils.isNullOrEmpty(fragment) ? "" : "#" + fragment);
+    }
+
+    /**
+     * Get the file basename from a {@link Uri}. The file basename is anything after last forward
+     * slash "/" in the path, or the path itself if its not found.
+     *
+     * @param uri The {@link Uri} to get basename from.
+     * @param withFragment If the {@link Uri} fragment should be included in basename.
+     * @return Returns the file basename if found, otherwise {@code null}.
+     */
+    public static String getUriFileBasename(Uri uri, boolean withFragment) {
+        if (uri == null) return null;
+
+        String path;
+        if (withFragment) {
+            path = getUriFilePath(uri);
+        } else {
+            path = uri.getPath();
+            if (DataUtils.isNullOrEmpty(path)) return null;
+        }
+
+        return FileUtils.getFileBasename(path);
     }
 
     /**

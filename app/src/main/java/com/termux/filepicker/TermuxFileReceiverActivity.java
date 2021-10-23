@@ -142,6 +142,7 @@ public class TermuxFileReceiverActivity extends Activity {
             }
 
             if (attachmentFileName == null) attachmentFileName = subjectFromIntent;
+            if (attachmentFileName == null) attachmentFileName = UriUtils.getUriFileBasename(uri, true);
 
             InputStream in = getContentResolver().openInputStream(uri);
             promptNameAndSave(in, attachmentFileName);
