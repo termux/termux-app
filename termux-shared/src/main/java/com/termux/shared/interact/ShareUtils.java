@@ -141,7 +141,7 @@ public class ShareUtils {
             return;
         }
 
-        Error error = FileUtils.writeStringToFile(label, filePath,
+        Error error = FileUtils.writeTextToFile(label, filePath,
             Charset.defaultCharset(), text, false);
         if (error != null) {
             Logger.logErrorExtended(LOG_TAG, error.toString());

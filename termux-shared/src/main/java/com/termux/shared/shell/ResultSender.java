@@ -253,7 +253,7 @@ public class ResultSender {
             // Write error or output to temp file
             // Check errCode file creation below for explanation for why temp file is used
             String temp_filename = resultConfig.resultFileBasename + "-" + AndroidUtils.getCurrentMilliSecondLocalTimeStamp();
-            error = FileUtils.writeStringToFile(temp_filename, resultConfig.resultDirectoryPath + "/" + temp_filename,
+            error = FileUtils.writeTextToFile(temp_filename, resultConfig.resultDirectoryPath + "/" + temp_filename,
                 null, error_or_output, false);
             if (error != null) {
                 return error;
@@ -283,7 +283,7 @@ public class ResultSender {
             // Write stdout to file
             if (!resultDataStdout.isEmpty()) {
                 filename = RESULT_SENDER.RESULT_FILE_STDOUT_PREFIX + resultConfig.resultFilesSuffix;
-                error = FileUtils.writeStringToFile(filename, resultConfig.resultDirectoryPath + "/" + filename,
+                error = FileUtils.writeTextToFile(filename, resultConfig.resultDirectoryPath + "/" + filename,
                     null, resultDataStdout, false);
                 if (error != null) {
                     return error;
@@ -293,7 +293,7 @@ public class ResultSender {
             // Write stderr to file
             if (!resultDataStderr.isEmpty()) {
                 filename = RESULT_SENDER.RESULT_FILE_STDERR_PREFIX + resultConfig.resultFilesSuffix;
-                error = FileUtils.writeStringToFile(filename, resultConfig.resultDirectoryPath + "/" + filename,
+                error = FileUtils.writeTextToFile(filename, resultConfig.resultDirectoryPath + "/" + filename,
                     null, resultDataStderr, false);
                 if (error != null) {
                     return error;
@@ -303,7 +303,7 @@ public class ResultSender {
             // Write exitCode to file
             if (!resultDataExitCode.isEmpty()) {
                 filename = RESULT_SENDER.RESULT_FILE_EXIT_CODE_PREFIX + resultConfig.resultFilesSuffix;
-                error = FileUtils.writeStringToFile(filename, resultConfig.resultDirectoryPath + "/" + filename,
+                error = FileUtils.writeTextToFile(filename, resultConfig.resultDirectoryPath + "/" + filename,
                     null, resultDataExitCode, false);
                 if (error != null) {
                     return error;
@@ -313,7 +313,7 @@ public class ResultSender {
             // Write errmsg to file
             if (resultData.isStateFailed() && !resultDataErrmsg.isEmpty()) {
                 filename = RESULT_SENDER.RESULT_FILE_ERRMSG_PREFIX + resultConfig.resultFilesSuffix;
-                error = FileUtils.writeStringToFile(filename, resultConfig.resultDirectoryPath + "/" + filename,
+                error = FileUtils.writeTextToFile(filename, resultConfig.resultDirectoryPath + "/" + filename,
                     null, resultDataErrmsg, false);
                 if (error != null) {
                     return error;
@@ -331,7 +331,7 @@ public class ResultSender {
             // Write errCode to temp file
             String temp_filename = RESULT_SENDER.RESULT_FILE_ERR_PREFIX + "-" + AndroidUtils.getCurrentMilliSecondLocalTimeStamp();
             if (!resultConfig.resultFilesSuffix.isEmpty()) temp_filename = temp_filename + "-" + resultConfig.resultFilesSuffix;
-            error = FileUtils.writeStringToFile(temp_filename, resultConfig.resultDirectoryPath + "/" + temp_filename,
+            error = FileUtils.writeTextToFile(temp_filename, resultConfig.resultDirectoryPath + "/" + temp_filename,
                 null, String.valueOf(resultData.getErrCode()), false);
             if (error != null) {
                 return error;

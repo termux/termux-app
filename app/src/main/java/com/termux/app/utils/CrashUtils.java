@@ -69,7 +69,7 @@ public class CrashUtils {
                 StringBuilder reportStringBuilder = new StringBuilder();
 
                 // Read report string from crash log file
-                error = FileUtils.readStringFromFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportStringBuilder, false);
+                error = FileUtils.readTextFromFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportStringBuilder, false);
                 if (error != null) {
                     Logger.logErrorExtended(logTag, error.toString());
                     return;

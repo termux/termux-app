@@ -1375,22 +1375,22 @@ public class FileUtils {
 
 
     /**
-     * Read a {@link String} from file at path with a specific {@link Charset} into {@code dataString}.
+     * Read a text {@link String} from file at path with a specific {@link Charset} into {@code dataString}.
      *
      * @param label The optional label for file to read. This can optionally be {@code null}.
      * @param filePath The {@code path} for file to read.
      * @param charset The {@link Charset} of the file. If this is {@code null},
-     *      *                then default {@link Charset} will be used.
+     *                then default {@link Charset} will be used.
      * @param dataStringBuilder The {@code StringBuilder} to read data into.
      * @param ignoreNonExistentFile The {@code boolean} that decides if it should be considered an
      *                              error if file to read doesn't exist.
      * @return Returns the {@code error} if reading was not successful, otherwise {@code null}.
      */
-    public static Error readStringFromFile(String label, final String filePath, Charset charset, @NonNull final StringBuilder dataStringBuilder, final boolean ignoreNonExistentFile) {
+    public static Error readTextFromFile(String label, final String filePath, Charset charset, @NonNull final StringBuilder dataStringBuilder, final boolean ignoreNonExistentFile) {
         label = (label == null ? "" : label + " ");
         if (filePath == null || filePath.isEmpty()) return FunctionErrno.ERRNO_NULL_OR_EMPTY_PARAMETER.getError(label + "file path", "readStringFromFile");
 
-        Logger.logVerbose(LOG_TAG, "Reading string from " + label + "file at path \"" + filePath + "\"");
+        Logger.logVerbose(LOG_TAG, "Reading text from " + label + "file at path \"" + filePath + "\"");
 
         Error error;
 
@@ -1423,7 +1423,7 @@ public class FileUtils {
         FileInputStream fileInputStream = null;
         BufferedReader bufferedReader = null;
         try {
-            // Read string from file
+            // Read text from file
             fileInputStream = new FileInputStream(filePath);
             bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, charset));
 
@@ -1437,7 +1437,7 @@ public class FileUtils {
 
             Logger.logVerbose(LOG_TAG, Logger.getMultiLineLogStringEntry("String", DataUtils.getTruncatedCommandOutput(dataStringBuilder.toString(), Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD, true, false, true), "-"));
         } catch (Exception e) {
-            return FileUtilsErrno.ERRNO_READING_STRING_FROM_FILE_FAILED_WITH_EXCEPTION.getError(e, label + "file", filePath, e.getMessage());
+            return FileUtilsErrno.ERRNO_READING_TEXT_FROM_FILE_FAILED_WITH_EXCEPTION.getError(e, label + "file", filePath, e.getMessage());
         } finally {
             closeCloseable(fileInputStream);
             closeCloseable(bufferedReader);
@@ -1497,7 +1497,7 @@ public class FileUtils {
         FileInputStream fileInputStream = null;
         ObjectInputStream objectInputStream = null;
         try {
-            // Read string from file
+            // Read serializable object from file
             fileInputStream = new FileInputStream(filePath);
             objectInputStream = new ObjectInputStream(fileInputStream);
             //serializableObject = (T) objectInputStream.readObject();
@@ -1515,7 +1515,7 @@ public class FileUtils {
     }
 
     /**
-     * Write the {@link String} {@code dataString} with a specific {@link Charset} to file at path.
+     * Write text {@code dataString} with a specific {@link Charset} to file at path.
      *
      * @param label The optional label for file to write. This can optionally be {@code null}.
      * @param filePath The {@code path} for file to write.
@@ -1525,11 +1525,11 @@ public class FileUtils {
      * @param append The {@code boolean} that decides if file should be appended to or not.
      * @return Returns the {@code error} if writing was not successful, otherwise {@code null}.
      */
-    public static Error writeStringToFile(String label, final String filePath, Charset charset, final String dataString, final boolean append) {
+    public static Error writeTextToFile(String label, final String filePath, Charset charset, final String dataString, final boolean append) {
         label = (label == null ? "" : label + " ");
         if (filePath == null || filePath.isEmpty()) return FunctionErrno.ERRNO_NULL_OR_EMPTY_PARAMETER.getError(label + "file path", "writeStringToFile");
 
-        Logger.logVerbose(LOG_TAG, Logger.getMultiLineLogStringEntry("Writing string to " + label + "file at path \"" + filePath + "\"", DataUtils.getTruncatedCommandOutput(dataString, Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD, true, false, true), "-"));
+        Logger.logVerbose(LOG_TAG, Logger.getMultiLineLogStringEntry("Writing text to " + label + "file at path \"" + filePath + "\"", DataUtils.getTruncatedCommandOutput(dataString, Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD, true, false, true), "-"));
 
         Error error;
 
@@ -1547,14 +1547,14 @@ public class FileUtils {
         FileOutputStream fileOutputStream = null;
         BufferedWriter bufferedWriter = null;
         try {
-            // Write string to file
+            // Write text to file
             fileOutputStream = new FileOutputStream(filePath, append);
             bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream, charset));
 
             bufferedWriter.write(dataString);
             bufferedWriter.flush();
         } catch (Exception e) {
-            return FileUtilsErrno.ERRNO_WRITING_STRING_TO_FILE_FAILED_WITH_EXCEPTION.getError(e, label + "file", filePath, e.getMessage());
+            return FileUtilsErrno.ERRNO_WRITING_TEXT_TO_FILE_FAILED_WITH_EXCEPTION.getError(e, label + "file", filePath, e.getMessage());
         } finally {
             closeCloseable(fileOutputStream);
             closeCloseable(bufferedWriter);
@@ -1586,7 +1586,7 @@ public class FileUtils {
         FileOutputStream fileOutputStream = null;
         ObjectOutputStream objectOutputStream = null;
         try {
-            // Write object to file
+            // Write serializable object to file
             fileOutputStream = new FileOutputStream(filePath);
             objectOutputStream = new ObjectOutputStream(fileOutputStream);
 

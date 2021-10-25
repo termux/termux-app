@@ -70,7 +70,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         Logger.logError(reportString.toString());
 
         // Write report string to crash log file
-        Error error = FileUtils.writeStringToFile("crash log", crashHandlerClient.getCrashLogFilePath(context),
+        Error error = FileUtils.writeTextToFile("crash log", crashHandlerClient.getCrashLogFilePath(context),
                         Charset.defaultCharset(), reportString.toString(), false);
         if (error != null) {
             Logger.logErrorExtended(LOG_TAG, error.toString());

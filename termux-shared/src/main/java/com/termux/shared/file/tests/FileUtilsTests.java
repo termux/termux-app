@@ -158,18 +158,18 @@ public class FileUtilsTests {
 
         // Write "line1" to dir2/sub_reg1 regular file
         label = dir2__sub_reg1_label; path = dir2__sub_reg1_path;
-        error = FileUtils.writeStringToFile(label, path, Charset.defaultCharset(), "line1", false);
+        error = FileUtils.writeTextToFile(label, path, Charset.defaultCharset(), "line1", false);
         assertEqual("Failed to write string to " + label + " file with append mode false", null, error);
         if (!FileUtils.regularFileExists(path, false))
             throwException("The " + label + " file does not exist as expected after writing to it with append mode false");
 
         // Write "line2" to dir2/sub_reg1 regular file
-        error = FileUtils.writeStringToFile(label, path, Charset.defaultCharset(), "\nline2", true);
+        error = FileUtils.writeTextToFile(label, path, Charset.defaultCharset(), "\nline2", true);
         assertEqual("Failed to write string to " + label + " file with append mode true", null, error);
 
         // Read dir2/sub_reg1 regular file
         StringBuilder dataStringBuilder = new StringBuilder();
-        error = FileUtils.readStringFromFile(label, path, Charset.defaultCharset(), dataStringBuilder, false);
+        error = FileUtils.readTextFromFile(label, path, Charset.defaultCharset(), dataStringBuilder, false);
         assertEqual("Failed to read from " + label + " file", null, error);
         assertEqual("The data read from " + label + " file in not as expected", "line1\nline2", dataStringBuilder.toString());
 
