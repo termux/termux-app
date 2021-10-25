@@ -1,7 +1,6 @@
 package com.termux.filepicker;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -13,8 +12,9 @@ import androidx.annotation.NonNull;
 import com.termux.R;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.data.IntentUtils;
-import com.termux.shared.data.UriUtils;
+import com.termux.shared.net.UriUtils;
 import com.termux.shared.interact.MessageDialogUtils;
+import com.termux.shared.models.net.UriScheme;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
@@ -93,9 +93,9 @@ public class TermuxFileReceiverActivity extends Activity {
                 return;
             }
 
-            if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+            if (UriScheme.SCHEME_CONTENT.equals(scheme)) {
                 handleContentUri(dataUri, sharedTitle);
-            } else if (ContentResolver.SCHEME_FILE.equals(scheme)) {
+            } else if (UriScheme.SCHEME_FILE.equals(scheme)) {
                 Logger.logVerbose(LOG_TAG, "uri: \"" + dataUri + "\", path: \"" + dataUri.getPath() + "\", fragment: \"" + dataUri.getFragment() + "\"");
 
                 // Get full path including fragment (anything after last "#")

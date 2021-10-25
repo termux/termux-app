@@ -2,7 +2,6 @@ package com.termux.app;
 
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -16,8 +15,9 @@ import android.webkit.MimeTypeMap;
 
 import com.termux.app.utils.PluginUtils;
 import com.termux.shared.data.IntentUtils;
-import com.termux.shared.data.UriUtils;
+import com.termux.shared.net.UriUtils;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.models.net.UriScheme;
 import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;
@@ -55,7 +55,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         String scheme = data.getScheme();
-        if (scheme != null && !ContentResolver.SCHEME_FILE.equals(scheme)) {
+        if (scheme != null && !UriScheme.SCHEME_FILE.equals(scheme)) {
             Intent urlIntent = new Intent(intentAction, data);
             if (intentAction.equals(Intent.ACTION_SEND)) {
                 urlIntent.putExtra(Intent.EXTRA_TEXT, data.toString());
