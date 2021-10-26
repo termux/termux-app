@@ -1,4 +1,4 @@
-package com.termux.shared.packages;
+package com.termux.shared.android;
 
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;

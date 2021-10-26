@@ -1,4 +1,4 @@
-package com.termux.shared.packages;
+package com.termux.shared.android;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -21,8 +21,8 @@ import com.google.common.base.Joiner;
 import com.termux.shared.R;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.models.errors.Error;
-import com.termux.shared.models.errors.FunctionErrno;
+import com.termux.shared.errors.Error;
+import com.termux.shared.errors.FunctionErrno;
 import com.termux.shared.view.ActivityUtils;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.termux.shared.termux.shell;
+package com.termux.shared.termux.shell.command.runner.terminal;
 
 import android.content.Context;
 import android.system.OsConstants;
@@ -6,9 +6,9 @@ import android.system.OsConstants;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.R;
-import com.termux.shared.models.ExecutionCommand;
-import com.termux.shared.models.ResultData;
-import com.termux.shared.models.errors.Errno;
+import com.termux.shared.shell.command.ExecutionCommand;
+import com.termux.shared.shell.command.result.ResultData;
+import com.termux.shared.errors.Errno;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.shell.ShellEnvironmentClient;
 import com.termux.shared.shell.ShellUtils;

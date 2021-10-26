@@ -17,11 +17,11 @@ import com.termux.shared.file.FileUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
-import com.termux.shared.models.ExecutionCommand;
-import com.termux.shared.models.errors.Error;
-import com.termux.shared.packages.PackageUtils;
+import com.termux.shared.shell.command.ExecutionCommand;
+import com.termux.shared.errors.Error;
+import com.termux.shared.android.PackageUtils;
 import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
-import com.termux.shared.shell.TermuxTask;
+import com.termux.shared.shell.command.runner.app.TermuxTask;
 
 import org.apache.commons.io.IOUtils;
 

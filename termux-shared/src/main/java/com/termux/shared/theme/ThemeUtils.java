@@ -3,8 +3,6 @@ package com.termux.shared.theme;
 import android.content.Context;
 import android.content.res.Configuration;
 
-import com.termux.shared.models.theme.NightMode;
-
 public class ThemeUtils {
 
     /**

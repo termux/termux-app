@@ -11,8 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.termux.shared.R;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.models.errors.Error;
-import com.termux.shared.models.errors.FunctionErrno;
+import com.termux.shared.errors.Error;
+import com.termux.shared.errors.FunctionErrno;
 
 
 public class ActivityUtils {

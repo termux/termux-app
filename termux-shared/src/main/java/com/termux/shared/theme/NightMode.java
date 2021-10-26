@@ -1,4 +1,4 @@
-package com.termux.shared.models.theme;
+package com.termux.shared.theme;
 
 import androidx.appcompat.app.AppCompatDelegate;
 

@@ -1,4 +1,4 @@
-package com.termux.shared.net;
+package com.termux.shared.net.uri;
 
 import android.net.Uri;
 
@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.file.FileUtils;
-import com.termux.shared.models.net.UriScheme;
 
 public class UriUtils {
 

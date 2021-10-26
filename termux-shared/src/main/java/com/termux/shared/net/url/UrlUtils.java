@@ -1,4 +1,4 @@
-package com.termux.shared.net;
+package com.termux.shared.net.url;
 
 import androidx.annotation.Nullable;
 

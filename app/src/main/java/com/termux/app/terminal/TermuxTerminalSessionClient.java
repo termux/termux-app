@@ -13,7 +13,7 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import com.termux.R;
-import com.termux.shared.termux.shell.TermuxSession;
+import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.app.TermuxActivity;
 import com.termux.shared.termux.terminal.TermuxTerminalSessionClientBase;

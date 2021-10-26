@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.packages.PackageUtils;
+import com.termux.shared.android.PackageUtils;
 import com.termux.shared.settings.preferences.SharedPreferenceUtils;
 import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_FLOAT_APP;
 import com.termux.shared.termux.TermuxConstants;

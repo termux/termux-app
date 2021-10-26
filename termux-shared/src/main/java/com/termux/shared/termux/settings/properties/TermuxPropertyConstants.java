@@ -1,7 +1,7 @@
 package com.termux.shared.termux.settings.properties;
 
 import com.google.common.collect.ImmutableBiMap;
-import com.termux.shared.models.theme.NightMode;
+import com.termux.shared.theme.NightMode;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.file.filesystem.FileType;
 import com.termux.shared.settings.properties.SharedProperties;

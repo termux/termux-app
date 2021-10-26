@@ -1,4 +1,4 @@
-package com.termux.shared.models.errors;
+package com.termux.shared.errors;
 
 import android.app.Activity;
 

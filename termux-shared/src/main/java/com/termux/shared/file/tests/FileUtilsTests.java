@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.models.errors.Error;
+import com.termux.shared.errors.Error;
 
 import java.io.File;
 import java.nio.charset.Charset;

@@ -18,8 +18,8 @@ import com.termux.shared.data.DataUtils;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.models.errors.Error;
-import com.termux.shared.packages.PermissionUtils;
+import com.termux.shared.errors.Error;
+import com.termux.shared.android.PermissionUtils;
 
 import java.nio.charset.Charset;
 

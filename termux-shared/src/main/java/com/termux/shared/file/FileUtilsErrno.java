@@ -1,4 +1,6 @@
-package com.termux.shared.models.errors;
+package com.termux.shared.file;
+
+import com.termux.shared.errors.Errno;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,8 +71,9 @@ public class FileUtilsErrno extends Errno {
     public static final Errno ERRNO_WRITING_TEXT_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 351, "Writing text to %1$s at path \"%2$s\" failed.\nException: %3$s");
     public static final Errno ERRNO_UNSUPPORTED_CHARSET = new Errno(TYPE, 352, "Unsupported charset \"%1$s\"");
     public static final Errno ERRNO_CHECKING_IF_CHARSET_SUPPORTED_FAILED = new Errno(TYPE, 353, "Checking if charset \"%1$s\" is supported failed.\nException: %2$s");
-    public static final Errno ERRNO_READING_SERIALIZABLE_OBJECT_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 354, "Reading serializable object from %1$s at path \"%2$s\" failed.\nException: %3$s");
-    public static final Errno ERRNO_WRITING_SERIALIZABLE_OBJECT_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 355, "Writing serializable object to %1$s at path \"%2$s\" failed.\nException: %3$s");
+    public static final Errno ERRNO_GET_CHARSET_FOR_NAME_FAILED = new Errno(TYPE, 354, "The \"%1$s\" charset is not supported.\nException: %2$s");
+    public static final Errno ERRNO_READING_SERIALIZABLE_OBJECT_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 355, "Reading serializable object from %1$s at path \"%2$s\" failed.\nException: %3$s");
+    public static final Errno ERRNO_WRITING_SERIALIZABLE_OBJECT_TO_FILE_FAILED_WITH_EXCEPTION = new Errno(TYPE, 356, "Writing serializable object to %1$s at path \"%2$s\" failed.\nException: %3$s");
 
 
 

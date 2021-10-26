@@ -1,4 +1,4 @@
-package com.termux.shared.models;
+package com.termux.shared.shell.command;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -6,10 +6,13 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.data.IntentUtils;
-import com.termux.shared.models.errors.Error;
+import com.termux.shared.shell.command.result.ResultConfig;
+import com.termux.shared.shell.command.result.ResultData;
+import com.termux.shared.errors.Error;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.data.DataUtils;
+import com.termux.shared.shell.command.runner.app.TermuxTask;
 
 import java.util.Collections;
 import java.util.List;
@@ -84,10 +87,10 @@ public class ExecutionCommand {
     public boolean isFailsafe;
 
     /**
-     * The {@link ExecutionCommand} custom log level for background {@link com.termux.shared.shell.TermuxTask}
+     * The {@link ExecutionCommand} custom log level for background {@link TermuxTask}
      * commands. By default, @link com.termux.shared.shell.StreamGobbler} only logs stdout and
      * stderr if {@link Logger} `CURRENT_LOG_LEVEL` is >= {@link Logger#LOG_LEVEL_VERBOSE} and
-     * {@link com.termux.shared.shell.TermuxTask} only logs stdin if `CURRENT_LOG_LEVEL` is >=
+     * {@link TermuxTask} only logs stdin if `CURRENT_LOG_LEVEL` is >=
      * {@link Logger#LOG_LEVEL_DEBUG}.
      */
     public Integer backgroundCustomLogLevel;

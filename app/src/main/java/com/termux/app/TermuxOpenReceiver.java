@@ -15,9 +15,9 @@ import android.webkit.MimeTypeMap;
 
 import com.termux.app.utils.PluginUtils;
 import com.termux.shared.data.IntentUtils;
-import com.termux.shared.net.UriUtils;
+import com.termux.shared.net.uri.UriUtils;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.models.net.UriScheme;
+import com.termux.shared.net.uri.UriScheme;
 import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;

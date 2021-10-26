@@ -1,4 +1,4 @@
-package com.termux.shared.models;
+package com.termux.shared.shell.command.result;
 
 import android.app.PendingIntent;
 

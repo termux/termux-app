@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
 import com.termux.R;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.markdown.MarkdownUtils;
-import com.termux.shared.models.errors.Error;
+import com.termux.shared.errors.Error;
 import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.models.ReportInfo;

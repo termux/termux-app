@@ -1,4 +1,4 @@
-package com.termux.shared.shell;
+package com.termux.shared.shell.command.runner.app;
 
 import android.content.Context;
 import android.system.ErrnoException;
@@ -9,11 +9,14 @@ import androidx.annotation.NonNull;
 
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
-import com.termux.shared.models.ExecutionCommand;
-import com.termux.shared.models.ResultData;
-import com.termux.shared.models.errors.Errno;
+import com.termux.shared.shell.command.ExecutionCommand;
+import com.termux.shared.shell.command.result.ResultData;
+import com.termux.shared.errors.Errno;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.models.ExecutionCommand.ExecutionState;
+import com.termux.shared.shell.command.ExecutionCommand.ExecutionState;
+import com.termux.shared.shell.ShellEnvironmentClient;
+import com.termux.shared.shell.ShellUtils;
+import com.termux.shared.shell.StreamGobbler;
 
 import java.io.DataOutputStream;
 import java.io.File;
