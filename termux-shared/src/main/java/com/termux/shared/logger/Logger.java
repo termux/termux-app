@@ -6,9 +6,10 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
-import com.termux.shared.termux.TermuxConstants;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -19,7 +20,7 @@ import java.util.List;
 
 public class Logger {
 
-    public static final String DEFAULT_LOG_TAG = TermuxConstants.TERMUX_APP_NAME;
+    private static String DEFAULT_LOG_TAG = "Logger";
 
     public static final int LOG_LEVEL_OFF = 0; // log nothing
     public static final int LOG_LEVEL_NORMAL = 1; // start logging error, warn and info messages and stacktraces
@@ -415,6 +416,20 @@ public class Logger {
             return logLabel + " (default)";
         else
             return logLabel;
+    }
+
+
+
+    @NonNull
+    public static String getDefaultLogTag() {
+        return DEFAULT_LOG_TAG;
+    }
+
+    /**
+     * IllegalArgumentException will be thrown if tag.length() > 23 for Nougat (7.0) and prior releases.
+     * https://developer.android.com/reference/android/util/Log#isLoggable(java.lang.String,%20int) */
+    public static void setDefaultLogTag(@NonNull String defaultLogTag) {
+        DEFAULT_LOG_TAG = defaultLogTag.length() >= 23 ? defaultLogTag.substring(0, 22) : defaultLogTag;
     }
 
 

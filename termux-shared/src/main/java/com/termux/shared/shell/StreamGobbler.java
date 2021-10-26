@@ -190,7 +190,7 @@ public class StreamGobbler extends Thread {
 
     @Override
     public void run() {
-        String defaultLogTag = Logger.DEFAULT_LOG_TAG;
+        String defaultLogTag = Logger.getDefaultLogTag();
         boolean loggingEnabled = Logger.shouldEnableLoggingForCustomLogLevel(mLogLevel);
         if (loggingEnabled)
             Logger.logVerbose(LOG_TAG, "Using custom log level: " + mLogLevel + ", current log level: " + Logger.getLogLevel());
