@@ -29,6 +29,7 @@ import com.termux.shared.data.IntentUtils;
 import com.termux.shared.net.uri.UriUtils;
 import com.termux.shared.errors.Errno;
 import com.termux.shared.shell.ShellUtils;
+import com.termux.shared.shell.command.runner.app.AppShell;
 import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
 import com.termux.shared.termux.shell.TermuxShellUtils;
 import com.termux.shared.termux.TermuxConstants;
@@ -42,7 +43,6 @@ import com.termux.shared.notification.NotificationUtils;
 import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.shell.command.ExecutionCommand;
-import com.termux.shared.shell.command.runner.app.TermuxTask;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A service holding a list of {@link TermuxSession} in {@link #mTermuxSessions} and background {@link TermuxTask}
+ * A service holding a list of {@link TermuxSession} in {@link #mTermuxSessions} and background {@link AppShell}
  * in {@link #mTermuxTasks}, showing a foreground notification while running so that it is not terminated.
  * The user interacts with the session through {@link TermuxActivity}, but this service may outlive
  * the activity when the user or the system disposes of the activity. In that case the user may
@@ -63,7 +63,7 @@ import java.util.List;
  * Optionally may hold a wake and a wifi lock, in which case that is shown in the notification - see
  * {@link #buildNotification()}.
  */
-public final class TermuxService extends Service implements TermuxTask.TermuxTaskClient, TermuxSession.TermuxSessionClient {
+public final class TermuxService extends Service implements AppShell.AppShellClient, TermuxSession.TermuxSessionClient {
 
     private static int EXECUTION_ID = 1000;
 
@@ -87,7 +87,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
     /**
      * The background TermuxTasks which this service manages.
      */
-    final List<TermuxTask> mTermuxTasks = new ArrayList<>();
+    final List<AppShell> mTermuxTasks = new ArrayList<>();
 
     /**
      * The pending plugin ExecutionCommands that have yet to be processed by this service.
@@ -263,7 +263,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
             termuxSessions.get(i).killIfExecuting(this, processResult);
         }
 
-        List<TermuxTask> termuxTasks = new ArrayList<>(mTermuxTasks);
+        List<AppShell> termuxTasks = new ArrayList<>(mTermuxTasks);
         for (int i = 0; i < termuxTasks.size(); i++) {
             ExecutionCommand executionCommand = termuxTasks.get(i).getExecutionCommand();
             if (executionCommand.isPluginExecutionCommandWithPendingResult())
@@ -403,24 +403,24 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
 
 
 
-    /** Execute a shell command in background {@link TermuxTask}. */
+    /** Execute a shell command in background TermuxTask. */
     private void executeTermuxTaskCommand(ExecutionCommand executionCommand) {
         if (executionCommand == null) return;
 
         Logger.logDebug(LOG_TAG, "Executing background \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask command");
 
-        TermuxTask newTermuxTask = createTermuxTask(executionCommand);
+        AppShell newTermuxTask = createTermuxTask(executionCommand);
     }
 
-    /** Create a {@link TermuxTask}. */
+    /** Create a TermuxTask. */
     @Nullable
-    public TermuxTask createTermuxTask(String executablePath, String[] arguments, String stdin, String workingDirectory) {
+    public AppShell createTermuxTask(String executablePath, String[] arguments, String stdin, String workingDirectory) {
         return createTermuxTask(new ExecutionCommand(getNextExecutionId(), executablePath, arguments, stdin, workingDirectory, true, false));
     }
 
-    /** Create a {@link TermuxTask}. */
+    /** Create a TermuxTask. */
     @Nullable
-    public synchronized TermuxTask createTermuxTask(ExecutionCommand executionCommand) {
+    public synchronized AppShell createTermuxTask(ExecutionCommand executionCommand) {
         if (executionCommand == null) return null;
 
         Logger.logDebug(LOG_TAG, "Creating \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxTask");
@@ -433,7 +433,7 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
             Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
-        TermuxTask newTermuxTask = TermuxTask.execute(this, executionCommand, this, new TermuxShellEnvironmentClient(), false);
+        AppShell newTermuxTask = AppShell.execute(this, executionCommand, this, new TermuxShellEnvironmentClient(), false);
         if (newTermuxTask == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxTask command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             // If the execution command was started for a plugin, then process the error
@@ -456,9 +456,9 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
         return newTermuxTask;
     }
 
-    /** Callback received when a {@link TermuxTask} finishes. */
+    /** Callback received when a TermuxTask finishes. */
     @Override
-    public void onTermuxTaskExited(final TermuxTask termuxTask) {
+    public void onAppShellExited(final AppShell termuxTask) {
         mHandler.post(() -> {
             if (termuxTask != null) {
                 ExecutionCommand executionCommand = termuxTask.getExecutionCommand();

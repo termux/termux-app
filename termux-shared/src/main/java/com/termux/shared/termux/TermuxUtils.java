@@ -14,6 +14,7 @@ import com.termux.shared.R;
 import com.termux.shared.android.AndroidUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.file.FileUtils;
+import com.termux.shared.shell.command.runner.app.AppShell;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
@@ -21,7 +22,6 @@ import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.shared.errors.Error;
 import com.termux.shared.android.PackageUtils;
 import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
-import com.termux.shared.shell.command.runner.app.TermuxTask;
 
 import org.apache.commons.io.IOUtils;
 
@@ -519,8 +519,8 @@ public class TermuxUtils {
         ExecutionCommand executionCommand = new ExecutionCommand(1, TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash", null, aptInfoScript, null, true, false);
         executionCommand.commandLabel = "APT Info Command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
-        TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
-        if (termuxTask == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
+        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
+        if (appShell == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
             Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             return null;
         }
@@ -577,8 +577,8 @@ public class TermuxUtils {
         ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null, logcatScript + "\n", "/", true, true);
         executionCommand.commandLabel = "Logcat dump command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
-        TermuxTask termuxTask = TermuxTask.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
-        if (termuxTask == null || !executionCommand.isSuccessful()) {
+        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
+        if (appShell == null || !executionCommand.isSuccessful()) {
             Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             return null;
         }
