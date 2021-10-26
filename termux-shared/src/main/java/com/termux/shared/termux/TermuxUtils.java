@@ -117,7 +117,11 @@ public class TermuxUtils {
         return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_WIDGET_PACKAGE_NAME);
     }
 
-
+    /** Wrapper for {@link PackageUtils#getContextForPackageOrExitApp(Context, String, boolean, String)}. */
+    public static Context getContextForPackageOrExitApp(@NonNull Context context, String packageName,
+                                                        final boolean exitAppOnError) {
+        return PackageUtils.getContextForPackageOrExitApp(context, packageName, exitAppOnError, TermuxConstants.TERMUX_GITHUB_REPO_URL);
+    }
 
     /**
      * Check if Termux app is installed and enabled. This can be used by external apps that don't

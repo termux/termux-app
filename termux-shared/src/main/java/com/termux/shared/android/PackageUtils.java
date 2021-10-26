@@ -19,7 +19,6 @@ import com.termux.shared.data.DataUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.reflection.ReflectionUtils;
-import com.termux.shared.termux.TermuxConstants;
 
 import java.lang.reflect.Field;
 import java.security.MessageDigest;
@@ -53,15 +52,19 @@ public class PackageUtils {
      * @param packageName The package name whose {@link Context} to get.
      * @param exitAppOnError If {@code true} and failed to get package context, then a dialog will
      *                       be shown which when dismissed will exit the app.
+     * @param helpUrl The help user to add to {@link R.string#error_get_package_context_failed_help_url_message}.
      * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
      */
     @Nullable
-    public static Context getContextForPackageOrExitApp(@NonNull Context context, String packageName, final boolean exitAppOnError) {
+    public static Context getContextForPackageOrExitApp(@NonNull Context context, String packageName,
+                                                        final boolean exitAppOnError, @Nullable String helpUrl) {
         Context packageContext = getContextForPackage(context, packageName);
 
         if (packageContext == null && exitAppOnError) {
             String errorMessage = context.getString(R.string.error_get_package_context_failed_message,
-                packageName, TermuxConstants.TERMUX_GITHUB_REPO_URL);
+                packageName);
+            if (!DataUtils.isNullOrEmpty(helpUrl))
+                errorMessage += "\n" + context.getString(R.string.error_get_package_context_failed_help_url_message, helpUrl);
             Logger.logError(LOG_TAG, errorMessage);
             MessageDialogUtils.exitAppWithErrorMessage(context,
                 context.getString(R.string.error_get_package_context_failed_title),

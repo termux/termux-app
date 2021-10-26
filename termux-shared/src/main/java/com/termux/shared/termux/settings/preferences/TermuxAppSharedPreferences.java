@@ -13,6 +13,7 @@ import com.termux.shared.settings.preferences.SharedPreferenceUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.data.DataUtils;
+import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
 
 public class TermuxAppSharedPreferences {
@@ -59,7 +60,7 @@ public class TermuxAppSharedPreferences {
      * @return Returns the {@link TermuxAppSharedPreferences}. This will {@code null} if an exception is raised.
      */
     public static TermuxAppSharedPreferences build(@NonNull final Context context, final boolean exitAppOnError) {
-        Context termuxPackageContext = PackageUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_PACKAGE_NAME, exitAppOnError);
+        Context termuxPackageContext = TermuxUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_PACKAGE_NAME, exitAppOnError);
         if (termuxPackageContext == null)
             return null;
         else

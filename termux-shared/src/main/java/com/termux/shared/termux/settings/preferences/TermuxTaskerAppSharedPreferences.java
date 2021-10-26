@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.termux.shared.android.PackageUtils;
 import com.termux.shared.settings.preferences.SharedPreferenceUtils;
 import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_TASKER_APP;
 import com.termux.shared.logger.Logger;
 
@@ -54,7 +55,7 @@ public class TermuxTaskerAppSharedPreferences {
      * @return Returns the {@link TermuxTaskerAppSharedPreferences}. This will {@code null} if an exception is raised.
      */
     public static  TermuxTaskerAppSharedPreferences build(@NonNull final Context context, final boolean exitAppOnError) {
-        Context termuxTaskerPackageContext = PackageUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_TASKER_PACKAGE_NAME, exitAppOnError);
+        Context termuxTaskerPackageContext = TermuxUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_TASKER_PACKAGE_NAME, exitAppOnError);
         if (termuxTaskerPackageContext == null)
             return null;
         else

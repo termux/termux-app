@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.android.PackageUtils;
 import com.termux.shared.settings.preferences.SharedPreferenceUtils;
+import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_BOOT_APP;
 import com.termux.shared.termux.TermuxConstants;
 
@@ -54,7 +55,7 @@ public class TermuxBootAppSharedPreferences {
      * @return Returns the {@link TermuxBootAppSharedPreferences}. This will {@code null} if an exception is raised.
      */
     public static TermuxBootAppSharedPreferences build(@NonNull final Context context, final boolean exitAppOnError) {
-        Context termuxTaskerPackageContext = PackageUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_BOOT_PACKAGE_NAME, exitAppOnError);
+        Context termuxTaskerPackageContext = TermuxUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_BOOT_PACKAGE_NAME, exitAppOnError);
         if (termuxTaskerPackageContext == null)
             return null;
         else
