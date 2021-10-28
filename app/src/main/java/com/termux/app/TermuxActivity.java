@@ -33,6 +33,7 @@ import android.widget.Toast;
 import com.termux.R;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.termux.TermuxConstants;
@@ -524,7 +525,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private void setSettingsButtonView() {
         ImageButton settingsButton = findViewById(R.id.settings_button);
         settingsButton.setOnClickListener(v -> {
-            startActivity(new Intent(this, SettingsActivity.class));
+            ActivityUtils.startActivity(this, new Intent(this, SettingsActivity.class));
         });
     }
 
@@ -643,10 +644,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 toggleKeepScreenOn();
                 return true;
             case CONTEXT_MENU_HELP_ID:
-                startActivity(new Intent(this, HelpActivity.class));
+                ActivityUtils.startActivity(this, new Intent(this, HelpActivity.class));
                 return true;
             case CONTEXT_MENU_SETTINGS_ID:
-                startActivity(new Intent(this, SettingsActivity.class));
+                ActivityUtils.startActivity(this, new Intent(this, SettingsActivity.class));
                 return true;
             case CONTEXT_MENU_REPORT_ID:
                 mTermuxTerminalViewClient.reportIssueFromTranscript();
@@ -689,7 +690,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.
             new AlertDialog.Builder(this).setMessage(getString(R.string.error_styling_not_installed))
-                .setPositiveButton(R.string.action_styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL)))).setNegativeButton(android.R.string.cancel, null).show();
+                .setPositiveButton(R.string.action_styling_install,
+                    (dialog, which) -> ActivityUtils.startActivity(this, new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL))))
+                .setNegativeButton(android.R.string.cancel, null).show();
         }
     }
     private void toggleKeepScreenOn() {
@@ -719,7 +722,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
      * if targeting targetSdkVersion 30 (android 11) and running on sdk 30 (android 11) and higher.
      */
     public void requestStoragePermission(boolean isPermissionCallback) {
-         new Thread() {
+        new Thread() {
             @Override
             public void run() {
                 // Do not ask for permission again
@@ -934,7 +937,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 
     public static void startTermuxActivity(@NonNull final Context context) {
-        context.startActivity(newInstance(context));
+        ActivityUtils.startActivity(context, newInstance(context));
     }
 
     public static Intent newInstance(@NonNull final Context context) {
