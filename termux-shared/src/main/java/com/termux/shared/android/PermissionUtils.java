@@ -3,6 +3,7 @@ package com.termux.shared.android;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -324,13 +325,20 @@ public class PermissionUtils {
         return requestPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE, requestCode);
     }
 
+    /** Wrapper for {@link #requestManageStorageExternalPermission(Context, int)}. */
+    public static Error requestManageStorageExternalPermission(@NonNull Context context) {
+        return requestManageStorageExternalPermission(context, -1);
+    }
+
     /**
      * Request user to grant {@link Manifest.permission#MANAGE_EXTERNAL_STORAGE} permission to the app.
      *
-     * @param context The context for operations. It must be an instance of {@link Activity} or
-     * {@link AppCompatActivity}.
-     * @param requestCode The request code to use while asking for permission. It must be `>=0` or
-     *                    will fail silently and will log an exception.
+     * @param context The context for operations, like an {@link Activity} or {@link Service} context.
+     *                It must be an instance of {@link Activity} or {@link AppCompatActivity} if
+     *                result is required via the Activity#onActivityResult() callback and
+     *                {@code requestCode} is `>=0`.
+     * @param requestCode The request code to use while asking for permission. It must be `>=0` if
+     *                    result it required.
      * @return Returns the {@code error} if requesting the permission was not successful, otherwise {@code null}.
      */
     public static Error requestManageStorageExternalPermission(@NonNull Context context, int requestCode) {
@@ -339,13 +347,22 @@ public class PermissionUtils {
         Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
         intent.addCategory("android.intent.category.DEFAULT");
         intent.setData(Uri.parse("package:" + context.getPackageName()));
-        Error error = ActivityUtils.startActivityForResult(context, requestCode, intent, true, false);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Error error;
+        if (requestCode >=0)
+            error = ActivityUtils.startActivityForResult(context, requestCode, intent, true, false);
+        else
+            error = ActivityUtils.startActivity(context, intent, true, false);
 
         // Use fallback if matching Activity did not exist for ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION.
         if (error != null) {
             intent = new Intent();
             intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-            return ActivityUtils.startActivityForResult(context, requestCode, intent);
+            if (requestCode >=0)
+                return ActivityUtils.startActivityForResult(context, requestCode, intent);
+            else
+                return ActivityUtils.startActivity(context, intent);
         }
 
         return null;
@@ -421,19 +438,33 @@ public class PermissionUtils {
         return Settings.canDrawOverlays(context);
     }
 
+    /** Wrapper for {@link #requestDisplayOverOtherAppsPermission(Context, int)}. */
+    public static Error requestDisplayOverOtherAppsPermission(@NonNull Context context) {
+        return requestDisplayOverOtherAppsPermission(context, -1);
+    }
+
     /**
      * Request user to grant {@link Manifest.permission#SYSTEM_ALERT_WINDOW} permission to the app.
      *
-     * @param context The context for operations. It must be an instance of {@link Activity} or
-     * {@link AppCompatActivity}.
-     * @param requestCode The request code to use while asking for permission. It must be `>=0` or
-     *                    will fail silently and will log an exception.
+     * @param context The context for operations, like an {@link Activity} or {@link Service} context.
+     *                It must be an instance of {@link Activity} or {@link AppCompatActivity} if
+     *                result is required via the Activity#onActivityResult() callback and
+     *                {@code requestCode} is `>=0`.
+     * @param requestCode The request code to use while asking for permission. It must be `>=0` if
+     *                    result it required.
      * @return Returns the {@code error} if requesting the permission was not successful, otherwise {@code null}.
      */
     public static Error requestDisplayOverOtherAppsPermission(@NonNull Context context, int requestCode) {
+        Logger.logInfo(LOG_TAG, "Requesting display over apps permission");
+
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
-        return ActivityUtils.startActivityForResult(context, requestCode, intent);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        if (requestCode >=0)
+            return ActivityUtils.startActivityForResult(context, requestCode, intent);
+        else
+            return ActivityUtils.startActivity(context, intent);
     }
 
     /**
@@ -475,21 +506,35 @@ public class PermissionUtils {
         return powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
     }
 
+    /** Wrapper for {@link #requestDisableBatteryOptimizations(Context, int)}. */
+    public static Error requestDisableBatteryOptimizations(@NonNull Context context) {
+        return requestDisableBatteryOptimizations(context, -1);
+    }
+
     /**
      * Request user to grant {@link Manifest.permission#REQUEST_IGNORE_BATTERY_OPTIMIZATIONS}
      * permission to the app.
      *
-     * @param context The context for operations. It must be an instance of {@link Activity} or
-     * {@link AppCompatActivity}.
-     * @param requestCode The request code to use while asking for permission. It must be `>=0` or
-     *                    will fail silently and will log an exception.
+     * @param context The context for operations, like an {@link Activity} or {@link Service} context.
+     *                It must be an instance of {@link Activity} or {@link AppCompatActivity} if
+     *                result is required via the Activity#onActivityResult() callback and
+     *                {@code requestCode} is `>=0`.
+     * @param requestCode The request code to use while asking for permission. It must be `>=0` if
+     *                    result it required.
      * @return Returns the {@code error} if requesting the permission was not successful, otherwise {@code null}.
      */
     @SuppressLint("BatteryLife")
     public static Error requestDisableBatteryOptimizations(@NonNull Context context, int requestCode) {
+        Logger.logInfo(LOG_TAG, "Requesting to disable battery optimizations");
+
         Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
-        return ActivityUtils.startActivityForResult(context, requestCode, intent);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        if (requestCode >=0)
+            return ActivityUtils.startActivityForResult(context, requestCode, intent);
+        else
+            return ActivityUtils.startActivity(context, intent);
     }
 
 }
