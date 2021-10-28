@@ -1,4 +1,4 @@
-package com.termux.shared.view;
+package com.termux.shared.activity;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,8 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.termux.shared.R;
-import com.termux.shared.logger.Logger;
 import com.termux.shared.errors.Error;
 import com.termux.shared.errors.FunctionErrno;
 
@@ -22,14 +20,15 @@ public class ActivityUtils {
     /**
      * Wrapper for {@link #startActivityForResult(Context, int, Intent, boolean, boolean, ActivityResultLauncher)}.
      */
-    public static boolean startActivityForResult(Context context, int requestCode, @NonNull Intent intent) {
+    public static Error startActivityForResult(Context context, int requestCode, @NonNull Intent intent) {
         return startActivityForResult(context, requestCode, intent, true, true, null);
     }
 
     /**
      * Wrapper for {@link #startActivityForResult(Context, int, Intent, boolean, boolean, ActivityResultLauncher)}.
      */
-    public static boolean startActivityForResult(Context context, int requestCode, @NonNull Intent intent, boolean logErrorMessage, boolean showErrorMessage) {
+    public static Error startActivityForResult(Context context, int requestCode, @NonNull Intent intent,
+                                               boolean logErrorMessage, boolean showErrorMessage) {
         return startActivityForResult(context, requestCode, intent, logErrorMessage, showErrorMessage, null);
     }
 
@@ -50,10 +49,13 @@ public class ActivityUtils {
      *                               activity. If this is {@code null}, then
      *                               {@link Activity#startActivity(Intent)} will be used instead.
      *                               Note that later is deprecated.
-     * @return Returns {@code true} if starting activity was successful, otherwise {@code false}.
+     * @return Returns the {@code error} if starting activity was not successful, otherwise {@code null}.
+
      */
-    public static boolean startActivityForResult(@NonNull Context context, int requestCode, @NonNull Intent intent,
-                                                 boolean logErrorMessage, boolean showErrorMessage, @Nullable ActivityResultLauncher<Intent> activityResultLauncher) {
+    public static Error startActivityForResult(@NonNull Context context, int requestCode, @NonNull Intent intent,
+                                               boolean logErrorMessage, boolean showErrorMessage,
+                                               @Nullable ActivityResultLauncher<Intent> activityResultLauncher) {
+        Error error;
         try {
             if (activityResultLauncher != null) {
                 activityResultLauncher.launch(intent);
@@ -63,24 +65,21 @@ public class ActivityUtils {
                 else if (context instanceof Activity)
                     ((Activity) context).startActivityForResult(intent, requestCode);
                 else {
+                    error = FunctionErrno.ERRNO_PARAMETER_NOT_INSTANCE_OF.getError("context", "startActivityForResult", "Activity or AppCompatActivity");
                     if (logErrorMessage)
-                        Error.logErrorAndShowToast(showErrorMessage ? context : null, LOG_TAG,
-                            FunctionErrno.ERRNO_PARAMETER_NOT_INSTANCE_OF.getError("context", "startActivityForResult", "Activity or AppCompatActivity"));
-                    return false;
+                        error.logErrorAndShowToast(showErrorMessage ? context : null, LOG_TAG);
+                    return error;
                 }
             }
         } catch (Exception e) {
-            if (logErrorMessage) {
-                String activityName = intent.getComponent() != null ? intent.getComponent().getShortClassName() : "Unknown";
-                String errmsg = context.getString(R.string.error_failed_to_start_activity_for_result, activityName);
-                Logger.logStackTraceWithMessage(LOG_TAG, errmsg, e);
-                if (showErrorMessage)
-                    Logger.showToast(context, errmsg + ": " + e.getMessage(), true);
-            }
-            return false;
+            String activityName = intent.getComponent() != null ? intent.getComponent().getClassName() : "Unknown";
+            error = ActivityUtilsErrno.ERRNO_START_ACTIVITY_FOR_RESULT_FAILED_WITH_EXCEPTION.getError(e, activityName, e.getMessage());
+            if (logErrorMessage)
+                error.logErrorAndShowToast(showErrorMessage ? context : null, LOG_TAG);
+            return error;
         }
 
-        return true;
+        return null;
     }
 
 }

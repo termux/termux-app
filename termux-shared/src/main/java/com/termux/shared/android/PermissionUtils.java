@@ -23,7 +23,7 @@ import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.errors.Error;
 import com.termux.shared.errors.FunctionErrno;
-import com.termux.shared.view.ActivityUtils;
+import com.termux.shared.activity.ActivityUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -331,24 +331,24 @@ public class PermissionUtils {
      * {@link AppCompatActivity}.
      * @param requestCode The request code to use while asking for permission. It must be `>=0` or
      *                    will fail silently and will log an exception.
-     * @return Returns {@code true} if requesting the permission was successful, otherwise {@code false}.
+     * @return Returns the {@code error} if requesting the permission was not successful, otherwise {@code null}.
      */
-    public static boolean requestManageStorageExternalPermission(@NonNull Context context, int requestCode) {
+    public static Error requestManageStorageExternalPermission(@NonNull Context context, int requestCode) {
         Logger.logInfo(LOG_TAG, "Requesting manage external storage permission");
 
         Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
         intent.addCategory("android.intent.category.DEFAULT");
         intent.setData(Uri.parse("package:" + context.getPackageName()));
-        boolean result = ActivityUtils.startActivityForResult(context, requestCode, intent);
+        Error error = ActivityUtils.startActivityForResult(context, requestCode, intent, true, false);
 
         // Use fallback if matching Activity did not exist for ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION.
-        if (!result) {
+        if (error != null) {
             intent = new Intent();
             intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
             return ActivityUtils.startActivityForResult(context, requestCode, intent);
         }
 
-        return true;
+        return null;
     }
 
     /**
@@ -428,9 +428,9 @@ public class PermissionUtils {
      * {@link AppCompatActivity}.
      * @param requestCode The request code to use while asking for permission. It must be `>=0` or
      *                    will fail silently and will log an exception.
-     * @return Returns {@code true} if requesting the permission was successful, otherwise {@code false}.
+     * @return Returns the {@code error} if requesting the permission was not successful, otherwise {@code null}.
      */
-    public static boolean requestDisplayOverOtherAppsPermission(@NonNull Context context, int requestCode) {
+    public static Error requestDisplayOverOtherAppsPermission(@NonNull Context context, int requestCode) {
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
         return ActivityUtils.startActivityForResult(context, requestCode, intent);
@@ -483,10 +483,10 @@ public class PermissionUtils {
      * {@link AppCompatActivity}.
      * @param requestCode The request code to use while asking for permission. It must be `>=0` or
      *                    will fail silently and will log an exception.
-     * @return Returns {@code true} if requesting the permission was successful, otherwise {@code false}.
+     * @return Returns the {@code error} if requesting the permission was not successful, otherwise {@code null}.
      */
     @SuppressLint("BatteryLife")
-    public static boolean requestDisableBatteryOptimizations(@NonNull Context context, int requestCode) {
+    public static Error requestDisableBatteryOptimizations(@NonNull Context context, int requestCode) {
         Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
         return ActivityUtils.startActivityForResult(context, requestCode, intent);

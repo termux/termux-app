@@ -18,12 +18,6 @@
 
 
 
-    <!-- ActivityUtils -->
-    <string name="error_failed_to_start_activity">Failed to start %1$s activity</string>
-    <string name="error_failed_to_start_activity_for_result">Failed to start %1$s activity for result</string>
-
-
-
     <!-- PackageUtils -->
     <string name="error_app_not_installed_or_disabled_warning">The %1$s (%2$s) app is not installed or is disabled."</string>
     <string name="error_get_package_context_failed_title">Failed To Get Package Context</string>
