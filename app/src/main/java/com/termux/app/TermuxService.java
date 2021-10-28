@@ -302,18 +302,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, TermuxConstants.TERMUX_APP_NAME.toLowerCase());
         mWifiLock.acquire();
 
-        String packageName = getPackageName();
-        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-            Intent whitelist = new Intent();
-            whitelist.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            whitelist.setData(Uri.parse("package:" + packageName));
-            whitelist.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            try {
-                startActivity(whitelist);
-            } catch (ActivityNotFoundException e) {
-                Logger.logStackTraceWithMessage(LOG_TAG, "Failed to call ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e);
-            }
+        if (!PermissionUtils.checkIfBatteryOptimizationsDisabled(this)) {
+            PermissionUtils.requestDisableBatteryOptimizations(this);
         }
 
         updateNotification();
