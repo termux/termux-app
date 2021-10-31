@@ -450,11 +450,17 @@ public class Logger {
         return CURRENT_LOG_LEVEL;
     }
 
+    /** The colon character ":" must not exist inside the tag, otherwise the `logcat` command
+     * filterspecs arguments `<tag>[:priority]` will not work and will throw `Invalid filter expression`
+     * error.
+     * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r4:system/logging/liblog/logprint.cpp;l=363
+     * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r4:system/logging/logcat/logcat.cpp;l=884
+     * */
     public static String getFullTag(String tag) {
         if (DEFAULT_LOG_TAG.equals(tag))
             return tag;
         else
-            return DEFAULT_LOG_TAG + ":" + tag;
+            return DEFAULT_LOG_TAG + "." + tag;
     }
 
     public static boolean isLogLevelValid(Integer logLevel) {
