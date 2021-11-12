@@ -50,6 +50,8 @@ import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.termux.theme.TermuxThemeUtils;
+import com.termux.shared.theme.NightMode;
 import com.termux.shared.theme.ThemeUtils;
 import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
@@ -408,7 +410,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 
     private void setActivityTheme() {
-        if (ThemeUtils.shouldEnableDarkTheme(this, mProperties.getNightMode())) {
+        // Update NightMode.APP_NIGHT_MODE
+        TermuxThemeUtils.setAppNightMode(mProperties.getNightMode());
+
+        if (ThemeUtils.shouldEnableDarkTheme(this, NightMode.getAppNightMode().getName())) {
             this.setTheme(R.style.Theme_Termux_Black);
         } else {
             this.setTheme(R.style.Theme_Termux);
@@ -416,7 +421,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     private void setDrawerTheme() {
-        if (ThemeUtils.shouldEnableDarkTheme(this, mProperties.getNightMode())) {
+        if (ThemeUtils.shouldEnableDarkTheme(this, NightMode.getAppNightMode().getName())) {
             findViewById(R.id.left_drawer).setBackgroundColor(ContextCompat.getColor(this,
                 android.R.color.background_dark));
             ((ImageButton) findViewById(R.id.settings_button)).setColorFilter(Color.WHITE);
@@ -904,13 +909,16 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     }
 
     private void reloadActivityStyling() {
-        if (mProperties!= null) {
+        if (mProperties != null) {
             mProperties.loadTermuxPropertiesFromDisk();
 
             if (mExtraKeysView != null) {
                 mExtraKeysView.setButtonTextAllCaps(mProperties.shouldExtraKeysTextBeAllCaps());
                 mExtraKeysView.reload(mProperties.getExtraKeysInfo());
             }
+
+            // Update NightMode.APP_NIGHT_MODE
+            TermuxThemeUtils.setAppNightMode(mProperties.getNightMode());
         }
 
         setMargins();

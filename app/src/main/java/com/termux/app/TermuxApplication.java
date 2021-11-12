@@ -7,19 +7,25 @@ import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.termux.theme.TermuxThemeUtils;
 
 
 public class TermuxApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        Context context = getApplicationContext();
+
         // Set crash handler for the app
         TermuxCrashUtils.setCrashHandler(this);
 
         // Set log config for the app
-        setLogConfig(getApplicationContext());
+        setLogConfig(context);
 
         Logger.logDebug("Starting Application");
+
+        // Set NightMode.APP_NIGHT_MODE
+        TermuxThemeUtils.setAppNightMode(context);
     }
 
     public static void setLogConfig(Context context) {
