@@ -2332,7 +2332,14 @@ public final class TerminalEmulator {
         }
 
         int offsetDueToCombiningChar = ((displayWidth <= 0 && mCursorCol > 0 && !mAboutToAutoWrap) ? 1 : 0);
-        mScreen.setChar(mCursorCol - offsetDueToCombiningChar, mCursorRow, codePoint, getStyle());
+        int column = mCursorCol - offsetDueToCombiningChar;
+
+        // Fix TerminalRow.setChar() ArrayIndexOutOfBoundsException index=-1 exception reported
+        // The offsetDueToCombiningChar would never be 1 if mCursorCol was 0 to get column/index=-1,
+        // so was mCursorCol changed after the offsetDueToCombiningChar conditional by another thread?
+        // TODO: Check if there are thread synchronization issues with mCursorCol and mCursorRow, possibly causing others bugs too.
+        if (column < 0) column = 0;
+        mScreen.setChar(column, mCursorRow, codePoint, getStyle());
 
         if (autoWrap && displayWidth > 0)
             mAboutToAutoWrap = (mCursorCol == mRightMargin - displayWidth);

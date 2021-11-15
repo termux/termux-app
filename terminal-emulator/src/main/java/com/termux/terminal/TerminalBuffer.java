@@ -449,8 +449,8 @@ public final class TerminalBuffer {
     }
 
     public void setChar(int column, int row, int codePoint, long style) {
-        if (row >= mScreenRows || column >= mColumns)
-            throw new IllegalArgumentException("row=" + row + ", column=" + column + ", mScreenRows=" + mScreenRows + ", mColumns=" + mColumns);
+        if (row  < 0 || row >= mScreenRows || column < 0 || column >= mColumns)
+            throw new IllegalArgumentException("TerminalBuffer.setChar(): row=" + row + ", column=" + column + ", mScreenRows=" + mScreenRows + ", mColumns=" + mColumns);
         row = externalToInternalRow(row);
         allocateFullLineIfNecessary(row).setChar(column, codePoint, style);
     }
