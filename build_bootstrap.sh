@@ -19,6 +19,7 @@ for ARCH in $ARCHS; do
 	unzip bootstrap-$ARCH.zip -d bootstrap-$ARCH > /dev/null 2>&1
 	cp -r bootstrap-changes/* bootstrap-$ARCH 
 	cd bootstrap-$ARCH
+        rm -f etc/apt/sources.list.d/*.list
 	echo "zipping package"
 	zip -r ../app/src/main/cpp/bootstrap-$ARCH.zip * > /dev/null 2>&1
 	cd ..
