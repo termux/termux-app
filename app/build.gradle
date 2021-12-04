@@ -25,6 +25,10 @@ android {
 
         implementation project(":terminal-view")
         implementation project(":termux-shared")
+
+
+        implementation 'com.github.tareksander:termux-am-library:main-SNAPSHOT'
+        
     }
 
     defaultConfig {
