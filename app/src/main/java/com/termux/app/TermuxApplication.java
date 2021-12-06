@@ -4,15 +4,15 @@ import android.app.Application;
 import android.content.Context;
 
 import com.termux.am.Am;
+import com.termux.shared.logger.Logger;
+import com.termux.shared.shell.LocalSocketListener;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
-import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
-import com.termux.shared.shell.LocalSocketListener;
 
-import java.io.IOException;
+import java.io.File;
 
 public class TermuxApplication extends Application {
 
@@ -35,18 +35,15 @@ public class TermuxApplication extends Application {
         // Set NightMode.APP_NIGHT_MODE
         TermuxThemeUtils.setAppNightMode(properties.getNightMode());
 
-        try {
-            new LocalSocketListener(this, (args, out, err) -> {
-                try {
-                    new Am(out, err, this).run(args);
-                    return 0;
-                } catch (Exception e) {
-                    return 1;
-                }
-            }, TermuxConstants.TERMUX_PACKAGE_NAME+"://call-am", 1000);
-        }
-        catch (IOException e) {
-            Logger.logDebug("TermuxApplication", "am socket already in use");
+        if (LocalSocketListener.tryEstablishLocalSocketListener(this, (args, out, err) -> {
+            try {
+                new Am(out, err, this).run(args);
+                return 0;
+            } catch (Exception e) {
+                return 1;
+            }
+        }, new File(getFilesDir(), "am-socket").getAbsolutePath(), 100, 1000) == null) {
+            Logger.logWarn("TermuxApplication", "am socket cannot be created");
         }
     }
 
