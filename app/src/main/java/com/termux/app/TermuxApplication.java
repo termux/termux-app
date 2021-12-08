@@ -12,8 +12,6 @@ import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 
-import java.io.File;
-
 public class TermuxApplication extends Application {
 
     public void onCreate() {
@@ -42,7 +40,7 @@ public class TermuxApplication extends Application {
             } catch (Exception e) {
                 return 1;
             }
-        }, new File(getFilesDir(), "am-socket").getAbsolutePath(), 100, 1000) == null) {
+        }, TermuxConstants.TERMUX_VAR_PREFIX_DIR_PATH+"/run/am-socket", 100, 1000) == null) {
             Logger.logWarn("TermuxApplication", "am socket cannot be created");
         }
     }
