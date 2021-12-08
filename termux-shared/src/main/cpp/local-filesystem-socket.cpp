@@ -188,6 +188,7 @@ extern "C"
 JNIEXPORT jint JNICALL
 Java_com_termux_shared_shell_LocalFilesystemSocket_getpeeruid(JNIEnv *env, jclass clazz, jint fd) {
     struct ucred cred = {};
+    cred.uid = 1; // initialize uid to 1 here because I'm paranoid and a failed getsockopt that somehow doesn't report as failed would report the uid of root
     socklen_t len = sizeof(cred);
     if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &len) == -1) {
         return -1;

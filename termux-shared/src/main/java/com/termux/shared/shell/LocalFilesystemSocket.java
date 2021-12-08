@@ -209,16 +209,20 @@ public class LocalFilesystemSocket
             if (backlog <= 0) {
                 throw new IllegalArgumentException("Backlog has to be at least 1");
             }
-            if (path == null) {
-                throw new IllegalArgumentException("path cannot be null");
+            if (path == null || path.length() == 0) {
+                throw new IllegalArgumentException("path cannot be null or empty");
             }
             this.path = path;
-            File f = new File(path);
-            File parent = f.getParentFile();
-            if (parent != null) {
-                parent.mkdirs();
+            if (path.getBytes(StandardCharsets.UTF_8)[0] != 0) {
+                // not a socket in the abstract linux namespace, make sure the path is accessible and clear
+                File f = new File(path);
+                File parent = f.getParentFile();
+                if (parent != null) {
+                    parent.mkdirs();
+                }
+                f.delete();
             }
-            f.delete();
+    
             fd = createserversocket(path.getBytes(StandardCharsets.UTF_8), backlog);
             if (fd == -1) {
                 throw new IOException("Could not create UNIX server socket at \""+path+"\"");
@@ -245,9 +249,9 @@ public class LocalFilesystemSocket
                     c = -1;
                     continue;
                 }
-                
-                if (peeruid == app.getApplicationInfo().uid) {
-                    // if the peer has the same uid, allow the connection
+    
+                // if the peer has the same uid or is root, allow the connection
+                if (peeruid == app.getApplicationInfo().uid || peeruid == 0) {
                     break;
                 } else {
                     Logger.logWarn("LocalFilesystemSocket.ServerSocket", "WARNING: An app with the uid of "+peeruid+" tried to connect to the socket at \""+path+"\", closing connection.");

@@ -77,7 +77,6 @@ public class LocalSocketListener
                         while ((c = r.read()) > 0) {
                             b.append((char) c);
                         }
-                        Logger.logDebug(LOG_TAG, b.toString());
                         String outString;
                         String errString;
                         int ret;
