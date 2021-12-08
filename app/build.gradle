@@ -27,7 +27,7 @@ android {
         implementation project(":termux-shared")
 
 
-        implementation 'com.github.tareksander:termux-am-library:1.0'
+        implementation 'com.github.termux:termux-am-library:1.0'
         
     }
 
