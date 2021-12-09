@@ -40,7 +40,7 @@ public class TermuxApplication extends Application {
             } catch (Exception e) {
                 return 1;
             }
-        }, TermuxConstants.TERMUX_VAR_PREFIX_DIR_PATH+"/run/am-socket", 100, 1000) == null) {
+        }, TermuxConstants.TERMUX_FILES_DIR_PATH+"/api/am-socket", 100, 1000) == null) {
             Logger.logWarn("TermuxApplication", "am socket cannot be created");
         }
     }
