@@ -470,7 +470,9 @@ public class Logger {
     /** Check if custom log level is valid and >= {@link #CURRENT_LOG_LEVEL}. If custom log level is
      * not valid then {@link #LOG_LEVEL_VERBOSE} must be >= {@link #CURRENT_LOG_LEVEL}. */
     public static boolean shouldEnableLoggingForCustomLogLevel(Integer customLogLevel) {
-        if (customLogLevel == null || CURRENT_LOG_LEVEL <= LOG_LEVEL_OFF || customLogLevel <= LOG_LEVEL_OFF) return false;
+        if (CURRENT_LOG_LEVEL <= LOG_LEVEL_OFF) return false;
+        if (customLogLevel == null) return CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE; // Use default app log level
+        if (customLogLevel <= LOG_LEVEL_OFF) return false;
         customLogLevel = Logger.isLogLevelValid(customLogLevel) ? customLogLevel: Logger.LOG_LEVEL_VERBOSE;
         return (customLogLevel >= CURRENT_LOG_LEVEL);
     }
