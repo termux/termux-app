@@ -512,7 +512,7 @@ public abstract class TermuxSharedProperties {
 
 
     public boolean areHardwareKeyboardShortcutsDisabled() {
-        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST, true);
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS, true);
     }
 
     public boolean areTerminalSessionChangeToastsDisabled() {
