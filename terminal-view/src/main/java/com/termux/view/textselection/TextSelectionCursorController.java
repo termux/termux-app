@@ -1,12 +1,10 @@
 package com.termux.view.textselection;
 
-import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.ActionMode;
-import android.view.InputDevice;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
