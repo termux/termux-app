@@ -34,7 +34,6 @@ public class ActivityUtils {
      *                         in addition to logging a message. The {@code context} must not be
      *                         {@code null}.
      * @return Returns the {@code error} if starting activity was not successful, otherwise {@code null}.
-
      */
     public static Error startActivity(Context context, @NonNull Intent intent,
                                       boolean logErrorMessage, boolean showErrorMessage) {
@@ -42,7 +41,7 @@ public class ActivityUtils {
         String activityName = intent.getComponent() != null ? intent.getComponent().getClassName() : "Unknown";
 
         if (context == null) {
-            error = ActivityUtilsErrno.ERRNO_STARTING_ACTIVITY_WITH_NULL_CONTEXT.getError(activityName);
+            error = ActivityErrno.ERRNO_STARTING_ACTIVITY_WITH_NULL_CONTEXT.getError(activityName);
             if (logErrorMessage)
                 error.logErrorAndShowToast(null, LOG_TAG);
             return error;
@@ -51,7 +50,7 @@ public class ActivityUtils {
         try {
             context.startActivity(intent);
         } catch (Exception e) {
-            error = ActivityUtilsErrno.ERRNO_START_ACTIVITY_FAILED_WITH_EXCEPTION.getError(e, activityName, e.getMessage());
+            error = ActivityErrno.ERRNO_START_ACTIVITY_FAILED_WITH_EXCEPTION.getError(e, activityName, e.getMessage());
             if (logErrorMessage)
                 error.logErrorAndShowToast(showErrorMessage ? context : null, LOG_TAG);
             return error;
@@ -97,7 +96,6 @@ public class ActivityUtils {
      *                               used instead.
      *                               Note that later is deprecated.
      * @return Returns the {@code error} if starting activity was not successful, otherwise {@code null}.
-
      */
     public static Error startActivityForResult(Context context, int requestCode, @NonNull Intent intent,
                                                boolean logErrorMessage, boolean showErrorMessage,
@@ -109,7 +107,7 @@ public class ActivityUtils {
                 activityResultLauncher.launch(intent);
             } else {
                 if (context == null) {
-                    error = ActivityUtilsErrno.ERRNO_STARTING_ACTIVITY_WITH_NULL_CONTEXT.getError(activityName);
+                    error = ActivityErrno.ERRNO_STARTING_ACTIVITY_WITH_NULL_CONTEXT.getError(activityName);
                     if (logErrorMessage)
                         error.logErrorAndShowToast(null, LOG_TAG);
                     return error;
@@ -127,7 +125,7 @@ public class ActivityUtils {
                 }
             }
         } catch (Exception e) {
-            error = ActivityUtilsErrno.ERRNO_START_ACTIVITY_FOR_RESULT_FAILED_WITH_EXCEPTION.getError(e, activityName, e.getMessage());
+            error = ActivityErrno.ERRNO_START_ACTIVITY_FOR_RESULT_FAILED_WITH_EXCEPTION.getError(e, activityName, e.getMessage());
             if (logErrorMessage)
                 error.logErrorAndShowToast(showErrorMessage ? context : null, LOG_TAG);
             return error;

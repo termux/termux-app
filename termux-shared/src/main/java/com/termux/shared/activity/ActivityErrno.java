@@ -2,9 +2,9 @@ package com.termux.shared.activity;
 
 import com.termux.shared.errors.Errno;
 
-public class ActivityUtilsErrno extends Errno {
+public class ActivityErrno extends Errno {
 
-    public static final String TYPE = "ActivityUtils Error";
+    public static final String TYPE = "Activity Error";
 
 
     /* Errors for starting activities (100-150) */
@@ -13,7 +13,7 @@ public class ActivityUtilsErrno extends Errno {
     public static final Errno ERRNO_STARTING_ACTIVITY_WITH_NULL_CONTEXT = new Errno(TYPE, 102, "Cannot start \"%1$s\" activity with null Context");
 
 
-    ActivityUtilsErrno(final String type, final int code, final String message) {
+    ActivityErrno(final String type, final int code, final String message) {
         super(type, code, message);
     }
 
