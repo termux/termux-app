@@ -49,7 +49,7 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 
 ## Installation
 
-Latest version is `v0.117`.
+Latest version is `v0.118.0`.
 
 Termux can be obtained through various sources listed below for **only** Android `>= 7`. Support was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, old builds are available on [archive.org](https://archive.org/details/termux-repositories-legacy).
 
