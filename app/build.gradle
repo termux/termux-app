@@ -156,6 +156,7 @@ def downloadBootstrap(String arch, String expectedChecksum, String version) {
             digest.update(buffer, 0, readBytes)
         }
         def checksum = new BigInteger(1, digest.digest()).toString(16)
+        while (checksum.length() < 64) { checksum = "0" + checksum }
         if (checksum == expectedChecksum) {
             return
         } else {
