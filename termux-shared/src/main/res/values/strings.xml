@@ -22,8 +22,8 @@
     <string name="error_app_not_installed_or_disabled_warning">The %1$s (%2$s) app is not installed or is disabled."</string>
     <string name="error_get_package_context_failed_title">Failed To Get Package Context</string>
     <string name="error_get_package_context_failed_message">Failed to get package context for the \"%1$s\" package.
-        This may be because the app package is not installed or it has different APK signature from the current app.
-        Check install instruction at %2$s for more details.</string>
+        This may be because the app package is not installed or it has different APK signature from the current app.</string>
+    <string name="error_get_package_context_failed_help_url_message">Check %1$s for more details.</string>
     <string name="error_get_component_state_failed">Failed to get %1$s/%2$s component state"</string>
     <string name="error_enable_component_failed">Failed to enable %1$s/%2$s component"</string>
     <string name="error_disable_component_failed">Failed to enable %1$s/%2$s component"</string>
