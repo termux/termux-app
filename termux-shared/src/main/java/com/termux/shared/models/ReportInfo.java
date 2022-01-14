@@ -1,7 +1,7 @@
 package com.termux.shared.models;
 
 import com.termux.shared.markdown.MarkdownUtils;
-import com.termux.shared.termux.AndroidUtils;
+import com.termux.shared.android.AndroidUtils;
 
 import java.io.Serializable;
 

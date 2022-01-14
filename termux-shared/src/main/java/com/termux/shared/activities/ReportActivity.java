@@ -21,7 +21,7 @@ import com.termux.shared.data.DataUtils;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.file.filesystem.FileType;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.models.errors.Error;
+import com.termux.shared.errors.Error;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.interact.ShareUtils;
