@@ -1,6 +1,6 @@
 package com.termux.shared.termux.extrakeys;
 
-import android.widget.Button;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ public class SpecialButtonState {
      * state is read. */
     boolean isLocked = false;
 
-    List<Button> buttons = new ArrayList<>();
+    List<MaterialButton> buttons = new ArrayList<>();
 
     ExtraKeysView mExtraKeysView;
 

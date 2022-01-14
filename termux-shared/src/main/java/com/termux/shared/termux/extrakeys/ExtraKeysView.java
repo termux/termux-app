@@ -25,13 +25,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.material.button.MaterialButton;
 import com.termux.shared.termux.terminal.io.TerminalExtraKeys;
 
 /**
@@ -86,23 +86,23 @@ public final class ExtraKeysView extends GridLayout {
          * @param buttonInfo The {@link ExtraKeyButton} for the button that was clicked.
          *                   The button may be a {@link ExtraKeyButton#KEY_MACRO} set which can be
          *                   checked with a call to {@link ExtraKeyButton#isMacro()}.
-         * @param button The {@link Button} that was clicked.
+         * @param button The {@link MaterialButton} that was clicked.
          */
-        void onExtraKeyButtonClick(View view, ExtraKeyButton buttonInfo, Button button);
+        void onExtraKeyButtonClick(View view, ExtraKeyButton buttonInfo, MaterialButton button);
 
         /**
          * This is called by {@link ExtraKeysView} when a button is clicked so that the client
-         * can perform any hepatic feedback. This is only called in the {@link Button.OnClickListener}
+         * can perform any hepatic feedback. This is only called in the {@link MaterialButton.OnClickListener}
          * and not for every repeat. Its also called for {@link #mSpecialButtons}.
          *
          * @param view The view that was clicked.
          * @param buttonInfo The {@link ExtraKeyButton} for the button that was clicked.
-         * @param button The {@link Button} that was clicked.
+         * @param button The {@link MaterialButton} that was clicked.
          * @return Return {@code true} if the client handled the feedback, otherwise {@code false}
-         * so that {@link ExtraKeysView#performExtraKeyButtonHapticFeedback(View, ExtraKeyButton, Button)}
+         * so that {@link ExtraKeysView#performExtraKeyButtonHapticFeedback(View, ExtraKeyButton, MaterialButton)}
          * can handle it depending on system settings.
          */
-        boolean performExtraKeyButtonHapticFeedback(View view, ExtraKeyButton buttonInfo, Button button);
+        boolean performExtraKeyButtonHapticFeedback(View view, ExtraKeyButton buttonInfo, MaterialButton button);
 
     }
 
@@ -147,7 +147,7 @@ public final class ExtraKeysView extends GridLayout {
 
     /**
      * The list of keys for which auto repeat of key should be triggered if its extra keys button
-     * is long pressed. This is done by calling {@link IExtraKeysView#onExtraKeyButtonClick(View, ExtraKeyButton, Button)}
+     * is long pressed. This is done by calling {@link IExtraKeysView#onExtraKeyButtonClick(View, ExtraKeyButton, MaterialButton)}
      * every {@link #mLongPressRepeatDelay} seconds after {@link #mLongPressTimeout} has passed.
      * The default keys are defined by {@link ExtraKeysConstants#PRIMARY_REPETITIVE_KEYS}.
      */
@@ -326,7 +326,7 @@ public final class ExtraKeysView extends GridLayout {
         if (longPressDuration >= MIN_LONG_PRESS_DURATION && longPressDuration <= MAX_LONG_PRESS_DURATION) {
             mLongPressTimeout = longPressDuration;
         } else {
-                mLongPressTimeout = FALLBACK_LONG_PRESS_DURATION;
+            mLongPressTimeout = FALLBACK_LONG_PRESS_DURATION;
         }
     }
 
@@ -382,12 +382,12 @@ public final class ExtraKeysView extends GridLayout {
             for (int col = 0; col < buttons[row].length; col++) {
                 final ExtraKeyButton buttonInfo = buttons[row][col];
 
-                Button button;
+                MaterialButton button;
                 if (isSpecialButton(buttonInfo)) {
                     button = createSpecialButton(buttonInfo.getKey(), true);
                     if (button == null) return;
                 } else {
-                    button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
+                    button = new MaterialButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
                 }
 
                 button.setText(buttonInfo.getDisplay());
@@ -566,12 +566,12 @@ public final class ExtraKeysView extends GridLayout {
     void showPopup(View view, ExtraKeyButton extraButton) {
         int width = view.getMeasuredWidth();
         int height = view.getMeasuredHeight();
-        Button button;
+        MaterialButton button;
         if (isSpecialButton(extraButton)) {
             button = createSpecialButton(extraButton.getKey(), false);
             if (button == null) return;
         } else {
-            button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
+            button = new MaterialButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
             button.setTextColor(mButtonTextColor);
         }
         button.setText(extraButton.getDisplay());
@@ -631,11 +631,11 @@ public final class ExtraKeysView extends GridLayout {
         return true;
     }
 
-    public Button createSpecialButton(String buttonKey, boolean needUpdate) {
+    public MaterialButton createSpecialButton(String buttonKey, boolean needUpdate) {
         SpecialButtonState state = mSpecialButtons.get(SpecialButton.valueOf(buttonKey));
         if (state == null) return null;
         state.setIsCreated(true);
-        Button button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
+        MaterialButton button = new MaterialButton(getContext(), null, android.R.attr.buttonBarButtonStyle);
         button.setTextColor(state.isActive ? mButtonActiveTextColor : mButtonTextColor);
         if (needUpdate) {
             state.buttons.add(button);
