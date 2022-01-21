@@ -82,6 +82,7 @@ public class FileTypes {
      *                       returned.
      * @return Returns the {@link FileType} of file.
      */
+    @NonNull
     public static FileType getFileType(final String filePath, final boolean followLinks) {
         if (filePath == null || filePath.isEmpty()) return FileType.NO_EXIST;
 

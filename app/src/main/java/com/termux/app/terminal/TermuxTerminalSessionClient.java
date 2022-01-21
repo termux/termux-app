@@ -12,6 +12,9 @@ import android.media.SoundPool;
 import android.text.TextUtils;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.termux.R;
 import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
@@ -108,14 +111,14 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
 
 
     @Override
-    public void onTextChanged(TerminalSession changedSession) {
+    public void onTextChanged(@NonNull TerminalSession changedSession) {
         if (!mActivity.isVisible()) return;
 
         if (mActivity.getCurrentSession() == changedSession) mActivity.getTerminalView().onScreenUpdated();
     }
 
     @Override
-    public void onTitleChanged(TerminalSession updatedSession) {
+    public void onTitleChanged(@NonNull TerminalSession updatedSession) {
         if (!mActivity.isVisible()) return;
 
         if (updatedSession != mActivity.getCurrentSession()) {
@@ -129,7 +132,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
     @Override
-    public void onSessionFinished(final TerminalSession finishedSession) {
+    public void onSessionFinished(@NonNull TerminalSession finishedSession) {
         TermuxService service = mActivity.getTermuxService();
 
         if (service == null || service.wantsToStop()) {
@@ -174,7 +177,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
     @Override
-    public void onCopyTextToClipboard(TerminalSession session, String text) {
+    public void onCopyTextToClipboard(@NonNull TerminalSession session, String text) {
         if (!mActivity.isVisible()) return;
 
         ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -182,7 +185,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
     @Override
-    public void onPasteTextFromClipboard(TerminalSession session) {
+    public void onPasteTextFromClipboard(@Nullable TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
         ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -194,7 +197,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
     @Override
-    public void onBell(TerminalSession session) {
+    public void onBell(@NonNull TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
         switch (mActivity.getProperties().getBellBehaviour()) {
@@ -213,7 +216,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     }
 
     @Override
-    public void onColorsChanged(TerminalSession changedSession) {
+    public void onColorsChanged(@NonNull TerminalSession changedSession) {
         if (mActivity.getCurrentSession() == changedSession)
             updateBackgroundColor();
     }

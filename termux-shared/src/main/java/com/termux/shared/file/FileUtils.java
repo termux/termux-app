@@ -4,6 +4,7 @@ import android.os.Build;
 import android.system.Os;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.common.io.RecursiveDeleteOption;
 import com.termux.shared.file.filesystem.FileType;
@@ -97,6 +98,7 @@ public class FileUtils {
      * @param path The {@code path} to convert.
      * @return Returns the {@code normalized path}.
      */
+    @Nullable
     public static String normalizePath(String path) {
         if (path == null) return null;
 
@@ -247,7 +249,7 @@ public class FileUtils {
     }
 
     /**
-     * Checks the type of file that exists at {@code filePath}.
+     * Get the type of file that exists at {@code filePath}.
      *
      * This function is a wrapper for
      * {@link FileTypes#getFileType(String, boolean)}
@@ -260,6 +262,7 @@ public class FileUtils {
      *                       returned.
      * @return Returns the {@link FileType} of file.
      */
+    @NonNull
     public static FileType getFileType(final String filePath, final boolean followLinks) {
         return FileTypes.getFileType(filePath, followLinks);
     }
@@ -1446,8 +1449,8 @@ public class FileUtils {
     }
 
     public static class ReadSerializableObjectResult {
-        public Error error;
-        public Serializable serializableObject;
+        public final Error error;
+        public final Serializable serializableObject;
 
         ReadSerializableObjectResult(Error error, Serializable serializableObject) {
             this.error = error;

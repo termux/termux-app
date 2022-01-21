@@ -25,7 +25,7 @@ public class Errno {
     public static final Errno ERRNO_FAILED = new Errno(TYPE, Activity.RESULT_FIRST_USER + 1, "Failed");
 
     /** The errno type. */
-    protected String type;
+    protected final String type;
     /** The errno code. */
     protected final int code;
     /** The errno message. */
@@ -34,7 +34,7 @@ public class Errno {
     private static final String LOG_TAG = "Errno";
 
 
-    public Errno(final String type, final int code, final String message) {
+    public Errno(@NonNull final String type, final int code, @NonNull final String message) {
         this.type = type;
         this.code = code;
         this.message = message;
@@ -47,18 +47,21 @@ public class Errno {
         return "type=" + type + ", code=" + code + ", message=\"" + message + "\"";
     }
 
-
+    @NonNull
     public String getType() {
         return type;
-    }
-
-    public String getMessage() {
-        return message;
     }
 
     public int getCode() {
         return code;
     }
+
+    @NonNull
+    public String getMessage() {
+        return message;
+    }
+
+
 
     /**
      * Get the {@link Errno} of a specific type and code.
