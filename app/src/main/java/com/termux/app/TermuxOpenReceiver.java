@@ -35,7 +35,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         final Uri data = intent.getData();
         if (data == null) {
-            Logger.logError(LOG_TAG, "termux-open: Called without intent data");
+            Logger.logError(LOG_TAG, "Called without intent data");
             return;
         }
 
@@ -68,7 +68,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             try {
                 context.startActivity(urlIntent);
             } catch (ActivityNotFoundException e) {
-                Logger.logError(LOG_TAG, "termux-open: No app handles the url " + data);
+                Logger.logError(LOG_TAG, "No app handles the url " + data);
             }
             return;
         }
@@ -82,7 +82,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
 
         final File fileToShare = new File(filePath);
         if (!(fileToShare.isFile() && fileToShare.canRead())) {
-            Logger.logError(LOG_TAG, "termux-open: Not a readable file: '" + fileToShare.getAbsolutePath() + "'");
+            Logger.logError(LOG_TAG, "Not a readable file: '" + fileToShare.getAbsolutePath() + "'");
             return;
         }
 
@@ -120,7 +120,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         try {
             context.startActivity(sendIntent);
         } catch (ActivityNotFoundException e) {
-            Logger.logError(LOG_TAG, "termux-open: No app handles the url " + data);
+            Logger.logError(LOG_TAG, "No app handles the url " + data);
         }
     }
 
