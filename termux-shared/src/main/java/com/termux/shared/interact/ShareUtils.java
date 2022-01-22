@@ -92,7 +92,7 @@ public class ShareUtils {
      * @param context The context for operations.
      * @param url The url to open.
      */
-    public static void openURL(final Context context, final String url) {
+    public static void openUrl(final Context context, final String url) {
         if (context == null || url == null || url.isEmpty()) return;
         Uri uri = Uri.parse(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);

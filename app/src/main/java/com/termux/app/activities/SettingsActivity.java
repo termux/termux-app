@@ -152,7 +152,7 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
                 donatePreference.setOnPreferenceClickListener(preference -> {
-                    ShareUtils.openURL(context, TermuxConstants.TERMUX_DONATE_URL);
+                    ShareUtils.openUrl(context, TermuxConstants.TERMUX_DONATE_URL);
                     return true;
                 });
             }

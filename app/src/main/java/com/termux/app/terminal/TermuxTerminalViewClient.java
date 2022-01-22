@@ -180,7 +180,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
             if (!urlSet.isEmpty()) {
                 String url = (String) urlSet.iterator().next();
-                ShareUtils.openURL(mActivity, url);
+                ShareUtils.openUrl(mActivity, url);
                 return;
             }
         }
@@ -685,7 +685,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             lv.setOnItemLongClickListener((parent, view, position, id) -> {
                 dialog.dismiss();
                 String url = (String) urls[position];
-                ShareUtils.openURL(mActivity, url);
+                ShareUtils.openUrl(mActivity, url);
                 return true;
             });
         });
