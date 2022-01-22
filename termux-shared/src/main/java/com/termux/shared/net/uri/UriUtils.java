@@ -3,6 +3,7 @@ package com.termux.shared.net.uri;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.file.FileUtils;
@@ -10,7 +11,7 @@ import com.termux.shared.file.FileUtils;
 public class UriUtils {
 
     /**
-     * Get the full file path from a {@link Uri}.
+     * Get the full file path from a {@link Uri} including the fragment.
      *
      * If the {@link Uri} was created from file path with {@link Uri#parse(String)}, like "am"
      * command "-d" option does, and the path contained a "#", then anything after it would become
@@ -21,10 +22,11 @@ public class UriUtils {
      * with {@link Uri.Builder#path(String)}, then "#" will automatically be encoded to "%23"
      * and separate fragment will not exist.
      *
-     * @param uri The {@link Uri} to get basename from.
+     * @param uri The {@link Uri} to get file path from.
      * @return Returns the file path if found, otherwise {@code null}.
      */
-    public static String getUriFilePath(Uri uri) {
+    @Nullable
+    public static String getUriFilePathWithFragment(Uri uri) {
         if (uri == null) return null;
         String path = uri.getPath();
         if (DataUtils.isNullOrEmpty(path)) return null;
@@ -40,12 +42,13 @@ public class UriUtils {
      * @param withFragment If the {@link Uri} fragment should be included in basename.
      * @return Returns the file basename if found, otherwise {@code null}.
      */
+    @Nullable
     public static String getUriFileBasename(Uri uri, boolean withFragment) {
         if (uri == null) return null;
 
         String path;
         if (withFragment) {
-            path = getUriFilePath(uri);
+            path = getUriFilePathWithFragment(uri);
         } else {
             path = uri.getPath();
             if (DataUtils.isNullOrEmpty(path)) return null;

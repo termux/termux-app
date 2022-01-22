@@ -73,7 +73,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         // Get full path including fragment (anything after last "#")
-        String filePath = UriUtils.getUriFilePath(data);
+        String filePath = UriUtils.getUriFilePathWithFragment(data);
 
         final File fileToShare = new File(filePath);
         if (!(fileToShare.isFile() && fileToShare.canRead())) {

@@ -99,7 +99,7 @@ public class TermuxFileReceiverActivity extends Activity {
                 Logger.logVerbose(LOG_TAG, "uri: \"" + dataUri + "\", path: \"" + dataUri.getPath() + "\", fragment: \"" + dataUri.getFragment() + "\"");
 
                 // Get full path including fragment (anything after last "#")
-                String path = UriUtils.getUriFilePath(dataUri);
+                String path = UriUtils.getUriFilePathWithFragment(dataUri);
                 if (DataUtils.isNullOrEmpty(path)) {
                     showErrorDialogAndQuit("File path from data uri is null, empty or invalid.");
                     return;
