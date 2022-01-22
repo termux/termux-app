@@ -137,16 +137,16 @@ public final class AppShell {
      * @param context The {@link Context} for operations.
      */
     private void executeInner(@NonNull final Context context) throws IllegalThreadStateException, InterruptedException {
-        final int pid = ShellUtils.getPid(mProcess);
+        mExecutionCommand.mPid = ShellUtils.getPid(mProcess);
 
-        Logger.logDebug(LOG_TAG, "Running \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell with pid " + pid);
+        Logger.logDebug(LOG_TAG, "Running \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell with pid " + mExecutionCommand.mPid);
 
         mExecutionCommand.resultData.exitCode = null;
 
         // setup stdin, and stdout and stderr gobblers
         DataOutputStream STDIN = new DataOutputStream(mProcess.getOutputStream());
-        StreamGobbler STDOUT = new StreamGobbler(pid + "-stdout", mProcess.getInputStream(), mExecutionCommand.resultData.stdout, mExecutionCommand.backgroundCustomLogLevel);
-        StreamGobbler STDERR = new StreamGobbler(pid + "-stderr", mProcess.getErrorStream(), mExecutionCommand.resultData.stderr, mExecutionCommand.backgroundCustomLogLevel);
+        StreamGobbler STDOUT = new StreamGobbler(mExecutionCommand.mPid + "-stdout", mProcess.getInputStream(), mExecutionCommand.resultData.stdout, mExecutionCommand.backgroundCustomLogLevel);
+        StreamGobbler STDERR = new StreamGobbler(mExecutionCommand.mPid + "-stderr", mProcess.getErrorStream(), mExecutionCommand.resultData.stderr, mExecutionCommand.backgroundCustomLogLevel);
 
         // start gobbling
         STDOUT.start();
@@ -196,9 +196,9 @@ public final class AppShell {
 
         // Process result
         if (exitCode == 0)
-            Logger.logDebug(LOG_TAG, "The \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell with pid " + pid + " exited normally");
+            Logger.logDebug(LOG_TAG, "The \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell with pid " + mExecutionCommand.mPid + " exited normally");
         else
-            Logger.logDebug(LOG_TAG, "The \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell with pid " + pid + " exited with code: " + exitCode);
+            Logger.logDebug(LOG_TAG, "The \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell with pid " + mExecutionCommand.mPid + " exited with code: " + exitCode);
 
         // If the execution command has already failed, like SIGKILL was sent, then don't continue
         if (mExecutionCommand.isStateFailed()) {

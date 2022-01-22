@@ -58,6 +58,8 @@ public class ExecutionCommand {
     /** The optional unique id for the {@link ExecutionCommand}. */
     public Integer id;
 
+    /** The process id of command. */
+    public int mPid = -1;
 
     /** The current state of the {@link ExecutionCommand}. */
     private ExecutionState currentState = ExecutionState.PRE_EXECUTION;
@@ -266,6 +268,9 @@ public class ExecutionCommand {
 
         logString.append(executionCommand.getCommandIdAndLabelLogString()).append(":");
 
+        if (executionCommand.mPid != -1)
+            logString.append("\n").append(executionCommand.getPidLogString());
+
         if (executionCommand.previousState != ExecutionState.PRE_EXECUTION)
             logString.append("\n").append(executionCommand.getPreviousStateLogString());
         logString.append("\n").append(executionCommand.getCurrentStateLogString());
@@ -358,6 +363,8 @@ public class ExecutionCommand {
 
         markdownString.append("## ").append(executionCommand.commandLabel).append("\n");
 
+        if (executionCommand.mPid != -1)
+            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Pid", executionCommand.mPid, "-"));
 
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Previous State", executionCommand.previousState.getName(), "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Current State", executionCommand.currentState.getName(), "-"));
@@ -406,6 +413,10 @@ public class ExecutionCommand {
             return "(" + id + ") ";
         else
             return "";
+    }
+
+    public String getPidLogString() {
+        return "Pid: `" + mPid + "`";
     }
 
     public String getCurrentStateLogString() {

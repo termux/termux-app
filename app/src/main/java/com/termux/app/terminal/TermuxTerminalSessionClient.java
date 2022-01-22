@@ -234,6 +234,17 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         mActivity.getTerminalView().setTerminalCursorBlinkerState(enabled, false);
     }
 
+    @Override
+    public void setTerminalShellPid(@NonNull TerminalSession terminalSession, int pid) {
+        TermuxService service = mActivity.getTermuxService();
+        if (service == null) return;
+
+        TermuxSession termuxSession = service.getTermuxSessionForTerminalSession(terminalSession);
+        if (termuxSession != null)
+            termuxSession.getExecutionCommand().mPid = pid;
+    }
+
+
     /**
      * Should be called when mActivity.onResetTerminalSession() is called
      */

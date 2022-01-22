@@ -5,18 +5,15 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.provider.Settings;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.Nullable;
@@ -780,12 +777,12 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
 
 
-    private void setCurrentStoredTerminalSession(TerminalSession session) {
-        if (session == null) return;
+    private void setCurrentStoredTerminalSession(TerminalSession terminalSession) {
+        if (terminalSession == null) return;
         // Make the newly created session the current one to be displayed
         TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(this);
         if (preferences == null) return;
-        preferences.setCurrentSession(session.mHandle);
+        preferences.setCurrentSession(terminalSession.mHandle);
     }
 
     public synchronized boolean isTermuxSessionsEmpty() {
@@ -808,11 +805,25 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             return null;
     }
 
+    @Nullable
+    public synchronized TermuxSession getTermuxSessionForTerminalSession(TerminalSession terminalSession) {
+        if (terminalSession == null) return null;
+
+        for (int i = 0; i < mTermuxSessions.size(); i++) {
+            if (mTermuxSessions.get(i).getTerminalSession().equals(terminalSession))
+                return mTermuxSessions.get(i);
+        }
+
+        return null;
+    }
+
     public synchronized TermuxSession getLastTermuxSession() {
         return mTermuxSessions.isEmpty() ? null : mTermuxSessions.get(mTermuxSessions.size() - 1);
     }
 
     public synchronized int getIndexOfSession(TerminalSession terminalSession) {
+        if (terminalSession == null) return -1;
+
         for (int i = 0; i < mTermuxSessions.size(); i++) {
             if (mTermuxSessions.get(i).getTerminalSession().equals(terminalSession))
                 return i;
