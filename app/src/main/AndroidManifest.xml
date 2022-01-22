@@ -180,11 +180,22 @@
         <meta-data
             android:name="android.max_aspect"
             android:value="10.0" />
+
+
+        <!-- https://developer.samsung.com/samsung-dex/modify-optimizing.html -->
+
+        <!-- Version < 3.0. DeX Mode and Screen Mirroring support -->
         <meta-data
-            android:name="com.sec.android.support.multiwindow"
+            android:name="com.samsung.android.keepalive.density"
             android:value="true" />
+
+        <!-- Version >= 3.0. DeX Dual Mode support -->
         <meta-data
             android:name="com.samsung.android.multidisplay.keep_process_alive"
+            android:value="true" />
+
+        <meta-data
+            android:name="com.sec.android.support.multiwindow"
             android:value="true" />
 
     </application>
