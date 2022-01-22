@@ -34,7 +34,7 @@ public class ShareUtils {
      * @param intent The intent that describes the choices that should be shown.
      * @param title The title for choose menu.
      */
-    private static void openSystemAppChooser(final Context context, final Intent intent, final String title) {
+    public static void openSystemAppChooser(final Context context, final Intent intent, final String title) {
         if (context == null) return;
 
         final Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
