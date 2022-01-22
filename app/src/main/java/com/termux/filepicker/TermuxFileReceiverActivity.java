@@ -1,6 +1,5 @@
 package com.termux.filepicker;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -8,6 +7,7 @@ import android.provider.OpenableColumns;
 import android.util.Patterns;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.termux.R;
 import com.termux.shared.data.DataUtils;
@@ -31,7 +31,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-public class TermuxFileReceiverActivity extends Activity {
+public class TermuxFileReceiverActivity extends AppCompatActivity {
 
     static final String TERMUX_RECEIVEDIR = TermuxConstants.TERMUX_FILES_DIR_PATH + "/home/downloads";
     static final String EDITOR_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-file-editor";

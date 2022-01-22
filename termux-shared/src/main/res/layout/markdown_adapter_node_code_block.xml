@@ -21,6 +21,8 @@
         android:paddingRight="16dip"
         android:paddingBottom="8dip"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textColorLink="?android:attr/textColorLink"
         android:textSize="12sp" />
 
 </HorizontalScrollView>

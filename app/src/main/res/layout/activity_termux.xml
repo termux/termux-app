@@ -1,4 +1,5 @@
 <com.termux.app.terminal.TermuxActivityRootView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_termux_root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -36,12 +37,12 @@
                 android:layout_width="240dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"
-                android:background="@android:color/white"
                 android:choiceMode="singleChoice"
                 android:divider="@android:color/transparent"
                 android:dividerHeight="0dp"
                 android:descendantFocusability="blocksDescendants"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:background="?attr/termuxActivityDrawerBackground">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -53,7 +54,8 @@
                         android:layout_height="40dp"
                         android:src="@drawable/ic_settings"
                         android:background="@null"
-                        android:contentDescription="@string/action_open_settings" />
+                        android:contentDescription="@string/action_open_settings"
+                        app:tint="?attr/termuxActivityDrawerImageTint" />
                 </LinearLayout>
 
                 <ListView
@@ -71,7 +73,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/toggle_keyboard_button"
                         style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="match_parent"
@@ -79,7 +81,7 @@
                         android:layout_weight="1"
                         android:text="@string/action_toggle_soft_keyboard" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/new_session_button"
                         style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="match_parent"

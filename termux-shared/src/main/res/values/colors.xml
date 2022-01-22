@@ -10,9 +10,14 @@
     <color name="red_800">#C4001D</color>
 
     <color name="grey_200">#EEEEEE</color>
+    <color name="grey_400">#BDBDBD</color>
+    <color name="grey_500">#9E9E9E</color>
     <color name="grey_800">#424242</color>
     <color name="grey_900">#212121</color>
 
     <color name="red_error">#DC143C</color>
     <color name="red_error_link">#FC143C</color>
+
+    <color name="blue_link_light">#0969DA</color>
+    <color name="blue_link_dark">#58A6FF</color>
 </resources>

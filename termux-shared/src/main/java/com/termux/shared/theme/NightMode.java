@@ -27,7 +27,7 @@ public enum NightMode {
     private static final String LOG_TAG = "NightMode";
 
     private final String name;
-    private final int mode;
+    private final @AppCompatDelegate.NightMode int mode;
 
     NightMode(final String name, int mode) {
         this.name = name;

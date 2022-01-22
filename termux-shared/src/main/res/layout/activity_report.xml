@@ -5,8 +5,8 @@
     android:orientation="vertical">
 
     <include
-        layout="@layout/partial_toolbar"
-        android:id="@+id/partial_toolbar"/>
+        layout="@layout/partial_primary_toolbar"
+        android:id="@+id/partial_primary_toolbar"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"

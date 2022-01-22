@@ -13,10 +13,10 @@
         android:background="?attr/colorPrimaryDark"
         android:gravity="center_vertical"
         android:minHeight="?attr/actionBarSize"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:titleTextAppearance="@style/Toolbar.Title">
-
+        android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.DayNight"
+        app:titleTextAppearance="@style/TextAppearance.Widget.BaseToolbar.Title"
+        app:subtitleTextAppearance="@style/TextAppearance.Widget.BaseToolbar.Subtitle">
     </androidx.appcompat.widget.Toolbar>
 
 </LinearLayout>

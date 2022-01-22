@@ -1,7 +1,6 @@
 package com.termux.app;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -10,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,6 +32,7 @@ import com.termux.R;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
+import com.termux.shared.activity.media.AppCompatActivityUtils;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.termux.TermuxConstants;
@@ -52,7 +51,6 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 import com.termux.shared.theme.NightMode;
-import com.termux.shared.theme.ThemeUtils;
 import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -62,7 +60,7 @@ import com.termux.view.TerminalViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
@@ -78,7 +76,7 @@ import java.util.Arrays;
  * </ul>
  * about memory leaks.
  */
-public final class TermuxActivity extends Activity implements ServiceConnection {
+public final class TermuxActivity extends AppCompatActivity implements ServiceConnection {
 
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -228,8 +226,6 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
-        setDrawerTheme();
-
         setTermuxTerminalViewAndClients();
 
         setTerminalToolbarView(savedInstanceState);
@@ -340,6 +336,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
+        Logger.logVerbose(LOG_TAG, "onSaveInstanceState");
+
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
     }
@@ -413,19 +411,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         // Update NightMode.APP_NIGHT_MODE
         TermuxThemeUtils.setAppNightMode(mProperties.getNightMode());
 
-        if (ThemeUtils.shouldEnableDarkTheme(this, NightMode.getAppNightMode().getName())) {
-            this.setTheme(R.style.Theme_Termux_Black);
-        } else {
-            this.setTheme(R.style.Theme_Termux);
-        }
-    }
-
-    private void setDrawerTheme() {
-        if (ThemeUtils.shouldEnableDarkTheme(this, NightMode.getAppNightMode().getName())) {
-            findViewById(R.id.left_drawer).setBackgroundColor(ContextCompat.getColor(this,
-                android.R.color.background_dark));
-            ((ImageButton) findViewById(R.id.settings_button)).setColorFilter(Color.WHITE);
-        }
+        // Set activity night mode. If NightMode.SYSTEM is set, then android will automatically
+        // trigger recreation of activity when uiMode/dark mode configuration is changed so that
+        // day or night theme takes affect.
+        AppCompatActivityUtils.setNightMode(this, NightMode.getAppNightMode().getName(), true);
     }
 
     private void setMargins() {
@@ -518,7 +507,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
     private void saveTerminalToolbarTextInput(Bundle savedInstanceState) {
         if (savedInstanceState == null) return;
 
-        final EditText textInputView =  findViewById(R.id.terminal_toolbar_text_input);
+        final EditText textInputView = findViewById(R.id.terminal_toolbar_text_input);
         if (textInputView != null) {
             String textInput = textInputView.getText().toString();
             if (!textInput.isEmpty()) savedInstanceState.putString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT, textInput);
@@ -934,12 +923,9 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
             mTermuxService.setTerminalTranscriptRows();
 
         // To change the activity and drawer theme, activity needs to be recreated.
-        // But this will destroy the activity, and will call the onCreate() again.
-        // We need to investigate if enabling this is wise, since all stored variables and
-        // views will be destroyed and bindService() will be called again. Extra keys input
-        // text will we restored since that has already been implemented. Terminal sessions
-        // and transcripts are also already preserved. Theme does change properly too.
-        // TermuxActivity.this.recreate();
+        // It will destroy the activity, including all stored variables and views, and onCreate()
+        // will be called again. Extra keys input text, terminal sessions and transcripts will be preserved.
+        TermuxActivity.this.recreate();
     }
 
 

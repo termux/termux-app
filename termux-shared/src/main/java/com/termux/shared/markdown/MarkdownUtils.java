@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.common.base.Strings;
 import com.termux.shared.R;
+import com.termux.shared.theme.ThemeUtils;
 
 import org.commonmark.ext.gfm.strikethrough.Strikethrough;
 import org.commonmark.node.BlockQuote;
@@ -152,11 +153,14 @@ public class MarkdownUtils {
 
                 @Override
                 public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
-                    builder
-                        // set color for inline code
-                        .setFactory(Code.class, (configuration, props) -> new Object[]{
-                            new BackgroundColorSpan(ContextCompat.getColor(context, R.color.background_markdown_code_inline)),
-                        });
+                    // Do not change color for night themes
+                    if (!ThemeUtils.isNightModeEnabled(context)) {
+                        builder
+                            // set color for inline code
+                            .setFactory(Code.class, (configuration, props) -> new Object[]{
+                                new BackgroundColorSpan(ContextCompat.getColor(context, R.color.background_markdown_code_inline)),
+                            });
+                    }
                 }
             })
             .build();

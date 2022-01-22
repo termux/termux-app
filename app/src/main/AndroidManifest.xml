@@ -46,14 +46,15 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
-        android:theme="@style/Theme.Termux">
+        android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar">
 
         <activity
             android:name=".app.TermuxActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|keyboard|keyboardHidden|navigation"
             android:label="@string/application_name"
             android:launchMode="singleTask"
-            android:resizeableActivity="true">
+            android:resizeableActivity="true"
+            android:theme="@style/Theme.TermuxActivity.DayNight.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -88,20 +89,18 @@
             android:exported="false"
             android:label="@string/application_name"
             android:parentActivityName=".app.TermuxActivity"
-            android:resizeableActivity="true"
-            android:theme="@android:style/Theme.Material.Light.DarkActionBar" />
+            android:resizeableActivity="true" />
 
         <activity
             android:name=".app.activities.SettingsActivity"
             android:exported="true"
             android:label="@string/title_activity_termux_settings"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+            android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
 
         <activity
             android:name=".shared.activities.ReportActivity"
-            android:theme="@style/Theme.AppCompat.TermuxReportActivity"
-            android:documentLaunchMode="intoExisting"
-            />
+            android:theme="@style/Theme.MarkdownViewActivity.DayNight"
+            android:documentLaunchMode="intoExisting" />
 
         <activity
             android:name=".filepicker.TermuxFileReceiverActivity"

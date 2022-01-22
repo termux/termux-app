@@ -16,6 +16,7 @@ android {
         implementation "androidx.drawerlayout:drawerlayout:1.1.1"
         implementation "androidx.preference:preference:1.1.1"
         implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation "com.google.android.material:material:1.4.0"
         implementation "com.google.guava:guava:24.1-jre"
         implementation "io.noties.markwon:core:$markwonVersion"
         implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"

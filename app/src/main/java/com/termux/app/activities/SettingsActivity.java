@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Environment;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -24,12 +23,17 @@ import com.termux.shared.termux.settings.preferences.TermuxWidgetAppSharedPrefer
 import com.termux.shared.android.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.activity.media.AppCompatActivityUtils;
+import com.termux.shared.theme.NightMode;
 
 public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AppCompatActivityUtils.setNightMode(this, NightMode.getAppNightMode().getName(), true);
+
         setContentView(R.layout.activity_settings);
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -37,11 +41,9 @@ public class SettingsActivity extends AppCompatActivity {
                 .replace(R.id.settings, new RootPreferencesFragment())
                 .commit();
         }
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-        }
+
+        AppCompatActivityUtils.setToolbar(this, com.termux.shared.R.id.toolbar);
+        AppCompatActivityUtils.setShowBackButtonInActionBar(this, true);
     }
 
     @Override

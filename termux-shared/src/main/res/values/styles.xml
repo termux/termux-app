@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- BaseToolbar Title text appearance. -->
+    <style name="TextAppearance.Widget.BaseToolbar.Title" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- BaseToolbar Subtitle text appearance. -->
+    <style name="TextAppearance.Widget.BaseToolbar.Subtitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Subtitle">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+
+
+
+
+    <!--
+     BaseDialog Title Panel materialAlertDialogTitlePanelStyle.
+     https://github.com/material-components/material-components-android/blob/1.4.0/lib/java/com/google/android/material/dialog/res/layout/mtrl_alert_dialog_title.xml#L29
+     https://github.com/material-components/material-components-android/blob/1.4.0/lib/java/com/google/android/material/dialog/res/values/themes.xml#L71
+    -->
+    <style name="BaseDialog.Title.Panel" parent="@style/MaterialAlertDialog.MaterialComponents.Title.Panel">
+        <!-- Title background. -->
+        <item name="android:background">@color/red_400</item>
+
+        <!-- Center Title. -->
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+    </style>
+
+
+    <!--
+     BaseDialog Message Text Light materialAlertDialogBodyTextStyle.
+     https://github.com/material-components/material-components-android/blob/1.4.0/lib/java/com/google/android/material/dialog/res/layout/mtrl_alert_dialog.xml#L59
+     https://github.com/material-components/material-components-android/blob/1.4.0/lib/java/com/google/android/material/dialog/res/values/themes_base.xml#L133
+    -->
+    <style name="BaseDialog.Message.Text.Light" parent="@style/MaterialAlertDialog.MaterialComponents.Body.Text">
+        <!-- Text color. -->
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorLink">@color/blue_link_light</item>
+    </style>
+
+    <!--
+     BaseDialog Message Text Dark materialAlertDialogBodyTextStyle.
+     https://github.com/material-components/material-components-android/blob/1.4.0/lib/java/com/google/android/material/dialog/res/layout/mtrl_alert_dialog.xml#L59
+     https://github.com/material-components/material-components-android/blob/1.4.0/lib/java/com/google/android/material/dialog/res/values/themes_base.xml#L133
+    -->
+    <style name="BaseDialog.Message.Text.Dark" parent="@style/MaterialAlertDialog.MaterialComponents.Body.Text">
+        <!-- Text color. -->
+        <item name="android:textColorLink">@color/blue_link_light</item>
+    </style>
+
+
+
+
+
+    <!-- ViewDivider style. -->
+    <style name="ViewDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">@dimen/activity_vertical_margin</item>
+        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
+        <item name="android:background">?android:attr/listDivider</item>
+    </style>
+
+</resources>
