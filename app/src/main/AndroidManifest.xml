@@ -50,6 +50,7 @@
 
         <activity
             android:name=".app.TermuxActivity"
+            android:exported="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|keyboard|keyboardHidden|navigation"
             android:label="@string/application_name"
             android:launchMode="singleTask"
@@ -73,6 +74,7 @@
 
         <activity-alias
             android:name=".HomeActivity"
+            android:exported="true"
             android:targetActivity=".app.TermuxActivity">
 
             <!-- Launch activity automatically on boot on Android Things devices -->
@@ -105,6 +107,7 @@
         <activity
             android:name=".filepicker.TermuxFileReceiverActivity"
             android:excludeFromRecents="true"
+            android:exported="true"
             android:label="@string/application_name"
             android:noHistory="true"
             android:resizeableActivity="true"
@@ -158,9 +161,13 @@
             android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
 
 
-        <receiver android:name=".app.TermuxOpenReceiver" android:exported="false" />
+        <receiver
+            android:name=".app.TermuxOpenReceiver"
+            android:exported="false" />
 
-        <receiver android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver" android:exported="false" />
+        <receiver
+            android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver"
+            android:exported="false" />
 
 
         <service
