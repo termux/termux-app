@@ -21,7 +21,7 @@ Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
 
 ***
 
-### Contents
+## Contents
 - [Termux App and Plugins](#Termux-App-and-Plugins)
 - [Installation](#Installation)
 - [Uninstallation](#Uninstallation)
@@ -50,6 +50,8 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 ## Installation
 
 Latest version is `v0.118.0`.
+
+**NOTICE: It is highly recommended that you update to `v0.118.0` or higher for various bug fixes ASAP. Also reminding [again](https://www.reddit.com/r/termux/comments/pkujfa/important_deprecation_notice_for_google_play) to users who have installed termux apps from google playstore that playstore builds are [deprecated](#google-play-store-deprecated) and no longer supported. It is recommended that you shift to F-Droid or Github releases.**
 
 Termux can be obtained through various sources listed below for **only** Android `>= 7`. Support was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, old builds are available on [archive.org](https://archive.org/details/termux-repositories-legacy).
 
