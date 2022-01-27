@@ -180,7 +180,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         Logger.logDebug(LOG_TAG, "onCreate");
         isOnResumeAfterOnCreate = true;
 
@@ -846,9 +845,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
 
 
-    public static void updateTermuxActivityStyling(Context context) {
+    public static void updateTermuxActivityStyling(Context context, boolean recreateActivity) {
         // Make sure that terminal styling is always applied.
         Intent stylingIntent = new Intent(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
+        stylingIntent.putExtra(TERMUX_ACTIVITY.EXTRA_RECREATE_ACTIVITY, recreateActivity);
         context.sendBroadcast(stylingIntent);
     }
 
@@ -889,7 +889,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                         return;
                     case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
                         Logger.logDebug(LOG_TAG, "Received intent to reload styling");
-                        reloadActivityStyling();
+                        reloadActivityStyling(intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_RECREATE_ACTIVITY, true));
                         return;
                     default:
                 }
@@ -897,7 +897,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }
     }
 
-    private void reloadActivityStyling() {
+    private void reloadActivityStyling(boolean recreateActivity) {
         if (mProperties != null) {
             mProperties.loadTermuxPropertiesFromDisk();
 
@@ -925,7 +925,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // To change the activity and drawer theme, activity needs to be recreated.
         // It will destroy the activity, including all stored variables and views, and onCreate()
         // will be called again. Extra keys input text, terminal sessions and transcripts will be preserved.
-        TermuxActivity.this.recreate();
+        if (recreateActivity) {
+            Logger.logDebug(LOG_TAG, "Recreating activity");
+            TermuxActivity.this.recreate();
+        }
     }
 
 

@@ -8,7 +8,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.34.0
+ * Version: v0.35.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -214,6 +214,9 @@ import java.util.List;
  *
  * - 0.34.0 (2021-10-26)
  *  - Move `RESULT_SENDER` to `com.termux.shared.shell.command.ShellCommandConstants`.
+ *
+ * - 0.35.0 (2022-01-28)
+ *  - Add `TERMUX_APP.TERMUX_ACTIVITY.EXTRA_RECREATE_ACTIVITY`.
  */
 
 /**
@@ -863,6 +866,9 @@ public final class TermuxConstants {
             /** Intent {@code String} extra for what to reload for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent. This has been deperecated. */
             @Deprecated
             public static final String EXTRA_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
+
+            /**  Intent {@code boolean} extra for whether to recreate activity for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent. */
+            public static final String EXTRA_RECREATE_ACTIVITY = TERMUX_APP.TERMUX_ACTIVITY_NAME + ".EXTRA_RECREATE_ACTIVITY"; // Default: "com.termux.app.TermuxActivity.EXTRA_RECREATE_ACTIVITY"
 
         }
 

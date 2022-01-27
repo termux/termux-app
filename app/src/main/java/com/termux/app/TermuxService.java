@@ -540,7 +540,9 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             mTermuxTerminalSessionClient.termuxSessionListNotifyUpdated();
 
         updateNotification();
-        TermuxActivity.updateTermuxActivityStyling(this);
+
+        // No need to recreate the activity since it likely just started and theme should already have applied
+        TermuxActivity.updateTermuxActivityStyling(this, false);
 
         return newTermuxSession;
     }
