@@ -22,7 +22,7 @@ import java.util.Map;
 public class TermuxAppSharedProperties extends TermuxSharedProperties {
 
     private ExtraKeysInfo mExtraKeysInfo;
-    private List<KeyboardShortcut> mSessionShortcuts = new ArrayList<>();
+    private List<KeyboardShortcut> mSessionShortcuts;
 
     private static final String LOG_TAG = "TermuxAppSharedProperties";
 
@@ -80,10 +80,7 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
      * Set the terminal sessions shortcuts.
      */
     private void setSessionShortcuts() {
-        if (mSessionShortcuts == null)
-            mSessionShortcuts = new ArrayList<>();
-        else
-            mSessionShortcuts.clear();
+        mSessionShortcuts = new ArrayList<>();
 
         // The {@link TermuxPropertyConstants#MAP_SESSION_SHORTCUTS} stores the session shortcut key and action pair
         for (Map.Entry<String, Integer> entry : TermuxPropertyConstants.MAP_SESSION_SHORTCUTS.entrySet()) {
