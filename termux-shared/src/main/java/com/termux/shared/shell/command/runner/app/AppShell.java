@@ -74,7 +74,7 @@ public final class AppShell {
         if (executionCommand.workingDirectory.isEmpty())
             executionCommand.workingDirectory = "/";
 
-        String[] env = shellEnvironmentClient.buildEnvironment(context, false, executionCommand.workingDirectory);
+        String[] env = shellEnvironmentClient.buildEnvironment(context, executionCommand.isFailsafe, executionCommand.workingDirectory);
 
         final String[] commandArray = shellEnvironmentClient.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
 
