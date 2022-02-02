@@ -3,6 +3,7 @@ package com.termux.filepicker;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import android.util.Patterns;
 
@@ -29,7 +30,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class TermuxFileReceiverActivity extends AppCompatActivity {
 
@@ -144,6 +151,24 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
             if (attachmentFileName == null) attachmentFileName = subjectFromIntent;
             if (attachmentFileName == null) attachmentFileName = UriUtils.getUriFileBasename(uri, true);
 
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                ParcelFileDescriptor fileDescriptor = null;
+                try {
+                    fileDescriptor = getContentResolver().openFileDescriptor(uri, "r");
+                    int fd = fileDescriptor.getFd();
+                    Path link = Paths.get("/proc/self/fd/" + fd);
+                    if (Files.isDirectory(link)) {
+                        promptNameAndCopy(link, fileDescriptor, attachmentFileName);
+                        return;
+                    }
+                } catch (Exception e) {
+                    Logger.logStackTraceWithMessage(LOG_TAG, "handleContentUri(uri=" + uri + ") as directory failed (continuing as file)", e);
+                    if (fileDescriptor != null) {
+                        fileDescriptor.close();
+                    }
+                }
+            }
+
             InputStream in = getContentResolver().openInputStream(uri);
             promptNameAndSave(in, attachmentFileName);
         } catch (Exception e) {
@@ -152,6 +177,53 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
         }
     }
 
+    @androidx.annotation.RequiresApi(api = android.os.Build.VERSION_CODES.O)
+    void promptNameAndCopy(final Path SOURCE, @NonNull final ParcelFileDescriptor fd, final String attachmentFileName) {
+        final TextInputDialogUtils.TextSetListener listener = (
+            text -> {
+                try (final ParcelFileDescriptor fileDescriptor = fd) {
+                    if (DataUtils.isNullOrEmpty(text)) {
+                        showErrorDialogAndQuit("File name cannot be null or empty");
+                        return;
+                    }
+                    final Path receiveDir = Paths.get(TERMUX_RECEIVEDIR, text);
+                    if (Files.createDirectories(receiveDir) != receiveDir) {
+                        showErrorDialogAndQuit("Cannot create directory: " + receiveDir.toAbsolutePath().toString());
+                        return;
+                    }
+                    try (Stream<Path> children = Files.list(SOURCE)) {
+                        for (Iterator<Path> itr = children.iterator(); itr.hasNext();) {
+                            Path child = itr.next();
+                            try (Stream<Path> stream = Files.walk(child)) {
+                                for (Iterator<Path> i = stream.iterator(); i.hasNext();) {
+                                    Path source = i.next();
+                                    Files.copy(source, receiveDir.resolve(SOURCE.relativize(source)), LinkOption.NOFOLLOW_LINKS);
+                                }
+                            }
+                        }
+                    }
+                    fileDescriptor.getFd();
+
+                    Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE);
+                    executeIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, receiveDir.toString());
+                    executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
+                    startService(executeIntent);
+                    finish();
+                } catch (Exception e) {
+                    showErrorDialogAndQuit("Error copying directory:\n\n" + e);
+                    Logger.logStackTraceWithMessage(LOG_TAG, "Error copying directory", e);
+                }
+            });
+        TextInputDialogUtils.textInput(this, R.string.title_file_received, attachmentFileName,
+            R.string.action_file_received_edit, listener,
+            R.string.action_file_received_open_directory, listener,
+            android.R.string.cancel, text -> finish(), dialog -> {
+                if (mFinishOnDismissNameDialog) {
+                    finish();
+                }
+            });
+    }
+    
     void promptNameAndSave(final InputStream in, final String attachmentFileName) {
         TextInputDialogUtils.textInput(this, R.string.title_file_received, attachmentFileName,
             R.string.action_file_received_edit, text -> {
