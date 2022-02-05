@@ -830,7 +830,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return mIsVisible;
     }
 
-    public boolean isIsOnResumeAfterOnCreate() {
+    public boolean isOnResumeAfterOnCreate() {
         return mIsOnResumeAfterOnCreate;
     }
 
