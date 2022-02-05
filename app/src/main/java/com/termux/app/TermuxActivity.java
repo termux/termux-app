@@ -154,6 +154,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private boolean isOnResumeAfterOnCreate = false;
 
     /**
+     * If activity was restarted like due to call to {@link #recreate()} after receiving
+     * {@link TERMUX_ACTIVITY#ACTION_RELOAD_STYLE}, system dark night mode was changed or activity
+     * was killed by android.
+     */
+    private boolean mIsActivityRecreated = false;
+
+    /**
      * The {@link TermuxActivity} is in an invalid state and must not be run.
      */
     private boolean mIsInvalidState;
@@ -175,6 +182,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final int CONTEXT_MENU_REPORT_ID = 9;
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
+    private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
 
     private static final String LOG_TAG = "TermuxActivity";
 
@@ -182,6 +190,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onCreate(Bundle savedInstanceState) {
         Logger.logDebug(LOG_TAG, "onCreate");
         isOnResumeAfterOnCreate = true;
+
+        if (savedInstanceState != null)
+            mIsActivityRecreated = savedInstanceState.getBoolean(ARG_ACTIVITY_RECREATED, false);
 
         // Check if a crash happened on last run of the app and show a
         // notification with the crash details if it did
@@ -339,6 +350,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
+        savedInstanceState.putBoolean(ARG_ACTIVITY_RECREATED, true);
     }
 
 
@@ -359,15 +371,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setTermuxSessionsListView();
 
+        final Intent intent = getIntent();
+        setIntent(null);
+
         if (mTermuxService.isTermuxSessionsEmpty()) {
             if (mIsVisible) {
                 TermuxInstaller.setupBootstrapIfNeeded(TermuxActivity.this, () -> {
                     if (mTermuxService == null) return; // Activity might have been destroyed.
                     try {
-                        Bundle bundle = getIntent().getExtras();
                         boolean launchFailsafe = false;
-                        if (bundle != null) {
-                            launchFailsafe = bundle.getBoolean(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
+                        if (intent != null && intent.getExtras() != null) {
+                            launchFailsafe = intent.getExtras().getBoolean(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                         }
                         mTermuxTerminalSessionClient.addNewSession(launchFailsafe, null);
                     } catch (WindowManager.BadTokenException e) {
@@ -379,10 +393,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 finishActivityIfNotFinishing();
             }
         } else {
-            Intent i = getIntent();
-            if (i != null && Intent.ACTION_RUN.equals(i.getAction())) {
+            // If termux was started from launcher "New session" shortcut and activity is recreated,
+            // then the original intent will be re-delivered, resulting in a new session being re-added
+            // each time.
+            if (!mIsActivityRecreated && intent != null && Intent.ACTION_RUN.equals(intent.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
-                boolean isFailSafe = i.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
+                boolean isFailSafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                 mTermuxTerminalSessionClient.addNewSession(isFailSafe, null);
             } else {
                 mTermuxTerminalSessionClient.setCurrentSession(mTermuxTerminalSessionClient.getCurrentStoredSessionOrLast());
@@ -541,7 +557,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         });
 
         findViewById(R.id.toggle_keyboard_button).setOnLongClickListener(v -> {
-            toggleTerminalToolbar();
+            //toggleTerminalToolbar();
             return true;
         });
     }
@@ -806,6 +822,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     public boolean isOnResumeAfterOnCreate() {
         return isOnResumeAfterOnCreate;
+    }
+
+    public boolean isActivityRecreated() {
+        return mIsActivityRecreated;
     }
 
 
