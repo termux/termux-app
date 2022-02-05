@@ -151,7 +151,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     /**
      * If onResume() was called after onCreate().
      */
-    private boolean isOnResumeAfterOnCreate = false;
+    private boolean mIsOnResumeAfterOnCreate = false;
 
     /**
      * If activity was restarted like due to call to {@link #recreate()} after receiving
@@ -189,7 +189,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Logger.logDebug(LOG_TAG, "onCreate");
-        isOnResumeAfterOnCreate = true;
+        mIsOnResumeAfterOnCreate = true;
 
         if (savedInstanceState != null)
             mIsActivityRecreated = savedInstanceState.getBoolean(ARG_ACTIVITY_RECREATED, false);
@@ -298,7 +298,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onResume();
 
-        isOnResumeAfterOnCreate = false;
+        mIsOnResumeAfterOnCreate = false;
     }
 
     @Override
@@ -820,8 +820,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return mIsVisible;
     }
 
-    public boolean isOnResumeAfterOnCreate() {
-        return isOnResumeAfterOnCreate;
+    public boolean ismIsOnResumeAfterOnCreate() {
+        return mIsOnResumeAfterOnCreate;
     }
 
     public boolean isActivityRecreated() {
