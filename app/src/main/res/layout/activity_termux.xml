@@ -1,5 +1,6 @@
 <com.termux.app.terminal.TermuxActivityRootView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_termux_root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -26,11 +27,13 @@
                 android:id="@+id/terminal_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:defaultFocusHighlightEnabled="false"
                 android:focusableInTouchMode="true"
                 android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
                 android:scrollbars="vertical"
                 android:importantForAutofill="no"
-                android:autofillHints="password" />
+                android:autofillHints="password"
+                tools:ignore="UnusedAttribute" />
 
             <LinearLayout
                 android:id="@+id/left_drawer"
