@@ -541,7 +541,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         // disabled or hidden at startup, otherwise if hardware keyboard is attached and user
         // starts typing on hardware keyboard without tapping on the terminal first, then a colour
         // tint will be added to the terminal as highlight for the focussed view. Test with a light
-        // theme.
+        // theme. For android 8.+, the "defaultFocusHighlightEnabled" attribute is also set to false
+        // in TerminalView layout to fix the issue.
 
         // If soft keyboard is disabled by user for Termux (check function docs for Termux behaviour info)
         if (KeyboardUtils.shouldSoftKeyboardBeDisabled(mActivity,
