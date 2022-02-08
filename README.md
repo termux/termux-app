@@ -148,8 +148,8 @@ All community links are available [here](https://wiki.termux.com/wiki/Community)
 The main ones are the following.
 
 - [Termux Reddit community](https://reddit.com/r/termux)
-- [Termux Matrix Channel](https://matrix.to/#termux_termux:gitter.im)
-- [Termux Dev Matrix Channel](https://matrix.to/#termux_dev:gitter.im)
+- [Termux User Matrix Channel](https://matrix.to/#/#termux_termux:gitter.im) ([Gitter](https://gitter.im/termux/termux))
+- [Termux Dev Matrix Channel](https://matrix.to/#/#termux_dev:gitter.im) ([Gitter](https://gitter.im/termux/dev))
 - [Termux Twitter](https://twitter.com/termux/)
 - [Termux Reports Email](mailto:termuxreports@groups.io)
 
