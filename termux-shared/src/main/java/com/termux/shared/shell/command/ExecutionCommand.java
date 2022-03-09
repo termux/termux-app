@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.shell.command.result.ResultConfig;
@@ -13,6 +14,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.shell.command.runner.app.AppShell;
+import com.termux.terminal.TerminalSession;
 
 import java.util.Collections;
 import java.util.List;
@@ -52,8 +54,56 @@ public class ExecutionCommand {
             return value;
         }
 
+
     }
 
+    public enum Runner {
+
+        /** Run command in {@link TerminalSession}. */
+        TERMINAL_SESSION("terminal-session"),
+
+        /** Run command in {@link AppShell}. */
+        APP_SHELL("app-shell");
+
+        ///** Run command in {@link AdbShell}. */
+        //ADB_SHELL("adb-shell"),
+
+        ///** Run command in {@link RootShell}. */
+        //ROOT_SHELL("root-shell");
+
+        private final String name;
+
+        Runner(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean equalsRunner(String runner) {
+            return runner != null && runner.equals(this.name);
+        }
+
+        /** Get {@link Runner} for {@code name} if found, otherwise {@code null}. */
+        @Nullable
+        public static Runner runnerOf(String name) {
+            for (Runner v : Runner.values()) {
+                if (v.name.equals(name)) {
+                    return v;
+                }
+            }
+            return null;
+        }
+
+        /** Get {@link Runner} for {@code name} if found, otherwise {@code def}. */
+        @NonNull
+        public static Runner runnerOf(@Nullable String name, @NonNull Runner def) {
+            Runner runner = runnerOf(name);
+            return runner != null ? runner : def;
+        }
+
+    }
 
     /** The optional unique id for the {@link ExecutionCommand}. */
     public Integer id;
@@ -83,8 +133,9 @@ public class ExecutionCommand {
     public Integer terminalTranscriptRows;
 
 
-    /** If the {@link ExecutionCommand} is a background or a foreground terminal session command. */
-    public boolean inBackground;
+    /** The {@link Runner} for the {@link ExecutionCommand}. */
+    public String runner;
+
     /** If the {@link ExecutionCommand} is meant to start a failsafe terminal session. */
     public boolean isFailsafe;
 
@@ -145,13 +196,13 @@ public class ExecutionCommand {
         this.id = id;
     }
 
-    public ExecutionCommand(Integer id, String executable, String[] arguments, String stdin, String workingDirectory, boolean inBackground, boolean isFailsafe) {
+    public ExecutionCommand(Integer id, String executable, String[] arguments, String stdin, String workingDirectory, String runner, boolean isFailsafe) {
         this.id = id;
         this.executable = executable;
         this.arguments = arguments;
         this.stdin = stdin;
         this.workingDirectory = workingDirectory;
-        this.inBackground = inBackground;
+        this.runner = runner;
         this.isFailsafe = isFailsafe;
     }
 
@@ -278,10 +329,10 @@ public class ExecutionCommand {
         logString.append("\n").append(executionCommand.getExecutableLogString());
         logString.append("\n").append(executionCommand.getArgumentsLogString());
         logString.append("\n").append(executionCommand.getWorkingDirectoryLogString());
-        logString.append("\n").append(executionCommand.getInBackgroundLogString());
+        logString.append("\n").append(executionCommand.getRunnerLogString());
         logString.append("\n").append(executionCommand.getIsFailsafeLogString());
 
-        if (executionCommand.inBackground) {
+        if (Runner.APP_SHELL.equalsRunner(executionCommand.runner)) {
             if (logStdin && (!ignoreNull || !DataUtils.isNullOrEmpty(executionCommand.stdin)))
                 logString.append("\n").append(executionCommand.getStdinLogString());
 
@@ -372,10 +423,10 @@ public class ExecutionCommand {
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Executable", executionCommand.executable, "-"));
         markdownString.append("\n").append(getArgumentsMarkdownString(executionCommand.arguments));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Working Directory", executionCommand.workingDirectory, "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("inBackground", executionCommand.inBackground, "-"));
+        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Runner", executionCommand.runner, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("isFailsafe", executionCommand.isFailsafe, "-"));
 
-        if (executionCommand.inBackground) {
+        if (Runner.APP_SHELL.equalsRunner(executionCommand.runner)) {
             if (!DataUtils.isNullOrEmpty(executionCommand.stdin))
                 markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry("Stdin", executionCommand.stdin, "-"));
             if (executionCommand.backgroundCustomLogLevel != null)
@@ -450,8 +501,8 @@ public class ExecutionCommand {
         return "Working Directory: `" + workingDirectory + "`";
     }
 
-    public String getInBackgroundLogString() {
-        return "inBackground: `" + inBackground + "`";
+    public String getRunnerLogString() {
+        return Logger.getSingleLineLogStringEntry("Runner", runner, "-");
     }
 
     public String getIsFailsafeLogString() {
