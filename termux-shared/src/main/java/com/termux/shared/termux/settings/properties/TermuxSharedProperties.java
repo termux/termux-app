@@ -26,7 +26,7 @@ public abstract class TermuxSharedProperties {
 
     public TermuxSharedProperties(@NonNull Context context, @NonNull String label, File propertiesFile,
                                   @NonNull Set<String> propertiesList, @NonNull SharedPropertiesParser sharedPropertiesParser) {
-        mContext = context;
+        mContext = context.getApplicationContext();
         mLabel = label;
         mPropertiesFile = propertiesFile;
         mSharedProperties = new SharedProperties(context, mPropertiesFile, propertiesList, sharedPropertiesParser);
