@@ -44,10 +44,12 @@ import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -67,6 +69,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     private boolean mTerminalCursorBlinkerStateAlreadySet;
 
+    private List<KeyboardShortcut> mSessionShortcuts;
+
     private static final String LOG_TAG = "TermuxTerminalViewClient";
 
     public TermuxTerminalViewClient(TermuxActivity activity, TermuxTerminalSessionClient termuxTerminalSessionClient) {
@@ -82,6 +86,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      * Should be called when mActivity.onCreate() is called
      */
     public void onCreate() {
+        onReloadProperties();
+
         mActivity.getTerminalView().setTextSize(mActivity.getPreferences().getFontSize());
         mActivity.getTerminalView().setKeepScreenOn(mActivity.getPreferences().shouldKeepScreenOn());
     }
@@ -128,9 +134,16 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     }
 
     /**
+     * Should be called when mActivity.reloadProperties() is called
+     */
+    public void onReloadProperties() {
+        setSessionShortcuts();
+    }
+
+    /**
      * Should be called when mActivity.reloadActivityStyling() is called
      */
-    public void onReload() {
+    public void onReloadActivityStyling() {
         // Show the soft keyboard if required
         setSoftKeyboardState(false, true);
 
@@ -452,7 +465,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 return true;
             }
 
-            List<KeyboardShortcut> shortcuts = mActivity.getProperties().getSessionShortcuts();
+            List<KeyboardShortcut> shortcuts = mSessionShortcuts;
             if (shortcuts != null && !shortcuts.isEmpty()) {
                 int codePointLowerCase = Character.toLowerCase(codePoint);
                 for (int i = shortcuts.size() - 1; i >= 0; i--) {
@@ -479,6 +492,27 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
         return false;
     }
+
+    /**
+     * Set the terminal sessions shortcuts.
+     */
+    private void setSessionShortcuts() {
+        mSessionShortcuts = new ArrayList<>();
+
+        // The {@link TermuxPropertyConstants#MAP_SESSION_SHORTCUTS} stores the session shortcut key and action pair
+        for (Map.Entry<String, Integer> entry : TermuxPropertyConstants.MAP_SESSION_SHORTCUTS.entrySet()) {
+            // The mMap stores the code points for the session shortcuts while loading properties
+            Integer codePoint = (Integer) mActivity.getProperties().getInternalPropertyValue(entry.getKey(), true);
+            // If codePoint is null, then session shortcut did not exist in properties or was invalid
+            // as parsed by {@link #getCodePointForSessionShortcuts(String,String)}
+            // If codePoint is not null, then get the action for the MAP_SESSION_SHORTCUTS key and
+            // add the code point to sessionShortcuts
+            if (codePoint != null)
+                mSessionShortcuts.add(new KeyboardShortcut(codePoint, entry.getValue()));
+        }
+    }
+
+
 
 
 

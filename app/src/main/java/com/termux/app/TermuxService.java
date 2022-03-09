@@ -19,7 +19,6 @@ import android.widget.ArrayAdapter;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
-import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.utils.PluginUtils;
 import com.termux.shared.data.IntentUtils;
@@ -27,6 +26,7 @@ import com.termux.shared.net.uri.UriUtils;
 import com.termux.shared.errors.Errno;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.shell.command.runner.app.AppShell;
+import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
 import com.termux.shared.termux.shell.TermuxShellUtils;
 import com.termux.shared.termux.TermuxConstants;
@@ -102,6 +102,11 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
      */
     final TermuxTerminalSessionClientBase mTermuxTerminalSessionClientBase = new TermuxTerminalSessionClientBase();
 
+    /**
+     * Termux app shared properties manager, loaded from termux.properties
+     */
+    private TermuxAppSharedProperties mProperties;
+
     /** The wake lock and wifi lock are always acquired and released together. */
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
@@ -109,13 +114,16 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     /** If the user has executed the {@link TERMUX_SERVICE#ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
 
-    public Integer mTerminalTranscriptRows;
-
     private static final String LOG_TAG = "TermuxService";
 
     @Override
     public void onCreate() {
         Logger.logVerbose(LOG_TAG, "onCreate");
+
+        // Get Termux app SharedProperties without loading from disk since TermuxApplication handles
+        // load and TermuxActivity handles reloads
+        mProperties = TermuxAppSharedProperties.getProperties();
+
         runStartForeground();
     }
 
@@ -515,7 +523,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         // If the execution command was started for a plugin, only then will the stdout be set
         // Otherwise if command was manually started by the user like by adding a new terminal session,
         // then no need to set stdout
-        executionCommand.terminalTranscriptRows = getTerminalTranscriptRows();
+        executionCommand.terminalTranscriptRows = mProperties.getTerminalTranscriptRows();
         TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(), this, new TermuxShellEnvironmentClient(), sessionName, executionCommand.isPluginExecutionCommand);
         if (newTermuxSession == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxSession command for:\n" + executionCommand.getCommandIdAndLabelLogString());
@@ -578,19 +586,6 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         }
 
         updateNotification();
-    }
-
-    /** Get the terminal transcript rows to be used for new {@link TermuxSession}. */
-    public Integer getTerminalTranscriptRows() {
-        if (mTerminalTranscriptRows == null)
-            setTerminalTranscriptRows();
-        return mTerminalTranscriptRows;
-    }
-
-    public void setTerminalTranscriptRows() {
-        // TermuxService only uses this termux property currently, so no need to load them all into
-        // an internal values map like TermuxActivity does
-        mTerminalTranscriptRows = TermuxAppSharedProperties.getTerminalTranscriptRows(this);
     }
 
 

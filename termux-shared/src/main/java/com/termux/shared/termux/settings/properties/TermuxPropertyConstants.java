@@ -355,7 +355,7 @@ public final class TermuxPropertyConstants {
     /** Defines the set for keys loaded by termux
      * Setting this to {@code null} will make {@link SharedProperties} throw an exception.
      * */
-    public static final Set<String> TERMUX_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+    public static final Set<String> TERMUX_APP_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         /* boolean */
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,

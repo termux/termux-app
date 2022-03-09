@@ -8,6 +8,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.settings.properties.SharedProperties;
 import com.termux.shared.settings.properties.SharedPropertiesParser;
+import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;
 import java.util.HashMap;
@@ -539,6 +540,9 @@ public abstract class TermuxSharedProperties {
 
 
 
+    public boolean shouldAllowExternalApps() {
+        return (boolean) getInternalPropertyValue(TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true);
+    }
     public boolean areHardwareKeyboardShortcutsDisabled() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS, true);
     }
