@@ -55,7 +55,7 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 
 Latest version is `v0.118.0`.
 
-**NOTICE: It is highly recommended that you update to `v0.118.0` or higher for various bug fixes ASAP. Also reminding [again](https://www.reddit.com/r/termux/comments/pkujfa/important_deprecation_notice_for_google_play) to users who have installed termux apps from google playstore that playstore builds are [deprecated](#google-play-store-deprecated) and no longer supported. It is recommended that you shift to F-Droid or Github releases.**
+**NOTICE: It is highly recommended that you update to `v0.118.0` or higher ASAP for various bug fixes, including a critical world-readable vulnerability reported at https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html. Also reminding [again](https://www.reddit.com/r/termux/comments/pkujfa/important_deprecation_notice_for_google_play) to users who have installed termux apps from google playstore that playstore builds are [deprecated](#google-play-store-deprecated) and no longer supported. It is recommended that you shift to F-Droid or Github releases.**
 
 Termux can be obtained through various sources listed below for **only** Android `>= 7`. Support was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, old builds are available on [archive.org](https://archive.org/details/termux-repositories-legacy).
 
@@ -109,6 +109,8 @@ If you plan on staying on Play Store sources in future as well, then you may wan
 
 <details>
 <summary></summary>
+
+- Play store apps have multiple critical vulnerabilities as reported at https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html and since they cannot be updated with fixes, any users using older versions would be vulnerable.
 
 - They should be disabled because deprecated things get removed and are not supported after some time, its the standard practice. It has been many months now since deprecation was announced and updates have not been released on Play Store since after `29 September 2020`.
 
