@@ -91,7 +91,7 @@ public class SharedProperties {
      * @param sharedPropertiesParser The implementation of the {@link SharedPropertiesParser} interface.
      */
     public SharedProperties(@NonNull Context context, @Nullable File propertiesFile, Set<String> propertiesList, @NonNull SharedPropertiesParser sharedPropertiesParser) {
-        mContext = context;
+        mContext = context.getApplicationContext();
         mPropertiesFile = propertiesFile;
         mPropertiesList = propertiesList;
         mSharedPropertiesParser = sharedPropertiesParser;

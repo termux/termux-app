@@ -27,9 +27,8 @@ import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
-import com.termux.shared.settings.properties.SharedProperties;
 import com.termux.shared.models.ReportInfo;
-import com.termux.shared.termux.settings.properties.TermuxPropertyConstants;
+import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.app.models.UserAction;
 import com.termux.shared.data.DataUtils;
@@ -366,8 +365,9 @@ public class PluginUtils {
      */
     public static String checkIfAllowExternalAppsPolicyIsViolated(final Context context, String apiName) {
         String errmsg = null;
-        if (!SharedProperties.isPropertyValueTrue(context, TermuxPropertyConstants.getTermuxPropertiesFile(),
-            TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true)) {
+
+        TermuxAppSharedProperties mProperties = TermuxAppSharedProperties.getProperties();
+        if (mProperties == null || !mProperties.shouldAllowExternalApps()) {
             errmsg = context.getString(R.string.error_allow_external_apps_ungranted, apiName,
                 TermuxFileUtils.getUnExpandedTermuxPath(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH));
         }

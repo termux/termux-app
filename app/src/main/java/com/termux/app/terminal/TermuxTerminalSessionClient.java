@@ -103,7 +103,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     /**
      * Should be called when mActivity.reloadActivityStyling() is called
      */
-    public void onReload() {
+    public void onReloadActivityStyling() {
         // Set terminal fonts and colors
         checkForFontAndColors();
     }

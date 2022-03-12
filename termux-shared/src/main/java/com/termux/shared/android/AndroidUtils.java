@@ -120,6 +120,10 @@ public class AndroidUtils {
         appendPropertyToMarkdown(markdownString, "TYPE", Build.TYPE);
         appendPropertyToMarkdown(markdownString, "TAGS", Build.TAGS);
 
+        // If on Android >= 12
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R)
+            appendPropertyToMarkdown(markdownString, "MONITOR_PHANTOM_PROCS", FeatureFlagUtils.getFeatureFlagValueString(context, FeatureFlagUtils.SETTINGS_ENABLE_MONITOR_PHANTOM_PROCS).getName());
+
         markdownString.append("\n\n### Hardware\n");
         appendPropertyToMarkdown(markdownString, "MANUFACTURER", Build.MANUFACTURER);
         appendPropertyToMarkdown(markdownString, "BRAND", Build.BRAND);

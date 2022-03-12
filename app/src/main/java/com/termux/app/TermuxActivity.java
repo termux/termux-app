@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.terminal.TermuxActivityRootView;
+import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
@@ -45,10 +46,10 @@ import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.TermuxTerminalSessionClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.shared.termux.extrakeys.ExtraKeysView;
-import com.termux.app.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 import com.termux.shared.theme.NightMode;
 import com.termux.shared.view.ViewUtils;
@@ -108,7 +109,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private TermuxAppSharedPreferences mPreferences;
 
     /**
-     * Termux app shared properties manager, loaded from termux.properties
+     * Termux app SharedProperties loaded from termux.properties
      */
     private TermuxAppSharedProperties mProperties;
 
@@ -126,6 +127,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
      * The terminal extra keys view.
      */
     ExtraKeysView mExtraKeysView;
+
+    /**
+     * The client for the {@link #mExtraKeysView}.
+     */
+    TermuxTerminalExtraKeys mTermuxTerminalExtraKeys;
 
     /**
      * The termux sessions list controller.
@@ -151,7 +157,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     /**
      * If onResume() was called after onCreate().
      */
-    private boolean isOnResumeAfterOnCreate = false;
+    private boolean mIsOnResumeAfterOnCreate = false;
+
+    /**
+     * If activity was restarted like due to call to {@link #recreate()} after receiving
+     * {@link TERMUX_ACTIVITY#ACTION_RELOAD_STYLE}, system dark night mode was changed or activity
+     * was killed by android.
+     */
+    private boolean mIsActivityRecreated = false;
 
     /**
      * The {@link TermuxActivity} is in an invalid state and must not be run.
@@ -175,13 +188,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final int CONTEXT_MENU_REPORT_ID = 9;
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
+    private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
 
     private static final String LOG_TAG = "TermuxActivity";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Logger.logDebug(LOG_TAG, "onCreate");
-        isOnResumeAfterOnCreate = true;
+        mIsOnResumeAfterOnCreate = true;
+
+        if (savedInstanceState != null)
+            mIsActivityRecreated = savedInstanceState.getBoolean(ARG_ACTIVITY_RECREATED, false);
 
         // Check if a crash happened on last run of the app and show a
         // notification with the crash details if it did
@@ -190,8 +207,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Delete ReportInfo serialized object files from cache older than 14 days
         ReportActivity.deleteReportInfoFilesOlderThanXDays(this, 14, false);
 
-        // Load termux shared properties
-        mProperties = new TermuxAppSharedProperties(this);
+        // Load Termux app SharedProperties from disk
+        mProperties = TermuxAppSharedProperties.getProperties();
+        reloadProperties();
 
         setActivityTheme();
 
@@ -237,14 +255,24 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         registerForContextMenu(mTerminalView);
 
-        // Start the {@link TermuxService} and make it run regardless of who is bound to it
-        Intent serviceIntent = new Intent(this, TermuxService.class);
-        startService(serviceIntent);
+        try {
+            // Start the {@link TermuxService} and make it run regardless of who is bound to it
+            Intent serviceIntent = new Intent(this, TermuxService.class);
+            startService(serviceIntent);
 
-        // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
-        // callback if it succeeds.
-        if (!bindService(serviceIntent, this, 0))
-            throw new RuntimeException("bindService() failed");
+            // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
+            // callback if it succeeds.
+            if (!bindService(serviceIntent, this, 0))
+                throw new RuntimeException("bindService() failed");
+        } catch (Exception e) {
+            Logger.logStackTraceWithMessage(LOG_TAG,"TermuxActivity failed to start TermuxService", e);
+            Logger.showToast(this,
+                getString(e.getMessage() != null && e.getMessage().contains("app is in background") ?
+                    R.string.error_termux_service_start_failed_bg : R.string.error_termux_service_start_failed_general),
+                true);
+            mIsInvalidState = true;
+            return;
+        }
 
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
@@ -287,7 +315,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onResume();
 
-        isOnResumeAfterOnCreate = false;
+        mIsOnResumeAfterOnCreate = false;
     }
 
     @Override
@@ -339,6 +367,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
+        savedInstanceState.putBoolean(ARG_ACTIVITY_RECREATED, true);
     }
 
 
@@ -352,22 +381,23 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
      */
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder service) {
-
         Logger.logDebug(LOG_TAG, "onServiceConnected");
 
         mTermuxService = ((TermuxService.LocalBinder) service).service;
 
         setTermuxSessionsListView();
 
+        final Intent intent = getIntent();
+        setIntent(null);
+
         if (mTermuxService.isTermuxSessionsEmpty()) {
             if (mIsVisible) {
                 TermuxInstaller.setupBootstrapIfNeeded(TermuxActivity.this, () -> {
                     if (mTermuxService == null) return; // Activity might have been destroyed.
                     try {
-                        Bundle bundle = getIntent().getExtras();
                         boolean launchFailsafe = false;
-                        if (bundle != null) {
-                            launchFailsafe = bundle.getBoolean(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
+                        if (intent != null && intent.getExtras() != null) {
+                            launchFailsafe = intent.getExtras().getBoolean(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                         }
                         mTermuxTerminalSessionClient.addNewSession(launchFailsafe, null);
                     } catch (WindowManager.BadTokenException e) {
@@ -379,10 +409,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 finishActivityIfNotFinishing();
             }
         } else {
-            Intent i = getIntent();
-            if (i != null && Intent.ACTION_RUN.equals(i.getAction())) {
+            // If termux was started from launcher "New session" shortcut and activity is recreated,
+            // then the original intent will be re-delivered, resulting in a new session being re-added
+            // each time.
+            if (!mIsActivityRecreated && intent != null && Intent.ACTION_RUN.equals(intent.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
-                boolean isFailSafe = i.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
+                boolean isFailSafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                 mTermuxTerminalSessionClient.addNewSession(isFailSafe, null);
             } else {
                 mTermuxTerminalSessionClient.setCurrentSession(mTermuxTerminalSessionClient.getCurrentStoredSessionOrLast());
@@ -395,7 +427,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-
         Logger.logDebug(LOG_TAG, "onServiceDisconnected");
 
         // Respect being stopped from the {@link TermuxService} notification action.
@@ -403,6 +434,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
 
+
+
+
+
+    private void reloadProperties() {
+        mProperties.loadTermuxPropertiesFromDisk();
+
+        if (mTermuxTerminalViewClient != null)
+            mTermuxTerminalViewClient.onReloadProperties();
+    }
 
 
 
@@ -463,6 +504,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
 
     private void setTerminalToolbarView(Bundle savedInstanceState) {
+        mTermuxTerminalExtraKeys = new TermuxTerminalExtraKeys(this, mTerminalView,
+            mTermuxTerminalViewClient, mTermuxTerminalSessionClient);
+
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
 
@@ -485,7 +529,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         layoutParams.height = (int) Math.round(mTerminalToolbarDefaultHeight *
-            (mProperties.getExtraKeysInfo() == null ? 0 : mProperties.getExtraKeysInfo().getMatrix().length) *
+            (mTermuxTerminalExtraKeys.getExtraKeysInfo() == null ? 0 : mTermuxTerminalExtraKeys.getExtraKeysInfo().getMatrix().length) *
             mProperties.getTerminalToolbarHeightScaleFactor());
         terminalToolbarViewPager.setLayoutParams(layoutParams);
     }
@@ -541,7 +585,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         });
 
         findViewById(R.id.toggle_keyboard_button).setOnLongClickListener(v -> {
-            toggleTerminalToolbar();
+            //toggleTerminalToolbar();
             return true;
         });
     }
@@ -774,6 +818,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return mExtraKeysView;
     }
 
+    public TermuxTerminalExtraKeys getTermuxTerminalExtraKeys() {
+        return mTermuxTerminalExtraKeys;
+    }
+
     public void setExtraKeysView(ExtraKeysView extraKeysView) {
         mExtraKeysView = extraKeysView;
     }
@@ -805,7 +853,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     public boolean isOnResumeAfterOnCreate() {
-        return isOnResumeAfterOnCreate;
+        return mIsOnResumeAfterOnCreate;
+    }
+
+    public boolean isActivityRecreated() {
+        return mIsActivityRecreated;
     }
 
 
@@ -899,11 +951,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void reloadActivityStyling(boolean recreateActivity) {
         if (mProperties != null) {
-            mProperties.loadTermuxPropertiesFromDisk();
+            reloadProperties();
 
             if (mExtraKeysView != null) {
                 mExtraKeysView.setButtonTextAllCaps(mProperties.shouldExtraKeysTextBeAllCaps());
-                mExtraKeysView.reload(mProperties.getExtraKeysInfo());
+                mExtraKeysView.reload(mTermuxTerminalExtraKeys.getExtraKeysInfo());
             }
 
             // Update NightMode.APP_NIGHT_MODE
@@ -914,13 +966,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         setTerminalToolbarHeight();
 
         if (mTermuxTerminalSessionClient != null)
-            mTermuxTerminalSessionClient.onReload();
+            mTermuxTerminalSessionClient.onReloadActivityStyling();
 
         if (mTermuxTerminalViewClient != null)
-            mTermuxTerminalViewClient.onReload();
-
-        if (mTermuxService != null)
-            mTermuxService.setTerminalTranscriptRows();
+            mTermuxTerminalViewClient.onReloadActivityStyling();
 
         // To change the activity and drawer theme, activity needs to be recreated.
         // It will destroy the activity, including all stored variables and views, and onCreate()
