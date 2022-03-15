@@ -133,9 +133,9 @@ public class PermissionUtils {
 
                 try {
                     if (context instanceof AppCompatActivity)
-                        ((AppCompatActivity) context).requestPermissions(new String[]{permission}, requestCode);
+                        ((AppCompatActivity) context).requestPermissions(permissions, requestCode);
                     else if (context instanceof Activity)
-                        ((Activity) context).requestPermissions(new String[]{permission}, requestCode);
+                        ((Activity) context).requestPermissions(permissions, requestCode);
                     else {
                         Error.logErrorAndShowToast(context, LOG_TAG,
                             FunctionErrno.ERRNO_PARAMETER_NOT_INSTANCE_OF.getError("context", "requestPermissions", "Activity or AppCompatActivity"));
@@ -147,6 +147,8 @@ public class PermissionUtils {
                     Logger.showToast(context, errmsg + "\n" + e.getMessage(), true);
                     return false;
                 }
+
+                break;
             }
         }
 
