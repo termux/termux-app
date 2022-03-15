@@ -8,7 +8,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.36.0
+ * Version: v0.37.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -220,6 +220,9 @@ import java.util.List;
  *
  * - 0.36.0 (2022-03-10)
  *      - Added `TERMUX_APP.TERMUX_SERVICE.EXTRA_RUNNER` and `TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_RUNNER`
+ *
+ * - 0.37.0 (2022-03-15)
+ *  - Added `TERMUX_API_APT_*`.
  */
 
 /**
@@ -485,6 +488,16 @@ public final class TermuxConstants {
     public static final String TERMUX_X11_PACKAGES_GITHUB_REPO_URL = TERMUX_GITHUB_ORGANIZATION_URL + "/" + TERMUX_X11_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/termux/x11-packages"
     /** Termux X11 Packages Github issues repo url */
     public static final String TERMUX_X11_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_X11_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/x11-packages/issues"
+
+
+    /** Termux API apt package name */
+    public static final String TERMUX_API_APT_PACKAGE_NAME = "termux-api"; // Default: "termux-api"
+    /** Termux API apt Github repo name */
+    public static final String TERMUX_API_APT_GITHUB_REPO_NAME = "termux-api-package"; // Default: "termux-api-package"
+    /** Termux API apt Github repo url */
+    public static final String TERMUX_API_APT_GITHUB_REPO_URL = TERMUX_GITHUB_ORGANIZATION_URL + "/" + TERMUX_API_APT_GITHUB_REPO_NAME; // Default: "https://github.com/termux/termux-api-package"
+    /** Termux API apt Github issues repo url */
+    public static final String TERMUX_API_APT_GITHUB_ISSUES_REPO_URL = TERMUX_API_APT_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/termux-api-package/issues"
 
 
 
