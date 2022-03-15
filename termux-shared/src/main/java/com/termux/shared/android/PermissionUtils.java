@@ -15,6 +15,7 @@ import android.os.PowerManager;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -281,7 +282,7 @@ public class PermissionUtils {
         if (requestCode < 0)
             return false;
 
-        if (requestLegacyStoragePermission) {
+        if (requestLegacyStoragePermission || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             requestLegacyStorageExternalPermission(context, requestCode);
         } else {
             requestManageStorageExternalPermission(context, requestCode);
@@ -303,7 +304,7 @@ public class PermissionUtils {
      * @return Returns {@code true} if permission is granted, otherwise {@code false}.
      */
     public static boolean checkStoragePermission(@NonNull Context context, boolean checkLegacyStoragePermission) {
-        if (checkLegacyStoragePermission) {
+        if (checkLegacyStoragePermission || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             return checkPermissions(context,
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE});
@@ -328,6 +329,7 @@ public class PermissionUtils {
     }
 
     /** Wrapper for {@link #requestManageStorageExternalPermission(Context, int)}. */
+    @RequiresApi(api = Build.VERSION_CODES.R)
     public static Error requestManageStorageExternalPermission(@NonNull Context context) {
         return requestManageStorageExternalPermission(context, -1);
     }
@@ -343,6 +345,7 @@ public class PermissionUtils {
      *                    result it required.
      * @return Returns the {@code error} if requesting the permission was not successful, otherwise {@code null}.
      */
+    @RequiresApi(api = Build.VERSION_CODES.R)
     public static Error requestManageStorageExternalPermission(@NonNull Context context, int requestCode) {
         Logger.logInfo(LOG_TAG, "Requesting manage external storage permission");
 
@@ -376,8 +379,8 @@ public class PermissionUtils {
      * https://developer.android.com/training/data-storage/use-cases#opt-out-scoped-storage
      */
     public static boolean isLegacyExternalStoragePossible(@NonNull Context context) {
-        return !(PackageUtils.getTargetSDKForPackage(context) >= Build.VERSION_CODES.R &&
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R);
+        return !(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            PackageUtils.getTargetSDKForPackage(context) >= Build.VERSION_CODES.R);
     }
 
     /**
