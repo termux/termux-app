@@ -10,8 +10,8 @@ import android.util.Pair;
 import android.view.WindowManager;
 
 import com.termux.R;
-import com.termux.app.utils.CrashUtils;
 import com.termux.shared.file.FileUtils;
+import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
@@ -256,7 +256,7 @@ final class TermuxInstaller {
 
         // Add info of all install Termux plugin apps as well since their target sdk or installation
         // on external/portable sd card can affect Termux app files directory access or exec.
-        CrashUtils.sendCrashReportNotification(activity, LOG_TAG,
+        TermuxCrashUtils.sendCrashReportNotification(activity, LOG_TAG,
             title, null, "## " + title + "\n\n" + message + "\n\n" +
                 TermuxUtils.getTermuxDebugMarkdownString(activity),
             true, false, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGES, true);
@@ -278,7 +278,7 @@ final class TermuxInstaller {
                     if (error != null) {
                         Logger.logErrorAndShowToast(context, LOG_TAG, error.getMessage());
                         Logger.logErrorExtended(LOG_TAG, "Setup Storage Error\n" + error.toString());
-                        CrashUtils.sendCrashReportNotification(context, LOG_TAG, title, null,
+                        TermuxCrashUtils.sendCrashReportNotification(context, LOG_TAG, title, null,
                             "## " + title + "\n\n" + Error.getErrorMarkdownString(error),
                             true, false, TermuxUtils.AppInfoMode.TERMUX_PACKAGE, true);
                         return;
@@ -319,7 +319,7 @@ final class TermuxInstaller {
                 } catch (Exception e) {
                     Logger.logErrorAndShowToast(context, LOG_TAG, e.getMessage());
                     Logger.logStackTraceWithMessage(LOG_TAG, "Setup Storage Error: Error setting up link", e);
-                    CrashUtils.sendCrashReportNotification(context, LOG_TAG, title, null,
+                    TermuxCrashUtils.sendCrashReportNotification(context, LOG_TAG, title, null,
                         "## " + title + "\n\n" + Logger.getStackTracesMarkdownString(null, Logger.getStackTracesStringArray(e)),
                         true, false, TermuxUtils.AppInfoMode.TERMUX_PACKAGE, true);
                 }

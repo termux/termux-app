@@ -1,10 +1,8 @@
-package com.termux.app.models;
+package com.termux.shared.termux.models;
 
 public enum UserAction {
 
-    ABOUT("about"),
-    PLUGIN_EXECUTION_COMMAND("plugin execution command"),
-    REPORT_ISSUE_FROM_TRANSCRIPT("report issue from transcript");
+    CRASH_REPORT("crash report");
 
     private final String name;
 

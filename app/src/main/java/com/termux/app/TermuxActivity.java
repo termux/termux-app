@@ -40,6 +40,7 @@ import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.activities.HelpActivity;
 import com.termux.app.activities.SettingsActivity;
+import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
@@ -55,7 +56,6 @@ import com.termux.shared.theme.NightMode;
 import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
-import com.termux.app.utils.CrashUtils;
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
 
@@ -199,10 +199,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (savedInstanceState != null)
             mIsActivityRecreated = savedInstanceState.getBoolean(ARG_ACTIVITY_RECREATED, false);
-
-        // Check if a crash happened on last run of the app and show a
+        
+        // Check if a crash happened on last run of the app or if a plugin crashed and show a
         // notification with the crash details if it did
-        CrashUtils.notifyAppCrashOnLastRun(this, LOG_TAG);
+        TermuxCrashUtils.notifyAppCrashFromCrashLogFile(this, LOG_TAG);
+
 
         // Delete ReportInfo serialized object files from cache older than 14 days
         ReportActivity.deleteReportInfoFilesOlderThanXDays(this, 14, false);
