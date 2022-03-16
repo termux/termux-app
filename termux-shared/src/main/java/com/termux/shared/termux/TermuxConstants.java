@@ -8,7 +8,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.37.0
+ * Version: v0.38.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -223,6 +223,9 @@ import java.util.List;
  *
  * - 0.37.0 (2022-03-15)
  *  - Added `TERMUX_API_APT_*`.
+ *
+ * - 0.38.0 (2022-03-16)
+ *      - Added `TERMUX_APP.TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH`.
  */
 
 /**
@@ -874,8 +877,9 @@ public final class TermuxConstants {
             public static final String EXTRA_FAILSAFE_SESSION = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.failsafe_session"; // Default: "com.termux.app.failsafe_session"
 
 
-            /** Intent action to make termux request storage permissions */
-            public static final String ACTION_REQUEST_PERMISSIONS = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.request_storage_permissions"; // Default: "com.termux.app.request_storage_permissions"
+            /** Intent action to make termux app notify user that a crash happened. */
+            public static final String ACTION_NOTIFY_APP_CRASH = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.notify_app_crash"; // Default: "com.termux.app.notify_app_crash"
+
 
             /** Intent action to make termux reload its termux session styling */
             public static final String ACTION_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
@@ -886,6 +890,9 @@ public final class TermuxConstants {
             /**  Intent {@code boolean} extra for whether to recreate activity for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent. */
             public static final String EXTRA_RECREATE_ACTIVITY = TERMUX_APP.TERMUX_ACTIVITY_NAME + ".EXTRA_RECREATE_ACTIVITY"; // Default: "com.termux.app.TermuxActivity.EXTRA_RECREATE_ACTIVITY"
 
+
+            /** Intent action to make termux request storage permissions */
+            public static final String ACTION_REQUEST_PERMISSIONS = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.request_storage_permissions"; // Default: "com.termux.app.request_storage_permissions"
         }
 
 

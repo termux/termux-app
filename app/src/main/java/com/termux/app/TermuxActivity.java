@@ -907,8 +907,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void registerTermuxActivityBroadcastReceiver() {
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
+        intentFilter.addAction(TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
+        intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
 
         registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
     }
@@ -936,13 +937,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 fixTermuxActivityBroadcastReceieverIntent(intent);
 
                 switch (intent.getAction()) {
-                    case TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS:
-                        Logger.logDebug(LOG_TAG, "Received intent to request storage permissions");
-                        requestStoragePermission(false);
+                    case TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH:
+                        Logger.logDebug(LOG_TAG, "Received intent to notify app crash");
+                        TermuxCrashUtils.notifyAppCrashFromCrashLogFile(context, LOG_TAG);
                         return;
                     case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
                         Logger.logDebug(LOG_TAG, "Received intent to reload styling");
                         reloadActivityStyling(intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_RECREATE_ACTIVITY, true));
+                        return;
+                    case TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS:
+                        Logger.logDebug(LOG_TAG, "Received intent to request storage permissions");
+                        requestStoragePermission(false);
                         return;
                     default:
                 }

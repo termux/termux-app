@@ -34,12 +34,70 @@ import java.nio.charset.Charset;
 
 public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
 
+    public enum TYPE {
+        UNCAUGHT_EXCEPTION,
+        CAUGHT_EXCEPTION;
+    }
+
+    private final TYPE mType;
+
+    private static final String LOG_TAG = "TermuxCrashUtils";
+
+    TermuxCrashUtils(TYPE type) {
+        mType = type;
+    }
+
     /**
      * Set default uncaught crash handler of current thread to {@link CrashHandler} for Termux app
      * and its plugin to log crashes at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}.
      */
     public static void setCrashHandler(@NonNull final Context context) {
-        CrashHandler.setCrashHandler(context, new TermuxCrashUtils());
+        CrashHandler.setCrashHandler(context, new TermuxCrashUtils(TYPE.UNCAUGHT_EXCEPTION));
+    }
+
+    /**
+     * Log a crash to {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH} and notify termux app
+     * by sending it the {@link TERMUX_APP.TERMUX_ACTIVITY#ACTION_NOTIFY_APP_CRASH} broadcast.
+     *
+     * @param context The {@link Context} for operations.
+     * @param throwable The {@link Throwable} thrown for the crash.
+     */
+    public static void logCrash(@NonNull final Context context, final Throwable throwable) {
+        if (throwable == null) return;
+        CrashHandler.logCrash(context, new TermuxCrashUtils(TYPE.CAUGHT_EXCEPTION), Thread.currentThread(), throwable);
+    }
+
+    @Override
+    public boolean onPreLogCrash(Context context, Thread thread, Throwable throwable) {
+        return false;
+    }
+
+    @Override
+    public void onPostLogCrash(final Context currentPackageContext, Thread thread, Throwable throwable) {
+        if (currentPackageContext == null) return;
+        String currentPackageName = currentPackageContext.getPackageName();
+
+        // Do not notify if is a non-termux app
+        final Context context = TermuxUtils.getTermuxPackageContext(currentPackageContext);
+        if (context == null) {
+            Logger.logWarn(LOG_TAG, "Ignoring call to onPostLogCrash() since failed to get \"" + TermuxConstants.TERMUX_PACKAGE_NAME + "\" package context from \"" + currentPackageName + "\" context");
+            return;
+        }
+
+        // If an uncaught exception, then do not notify since the termux app itself would be crashing
+        if (TYPE.UNCAUGHT_EXCEPTION.equals(mType) && TermuxConstants.TERMUX_PACKAGE_NAME.equals(currentPackageName))
+            return;
+
+        String message = TERMUX_APP.TERMUX_ACTIVITY_NAME + " that \"" + currentPackageName + "\" app crashed";
+
+       try {
+           Logger.logInfo(LOG_TAG, "Sending broadcast to notify " + message);
+            Intent intent = new Intent(TERMUX_APP.TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH);
+            intent.setPackage(TermuxConstants.TERMUX_PACKAGE_NAME);
+            context.sendBroadcast(intent);
+        } catch (Exception e) {
+            Logger.logStackTraceWithMessage(LOG_TAG,"Failed to notify " + message, e);
+        }
     }
 
     @NonNull
