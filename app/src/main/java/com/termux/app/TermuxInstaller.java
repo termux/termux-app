@@ -286,6 +286,7 @@ final class TermuxInstaller {
 
                     Logger.logInfo(LOG_TAG, "Setting up storage symlinks at ~/storage/shared, ~/storage/downloads, ~/storage/dcim, ~/storage/pictures, ~/storage/music and ~/storage/movies for directories in \"" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\".");
 
+                    // Get primary storage root "/storage/emulated/0" symlink
                     File sharedDir = Environment.getExternalStorageDirectory();
                     Os.symlink(sharedDir.getAbsolutePath(), new File(storageDir, "shared").getAbsolutePath());
 
@@ -315,12 +316,32 @@ final class TermuxInstaller {
                         Os.symlink(audiobooksDir.getAbsolutePath(), new File(storageDir, "audiobooks").getAbsolutePath());
                     }
 
-                    final File[] dirs = context.getExternalFilesDirs(null);
-                    if (dirs != null && dirs.length > 1) {
-                        for (int i = 1; i < dirs.length; i++) {
+                    // Dir 0 should ideally be for primary storage
+                    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/app/ContextImpl.java;l=818
+                    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/os/Environment.java;l=219
+                    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/os/Environment.java;l=181
+                    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/services/core/java/com/android/server/StorageManagerService.java;l=3796
+                    // https://cs.android.com/android/platform/superproject/+/android-7.0.0_r36:frameworks/base/services/core/java/com/android/server/MountService.java;l=3053
+
+                    // Create "Android/data/com.termux" symlinks
+                    File[] dirs = context.getExternalFilesDirs(null);
+                    if (dirs != null && dirs.length > 0) {
+                        for (int i = 0; i < dirs.length; i++) {
                             File dir = dirs[i];
                             if (dir == null) continue;
                             String symlinkName = "external-" + i;
+                            Logger.logInfo(LOG_TAG, "Setting up storage symlinks at ~/storage/" + symlinkName + " for \"" + dir.getAbsolutePath() + "\".");
+                            Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
+                        }
+                    }
+
+                    // Create "Android/media/com.termux" symlinks
+                    dirs = context.getExternalMediaDirs();
+                    if (dirs != null && dirs.length > 0) {
+                        for (int i = 0; i < dirs.length; i++) {
+                            File dir = dirs[i];
+                            if (dir == null) continue;
+                            String symlinkName = "media-" + i;
                             Logger.logInfo(LOG_TAG, "Setting up storage symlinks at ~/storage/" + symlinkName + " for \"" + dir.getAbsolutePath() + "\".");
                             Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
                         }
