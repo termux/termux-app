@@ -273,11 +273,11 @@ public class TermuxUtils {
             case TERMUX_AND_CALLING_PACKAGE:
                 appInfo.append(TermuxUtils.getAppInfoMarkdownString(currentPackageContext, false));
                 if (!DataUtils.isNullOrEmpty(callingPackageName)) {
-                    String callingPackageAppInfo;
+                    String callingPackageAppInfo = null;
                     if (TermuxConstants.TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST.contains(callingPackageName)) {
                         Context termuxPluginAppContext = PackageUtils.getContextForPackage(currentPackageContext, callingPackageName);
                         if (termuxPluginAppContext != null)
-                            callingPackageAppInfo = getAppInfoMarkdownString(termuxPluginAppContext, false);
+                            appInfo.append(getAppInfoMarkdownString(termuxPluginAppContext, false));
                         else
                             callingPackageAppInfo = AndroidUtils.getAppInfoMarkdownString(currentPackageContext, callingPackageName);
                     } else {
