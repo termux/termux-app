@@ -60,12 +60,17 @@ public class SettingsActivity extends AppCompatActivity {
 
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-            configureTermuxAPIPreference(context);
-            configureTermuxFloatPreference(context);
-            configureTermuxTaskerPreference(context);
-            configureTermuxWidgetPreference(context);
-            configureAboutPreference(context);
-            configureDonatePreference(context);
+            new Thread() {
+                @Override
+                public void run() {
+                    configureTermuxAPIPreference(context);
+                    configureTermuxFloatPreference(context);
+                    configureTermuxTaskerPreference(context);
+                    configureTermuxWidgetPreference(context);
+                    configureAboutPreference(context);
+                    configureDonatePreference(context);
+                }
+            }.start();
         }
 
         private void configureTermuxAPIPreference(@NonNull Context context) {
