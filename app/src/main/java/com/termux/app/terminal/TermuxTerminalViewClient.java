@@ -6,7 +6,6 @@ import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
@@ -647,17 +646,10 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, false, true);
         if (transcriptText == null) return;
 
-        try {
-            // See https://github.com/termux/termux-app/issues/1166.
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            transcriptText = DataUtils.getTruncatedCommandOutput(transcriptText, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();
-            intent.putExtra(Intent.EXTRA_TEXT, transcriptText);
-            intent.putExtra(Intent.EXTRA_SUBJECT, mActivity.getString(R.string.title_share_transcript));
-            mActivity.startActivity(Intent.createChooser(intent, mActivity.getString(R.string.title_share_transcript_with)));
-        } catch (Exception e) {
-            Logger.logStackTraceWithMessage(LOG_TAG,"Failed to get share session transcript of length " + transcriptText.length(), e);
-        }
+        // See https://github.com/termux/termux-app/issues/1166.
+        transcriptText = DataUtils.getTruncatedCommandOutput(transcriptText, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, false, true, false).trim();
+        ShareUtils.shareText(mActivity, mActivity.getString(R.string.title_share_transcript),
+            transcriptText, mActivity.getString(R.string.title_share_transcript_with));
     }
 
     public void showUrlSelection() {

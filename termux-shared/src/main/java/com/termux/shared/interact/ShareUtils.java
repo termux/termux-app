@@ -23,6 +23,8 @@ import com.termux.shared.packages.PermissionUtils;
 
 import java.nio.charset.Charset;
 
+import javax.annotation.Nullable;
+
 public class ShareUtils {
 
     private static final String LOG_TAG = "ShareUtils";
@@ -56,6 +58,18 @@ public class ShareUtils {
      * @param text The text to share.
      */
     public static void shareText(final Context context, final String subject, final String text) {
+        shareText(context, subject, text, null);
+    }
+
+    /**
+     * Share text.
+     *
+     * @param context The context for operations.
+     * @param subject The subject for sharing.
+     * @param text The text to share.
+     * @param title The title for share menu.
+     */
+    public static void shareText(final Context context, final String subject, final String text, @Nullable final String title) {
         if (context == null || text == null) return;
 
         final Intent shareTextIntent = new Intent(Intent.ACTION_SEND);
@@ -63,7 +77,7 @@ public class ShareUtils {
         shareTextIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
         shareTextIntent.putExtra(Intent.EXTRA_TEXT, DataUtils.getTruncatedCommandOutput(text, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, true, false, false));
 
-        openSystemAppChooser(context, shareTextIntent, context.getString(R.string.title_share_with));
+        openSystemAppChooser(context, shareTextIntent, DataUtils.isNullOrEmpty(title) ? context.getString(R.string.title_share_with) : title);
     }
 
     /**
