@@ -37,6 +37,8 @@ public class TermuxUtils {
     public enum AppInfoMode {
         /** Get info for Termux app only. */
         TERMUX_PACKAGE,
+        /** Get info for Termux app and plugin app if context is of plugin app. */
+        TERMUX_AND_PLUGIN_PACKAGE,
         /** Get info for Termux app and its plugins listed in {@link TermuxConstants#TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST}. */
         TERMUX_AND_PLUGIN_PACKAGES,
         /* Get info for all the Termux app plugins listed in {@link TermuxConstants#TERMUX_PLUGIN_APP_PACKAGE_NAMES_LIST}. */
@@ -258,6 +260,9 @@ public class TermuxUtils {
         switch (appInfoMode) {
             case TERMUX_PACKAGE:
                 return getAppInfoMarkdownString(currentPackageContext, false);
+
+            case TERMUX_AND_PLUGIN_PACKAGE:
+                return getAppInfoMarkdownString(currentPackageContext, true);
 
             case TERMUX_AND_PLUGIN_PACKAGES:
                 appInfo.append(TermuxUtils.getAppInfoMarkdownString(currentPackageContext, false));
