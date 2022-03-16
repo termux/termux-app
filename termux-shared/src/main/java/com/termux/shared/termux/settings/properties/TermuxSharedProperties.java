@@ -354,15 +354,15 @@ public abstract class TermuxSharedProperties {
      * Returns the int for the value if its not null and is between
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_HORIZONTAL_MIN} and
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_HORIZONTAL_MAX},
-     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_HORIZONTAL_MARGIN}.
+     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_MARGIN_HORIZONTAL}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
      */
     public static int getTerminalMarginHorizontalInternalPropertyValueFromValue(String value) {
         return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_MARGIN_HORIZONTAL,
-            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_HORIZONTAL_MARGIN),
-            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_HORIZONTAL_MARGIN,
+            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_MARGIN_HORIZONTAL),
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_MARGIN_HORIZONTAL,
             TermuxPropertyConstants.IVALUE_TERMINAL_MARGIN_HORIZONTAL_MIN,
             TermuxPropertyConstants.IVALUE_TERMINAL_MARGIN_HORIZONTAL_MAX,
             true, true, LOG_TAG);
@@ -372,15 +372,15 @@ public abstract class TermuxSharedProperties {
      * Returns the int for the value if its not null and is between
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_VERTICAL_MIN} and
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_VERTICAL_MAX},
-     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_VERTICAL_MARGIN}.
+     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_MARGIN_VERTICAL}.
      *
      * @param value The {@link String} value to convert.
      * @return Returns the internal value for value.
      */
     public static int getTerminalMarginVerticalInternalPropertyValueFromValue(String value) {
         return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_TERMINAL_MARGIN_VERTICAL,
-            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_VERTICAL_MARGIN),
-            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_VERTICAL_MARGIN,
+            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_MARGIN_VERTICAL),
+            TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_MARGIN_VERTICAL,
             TermuxPropertyConstants.IVALUE_TERMINAL_MARGIN_VERTICAL_MIN,
             TermuxPropertyConstants.IVALUE_TERMINAL_MARGIN_VERTICAL_MAX,
             true, true, LOG_TAG);

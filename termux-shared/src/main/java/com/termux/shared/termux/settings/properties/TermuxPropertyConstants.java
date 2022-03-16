@@ -203,13 +203,13 @@ public final class TermuxPropertyConstants {
     public static final String KEY_TERMINAL_MARGIN_HORIZONTAL =  "terminal-margin-horizontal"; // Default: "terminal-margin-horizontal"
     public static final int IVALUE_TERMINAL_MARGIN_HORIZONTAL_MIN = 0;
     public static final int IVALUE_TERMINAL_MARGIN_HORIZONTAL_MAX = 100;
-    public static final int DEFAULT_IVALUE_TERMINAL_HORIZONTAL_MARGIN = 3;
+    public static final int DEFAULT_IVALUE_TERMINAL_MARGIN_HORIZONTAL = 3;
 
     /** Defines the key for the terminal margin on top and bottom in dp units */
     public static final String KEY_TERMINAL_MARGIN_VERTICAL =  "terminal-margin-vertical"; // Default: "terminal-margin-vertical"
     public static final int IVALUE_TERMINAL_MARGIN_VERTICAL_MIN = 0;
     public static final int IVALUE_TERMINAL_MARGIN_VERTICAL_MAX = 100;
-    public static final int DEFAULT_IVALUE_TERMINAL_VERTICAL_MARGIN = 0;
+    public static final int DEFAULT_IVALUE_TERMINAL_MARGIN_VERTICAL = 0;
 
 
 

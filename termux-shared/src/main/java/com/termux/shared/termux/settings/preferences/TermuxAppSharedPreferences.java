@@ -1,6 +1,5 @@
 package com.termux.shared.termux.settings.preferences;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.TypedValue;
@@ -38,7 +37,7 @@ public class TermuxAppSharedPreferences {
     }
 
     /**
-     * Get the {@link Context} for a package name.
+     * Get {@link TermuxAppSharedPreferences}.
      *
      * @param context The {@link Context} to use to get the {@link Context} of the
      *                {@link TermuxConstants#TERMUX_PACKAGE_NAME}.
@@ -54,9 +53,9 @@ public class TermuxAppSharedPreferences {
     }
 
     /**
-     * Get the {@link Context} for a package name.
+     * Get {@link TermuxAppSharedPreferences}.
      *
-     * @param context The {@link Activity} to use to get the {@link Context} of the
+     * @param context The {@link Context} to use to get the {@link Context} of the
      *                {@link TermuxConstants#TERMUX_PACKAGE_NAME}.
      * @param exitAppOnError If {@code true} and failed to get package context, then a dialog will
      *                       be shown which when dismissed will exit the app.

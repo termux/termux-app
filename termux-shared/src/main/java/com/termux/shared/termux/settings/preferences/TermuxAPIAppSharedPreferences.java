@@ -1,6 +1,5 @@
 package com.termux.shared.termux.settings.preferences;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -30,7 +29,7 @@ public class TermuxAPIAppSharedPreferences {
     }
 
     /**
-     * Get the {@link Context} for a package name.
+     * Get {@link TermuxAPIAppSharedPreferences}.
      *
      * @param context The {@link Context} to use to get the {@link Context} of the
      *                {@link TermuxConstants#TERMUX_API_PACKAGE_NAME}.
@@ -38,28 +37,28 @@ public class TermuxAPIAppSharedPreferences {
      */
     @Nullable
     public static TermuxAPIAppSharedPreferences build(@NonNull final Context context) {
-        Context termuxTaskerPackageContext = PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_API_PACKAGE_NAME);
-        if (termuxTaskerPackageContext == null)
+        Context termuxAPIPackageContext = PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_API_PACKAGE_NAME);
+        if (termuxAPIPackageContext == null)
             return null;
         else
-            return new TermuxAPIAppSharedPreferences(termuxTaskerPackageContext);
+            return new TermuxAPIAppSharedPreferences(termuxAPIPackageContext);
     }
 
     /**
-     * Get the {@link Context} for a package name.
+     * Get {@link TermuxAPIAppSharedPreferences}.
      *
-     * @param context The {@link Activity} to use to get the {@link Context} of the
+     * @param context The {@link Context} to use to get the {@link Context} of the
      *                {@link TermuxConstants#TERMUX_API_PACKAGE_NAME}.
      * @param exitAppOnError If {@code true} and failed to get package context, then a dialog will
      *                       be shown which when dismissed will exit the app.
      * @return Returns the {@link TermuxAPIAppSharedPreferences}. This will {@code null} if an exception is raised.
      */
     public static TermuxAPIAppSharedPreferences build(@NonNull final Context context, final boolean exitAppOnError) {
-        Context termuxTaskerPackageContext = TermuxUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_API_PACKAGE_NAME, exitAppOnError);
-        if (termuxTaskerPackageContext == null)
+        Context termuxAPIPackageContext = TermuxUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_API_PACKAGE_NAME, exitAppOnError);
+        if (termuxAPIPackageContext == null)
             return null;
         else
-            return new TermuxAPIAppSharedPreferences(termuxTaskerPackageContext);
+            return new TermuxAPIAppSharedPreferences(termuxAPIPackageContext);
     }
 
     private static SharedPreferences getPrivateSharedPreferences(Context context) {

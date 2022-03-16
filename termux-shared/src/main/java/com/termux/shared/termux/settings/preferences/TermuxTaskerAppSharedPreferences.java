@@ -1,6 +1,5 @@
 package com.termux.shared.termux.settings.preferences;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -30,7 +29,7 @@ public class TermuxTaskerAppSharedPreferences {
     }
 
     /**
-     * Get the {@link Context} for a package name.
+     * Get {@link TermuxTaskerAppSharedPreferences}.
      *
      * @param context The {@link Context} to use to get the {@link Context} of the
      *                {@link TermuxConstants#TERMUX_TASKER_PACKAGE_NAME}.
@@ -42,13 +41,13 @@ public class TermuxTaskerAppSharedPreferences {
         if (termuxTaskerPackageContext == null)
             return null;
         else
-            return new  TermuxTaskerAppSharedPreferences(termuxTaskerPackageContext);
+            return new TermuxTaskerAppSharedPreferences(termuxTaskerPackageContext);
     }
 
     /**
-     * Get the {@link Context} for a package name.
+     * Get {@link TermuxTaskerAppSharedPreferences}.
      *
-     * @param context The {@link Activity} to use to get the {@link Context} of the
+     * @param context The {@link Context} to use to get the {@link Context} of the
      *                {@link TermuxConstants#TERMUX_TASKER_PACKAGE_NAME}.
      * @param exitAppOnError If {@code true} and failed to get package context, then a dialog will
      *                       be shown which when dismissed will exit the app.
@@ -59,7 +58,7 @@ public class TermuxTaskerAppSharedPreferences {
         if (termuxTaskerPackageContext == null)
             return null;
         else
-            return new  TermuxTaskerAppSharedPreferences(termuxTaskerPackageContext);
+            return new TermuxTaskerAppSharedPreferences(termuxTaskerPackageContext);
     }
 
     private static SharedPreferences getPrivateSharedPreferences(Context context) {
