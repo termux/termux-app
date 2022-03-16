@@ -20,6 +20,7 @@ public class TermuxAppSharedPreferences {
 
     private final Context mContext;
     private final SharedPreferences mSharedPreferences;
+    private final SharedPreferences mMultiProcessSharedPreferences;
 
     private int MIN_FONTSIZE;
     private int MAX_FONTSIZE;
@@ -30,6 +31,8 @@ public class TermuxAppSharedPreferences {
     private TermuxAppSharedPreferences(@NonNull Context context) {
         mContext = context;
         mSharedPreferences = getPrivateSharedPreferences(mContext);
+        mMultiProcessSharedPreferences = getPrivateAndMultiProcessSharedPreferences(mContext);
+
 
         setFontVariables(context);
     }
@@ -70,6 +73,12 @@ public class TermuxAppSharedPreferences {
     private static SharedPreferences getPrivateSharedPreferences(Context context) {
         if (context == null) return null;
         return SharedPreferenceUtils.getPrivateSharedPreferences(context, TermuxConstants.TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
+    }
+
+
+    private static SharedPreferences getPrivateAndMultiProcessSharedPreferences(Context context) {
+        if (context == null) return null;
+        return SharedPreferenceUtils.getPrivateAndMultiProcessSharedPreferences(context, TermuxConstants.TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
     }
 
 
@@ -218,8 +227,11 @@ public class TermuxAppSharedPreferences {
 
 
 
-    public boolean arePluginErrorNotificationsEnabled() {
-        return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED);
+    public boolean arePluginErrorNotificationsEnabled(boolean readFromFile) {
+        if (readFromFile)
+            return SharedPreferenceUtils.getBoolean(mMultiProcessSharedPreferences, TERMUX_APP.KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED);
+        else
+            return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_PLUGIN_ERROR_NOTIFICATIONS_ENABLED);
     }
 
     public void setPluginErrorNotificationsEnabled(boolean value) {
@@ -228,8 +240,11 @@ public class TermuxAppSharedPreferences {
 
 
 
-    public boolean areCrashReportNotificationsEnabled() {
-        return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED);
+    public boolean areCrashReportNotificationsEnabled(boolean readFromFile) {
+        if (readFromFile)
+            return SharedPreferenceUtils.getBoolean(mMultiProcessSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED);
+       else
+            return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED);
     }
 
     public void setCrashReportNotificationsEnabled(boolean value) {

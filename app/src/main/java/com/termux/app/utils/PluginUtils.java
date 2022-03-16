@@ -241,7 +241,7 @@ public class PluginUtils {
         if (preferences == null) return;
 
         // If user has disabled notifications for plugin commands, then just return
-        if (!preferences.arePluginErrorNotificationsEnabled() && !forceNotification)
+        if (!preferences.arePluginErrorNotificationsEnabled(true) && !forceNotification)
             return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
