@@ -30,7 +30,8 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     public void uncaughtException(@NonNull Thread thread, @NonNull Throwable throwable) {
-        logCrash(mContext, mCrashHandlerClient, thread, throwable);
+        Logger.logInfo(LOG_TAG, "uncaughtException() for " + thread +  ": " + throwable.getMessage());
+        logCrash(thread, throwable);
         defaultUEH.uncaughtException(thread, throwable);
     }
 
@@ -44,14 +45,30 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     /**
-     * Log a crash in the crash log file at {@code crashlogFilePath}.
+     * Log a crash in the crash log file at path returned by {@link CrashHandlerClient#getCrashLogFilePath(Context)}.
      *
      * @param context The {@link Context} for operations.
      * @param crashHandlerClient The {@link CrashHandlerClient} implementation.
      * @param thread The {@link Thread} in which the crash happened.
      * @param throwable The {@link Throwable} thrown for the crash.
      */
-    public static void logCrash(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient, final Thread thread, final Throwable throwable) {
+    public static void logCrash(@NonNull Context context,
+                                @NonNull CrashHandlerClient crashHandlerClient,
+                                @NonNull Thread thread,  @NonNull Throwable throwable) {
+        Logger.logInfo(LOG_TAG, "logCrash() for " + thread +  ": " + throwable.getMessage());
+        new CrashHandler(context, crashHandlerClient).logCrash(thread, throwable);
+    }
+
+    public void logCrash(@NonNull Thread thread, @NonNull Throwable throwable) {
+        if (!mCrashHandlerClient.onPreLogCrash(mContext, thread, throwable)) {
+            logCrashToFile(mContext, mCrashHandlerClient, thread, throwable);
+            mCrashHandlerClient.onPostLogCrash(mContext, thread, throwable);
+        }
+    }
+
+    public void logCrashToFile(@NonNull Context context,
+                               @NonNull CrashHandlerClient crashHandlerClient,
+                               @NonNull Thread thread, @NonNull Throwable throwable) {
         StringBuilder reportString = new StringBuilder();
 
         reportString.append("## Crash Details\n");
@@ -78,6 +95,26 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     public interface CrashHandlerClient {
+
+        /**
+         * Called before {@link #logCrashToFile(Context, CrashHandlerClient, Thread, Throwable)} is called.
+         *
+         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient)}.
+         * @param thread The {@link Thread} in which the crash happened.
+         * @param throwable The {@link Throwable} thrown for the crash.
+         * @return Should return {@code true} if crash has been handled and should not be logged,
+         * otherwise {@code false}.
+         */
+        boolean onPreLogCrash(Context context, Thread thread, Throwable throwable);
+
+        /**
+         * Called after {@link #logCrashToFile(Context, CrashHandlerClient, Thread, Throwable)} is called.
+         *
+         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient)}.
+         * @param thread The {@link Thread} in which the crash happened.
+         * @param throwable The {@link Throwable} thrown for the crash.
+         */
+        void onPostLogCrash(Context context, Thread thread, Throwable throwable);
 
         /**
          * Get crash log file path.
