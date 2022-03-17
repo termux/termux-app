@@ -5,11 +5,15 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.errors.Error;
+import com.termux.shared.file.filesystem.FileTypes;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.android.PackageUtils;
 import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
+
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +30,8 @@ public class TermuxShellUtils {
     public static String TERMUX_APK_RELEASE;
 
     public static String TERMUX_API_VERSION_NAME;
+
+    private static final String LOG_TAG = "TermuxShellUtils";
 
     public static String getDefaultWorkingDirectoryPath() {
         return TermuxConstants.TERMUX_HOME_DIR_PATH;
@@ -159,9 +165,29 @@ public class TermuxShellUtils {
             return;
 
         Error error;
-        error = FileUtils.clearDirectory("$TMPDIR", FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null));
-        if (error != null) {
-            Logger.logErrorExtended(error.toString());
+
+        TermuxAppSharedProperties properties = TermuxAppSharedProperties.getProperties();
+        int days = properties.getDeleteTMPDIRFilesOlderThanXDaysOnExit();
+
+        // Disable currently until FileUtils.deleteFilesOlderThanXDays() is fixed.
+        if (days > 0)
+            days = 0;
+
+        if (days < 0) {
+            Logger.logInfo(LOG_TAG, "Not clearing termux $TMPDIR");
+        } else if (days == 0) {
+            error = FileUtils.clearDirectory("$TMPDIR",
+                FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null));
+            if (error != null) {
+                Logger.logErrorExtended(LOG_TAG, "Failed to clear termux $TMPDIR\n" + error);
+            }
+        } else {
+            error = FileUtils.deleteFilesOlderThanXDays("$TMPDIR",
+                FileUtils.getCanonicalPath(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, null),
+                TrueFileFilter.INSTANCE, days, true, FileTypes.FILE_TYPE_ANY_FLAGS);
+            if (error != null) {
+                Logger.logErrorExtended(LOG_TAG, "Failed to delete files from termux $TMPDIR older than " + days + " days\n" + error);
+            }
         }
     }
 

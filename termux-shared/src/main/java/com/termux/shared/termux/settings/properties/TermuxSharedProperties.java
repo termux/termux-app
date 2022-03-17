@@ -247,6 +247,8 @@ public abstract class TermuxSharedProperties {
             /* int */
             case TermuxPropertyConstants.KEY_BELL_BEHAVIOUR:
                 return (int) getBellBehaviourInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT:
+                return (int) getDeleteTMPDIRFilesOlderThanXDaysOnExitInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_CURSOR_BLINK_RATE:
                 return (int) getTerminalCursorBlinkRateInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_CURSOR_STYLE:
@@ -318,6 +320,24 @@ public abstract class TermuxSharedProperties {
      */
     public static int getBellBehaviourInternalPropertyValueFromValue(String value) {
         return (int) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_BELL_BEHAVIOUR, TermuxPropertyConstants.MAP_BELL_BEHAVIOUR, SharedProperties.toLowerCase(value), TermuxPropertyConstants.DEFAULT_IVALUE_BELL_BEHAVIOUR, true, LOG_TAG);
+    }
+
+    /**
+     * Returns the int for the value if its not null and is between
+     * {@link TermuxPropertyConstants#IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT_MIN} and
+     * {@link TermuxPropertyConstants#IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT_MAX},
+     * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT}.
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static int getDeleteTMPDIRFilesOlderThanXDaysOnExitInternalPropertyValueFromValue(String value) {
+        return SharedProperties.getDefaultIfNotInRange(TermuxPropertyConstants.KEY_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT,
+            DataUtils.getIntFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT),
+            TermuxPropertyConstants.DEFAULT_IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT,
+            TermuxPropertyConstants.IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT_MIN,
+            TermuxPropertyConstants.IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT_MAX,
+            true, true, LOG_TAG);
     }
 
     /**
@@ -581,6 +601,10 @@ public abstract class TermuxSharedProperties {
 
     public int getBellBehaviour() {
         return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_BELL_BEHAVIOUR, true);
+    }
+
+    public int getDeleteTMPDIRFilesOlderThanXDaysOnExit() {
+        return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT, true);
     }
 
     public int getTerminalCursorBlinkRate() {

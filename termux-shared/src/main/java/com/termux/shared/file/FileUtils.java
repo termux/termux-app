@@ -1352,6 +1352,10 @@ public class FileUtils {
                 }
             }
 
+            // TODO: Use FileAttributes with support for atime (default), mtime, ctime. Add regex for ignoring file and dir absolute paths.
+            // FIXME: iterateFiles() does not return subdirectories even with TrueFileFilter for file and dir.
+            // FIXME: Empty directories remain
+
             // If directory exists, delete its contents
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.DATE, -(days));
