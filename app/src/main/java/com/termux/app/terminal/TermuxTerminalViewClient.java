@@ -222,7 +222,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public boolean isTerminalViewSelected() {
-        return mActivity.getTerminalToolbarViewPager() == null || mActivity.isTerminalViewSelected();
+        return mActivity.getTerminalToolbarViewPager() == null || mActivity.isTerminalViewSelected() || mActivity.getTerminalView().hasFocus();
     }
 
 
