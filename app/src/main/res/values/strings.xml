@@ -100,6 +100,8 @@
         Grants it from Settings -> Apps -> &TERMUX_APP_NAME; -> Advanced</string>
     <string name="error_termux_service_invalid_execution_command_runner">Invalid execution command runner to TermuxService: `%1$s`</string>
     <string name="error_termux_service_unsupported_execution_command_runner">Unsupported execution command runner to TermuxService: `%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_session_create_mode">Unsupported execution command session create mode to TermuxService: `%1$s`</string>
+    <string name="error_termux_service_execution_command_session_name_unset">Session name not set but `%1$s` session create mode passed</string>
 
 
 
