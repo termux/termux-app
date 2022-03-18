@@ -345,9 +345,20 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         if (sessionToRename == null) return;
 
         TextInputDialogUtils.textInput(mActivity, R.string.title_rename_session, sessionToRename.mSessionName, R.string.action_rename_session_confirm, text -> {
-            sessionToRename.mSessionName = text;
+            renameSession(sessionToRename, text);
             termuxSessionListNotifyUpdated();
         }, -1, null, -1, null, null);
+    }
+
+    private void renameSession(TerminalSession sessionToRename, String text) {
+        if (sessionToRename == null) return;
+        sessionToRename.mSessionName = text;
+        TermuxService service = mActivity.getTermuxService();
+        if (service != null) {
+            TermuxSession termuxSession = service.getTermuxSessionForTerminalSession(sessionToRename);
+            if (termuxSession != null)
+                termuxSession.getExecutionCommand().sessionName = text;
+        }
     }
 
     public void addNewSession(boolean isFailSafe, String sessionName) {

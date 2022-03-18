@@ -148,9 +148,12 @@ public class ExecutionCommand {
      */
     public Integer backgroundCustomLogLevel;
 
-    /** The session action of foreground commands. */
+
+    /** The session action of {@link Runner#TERMINAL_SESSION} commands. */
     public String sessionAction;
 
+    /** The session name of {@link Runner#TERMINAL_SESSION} commands. */
+    public String sessionName;
 
     /** The command label for the {@link ExecutionCommand}. */
     public String commandLabel;
@@ -343,6 +346,9 @@ public class ExecutionCommand {
         if (!ignoreNull || executionCommand.sessionAction != null)
             logString.append("\n").append(executionCommand.getSessionActionLogString());
 
+        if (!ignoreNull || executionCommand.sessionName != null) {
+            logString.append("\n").append(executionCommand.getSessionNameLogString());
+        }
         if (!ignoreNull || executionCommand.commandIntent != null)
             logString.append("\n").append(executionCommand.getCommandIntentLogString());
 
@@ -434,6 +440,7 @@ public class ExecutionCommand {
         }
 
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Session Action", executionCommand.sessionAction, "-"));
+        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Session Name", executionCommand.sessionName, "-"));
 
 
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("isPluginExecutionCommand", executionCommand.isPluginExecutionCommand, "-"));
@@ -524,6 +531,9 @@ public class ExecutionCommand {
         return Logger.getSingleLineLogStringEntry("Session Action", sessionAction, "-");
     }
 
+    public String getSessionNameLogString() {
+        return Logger.getSingleLineLogStringEntry("Session Name", sessionName, "-");
+    }
     public String getCommandDescriptionLogString() {
         return Logger.getSingleLineLogStringEntry("Command Description", commandDescription, "-");
     }
