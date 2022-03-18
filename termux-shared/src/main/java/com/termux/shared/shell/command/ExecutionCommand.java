@@ -105,6 +105,41 @@ public class ExecutionCommand {
 
     }
 
+    public enum SessionCreateMode {
+
+        /** Always create {@link TerminalSession}. */
+        ALWAYS("always"),
+
+        /** Create session only if no session with {@link #sessionName} found. */
+        NO_SESSION_WITH_NAME("no-session-with-name");
+
+        private final String mode;
+
+        SessionCreateMode(final String mode) {
+            this.mode = mode;
+        }
+
+        public String getMode() {
+            return mode;
+        }
+
+        public boolean equalsMode(String sessionCreateMode) {
+            return sessionCreateMode != null && sessionCreateMode.equals(this.mode);
+        }
+
+        /** Get {@link SessionCreateMode} for {@code mode} if found, otherwise {@code null}. */
+        @Nullable
+        public static SessionCreateMode modeOf(String mode) {
+            for (SessionCreateMode v : SessionCreateMode.values()) {
+                if (v.mode.equals(mode)) {
+                    return v;
+                }
+            }
+            return null;
+        }
+
+    }
+
     /** The optional unique id for the {@link ExecutionCommand}. */
     public Integer id;
 
@@ -154,6 +189,11 @@ public class ExecutionCommand {
 
     /** The session name of {@link Runner#TERMINAL_SESSION} commands. */
     public String sessionName;
+
+    /** The {@link SessionCreateMode} of session for {@link Runner#TERMINAL_SESSION} commands. */
+    public String sessionCreateMode;
+
+
 
     /** The command label for the {@link ExecutionCommand}. */
     public String commandLabel;
@@ -349,6 +389,11 @@ public class ExecutionCommand {
         if (!ignoreNull || executionCommand.sessionName != null) {
             logString.append("\n").append(executionCommand.getSessionNameLogString());
         }
+
+        if (!ignoreNull || executionCommand.sessionCreateMode != null) {
+            logString.append("\n").append(executionCommand.getSessionCreateModeLogString());
+        }
+
         if (!ignoreNull || executionCommand.commandIntent != null)
             logString.append("\n").append(executionCommand.getCommandIntentLogString());
 
@@ -441,6 +486,7 @@ public class ExecutionCommand {
 
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Session Action", executionCommand.sessionAction, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Session Name", executionCommand.sessionName, "-"));
+        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Session Create Mode", executionCommand.sessionCreateMode, "-"));
 
 
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("isPluginExecutionCommand", executionCommand.isPluginExecutionCommand, "-"));
@@ -534,6 +580,11 @@ public class ExecutionCommand {
     public String getSessionNameLogString() {
         return Logger.getSingleLineLogStringEntry("Session Name", sessionName, "-");
     }
+
+    public String getSessionCreateModeLogString() {
+        return Logger.getSingleLineLogStringEntry("Session Create Mode", sessionCreateMode, "-");
+    }
+
     public String getCommandDescriptionLogString() {
         return Logger.getSingleLineLogStringEntry("Command Description", commandDescription, "-");
     }

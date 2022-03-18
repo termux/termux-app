@@ -41,6 +41,7 @@ import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.shared.shell.command.ExecutionCommand.Runner;
+import com.termux.shared.shell.command.ExecutionCommand.SessionCreateMode;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -380,6 +381,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         executionCommand.workingDirectory = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_WORKDIR, null);
         executionCommand.isFailsafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
         executionCommand.sessionAction = intent.getStringExtra(TERMUX_SERVICE.EXTRA_SESSION_ACTION);
+        executionCommand.sessionName = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_SESSION_NAME, null);
+        executionCommand.sessionCreateMode = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_SESSION_CREATE_MODE, null);
         executionCommand.commandLabel = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_COMMAND_LABEL, "Execution Intent Command");
         executionCommand.commandDescription = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_COMMAND_DESCRIPTION, null);
         executionCommand.commandHelp = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_COMMAND_HELP, null);
@@ -398,13 +401,13 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         mPendingPluginExecutionCommands.add(executionCommand);
 
         if (Runner.APP_SHELL.equalsRunner(executionCommand.runner))
-                executeTermuxTaskCommand(executionCommand);
+            executeTermuxTaskCommand(executionCommand);
         else if (Runner.TERMINAL_SESSION.equalsRunner(executionCommand.runner))
-                executeTermuxSessionCommand(executionCommand);
+            executeTermuxSessionCommand(executionCommand);
         else {
-                String errmsg = this.getString(R.string.error_termux_service_unsupported_execution_command_runner, executionCommand.runner);
-                executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
-                PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
+            String errmsg = getString(R.string.error_termux_service_unsupported_execution_command_runner, executionCommand.runner);
+            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
         }
     }
 
@@ -493,16 +496,39 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     private void executeTermuxSessionCommand(ExecutionCommand executionCommand) {
         if (executionCommand == null) return;
 
+        if (executionCommand.sessionCreateMode == null)
+            executionCommand.sessionCreateMode = SessionCreateMode.ALWAYS.getMode();
+
         Logger.logDebug(LOG_TAG, "Executing foreground \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession command");
 
-        String sessionName = null;
-
-        // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
-        if (executionCommand.executable != null) {
-            sessionName = ShellUtils.getExecutableBasename(executionCommand.executable).replace('-', ' ');
+        // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do-something.sh".
+        if (executionCommand.sessionName == null && executionCommand.executable != null) {
+            executionCommand.sessionName = ShellUtils.getExecutableBasename(executionCommand.executable);
         }
 
-        TermuxSession newTermuxSession = createTermuxSession(executionCommand, sessionName);
+        TermuxSession newTermuxSession = null;
+        if (SessionCreateMode.ALWAYS.equalsMode(executionCommand.sessionCreateMode))
+            ; // Default
+        else if (SessionCreateMode.NO_SESSION_WITH_NAME.equalsMode(executionCommand.sessionCreateMode))
+            if (DataUtils.isNullOrEmpty(executionCommand.sessionName)) {
+                String errmsg = getString(R.string.error_termux_service_execution_command_session_name_unset, executionCommand.sessionCreateMode);
+                executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
+                PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
+                return;
+            } else {
+                newTermuxSession = getTermuxSessionForName(executionCommand.sessionName);
+                if (newTermuxSession != null)
+                    Logger.logInfo(LOG_TAG, "Existing session with \"" + executionCommand.sessionName + "\" session name found");
+            }
+        else {
+            String errmsg = getString(R.string.error_termux_service_unsupported_execution_command_session_create_mode, executionCommand.sessionCreateMode);
+            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
+            PluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
+            return;
+        }
+
+        if (newTermuxSession == null)
+            newTermuxSession = createTermuxSession(executionCommand);
         if (newTermuxSession == null) return;
 
         handleSessionAction(DataUtils.getIntFromString(executionCommand.sessionAction,
@@ -850,6 +876,18 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             terminalSession = mTermuxSessions.get(i).getTerminalSession();
             if (terminalSession.mHandle.equals(sessionHandle))
                 return terminalSession;
+        }
+        return null;
+    }
+
+    public synchronized TermuxSession getTermuxSessionForName(String name) {
+        if (DataUtils.isNullOrEmpty(name)) return null;
+        TermuxSession termuxSession;
+        for (int i = 0, len = mTermuxSessions.size(); i < len; i++) {
+            termuxSession = mTermuxSessions.get(i);
+            TerminalSession terminalSession = termuxSession.getTerminalSession();
+            if (terminalSession.mSessionName != null && terminalSession.mSessionName.equals(name))
+                return termuxSession;
         }
         return null;
     }
