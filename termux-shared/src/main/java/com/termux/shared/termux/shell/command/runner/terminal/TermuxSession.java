@@ -54,7 +54,6 @@ public class TermuxSession {
      * @param terminalSessionClient The {@link TerminalSessionClient} interface implementation.
      * @param termuxSessionClient The {@link TermuxSessionClient} interface implementation.
      * @param shellEnvironmentClient The {@link ShellEnvironmentClient} interface implementation.
-     * @param sessionName The optional {@link TerminalSession} name.
      * @param setStdoutOnExit If set to {@code true}, then the {@link ResultData#stdout}
      *                        available in the {@link TermuxSessionClient#onTermuxSessionExited(TermuxSession)}
      *                        callback will be set to the {@link TerminalSession} transcript. The session
@@ -67,7 +66,7 @@ public class TermuxSession {
     public static TermuxSession execute(@NonNull final Context context, @NonNull ExecutionCommand executionCommand,
                                         @NonNull final TerminalSessionClient terminalSessionClient, final TermuxSessionClient termuxSessionClient,
                                         @NonNull final ShellEnvironmentClient shellEnvironmentClient,
-                                        final String sessionName, final boolean setStdoutOnExit) {
+                                        final boolean setStdoutOnExit) {
         if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty())
             executionCommand.workingDirectory = shellEnvironmentClient.getDefaultWorkingDirectoryPath();
         if (executionCommand.workingDirectory.isEmpty())
@@ -132,8 +131,8 @@ public class TermuxSession {
         Logger.logDebug(LOG_TAG, "Running \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession");
         TerminalSession terminalSession = new TerminalSession(executionCommand.executable, executionCommand.workingDirectory, executionCommand.arguments, environment, executionCommand.terminalTranscriptRows, terminalSessionClient);
 
-        if (sessionName != null) {
-            terminalSession.mSessionName = sessionName;
+        if (executionCommand.sessionName != null) {
+            terminalSession.mSessionName = executionCommand.sessionName;
         }
 
         return new TermuxSession(terminalSession, executionCommand, termuxSessionClient, setStdoutOnExit);
