@@ -352,7 +352,6 @@ public class PermissionUtils {
         Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
         intent.addCategory("android.intent.category.DEFAULT");
         intent.setData(Uri.parse("package:" + context.getPackageName()));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         Error error;
         if (requestCode >=0)
@@ -464,7 +463,6 @@ public class PermissionUtils {
 
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         if (requestCode >=0)
             return ActivityUtils.startActivityForResult(context, requestCode, intent);
@@ -534,7 +532,6 @@ public class PermissionUtils {
 
         Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         if (requestCode >=0)
             return ActivityUtils.startActivityForResult(context, requestCode, intent);
