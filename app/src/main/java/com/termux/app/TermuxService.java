@@ -136,7 +136,11 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
 
-        String action = intent.getAction();
+        String action = null;
+        if (intent != null) {
+            Logger.logVerboseExtended(LOG_TAG, "Intent Received:\n" + IntentUtils.getIntentString(intent));
+            action = intent.getAction();
+        }
 
         if (action != null) {
             switch (action) {
