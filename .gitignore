@@ -11,9 +11,6 @@ release/
 .cxx
 *.zip
 
-# Crashlytics configurations
-com_crashlytics_export_strings.xml
-
 # Local configuration file (sdk path, etc)
 local.properties
 
