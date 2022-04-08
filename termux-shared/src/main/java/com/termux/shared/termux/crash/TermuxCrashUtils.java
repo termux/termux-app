@@ -196,9 +196,9 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
      * @param message The message for the crash report.
      * @param throwable The {@link Throwable} for the crash report.
      */
-    public static void sendPluginCrashReportNotification(final Context currentPackageContext, String logTag,
-                                                         CharSequence title, String message, Throwable throwable) {
-        TermuxCrashUtils.sendPluginCrashReportNotification(currentPackageContext, logTag,
+    public static void sendCrashReportNotification(final Context currentPackageContext, String logTag,
+                                                   CharSequence title, String message, Throwable throwable) {
+        sendCrashReportNotification(currentPackageContext, logTag,
             title, message,
             MarkdownUtils.getMarkdownCodeForString(Logger.getMessageAndStackTraceString(message, throwable), true),
             false, false, true);
@@ -214,10 +214,10 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
      * @param notificationTextString The text of the notification.
      * @param message The message for the crash report.
      */
-    public static void sendPluginCrashReportNotification(final Context currentPackageContext, String logTag,
-                                                         CharSequence title, String notificationTextString,
-                                                         String message) {
-        TermuxCrashUtils.sendPluginCrashReportNotification(currentPackageContext, logTag,
+    public static void sendCrashReportNotification(final Context currentPackageContext, String logTag,
+                                                   CharSequence title, String notificationTextString,
+                                                   String message) {
+        sendCrashReportNotification(currentPackageContext, logTag,
             title, notificationTextString, message,
             false, false, true);
     }
@@ -238,12 +238,12 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
      * @param showToast If set to {@code true}, then a toast will be shown for {@code notificationTextString}.
      * @param addDeviceInfo If set to {@code true}, then device info should be appended to the message.
      */
-    public static void sendPluginCrashReportNotification(final Context currentPackageContext, String logTag,
-                                                         CharSequence title, String notificationTextString,
-                                                         String message, boolean forceNotification,
-                                                         boolean showToast,
-                                                         boolean addDeviceInfo) {
-        TermuxCrashUtils.sendCrashReportNotification(currentPackageContext, logTag,
+    public static void sendCrashReportNotification(final Context currentPackageContext, String logTag,
+                                                   CharSequence title, String notificationTextString,
+                                                   String message, boolean forceNotification,
+                                                   boolean showToast,
+                                                   boolean addDeviceInfo) {
+        sendCrashReportNotification(currentPackageContext, logTag,
             title, notificationTextString, "## " + title + "\n\n" + message + "\n\n",
             forceNotification, showToast, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGE, addDeviceInfo);
     }
