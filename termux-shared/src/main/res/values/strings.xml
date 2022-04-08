@@ -39,6 +39,12 @@
 
 
 
+    <!-- TermuxPluginUtils -->
+    <string name="error_allow_external_apps_ungranted">%1$s requires `allow-external-apps`
+        property to be set to `true` in `%2$s` file.</string>
+
+
+
     <!-- ReportActivity -->
     <string name="title_report_text">Report Text</string>
     <string name="msg_report_truncated">**Report Truncated**\n\nReport is too large to view here.

@@ -121,8 +121,6 @@
 
 
     <!-- Miscellaneous -->
-    <string name="error_allow_external_apps_ungranted">%1$s requires `allow-external-apps`
-        property to be set to `true` in `%2$s` file.</string>
     <string name="error_termux_service_start_failed_general">Failed to start TermuxService. Check logcat for exception message.</string>
     <string name="error_termux_service_start_failed_bg">Failed to start TermuxService while app is in background due to android bg restrictions.</string>
 
