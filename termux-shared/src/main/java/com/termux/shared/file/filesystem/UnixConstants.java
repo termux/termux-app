@@ -88,6 +88,8 @@ public class UnixConstants {
 
     static final int S_IFLNK = OsConstants.S_IFLNK;
 
+    static final int S_IFSOCK = OsConstants.S_IFSOCK;
+
     static final int S_IFCHR = OsConstants.S_IFCHR;
 
     static final int S_IFBLK = OsConstants.S_IFBLK;

@@ -104,6 +104,8 @@ public class FileTypes {
             return FileType.DIRECTORY;
         else if (fileAttributes.isSymbolicLink())
             return FileType.SYMLINK;
+        else if (fileAttributes.isSocket())
+            return FileType.SOCKET;
         else if (fileAttributes.isCharacter())
             return FileType.CHARACTER;
         else if (fileAttributes.isFifo())

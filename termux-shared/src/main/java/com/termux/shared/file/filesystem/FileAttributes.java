@@ -202,6 +202,10 @@ public class FileAttributes {
         return ((st_mode & UnixConstants.S_IFMT) == UnixConstants.S_IFIFO);
     }
 
+    public boolean isSocket() {
+        return ((st_mode & UnixConstants.S_IFMT) == UnixConstants.S_IFSOCK);
+    }
+
     public boolean isBlock() {
         return ((st_mode & UnixConstants.S_IFMT) == UnixConstants.S_IFBLK);
     }

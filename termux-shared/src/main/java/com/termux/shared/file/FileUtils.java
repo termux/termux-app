@@ -1117,6 +1117,21 @@ public class FileUtils {
     }
 
     /**
+     * Delete socket file at path.
+     *
+     * This function is a wrapper for {@link #deleteFile(String, String, boolean, boolean, int)}.
+     *
+     * @param label The optional label for file to delete. This can optionally be {@code null}.
+     * @param filePath The {@code path} for file to delete.
+     * @param ignoreNonExistentFile The {@code boolean} that decides if it should be considered an
+     *                              error if file to deleted doesn't exist.
+     * @return Returns the {@code error} if deletion was not successful, otherwise {@code null}.
+     */
+    public static Error deleteSocketFile(String label, final String filePath, final boolean ignoreNonExistentFile) {
+        return deleteFile(label, filePath, ignoreNonExistentFile, false, FileType.SOCKET.getValue());
+    }
+
+    /**
      * Delete regular, directory or symlink file at path.
      *
      * This function is a wrapper for {@link #deleteFile(String, String, boolean, boolean, int)}.
