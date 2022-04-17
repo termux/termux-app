@@ -26,6 +26,8 @@ android {
         implementation "commons-io:commons-io:2.5"
 
         implementation project(":terminal-view")
+
+        implementation 'com.github.termux:termux-am-library:1.0'
     }
 
     defaultConfig {

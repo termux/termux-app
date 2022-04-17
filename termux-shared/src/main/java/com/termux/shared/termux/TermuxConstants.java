@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.40.0
+ * Version: v0.41.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -236,6 +236,9 @@ import java.util.List;
  *
  * - 0.40.0 (2022-04-17)
  *      - Added `TERMUX_APPS_DIR_PATH` and `TERMUX_APP.APPS_DIR_PATH`.
+ *
+ * - 0.41.0 (2022-04-17)
+ *      - Added `TERMUX_APP.TERMUX_AM_SOCKET_FILE_PATH`.
  */
 
 /**
@@ -882,6 +885,9 @@ public final class TermuxConstants {
 
         /** Termux apps directory path */
         public static final String APPS_DIR_PATH = TERMUX_APPS_DIR_PATH + "/termux-app"; // Default: "/data/data/com.termux/files/apps/termux-app"
+
+        /** termux-am socket file path */
+        public static final String TERMUX_AM_SOCKET_FILE_PATH = APPS_DIR_PATH + "/termux-am/am.sock"; // Default: "/data/data/com.termux/files/apps/termux-app/termux-am/am.sock"
 
 
         /** Termux app core activity name. */

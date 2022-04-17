@@ -3,15 +3,14 @@ package com.termux.app;
 import android.app.Application;
 import android.content.Context;
 
-import com.termux.am.Am;
 import com.termux.shared.errors.Error;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.shell.LocalSocketListener;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
+import com.termux.shared.termux.shell.am.TermuxAmSocketServer;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 
 public class TermuxApplication extends Application {
@@ -50,17 +49,8 @@ public class TermuxApplication extends Application {
                 Logger.logErrorExtended(LOG_TAG, "Create apps/termux-app directory failed\n" + error);
                 return;
             }
-        }
 
-        if (LocalSocketListener.tryEstablishLocalSocketListener(this, (args, out, err) -> {
-            try {
-                new Am(out, err, this).run(args);
-                return 0;
-            } catch (Exception e) {
-                return 1;
-            }
-        }, TermuxConstants.TERMUX_FILES_DIR_PATH+"/api/am-socket", 100, 1000) == null) {
-            Logger.logWarn("TermuxApplication", "am socket cannot be created");
+            TermuxAmSocketServer.setupTermuxAmSocketServer(context);
         }
     }
 
@@ -74,4 +64,3 @@ public class TermuxApplication extends Application {
     }
 
 }
-

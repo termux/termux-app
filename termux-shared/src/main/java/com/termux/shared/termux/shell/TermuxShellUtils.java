@@ -28,8 +28,10 @@ public class TermuxShellUtils {
     public static String TERMUX_IS_DEBUGGABLE_BUILD;
     public static String TERMUX_APP_PID;
     public static String TERMUX_APK_RELEASE;
+    public static Boolean TERMUX_APP_AM_SOCKET_SERVER_ENABLED;
 
     public static String TERMUX_API_VERSION_NAME;
+
 
     private static final String LOG_TAG = "TermuxShellUtils";
 
@@ -59,6 +61,8 @@ public class TermuxShellUtils {
             environment.add("TERMUX_APP_PID=" + TERMUX_APP_PID);
         if (TERMUX_APK_RELEASE != null)
             environment.add("TERMUX_APK_RELEASE=" + TERMUX_APK_RELEASE);
+        if (TERMUX_APP_AM_SOCKET_SERVER_ENABLED != null)
+            environment.add("TERMUX_APP_AM_SOCKET_SERVER_ENABLED=" + TERMUX_APP_AM_SOCKET_SERVER_ENABLED);
 
         if (TERMUX_API_VERSION_NAME != null)
             environment.add("TERMUX_API_VERSION=" + TERMUX_API_VERSION_NAME);

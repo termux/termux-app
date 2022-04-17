@@ -25,10 +25,6 @@ android {
 
         implementation project(":terminal-view")
         implementation project(":termux-shared")
-
-
-        implementation 'com.github.termux:termux-am-library:1.0'
-        
     }
 
     defaultConfig {
