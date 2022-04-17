@@ -2,11 +2,15 @@ package com.termux.shared.data;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.common.base.Strings;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Collections;
 
 public class DataUtils {
 
@@ -158,6 +162,51 @@ public class DataUtils {
             return def;
         else
             return value;
+    }
+
+
+
+    /**
+     * Add a space indent to a {@link String}. Each indent is 4 space characters long.
+     *
+     * @param string The {@link String} to add indent to.
+     * @param count The indent count.
+     * @return Returns the indented {@link String}.
+     */
+    public static String getSpaceIndentedString(String string, int count) {
+        if (string == null || string.isEmpty())
+            return string;
+        else
+            return getIndentedString(string, "    ", count);
+    }
+
+    /**
+     * Add a tab indent to a {@link String}. Each indent is 1 tab character long.
+     *
+     * @param string The {@link String} to add indent to.
+     * @param count The indent count.
+     * @return Returns the indented {@link String}.
+     */
+    public static String getTabIndentedString(String string, int count) {
+        if (string == null || string.isEmpty())
+            return string;
+        else
+            return getIndentedString(string, "\t", count);
+    }
+
+    /**
+     * Add an indent to a {@link String}.
+     *
+     * @param string The {@link String} to add indent to.
+     * @param indent The indent characters.
+     * @param count The indent count.
+     * @return Returns the indented {@link String}.
+     */
+    public static String getIndentedString(String string, @NonNull String indent, int count) {
+        if (string == null || string.isEmpty())
+            return string;
+        else
+            return string.replaceAll("(?m)^", Strings.repeat(indent, Math.max(count, 1)));
     }
 
 
