@@ -209,7 +209,7 @@ public class Error implements Serializable {
 
         logString.append(getCodeString());
         logString.append("\n").append(getTypeAndMessageLogString());
-        if (this.throwablesList != null)
+        if (throwablesList != null && throwablesList.size() > 0)
             logString.append("\n").append(geStackTracesLogString());
 
         return logString.toString();
@@ -272,7 +272,8 @@ public class Error implements Serializable {
         markdownString.append(MarkdownUtils.getSingleLineMarkdownStringEntry("Error Code", getCode(), "-"));
         markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry(
             (Errno.TYPE.equals(getType()) ? "Error Message" : "Error Message (" + getType() + ")"), message, "-"));
-        markdownString.append("\n\n").append(geStackTracesMarkdownString());
+        if (throwablesList != null && throwablesList.size() > 0)
+            markdownString.append("\n\n").append(geStackTracesMarkdownString());
 
         return markdownString.toString();
     }
