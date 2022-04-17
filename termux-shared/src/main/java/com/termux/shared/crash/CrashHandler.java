@@ -51,6 +51,20 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     /**
+     * Set uncaught crash handler of current non-main thread to {@link CrashHandler}.
+     */
+    public static void setCrashHandler(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient) {
+        Thread.currentThread().setUncaughtExceptionHandler(new CrashHandler(context, crashHandlerClient, false));
+    }
+
+    /**
+     * Get {@link CrashHandler} instance that can be set as uncaught crash handler of a non-main thread.
+     */
+    public static CrashHandler getCrashHandler(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient) {
+        return new CrashHandler(context, crashHandlerClient, false);
+    }
+
+    /**
      * Log a crash in the crash log file at path returned by {@link CrashHandlerClient#getCrashLogFilePath(Context)}.
      *
      * @param context The {@link Context} for operations.
