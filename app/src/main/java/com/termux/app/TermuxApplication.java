@@ -20,7 +20,7 @@ public class TermuxApplication extends Application {
         Context context = getApplicationContext();
 
         // Set crash handler for the app
-        TermuxCrashUtils.setCrashHandler(this);
+        TermuxCrashUtils.setDefaultCrashHandler(this);
 
         // Set log config for the app
         setLogConfig(context);

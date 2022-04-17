@@ -19,28 +19,34 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
     private final Context mContext;
     private final CrashHandlerClient mCrashHandlerClient;
-    private final Thread.UncaughtExceptionHandler defaultUEH;
+    private final Thread.UncaughtExceptionHandler mDefaultUEH;
+    private final boolean mIsDefaultHandler;
 
     private static final String LOG_TAG = "CrashUtils";
 
-    private CrashHandler(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient) {
-        this.mContext = context;
-        this.mCrashHandlerClient = crashHandlerClient;
-        this.defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
+    private CrashHandler(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient,
+                         boolean isDefaultHandler) {
+        mContext = context;
+        mCrashHandlerClient = crashHandlerClient;
+        mDefaultUEH = Thread.getDefaultUncaughtExceptionHandler();
+        mIsDefaultHandler = isDefaultHandler;
     }
 
     public void uncaughtException(@NonNull Thread thread, @NonNull Throwable throwable) {
         Logger.logInfo(LOG_TAG, "uncaughtException() for " + thread +  ": " + throwable.getMessage());
         logCrash(thread, throwable);
-        defaultUEH.uncaughtException(thread, throwable);
+
+        // Don't stop the app if not on the main thread
+        if (mIsDefaultHandler)
+            mDefaultUEH.uncaughtException(thread, throwable);
     }
 
     /**
-     * Set default uncaught crash handler of current thread to {@link CrashHandler}.
+     * Set default uncaught crash handler for the app to {@link CrashHandler}.
      */
-    public static void setCrashHandler(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient) {
+    public static void setDefaultCrashHandler(@NonNull final Context context, @NonNull final CrashHandlerClient crashHandlerClient) {
         if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
-            Thread.setDefaultUncaughtExceptionHandler(new CrashHandler(context, crashHandlerClient));
+            Thread.setDefaultUncaughtExceptionHandler(new CrashHandler(context, crashHandlerClient, true));
         }
     }
 
@@ -56,7 +62,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
                                 @NonNull CrashHandlerClient crashHandlerClient,
                                 @NonNull Thread thread,  @NonNull Throwable throwable) {
         Logger.logInfo(LOG_TAG, "logCrash() for " + thread +  ": " + throwable.getMessage());
-        new CrashHandler(context, crashHandlerClient).logCrash(thread, throwable);
+        new CrashHandler(context, crashHandlerClient, false).logCrash(thread, throwable);
     }
 
     public void logCrash(@NonNull Thread thread, @NonNull Throwable throwable) {
@@ -99,7 +105,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         /**
          * Called before {@link #logCrashToFile(Context, CrashHandlerClient, Thread, Throwable)} is called.
          *
-         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient)}.
+         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient, boolean)}.
          * @param thread The {@link Thread} in which the crash happened.
          * @param throwable The {@link Throwable} thrown for the crash.
          * @return Should return {@code true} if crash has been handled and should not be logged,
@@ -110,7 +116,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         /**
          * Called after {@link #logCrashToFile(Context, CrashHandlerClient, Thread, Throwable)} is called.
          *
-         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient)}.
+         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient, boolean)}.
          * @param thread The {@link Thread} in which the crash happened.
          * @param throwable The {@link Throwable} thrown for the crash.
          */
@@ -119,7 +125,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         /**
          * Get crash log file path.
          *
-         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient)}.
+         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient, boolean)}.
          * @return Should return the crash log file path.
          */
         @NonNull
@@ -128,7 +134,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         /**
          * Get app info markdown string to add to crash log.
          *
-         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient)}.
+         * @param context The {@link Context} passed to {@link CrashHandler#CrashHandler(Context, CrashHandlerClient, boolean)}.
          * @return Should return app info markdown string.
          */
         String getAppInfoMarkdownString(Context context);

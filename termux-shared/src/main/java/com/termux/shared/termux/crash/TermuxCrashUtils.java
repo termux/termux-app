@@ -48,8 +48,12 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
     }
 
     /**
-     * Set default uncaught crash handler of current thread to {@link CrashHandler} for Termux app
-     * and its plugin to log crashes at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}.
+     * Set default uncaught crash handler of the app to {@link CrashHandler} for Termux app
+     * and its plugins to log crashes at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}.
+     */
+    public static void setDefaultCrashHandler(@NonNull final Context context) {
+        CrashHandler.setDefaultCrashHandler(context, new TermuxCrashUtils(TYPE.UNCAUGHT_EXCEPTION));
+    }
      */
     public static void setCrashHandler(@NonNull final Context context) {
         CrashHandler.setCrashHandler(context, new TermuxCrashUtils(TYPE.UNCAUGHT_EXCEPTION));
