@@ -120,6 +120,28 @@ public class Logger {
 
 
 
+    public static void logErrorPrivate(String tag, String message) {
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
+            logMessage(Log.ERROR, tag, message);
+    }
+
+    public static void logErrorPrivate(String message) {
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
+            logMessage(Log.ERROR, DEFAULT_LOG_TAG, message);
+    }
+
+    public static void logErrorPrivateExtended(String tag, String message) {
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
+            logExtendedMessage(Log.ERROR, tag, message);
+    }
+
+    public static void logErrorPrivateExtended(String message) {
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
+            logExtendedMessage(Log.ERROR, DEFAULT_LOG_TAG, message);
+    }
+
+
+
     public static void logWarn(String tag, String message) {
         logMessage(Log.WARN, tag, message);
     }

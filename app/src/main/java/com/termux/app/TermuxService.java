@@ -455,8 +455,10 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             // If the execution command was started for a plugin, then process the error
             if (executionCommand.isPluginExecutionCommand)
                 TermuxPluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
-            else
-                Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
+            else {
+                Logger.logError(LOG_TAG, "Set log level to debug or higher to see error in logs");
+                Logger.logErrorPrivateExtended(LOG_TAG, executionCommand.toString());
+            }
             return null;
         }
 
@@ -576,8 +578,10 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             // If the execution command was started for a plugin, then process the error
             if (executionCommand.isPluginExecutionCommand)
                 TermuxPluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
-            else
-                Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
+            else {
+                Logger.logError(LOG_TAG, "Set log level to debug or higher to see error in logs");
+                Logger.logErrorPrivateExtended(LOG_TAG, executionCommand.toString());
+            }
             return null;
         }
 
