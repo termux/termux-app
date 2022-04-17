@@ -4,15 +4,19 @@ import android.app.Application;
 import android.content.Context;
 
 import com.termux.am.Am;
+import com.termux.shared.errors.Error;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.shell.LocalSocketListener;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
+import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 
 public class TermuxApplication extends Application {
+
+    private static final String LOG_TAG = "TermuxApplication";
 
     public void onCreate() {
         super.onCreate();
@@ -32,6 +36,21 @@ public class TermuxApplication extends Application {
 
         // Set NightMode.APP_NIGHT_MODE
         TermuxThemeUtils.setAppNightMode(properties.getNightMode());
+
+        // Check and create termux files directory. If failed to access it like in case of secondary
+        // user or external sd card installation, then don't run files directory related code
+        Error error = TermuxFileUtils.isTermuxFilesDirectoryAccessible(this, true, true);
+        if (error != null) {
+            Logger.logErrorExtended(LOG_TAG, "Termux files directory is not accessible\n" + error);
+        } else {
+            Logger.logInfo(LOG_TAG, "Termux files directory is accessible");
+
+            error = TermuxFileUtils.isAppsTermuxAppDirectoryAccessible(true, true);
+            if (error != null) {
+                Logger.logErrorExtended(LOG_TAG, "Create apps/termux-app directory failed\n" + error);
+                return;
+            }
+        }
 
         if (LocalSocketListener.tryEstablishLocalSocketListener(this, (args, out, err) -> {
             try {

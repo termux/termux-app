@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.39.0
+ * Version: v0.40.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -216,10 +216,10 @@ import java.util.List;
  *      - Added `TERMUX_PROPERTIES_FILE_PATHS_LIST` and `TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST`.
  *
  * - 0.34.0 (2021-10-26)
- *  - Move `RESULT_SENDER` to `com.termux.shared.shell.command.ShellCommandConstants`.
+ *      - Move `RESULT_SENDER` to `com.termux.shared.shell.command.ShellCommandConstants`.
  *
  * - 0.35.0 (2022-01-28)
- *  - Add `TERMUX_APP.TERMUX_ACTIVITY.EXTRA_RECREATE_ACTIVITY`.
+ *      - Add `TERMUX_APP.TERMUX_ACTIVITY.EXTRA_RECREATE_ACTIVITY`.
  *
  * - 0.36.0 (2022-03-10)
  *      - Added `TERMUX_APP.TERMUX_SERVICE.EXTRA_RUNNER` and `TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_RUNNER`
@@ -233,6 +233,9 @@ import java.util.List;
  * - 0.39.0 (2022-03-18)
  *      - Added `TERMUX_APP.TERMUX_SERVICE.EXTRA_SESSION_NAME`, `TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_SESSION_NAME`,
  *          `TERMUX_APP.TERMUX_SERVICE.EXTRA_SESSION_CREATE_MODE` and `TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_SESSION_CREATE_MODE`.
+ *
+ * - 0.40.0 (2022-04-17)
+ *      - Added `TERMUX_APPS_DIR_PATH` and `TERMUX_APP.APPS_DIR_PATH`.
  */
 
 /**
@@ -657,6 +660,11 @@ public final class TermuxConstants {
 
 
 
+    /** Termux and plugin apps directory path */
+    public static final String TERMUX_APPS_DIR_PATH = TERMUX_FILES_DIR_PATH + "/apps"; // Default: "/data/data/com.termux/files/apps"
+    /** Termux and plugin apps directory */
+    public static final File TERMUX_APPS_DIR = new File(TERMUX_APPS_DIR_PATH);
+
 
 
     /*
@@ -871,6 +879,10 @@ public final class TermuxConstants {
      * Termux app constants.
      */
     public static final class TERMUX_APP {
+
+        /** Termux apps directory path */
+        public static final String APPS_DIR_PATH = TERMUX_APPS_DIR_PATH + "/termux-app"; // Default: "/data/data/com.termux/files/apps/termux-app"
+
 
         /** Termux app core activity name. */
         public static final String TERMUX_ACTIVITY_NAME = TERMUX_PACKAGE_NAME + ".app.TermuxActivity"; // Default: "com.termux.app.TermuxActivity"
