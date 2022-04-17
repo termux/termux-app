@@ -86,7 +86,7 @@ public class ReflectionUtils {
      * {@link Object} value.
      */
     @NonNull
-    public static <T> FieldInvokeResult invokeField(@NonNull Class<T> clazz, @NonNull String fieldName, T object) {
+    public static <T> FieldInvokeResult invokeField(@NonNull Class<? extends T> clazz, @NonNull String fieldName, T object) {
         try {
             Field field = getDeclaredField(clazz, fieldName);
             if (field == null) return new FieldInvokeResult(false, null);
