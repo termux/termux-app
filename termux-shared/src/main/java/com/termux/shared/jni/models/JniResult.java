@@ -1,5 +1,6 @@
 package com.termux.shared.jni.models;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.logger.Logger;
@@ -11,6 +12,7 @@ import com.termux.shared.logger.Logger;
  * https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html
  * https://developer.android.com/training/articles/perf-jni
  */
+@Keep
 public class JniResult {
 
     /**

@@ -2,6 +2,7 @@ package com.termux.shared.net.socket.local;
 
 import android.content.Context;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.android.ProcessUtils;
@@ -10,6 +11,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 
 /** The {@link PeerCred} of the {@link LocalClientSocket} containing info of client/peer. */
+@Keep
 public class PeerCred {
 
     public static final String LOG_TAG = "PeerCred";
