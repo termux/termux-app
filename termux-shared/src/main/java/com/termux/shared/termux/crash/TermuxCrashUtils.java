@@ -5,13 +5,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Icon;
 import android.os.Environment;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.termux.shared.R;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.android.AndroidUtils;
 import com.termux.shared.crash.CrashHandler;
@@ -391,26 +389,10 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
                                                                           final PendingIntent contentIntent,
                                                                           final PendingIntent deleteIntent,
                                                                           final int notificationMode) {
-
-        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(termuxPackageContext,
+        return TermuxNotificationUtils.getTermuxOrPluginAppNotificationBuilder(
+            currentPackageContext, termuxPackageContext,
             TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
             title, notificationText, notificationBigText, contentIntent, deleteIntent, notificationMode);
-
-        if (builder == null)  return null;
-
-        // Enable timestamp
-        builder.setShowWhen(true);
-
-        // Set notification icon
-        builder.setSmallIcon(Icon.createWithResource(currentPackageContext, R.drawable.ic_error_notification));
-
-        // Set background color for small notification icon
-        builder.setColor(0xFF607D8B);
-
-        // Dismiss on click
-        builder.setAutoCancel(true);
-
-        return builder;
     }
 
     /**
