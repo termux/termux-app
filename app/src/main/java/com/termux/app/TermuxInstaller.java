@@ -73,7 +73,8 @@ final class TermuxInstaller {
         // Termux can only be run as the primary user (device owner) since only that
         // account has the expected file system paths. Verify that:
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !PackageUtils.isCurrentUserThePrimaryUser(activity)) {
-            bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message, MarkdownUtils.getMarkdownCodeForString(TERMUX_PREFIX_DIR_PATH, false));
+            bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message,
+                MarkdownUtils.getMarkdownCodeForString(TERMUX_PREFIX_DIR_PATH, false));
             Logger.logError(LOG_TAG, "isFilesDirectoryAccessible: " + isFilesDirectoryAccessible);
             Logger.logError(LOG_TAG, bootstrapErrorMessage);
             sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
@@ -84,7 +85,14 @@ final class TermuxInstaller {
         }
 
         if (!isFilesDirectoryAccessible) {
-            bootstrapErrorMessage = Error.getMinimalErrorString(filesDirectoryAccessibleError) + "\nTERMUX_FILES_DIR: " + MarkdownUtils.getMarkdownCodeForString(TermuxConstants.TERMUX_FILES_DIR_PATH, false);
+            bootstrapErrorMessage = Error.getMinimalErrorString(filesDirectoryAccessibleError);
+            //noinspection SdCardPath
+            if (PackageUtils.isAppInstalledOnExternalStorage(activity) &&
+                !TermuxConstants.TERMUX_FILES_DIR_PATH.equals(activity.getFilesDir().getAbsolutePath().replaceAll("^/data/user/0/", "/data/data/"))) {
+                bootstrapErrorMessage += "\n\n" + activity.getString(R.string.bootstrap_error_installed_on_portable_sd,
+                    MarkdownUtils.getMarkdownCodeForString(TERMUX_PREFIX_DIR_PATH, false));
+            }
+
             Logger.logError(LOG_TAG, bootstrapErrorMessage);
             sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
             MessageDialogUtils.showMessage(activity,
