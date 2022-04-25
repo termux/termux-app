@@ -221,6 +221,10 @@ public class ViewUtils {
     public static float dpToPx(Context context, float dp) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }
+
+    /** Convert value in pixels (px) to device independent pixels (dp) units. */
+    public static float pxToDp(Context context, float px) {
+        return px / context.getResources().getDisplayMetrics().density;
     }
 
 
