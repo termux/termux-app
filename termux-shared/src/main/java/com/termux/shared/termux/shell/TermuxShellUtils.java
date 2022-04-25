@@ -1,9 +1,11 @@
 package com.termux.shared.termux.shell;
 
 import android.content.Context;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
+import com.termux.shared.BuildConfig;
 import com.termux.shared.errors.Error;
 import com.termux.shared.file.filesystem.FileTypes;
 import com.termux.shared.termux.TermuxBootstrap;
@@ -95,9 +97,14 @@ public class TermuxShellUtils {
             environment.add("PATH= " + System.getenv("PATH"));
         } else {
             environment.add("LANG=en_US.UTF-8");
-            environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
             environment.add("PWD=" + workingDirectory);
             environment.add("TMPDIR=" + TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + ":" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/applets");
+                environment.add("LD_LIBRARY_PATH=" + TermuxConstants.TERMUX_LIB_PREFIX_DIR_PATH);
+            } else {
+                environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
+            }
         }
 
         return environment.toArray(new String[0]);
