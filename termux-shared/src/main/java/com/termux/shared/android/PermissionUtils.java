@@ -93,6 +93,7 @@ public class PermissionUtils {
      *                    will fail silently and will log an exception.
      * @return Returns {@code true} if requesting the permission was successful, otherwise {@code false}.
      */
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public static boolean requestPermission(@NonNull Context context, @NonNull String permission,
                                             int requestCode) {
         return requestPermissions(context, new String[]{permission}, requestCode);
@@ -116,6 +117,7 @@ public class PermissionUtils {
      *                    will fail silently and will log an exception.
      * @return Returns {@code true} if requesting the permissions was successful, otherwise {@code false}.
      */
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public static boolean requestPermissions(@NonNull Context context, @NonNull String[] permissions,
                                              int requestCode) {
         List<String> permissionsNotRequested = getPermissionsNotRequested(context, permissions);
@@ -274,12 +276,13 @@ public class PermissionUtils {
             return true;
         }
 
+
         errmsg = context.getString(R.string.msg_storage_permission_not_granted);
         Logger.logError(LOG_TAG, errmsg);
         if (showErrorMessage)
             Logger.showToast(context, errmsg, false);
 
-        if (requestCode < 0)
+        if (requestCode < 0 || Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
             return false;
 
         if (requestLegacyStoragePermission || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
@@ -323,6 +326,7 @@ public class PermissionUtils {
      *                    will fail silently and will log an exception.
      * @return Returns {@code true} if requesting the permission was successful, otherwise {@code false}.
      */
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public static boolean requestLegacyStorageExternalPermission(@NonNull Context context, int requestCode) {
         Logger.logInfo(LOG_TAG, "Requesting legacy external storage permission");
         return requestPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE, requestCode);
@@ -439,7 +443,10 @@ public class PermissionUtils {
      * @return Returns {@code true} if permission is granted, otherwise {@code false}.
      */
     public static boolean checkDisplayOverOtherAppsPermission(@NonNull Context context) {
-        return Settings.canDrawOverlays(context);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
+            return Settings.canDrawOverlays(context);
+        else
+            return true;
     }
 
     /** Wrapper for {@link #requestDisplayOverOtherAppsPermission(Context, int)}. */
@@ -460,6 +467,9 @@ public class PermissionUtils {
      */
     public static Error requestDisplayOverOtherAppsPermission(@NonNull Context context, int requestCode) {
         Logger.logInfo(LOG_TAG, "Requesting display over apps permission");
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+            return null;
 
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
@@ -505,8 +515,11 @@ public class PermissionUtils {
      * @return Returns {@code true} if permission is granted, otherwise {@code false}.
      */
     public static boolean checkIfBatteryOptimizationsDisabled(@NonNull Context context) {
-        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        return powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            return powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
+        } else
+            return true;
     }
 
     /** Wrapper for {@link #requestDisableBatteryOptimizations(Context, int)}. */
@@ -529,6 +542,9 @@ public class PermissionUtils {
     @SuppressLint("BatteryLife")
     public static Error requestDisableBatteryOptimizations(@NonNull Context context, int requestCode) {
         Logger.logInfo(LOG_TAG, "Requesting to disable battery optimizations");
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+            return null;
 
         Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
