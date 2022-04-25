@@ -198,6 +198,34 @@ public class LocalSocketManager {
             return new JniResult(message, t);
         }
     }
+    
+    /**
+     * Attempts to read one byte from file descriptor {@code fd} into the data buffer and
+     * a received file descriptor into the file descriptor buffer {@code readFD}.
+     * On success, the number of bytes read is returned (zero indicates end of file).
+     * It is not an error if bytes read is smaller than the number of bytes requested; this may happen
+     * for example because fewer bytes are actually available right now (maybe because we were close
+     * to end-of-file, or because we are reading from a pipe), or because read() was interrupted by
+     * a signal. On error, the {@link JniResult#errno} and {@link JniResult#errmsg} will be set.
+     * If no file descriptor was attached to the data byte, {@code readFD[0]} is -1.
+     *
+     * @param serverTitle The server title used for logging and errors.
+     * @param fd The socket fd.
+     * @param data The data buffer to read bytes into. Has to have a length of at least one, but only the first byte is used.
+     * @param readFD The file descriptor buffer to read file descriptors into. Has to have a length of at least one, but only the first int is used.
+     * @return Returns the {@link JniResult}. If reading was successful, then {@link JniResult#retval}
+     * will be 0 and {@link JniResult#intData} will contain the bytes read.
+     */
+    @Nullable
+    public static JniResult readFD(@NonNull String serverTitle, int fd, @NonNull byte[] data, @NonNull int[] readFD) {
+        try {
+            return readFDNative(serverTitle, fd, data, readFD);
+        } catch (Throwable t) {
+            String message = "Exception in readFDNative()";
+            Logger.logStackTraceWithMessage(LOG_TAG, message, t);
+            return new JniResult(message, t);
+        }
+    }
 
     /**
      * Attempts to send data buffer to the file descriptor. On error, the {@link JniResult#errno} and
@@ -218,6 +246,28 @@ public class LocalSocketManager {
             return sendNative(serverTitle, fd, data, deadline);
         } catch (Throwable t) {
             String message = "Exception in sendNative()";
+            Logger.logStackTraceWithMessage(LOG_TAG, message, t);
+            return new JniResult(message, t);
+        }
+    }
+    
+    /**
+     * Attempts to send a byte and the passed file descriptor {@code sendFD} to the file descriptor {@code fd}. On error, the {@link JniResult#errno} and
+     * {@link JniResult#errmsg} will be set.
+     *
+     * @param serverTitle The server title used for logging and errors.
+     * @param fd The socket fd.
+     * @param data The byte to send.
+     * @param sendFD The file descriptor to send.
+     * @return Returns the {@link JniResult}. If sending was successful, then {@link JniResult#retval}
+     * will be 0.
+     */
+    @Nullable
+    public static JniResult sendFD(@NonNull String serverTitle, int fd, byte data, int sendFD) {
+        try {
+            return sendFDNative(serverTitle, fd, data, sendFD);
+        } catch (Throwable t) {
+            String message = "Exception in sendFDNative()";
             Logger.logStackTraceWithMessage(LOG_TAG, message, t);
             return new JniResult(message, t);
         }
@@ -436,8 +486,12 @@ public class LocalSocketManager {
     @Nullable private static native JniResult acceptNative(@NonNull String serverTitle, int fd);
 
     @Nullable private static native JniResult readNative(@NonNull String serverTitle, int fd, @NonNull byte[] data, long deadline);
+    
+    @Nullable private static native JniResult readFDNative(@NonNull String serverTitle, int socketFD, @NonNull byte[] data, @NonNull int[] readFD);
 
     @Nullable private static native JniResult sendNative(@NonNull String serverTitle, int fd, @NonNull byte[] data, long deadline);
+    
+    @Nullable private static native JniResult sendFDNative(@NonNull String serverTitle, int socketFD, byte data, int sendFD);
 
     @Nullable private static native JniResult availableNative(@NonNull String serverTitle, int fd);
 
