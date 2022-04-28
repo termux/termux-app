@@ -8,7 +8,7 @@ ext {
     // crash at startup.
     // Bootstrap of a different variant must not be manually installed by the user after app installation
     // by replacing $PREFIX since app code is dependant on the variant used to build the APK.
-    // Currently supported values are: [ "apt-android-7" ]
+    // Currently supported values are: [ "apt-android-7" "apt-android-5" ]
     packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7" // Default: "apt-android-7"
 }
 
@@ -219,6 +219,12 @@ task downloadBootstraps() {
             downloadBootstrap("arm", "f8ec9505081b81da0ee66413762c52e6cb4a6ebd7be1a2a5ddee8953e0795dc9", version)
             downloadBootstrap("i686", "0491f12ed84a5ef3c28bd742311fed9f176e32100a2c6bbdb017df8f48044484", version)
             downloadBootstrap("x86_64", "94073a0e136bf5a9c05c1997a55dc261248f4ccb8bffaa9a950a132529cd1529", version)
+        } else if (packageVariant == "apt-android-5") {
+            def version = "2022.04.25-r1" + "+" + packageVariant
+            downloadBootstrap("aarch64", "66eac22c1626cfa8c37f0d30e5cc987bf5e01356ef8c883a12d9b65c93b60e64", version)
+            downloadBootstrap("arm", "84637d87f176bd647c9e05b161ae4de3611773871727b11405076a54cbf43467", version)
+            downloadBootstrap("i686", "20d7c399bfba5de95309838effb782a2b16e9eff4f72a55150617ee513e25fea", version)
+            downloadBootstrap("x86_64", "ae35f4d17027df562e241835299d7e711944825f10c1c2d9c5eb91d5e247daba", version)
         } else {
             throw new GradleException("Unsupported TERMUX_PACKAGE_VARIANT \"" + packageVariant + "\"")
         }
