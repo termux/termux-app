@@ -2,6 +2,16 @@ plugins {
     id "com.android.application"
 }
 
+ext {
+    // The packageVariant defines the bootstrap variant that will be included in the app APK.
+    // This must be supported by com.termux.shared.termux.TermuxBootstrap.PackageVariant or app will
+    // crash at startup.
+    // Bootstrap of a different variant must not be manually installed by the user after app installation
+    // by replacing $PREFIX since app code is dependant on the variant used to build the APK.
+    // Currently supported values are: [ "apt-android-7" ]
+    packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7" // Default: "apt-android-7"
+}
+
 android {
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
     ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
@@ -36,6 +46,8 @@ android {
 
         if (appVersionName) versionName = appVersionName
         validateVersionName(versionName)
+
+        buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"" + project.ext.packageVariant + "\"" // Used by TermuxApplication class
 
         manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux"
         manifestPlaceholders.TERMUX_APP_NAME = "Termux"
@@ -115,10 +127,10 @@ android {
         variant.outputs.all { output ->
             if (variant.buildType.name == "debug") {
                 def abi = output.getFilter(com.android.build.OutputFile.ABI)
-                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : "debug") + "_" + (abi ? abi : "universal") + ".apk")
+                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "debug") + "_" + (abi ? abi : "universal") + ".apk")
             } else if (variant.buildType.name == "release") {
                 def abi = output.getFilter(com.android.build.OutputFile.ABI)
-                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : "release") + "_" + (abi ? abi : "universal") + ".apk")
+                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "release") + "_" + (abi ? abi : "universal") + ".apk")
             }
         }
     }
@@ -161,7 +173,7 @@ def downloadBootstrap(String arch, String expectedChecksum, String version) {
         if (checksum == expectedChecksum) {
             return
         } else {
-            logger.quiet("Deleting old local file with wrong hash: " + localUrl)
+            logger.quiet("Deleting old local file with wrong hash: " + localUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
             file.delete()
         }
     }
@@ -196,11 +208,16 @@ clean {
 
 task downloadBootstraps() {
     doLast {
-        def version = "2022.04.22-r1"
-        downloadBootstrap("aarch64", "ec8a6043644594fc24681cffaf9c7b32f5bc68df7491c5df9a060e40e1934c70", version)
-        downloadBootstrap("arm",     "f8ec9505081b81da0ee66413762c52e6cb4a6ebd7be1a2a5ddee8953e0795dc9", version)
-        downloadBootstrap("i686",    "0491f12ed84a5ef3c28bd742311fed9f176e32100a2c6bbdb017df8f48044484", version)
-        downloadBootstrap("x86_64",  "94073a0e136bf5a9c05c1997a55dc261248f4ccb8bffaa9a950a132529cd1529", version)
+        def packageVariant = project.ext.packageVariant
+        if (packageVariant == "apt-android-7") {
+            def version = "2022.04.22-r1" + "+" + packageVariant
+            downloadBootstrap("aarch64", "ec8a6043644594fc24681cffaf9c7b32f5bc68df7491c5df9a060e40e1934c70", version)
+            downloadBootstrap("arm", "f8ec9505081b81da0ee66413762c52e6cb4a6ebd7be1a2a5ddee8953e0795dc9", version)
+            downloadBootstrap("i686", "0491f12ed84a5ef3c28bd742311fed9f176e32100a2c6bbdb017df8f48044484", version)
+            downloadBootstrap("x86_64", "94073a0e136bf5a9c05c1997a55dc261248f4ccb8bffaa9a950a132529cd1529", version)
+        } else {
+            throw new GradleException("Unsupported TERMUX_PACKAGE_VARIANT \"" + packageVariant + "\"")
+        }
     }
 }
 

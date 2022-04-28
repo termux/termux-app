@@ -23,6 +23,7 @@ import com.termux.shared.file.FileUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.shell.ShellUtils;
+import com.termux.shared.termux.TermuxBootstrap;
 import com.termux.shared.termux.terminal.TermuxTerminalViewClientBase;
 import com.termux.shared.termux.extrakeys.SpecialButton;
 import com.termux.shared.android.AndroidUtils;
@@ -756,9 +757,11 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
                 reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(mActivity));
 
-                String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
-                if (termuxAptInfo != null)
-                    reportString.append("\n\n").append(termuxAptInfo);
+                if (TermuxBootstrap.isAppPackageManagerAPT()) {
+                    String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
+                    if (termuxAptInfo != null)
+                        reportString.append("\n\n").append(termuxAptInfo);
+                }
 
                 if (addTermuxDebugInfo) {
                     String termuxDebugInfo = TermuxUtils.getTermuxDebugMarkdownString(mActivity);

@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.termux.shared.errors.Error;
 import com.termux.shared.file.filesystem.FileTypes;
+import com.termux.shared.termux.TermuxBootstrap;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
@@ -61,6 +62,10 @@ public class TermuxShellUtils {
             environment.add("TERMUX_APP_PID=" + TERMUX_APP_PID);
         if (TERMUX_APK_RELEASE != null)
             environment.add("TERMUX_APK_RELEASE=" + TERMUX_APK_RELEASE);
+        if (TermuxBootstrap.TERMUX_APP_PACKAGE_MANAGER != null)
+            environment.add("TERMUX_APP_PACKAGE_MANAGER=" + TermuxBootstrap.TERMUX_APP_PACKAGE_MANAGER.getName());
+        if (TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT != null)
+            environment.add("TERMUX_APP_PACKAGE_VARIANT=" + TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT.getName());
         if (TERMUX_APP_AM_SOCKET_SERVER_ENABLED != null)
             environment.add("TERMUX_APP_AM_SOCKET_SERVER_ENABLED=" + TERMUX_APP_AM_SOCKET_SERVER_ENABLED);
 

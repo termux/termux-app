@@ -8,8 +8,13 @@ on:
 jobs:
   attach-apks:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package_variant: [ apt-android-7, apt-android-5 ]
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
@@ -18,6 +23,8 @@ jobs:
 
       - name: Build and attach APKs to release
         shell: bash {0}
+        env:
+          PACKAGE_VARIANT: ${{ matrix.package_variant }}
         run: |
           exit_on_error() {
               echo "$1"
@@ -34,13 +41,14 @@ jobs:
           fi
 
           APK_DIR_PATH="./app/build/outputs/apk/debug"
-          APK_VERSION_TAG="$RELEASE_VERSION_NAME+github-debug"
+          APK_VERSION_TAG="$RELEASE_VERSION_NAME+${{ env.PACKAGE_VARIANT }}-github-debug"
           APK_BASENAME_PREFIX="termux-app_$APK_VERSION_TAG"
 
-          echo "Building APKs for '$RELEASE_VERSION_NAME' release"
+          echo "Building APKs for 'APK_VERSION_TAG' release"
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
+          export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
           if ! ./gradlew assembleDebug; then
-            exit_on_error "Build failed for '$RELEASE_VERSION_NAME' release."
+            exit_on_error "Build failed for '$APK_VERSION_TAG' release."
           fi
 
           echo "Validating APKs"
@@ -58,8 +66,8 @@ jobs:
             "${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
             "${APK_BASENAME_PREFIX}_x86_64.apk" \
             "${APK_BASENAME_PREFIX}_x86.apk" \
-            > sha256sums); then
-            exit_on_error "Generate sha25sums failed for '$RELEASE_VERSION_NAME' release."
+            > "${APK_BASENAME_PREFIX}_sha256sums"); then
+            exit_on_error "Generate sha25sums failed for '$APK_VERSION_TAG' release."
           fi
 
           echo "Attaching APKs to github release"
@@ -70,7 +78,7 @@ jobs:
           -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
           -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86_64.apk" \
           -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86.apk" \
-          -a "$APK_DIR_PATH/sha256sums" \
+          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_sha256sums" \
           "$RELEASE_VERSION_NAME"; then
-            exit_on_error "Attach APKs to release failed for '$RELEASE_VERSION_NAME' release."
+            exit_on_error "Attach APKs to release failed for '$APK_VERSION_TAG' release."
           fi

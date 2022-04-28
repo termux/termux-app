@@ -11,12 +11,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package_variant: [ apt-android-7, apt-android-5 ]
+
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
 
       - name: Build APKs
         shell: bash {0}
+        env:
+          PACKAGE_VARIANT: ${{ matrix.package_variant }}
         run: |
           exit_on_error() { echo "$1"; exit 1; }
 
@@ -35,7 +42,7 @@ jobs:
           fi
 
           APK_DIR_PATH="./app/build/outputs/apk/debug"
-          APK_VERSION_TAG="$RELEASE_VERSION_NAME-github-debug" # Note the "-", GITHUB_SHA will already have "+" before it
+          APK_VERSION_TAG="$RELEASE_VERSION_NAME-${{ env.PACKAGE_VARIANT }}-github-debug" # Note the "-", GITHUB_SHA will already have "+" before it
           APK_BASENAME_PREFIX="termux-app_$APK_VERSION_TAG"
 
           # Used by attachment steps later
@@ -43,11 +50,12 @@ jobs:
           echo "APK_VERSION_TAG=$APK_VERSION_TAG" >> $GITHUB_ENV
           echo "APK_BASENAME_PREFIX=$APK_BASENAME_PREFIX" >> $GITHUB_ENV
 
-          echo "Building APKs for '$RELEASE_VERSION_NAME' build"
+          echo "Building APKs for 'APK_VERSION_TAG' build"
           export TERMUX_APP_VERSION_NAME="${RELEASE_VERSION_NAME/v/}" # Used by app/build.gradle
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
+          export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
           if ! ./gradlew assembleDebug; then
-            exit_on_error "Build failed for '$RELEASE_VERSION_NAME' build."
+            exit_on_error "Build failed for '$APK_VERSION_TAG' build."
           fi
 
           echo "Validating APKs"
@@ -65,8 +73,8 @@ jobs:
             "${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
             "${APK_BASENAME_PREFIX}_x86_64.apk" \
             "${APK_BASENAME_PREFIX}_x86.apk" \
-            > sha256sums); then
-            exit_on_error "Generate sha25sums failed for '$RELEASE_VERSION_NAME' release."
+            > "${APK_BASENAME_PREFIX}_sha256sums"); then
+            exit_on_error "Generate sha25sums failed for '$APK_VERSION_TAG' release."
           fi
 
       - name: Attach universal APK file
@@ -112,7 +120,7 @@ jobs:
       - name: Attach sha256sums file
         uses: actions/upload-artifact@v2
         with:
-          name: sha256sums
+          name: ${{ env.APK_BASENAME_PREFIX }}_sha256sums
           path: |
-            ${{ env.APK_DIR_PATH }}/sha256sums
+            ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_sha256sums
             ${{ env.APK_DIR_PATH }}/output-metadata.json
