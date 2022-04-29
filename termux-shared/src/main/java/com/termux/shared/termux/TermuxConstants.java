@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.41.0
+ * Version: v0.42.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -239,6 +239,9 @@ import java.util.List;
  *
  * - 0.41.0 (2022-04-17)
  *      - Added `TERMUX_APP.TERMUX_AM_SOCKET_FILE_PATH`.
+ *
+ * - 0.42.0 (2022-04-29)
+ *      - Added `APK_RELEASE_TERMUX_DEVS` and `APK_RELEASE_TERMUX_DEVS_SIGNING_CERTIFICATE_SHA256_DIGEST`.
  */
 
 /**
@@ -449,6 +452,12 @@ public final class TermuxConstants {
 
     /** Google Play Store APK release signing certificate SHA-256 digest */
     public static final String APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST = "738F0A30A04D3C8A1BE304AF18D0779BCF3EA88FB60808F657A3521861C2EBF9"; // Default: "738F0A30A04D3C8A1BE304AF18D0779BCF3EA88FB60808F657A3521861C2EBF9"
+
+    /** Termux Devs APK release */
+    public static final String APK_RELEASE_TERMUX_DEVS = "Termux Devs"; // Default: "Termux Devs"
+
+    /** Termux Devs APK release signing certificate SHA-256 digest */
+    public static final String APK_RELEASE_TERMUX_DEVS_SIGNING_CERTIFICATE_SHA256_DIGEST = "F7A038EB551F1BE8FDF388686B784ABAB4552A5D82DF423E3D8F1B5CBE1C69AE"; // Default: "F7A038EB551F1BE8FDF388686B784ABAB4552A5D82DF423E3D8F1B5CBE1C69AE"
 
 
 
