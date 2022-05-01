@@ -122,6 +122,75 @@ public class LocalServerSocket implements Closeable {
 
         return null;
     }
+    
+    /**
+     * Creates the socket and binds to it, but doesn't start the socket listener.
+     * You can use this to pass the server socket file descriptor to another application.
+     */
+    public synchronized Error createSocket() {
+        Logger.logDebug(LOG_TAG, "start");
+        
+        String path = mLocalSocketRunConfig.getPath();
+        if (path == null || path.isEmpty()) {
+            return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_NULL_OR_EMPTY.getError(mLocalSocketRunConfig.getTitle());
+        }
+        if (!mLocalSocketRunConfig.isAbstractNamespaceSocket()) {
+            path = FileUtils.getCanonicalPath(path, null);
+        }
+        
+        // On Linux, sun_path is 108 bytes (UNIX_PATH_MAX) in size, so do an early check here to
+        // prevent useless parent directory creation since createServerSocket() call will fail since
+        // there is a native check as well.
+        if (path.getBytes(StandardCharsets.UTF_8).length > 108) {
+            return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_TOO_LONG.getError(mLocalSocketRunConfig.getTitle(), path);
+        }
+        
+        int backlog = mLocalSocketRunConfig.getBacklog();
+        if (backlog <= 0) {
+            return LocalSocketErrno.ERRNO_SERVER_SOCKET_BACKLOG_INVALID.getError(mLocalSocketRunConfig.getTitle(), backlog);
+        }
+        
+        Error error;
+        
+        // If server socket is not in abstract namespace
+        if (!mLocalSocketRunConfig.isAbstractNamespaceSocket()) {
+            if (!path.startsWith("/"))
+                return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_NOT_ABSOLUTE.getError(mLocalSocketRunConfig.getTitle(), path);
+            
+            // Create the server socket file parent directory and set SERVER_SOCKET_PARENT_DIRECTORY_PERMISSIONS if missing
+            String socketParentPath = new File(path).getParent();
+            error = FileUtils.validateDirectoryFileExistenceAndPermissions(mLocalSocketRunConfig.getTitle() + " server socket file parent",
+                socketParentPath,
+                null, true,
+                SERVER_SOCKET_PARENT_DIRECTORY_PERMISSIONS, true, true,
+                false, false);
+            if (error != null)
+                return error;
+            
+            
+            // Delete the server socket file to stop any existing servers and for bind() to succeed
+            error = deleteServerSocketFile();
+            if (error != null)
+                return error;
+        }
+        
+        // Create the server socket
+        JniResult result = LocalSocketManager.createServerSocket(mLocalSocketRunConfig.getLogTitle() + " (server)",
+            path.getBytes(StandardCharsets.UTF_8), backlog);
+        if (result == null || result.retval != 0) {
+            return LocalSocketErrno.ERRNO_CREATE_SERVER_SOCKET_FAILED.getError(mLocalSocketRunConfig.getTitle(), JniResult.getErrorString(result));
+        }
+        
+        int fd = result.intData;
+        if (fd < 0) {
+            return LocalSocketErrno.ERRNO_SERVER_SOCKET_FD_INVALID.getError(fd, mLocalSocketRunConfig.getTitle());
+        }
+        
+        // Update fd to signify that server socket has been created successfully
+        mLocalSocketRunConfig.setFD(fd);
+        
+        return null;
+    }
 
     /** Stop server. */
     public synchronized Error stop() {
