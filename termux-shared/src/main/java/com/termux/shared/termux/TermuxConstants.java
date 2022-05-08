@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.53.0
+ * Version: v0.54.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -279,6 +279,8 @@ import java.util.List;
  *      - Added `TERMUX_PREFIX_DIR_IGNORED_SUB_FILES_PATHS_TO_CONSIDER_AS_EMPTY`.
  * - 0.53.0 (2022-08-22)
  *      - Added `PERMISSION_TERMUX_PLUGIN` and `PERMISSION_TERMUX_SIGNATURE`.
+ * - 0.54.0 (2022-08-22)
+ *      - Added `TERMUX_PLUGINS_DIR_PATH` and `TERMUX_PLUGINS_DIR`.
  */
 
 /**
@@ -684,6 +686,11 @@ public final class TermuxConstants {
     public static final String TERMUX_APPS_DIR_PATH = TERMUX_FILES_DIR_PATH + "/apps"; // Default: "/data/data/com.termux/files/apps"
     /** Termux and plugin apps directory */
     public static final File TERMUX_APPS_DIR = new File(TERMUX_APPS_DIR_PATH);
+    
+    /** Termux and plugin apps directory path */
+    public static final String TERMUX_PLUGINS_DIR_PATH = TERMUX_APPS_DIR_PATH + "/plugins"; // Default: "/data/data/com.termux/files/apps/plugins"
+    /** Termux and plugin apps directory */
+    public static final File TERMUX_PLUGINS_DIR = new File(TERMUX_PLUGINS_DIR_PATH);
 
 
     /** Termux app $PREFIX directory path ignored sub file paths to consider it empty */

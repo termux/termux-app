@@ -51,7 +51,7 @@ interface IPluginService {
     ParcelFileDescriptor[] runTask(String commandPath, in String[] arguments, in ParcelFileDescriptor stdin, String workdir, String commandLabel, String commandDescription, String commandHelp) = 3;
     
     /**
-    * This creates a socket file with name under {@link TermuxConstants#TERMUX_APPS_DIR_PATH}/&lt;package name of caller&gt; and listens on it.
+    * This creates a socket file with name under {@link TermuxConstants#TERMUX_APPS_DIR_PATH}/plugins/&lt;package name of caller&gt; and listens on it.
     * 
     * @param name Name of the socket file.
     * @return The file descriptor of the created local server socket.
@@ -60,7 +60,7 @@ interface IPluginService {
     
     
     /**
-    * Opens a file under{@link TermuxConstants#TERMUX_APPS_DIR_PATH}/&lt;package name of caller&gt; with mode.
+    * Opens a file under{@link TermuxConstants#TERMUX_APPS_DIR_PATH}/plugins/&lt;package name of caller&gt; with mode.
     * 
     * @param name Name of the file.
     * @þaram mode Mode to use.

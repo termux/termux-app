@@ -58,7 +58,7 @@ public class BinderUtils
         if (packageName == null) {
             return null;
         }
-        return TermuxConstants.TERMUX_APPS_DIR_PATH + "/" + packageName;
+        return TermuxConstants.TERMUX_PLUGINS_DIR_PATH + "/" + packageName;
     }
     
     
