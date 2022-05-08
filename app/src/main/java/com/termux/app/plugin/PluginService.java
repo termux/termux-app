@@ -308,7 +308,7 @@ public class PluginService extends Service
             
             String filePath = fileInPluginDirOrThrow(name);
             
-            Error err = FileUtils.createRegularFile("("+BinderUtils.getCallerPackageName(PluginService.this)+")", filePath, "rw", true, false);
+            Error err = FileUtils.createRegularFile("("+BinderUtils.getCallerPackageName(PluginService.this)+")", filePath, "rw-", true, false);
             if (err != null) {
                 throw new UnsupportedOperationException(err.getErrorLogString());
             }
