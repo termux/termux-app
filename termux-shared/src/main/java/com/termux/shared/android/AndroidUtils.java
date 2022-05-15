@@ -198,7 +198,11 @@ public class AndroidUtils {
 
     public static void appendPropertyToMarkdownIfSet(StringBuilder markdownString, String label, Object value) {
         if (value == null) return;
-        if (value instanceof String && (((String) value).isEmpty()) || "REL".equals(value)) return;
+        boolean isString = value instanceof String;
+        boolean isEmpty = ((String) value).isEmpty();
+        boolean isREL = "REL".equals(value);
+
+        if (isString && (isEmpty || isREL)) return;
         markdownString.append("\n").append(getPropertyMarkdown(label, value));
     }
 
