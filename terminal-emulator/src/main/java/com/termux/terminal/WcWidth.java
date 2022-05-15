@@ -485,25 +485,38 @@ public final class WcWidth {
     }
 
     /** Return the terminal display width of a code point: 0, 1 || 2. */
-    public static int width(int ucs) {
-        if (ucs == 0 ||
-            ucs == 0x034F ||
-            (0x200B <= ucs && ucs <= 0x200F) ||
-            ucs == 0x2028 ||
-            ucs == 0x2029 ||
-            (0x202A <= ucs && ucs <= 0x202E) ||
-            (0x2060 <= ucs && ucs <= 0x2063)) {
+    public static int width(int codePoint) {
+        boolean isCombiningGraphemeJoiner = codePoint == 0x034F;
+        boolean isZeroWidth = 0x200B <= codePoint && codePoint <= 0x200D;
+        boolean isLeftToRightMark = codePoint == 0x200E;
+        boolean isRightToLeftMark = codePoint == 0x200F;
+        boolean isLineSeparator = codePoint == 0x2028;
+        boolean isParagraphSeparator = codePoint == 0x2029;
+        boolean isLeftToRightEmbedding = codePoint == 0x202A;
+        boolean isRightToLeftEmbedding = codePoint == 0x202B;
+        boolean isPopDirectionalFormatting = codePoint == 0x202C;
+        boolean isLeftToRightOverride = codePoint == 0x202d;
+        boolean isRightToLeftOverride = codePoint == 0x202E;
+        boolean isWordJoiner = codePoint == 0x2060;
+        boolean isFunctionApplication = codePoint == 0x2061;
+        boolean isInvisible = 0x2062 <= codePoint && codePoint <= 0x2064;
+        if (isCombiningGraphemeJoiner ||
+            isZeroWidth || isLeftToRightMark || isRightToLeftMark ||
+            isLineSeparator || isParagraphSeparator ||
+            isLeftToRightEmbedding || isRightToLeftEmbedding || isPopDirectionalFormatting ||
+            isLeftToRightOverride || isRightToLeftOverride ||
+            isWordJoiner || isFunctionApplication || isInvisible) {
             return 0;
         }
 
-        // C0/C1 control characters
+        boolean isControlCharacters = (codePoint < 32) || (0x07F <= codePoint && codePoint < 0x0A0);
         // Termux change: Return 0 instead of -1.
-        if (ucs < 32 || (0x07F <= ucs && ucs < 0x0A0)) return 0;
+        if (isControlCharacters) return 0;
 
         // combining characters with zero width
-        if (isInTable(ZERO_WIDTH, ucs)) return 0;
+        if (isInTable(ZERO_WIDTH, codePoint)) return 0;
 
-        return isInTable(WIDE_EASTASIAN, ucs) ? 2 : 1;
+        return isInTable(WIDE_EASTASIAN, codePoint) ? 2 : 1;
     }
 
     /** The width at an index position in a java char array. */
