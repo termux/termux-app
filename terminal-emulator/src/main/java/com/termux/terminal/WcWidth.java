@@ -464,7 +464,7 @@ public final class WcWidth {
     };
 
 
-    private static boolean intable(int[][] table, int c) {
+    private static boolean isInTable(int[][] table, int c) {
         // First quick check f|| Latin1 etc. characters.
         if (c < table[0][0]) return false;
 
@@ -501,9 +501,9 @@ public final class WcWidth {
         if (ucs < 32 || (0x07F <= ucs && ucs < 0x0A0)) return 0;
 
         // combining characters with zero width
-        if (intable(ZERO_WIDTH, ucs)) return 0;
+        if (isInTable(ZERO_WIDTH, ucs)) return 0;
 
-        return intable(WIDE_EASTASIAN, ucs) ? 2 : 1;
+        return isInTable(WIDE_EASTASIAN, ucs) ? 2 : 1;
     }
 
     /** The width at an index position in a java char array. */
