@@ -64,15 +64,12 @@ public class ReflectionUtils {
 
 
     /** Class that represents result of invoking a field. */
-    public static class FieldInvokeResult {
-        public boolean success;
-        public Object value;
-
+    public static class FieldInvokeResult extends InvokeResult {
         FieldInvokeResult(boolean success, Object value) {
-            this.value = success;
-            this.value = value;
+            super(success, value);
         }
     }
+
 
     /**
      * Get a value for a {@link Field} of an object for the specified class.
@@ -161,13 +158,9 @@ public class ReflectionUtils {
 
 
     /** Class that represents result of invoking a method that has a non-void return type. */
-    public static class MethodInvokeResult {
-        public boolean success;
-        public Object value;
-
+    public static class MethodInvokeResult extends InvokeResult{
         MethodInvokeResult(boolean success, Object value) {
-            this.value = success;
-            this.value = value;
+            super(success, value);
         }
     }
 
