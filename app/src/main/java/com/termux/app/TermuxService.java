@@ -137,14 +137,20 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         // Run again in case service is already started and onCreate() is not called
         runStartForeground();
 
-        String action = null;
-        if (intent != null) {
-            Logger.logVerboseExtended(LOG_TAG, "Intent Received:\n" + IntentUtils.getIntentString(intent));
-            action = intent.getAction();
-        }
+        String chooseAction = null;
 
-        if (action != null) {
-            switch (action) {
+        chooseAction = getAction(intent, chooseAction);
+        ExecuteAction(intent, chooseAction);
+
+        // If this service really do get killed, there is no point restarting it automatically - let the user do on next
+        // start of {@link Term):
+        return Service.START_NOT_STICKY;
+    }
+
+    private void ExecuteAction(Intent intent, String chooseAction) {
+        boolean isAction = chooseAction != null;
+        if (isAction) {
+            switch (chooseAction) {
                 case TERMUX_SERVICE.ACTION_STOP_SERVICE:
                     Logger.logDebug(LOG_TAG, "ACTION_STOP_SERVICE intent received");
                     actionStopService();
@@ -162,14 +168,21 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
                     actionServiceExecute(intent);
                     break;
                 default:
-                    Logger.logError(LOG_TAG, "Invalid action: \"" + action + "\"");
+
+                    Logger.logError(LOG_TAG, "Invalid action: \"" + chooseAction + "\"");
                     break;
             }
         }
+    }
 
-        // If this service really do get killed, there is no point restarting it automatically - let the user do on next
-        // start of {@link Term):
-        return Service.START_NOT_STICKY;
+    private String getAction(Intent intent, String chooseAction, ) {
+        boolean isIntent = intent != null;
+        if (isIntent) {
+            String getActionMessage = "Intent Received:\n" + IntentUtils.getIntentString(intent);
+            Logger.logVerboseExtended(LOG_TAG, getActionMessage);
+            chooseAction = intent.getAction();
+        }
+        return chooseAction;
     }
 
     @Override
