@@ -110,38 +110,26 @@ final class TermuxInstaller {
         new Thread() {
             @Override
             public void run() {
-                try {
-                    Logger.logInfo(LOG_TAG, "Installing " + TermuxConstants.TERMUX_APP_NAME + " bootstrap packages.");
-
-                    Error error;
+                try {Error error;
 
                     // Delete prefix staging directory or any file at its destination
                     error = FileUtils.deleteFile("termux prefix staging directory", TERMUX_STAGING_PREFIX_DIR_PATH, true);
-                    if (error != null) {
-                        showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
-                        return;
-                    }
+                    if (hasBootstrapError(error, activity, whenDone)) return;
 
                     // Delete prefix directory or any file at its destination
                     error = FileUtils.deleteFile("termux prefix directory", TERMUX_PREFIX_DIR_PATH, true);
-                    if (error != null) {
-                        showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
-                        return;
-                    }
+                    if (hasBootstrapError(error, activity, whenDone)) return;
 
                     // Create prefix staging directory if it does not already exist and set required permissions
                     error = TermuxFileUtils.isTermuxPrefixStagingDirectoryAccessible(true, true);
-                    if (error != null) {
-                        showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
-                        return;
-                    }
+                    if (hasBootstrapError(error, activity, whenDone)) return;
 
                     // Create prefix directory if it does not already exist and set required permissions
                     error = TermuxFileUtils.isTermuxPrefixDirectoryAccessible(true, true);
-                    if (error != null) {
-                        showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
-                        return;
-                    }
+                    if (hasBootstrapError(error, activity, whenDone)) return;
+                    Logger.logInfo(LOG_TAG, "Installing " + TermuxConstants.TERMUX_APP_NAME + " bootstrap packages.");
+
+                    
 
                     Logger.logInfo(LOG_TAG, "Extracting bootstrap zip to prefix staging directory \"" + TERMUX_STAGING_PREFIX_DIR_PATH + "\".");
 
@@ -225,6 +213,14 @@ final class TermuxInstaller {
                 }
             }
         }.start();
+    }
+
+    private static boolean hasBootstrapError(Error error, Activity activity, Runnable whenDone) {
+        if (error != null) {
+            showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
+            return true;
+        }
+        return false;
     }
 
     public static void showBootstrapErrorDialog(Activity activity, Runnable whenDone, String message) {
