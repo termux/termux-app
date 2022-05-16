@@ -73,7 +73,9 @@ public class PermissionUtils {
         int result;
         for (String permission : permissions) {
             result = ContextCompat.checkSelfPermission(context, permission);
-            if (result != PackageManager.PERMISSION_GRANTED) {
+            boolean permissionGranted = (result == PackageManager.PERMISSION_GRANTED);
+
+            if (!permissionGranted) {
                 return false;
             }
         }
@@ -128,14 +130,19 @@ public class PermissionUtils {
 
         for (String permission : permissions) {
             int result = ContextCompat.checkSelfPermission(context, permission);
+            boolean permissionGranted = (result == PackageManager.PERMISSION_GRANTED);
             // If at least one permission not granted
-            if (result != PackageManager.PERMISSION_GRANTED) {
+
+            if (!permissionGranted) {
                 Logger.logInfo(LOG_TAG, "Requesting Permissions: " + Arrays.toString(permissions));
 
                 try {
-                    if (context instanceof AppCompatActivity)
+                    boolean isAppCompatActivity = context instanceof AppCompatActivity;
+                    boolean isActivity = context instanceof Activity;
+
+                    if (isAppCompatActivity)
                         ((AppCompatActivity) context).requestPermissions(permissions, requestCode);
-                    else if (context instanceof Activity)
+                    else if (isActivity)
                         ((Activity) context).requestPermissions(permissions, requestCode);
                     else {
                         Error.logErrorAndShowToast(context, LOG_TAG,
