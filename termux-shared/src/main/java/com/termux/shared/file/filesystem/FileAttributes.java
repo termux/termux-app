@@ -210,18 +210,17 @@ public class FileAttributes {
         return ((st_mode & UnixConstants.S_IFMT) == UnixConstants.S_IFBLK);
     }
 
+    /** Is not regular file, directory or symbolic link */
     public boolean isOther() {
-        int type = st_mode & UnixConstants.S_IFMT;
-        return (type != UnixConstants.S_IFREG &&
-            type != UnixConstants.S_IFDIR &&
-            type != UnixConstants.S_IFLNK);
+        return (!isRegularFile() &&
+            !isDirectory() &&
+            !isSymbolicLink());
     }
-
+    /** Is character, block or fifo */
     public boolean isDevice() {
-        int type = st_mode & UnixConstants.S_IFMT;
-        return (type == UnixConstants.S_IFCHR ||
-            type == UnixConstants.S_IFBLK ||
-            type == UnixConstants.S_IFIFO);
+        return (isCharacter() ||
+            isBlock() ||
+            isFifo());
     }
 
     public long size() {
@@ -260,6 +259,7 @@ public class FileAttributes {
         }
         return group;
     }
+
 
     public Set<FilePermission> permissions() {
         int bits = (st_mode & UnixConstants.S_IAMB);
