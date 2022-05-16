@@ -81,7 +81,11 @@ public final class TerminalColors {
 
     /** Try parse a color from a text parameter and into a specified index. */
     public void tryParseColor(int intoIndex, String textParameter) {
-        mCurrentColors[intoIndex] = parse(textParameter);
+        try {
+            mCurrentColors[intoIndex] = parse(textParameter);
+        } catch (IllegalArgumentException e) {
+            // Ignore.
+        }
     }
 
 }
