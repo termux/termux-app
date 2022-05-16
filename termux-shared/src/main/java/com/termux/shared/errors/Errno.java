@@ -70,7 +70,10 @@ public class Errno {
      * @param code The unique code of the {@link Errno}.
      */
     public static Errno valueOf(String type, Integer code) {
-        if (type == null || type.isEmpty() || code == null) return null;
+        boolean isTypeInvaild = (type == null) || (type.isEmpty());
+        boolean isCodeInvalid = (code == null);
+
+        if (isTypeInvaild || isCodeInvalid) return null;
         return map.get(type + ":" + code);
     }
 

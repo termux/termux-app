@@ -101,15 +101,28 @@ public class AndroidUtils {
         StringBuilder markdownString = new StringBuilder();
 
         markdownString.append("## Device Info");
+        markdownString.append(getSoftwareInfoMarkdownString(context));
+        markdownString.append(getHardwareInfoMarkdownString());
+
+        markdownString.append("\n##\n");
+
+        return markdownString.toString();
+    }
+
+    private static String getSoftwareInfoMarkdownString(@NonNull final Context context) {
+        Properties systemProperties = getSystemProperties();
+        StringBuilder markdownString = new StringBuilder();
 
         markdownString.append("\n\n### Software\n");
         appendPropertyToMarkdown(markdownString,"OS_VERSION", getSystemPropertyWithAndroidAPI("os.version"));
         appendPropertyToMarkdown(markdownString, "SDK_INT", Build.VERSION.SDK_INT);
+
         // If its a release version
         if ("REL".equals(Build.VERSION.CODENAME))
             appendPropertyToMarkdown(markdownString, "RELEASE", Build.VERSION.RELEASE);
         else
             appendPropertyToMarkdown(markdownString, "CODENAME", Build.VERSION.CODENAME);
+        
         appendPropertyToMarkdown(markdownString, "ID", Build.ID);
         appendPropertyToMarkdown(markdownString, "DISPLAY", Build.DISPLAY);
         appendPropertyToMarkdown(markdownString, "INCREMENTAL", Build.VERSION.INCREMENTAL);
@@ -124,6 +137,12 @@ public class AndroidUtils {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R)
             appendPropertyToMarkdown(markdownString, "MONITOR_PHANTOM_PROCS", FeatureFlagUtils.getFeatureFlagValueString(context, FeatureFlagUtils.SETTINGS_ENABLE_MONITOR_PHANTOM_PROCS).getName());
 
+        return markdownString.toString();
+    }
+
+    private static String getHardwareInfoMarkdownString() {
+        StringBuilder markdownString = new StringBuilder();
+
         markdownString.append("\n\n### Hardware\n");
         appendPropertyToMarkdown(markdownString, "MANUFACTURER", Build.MANUFACTURER);
         appendPropertyToMarkdown(markdownString, "BRAND", Build.BRAND);
@@ -134,10 +153,9 @@ public class AndroidUtils {
         appendPropertyToMarkdown(markdownString, "DEVICE", Build.DEVICE);
         appendPropertyToMarkdown(markdownString, "SUPPORTED_ABIS", Joiner.on(", ").skipNulls().join(Build.SUPPORTED_ABIS));
 
-        markdownString.append("\n##\n");
-
         return markdownString.toString();
     }
+
 
 
 
@@ -198,7 +216,11 @@ public class AndroidUtils {
 
     public static void appendPropertyToMarkdownIfSet(StringBuilder markdownString, String label, Object value) {
         if (value == null) return;
-        if (value instanceof String && (((String) value).isEmpty()) || "REL".equals(value)) return;
+        boolean isString = value instanceof String;
+        boolean isEmpty = ((String) value).isEmpty();
+        boolean isREL = "REL".equals(value);
+
+        if (isString && (isEmpty || isREL)) return;
         markdownString.append("\n").append(getPropertyMarkdown(label, value));
     }
 

@@ -61,6 +61,13 @@ public final class TerminalView extends View {
     public static final int TERMINAL_CURSOR_BLINK_RATE_MIN = 100;
     public static final int TERMINAL_CURSOR_BLINK_RATE_MAX = 2000;
 
+    public static final int CONTROL_CODE_POINT_ESC = '3';
+    public static final int CONTROL_CODE_POINT_FS = '4';
+    public static final int CONTROL_CODE_POINT_GS = '5';
+    public static final int CONTROL_CODE_POINT_RS = '6';
+    public static final int CONTROL_CODE_POINT_US = '7';
+    public static final int CONTROL_CODE_POINT_DEL = '8';
+
     /** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
     int mTopRow;
     int[] mDefaultSelectors = new int[]{-1,-1,-1,-1};
@@ -94,7 +101,7 @@ public final class TerminalView extends View {
             @Override
             public boolean onUp(MotionEvent event) {
                 mScrollRemainder = 0.0f;
-                if (mEmulator != null && mEmulator.isMouseTrackingActive() && !event.isFromSource(InputDevice.SOURCE_MOUSE) && !isSelectingText() && !scrolledWithFinger) {
+                if (!isEmulatorNull() && mEmulator.isMouseTrackingActive() && !event.isFromSource(InputDevice.SOURCE_MOUSE) && !isSelectingText() && !scrolledWithFinger) {
                     // Quick event processing when mouse tracking is active - do not wait for check of double tapping
                     // for zooming.
                     sendMouseEventCode(event, TerminalEmulator.MOUSE_LEFT_BUTTON, true);
@@ -107,7 +114,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onSingleTapUp(MotionEvent event) {
-                if (mEmulator == null) return true;
+                if (isEmulatorNull()) return true;
 
                 if (isSelectingText()) {
                     stopTextSelectionMode();
@@ -120,7 +127,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onScroll(MotionEvent e, float distanceX, float distanceY) {
-                if (mEmulator == null) return true;
+                if (isEmulatorNull()) return true;
                 if (mEmulator.isMouseTrackingActive() && e.isFromSource(InputDevice.SOURCE_MOUSE)) {
                     // If moving with mouse pointer while pressing button, report that instead of scroll.
                     // This means that we never report moving with button press-events for touch input,
@@ -139,7 +146,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onScale(float focusX, float focusY, float scale) {
-                if (mEmulator == null || isSelectingText()) return true;
+                if (isEmulatorNull() || isSelectingText()) return true;
                 mScaleFactor *= scale;
                 mScaleFactor = mClient.onScale(mScaleFactor);
                 return true;
@@ -147,7 +154,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onFling(final MotionEvent e2, float velocityX, float velocityY) {
-                if (mEmulator == null) return true;
+                if (isEmulatorNull()) return true;
                 // Do not start scrolling until last fling has been taken care of:
                 if (!mScroller.isFinished()) return true;
 
@@ -309,7 +316,7 @@ public final class TerminalView extends View {
                 }
                 super.commitText(text, newCursorPosition);
 
-                if (mEmulator == null) return true;
+                if (isEmulatorNull()) return true;
 
                 Editable content = getEditable();
                 sendTextToTerminal(content);
@@ -389,21 +396,21 @@ public final class TerminalView extends View {
 
     @Override
     protected int computeVerticalScrollRange() {
-        return mEmulator == null ? 1 : mEmulator.getScreen().getActiveRows();
+        return isEmulatorNull() ? 1 : mEmulator.getScreen().getActiveRows();
     }
 
     @Override
     protected int computeVerticalScrollExtent() {
-        return mEmulator == null ? 1 : mEmulator.mRows;
+        return isEmulatorNull() ? 1 : mEmulator.mRows;
     }
 
     @Override
     protected int computeVerticalScrollOffset() {
-        return mEmulator == null ? 1 : mEmulator.getScreen().getActiveRows() + mTopRow - mEmulator.mRows;
+        return isEmulatorNull() ? 1 : mEmulator.getScreen().getActiveRows() + mTopRow - mEmulator.mRows;
     }
 
     public void onScreenUpdated() {
-        if (mEmulator == null) return;
+        if (isEmulatorNull()) return;
 
         int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
         if (mTopRow < -rowsInHistory) mTopRow = -rowsInHistory;
@@ -525,7 +532,7 @@ public final class TerminalView extends View {
     /** Overriding {@link View#onGenericMotionEvent(MotionEvent)}. */
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        if (mEmulator != null && event.isFromSource(InputDevice.SOURCE_MOUSE) && event.getAction() == MotionEvent.ACTION_SCROLL) {
+        if (!isEmulatorNull() && event.isFromSource(InputDevice.SOURCE_MOUSE) && event.getAction() == MotionEvent.ACTION_SCROLL) {
             // Handle mouse wheel scrolling.
             boolean up = event.getAxisValue(MotionEvent.AXIS_VSCROLL) > 0.0f;
             doScroll(event, up ? -3 : 3);
@@ -538,7 +545,7 @@ public final class TerminalView extends View {
     @Override
     @TargetApi(23)
     public boolean onTouchEvent(MotionEvent event) {
-        if (mEmulator == null) return true;
+        if (isEmulatorNull()) return true;
         final int action = event.getAction();
 
         if (isSelectingText()) {
@@ -699,7 +706,7 @@ public final class TerminalView extends View {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
             mClient.logInfo(LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
-        if (mEmulator == null) return true;
+        if (isEmulatorNull()) return true;
         if (isSelectingText()) {
             stopTextSelectionMode();
         }
@@ -780,7 +787,7 @@ public final class TerminalView extends View {
         if (mTermSession == null) return;
 
         // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
-        if (mEmulator != null)
+        if (!isEmulatorNull())
             mEmulator.setCursorBlinkState(true);
 
         final boolean controlDown = controlDownFromEvent || mClient.readControlKey();
@@ -795,19 +802,19 @@ public final class TerminalView extends View {
                 codePoint = codePoint - 'A' + 1;
             } else if (codePoint == ' ' || codePoint == '2') {
                 codePoint = 0;
-            } else if (codePoint == '[' || codePoint == '3') {
+            } else if (codePoint == '[' || codePoint == CONTROL_CODE_POINT_ESC) {
                 codePoint = 27; // ^[ (Esc)
-            } else if (codePoint == '\\' || codePoint == '4') {
+            } else if (codePoint == '\\' || codePoint == CONTROL_CODE_POINT_FS) {
                 codePoint = 28;
-            } else if (codePoint == ']' || codePoint == '5') {
+            } else if (codePoint == ']' || codePoint == CONTROL_CODE_POINT_GS) {
                 codePoint = 29;
-            } else if (codePoint == '^' || codePoint == '6') {
+            } else if (codePoint == '^' || codePoint == CONTROL_CODE_POINT_RS) {
                 codePoint = 30; // control-^
-            } else if (codePoint == '_' || codePoint == '7' || codePoint == '/') {
+            } else if (codePoint == '_' || codePoint == CONTROL_CODE_POINT_US || codePoint == '/') {
                 // "Ctrl-/ sends 0x1f which is equivalent of Ctrl-_ since the days of VT102"
                 // - http://apple.stackexchange.com/questions/24261/how-do-i-send-c-that-is-control-slash-to-the-terminal
                 codePoint = 31;
-            } else if (codePoint == '8') {
+            } else if (codePoint == CONTROL_CODE_POINT_DEL) {
                 codePoint = 127; // DEL
             }
         }
@@ -836,7 +843,7 @@ public final class TerminalView extends View {
     /** Input the specified keyCode if applicable and return if the input was consumed. */
     public boolean handleKeyCode(int keyCode, int keyMod) {
         // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
-        if (mEmulator != null)
+        if (!isEmulatorNull())
             mEmulator.setCursorBlinkState(true);
 
         TerminalEmulator term = mTermSession.getEmulator();
@@ -860,7 +867,7 @@ public final class TerminalView extends View {
 
         // Do not return for KEYCODE_BACK and send it to the client since user may be trying
         // to exit the activity.
-        if (mEmulator == null && keyCode != KeyEvent.KEYCODE_BACK) return true;
+        if (isEmulatorNull() && keyCode != KeyEvent.KEYCODE_BACK) return true;
 
         if (mClient.onKeyUp(keyCode, event)) {
             invalidate();
@@ -892,7 +899,7 @@ public final class TerminalView extends View {
         int newColumns = Math.max(4, (int) (viewWidth / mRenderer.mFontWidth));
         int newRows = Math.max(4, (viewHeight - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
 
-        if (mEmulator == null || (newColumns != mEmulator.mColumns || newRows != mEmulator.mRows)) {
+        if (isEmulatorNull() || (newColumns != mEmulator.mColumns || newRows != mEmulator.mRows)) {
             mTermSession.updateSize(newColumns, newRows);
             mEmulator = mTermSession.getEmulator();
             mClient.onEmulatorSet();
@@ -909,7 +916,7 @@ public final class TerminalView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (mEmulator == null) {
+        if (isEmulatorNull()) {
             canvas.drawColor(0XFF000000);
         } else {
             // render the terminal view and highlight any selected text
@@ -1072,7 +1079,7 @@ public final class TerminalView extends View {
         // Stop any existing cursor blinker callbacks
         stopTerminalCursorBlinker();
 
-        if (mEmulator == null) return;
+        if (isEmulatorNull()) return;
 
         mEmulator.setCursorBlinkingEnabled(false);
 
@@ -1128,7 +1135,7 @@ public final class TerminalView extends View {
 
         public void run() {
             try {
-                if (mEmulator != null) {
+                if (!isEmulatorNull()) {
                     // Toggle the blink state and then invalidate() the view so
                     // that onDraw() is called, which then calls TerminalRenderer.render()
                     // which checks with TerminalEmulator.shouldCursorBeVisible() to decide whether
@@ -1280,4 +1287,7 @@ public final class TerminalView extends View {
         }
     }
 
+    private boolean isEmulatorNull() {
+        return mEmulator == null;
+    }
 }
