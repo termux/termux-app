@@ -92,9 +92,12 @@ public final class TerminalColorScheme {
                 throw new IllegalArgumentException("Invalid property: '" + key + "'");
             }
 
-            int colorValue = TerminalColors.parse(value);
-
-            mDefaultColors[colorIndex] = colorValue;
+            try {
+                int colorValue = TerminalColors.parse(value);
+                mDefaultColors[colorIndex] = colorValue;
+            } catch (IllegalArgumentException e) {
+                // Ignore.
+            }
         }
     }
 
