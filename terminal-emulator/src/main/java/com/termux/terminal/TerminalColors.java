@@ -33,26 +33,34 @@ public final class TerminalColors {
      * Highest bit is set if successful, so return value is 0xFF${R}${G}${B}. Return 0 if failed.
      */
     static int parse(String colorString) {
-        try {
-            int skipInitial, skipBetween;
-            if (colorString.charAt(0) == '#') {
-                // #RGB, #RRGGBB, #RRRGGGBBB or #RRRRGGGGBBBB. Most significant bits.
-                skipInitial = 1;
-                skipBetween = 0;
-            } else if (colorString.startsWith("rgb:")) {
-                // rgb:<red>/<green>/<blue> where <red>, <green>, <blue> := h | hh | hhh | hhhh. Scaled.
-                skipInitial = 4;
-                skipBetween = 1;
-            } else {
-                throw new IllegalArgumentException("Wrong Prefix Format: '" + colorString + "'");
-            }
-            int charsForColors = colorString.length() - skipInitial - 2 * skipBetween;
-            if (charsForColors % 3 != 0) {
-                throw new IllegalArgumentException("Unequal Length: '" + colorString + "'");
-            }
-            int componentLength = charsForColors / 3;
-            double mult = 255 / (Math.pow(2, componentLength * 4) - 1);
+        int skipInitial, skipBetween;
+        if (colorString.charAt(0) == '#') {
+            // #RGB, #RRGGBB, #RRRGGGBBB or #RRRRGGGGBBBB. Most significant bits.
+            skipInitial = 1;
+            skipBetween = 0;
+        } else if (colorString.startsWith("rgb:")) {
+            // rgb:<red>/<green>/<blue> where <red>, <green>, <blue> := h | hh | hhh | hhhh. Scaled.
+            skipInitial = 4;
+            skipBetween = 1;
+        } else {
+            throw new IllegalArgumentException("Wrong Prefix Format: '" + colorString + "'");
+        }
 
+        return parseRGB(colorString, skipInitial, skipBetween);
+    }
+
+    private static int getComponentLength(String colorString, int skipInitial, int skipBetween) {
+        int charsForColors = colorString.length() - skipInitial - 2 * skipBetween;
+        if (charsForColors % 3 != 0) {
+            throw new IllegalArgumentException("Unequal Length: '" + colorString + "'");
+        }
+        return charsForColors / 3;
+    }
+
+    private static int parseRGB(String colorString, int skipInitial, int skipBetween) {
+        final int componentLength = getComponentLength(colorString, skipInitial, skipBetween);
+        final double mult = 255 / (Math.pow(2, componentLength * 4) - 1);
+        try {
             int currentPosition = skipInitial;
             String rString = colorString.substring(currentPosition, currentPosition + componentLength);
             currentPosition += componentLength + skipBetween;
