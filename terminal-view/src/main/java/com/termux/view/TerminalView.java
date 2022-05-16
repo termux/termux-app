@@ -61,6 +61,13 @@ public final class TerminalView extends View {
     public static final int TERMINAL_CURSOR_BLINK_RATE_MIN = 100;
     public static final int TERMINAL_CURSOR_BLINK_RATE_MAX = 2000;
 
+    public static final int CONTROL_CODE_POINT_ESC = '3';
+    public static final int CONTROL_CODE_POINT_FS = '4';
+    public static final int CONTROL_CODE_POINT_GS = '5';
+    public static final int CONTROL_CODE_POINT_RS = '6';
+    public static final int CONTROL_CODE_POINT_US = '7';
+    public static final int CONTROL_CODE_POINT_DEL = '8';
+
     /** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
     int mTopRow;
     int[] mDefaultSelectors = new int[]{-1,-1,-1,-1};
@@ -795,19 +802,19 @@ public final class TerminalView extends View {
                 codePoint = codePoint - 'A' + 1;
             } else if (codePoint == ' ' || codePoint == '2') {
                 codePoint = 0;
-            } else if (codePoint == '[' || codePoint == '3') {
+            } else if (codePoint == '[' || codePoint == CONTROL_CODE_POINT_ESC) {
                 codePoint = 27; // ^[ (Esc)
-            } else if (codePoint == '\\' || codePoint == '4') {
+            } else if (codePoint == '\\' || codePoint == CONTROL_CODE_POINT_FS) {
                 codePoint = 28;
-            } else if (codePoint == ']' || codePoint == '5') {
+            } else if (codePoint == ']' || codePoint == CONTROL_CODE_POINT_GS) {
                 codePoint = 29;
-            } else if (codePoint == '^' || codePoint == '6') {
+            } else if (codePoint == '^' || codePoint == CONTROL_CODE_POINT_RS) {
                 codePoint = 30; // control-^
-            } else if (codePoint == '_' || codePoint == '7' || codePoint == '/') {
+            } else if (codePoint == '_' || codePoint == CONTROL_CODE_POINT_US || codePoint == '/') {
                 // "Ctrl-/ sends 0x1f which is equivalent of Ctrl-_ since the days of VT102"
                 // - http://apple.stackexchange.com/questions/24261/how-do-i-send-c-that-is-control-slash-to-the-terminal
                 codePoint = 31;
-            } else if (codePoint == '8') {
+            } else if (codePoint == CONTROL_CODE_POINT_DEL) {
                 codePoint = 127; // DEL
             }
         }
