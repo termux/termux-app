@@ -93,8 +93,6 @@ public final class TerminalColorScheme {
             }
 
             int colorValue = TerminalColors.parse(value);
-            if (colorValue == 0)
-                throw new IllegalArgumentException("Property '" + key + "' has invalid color: '" + value + "'");
 
             mDefaultColors[colorIndex] = colorValue;
         }
