@@ -96,7 +96,10 @@ final class TermuxInstaller {
         if (FileUtils.directoryFileExists(TERMUX_PREFIX_DIR_PATH, true)) {
             File[] PREFIX_FILE_LIST =  TERMUX_PREFIX_DIR.listFiles();
             // If prefix directory is empty or only contains the tmp directory
-            if(PREFIX_FILE_LIST == null || PREFIX_FILE_LIST.length == 0 || (PREFIX_FILE_LIST.length == 1 && TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH.equals(PREFIX_FILE_LIST[0].getAbsolutePath()))) {
+            boolean hasEmptyPrefixDirectory = PREFIX_FILE_LIST == null || PREFIX_FILE_LIST.length == 0;
+            boolean hasTmpDirectoryOnly = PREFIX_FILE_LIST.length == 1 && TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH.equals(PREFIX_FILE_LIST[0].getAbsolutePath());
+
+            if(hasEmptyPrefixDirectory || hasTmpDirectoryOnly) {
                 Logger.logInfo(LOG_TAG, "The termux prefix directory \"" + TERMUX_PREFIX_DIR_PATH + "\" exists but is empty or only contains the tmp directory.");
             } else {
                 whenDone.run();
