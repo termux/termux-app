@@ -115,21 +115,7 @@ final class TermuxInstaller {
             public void run() {
                 try {Error error;
 
-                    // Delete prefix staging directory or any file at its destination
-                    error = FileUtils.deleteFile("termux prefix staging directory", TERMUX_STAGING_PREFIX_DIR_PATH, true);
-                    if (hasBootstrapError(error, activity, whenDone)) return;
-
-                    // Delete prefix directory or any file at its destination
-                    error = FileUtils.deleteFile("termux prefix directory", TERMUX_PREFIX_DIR_PATH, true);
-                    if (hasBootstrapError(error, activity, whenDone)) return;
-
-                    // Create prefix staging directory if it does not already exist and set required permissions
-                    error = TermuxFileUtils.isTermuxPrefixStagingDirectoryAccessible(true, true);
-                    if (hasBootstrapError(error, activity, whenDone)) return;
-
-                    // Create prefix directory if it does not already exist and set required permissions
-                    error = TermuxFileUtils.isTermuxPrefixDirectoryAccessible(true, true);
-                    if (hasBootstrapError(error, activity, whenDone)) return;
+                    if (hasPrefixError(activity, whenDone)) return;
                     Logger.logInfo(LOG_TAG, "Installing " + TermuxConstants.TERMUX_APP_NAME + " bootstrap packages.");
 
                     
@@ -155,10 +141,7 @@ final class TermuxInstaller {
                                     symlinks.add(Pair.create(oldPath, newPath));
 
                                     error = ensureDirectoryExists(new File(newPath).getParentFile());
-                                    if (error != null) {
-                                        showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
-                                        return;
-                                    }
+                                    if (hasBootstrapError(error, activity, whenDone)) return;
                                 }
                             } else {
                                 String zipEntryName = zipEntry.getName();
@@ -166,10 +149,7 @@ final class TermuxInstaller {
                                 boolean isDirectory = zipEntry.isDirectory();
 
                                 error = ensureDirectoryExists(isDirectory ? targetFile : targetFile.getParentFile());
-                                if (error != null) {
-                                    showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
-                                    return;
-                                }
+                                if (hasBootstrapError(error, activity, whenDone)) return;
 
                                 if (!isDirectory) {
                                     try (FileOutputStream outStream = new FileOutputStream(targetFile)) {
@@ -216,6 +196,28 @@ final class TermuxInstaller {
                 }
             }
         }.start();
+    }
+
+
+
+    private static boolean hasPrefixError(Activity activity, Runnable whenDone) {
+        Error error;
+        // Delete prefix staging directory or any file at its destination
+        error = FileUtils.deleteFile("termux prefix staging directory", TERMUX_STAGING_PREFIX_DIR_PATH, true);
+        if (hasBootstrapError(error, activity, whenDone)) return true;
+
+        // Delete prefix directory or any file at its destination
+        error = FileUtils.deleteFile("termux prefix directory", TERMUX_PREFIX_DIR_PATH, true);
+        if (hasBootstrapError(error, activity, whenDone)) return true;
+
+        // Create prefix staging directory if it does not already exist and set required permissions
+        error = TermuxFileUtils.isTermuxPrefixStagingDirectoryAccessible(true, true);
+        if (hasBootstrapError(error, activity, whenDone)) return true;
+
+        // Create prefix directory if it does not already exist and set required permissions
+        error = TermuxFileUtils.isTermuxPrefixDirectoryAccessible(true, true);
+        if (hasBootstrapError(error, activity, whenDone)) return true;
+        return false;
     }
 
     private static boolean hasBootstrapError(Error error, Activity activity, Runnable whenDone) {
