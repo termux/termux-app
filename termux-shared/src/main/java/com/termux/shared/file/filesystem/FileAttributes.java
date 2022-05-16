@@ -260,30 +260,39 @@ public class FileAttributes {
         return group;
     }
 
-
     public Set<FilePermission> permissions() {
         int bits = (st_mode & UnixConstants.S_IAMB);
         HashSet<FilePermission> perms = new HashSet<>();
 
-        if ((bits & UnixConstants.S_IRUSR) > 0)
+        boolean canOwnerRead = ((bits & UnixConstants.S_IRUSR) > 0);
+        boolean canOwnerWrite = ((bits & UnixConstants.S_IWUSR) > 0);
+        boolean canOwnerExecute = ((bits & UnixConstants.S_IXUSR) > 0);
+        boolean canGroupRead = ((bits & UnixConstants.S_IRGRP) > 0);
+        boolean canGroupWrite = ((bits & UnixConstants.S_IWGRP) > 0);
+        boolean canGroupExecute = ((bits & UnixConstants.S_IXGRP) > 0);
+        boolean canOtherRead = ((bits & UnixConstants.S_IROTH) > 0);
+        boolean canOtherWrite = ((bits & UnixConstants.S_IWOTH) > 0);
+        boolean canOtherExecute = ((bits & UnixConstants.S_IXOTH) > 0);
+
+        if (canOwnerRead)
             perms.add(FilePermission.OWNER_READ);
-        if ((bits & UnixConstants.S_IWUSR) > 0)
+        if (canOwnerWrite)
             perms.add(FilePermission.OWNER_WRITE);
-        if ((bits & UnixConstants.S_IXUSR) > 0)
+        if (canOwnerExecute)
             perms.add(FilePermission.OWNER_EXECUTE);
 
-        if ((bits & UnixConstants.S_IRGRP) > 0)
+        if (canGroupRead)
             perms.add(FilePermission.GROUP_READ);
-        if ((bits & UnixConstants.S_IWGRP) > 0)
+        if (canGroupWrite)
             perms.add(FilePermission.GROUP_WRITE);
-        if ((bits & UnixConstants.S_IXGRP) > 0)
+        if (canGroupExecute)
             perms.add(FilePermission.GROUP_EXECUTE);
 
-        if ((bits & UnixConstants.S_IROTH) > 0)
+        if (canOtherRead)
             perms.add(FilePermission.OTHERS_READ);
-        if ((bits & UnixConstants.S_IWOTH) > 0)
+        if (canOtherWrite)
             perms.add(FilePermission.OTHERS_WRITE);
-        if ((bits & UnixConstants.S_IXOTH) > 0)
+        if (canOtherExecute)
             perms.add(FilePermission.OTHERS_EXECUTE);
 
         return perms;
