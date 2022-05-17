@@ -79,8 +79,7 @@ public class Logger {
                 if (higherThanVerbose)
                     Log.v(getFullTag(tag), message); break;
 
-            default:
-                break;
+            default: break;
         }
     }
 
