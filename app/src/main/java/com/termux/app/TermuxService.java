@@ -175,7 +175,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         }
     }
 
-    private String getAction(Intent intent, String chooseAction, ) {
+    private String getAction(Intent intent, String chooseAction) {
         boolean isIntent = intent != null;
         if (isIntent) {
             String getActionMessage = "Intent Received:\n" + IntentUtils.getIntentString(intent);
@@ -284,20 +284,12 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
         Logger.logDebug(LOG_TAG, "Killing TermuxSessions=" + mTermuxSessions.size() + ", TermuxTasks=" + mTermuxTasks.size() + ", PendingPluginExecutionCommands=" + mPendingPluginExecutionCommands.size());
 
-        List<TermuxSession> termuxSessions = new ArrayList<>(mTermuxSessions);
-        for (int i = 0; i < termuxSessions.size(); i++) {
-            ExecutionCommand executionCommand = termuxSessions.get(i).getExecutionCommand();
-            processResult = mWantsToStop || executionCommand.isPluginExecutionCommandWithPendingResult();
-            termuxSessions.get(i).killIfExecuting(this, processResult);
-        }
+        killTerumxSessions();
+        killtermuxTasks();
+        killpendingPluginExecutionCommands();
+    }
 
-        List<AppShell> termuxTasks = new ArrayList<>(mTermuxTasks);
-        for (int i = 0; i < termuxTasks.size(); i++) {
-            ExecutionCommand executionCommand = termuxTasks.get(i).getExecutionCommand();
-            if (executionCommand.isPluginExecutionCommandWithPendingResult())
-                termuxTasks.get(i).killIfExecuting(this, true);
-        }
-
+    private void killpendingPluginExecutionCommands() {
         List<ExecutionCommand> pendingPluginExecutionCommands = new ArrayList<>(mPendingPluginExecutionCommands);
         for (int i = 0; i < pendingPluginExecutionCommands.size(); i++) {
             ExecutionCommand executionCommand = pendingPluginExecutionCommands.get(i);
@@ -306,6 +298,25 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
                     TermuxPluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
                 }
             }
+        }
+    }
+
+    private void killtermuxTasks() {
+        List<AppShell> termuxTasks = new ArrayList<>(mTermuxTasks);
+        for (int i = 0; i < termuxTasks.size(); i++) {
+            ExecutionCommand executionCommand = termuxTasks.get(i).getExecutionCommand();
+            if (executionCommand.isPluginExecutionCommandWithPendingResult())
+                termuxTasks.get(i).killIfExecuting(this, true);
+        }
+    }
+
+    private void killTerumxSessions() {
+        boolean processResult;
+        List<TermuxSession> termuxSessions = new ArrayList<>(mTermuxSessions);
+        for (int i = 0; i < termuxSessions.size(); i++) {
+            ExecutionCommand executionCommand = termuxSessions.get(i).getExecutionCommand();
+            processResult = mWantsToStop || executionCommand.isPluginExecutionCommandWithPendingResult();
+            termuxSessions.get(i).killIfExecuting(this, processResult);
         }
     }
 
