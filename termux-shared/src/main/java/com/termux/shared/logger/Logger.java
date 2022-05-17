@@ -54,16 +54,34 @@ public class Logger {
 
 
     public static void logMessage(int logPriority, String tag, String message) {
-        if (logPriority == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
-            Log.e(getFullTag(tag), message);
-        else if (logPriority == Log.WARN && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
-            Log.w(getFullTag(tag), message);
-        else if (logPriority == Log.INFO && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
-            Log.i(getFullTag(tag), message);
-        else if (logPriority == Log.DEBUG && CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
-            Log.d(getFullTag(tag), message);
-        else if (logPriority == Log.VERBOSE && CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE)
-            Log.v(getFullTag(tag), message);
+        boolean higherThanNormal = (CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL);
+        boolean higherThanDebug = (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG);
+        boolean higherThanVerbose = (CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE);
+
+        switch (logPriority) {
+            case Log.ERROR:
+                if (higherThanNormal)
+                    Log.e(getFullTag(tag), message); break;
+
+            case Log.WARN:
+                if (higherThanNormal)
+                    Log.w(getFullTag(tag), message); break;
+
+            case Log.INFO:
+                if (higherThanNormal)
+                    Log.i(getFullTag(tag), message); break;
+
+            case Log.DEBUG:
+                if (higherThanDebug)
+                    Log.d(getFullTag(tag), message); break;
+
+            case Log.VERBOSE:
+                if (higherThanVerbose)
+                    Log.v(getFullTag(tag), message); break;
+
+            default:
+                break;
+        }
     }
 
     public static void logExtendedMessage(int logLevel, String tag, String message) {
