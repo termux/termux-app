@@ -368,6 +368,15 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
         Logger.logDebug(LOG_TAG, "Releasing WakeLocks");
 
+        releaseWakeLockAndWifiLock();
+
+        if (updateNotification)
+            updateNotification();
+
+        Logger.logDebug(LOG_TAG, "WakeLocks released successfully");
+    }
+
+    private void releaseWakeLockAndWifiLock() {
         if (mWakeLock != null) {
             mWakeLock.release();
             mWakeLock = null;
@@ -377,11 +386,6 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             mWifiLock.release();
             mWifiLock = null;
         }
-
-        if (updateNotification)
-            updateNotification();
-
-        Logger.logDebug(LOG_TAG, "WakeLocks released successfully");
     }
 
     /** Process {@link TERMUX_SERVICE#ACTION_SERVICE_EXECUTE} intent to execute a shell command in
