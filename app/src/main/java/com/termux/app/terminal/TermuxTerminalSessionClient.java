@@ -31,11 +31,14 @@ import com.termux.terminal.TextStyle;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Properties;
 
 public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase {
 
+    public static final String SPACE = " ";
+    public static final String NEWLINE = "\n";
     private final TermuxActivity mActivity;
 
     private static final int MAX_SESSIONS = 8;
@@ -479,12 +482,12 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         if (indexOfSession < 0) return null;
         StringBuilder toastTitle = new StringBuilder("[" + (indexOfSession + 1) + "]");
         if (!TextUtils.isEmpty(session.mSessionName)) {
-            toastTitle.append(" ").append(session.mSessionName);
+            toastTitle.append(SPACE).append(session.mSessionName);
         }
         String title = session.getTitle();
         if (!TextUtils.isEmpty(title)) {
             // Space to "[${NR}] or newline after session name:
-            toastTitle.append(session.mSessionName == null ? " " : "\n");
+            toastTitle.append(session.mSessionName == null ? SPACE : NEWLINE);
             toastTitle.append(title);
         }
         return toastTitle.toString();
@@ -500,6 +503,8 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
             if (colorsFile.isFile()) {
                 try (InputStream in = new FileInputStream(colorsFile)) {
                     props.load(in);
+                }catch(FileNotFoundException e){
+                    Logger.logStackTraceWithMessage(LOG_TAG, "Error in checkForFontAndColors(), colorsFile doesn't exist", e);
                 }
             }
 
@@ -522,6 +527,8 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         TerminalSession session = mActivity.getCurrentSession();
         if (session != null && session.getEmulator() != null) {
             mActivity.getWindow().getDecorView().setBackgroundColor(session.getEmulator().mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]);
+        }else{
+            Logger.logVerbose(LOG_TAG, "There is no Session and Session emulator in updateBackgroundColor()");
         }
     }
 
