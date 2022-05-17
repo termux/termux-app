@@ -277,6 +277,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
      *
      * We make copies of each list since items are removed inside the loop.
      */
+
+    // Need to apply Design Pattern
     private synchronized void killAllTermuxExecutionCommands() {
         boolean processResult;
 
@@ -308,7 +310,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     }
 
 
-
+    //Need to apply Design Pattern
     /** Process action to acquire Power and Wi-Fi WakeLocks. */
     @SuppressLint({"WakelockTimeout", "BatteryLife"})
     private void actionAcquireWakeLock() {
@@ -319,14 +321,10 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
         Logger.logDebug(LOG_TAG, "Acquiring WakeLocks");
 
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TermuxConstants.TERMUX_APP_NAME.toLowerCase() + ":service-wakelock");
-        mWakeLock.acquire();
+        powerMangerAcquireWakeLock();
 
         // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
-        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, TermuxConstants.TERMUX_APP_NAME.toLowerCase());
-        mWifiLock.acquire();
+        wifiMangerAcquireWakeLock();
 
         if (!PermissionUtils.checkIfBatteryOptimizationsDisabled(this)) {
             PermissionUtils.requestDisableBatteryOptimizations(this);
@@ -336,6 +334,18 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
         Logger.logDebug(LOG_TAG, "WakeLocks acquired successfully");
 
+    }
+
+    private void powerMangerAcquireWakeLock() {
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TermuxConstants.TERMUX_APP_NAME.toLowerCase() + ":service-wakelock");
+        mWakeLock.acquire();
+    }
+
+    private void wifiMangerAcquireWakeLock() {
+        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, TermuxConstants.TERMUX_APP_NAME.toLowerCase());
+        mWifiLock.acquire();
     }
 
     /** Process action to release Power and Wi-Fi WakeLocks. */
