@@ -187,12 +187,14 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
     @Override
     public void onDestroy() {
+        boolean isStop = !mWantsToStop;
         Logger.logVerbose(LOG_TAG, "onDestroy");
 
         TermuxShellUtils.clearTermuxTMPDIR(true);
 
         actionReleaseWakeLock(false);
-        if (!mWantsToStop)
+
+        if (isStop)
             killAllTermuxExecutionCommands();
         runStopForeground();
     }
