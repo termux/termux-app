@@ -82,13 +82,12 @@ public final class TerminalBuffer {
             }
             char[] line = lineObject.mText;
             int lastPrintingCharIndex = -1;
-            int i;
             boolean rowLineWrap = getLineWrap(row);
             if (rowLineWrap && x2 == columns) {
                 // If the line was wrapped, we shouldn't lose trailing space:
                 lastPrintingCharIndex = x2Index - 1;
             } else {
-                for (i = x1Index; i < x2Index; ++i) {
+                for (int i = x1Index; i < x2Index; ++i) {
                     char c = line[i];
                     if (c != ' ') lastPrintingCharIndex = i;
                 }
@@ -99,8 +98,10 @@ public final class TerminalBuffer {
                 builder.append(line, x1Index, len);
 
             boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
-            if ((!joinBackLines || !rowLineWrap) && (!joinFullLines || !lineFillsWidth)
-                && row < selY2 && row < mScreenRows - 1) builder.append('\n');
+            boolean isBackLineRowNotWrapped = !(joinBackLines && rowLineWrap);
+            boolean isFullLineNotFillsWidth = !(joinFullLines && lineFillsWidth);
+            boolean isRowBeforeSelY2 = row < selY2 && row < mScreenRows - 1;
+            if (isBackLineRowNotWrapped && isFullLineNotFillsWidth && isRowBeforeSelY2) builder.append('\n');
         }
         return builder.toString();
     }
