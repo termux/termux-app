@@ -658,20 +658,23 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     /** Callback received when a {@link TermuxSession} finishes. */
     @Override
     public void onTermuxSessionExited(final TermuxSession termuxSession) {
-        if (termuxSession != null) {
+        boolean isTermuxSession = termuxSession != null;
+        if (isTermuxSession) {
             ExecutionCommand executionCommand = termuxSession.getExecutionCommand();
 
             Logger.logVerbose(LOG_TAG, "The onTermuxSessionExited() callback called for \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession command");
 
             // If the execution command was started for a plugin, then process the results
-            if (executionCommand != null && executionCommand.isPluginExecutionCommand)
+            boolean isExecutionCommand = executionCommand != null;
+            if (isExecutionCommand && executionCommand.isPluginExecutionCommand)
                 TermuxPluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
 
             mTermuxSessions.remove(termuxSession);
 
             // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
             // activity in is foreground
-            if (mTermuxTerminalSessionClient != null)
+            boolean isTermuxTerminalSessionClient = mTermuxTerminalSessionClient != null;
+            if (isTermuxTerminalSessionClient)
                 mTermuxTerminalSessionClient.termuxSessionListNotifyUpdated();
         }
 

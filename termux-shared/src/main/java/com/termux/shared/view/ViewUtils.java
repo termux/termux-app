@@ -110,23 +110,24 @@ public class ViewUtils {
                 ", displayOrientation=" + displayOrientation);
         }
 
+        boolean isStatusBarHeightTop = (statusBarHeight == windowRect.top);
         if (isInMultiWindowMode) {
-            if (displayOrientation == Configuration.ORIENTATION_PORTRAIT) {
-                // The windowRect.top of the window at the of split screen mode should start right
-                // below the status bar
-                if (statusBarHeight != windowRect.top) {
-                    if (view_utils_logging_enabled)
-                        Logger.logVerbose(LOG_TAG, "Window top does not equal statusBarHeight " + statusBarHeight + " in multi-window portrait mode. Window is possibly bottom app in split screen mode. Adding windowRect.top " + windowRect.top + " to viewTop.");
-                    viewTop += windowRect.top;
-                } else {
-                    if (view_utils_logging_enabled)
-                        Logger.logVerbose(LOG_TAG, "windowRect.top equals statusBarHeight " + statusBarHeight + " in multi-window portrait mode. Window is possibly top app in split screen mode.");
-                }
-
-            } else if (displayOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-                // If window is on the right in landscape mode of split screen, the viewLeft actually
-                // starts at windowRect.left instead of 0 returned by getLocationInWindow
-                viewLeft += windowRect.left;
+            switch (displayOrientation) {
+                case Configuration.ORIENTATION_PORTRAIT:
+                    // The windowRect.top of the window at the of split screen mode should start right
+                    // below the status bar
+                    if (!isStatusBarHeightTop) {
+                        if (view_utils_logging_enabled)
+                            Logger.logVerbose(LOG_TAG, "Window top does not equal statusBarHeight " + statusBarHeight + " in multi-window portrait mode. Window is possibly bottom app in split screen mode. Adding windowRect.top " + windowRect.top + " to viewTop.");
+                        viewTop += windowRect.top;
+                    } else {
+                        if (view_utils_logging_enabled)
+                            Logger.logVerbose(LOG_TAG, "windowRect.top equals statusBarHeight " + statusBarHeight + " in multi-window portrait mode. Window is possibly top app in split screen mode.");
+                    }
+                    break;
+                case Configuration.ORIENTATION_LANDSCAPE:
+                    viewLeft += windowRect.left;
+                    break;
             }
         }
 
@@ -152,9 +153,14 @@ public class ViewUtils {
      */
     public static boolean isRectAbove(@NonNull Rect r1, @NonNull Rect r2) {
         // check for empty first
-        return r1.left < r1.right && r1.top < r1.bottom
-            // now check if above
-            && r1.left <= r2.left && r1.bottom >= r2.bottom;
+
+        // now check if above
+        boolean isR1RightAboveLeft = (r1.left < r1.right);
+        boolean isR1BottomAboveTop = (r1.top < r1.bottom);
+        boolean isR2LeftAboveR1Left = (r1.left <= r2.left);
+        boolean isR1BottomAboveR2Bottom = (r1.bottom >= r2.bottom);
+
+        return isR1RightAboveLeft && isR1BottomAboveTop && isR2LeftAboveR1Left && isR1BottomAboveR2Bottom;
     }
 
     /**
