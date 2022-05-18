@@ -27,17 +27,18 @@ public class ThemeUtils {
     /** Will return true if mode is set to {@link NightMode#TRUE}, otherwise will return true if
      * mode is set to {@link NightMode#SYSTEM} and night mode is enabled by system. */
     public static boolean shouldEnableDarkTheme(Context context, String name) {
-        if (NightMode.TRUE.getName().equals(name))
+        boolean isNightMode = (NightMode.TRUE.getName().equals(name));
+//        boolean isDarkMode = (NightMode.FALSE.getName().equals(name));
+        boolean isSystemMode = (NightMode.SYSTEM.getName().equals(name));
+
+        if(isNightMode)
             return true;
-        else if (NightMode.FALSE.getName().equals(name))
-            return false;
-        else if (NightMode.SYSTEM.getName().equals(name)) {
+        else if(isSystemMode)
             return isNightModeEnabled(context);
-        } else {
+        else {
             return false;
         }
     }
-
 
     /** Get {@link #ATTR_TEXT_COLOR_PRIMARY} value being used by current theme. */
     public static int getTextColorPrimary(Context context) {
