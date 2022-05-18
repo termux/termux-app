@@ -223,8 +223,11 @@ public final class TerminalBuffer {
 
             final TerminalRow oldLine = oldLines[internalOldRow];
             final boolean cursorAtThisRow = externalOldRow == oldCursorRow;
+
             // The cursor may only be on a non-null line, which we should not skip:
-            if (oldLine == null || (!(!newCursorPlaced && cursorAtThisRow)) && oldLine.isBlank()) {
+            final boolean isOldCursorAtThisRow = !newCursorPlaced && cursorAtThisRow;
+            final boolean isCursorAtBlankLine = !isOldCursorAtThisRow && oldLine.isBlank();
+            if (oldLine == null || isCursorAtBlankLine) {
                 skippedBlankLines++;
                 continue;
             } else if (skippedBlankLines > 0) {
@@ -259,7 +262,7 @@ public final class TerminalBuffer {
                 // Note that looping over java character, not cells.
                 final char c = oldLine.mText[i];
                 final int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
-                int displayWidth = WcWidth.width(codePoint);
+                final int displayWidth = WcWidth.width(codePoint);
                 // Use the last style if this is a zero-width character:
                 if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
 
@@ -291,7 +294,9 @@ public final class TerminalBuffer {
                 }
             }
             // Old row has been copied. Check if we need to insert newline if old line was not wrapping:
-            if (externalOldRow != (oldScreenRows - 1) && !oldLine.mLineWrap) {
+            final boolean isOldRowCopied = externalOldRow != (oldScreenRows - 1);
+            final boolean isOldLineNotWrapping = !oldLine.mLineWrap;
+            if (isOldRowCopied && isOldLineNotWrapping) {
                 if (currentOutputExternalRow == mScreenRows - 1) {
                     if (newCursorPlaced) newCursorRow--;
                     scrollDownOneLine(0, mScreenRows, currentStyle);
