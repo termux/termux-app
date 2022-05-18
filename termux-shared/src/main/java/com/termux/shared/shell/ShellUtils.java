@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 public class ShellUtils {
 
     public static int getPid(Process p) {
+        int invalid = -1;
         try {
             Field f = p.getClass().getDeclaredField("pid");
             f.setAccessible(true);
@@ -19,7 +20,7 @@ public class ShellUtils {
                 f.setAccessible(false);
             }
         } catch (Throwable e) {
-            return -1;
+            return invalid;
         }
     }
 
