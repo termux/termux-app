@@ -1,5 +1,7 @@
 package com.termux.terminal;
 
+import androidx.annotation.NonNull;
+
 import java.util.Arrays;
 
 /**
@@ -81,16 +83,14 @@ public final class TerminalBuffer {
                 x2Index = lineObject.findStartOfColumn(x2 + 1);
             }
             char[] line = lineObject.mText;
-            int lastPrintingCharIndex = -1;
             boolean rowLineWrap = getLineWrap(row);
+            int lastPrintingCharIndex;
             if (rowLineWrap && x2 == columns) {
                 // If the line was wrapped, we shouldn't lose trailing space:
                 lastPrintingCharIndex = x2Index - 1;
-            } else {
-                for (int i = x1Index; i < x2Index; ++i) {
-                    char c = line[i];
-                    if (c != ' ') lastPrintingCharIndex = i;
-                }
+            }
+            else {
+                lastPrintingCharIndex = findLastPrintingCharIndex(line, x1Index, x2Index);
             }
 
             int len = lastPrintingCharIndex - x1Index + 1;
@@ -106,18 +106,21 @@ public final class TerminalBuffer {
         return builder.toString();
     }
 
+    private int findLastPrintingCharIndex(char[] line, int x1Index, int x2Index) {
+        int lastPrintingCharIndex = -1;
+        for (int i = x1Index; i < x2Index; ++i) {
+            char c = line[i];
+            if (c != ' ') lastPrintingCharIndex = i;
+        }
+        return lastPrintingCharIndex;
+    }
+
     public String getWordAtLocation(int x, int y) {
         // Set y1 and y2 to the lines where the wrapped line starts and ends.
         // I.e. if a line that is wrapped to 3 lines starts at line 4, and this
         // is called with y=5, then y1 would be set to 4 and y2 would be set to 6.
-        int y1 = y;
-        int y2 = y;
-        while (y1 > 0 && !getSelectedText(0, y1 - 1, mColumns, y, true, true).contains("\n")) {
-            y1--;
-        }
-        while (y2 < mScreenRows && !getSelectedText(0, y, mColumns, y2 + 1, true, true).contains("\n")) {
-            y2++;
-        }
+        int y1 = lineWrapStarts(y);
+        int y2 = lineWrapEnds(y);
 
         // Get the text for the whole wrapped line
         String text = getSelectedText(0, y1, mColumns, y2, true, true);
@@ -130,6 +133,11 @@ public final class TerminalBuffer {
           return "";
         }
 
+        return getWordAtOffset(text, textOffset);
+    }
+
+    @NonNull
+    private String getWordAtOffset(String text, int textOffset) {
         // Set x1 and x2 to the indices of the last space before x and the
         // first space after x in text respectively
         int x1 = text.lastIndexOf(' ', textOffset);
@@ -143,6 +151,22 @@ public final class TerminalBuffer {
           return "";
         }
         return text.substring(x1 + 1, x2);
+    }
+
+    private int lineWrapStarts(int y) {
+        int y1 = y;
+        while (y1 > 0 && !getSelectedText(0, y1 - 1, mColumns, y, true, true).contains("\n")) {
+            y1--;
+        }
+        return y1;
+    }
+
+    private int lineWrapEnds(int y) {
+        int y2 = y;
+        while (y2 < mScreenRows && !getSelectedText(0, y, mColumns, y2 + 1, true, true).contains("\n")) {
+            y2++;
+        }
+        return y2;
     }
 
     public int getActiveTranscriptRows() {
