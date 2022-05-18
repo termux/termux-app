@@ -153,9 +153,14 @@ public class ViewUtils {
      */
     public static boolean isRectAbove(@NonNull Rect r1, @NonNull Rect r2) {
         // check for empty first
-        return r1.left < r1.right && r1.top < r1.bottom
-            // now check if above
-            && r1.left <= r2.left && r1.bottom >= r2.bottom;
+
+        // now check if above
+        boolean isR1RightAboveLeft = (r1.left < r1.right);
+        boolean isR1BottomAboveTop = (r1.top < r1.bottom);
+        boolean isR2LeftAboveR1Left = (r1.left <= r2.left);
+        boolean isR1BottomAboveR2Bottom = (r1.bottom >= r2.bottom);
+
+        return isR1RightAboveLeft && isR1BottomAboveTop && isR2LeftAboveR1Left && isR1BottomAboveR2Bottom;
     }
 
     /**
