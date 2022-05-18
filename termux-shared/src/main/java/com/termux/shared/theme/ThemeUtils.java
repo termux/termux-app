@@ -27,43 +27,37 @@ public class ThemeUtils {
     /** Will return true if mode is set to {@link NightMode#TRUE}, otherwise will return true if
      * mode is set to {@link NightMode#SYSTEM} and night mode is enabled by system. */
     public static boolean shouldEnableDarkTheme(Context context, String name) {
-        if (NightMode.TRUE.getName().equals(name))
+        boolean isNightMode = (NightMode.TRUE.getName().equals(name));
+//        boolean isDarkMode = (NightMode.FALSE.getName().equals(name));
+        boolean isSystemMode = (NightMode.SYSTEM.getName().equals(name));
+
+        if(isNightMode)
             return true;
-        else if (NightMode.FALSE.getName().equals(name))
-            return false;
-        else if (NightMode.SYSTEM.getName().equals(name)) {
+        else if(isSystemMode)
             return isNightModeEnabled(context);
-        } else {
+        else {
             return false;
         }
     }
 
-
     /** Get {@link #ATTR_TEXT_COLOR_PRIMARY} value being used by current theme. */
     public static int getTextColorPrimary(Context context) {
-        return getSystemAttrColor(context, ATTR_TEXT_COLOR_PRIMARY);
+        return getSystemAttrColor(context, ATTR_TEXT_COLOR_PRIMARY, 0);
     }
 
     /** Get {@link #ATTR_TEXT_COLOR_SECONDARY} value being used by current theme. */
     public static int getTextColorSecondary(Context context) {
-        return getSystemAttrColor(context, ATTR_TEXT_COLOR_SECONDARY);
+        return getSystemAttrColor(context, ATTR_TEXT_COLOR_SECONDARY, 0);
     }
 
     /** Get {@link #ATTR_TEXT_COLOR} value being used by current theme. */
     public static int getTextColor(Context context) {
-        return getSystemAttrColor(context, ATTR_TEXT_COLOR);
+        return getSystemAttrColor(context, ATTR_TEXT_COLOR, 0);
     }
 
     /** Get {@link #ATTR_TEXT_COLOR_LINK} value being used by current theme. */
     public static int getTextColorLink(Context context) {
-        return getSystemAttrColor(context, ATTR_TEXT_COLOR_LINK);
-    }
-
-
-
-    /** Wrapper for {@link #getSystemAttrColor(Context, int, int)} with {@code def} value {@code 0}. */
-    public static int getSystemAttrColor(Context context, int attr) {
-        return getSystemAttrColor(context, attr, 0);
+        return getSystemAttrColor(context, ATTR_TEXT_COLOR_LINK, 0);
     }
 
     /**
