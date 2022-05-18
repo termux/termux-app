@@ -284,15 +284,20 @@ public final class TerminalBuffer {
     }
 
     private void updateOldState(int newColumns, int newRows, int newTotalRows, int[] cursor, long currentStyle) {
-        TerminalRow[] oldLines = mLines;
-        mLines = new TerminalRow[newTotalRows];
-        for (int i = 0; i < newTotalRows; i++)
-            mLines[i] = new TerminalRow(newColumns, currentStyle);
+        final TerminalRow[] oldLines = mLines;
 
         final int oldActiveTranscriptRows = mActiveTranscriptRows;
         final int oldScreenFirstRow = mScreenFirstRow;
         final int oldScreenRows = mScreenRows;
         final int oldTotalRows = mTotalRows;
+
+        final int oldCursorRow = cursor[1];
+        final int oldCursorColumn = cursor[0];
+
+        mLines = new TerminalRow[newTotalRows];
+        for (int i = 0; i < newTotalRows; i++)
+            mLines[i] = new TerminalRow(newColumns, currentStyle);
+
         mTotalRows = newTotalRows;
         mScreenRows = newRows;
         mActiveTranscriptRows = mScreenFirstRow = 0;
@@ -300,8 +305,6 @@ public final class TerminalBuffer {
 
         int newCursorRow = -1;
         int newCursorColumn = -1;
-        int oldCursorRow = cursor[1];
-        int oldCursorColumn = cursor[0];
         boolean newCursorPlaced = false;
 
         int currentOutputExternalRow = 0;
@@ -316,8 +319,8 @@ public final class TerminalBuffer {
             int internalOldRow = oldScreenFirstRow + externalOldRow;
             internalOldRow = (internalOldRow < 0) ? (oldTotalRows + internalOldRow) : (internalOldRow % oldTotalRows);
 
-            TerminalRow oldLine = oldLines[internalOldRow];
-            boolean cursorAtThisRow = externalOldRow == oldCursorRow;
+            final TerminalRow oldLine = oldLines[internalOldRow];
+            final boolean cursorAtThisRow = externalOldRow == oldCursorRow;
             // The cursor may only be on a non-null line, which we should not skip:
             if (oldLine == null || (!(!newCursorPlaced && cursorAtThisRow)) && oldLine.isBlank()) {
                 skippedBlankLines++;
@@ -352,8 +355,8 @@ public final class TerminalBuffer {
             long styleAtCol = 0;
             for (int i = 0; i < lastNonSpaceIndex; i++) {
                 // Note that looping over java character, not cells.
-                char c = oldLine.mText[i];
-                int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
+                final char c = oldLine.mText[i];
+                final int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
                 int displayWidth = WcWidth.width(codePoint);
                 // Use the last style if this is a zero-width character:
                 if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
@@ -370,8 +373,8 @@ public final class TerminalBuffer {
                     currentOutputExternalColumn = 0;
                 }
 
-                int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternalColumn > 0) ? 1 : 0);
-                int outputColumn = currentOutputExternalColumn - offsetDueToCombiningChar;
+                final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternalColumn > 0) ? 1 : 0);
+                final int outputColumn = currentOutputExternalColumn - offsetDueToCombiningChar;
                 setChar(outputColumn, currentOutputExternalRow, codePoint, styleAtCol);
 
                 if (displayWidth > 0) {
