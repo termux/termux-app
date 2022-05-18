@@ -15,6 +15,11 @@ import java.util.List;
 
 public class ResultData implements Serializable {
 
+    private enum StringType {
+        Log, Markdown, Minimal
+    }
+
+
     /** The stdout of command. */
     public final StringBuilder stdout = new StringBuilder();
     /** The stderr of command. */
@@ -172,21 +177,34 @@ public class ResultData implements Serializable {
         return Logger.getSingleLineLogStringEntry("Exit Code", exitCode, "-");
     }
 
-    public static String getErrorsListLogString(final ResultData resultData) {
-        if (resultData == null) return "null";
+    private static String getErrorsListString(final ResultData resultData, StringType type) {
+        StringBuilder result = new StringBuilder();
+        if (resultData.errorsList == null) return result.toString();
 
-        StringBuilder logString = new StringBuilder();
-
-        if (resultData.errorsList != null) {
-            for (Error error : resultData.errorsList) {
-                if (error.isStateFailed()) {
-                    if (!logString.toString().isEmpty())
-                        logString.append("\n");
-                    logString.append(Error.getErrorLogString(error));
+        for (Error error : resultData.errorsList) {
+            if (error.isStateFailed()) {
+                if (!result.toString().isEmpty())
+                    result.append("\n");
+                switch (type) {
+                    case Log:
+                        result.append(Error.getErrorLogString(error)); break;
+                    case Markdown:
+                        result.append(Error.getErrorMarkdownString(error)); break;
+                    case Minimal:
+                        result.append(Error.getMinimalErrorString(error)); break;
+                    default: break;
                 }
             }
         }
 
+        return result.toString();
+    }
+
+    public static String getErrorsListLogString(final ResultData resultData) {
+        if (resultData == null) return "null";
+
+        StringBuilder logString = new StringBuilder();
+        logString.append(getErrorsListString(resultData, StringType.Log));
         return logString.toString();
     }
 
@@ -223,17 +241,7 @@ public class ResultData implements Serializable {
         if (resultData == null) return "null";
 
         StringBuilder markdownString = new StringBuilder();
-
-        if (resultData.errorsList != null) {
-            for (Error error : resultData.errorsList) {
-                if (error.isStateFailed()) {
-                    if (!markdownString.toString().isEmpty())
-                        markdownString.append("\n");
-                    markdownString.append(Error.getErrorMarkdownString(error));
-                }
-            }
-        }
-
+        markdownString.append(getErrorsListString(resultData, StringType.Markdown));
         return markdownString.toString();
     }
 
@@ -241,17 +249,7 @@ public class ResultData implements Serializable {
         if (resultData == null) return "null";
 
         StringBuilder minimalString = new StringBuilder();
-
-        if (resultData.errorsList != null) {
-            for (Error error : resultData.errorsList) {
-                if (error.isStateFailed()) {
-                    if (!minimalString.toString().isEmpty())
-                        minimalString.append("\n");
-                    minimalString.append(Error.getMinimalErrorString(error));
-                }
-            }
-        }
-
+        minimalString.append(getErrorsListString(resultData, StringType.Minimal));
         return minimalString.toString();
     }
 
