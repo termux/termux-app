@@ -58,94 +58,19 @@ public final class TerminalBuffer {
     }
 
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines, boolean joinFullLines) {
-        final StringBuilder builder = new StringBuilder();
-        final int columns = mColumns;
-
-        if (selY1 < -getActiveTranscriptRows()) selY1 = -getActiveTranscriptRows();
-        if (selY2 >= mScreenRows) selY2 = mScreenRows - 1;
-
-        for (int row = selY1; row <= selY2; row++) {
-            int x1 = (row == selY1) ? selX1 : 0;
-            int x2;
-            if (row == selY2) {
-                x2 = selX2 + 1;
-                if (x2 > columns) x2 = columns;
-            } else {
-                x2 = columns;
-            }
-            TerminalRow lineObject = mLines[externalToInternalRow(row)];
-            int x1Index = lineObject.findStartOfColumn(x1);
-            int x2Index = (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
-            if (x2Index == x1Index) {
-                // Selected the start of a wide character.
-                x2Index = lineObject.findStartOfColumn(x2 + 1);
-            }
-            char[] line = lineObject.mText;
-            int lastPrintingCharIndex = -1;
-            int i;
-            boolean rowLineWrap = getLineWrap(row);
-            if (rowLineWrap && x2 == columns) {
-                // If the line was wrapped, we shouldn't lose trailing space:
-                lastPrintingCharIndex = x2Index - 1;
-            } else {
-                for (i = x1Index; i < x2Index; ++i) {
-                    char c = line[i];
-                    if (c != ' ') lastPrintingCharIndex = i;
-                }
-            }
-
-            int len = lastPrintingCharIndex - x1Index + 1;
-            if (lastPrintingCharIndex != -1 && len > 0)
-                builder.append(line, x1Index, len);
-
-            boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
-            if ((!joinBackLines || !rowLineWrap) && (!joinFullLines || !lineFillsWidth)
-                && row < selY2 && row < mScreenRows - 1) builder.append('\n');
-        }
-        return builder.toString();
+        return new TextFinder(this).getSelectedText(selX1, selY1, selX2, selY2, joinBackLines, joinFullLines);
     }
 
     public String getWordAtLocation(int x, int y) {
-        // Set y1 and y2 to the lines where the wrapped line starts and ends.
-        // I.e. if a line that is wrapped to 3 lines starts at line 4, and this
-        // is called with y=5, then y1 would be set to 4 and y2 would be set to 6.
-        int y1 = y;
-        int y2 = y;
-        while (y1 > 0 && !getSelectedText(0, y1 - 1, mColumns, y, true, true).contains("\n")) {
-            y1--;
-        }
-        while (y2 < mScreenRows && !getSelectedText(0, y, mColumns, y2 + 1, true, true).contains("\n")) {
-            y2++;
-        }
-
-        // Get the text for the whole wrapped line
-        String text = getSelectedText(0, y1, mColumns, y2, true, true);
-        // The index of x in text
-        int textOffset = (y - y1) * mColumns + x;
-
-        if (textOffset >= text.length()) {
-          // The click was to the right of the last word on the line, so
-          // there's no word to return
-          return "";
-        }
-
-        // Set x1 and x2 to the indices of the last space before x and the
-        // first space after x in text respectively
-        int x1 = text.lastIndexOf(' ', textOffset);
-        int x2 = text.indexOf(' ', textOffset);
-        if (x2 == -1) {
-            x2 = text.length();
-        }
-
-        if (x1 == x2) {
-          // The click was on a space, so there's no word to return
-          return "";
-        }
-        return text.substring(x1 + 1, x2);
+        return new TextFinder(this).getWordAtLocation(x, y);
     }
 
     public int getActiveTranscriptRows() {
         return mActiveTranscriptRows;
+    }
+
+    public int getScreenFirstRows() {
+        return mScreenFirstRow;
     }
 
     public int getActiveRows() {
@@ -204,153 +129,200 @@ public final class TerminalBuffer {
         // newRows > mTotalRows should not normally happen since mTotalRows is TRANSCRIPT_ROWS (10000):
         if (newColumns == mColumns && newRows <= mTotalRows) {
             // Fast resize where just the rows changed.
-            int shiftDownOfTopRow = mScreenRows - newRows;
-            if (shiftDownOfTopRow > 0 && shiftDownOfTopRow < mScreenRows) {
-                // Shrinking. Check if we can skip blank rows at bottom below cursor.
-                for (int i = mScreenRows - 1; i > 0; i--) {
-                    if (cursor[1] >= i) break;
-                    int r = externalToInternalRow(i);
-                    if (mLines[r] == null || mLines[r].isBlank()) {
-                        if (--shiftDownOfTopRow == 0) break;
-                    }
-                }
-            } else if (shiftDownOfTopRow < 0) {
-                // Negative shift down = expanding. Only move screen up if there is transcript to show:
-                int actualShift = Math.max(shiftDownOfTopRow, -mActiveTranscriptRows);
-                if (shiftDownOfTopRow != actualShift) {
-                    // The new lines revealed by the resizing are not all from the transcript. Blank the below ones.
-                    for (int i = 0; i < actualShift - shiftDownOfTopRow; i++)
-                        allocateFullLineIfNecessary((mScreenFirstRow + mScreenRows + i) % mTotalRows).clear(currentStyle);
-                    shiftDownOfTopRow = actualShift;
-                }
-            }
-            mScreenFirstRow += shiftDownOfTopRow;
-            mScreenFirstRow = (mScreenFirstRow < 0) ? (mScreenFirstRow + mTotalRows) : (mScreenFirstRow % mTotalRows);
-            mTotalRows = newTotalRows;
-            mActiveTranscriptRows = altScreen ? 0 : Math.max(0, mActiveTranscriptRows + shiftDownOfTopRow);
-            cursor[1] -= shiftDownOfTopRow;
-            mScreenRows = newRows;
+            fastResize(newRows, newTotalRows, cursor, currentStyle, altScreen);
         } else {
             // Copy away old state and update new:
-            TerminalRow[] oldLines = mLines;
-            mLines = new TerminalRow[newTotalRows];
-            for (int i = 0; i < newTotalRows; i++)
-                mLines[i] = new TerminalRow(newColumns, currentStyle);
-
-            final int oldActiveTranscriptRows = mActiveTranscriptRows;
-            final int oldScreenFirstRow = mScreenFirstRow;
-            final int oldScreenRows = mScreenRows;
-            final int oldTotalRows = mTotalRows;
-            mTotalRows = newTotalRows;
-            mScreenRows = newRows;
-            mActiveTranscriptRows = mScreenFirstRow = 0;
-            mColumns = newColumns;
-
-            int newCursorRow = -1;
-            int newCursorColumn = -1;
-            int oldCursorRow = cursor[1];
-            int oldCursorColumn = cursor[0];
-            boolean newCursorPlaced = false;
-
-            int currentOutputExternalRow = 0;
-            int currentOutputExternalColumn = 0;
-
-            // Loop over every character in the initial state.
-            // Blank lines should be skipped only if at end of transcript (just as is done in the "fast" resize), so we
-            // keep track how many blank lines we have skipped if we later on find a non-blank line.
-            int skippedBlankLines = 0;
-            for (int externalOldRow = -oldActiveTranscriptRows; externalOldRow < oldScreenRows; externalOldRow++) {
-                // Do what externalToInternalRow() does but for the old state:
-                int internalOldRow = oldScreenFirstRow + externalOldRow;
-                internalOldRow = (internalOldRow < 0) ? (oldTotalRows + internalOldRow) : (internalOldRow % oldTotalRows);
-
-                TerminalRow oldLine = oldLines[internalOldRow];
-                boolean cursorAtThisRow = externalOldRow == oldCursorRow;
-                // The cursor may only be on a non-null line, which we should not skip:
-                if (oldLine == null || (!(!newCursorPlaced && cursorAtThisRow)) && oldLine.isBlank()) {
-                    skippedBlankLines++;
-                    continue;
-                } else if (skippedBlankLines > 0) {
-                    // After skipping some blank lines we encounter a non-blank line. Insert the skipped blank lines.
-                    for (int i = 0; i < skippedBlankLines; i++) {
-                        if (currentOutputExternalRow == mScreenRows - 1) {
-                            scrollDownOneLine(0, mScreenRows, currentStyle);
-                        } else {
-                            currentOutputExternalRow++;
-                        }
-                        currentOutputExternalColumn = 0;
-                    }
-                    skippedBlankLines = 0;
-                }
-
-                int lastNonSpaceIndex = 0;
-                boolean justToCursor = false;
-                if (cursorAtThisRow || oldLine.mLineWrap) {
-                    // Take the whole line, either because of cursor on it, or if line wrapping.
-                    lastNonSpaceIndex = oldLine.getSpaceUsed();
-                    if (cursorAtThisRow) justToCursor = true;
-                } else {
-                    for (int i = 0; i < oldLine.getSpaceUsed(); i++)
-                        // NEWLY INTRODUCED BUG! Should not index oldLine.mStyle with char indices
-                        if (oldLine.mText[i] != ' '/* || oldLine.mStyle[i] != currentStyle */)
-                            lastNonSpaceIndex = i + 1;
-                }
-
-                int currentOldCol = 0;
-                long styleAtCol = 0;
-                for (int i = 0; i < lastNonSpaceIndex; i++) {
-                    // Note that looping over java character, not cells.
-                    char c = oldLine.mText[i];
-                    int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
-                    int displayWidth = WcWidth.width(codePoint);
-                    // Use the last style if this is a zero-width character:
-                    if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
-
-                    // Line wrap as necessary:
-                    if (currentOutputExternalColumn + displayWidth > mColumns) {
-                        setLineWrap(currentOutputExternalRow);
-                        if (currentOutputExternalRow == mScreenRows - 1) {
-                            if (newCursorPlaced) newCursorRow--;
-                            scrollDownOneLine(0, mScreenRows, currentStyle);
-                        } else {
-                            currentOutputExternalRow++;
-                        }
-                        currentOutputExternalColumn = 0;
-                    }
-
-                    int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternalColumn > 0) ? 1 : 0);
-                    int outputColumn = currentOutputExternalColumn - offsetDueToCombiningChar;
-                    setChar(outputColumn, currentOutputExternalRow, codePoint, styleAtCol);
-
-                    if (displayWidth > 0) {
-                        if (oldCursorRow == externalOldRow && oldCursorColumn == currentOldCol) {
-                            newCursorColumn = currentOutputExternalColumn;
-                            newCursorRow = currentOutputExternalRow;
-                            newCursorPlaced = true;
-                        }
-                        currentOldCol += displayWidth;
-                        currentOutputExternalColumn += displayWidth;
-                        if (justToCursor && newCursorPlaced) break;
-                    }
-                }
-                // Old row has been copied. Check if we need to insert newline if old line was not wrapping:
-                if (externalOldRow != (oldScreenRows - 1) && !oldLine.mLineWrap) {
-                    if (currentOutputExternalRow == mScreenRows - 1) {
-                        if (newCursorPlaced) newCursorRow--;
-                        scrollDownOneLine(0, mScreenRows, currentStyle);
-                    } else {
-                        currentOutputExternalRow++;
-                    }
-                    currentOutputExternalColumn = 0;
-                }
-            }
-
-            cursor[0] = newCursorColumn;
-            cursor[1] = newCursorRow;
+            updateOldState(newColumns, newRows, newTotalRows, cursor, currentStyle);
         }
 
         // Handle cursor scrolling off screen:
         if (cursor[0] < 0 || cursor[1] < 0) cursor[0] = cursor[1] = 0;
+    }
+
+    private void fastResize(int newRows, int newTotalRows, int[] cursor, long currentStyle, boolean altScreen) {
+        int shiftDownOfTopRow = calcShiftDownOfTopRow(newRows, cursor, currentStyle);
+        mScreenFirstRow += shiftDownOfTopRow;
+        mScreenFirstRow = (mScreenFirstRow < 0) ? (mScreenFirstRow + mTotalRows) : (mScreenFirstRow % mTotalRows);
+        mTotalRows = newTotalRows;
+        mActiveTranscriptRows = altScreen ? 0 : Math.max(0, mActiveTranscriptRows + shiftDownOfTopRow);
+        cursor[1] -= shiftDownOfTopRow;
+        mScreenRows = newRows;
+    }
+
+    private int calcShiftDownOfTopRow(int newRows, int[] cursor, long currentStyle) {
+        int shiftDownOfTopRow = mScreenRows - newRows;
+        if (shiftDownOfTopRow > 0 && shiftDownOfTopRow < mScreenRows) {
+            // Shrinking. Check if we can skip blank rows at bottom below cursor.
+            shiftDownOfTopRow = shrinkingRows(cursor, shiftDownOfTopRow);
+        } else if (shiftDownOfTopRow < 0) {
+            // Negative shift down = expanding. Only move screen up if there is transcript to show:
+            shiftDownOfTopRow = expandingRows(currentStyle, shiftDownOfTopRow);
+        }
+        return shiftDownOfTopRow;
+    }
+
+    private int shrinkingRows(int[] cursor, int shiftDownOfTopRow) {
+        for (int i = mScreenRows - 1; i > 0; i--) {
+            if (cursor[1] >= i) break;
+            int r = externalToInternalRow(i);
+            if (mLines[r] == null || mLines[r].isBlank()) {
+                if (--shiftDownOfTopRow == 0) break;
+            }
+        }
+        return shiftDownOfTopRow;
+    }
+
+    private int expandingRows(long currentStyle, int shiftDownOfTopRow) {
+        int actualShift = Math.max(shiftDownOfTopRow, -mActiveTranscriptRows);
+        if (shiftDownOfTopRow != actualShift) {
+            // The new lines revealed by the resizing are not all from the transcript. Blank the below ones.
+            for (int i = 0; i < actualShift - shiftDownOfTopRow; i++)
+                allocateFullLineIfNecessary((mScreenFirstRow + mScreenRows + i) % mTotalRows).clear(currentStyle);
+            shiftDownOfTopRow = actualShift;
+        }
+        return shiftDownOfTopRow;
+    }
+
+    class RowColumnPair {
+        int row;
+        int column;
+
+        public RowColumnPair(int row, int column) {
+            this.row = row;
+            this.column = column;
+        }
+    }
+
+    private void updateOldState(int newColumns, int newRows, int newTotalRows, int[] cursor, long currentStyle) {
+        final TerminalRow[] oldLines = mLines;
+
+        final int oldActiveTranscriptRows = mActiveTranscriptRows;
+        final int oldScreenFirstRow = mScreenFirstRow;
+        final int oldScreenRows = mScreenRows;
+        final int oldTotalRows = mTotalRows;
+
+        final RowColumnPair oldCursor = new RowColumnPair(cursor[1], cursor[0]);
+
+        mLines = new TerminalRow[newTotalRows];
+        for (int i = 0; i < newTotalRows; i++)
+            mLines[i] = new TerminalRow(newColumns, currentStyle);
+
+        mTotalRows = newTotalRows;
+        mScreenRows = newRows;
+        mActiveTranscriptRows = mScreenFirstRow = 0;
+        mColumns = newColumns;
+
+        RowColumnPair newCursor = new RowColumnPair(-1, -1);
+        boolean newCursorPlaced = false;
+
+        RowColumnPair currentOutputExternal = new RowColumnPair(0, 0);
+
+        // Loop over every character in the initial state.
+        // Blank lines should be skipped only if at end of transcript (just as is done in the "fast" resize), so we
+        // keep track how many blank lines we have skipped if we later on find a non-blank line.
+        int skippedBlankLines = 0;
+        for (int externalOldRow = -oldActiveTranscriptRows; externalOldRow < oldScreenRows; externalOldRow++) {
+            final TerminalRow oldLine = getOldTerminalRow(oldLines, oldScreenFirstRow, oldTotalRows, externalOldRow);
+            final boolean cursorAtThisRow = externalOldRow == oldCursor.row;
+
+            // The cursor may only be on a non-null line, which we should not skip:
+            final boolean isOldCursorAtThisRow = !newCursorPlaced && cursorAtThisRow;
+            final boolean isCursorAtBlankLine = !isOldCursorAtThisRow && oldLine.isBlank();
+            if (oldLine == null || isCursorAtBlankLine) {
+                skippedBlankLines++;
+                continue;
+            }
+
+            if (skippedBlankLines > 0) {
+                // After skipping some blank lines we encounter a non-blank line. Insert the skipped blank lines.
+                insertSkippedBlankLines(currentStyle, currentOutputExternal, skippedBlankLines);
+                skippedBlankLines = 0;
+            }
+
+            int lastNonSpaceIndex = 0;
+            boolean justToCursor = false;
+            if (cursorAtThisRow || oldLine.mLineWrap) {
+                // Take the whole line, either because of cursor on it, or if line wrapping.
+                lastNonSpaceIndex = oldLine.getSpaceUsed();
+                if (cursorAtThisRow) justToCursor = true;
+            } else {
+                for (int i = 0; i < oldLine.getSpaceUsed(); i++)
+                    // NEWLY INTRODUCED BUG! Should not index oldLine.mStyle with char indices
+                    if (oldLine.mText[i] != ' '/* || oldLine.mStyle[i] != currentStyle */)
+                        lastNonSpaceIndex = i + 1;
+            }
+
+            int currentOldCol = 0;
+            long styleAtCol = 0;
+            for (int i = 0; i < lastNonSpaceIndex; i++) {
+                // Note that looping over java character, not cells.
+                final char c = oldLine.mText[i];
+                final int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
+                final int displayWidth = WcWidth.width(codePoint);
+                // Use the last style if this is a zero-width character:
+                if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
+
+                // Line wrap as necessary:
+                if (currentOutputExternal.column + displayWidth > mColumns) {
+                    setLineWrap(currentOutputExternal.row);
+                    newCursor.row = getNewCursorRow(currentStyle, newCursor.row, newCursorPlaced, currentOutputExternal);
+                }
+
+                final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternal.column > 0) ? 1 : 0);
+                final int outputColumn = currentOutputExternal.column - offsetDueToCombiningChar;
+                setChar(outputColumn, currentOutputExternal.row, codePoint, styleAtCol);
+
+                if (displayWidth > 0) {
+                    if (oldCursor.row == externalOldRow && oldCursor.column == currentOldCol) {
+                        newCursor.column = currentOutputExternal.column;
+                        newCursor.row = currentOutputExternal.row;
+                        newCursorPlaced = true;
+                    }
+                    currentOldCol += displayWidth;
+                    currentOutputExternal.column += displayWidth;
+                    if (justToCursor && newCursorPlaced) break;
+                }
+            }
+
+            // Old row has been copied. Check if we need to insert newline if old line was not wrapping:
+            final boolean isOldRowCopied = externalOldRow != (oldScreenRows - 1);
+            final boolean isOldLineNotWrapping = !oldLine.mLineWrap;
+            if (isOldRowCopied && isOldLineNotWrapping) {
+                newCursor.row = getNewCursorRow(currentStyle, newCursor.row, newCursorPlaced, currentOutputExternal);
+            }
+        }
+
+        cursor[0] = newCursor.column;
+        cursor[1] = newCursor.row;
+    }
+
+    private TerminalRow getOldTerminalRow(TerminalRow[] oldLines, int oldScreenFirstRow, int oldTotalRows, int externalOldRow) {
+        // Do what externalToInternalRow() does but for the old state:
+        int internalOldRow = oldScreenFirstRow + externalOldRow;
+        internalOldRow = (internalOldRow < 0) ? (oldTotalRows + internalOldRow) : (internalOldRow % oldTotalRows);
+        return oldLines[internalOldRow];
+    }
+
+    private void insertSkippedBlankLines(long currentStyle, RowColumnPair currentOutputExternal, int skippedBlankLines) {
+        for (int i = 0; i < skippedBlankLines; i++) {
+            if (currentOutputExternal.row == mScreenRows - 1) {
+                scrollDownOneLine(0, mScreenRows, currentStyle);
+            } else {
+                currentOutputExternal.row++;
+            }
+            currentOutputExternal.column = 0;
+        }
+    }
+
+    private int getNewCursorRow(long currentStyle, int newCursorRow, boolean newCursorPlaced, RowColumnPair currentOutputExternal) {
+        if (currentOutputExternal.row == mScreenRows - 1) {
+            if (newCursorPlaced) newCursorRow--;
+            scrollDownOneLine(0, mScreenRows, currentStyle);
+        } else {
+            currentOutputExternal.row++;
+        }
+        currentOutputExternal.column = 0;
+        return newCursorRow;
     }
 
     /**
