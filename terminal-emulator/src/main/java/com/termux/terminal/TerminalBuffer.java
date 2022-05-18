@@ -1,7 +1,5 @@
 package com.termux.terminal;
 
-import androidx.annotation.NonNull;
-
 import java.util.Arrays;
 
 /**
@@ -185,6 +183,16 @@ public final class TerminalBuffer {
         return shiftDownOfTopRow;
     }
 
+    class RowColumnPair {
+        int row;
+        int column;
+
+        public RowColumnPair(int row, int column) {
+            this.row = row;
+            this.column = column;
+        }
+    }
+
     private void updateOldState(int newColumns, int newRows, int newTotalRows, int[] cursor, long currentStyle) {
         final TerminalRow[] oldLines = mLines;
 
@@ -193,8 +201,7 @@ public final class TerminalBuffer {
         final int oldScreenRows = mScreenRows;
         final int oldTotalRows = mTotalRows;
 
-        final int oldCursorRow = cursor[1];
-        final int oldCursorColumn = cursor[0];
+        final RowColumnPair oldCursor = new RowColumnPair(cursor[1], cursor[0]);
 
         mLines = new TerminalRow[newTotalRows];
         for (int i = 0; i < newTotalRows; i++)
@@ -205,12 +212,10 @@ public final class TerminalBuffer {
         mActiveTranscriptRows = mScreenFirstRow = 0;
         mColumns = newColumns;
 
-        int newCursorRow = -1;
-        int newCursorColumn = -1;
+        RowColumnPair newCursor = new RowColumnPair(-1, -1);
         boolean newCursorPlaced = false;
 
-        int currentOutputExternalRow = 0;
-        int currentOutputExternalColumn = 0;
+        RowColumnPair currentOutputExternal = new RowColumnPair(0, 0);
 
         // Loop over every character in the initial state.
         // Blank lines should be skipped only if at end of transcript (just as is done in the "fast" resize), so we
@@ -222,7 +227,7 @@ public final class TerminalBuffer {
             internalOldRow = (internalOldRow < 0) ? (oldTotalRows + internalOldRow) : (internalOldRow % oldTotalRows);
 
             final TerminalRow oldLine = oldLines[internalOldRow];
-            final boolean cursorAtThisRow = externalOldRow == oldCursorRow;
+            final boolean cursorAtThisRow = externalOldRow == oldCursor.row;
 
             // The cursor may only be on a non-null line, which we should not skip:
             final boolean isOldCursorAtThisRow = !newCursorPlaced && cursorAtThisRow;
@@ -232,14 +237,7 @@ public final class TerminalBuffer {
                 continue;
             } else if (skippedBlankLines > 0) {
                 // After skipping some blank lines we encounter a non-blank line. Insert the skipped blank lines.
-                for (int i = 0; i < skippedBlankLines; i++) {
-                    if (currentOutputExternalRow == mScreenRows - 1) {
-                        scrollDownOneLine(0, mScreenRows, currentStyle);
-                    } else {
-                        currentOutputExternalRow++;
-                    }
-                    currentOutputExternalColumn = 0;
-                }
+                insertSkippedBlankLines(currentStyle, currentOutputExternal, skippedBlankLines);
                 skippedBlankLines = 0;
             }
 
@@ -267,29 +265,23 @@ public final class TerminalBuffer {
                 if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
 
                 // Line wrap as necessary:
-                if (currentOutputExternalColumn + displayWidth > mColumns) {
-                    setLineWrap(currentOutputExternalRow);
-                    if (currentOutputExternalRow == mScreenRows - 1) {
-                        if (newCursorPlaced) newCursorRow--;
-                        scrollDownOneLine(0, mScreenRows, currentStyle);
-                    } else {
-                        currentOutputExternalRow++;
-                    }
-                    currentOutputExternalColumn = 0;
+                if (currentOutputExternal.column + displayWidth > mColumns) {
+                    setLineWrap(currentOutputExternal.row);
+                    newCursor.row = getNewCursorRow(currentStyle, newCursor.row, newCursorPlaced, currentOutputExternal);
                 }
 
-                final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternalColumn > 0) ? 1 : 0);
-                final int outputColumn = currentOutputExternalColumn - offsetDueToCombiningChar;
-                setChar(outputColumn, currentOutputExternalRow, codePoint, styleAtCol);
+                final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternal.column > 0) ? 1 : 0);
+                final int outputColumn = currentOutputExternal.column - offsetDueToCombiningChar;
+                setChar(outputColumn, currentOutputExternal.row, codePoint, styleAtCol);
 
                 if (displayWidth > 0) {
-                    if (oldCursorRow == externalOldRow && oldCursorColumn == currentOldCol) {
-                        newCursorColumn = currentOutputExternalColumn;
-                        newCursorRow = currentOutputExternalRow;
+                    if (oldCursor.row == externalOldRow && oldCursor.column == currentOldCol) {
+                        newCursor.column = currentOutputExternal.column;
+                        newCursor.row = currentOutputExternal.row;
                         newCursorPlaced = true;
                     }
                     currentOldCol += displayWidth;
-                    currentOutputExternalColumn += displayWidth;
+                    currentOutputExternal.column += displayWidth;
                     if (justToCursor && newCursorPlaced) break;
                 }
             }
@@ -297,18 +289,34 @@ public final class TerminalBuffer {
             final boolean isOldRowCopied = externalOldRow != (oldScreenRows - 1);
             final boolean isOldLineNotWrapping = !oldLine.mLineWrap;
             if (isOldRowCopied && isOldLineNotWrapping) {
-                if (currentOutputExternalRow == mScreenRows - 1) {
-                    if (newCursorPlaced) newCursorRow--;
-                    scrollDownOneLine(0, mScreenRows, currentStyle);
-                } else {
-                    currentOutputExternalRow++;
-                }
-                currentOutputExternalColumn = 0;
+                newCursor.row = getNewCursorRow(currentStyle, newCursor.row, newCursorPlaced, currentOutputExternal);
             }
         }
 
-        cursor[0] = newCursorColumn;
-        cursor[1] = newCursorRow;
+        cursor[0] = newCursor.column;
+        cursor[1] = newCursor.row;
+    }
+
+    private void insertSkippedBlankLines(long currentStyle, RowColumnPair currentOutputExternal, int skippedBlankLines) {
+        for (int i = 0; i < skippedBlankLines; i++) {
+            if (currentOutputExternal.row == mScreenRows - 1) {
+                scrollDownOneLine(0, mScreenRows, currentStyle);
+            } else {
+                currentOutputExternal.row++;
+            }
+            currentOutputExternal.column = 0;
+        }
+    }
+
+    private int getNewCursorRow(long currentStyle, int newCursorRow, boolean newCursorPlaced, RowColumnPair currentOutputExternal) {
+        if (currentOutputExternal.row == mScreenRows - 1) {
+            if (newCursorPlaced) newCursorRow--;
+            scrollDownOneLine(0, mScreenRows, currentStyle);
+        } else {
+            currentOutputExternal.row++;
+        }
+        currentOutputExternal.column = 0;
+        return newCursorRow;
     }
 
     /**
