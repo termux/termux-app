@@ -222,11 +222,7 @@ public final class TerminalBuffer {
         // keep track how many blank lines we have skipped if we later on find a non-blank line.
         int skippedBlankLines = 0;
         for (int externalOldRow = -oldActiveTranscriptRows; externalOldRow < oldScreenRows; externalOldRow++) {
-            // Do what externalToInternalRow() does but for the old state:
-            int internalOldRow = oldScreenFirstRow + externalOldRow;
-            internalOldRow = (internalOldRow < 0) ? (oldTotalRows + internalOldRow) : (internalOldRow % oldTotalRows);
-
-            final TerminalRow oldLine = oldLines[internalOldRow];
+            final TerminalRow oldLine = getOldTerminalRow(oldLines, oldScreenFirstRow, oldTotalRows, externalOldRow);
             final boolean cursorAtThisRow = externalOldRow == oldCursor.row;
 
             // The cursor may only be on a non-null line, which we should not skip:
@@ -235,7 +231,9 @@ public final class TerminalBuffer {
             if (oldLine == null || isCursorAtBlankLine) {
                 skippedBlankLines++;
                 continue;
-            } else if (skippedBlankLines > 0) {
+            }
+
+            if (skippedBlankLines > 0) {
                 // After skipping some blank lines we encounter a non-blank line. Insert the skipped blank lines.
                 insertSkippedBlankLines(currentStyle, currentOutputExternal, skippedBlankLines);
                 skippedBlankLines = 0;
@@ -285,6 +283,7 @@ public final class TerminalBuffer {
                     if (justToCursor && newCursorPlaced) break;
                 }
             }
+
             // Old row has been copied. Check if we need to insert newline if old line was not wrapping:
             final boolean isOldRowCopied = externalOldRow != (oldScreenRows - 1);
             final boolean isOldLineNotWrapping = !oldLine.mLineWrap;
@@ -295,6 +294,13 @@ public final class TerminalBuffer {
 
         cursor[0] = newCursor.column;
         cursor[1] = newCursor.row;
+    }
+
+    private TerminalRow getOldTerminalRow(TerminalRow[] oldLines, int oldScreenFirstRow, int oldTotalRows, int externalOldRow) {
+        // Do what externalToInternalRow() does but for the old state:
+        int internalOldRow = oldScreenFirstRow + externalOldRow;
+        internalOldRow = (internalOldRow < 0) ? (oldTotalRows + internalOldRow) : (internalOldRow % oldTotalRows);
+        return oldLines[internalOldRow];
     }
 
     private void insertSkippedBlankLines(long currentStyle, RowColumnPair currentOutputExternal, int skippedBlankLines) {
