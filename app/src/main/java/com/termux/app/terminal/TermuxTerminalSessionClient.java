@@ -372,14 +372,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
             new AlertDialog.Builder(mActivity).setTitle(R.string.title_max_terminals_reached).setMessage(R.string.msg_max_terminals_reached)
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
-            TerminalSession currentSession = mActivity.getCurrentSession();
-
-            String workingDirectory;
-            if (currentSession == null) {
-                workingDirectory = mActivity.getProperties().getDefaultWorkingDirectory();
-            } else {
-                workingDirectory = currentSession.getCwd();
-            }
+            String workingDirectory = getCurrentWorkingDirectory();
 
             TermuxSession newTermuxSession = service.createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);
             if (newTermuxSession == null) return;
@@ -389,6 +382,18 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
 
             mActivity.getDrawer().closeDrawers();
         }
+    }
+
+    private String getCurrentWorkingDirectory() {
+        TerminalSession currentSession = mActivity.getCurrentSession();
+
+        String workingDirectory;
+        if (currentSession == null) {
+            workingDirectory = mActivity.getProperties().getDefaultWorkingDirectory();
+        } else {
+            workingDirectory = currentSession.getCwd();
+        }
+        return workingDirectory;
     }
 
     public void setCurrentStoredSession() {
