@@ -157,12 +157,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
                 Logger.logVerbose(LOG_TAG, "The \"" + finishedSession.mSessionName + "\" session will be force finished automatically since result in pending.");
         }
 
-        if (mActivity.isVisible() && finishedSession != mActivity.getCurrentSession()) {
-            // Show toast for non-current sessions that exit.
-            // Verify that session was not removed before we got told about it finishing:
-            if (index >= 0)
-                mActivity.showToast(toToastTitle(finishedSession) + " - exited", true);
-        }
+        showNonFinishedSessionToast(finishedSession, index);
 
         if (mActivity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
             // On Android TV devices we need to use older behaviour because we may
@@ -176,6 +171,15 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
             if (finishedSession.getExitStatus() == 0 || finishedSession.getExitStatus() == 130 || isPluginExecutionCommandWithPendingResult) {
                 removeFinishedSession(finishedSession);
             }
+        }
+    }
+
+    private void showNonFinishedSessionToast(TerminalSession finishedSession, int index) {
+        if (mActivity.isVisible() && finishedSession != mActivity.getCurrentSession()) {
+            // Show toast for non-current sessions that exit.
+            // Verify that session was not removed before we got told about it finishing:
+            if (index >= 0)
+                mActivity.showToast(toToastTitle(finishedSession) + " - exited", true);
         }
     }
 
