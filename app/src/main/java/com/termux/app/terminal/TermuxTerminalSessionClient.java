@@ -145,20 +145,15 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         }
 
         int index = service.getIndexOfSession(finishedSession);
-
-        // For plugin commands that expect the result back, we should immediately close the session
-        // and send the result back instead of waiting fo the user to press enter.
-        // The plugin can handle/show errors itself.
-        boolean isPluginExecutionCommandWithPendingResult = false;
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null) {
-            isPluginExecutionCommandWithPendingResult = termuxSession.getExecutionCommand().isPluginExecutionCommandWithPendingResult();
-            if (isPluginExecutionCommandWithPendingResult)
-                Logger.logVerbose(LOG_TAG, "The \"" + finishedSession.mSessionName + "\" session will be force finished automatically since result in pending.");
-        }
+        
+        boolean isPluginExecutionCommandWithPendingResult = isSessionPendingResult(finishedSession, service, index);
 
         showNonFinishedSessionToast(finishedSession, index);
 
+        removeFinishedSessionByCondition(finishedSession, service, isPluginExecutionCommandWithPendingResult);
+    }
+
+    private void removeFinishedSessionByCondition(TerminalSession finishedSession, TermuxService service, boolean isPluginExecutionCommandWithPendingResult) {
         if (mActivity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
             // On Android TV devices we need to use older behaviour because we may
             // not be able to have multiple launcher icons.
@@ -172,6 +167,20 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
                 removeFinishedSession(finishedSession);
             }
         }
+    }
+
+    // For plugin commands that expect the result back, we should immediately close the session
+    // and send the result back instead of waiting fo the user to press enter.
+    // The plugin can handle/show errors itself.
+    private boolean isSessionPendingResult(TerminalSession finishedSession, TermuxService service, int index) {
+        boolean isPluginExecutionCommandWithPendingResult = false;
+        TermuxSession termuxSession = service.getTermuxSession(index);
+        if (termuxSession != null) {
+            isPluginExecutionCommandWithPendingResult = termuxSession.getExecutionCommand().isPluginExecutionCommandWithPendingResult();
+            if (isPluginExecutionCommandWithPendingResult)
+                Logger.logVerbose(LOG_TAG, "The \"" + finishedSession.mSessionName + "\" session will be force finished automatically since result in pending.");
+        }
+        return isPluginExecutionCommandWithPendingResult;
     }
 
     private void showNonFinishedSessionToast(TerminalSession finishedSession, int index) {
@@ -324,6 +333,14 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
 
+        int index = getIndexWithDirection(forward, service);
+
+        TermuxSession termuxSession = service.getTermuxSession(index);
+        if (termuxSession != null)
+            setCurrentSession(termuxSession.getTerminalSession());
+    }
+
+    private int getIndexWithDirection(boolean forward, TermuxService service) {
         TerminalSession currentTerminalSession = mActivity.getCurrentSession();
         int index = service.getIndexOfSession(currentTerminalSession);
         int size = service.getTermuxSessionsSize();
@@ -332,10 +349,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         } else {
             if (--index < 0) index = size - 1;
         }
-
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.getTerminalSession());
+        return index;
     }
 
     public void switchToSession(int index) {
