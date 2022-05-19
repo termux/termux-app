@@ -268,13 +268,7 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
 
         String userActionName = UserAction.CRASH_REPORT.getName();
 
-        ReportInfo reportInfo = new ReportInfo(userActionName, logTag, title.toString());
-        reportInfo.setReportString(reportString.toString());
-        reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(currentPackageContext));
-        reportInfo.setAddReportInfoHeaderToMarkdown(true);
-        reportInfo.setReportSaveFileLabelAndPath(userActionName,
-            Environment.getExternalStorageDirectory() + "/" +
-                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+        ReportInfo reportInfo = makeNewReportInfo(userActionName, logTag, title.toString(), reportString.toString(), currentPackageContext);
 
         ReportActivity.NewInstanceResult result = ReportActivity.newInstance(termuxPackageContext, reportInfo);
         if (result.contentIntent == null) return;
@@ -305,6 +299,18 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
         NotificationManager notificationManager = NotificationUtils.getNotificationManager(termuxPackageContext);
         if (notificationManager != null)
             notificationManager.notify(nextNotificationId, builder.build());
+    }
+
+    private static ReportInfo makeNewReportInfo(String userActionName, String logTag, String title, String reportString, Context currentPackageContext) {
+        ReportInfo reportInfo = new ReportInfo(userActionName, logTag, title);
+        reportInfo.setReportString(reportString);
+        reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(currentPackageContext));
+        reportInfo.setAddReportInfoHeaderToMarkdown(true);
+        reportInfo.setReportSaveFileLabelAndPath(userActionName,
+            Environment.getExternalStorageDirectory() + "/" +
+                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+
+        return reportInfo;
     }
 
     /**
