@@ -29,10 +29,7 @@ import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TextStyle;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 
 public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase {
@@ -58,7 +55,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
      */
     public void onCreate() {
         // Set terminal fonts and colors
-        checkForFontAndColors();
+        onReloadActivityStyling();
     }
 
     /**
@@ -519,30 +516,38 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
 
     public void checkForFontAndColors() {
         try {
-            File colorsFile = TermuxConstants.TERMUX_COLOR_PROPERTIES_FILE;
-            File fontFile = TermuxConstants.TERMUX_FONT_FILE;
-
-            final Properties props = new Properties();
-            if (colorsFile.isFile()) {
-                try (InputStream in = new FileInputStream(colorsFile)) {
-                    props.load(in);
-                }catch(FileNotFoundException e){
-                    Logger.logStackTraceWithMessage(LOG_TAG, "Error in checkForFontAndColors(), colorsFile doesn't exist", e);
-                }
-            }
-
-            TerminalColors.COLOR_SCHEME.updateWith(props);
-            TerminalSession session = mActivity.getCurrentSession();
-            if (session != null && session.getEmulator() != null) {
-                session.getEmulator().mColors.reset();
-            }
-            updateBackgroundColor();
-
-            final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
-            mActivity.getTerminalView().setTypeface(newTypeface);
+            checkForColors();
+            checkForFont();
         } catch (Exception e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error in checkForFontAndColors()", e);
         }
+    }
+
+    private void checkForFont() {
+        File fontFile = TermuxConstants.TERMUX_FONT_FILE;
+
+        final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
+        mActivity.getTerminalView().setTypeface(newTypeface);
+    }
+
+    private void checkForColors() throws IOException {
+        File colorsFile = TermuxConstants.TERMUX_COLOR_PROPERTIES_FILE;
+
+        final Properties props = new Properties();
+        if (colorsFile.isFile()) {
+            try (InputStream in = new FileInputStream(colorsFile)) {
+                props.load(in);
+            }catch(FileNotFoundException e){
+                Logger.logStackTraceWithMessage(LOG_TAG, "Error in checkForColors(), colorsFile doesn't exist", e);
+            }
+        }
+
+        TerminalColors.COLOR_SCHEME.updateWith(props);
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session != null && session.getEmulator() != null) {
+            session.getEmulator().mColors.reset();
+        }
+        updateBackgroundColor();
     }
 
     public void updateBackgroundColor() {
