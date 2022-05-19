@@ -99,22 +99,23 @@ public class ResultConfig {
 
         resultPendingIntentVariablesString.append("Result PendingIntent Creator: `").append(resultPendingIntent.getCreatorPackage()).append("`");
 
-        if (!ignoreNull || resultBundleKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Bundle Key", resultBundleKey, "-"));
-        if (!ignoreNull || resultStdoutKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Stdout Key", resultStdoutKey, "-"));
-        if (!ignoreNull || resultStderrKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Stderr Key", resultStderrKey, "-"));
-        if (!ignoreNull || resultExitCodeKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Exit Code Key", resultExitCodeKey, "-"));
-        if (!ignoreNull || resultErrCodeKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Err Code Key", resultErrCodeKey, "-"));
-        if (!ignoreNull || resultErrmsgKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Error Key", resultErrmsgKey, "-"));
-        if (!ignoreNull || resultStdoutOriginalLengthKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Stdout Original Length Key", resultStdoutOriginalLengthKey, "-"));
-        if (!ignoreNull || resultStderrOriginalLengthKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Stderr Original Length Key", resultStderrOriginalLengthKey, "-"));
+        String[][] resultPendingIntentVariableList = {
+            {"Result Bundle Key", resultBundleKey},
+            {"Result Stdout Key", resultStdoutKey},
+            {"Result Stderr Key", resultStderrKey},
+            {"Result Exit Code Key", resultExitCodeKey},
+            {"Result Err Code Key", resultErrCodeKey},
+            {"Result Error Key", resultErrmsgKey},
+            {"Result Stdout Original Length Key", resultStdoutOriginalLengthKey},
+            {"Result Stderr Original Length Key", resultStderrOriginalLengthKey}
+        };
+
+        for (String[] each: resultPendingIntentVariableList) {
+            String label = each[0]; String object = each[1];
+            if (!ignoreNull || object != null) {
+                resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry(label, object, "-"));
+            }
+        }
 
         return resultPendingIntentVariablesString.toString();
     }
