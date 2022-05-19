@@ -151,18 +151,18 @@ public class ExtraKeysInfo {
             for (int j = 0; j < matrix[i].length; j++) {
                 Object key = matrix[i][j];
 
-                JSONObject jobject = normalizeKeyConfig(key);
+                JSONObject jsonObject = normalizeKeyConfig(key);
 
                 ExtraKeyButton button;
 
-                if (!jobject.has(ExtraKeyButton.KEY_POPUP)) {
+                if (!jsonObject.has(ExtraKeyButton.KEY_POPUP)) {
                     // no popup
-                    button = new ExtraKeyButton(jobject, extraKeyDisplayMap, extraKeyAliasMap);
+                    button = new ExtraKeyButton(jsonObject, extraKeyDisplayMap, extraKeyAliasMap);
                 } else {
                     // a popup
-                    JSONObject popupJobject = normalizeKeyConfig(jobject.get(ExtraKeyButton.KEY_POPUP));
-                    ExtraKeyButton popup = new ExtraKeyButton(popupJobject, extraKeyDisplayMap, extraKeyAliasMap);
-                    button = new ExtraKeyButton(jobject, popup, extraKeyDisplayMap, extraKeyAliasMap);
+                    JSONObject popupJSONObject = normalizeKeyConfig(jsonObject.get(ExtraKeyButton.KEY_POPUP));
+                    ExtraKeyButton popup = new ExtraKeyButton(popupJSONObject, extraKeyDisplayMap, extraKeyAliasMap);
+                    button = new ExtraKeyButton(jsonObject, popup, extraKeyDisplayMap, extraKeyAliasMap);
                 }
 
                 buttons[i][j] = button;
@@ -177,16 +177,16 @@ public class ExtraKeysInfo {
      * {@link ExtraKeyButton#ExtraKeyButton(JSONObject, ExtraKeyButton, ExtraKeysConstants.ExtraKeyDisplayMap, ExtraKeysConstants.ExtraKeyDisplayMap)}.
      */
     private static JSONObject normalizeKeyConfig(Object key) throws JSONException {
-        JSONObject jobject;
+        JSONObject jsonObject;
         if (key instanceof String) {
-            jobject = new JSONObject();
-            jobject.put(ExtraKeyButton.KEY_KEY_NAME, key);
+            jsonObject = new JSONObject();
+            jsonObject.put(ExtraKeyButton.KEY_KEY_NAME, key);
         } else if (key instanceof JSONObject) {
-            jobject = (JSONObject) key;
+            jsonObject = (JSONObject) key;
         } else {
             throw new JSONException("An key in the extra-key matrix must be a string or an object");
         }
-        return jobject;
+        return jsonObject;
     }
 
     public ExtraKeyButton[][] getMatrix() {
