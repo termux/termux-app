@@ -335,9 +335,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
 
         int index = getIndexWithDirection(forward, service);
 
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.getTerminalSession());
+        setCurrentSession(service, index);
     }
 
     private int getIndexWithDirection(boolean forward, TermuxService service) {
@@ -356,9 +354,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
 
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.getTerminalSession());
+        setCurrentSession(service, index);
     }
 
     @SuppressLint("InflateParams")
@@ -471,10 +467,14 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
             if (index >= size) {
                 index = size - 1;
             }
-            TermuxSession termuxSession = service.getTermuxSession(index);
-            if (termuxSession != null)
-                setCurrentSession(termuxSession.getTerminalSession());
+            setCurrentSession(service, index);
         }
+    }
+
+    private void setCurrentSession(TermuxService service, int index) {
+        TermuxSession termuxSession = service.getTermuxSession(index);
+        if (termuxSession != null)
+            setCurrentSession(termuxSession.getTerminalSession());
     }
 
     public void termuxSessionListNotifyUpdated() {
