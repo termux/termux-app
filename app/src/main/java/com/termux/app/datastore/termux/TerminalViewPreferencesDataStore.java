@@ -48,5 +48,5 @@ public class TerminalViewPreferencesDataStore extends PreferenceDataStore {
         }
     }
 
-}
+
 
