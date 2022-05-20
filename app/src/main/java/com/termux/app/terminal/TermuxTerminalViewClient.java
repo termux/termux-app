@@ -688,20 +688,17 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     }
 
     public void showUrlSelection() {
-        TerminalSession session = mActivity.getCurrentSession();
-        if (session == null) return;
+        final CharSequence[] urls = getUrls();
+        if (urls == null) return;
 
-        String text = ShellUtils.getTerminalSessionTranscriptText(session, true, true);
+        final AlertDialog dialog = getClickedUrlDialog(urls);
 
-        LinkedHashSet<CharSequence> urlSet = TermuxUrlUtils.extractUrls(text);
-        if (urlSet.isEmpty()) {
-            new AlertDialog.Builder(mActivity).setMessage(R.string.title_select_url_none_found).show();
-            return;
-        }
+        checkUrlLongPress(urls, dialog);
 
-        final CharSequence[] urls = urlSet.toArray(new CharSequence[0]);
-        Collections.reverse(Arrays.asList(urls)); // Latest first.
+        dialog.show();
+    }
 
+    private AlertDialog getClickedUrlDialog(CharSequence[] urls) {
         // Click to copy url to clipboard:
         final AlertDialog dialog = new AlertDialog.Builder(mActivity).setItems(urls, (di, which) -> {
             String url = (String) urls[which];
@@ -709,19 +706,37 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             clipboard.setPrimaryClip(new ClipData(null, new String[]{"text/plain"}, new ClipData.Item(url)));
             Toast.makeText(mActivity, R.string.msg_select_url_copied_to_clipboard, Toast.LENGTH_LONG).show();
         }).setTitle(R.string.title_select_url_dialog).create();
+        return dialog;
+    }
 
+    private CharSequence[] getUrls() {
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session == null) return null;
+
+        String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, true, true);
+
+        LinkedHashSet<CharSequence> urlSet = TermuxUrlUtils.extractUrls(transcriptText);
+        if (urlSet.isEmpty()) {
+            new AlertDialog.Builder(mActivity).setMessage(R.string.title_select_url_none_found).show();
+            return null;
+        }
+
+        final CharSequence[] urls = urlSet.toArray(new CharSequence[0]);
+        Collections.reverse(Arrays.asList(urls)); // Latest first.
+        return urls;
+    }
+
+    private void checkUrlLongPress(CharSequence[] urls, AlertDialog dialog) {
         // Long press to open URL:
         dialog.setOnShowListener(di -> {
-            ListView lv = dialog.getListView(); // this is a ListView with your "buds" in it
-            lv.setOnItemLongClickListener((parent, view, position, id) -> {
+            ListView dialogListView = dialog.getListView(); // this is a ListView with your "buds" in it
+            dialogListView.setOnItemLongClickListener((parent, view, position, id) -> {
                 dialog.dismiss();
                 String url = (String) urls[position];
                 ShareUtils.openUrl(mActivity, url);
                 return true;
             });
         });
-
-        dialog.show();
     }
 
     public void reportIssueFromTranscript() {
