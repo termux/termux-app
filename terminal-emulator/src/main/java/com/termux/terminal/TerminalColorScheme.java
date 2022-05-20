@@ -74,30 +74,40 @@ public final class TerminalColorScheme {
         for (Map.Entry<Object, Object> entries : props.entrySet()) {
             String key = (String) entries.getKey();
             String value = (String) entries.getValue();
-            int colorIndex;
-
-            if (key.equals("foreground")) {
-                colorIndex = TextStyle.COLOR_INDEX_FOREGROUND;
-            } else if (key.equals("background")) {
-                colorIndex = TextStyle.COLOR_INDEX_BACKGROUND;
-            } else if (key.equals("cursor")) {
-                colorIndex = TextStyle.COLOR_INDEX_CURSOR;
-            } else if (key.startsWith("color")) {
-                try {
-                    colorIndex = Integer.parseInt(key.substring(5));
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Invalid property: '" + key + "'");
-                }
-            } else {
-                throw new IllegalArgumentException("Invalid property: '" + key + "'");
-            }
 
             try {
-                int colorValue = TerminalColors.parse(value);
-                mDefaultColors[colorIndex] = colorValue;
+                int colorIndex = getColorIndex(key);
+                setColorAtIndex(value, colorIndex);
             } catch (IllegalArgumentException e) {
                 // Ignore.
             }
+        }
+    }
+
+    private int getColorIndex(String key) {
+        if (key.equals("foreground")) {
+            return TextStyle.COLOR_INDEX_FOREGROUND;
+        } else if (key.equals("background")) {
+            return TextStyle.COLOR_INDEX_BACKGROUND;
+        } else if (key.equals("cursor")) {
+            return TextStyle.COLOR_INDEX_CURSOR;
+        } else if (key.startsWith("color")) {
+            try {
+                return Integer.parseInt(key.substring(5));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid property: '" + key + "'");
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid property: '" + key + "'");
+        }
+    }
+
+    private void setColorAtIndex(String value, int colorIndex) {
+        try {
+            int colorValue = TerminalColors.parse(value);
+            mDefaultColors[colorIndex] = colorValue;
+        } catch (IllegalArgumentException e) {
+            // Ignore.
         }
     }
 
