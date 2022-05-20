@@ -424,26 +424,35 @@ public final class TerminalBuffer {
     /** Support for http://vt100.net/docs/vt510-rm/DECCARA and http://vt100.net/docs/vt510-rm/DECCARA */
     public void setOrClearEffect(int bits, boolean isSetOrClear, boolean isReverse, boolean isRectangular, int leftMargin, int rightMargin, int top, int left,
                                  int bottom, int right) {
-        for (int y = top; y < bottom; y++) {
-            TerminalRow line = mLines[externalToInternalRow(y)];
-            int startOfLine = (isRectangular || y == top) ? left : leftMargin;
-            int endOfLine = (isRectangular || y + 1 == bottom) ? right : rightMargin;
-            for (int x = startOfLine; x < endOfLine; x++) {
-                long currentStyle = line.getStyle(x);
-                int foreColor = TextStyle.decodeForeColor(currentStyle);
-                int backColor = TextStyle.decodeBackColor(currentStyle);
-                int effect = TextStyle.decodeEffect(currentStyle);
-                if (isReverse) {
-                    // Clear out the bits to reverse and add them back in reversed:
-                    effect = (effect & ~bits) | (bits & ~effect);
-                } else if (isSetOrClear) {
-                    effect |= bits;
-                } else {
-                    effect &= ~bits;
-                }
-                line.mStyle[x] = TextStyle.encode(foreColor, backColor, effect);
+        for (int row = top; row < bottom; row++) {
+            TerminalRow line = mLines[externalToInternalRow(row)];
+            int startOfLine = (isRectangular || row == top) ? left : leftMargin;
+            int endOfLine = (isRectangular || row + 1 == bottom) ? right : rightMargin;
+            for (int col = startOfLine; col < endOfLine; col++) {
+                setStyle(bits, isSetOrClear, isReverse, line, col);
             }
         }
+    }
+
+    private void setStyle(int bits, boolean isSetOrClear, boolean isReverse, TerminalRow line, int col) {
+        final long currentStyle = line.getStyle(col);
+        final int foreColor = TextStyle.decodeForeColor(currentStyle);
+        final int backColor = TextStyle.decodeBackColor(currentStyle);
+        int effect = getEffect(bits, isSetOrClear, isReverse, currentStyle);
+        line.mStyle[col] = TextStyle.encode(foreColor, backColor, effect);
+    }
+
+    private int getEffect(int bits, boolean isSetOrClear, boolean isReverse, long currentStyle) {
+        int effect = TextStyle.decodeEffect(currentStyle);
+        if (isReverse) {
+            // Clear out the bits to reverse and add them back in reversed:
+            effect = (effect & ~bits) | (bits & ~effect);
+        } else if (isSetOrClear) {
+            effect |= bits;
+        } else {
+            effect &= ~bits;
+        }
+        return effect;
     }
 
     public void clearTranscript() {
