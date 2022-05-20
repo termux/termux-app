@@ -758,45 +758,57 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             public void run() {
                 StringBuilder reportString = new StringBuilder();
 
-                String title = TermuxConstants.TERMUX_APP_NAME + " Report Issue";
+                addReportHeader(reportString, transcriptText);
 
-                reportString.append("## Transcript\n");
-                reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptText, true));
-                reportString.append("\n##\n");
+                addReportBody(reportString, addTermuxDebugInfo);
 
-                if (addTermuxDebugInfo) {
-                    reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGES));
-                } else {
-                    reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, TermuxUtils.AppInfoMode.TERMUX_PACKAGE));
-                }
-
-                reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(mActivity));
-
-                if (TermuxBootstrap.isAppPackageManagerAPT()) {
-                    String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
-                    if (termuxAptInfo != null)
-                        reportString.append("\n\n").append(termuxAptInfo);
-                }
-
-                if (addTermuxDebugInfo) {
-                    String termuxDebugInfo = TermuxUtils.getTermuxDebugMarkdownString(mActivity);
-                    if (termuxDebugInfo != null)
-                        reportString.append("\n\n").append(termuxDebugInfo);
-                }
-
-                String userActionName = UserAction.REPORT_ISSUE_FROM_TRANSCRIPT.getName();
-
-                ReportInfo reportInfo = new ReportInfo(userActionName,
-                    TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title);
-                reportInfo.setReportString(reportString.toString());
-                reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity));
-                reportInfo.setReportSaveFileLabelAndPath(userActionName,
-                    Environment.getExternalStorageDirectory() + "/" +
-                        FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+                ReportInfo reportInfo = updateReportInfo(reportString);
 
                 ReportActivity.startReportActivity(mActivity, reportInfo);
             }
         }.start();
+    }
+
+    private void addReportBody(StringBuilder reportString, boolean addTermuxDebugInfo) {
+        if (addTermuxDebugInfo) {
+            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGES));
+        } else {
+            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, TermuxUtils.AppInfoMode.TERMUX_PACKAGE));
+        }
+
+        reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(mActivity));
+
+        if (TermuxBootstrap.isAppPackageManagerAPT()) {
+            String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
+            if (termuxAptInfo != null)
+                reportString.append("\n\n").append(termuxAptInfo);
+        }
+
+        if (addTermuxDebugInfo) {
+            String termuxDebugInfo = TermuxUtils.getTermuxDebugMarkdownString(mActivity);
+            if (termuxDebugInfo != null)
+                reportString.append("\n\n").append(termuxDebugInfo);
+        }
+    }
+
+    private void addReportHeader(StringBuilder reportString, String transcriptText) {
+        reportString.append("## Transcript\n");
+        reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptText, true));
+        reportString.append("\n##\n");
+    }
+
+    private ReportInfo updateReportInfo(StringBuilder reportString) {
+        String userActionName = UserAction.REPORT_ISSUE_FROM_TRANSCRIPT.getName();
+        String title = TermuxConstants.TERMUX_APP_NAME + " Report Issue";
+
+        ReportInfo reportInfo = new ReportInfo(userActionName,
+            TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title);
+        reportInfo.setReportString(reportString.toString());
+        reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity));
+        reportInfo.setReportSaveFileLabelAndPath(userActionName,
+            Environment.getExternalStorageDirectory() + "/" +
+                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+        return reportInfo;
     }
 
     public void doPaste() {
