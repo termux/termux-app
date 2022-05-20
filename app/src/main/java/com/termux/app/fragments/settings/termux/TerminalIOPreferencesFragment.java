@@ -10,7 +10,6 @@ import androidx.preference.PreferenceManager;
 import com.termux.R;
 import com.termux.app.datastore.termux.TerminalIOPreferencesDataStore;
 
-
 @Keep
 public class TerminalIOPreferencesFragment extends PreferenceFragmentCompat {
 
