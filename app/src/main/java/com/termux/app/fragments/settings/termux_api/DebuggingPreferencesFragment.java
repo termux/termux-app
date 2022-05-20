@@ -13,7 +13,6 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.termux.R;
-import com.termux.app.datastore.termux.DebuggingPreferencesDataStore;
 import com.termux.shared.termux.settings.preferences.TermuxAPIAppSharedPreferences;
 
 @Keep
