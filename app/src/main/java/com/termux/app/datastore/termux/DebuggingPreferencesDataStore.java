@@ -45,7 +45,6 @@ public class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
         if ( key == "log_level"  )
             _put(value);
-
     }
 
     private void _put(@Nullable String value) {
@@ -70,11 +69,16 @@ public class DebuggingPreferencesDataStore extends PreferenceDataStore {
             default:
                 break;
         }
+
+    }
+
+    private boolean isDisability(String key) {
+        return mPreferences == null || key == null;
     }
 
     @Override
     public boolean getBoolean(String key, boolean defValue) {
-        if (mPreferences == null) return false;
+        if (isDisability(key)) return false;
         switch (key) {
             case "terminal_view_key_logging_enabled":
                 return mPreferences.isTerminalViewKeyLoggingEnabled();

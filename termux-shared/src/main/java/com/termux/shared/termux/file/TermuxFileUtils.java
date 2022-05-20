@@ -26,6 +26,10 @@ public class TermuxFileUtils {
 
     private static final String LOG_TAG = "TermuxFileUtils";
 
+    private static boolean isStringHasValue(String str) {
+        return str != null && !str.isEmpty();
+    }
+
     /**
      * Replace "$PREFIX/" or "~/" prefix with termux absolute paths.
      *
@@ -50,7 +54,7 @@ public class TermuxFileUtils {
      * @return Returns the {@code expand path}.
      */
     public static String getExpandedTermuxPath(String path) {
-        if (path != null && !path.isEmpty()) {
+        if (isStringHasValue(path)) {
             path = path.replaceAll("^\\$PREFIX$", TermuxConstants.TERMUX_PREFIX_DIR_PATH);
             path = path.replaceAll("^\\$PREFIX/", TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/");
             path = path.replaceAll("^~/$", TermuxConstants.TERMUX_HOME_DIR_PATH);
@@ -84,7 +88,7 @@ public class TermuxFileUtils {
      * @return Returns the {@code unexpand path}.
      */
     public static String getUnExpandedTermuxPath(String path) {
-        if (path != null && !path.isEmpty()) {
+        if (isStringHasValue(path)) {
             path = path.replaceAll("^" + Pattern.quote(TermuxConstants.TERMUX_PREFIX_DIR_PATH) + "/", "\\$PREFIX/");
             path = path.replaceAll("^" + Pattern.quote(TermuxConstants.TERMUX_HOME_DIR_PATH) + "/", "~/");
         }
@@ -123,7 +127,7 @@ public class TermuxFileUtils {
      * @return Returns the allowed path if it {@code path} is under it, otherwise {@link TermuxConstants#TERMUX_FILES_DIR_PATH}.
      */
     public static String getMatchedAllowedTermuxWorkingDirectoryParentPathForPath(String path) {
-        if (path == null || path.isEmpty()) return TermuxConstants.TERMUX_FILES_DIR_PATH;
+        if (!isStringHasValue(path)) return TermuxConstants.TERMUX_FILES_DIR_PATH;
 
         if (path.startsWith(TermuxConstants.TERMUX_STORAGE_HOME_DIR_PATH + "/")) {
             return TermuxConstants.TERMUX_STORAGE_HOME_DIR_PATH;
@@ -324,7 +328,6 @@ public class TermuxFileUtils {
             FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS, setMissingPermissions, true,
             false, false);
     }
-
     /**
      * Get a markdown {@link String} for stat output for various Termux app files paths.
      *
@@ -339,27 +342,22 @@ public class TermuxFileUtils {
         String filesDir = termuxPackageContext.getFilesDir().getAbsolutePath();
 
         // Build script
-        StringBuilder statScript = new StringBuilder();
-        statScript
-            .append("echo 'ls info:'\n")
-            .append("/system/bin/ls -lhdZ")
-            .append(" '/data/data'")
-            .append(" '/data/user/0'")
-            .append(" '" + TermuxConstants.TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH + "'")
-            .append(" '/data/user/0/" + TermuxConstants.TERMUX_PACKAGE_NAME + "'")
-            .append(" '" + TermuxConstants.TERMUX_FILES_DIR_PATH + "'")
-            .append(" '" + filesDir + "'")
-            .append(" '/data/user/0/" + TermuxConstants.TERMUX_PACKAGE_NAME + "/files'")
-            .append(" '/data/user/" + TermuxConstants.TERMUX_PACKAGE_NAME + "/files'")
-            .append(" '" + TermuxConstants.TERMUX_STAGING_PREFIX_DIR_PATH + "'")
-            .append(" '" + TermuxConstants.TERMUX_PREFIX_DIR_PATH + "'")
-            .append(" '" + TermuxConstants.TERMUX_HOME_DIR_PATH + "'")
-            .append(" '" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/login'")
-            .append(" 2>&1")
-            .append("\necho; echo 'mount info:'\n")
-            .append("/system/bin/grep -E '( /data )|( /data/data )|( /data/user/[0-9]+ )' /proc/self/mountinfo 2>&1 | /system/bin/grep -v '/data_mirror' 2>&1");
+        StringBuilder statScript = TermuxConstants.buildScript(filesDir);
 
         // Run script
+        ExecutionCommand executionCommand = runningScript(statScript, context);
+        if(executionCommand == null) return null;
+
+        // Build script output
+        StringBuilder statOutput = buildOutputScript(statScript, executionCommand);
+
+        // Build markdown output
+        StringBuilder markdownString = buildOutputMarkdown(filesDir ,statOutput);
+
+        return markdownString.toString();
+    }
+
+    private static ExecutionCommand runningScript(StringBuilder statScript, Context context) {
         ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null,
             statScript.toString() + "\n", "/", ExecutionCommand.Runner.APP_SHELL.getName(), true);
         executionCommand.commandLabel = TermuxConstants.TERMUX_APP_NAME + " Files Stat Command";
@@ -370,7 +368,10 @@ public class TermuxFileUtils {
             return null;
         }
 
-        // Build script output
+        return executionCommand;
+    }
+
+    private static StringBuilder buildOutputScript(StringBuilder statScript, ExecutionCommand executionCommand) {
         StringBuilder statOutput = new StringBuilder();
         statOutput.append("$ ").append(statScript.toString());
         statOutput.append("\n\n").append(executionCommand.resultData.stdout.toString());
@@ -383,7 +384,10 @@ public class TermuxFileUtils {
             statOutput.append("\n").append("exit code: ").append(executionCommand.resultData.exitCode.toString());
         }
 
-        // Build markdown output
+        return statOutput;
+    }
+
+    private static StringBuilder buildOutputMarkdown(String filesDir, StringBuilder statOutput) {
         StringBuilder markdownString = new StringBuilder();
         markdownString.append("## ").append(TermuxConstants.TERMUX_APP_NAME).append(" Files Info\n\n");
         AndroidUtils.appendPropertyToMarkdown(markdownString,"TERMUX_REQUIRED_FILES_DIR_PATH ($PREFIX)", TermuxConstants.TERMUX_FILES_DIR_PATH);
@@ -391,7 +395,7 @@ public class TermuxFileUtils {
         markdownString.append("\n\n").append(MarkdownUtils.getMarkdownCodeForString(statOutput.toString(), true));
         markdownString.append("\n##\n");
 
-        return markdownString.toString();
+        return markdownString;
     }
 
 }
