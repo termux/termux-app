@@ -203,7 +203,6 @@ public final class TerminalBuffer {
         mColumns = newColumns;
 
         Cursor newCursor = new Cursor(-1, -1);
-        boolean isNewCursorPlaced = false;
 
         Cursor currentOutputExternal = new Cursor(0, 0);
 
@@ -216,7 +215,7 @@ public final class TerminalBuffer {
             final boolean isCursorAtThisRow = externalOldRow == oldCursor.getRow();
 
             // The cursor may only be on a non-null line, which we should not skip:
-            final boolean isOldCursorAtThisRow = !isNewCursorPlaced && isCursorAtThisRow;
+            final boolean isOldCursorAtThisRow = (newCursor.getRow() == -1) && isCursorAtThisRow;
             final boolean isCursorAtBlankLine = !isOldCursorAtThisRow && oldLine.isBlank();
             if (oldLine == null || isCursorAtBlankLine) {
                 skippedBlankLines++;
@@ -253,10 +252,7 @@ public final class TerminalBuffer {
                 if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
 
                 // Line wrap as necessary:
-                if (currentOutputExternal.getColumn() + displayWidth > mColumns) {
-                    setLineWrap(currentOutputExternal.getRow());
-                    newCursor.setRow(getNewCursorRow(currentStyle, newCursor.getRow(), isNewCursorPlaced, currentOutputExternal));
-                }
+                lineWrap(currentStyle, newCursor, currentOutputExternal, displayWidth);
 
                 final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternal.getColumn() > 0) ? 1 : 0);
                 final int outputColumn = currentOutputExternal.getColumn() - offsetDueToCombiningChar;
@@ -266,11 +262,10 @@ public final class TerminalBuffer {
                     if (oldCursor.getRow() == externalOldRow && oldCursor.getColumn() == currentOldCol) {
                         newCursor.setColumn(currentOutputExternal.getColumn());
                         newCursor.setRow(currentOutputExternal.getRow());
-                        isNewCursorPlaced = true;
                     }
                     currentOldCol += displayWidth;
                     currentOutputExternal.addToColumn(displayWidth);
-                    if (isJustToCursor && isNewCursorPlaced) break;
+                    if (isJustToCursor && newCursor.getRow() != -1) break;
                 }
             }
 
@@ -278,12 +273,20 @@ public final class TerminalBuffer {
             final boolean isOldRowCopied = externalOldRow != (oldScreenRows - 1);
             final boolean isOldLineNotWrapping = !oldLine.mLineWrap;
             if (isOldRowCopied && isOldLineNotWrapping) {
-                newCursor.setRow(getNewCursorRow(currentStyle, newCursor.getRow(), isNewCursorPlaced, currentOutputExternal));
+                setNewCursorRow(currentStyle, newCursor, currentOutputExternal);
             }
         }
 
         cursor[0] = newCursor.getColumn();
         cursor[1] = newCursor.getRow();
+    }
+
+    private void lineWrap(long currentStyle, Cursor newCursor, Cursor currentOutputExternal, int displayWidth) {
+        final boolean isLineLong = currentOutputExternal.getColumn() + displayWidth > mColumns;
+        if (isLineLong) {
+            setLineWrap(currentOutputExternal.getRow());
+            setNewCursorRow(currentStyle, newCursor, currentOutputExternal);
+        }
     }
 
     private TerminalRow getOldTerminalRow(TerminalRow[] oldLines, int oldScreenFirstRow, int oldTotalRows, int externalOldRow) {
@@ -304,15 +307,14 @@ public final class TerminalBuffer {
         }
     }
 
-    private int getNewCursorRow(long currentStyle, int newCursorRow, boolean isNewCursorPlaced, Cursor currentOutputExternal) {
+    private void setNewCursorRow(long currentStyle, Cursor newCursor, Cursor currentOutputExternal) {
         if (currentOutputExternal.getRow() == mScreenRows - 1) {
-            if (isNewCursorPlaced) newCursorRow--;
+            if (newCursor.getRow() != -1) newCursor.addToRow(-1);
             scrollDownOneLine(0, mScreenRows, currentStyle);
         } else {
             currentOutputExternal.addToRow(1);
         }
         currentOutputExternal.setColumn(0);
-        return newCursorRow;
     }
 
     /**
