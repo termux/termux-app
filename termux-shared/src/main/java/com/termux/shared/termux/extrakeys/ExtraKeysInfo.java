@@ -152,10 +152,10 @@ public class ExtraKeysInfo {
                 Object key = matrix[i][j];
 
                 JSONObject jsonObject = normalizeKeyConfig(key);
-
+                boolean hasKeyPopup = jsonObject.has(ExtraKeyButton.KEY_POPUP);
                 ExtraKeyButton button;
 
-                if (!jsonObject.has(ExtraKeyButton.KEY_POPUP)) {
+                if (!hasKeyPopup) {
                     // no popup
                     button = new ExtraKeyButton(jsonObject, extraKeyDisplayMap, extraKeyAliasMap);
                 } else {
