@@ -207,27 +207,6 @@ public class TermuxPluginUtils {
             resultConfig.resultFileBasename = ShellUtils.getExecutableBasename(executionCommand.executable) + "-" + AndroidUtils.getCurrentMilliSecondLocalTimeStamp() + ".log";
     }
 
-
-
-
-    /**
-     * Send a plugin error report notification for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
-     *
-     * @param currentPackageContext The {@link Context} of current package.
-     * @param logTag The log tag to use for logging.
-     * @param title The title for the error report and notification.
-     * @param message The message for the error report.
-     * @param throwable The {@link Throwable} for the error report.
-     */
-    public static void sendPluginCommandErrorNotification(final Context currentPackageContext, String logTag,
-                                                         CharSequence title, String message, Throwable throwable) {
-        sendPluginCommandErrorNotification(currentPackageContext, logTag,
-            title, message,
-            MarkdownUtils.getMarkdownCodeForString(Logger.getMessageAndStackTraceString(message, throwable), true),
-            false, false, true);
-    }
-
     /**
      * Send a plugin error report notification for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
      * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
@@ -241,35 +220,10 @@ public class TermuxPluginUtils {
     public static void sendPluginCommandErrorNotification(final Context currentPackageContext, String logTag,
                                                          CharSequence title, String notificationTextString,
                                                          String message) {
-        sendPluginCommandErrorNotification(currentPackageContext, logTag,
-            title, notificationTextString, message,
-            false, false, true);
-    }
 
-    /**
-     * Send a plugin error report notification for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
-     *
-     * @param currentPackageContext The {@link Context} of current package.
-     * @param logTag The log tag to use for logging.
-     * @param title The title for the error report and notification.
-     * @param notificationTextString The text of the notification.
-     * @param message The message for the error report.
-     * @param forceNotification If set to {@code true}, then a notification will be shown
-     *                          regardless of if pending intent is {@code null} or
-     *                          {@link TermuxPreferenceConstants.TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
-     *                          is {@code false}.
-     * @param showToast If set to {@code true}, then a toast will be shown for {@code notificationTextString}.
-     * @param addDeviceInfo If set to {@code true}, then device info should be appended to the message.
-     */
-    public static void sendPluginCommandErrorNotification(final Context currentPackageContext, String logTag,
-                                                         CharSequence title, String notificationTextString,
-                                                         String message, boolean forceNotification,
-                                                         boolean showToast,
-                                                         boolean addDeviceInfo) {
         sendPluginCommandErrorNotification(currentPackageContext, logTag,
             title, notificationTextString, "## " + title + "\n\n" + message + "\n\n",
-            forceNotification, showToast, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGE, addDeviceInfo, null);
+            false, false, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGE, true, null);
     }
 
     /**

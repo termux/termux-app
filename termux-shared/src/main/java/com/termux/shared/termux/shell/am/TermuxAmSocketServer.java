@@ -14,6 +14,7 @@ import com.termux.shared.net.socket.local.LocalSocketManagerClientBase;
 import com.termux.shared.net.socket.local.LocalSocketRunConfig;
 import com.termux.shared.shell.am.AmSocketServer;
 import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
@@ -153,9 +154,13 @@ public class TermuxAmSocketServer {
     public static synchronized void showErrorNotification(@NonNull Context context, @NonNull Error error,
                                                           @NonNull LocalSocketRunConfig localSocketRunConfig,
                                                           @Nullable LocalClientSocket clientSocket) {
-        TermuxPluginUtils.sendPluginCommandErrorNotification(context, LOG_TAG,
-            localSocketRunConfig.getTitle() + " Socket Server Error", error.getMinimalErrorString(),
-            LocalSocketManager.getErrorMarkdownString(error, localSocketRunConfig, clientSocket));
+
+        CharSequence title = localSocketRunConfig.getTitle() + " Socket Server Error";
+        String notificationTextString = error.getMinimalErrorString();
+        String message = "## " + title + "\n\n" + LocalSocketManager.getErrorMarkdownString(error, localSocketRunConfig, clientSocket) + "\n\n";
+
+        TermuxPluginUtils.sendPluginCommandErrorNotification(context, LOG_TAG, title, notificationTextString, message,
+            false, false, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGE, true, null);
     }
 
 
