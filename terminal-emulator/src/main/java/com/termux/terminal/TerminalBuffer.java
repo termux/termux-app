@@ -58,7 +58,7 @@ public final class TerminalBuffer {
     }
 
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines, boolean joinFullLines) {
-        return new TextFinder(this).getSelectedText(new Cursor(selX1, selY1), new Cursor(selX2, selY2), joinBackLines, joinFullLines);
+        return new TextFinder(this).getSelectedText(new Cursor(selY1, selX1), new Cursor(selY2, selX2), joinBackLines, joinFullLines);
     }
 
     public String getWordAtLocation(int x, int y) {
