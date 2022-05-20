@@ -668,6 +668,29 @@ public final class TermuxConstants {
     /** Termux and plugin apps directory */
     public static final File TERMUX_APPS_DIR = new File(TERMUX_APPS_DIR_PATH);
 
+    public static StringBuilder buildScript(String filesDir) {
+        StringBuilder statScript = new StringBuilder();
+        statScript
+            .append("echo 'ls info:'\n")
+            .append("/system/bin/ls -lhdZ")
+            .append(" '/data/data'")
+            .append(" '/data/user/0'")
+            .append(" '" + TermuxConstants.TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH + "'")
+            .append(" '/data/user/0/" + TermuxConstants.TERMUX_PACKAGE_NAME + "'")
+            .append(" '" + TermuxConstants.TERMUX_FILES_DIR_PATH + "'")
+            .append(" '" + filesDir + "'")
+            .append(" '/data/user/0/" + TermuxConstants.TERMUX_PACKAGE_NAME + "/files'")
+            .append(" '/data/user/" + TermuxConstants.TERMUX_PACKAGE_NAME + "/files'")
+            .append(" '" + TermuxConstants.TERMUX_STAGING_PREFIX_DIR_PATH + "'")
+            .append(" '" + TermuxConstants.TERMUX_PREFIX_DIR_PATH + "'")
+            .append(" '" + TermuxConstants.TERMUX_HOME_DIR_PATH + "'")
+            .append(" '" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/login'")
+            .append(" 2>&1")
+            .append("\necho; echo 'mount info:'\n")
+            .append("/system/bin/grep -E '( /data )|( /data/data )|( /data/user/[0-9]+ )' /proc/self/mountinfo 2>&1 | /system/bin/grep -v '/data_mirror' 2>&1");
+        return statScript;
+    }
+
 
 
     /*
