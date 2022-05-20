@@ -80,17 +80,17 @@ public final class TextFinder {
         if (isBackLineRowNotWrapped && isFullLineNotFillsWidth && isRowBeforeSelY2) builder.append('\n');
     }
 
-    public String getWordAtLocation(int x, int y) {
+    public String getWordAtLocation(Cursor cursor) {
         // Set y1 and y2 to the lines where the wrapped line starts and ends.
         // I.e. if a line that is wrapped to 3 lines starts at line 4, and this
         // is called with y=5, then y1 would be set to 4 and y2 would be set to 6.
-        int y1 = lineWrapStarts(y);
-        int y2 = lineWrapEnds(y);
+        int y1 = lineWrapStarts(cursor.getRow());
+        int y2 = lineWrapEnds(cursor.getRow());
 
         // Get the text for the whole wrapped line
-        String text = getSelectedText(new Cursor(0, y1), new Cursor(mTerminalBuffer.mColumns, y2), true, true);
+        String text = getSelectedText(new Cursor(y1, 0), new Cursor(y2, mTerminalBuffer.mColumns), true, true);
         // The index of x in text
-        int textOffset = (y - y1) * mTerminalBuffer.mColumns + x;
+        int textOffset = (cursor.getRow() - y1) * mTerminalBuffer.mColumns + cursor.getColumn();
 
         if (textOffset >= text.length()) {
             // The click was to the right of the last word on the line, so

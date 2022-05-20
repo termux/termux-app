@@ -62,7 +62,7 @@ public final class TerminalBuffer {
     }
 
     public String getWordAtLocation(int x, int y) {
-        return new TextFinder(this).getWordAtLocation(x, y);
+        return new TextFinder(this).getWordAtLocation(new Cursor(y, x));
     }
 
     public int getActiveTranscriptRows() {
