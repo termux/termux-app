@@ -13,6 +13,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.termux.R;
+import com.termux.app.datastore.termux_widget.DebuggingPreferencesDataStore;
 import com.termux.shared.termux.settings.preferences.TermuxWidgetAppSharedPreferences;
 
 @Keep
@@ -47,55 +48,3 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
     }
 }
 
-class DebuggingPreferencesDataStore extends PreferenceDataStore {
-
-    private final Context mContext;
-    private final TermuxWidgetAppSharedPreferences mPreferences;
-
-    private static DebuggingPreferencesDataStore mInstance;
-
-    private DebuggingPreferencesDataStore(Context context) {
-        mContext = context;
-        mPreferences = TermuxWidgetAppSharedPreferences.build(context, true);
-    }
-
-    public static synchronized DebuggingPreferencesDataStore getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new DebuggingPreferencesDataStore(context);
-        }
-        return mInstance;
-    }
-
-
-
-    @Override
-    @Nullable
-    public String getString(String key, @Nullable String defValue) {
-        if (mPreferences == null) return null;
-        if (key == null) return null;
-
-        switch (key) {
-            case "log_level":
-                return String.valueOf(mPreferences.getLogLevel(true));
-            default:
-                return null;
-        }
-    }
-
-    @Override
-    public void putString(String key, @Nullable String value) {
-        if (mPreferences == null) return;
-        if (key == null) return;
-
-        switch (key) {
-            case "log_level":
-                if (value != null) {
-                    mPreferences.setLogLevel(mContext, Integer.parseInt(value), true);
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-}
