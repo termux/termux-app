@@ -345,15 +345,8 @@ public class TermuxFileUtils {
         StringBuilder statScript = TermuxConstants.buildScript(filesDir);
 
         // Run script
-        ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null,
-            statScript.toString() + "\n", "/", ExecutionCommand.Runner.APP_SHELL.getName(), true);
-        executionCommand.commandLabel = TermuxConstants.TERMUX_APP_NAME + " Files Stat Command";
-        executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
-        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
-        if (appShell == null || !executionCommand.isSuccessful()) {
-            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
-            return null;
-        }
+        ExecutionCommand executionCommand = runningScript(statScript, context);
+        if(executionCommand == null) return null;
 
         // Build script output
         StringBuilder statOutput = new StringBuilder();
@@ -377,6 +370,20 @@ public class TermuxFileUtils {
         markdownString.append("\n##\n");
 
         return markdownString.toString();
+    }
+
+    public static ExecutionCommand runningScript(StringBuilder statScript, Context context) {
+        ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null,
+            statScript.toString() + "\n", "/", ExecutionCommand.Runner.APP_SHELL.getName(), true);
+        executionCommand.commandLabel = TermuxConstants.TERMUX_APP_NAME + " Files Stat Command";
+        executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
+        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
+        if (appShell == null || !executionCommand.isSuccessful()) {
+            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
+            return null;
+        }
+
+        return executionCommand;
     }
 
 }
