@@ -26,6 +26,10 @@ public class TermuxFileUtils {
 
     private static final String LOG_TAG = "TermuxFileUtils";
 
+    private static boolean isStringHasValue(String str) {
+        return str != null && !str.isEmpty();
+    }
+
     /**
      * Replace "$PREFIX/" or "~/" prefix with termux absolute paths.
      *
@@ -50,7 +54,7 @@ public class TermuxFileUtils {
      * @return Returns the {@code expand path}.
      */
     public static String getExpandedTermuxPath(String path) {
-        if (path != null && !path.isEmpty()) {
+        if (isStringHasValue(path)) {
             path = path.replaceAll("^\\$PREFIX$", TermuxConstants.TERMUX_PREFIX_DIR_PATH);
             path = path.replaceAll("^\\$PREFIX/", TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/");
             path = path.replaceAll("^~/$", TermuxConstants.TERMUX_HOME_DIR_PATH);
@@ -84,7 +88,7 @@ public class TermuxFileUtils {
      * @return Returns the {@code unexpand path}.
      */
     public static String getUnExpandedTermuxPath(String path) {
-        if (path != null && !path.isEmpty()) {
+        if (isStringHasValue(path)) {
             path = path.replaceAll("^" + Pattern.quote(TermuxConstants.TERMUX_PREFIX_DIR_PATH) + "/", "\\$PREFIX/");
             path = path.replaceAll("^" + Pattern.quote(TermuxConstants.TERMUX_HOME_DIR_PATH) + "/", "~/");
         }
@@ -123,7 +127,7 @@ public class TermuxFileUtils {
      * @return Returns the allowed path if it {@code path} is under it, otherwise {@link TermuxConstants#TERMUX_FILES_DIR_PATH}.
      */
     public static String getMatchedAllowedTermuxWorkingDirectoryParentPathForPath(String path) {
-        if (path == null || path.isEmpty()) return TermuxConstants.TERMUX_FILES_DIR_PATH;
+        if (!isStringHasValue(path)) return TermuxConstants.TERMUX_FILES_DIR_PATH;
 
         if (path.startsWith(TermuxConstants.TERMUX_STORAGE_HOME_DIR_PATH + "/")) {
             return TermuxConstants.TERMUX_STORAGE_HOME_DIR_PATH;
