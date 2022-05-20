@@ -32,21 +32,24 @@ public class DebuggingPreferencesDataStore extends PreferenceDataStore {
     @Nullable
     public String getString(String key, @Nullable String defValue) {
         if (isDisability(key)) return null;
+        return (key == "log_level") ? String.valueOf(mPreferences.getLogLevel()): null;
+    }
 
-        String _getString = (key == "log_level" )? String.valueOf(mPreferences.getLogLevel()): null;
-        return _getString;
-
+    private boolean isDisability(String key) {
+        return (mPreferences == null || key == null) ? true : false;
     }
 
     @Override
     public void putString(String key, @Nullable String value) {
         if (isDisability(key)) return;
 
-        if (key == "log_level" && value != null) {
-            mPreferences.setLogLevel(mContext, Integer.parseInt(value));
-        }
+        if ( key == "log_level"  )
+            _put(value);
     }
 
+    private void _put(@Nullable String value) {
+        if (value != null) mPreferences.setLogLevel(mContext, Integer.parseInt(value));
+    }
 
 
     @Override
