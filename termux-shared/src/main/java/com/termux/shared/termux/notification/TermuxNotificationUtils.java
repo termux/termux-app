@@ -25,11 +25,21 @@ public class TermuxNotificationUtils {
         int lastNotificationId = preferences.getLastNotificationId();
 
         int nextNotificationId = lastNotificationId + 1;
-        while(nextNotificationId == TermuxConstants.TERMUX_APP_NOTIFICATION_ID || nextNotificationId == TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_ID) {
+
+        boolean isAppNotificationIdSame = nextNotificationId == TermuxConstants.TERMUX_APP_NOTIFICATION_ID;
+        boolean isCommandNotificationIdSame = nextNotificationId == TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_ID;
+
+        while( isAppNotificationIdSame || isCommandNotificationIdSame) {
             nextNotificationId++;
+
+            isAppNotificationIdSame = nextNotificationId == TermuxConstants.TERMUX_APP_NOTIFICATION_ID;
+            isCommandNotificationIdSame = nextNotificationId == TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_ID;
         }
 
-        if (nextNotificationId == Integer.MAX_VALUE || nextNotificationId < 0)
+        boolean isNotificationIdMaxValue = nextNotificationId == Integer.MAX_VALUE;
+        boolean isNotificationIdUnderZero = nextNotificationId < 0;
+
+        if (isNotificationIdMaxValue || isNotificationIdUnderZero)
             nextNotificationId = TermuxPreferenceConstants.TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID;
 
         preferences.setLastNotificationId(nextNotificationId);
