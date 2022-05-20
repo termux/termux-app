@@ -58,7 +58,7 @@ public final class TerminalBuffer {
     }
 
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines, boolean joinFullLines) {
-        return new TextFinder(this).getSelectedText(selX1, selY1, selX2, selY2, joinBackLines, joinFullLines);
+        return new TextFinder(this).getSelectedText(new Cursor(selX1, selY1), new Cursor(selX2, selY2), joinBackLines, joinFullLines);
     }
 
     public String getWordAtLocation(int x, int y) {
@@ -67,10 +67,6 @@ public final class TerminalBuffer {
 
     public int getActiveTranscriptRows() {
         return mActiveTranscriptRows;
-    }
-
-    public int getScreenFirstRows() {
-        return mScreenFirstRow;
     }
 
     public int getActiveRows() {
@@ -187,16 +183,6 @@ public final class TerminalBuffer {
         return shiftDownOfTopRow;
     }
 
-    class RowColumnPair {
-        int row;
-        int column;
-
-        public RowColumnPair(int row, int column) {
-            this.row = row;
-            this.column = column;
-        }
-    }
-
     private void updateOldState(int newColumns, int newRows, int newTotalRows, int[] cursor, long currentStyle) {
         final TerminalRow[] oldLines = mLines;
 
@@ -205,7 +191,7 @@ public final class TerminalBuffer {
         final int oldScreenRows = mScreenRows;
         final int oldTotalRows = mTotalRows;
 
-        final RowColumnPair oldCursor = new RowColumnPair(cursor[1], cursor[0]);
+        final Cursor oldCursor = new Cursor(cursor[1], cursor[0]);
 
         mLines = new TerminalRow[newTotalRows];
         for (int i = 0; i < newTotalRows; i++)
@@ -216,10 +202,10 @@ public final class TerminalBuffer {
         mActiveTranscriptRows = mScreenFirstRow = 0;
         mColumns = newColumns;
 
-        RowColumnPair newCursor = new RowColumnPair(-1, -1);
+        Cursor newCursor = new Cursor(-1, -1);
         boolean isNewCursorPlaced = false;
 
-        RowColumnPair currentOutputExternal = new RowColumnPair(0, 0);
+        Cursor currentOutputExternal = new Cursor(0, 0);
 
         // Loop over every character in the initial state.
         // Blank lines should be skipped only if at end of transcript (just as is done in the "fast" resize), so we
@@ -227,7 +213,7 @@ public final class TerminalBuffer {
         int skippedBlankLines = 0;
         for (int externalOldRow = -oldActiveTranscriptRows; externalOldRow < oldScreenRows; externalOldRow++) {
             final TerminalRow oldLine = getOldTerminalRow(oldLines, oldScreenFirstRow, oldTotalRows, externalOldRow);
-            final boolean isCursorAtThisRow = externalOldRow == oldCursor.row;
+            final boolean isCursorAtThisRow = externalOldRow == oldCursor.getRow();
 
             // The cursor may only be on a non-null line, which we should not skip:
             final boolean isOldCursorAtThisRow = !isNewCursorPlaced && isCursorAtThisRow;
@@ -267,23 +253,23 @@ public final class TerminalBuffer {
                 if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
 
                 // Line wrap as necessary:
-                if (currentOutputExternal.column + displayWidth > mColumns) {
-                    setLineWrap(currentOutputExternal.row);
-                    newCursor.row = getNewCursorRow(currentStyle, newCursor.row, isNewCursorPlaced, currentOutputExternal);
+                if (currentOutputExternal.getColumn() + displayWidth > mColumns) {
+                    setLineWrap(currentOutputExternal.getRow());
+                    newCursor.setRow(getNewCursorRow(currentStyle, newCursor.getRow(), isNewCursorPlaced, currentOutputExternal));
                 }
 
-                final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternal.column > 0) ? 1 : 0);
-                final int outputColumn = currentOutputExternal.column - offsetDueToCombiningChar;
-                setChar(outputColumn, currentOutputExternal.row, codePoint, styleAtCol);
+                final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternal.getColumn() > 0) ? 1 : 0);
+                final int outputColumn = currentOutputExternal.getColumn() - offsetDueToCombiningChar;
+                setChar(outputColumn, currentOutputExternal.getRow(), codePoint, styleAtCol);
 
                 if (displayWidth > 0) {
-                    if (oldCursor.row == externalOldRow && oldCursor.column == currentOldCol) {
-                        newCursor.column = currentOutputExternal.column;
-                        newCursor.row = currentOutputExternal.row;
+                    if (oldCursor.getRow() == externalOldRow && oldCursor.getColumn() == currentOldCol) {
+                        newCursor.setColumn(currentOutputExternal.getColumn());
+                        newCursor.setRow(currentOutputExternal.getRow());
                         isNewCursorPlaced = true;
                     }
                     currentOldCol += displayWidth;
-                    currentOutputExternal.column += displayWidth;
+                    currentOutputExternal.addToColumn(displayWidth);
                     if (isJustToCursor && isNewCursorPlaced) break;
                 }
             }
@@ -292,12 +278,12 @@ public final class TerminalBuffer {
             final boolean isOldRowCopied = externalOldRow != (oldScreenRows - 1);
             final boolean isOldLineNotWrapping = !oldLine.mLineWrap;
             if (isOldRowCopied && isOldLineNotWrapping) {
-                newCursor.row = getNewCursorRow(currentStyle, newCursor.row, isNewCursorPlaced, currentOutputExternal);
+                newCursor.setRow(getNewCursorRow(currentStyle, newCursor.getRow(), isNewCursorPlaced, currentOutputExternal));
             }
         }
 
-        cursor[0] = newCursor.column;
-        cursor[1] = newCursor.row;
+        cursor[0] = newCursor.getColumn();
+        cursor[1] = newCursor.getRow();
     }
 
     private TerminalRow getOldTerminalRow(TerminalRow[] oldLines, int oldScreenFirstRow, int oldTotalRows, int externalOldRow) {
@@ -307,25 +293,25 @@ public final class TerminalBuffer {
         return oldLines[internalOldRow];
     }
 
-    private void insertSkippedBlankLines(long currentStyle, RowColumnPair currentOutputExternal, int skippedBlankLines) {
+    private void insertSkippedBlankLines(long currentStyle, Cursor currentOutputExternal, int skippedBlankLines) {
         for (int i = 0; i < skippedBlankLines; i++) {
-            if (currentOutputExternal.row == mScreenRows - 1) {
+            if (currentOutputExternal.getRow() == mScreenRows - 1) {
                 scrollDownOneLine(0, mScreenRows, currentStyle);
             } else {
-                currentOutputExternal.row++;
+                currentOutputExternal.addToRow(1);
             }
-            currentOutputExternal.column = 0;
+            currentOutputExternal.setColumn(0);
         }
     }
 
-    private int getNewCursorRow(long currentStyle, int newCursorRow, boolean isNewCursorPlaced, RowColumnPair currentOutputExternal) {
-        if (currentOutputExternal.row == mScreenRows - 1) {
+    private int getNewCursorRow(long currentStyle, int newCursorRow, boolean isNewCursorPlaced, Cursor currentOutputExternal) {
+        if (currentOutputExternal.getRow() == mScreenRows - 1) {
             if (isNewCursorPlaced) newCursorRow--;
             scrollDownOneLine(0, mScreenRows, currentStyle);
         } else {
-            currentOutputExternal.row++;
+            currentOutputExternal.addToRow(1);
         }
-        currentOutputExternal.column = 0;
+        currentOutputExternal.setColumn(0);
         return newCursorRow;
     }
 
@@ -471,3 +457,4 @@ public final class TerminalBuffer {
     }
 
 }
+
