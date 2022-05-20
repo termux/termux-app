@@ -352,12 +352,7 @@ public class TermuxFileUtils {
         StringBuilder statOutput = buildOutputScript(statScript, executionCommand);
 
         // Build markdown output
-        StringBuilder markdownString = new StringBuilder();
-        markdownString.append("## ").append(TermuxConstants.TERMUX_APP_NAME).append(" Files Info\n\n");
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"TERMUX_REQUIRED_FILES_DIR_PATH ($PREFIX)", TermuxConstants.TERMUX_FILES_DIR_PATH);
-        AndroidUtils.appendPropertyToMarkdown(markdownString,"ANDROID_ASSIGNED_FILES_DIR_PATH", filesDir);
-        markdownString.append("\n\n").append(MarkdownUtils.getMarkdownCodeForString(statOutput.toString(), true));
-        markdownString.append("\n##\n");
+        StringBuilder markdownString = buildOutputMarkdown(filesDir ,statOutput);
 
         return markdownString.toString();
     }
@@ -390,6 +385,17 @@ public class TermuxFileUtils {
         }
 
         return statOutput;
+    }
+
+    private static StringBuilder buildOutputMarkdown(String filesDir, StringBuilder statOutput) {
+        StringBuilder markdownString = new StringBuilder();
+        markdownString.append("## ").append(TermuxConstants.TERMUX_APP_NAME).append(" Files Info\n\n");
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"TERMUX_REQUIRED_FILES_DIR_PATH ($PREFIX)", TermuxConstants.TERMUX_FILES_DIR_PATH);
+        AndroidUtils.appendPropertyToMarkdown(markdownString,"ANDROID_ASSIGNED_FILES_DIR_PATH", filesDir);
+        markdownString.append("\n\n").append(MarkdownUtils.getMarkdownCodeForString(statOutput.toString(), true));
+        markdownString.append("\n##\n");
+
+        return markdownString;
     }
 
 }
