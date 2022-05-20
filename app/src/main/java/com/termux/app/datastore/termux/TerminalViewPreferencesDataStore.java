@@ -31,13 +31,9 @@ public class TerminalViewPreferencesDataStore extends PreferenceDataStore {
     public void putBoolean(String key, boolean value) {
         if (isDisability(key)) return;
 
-        switch (key) {
-            case "terminal_margin_adjustment":
-                mPreferences.setTerminalMarginAdjustment(value);
-                break;
-            default:
-                break;
-        }
+        if(key == "terminal_margin_adjustment")
+            mPreferences.setTerminalMarginAdjustment(value);
+
     }
 
     private boolean isDisability(String key) {
@@ -47,12 +43,8 @@ public class TerminalViewPreferencesDataStore extends PreferenceDataStore {
     @Override
     public boolean getBoolean(String key, boolean defValue) {
         if (mPreferences == null) return false;
+        return(key == "terminal_margin_adjustment")? mPreferences.isTerminalMarginAdjustmentEnabled(): false;
 
-        switch (key) {
-            case "terminal_margin_adjustment":
-                return mPreferences.isTerminalMarginAdjustmentEnabled();
-            default:
-                return false;
         }
     }
 
