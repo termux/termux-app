@@ -29,8 +29,7 @@ public class TerminalViewPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public void putBoolean(String key, boolean value) {
-        if (mPreferences == null) return;
-        if (key == null) return;
+        if (isDisability(key)) return;
 
         switch (key) {
             case "terminal_margin_adjustment":
@@ -39,6 +38,10 @@ public class TerminalViewPreferencesDataStore extends PreferenceDataStore {
             default:
                 break;
         }
+    }
+
+    private boolean isDisability(String key) {
+        return (mPreferences == null || key == null) ? true : false;
     }
 
     @Override
