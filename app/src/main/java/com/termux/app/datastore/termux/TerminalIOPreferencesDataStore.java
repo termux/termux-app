@@ -29,9 +29,7 @@ public class TerminalIOPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public void putBoolean(String key, boolean value) {
-        if (mPreferences == null) return;
-        if (key == null) return;
-
+        if (isDisability(key)) return;
         switch (key) {
             case "soft_keyboard_enabled":
                 mPreferences.setSoftKeyboardEnabled(value);
@@ -42,6 +40,10 @@ public class TerminalIOPreferencesDataStore extends PreferenceDataStore {
             default:
                 break;
         }
+    }
+
+    private boolean isDisability(String key) {
+        return (mPreferences == null || key == null) ? true : false;
     }
 
     @Override
