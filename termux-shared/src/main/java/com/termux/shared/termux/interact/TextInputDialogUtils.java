@@ -12,6 +12,9 @@ import android.widget.LinearLayout;
 
 public final class TextInputDialogUtils {
 
+    public static final int PADDING_PER_DIP_AT_TOPANDSIDES = 16;
+    public static final int PADDING_PER_DIP_AT_BOTTOM = 24;
+
     public interface TextSetListener {
         void onTextSet(String text);
     }
@@ -38,8 +41,8 @@ public final class TextInputDialogUtils {
 
         float dipInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, activity.getResources().getDisplayMetrics());
         // https://www.google.com/design/spec/components/dialogs.html#dialogs-specs
-        int paddingTopAndSides = Math.round(16 * dipInPixels);
-        int paddingBottom = Math.round(24 * dipInPixels);
+        int paddingTopAndSides = Math.round(PADDING_PER_DIP_AT_TOPANDSIDES * dipInPixels);
+        int paddingBottom = Math.round(PADDING_PER_DIP_AT_BOTTOM * dipInPixels);
 
         LinearLayout layout = new LinearLayout(activity);
         layout.setOrientation(LinearLayout.VERTICAL);
