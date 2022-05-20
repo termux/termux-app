@@ -17,6 +17,11 @@ public class Cursor {
         return column;
     }
 
+    public void setCursor(Cursor cursor) {
+        this.row = cursor.getRow();
+        this.column = cursor.getColumn();
+    }
+
     public void setRow(int row) {
         this.row = row;
     }

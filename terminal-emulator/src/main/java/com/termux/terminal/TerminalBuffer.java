@@ -241,33 +241,7 @@ public final class TerminalBuffer {
                         lastNonSpaceIndex = i + 1;
             }
 
-            int currentOldCol = 0;
-            long styleAtCol = 0;
-            for (int i = 0; i < lastNonSpaceIndex; i++) {
-                // Note that looping over java character, not cells.
-                final char c = oldLine.mText[i];
-                final int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
-                final int displayWidth = WcWidth.width(codePoint);
-                // Use the last style if this is a zero-width character:
-                if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
-
-                // Line wrap as necessary:
-                lineWrap(currentStyle, newCursor, currentOutputExternal, displayWidth);
-
-                final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternal.getColumn() > 0) ? 1 : 0);
-                final int outputColumn = currentOutputExternal.getColumn() - offsetDueToCombiningChar;
-                setChar(outputColumn, currentOutputExternal.getRow(), codePoint, styleAtCol);
-
-                if (displayWidth > 0) {
-                    if (oldCursor.getRow() == externalOldRow && oldCursor.getColumn() == currentOldCol) {
-                        newCursor.setColumn(currentOutputExternal.getColumn());
-                        newCursor.setRow(currentOutputExternal.getRow());
-                    }
-                    currentOldCol += displayWidth;
-                    currentOutputExternal.addToColumn(displayWidth);
-                    if (isJustToCursor && newCursor.getRow() != -1) break;
-                }
-            }
+            copyLine(currentStyle, oldCursor, newCursor, currentOutputExternal, externalOldRow, oldLine, lastNonSpaceIndex, isJustToCursor);
 
             // Old row has been copied. Check if we need to insert newline if old line was not wrapping:
             final boolean isOldRowCopied = externalOldRow != (oldScreenRows - 1);
@@ -279,6 +253,35 @@ public final class TerminalBuffer {
 
         cursor[0] = newCursor.getColumn();
         cursor[1] = newCursor.getRow();
+    }
+
+    private void copyLine(long currentStyle, Cursor oldCursor, Cursor newCursor, Cursor currentOutputExternal, int externalOldRow, TerminalRow oldLine, int lastNonSpaceIndex, boolean isJustToCursor) {
+        int currentOldCol = 0;
+        long styleAtCol = 0;
+        for (int i = 0; i < lastNonSpaceIndex; i++) {
+            // Note that looping over java character, not cells.
+            final char c = oldLine.mText[i];
+            final int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
+            final int displayWidth = WcWidth.width(codePoint);
+            // Use the last style if this is a zero-width character:
+            if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
+
+            // Line wrap as necessary:
+            lineWrap(currentStyle, newCursor, currentOutputExternal, displayWidth);
+
+            final int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternal.getColumn() > 0) ? 1 : 0);
+            final int outputColumn = currentOutputExternal.getColumn() - offsetDueToCombiningChar;
+            setChar(outputColumn, currentOutputExternal.getRow(), codePoint, styleAtCol);
+
+            if (displayWidth > 0) {
+                if (oldCursor.getRow() == externalOldRow && oldCursor.getColumn() == currentOldCol) {
+                    newCursor.setCursor(currentOutputExternal);
+                }
+                currentOldCol += displayWidth;
+                currentOutputExternal.addToColumn(displayWidth);
+                if (isJustToCursor && newCursor.getRow() != -1) break;
+            }
+        }
     }
 
     private void lineWrap(long currentStyle, Cursor newCursor, Cursor currentOutputExternal, int displayWidth) {
