@@ -349,17 +349,7 @@ public class TermuxFileUtils {
         if(executionCommand == null) return null;
 
         // Build script output
-        StringBuilder statOutput = new StringBuilder();
-        statOutput.append("$ ").append(statScript.toString());
-        statOutput.append("\n\n").append(executionCommand.resultData.stdout.toString());
-
-        boolean stderrSet = !executionCommand.resultData.stderr.toString().isEmpty();
-        if (executionCommand.resultData.exitCode != 0 || stderrSet) {
-            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
-            if (stderrSet)
-                statOutput.append("\n").append(executionCommand.resultData.stderr.toString());
-            statOutput.append("\n").append("exit code: ").append(executionCommand.resultData.exitCode.toString());
-        }
+        StringBuilder statOutput = buildOutputScript(statScript, executionCommand);
 
         // Build markdown output
         StringBuilder markdownString = new StringBuilder();
@@ -372,7 +362,7 @@ public class TermuxFileUtils {
         return markdownString.toString();
     }
 
-    public static ExecutionCommand runningScript(StringBuilder statScript, Context context) {
+    private static ExecutionCommand runningScript(StringBuilder statScript, Context context) {
         ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null,
             statScript.toString() + "\n", "/", ExecutionCommand.Runner.APP_SHELL.getName(), true);
         executionCommand.commandLabel = TermuxConstants.TERMUX_APP_NAME + " Files Stat Command";
@@ -384,6 +374,22 @@ public class TermuxFileUtils {
         }
 
         return executionCommand;
+    }
+
+    private static StringBuilder buildOutputScript(StringBuilder statScript, ExecutionCommand executionCommand) {
+        StringBuilder statOutput = new StringBuilder();
+        statOutput.append("$ ").append(statScript.toString());
+        statOutput.append("\n\n").append(executionCommand.resultData.stdout.toString());
+
+        boolean stderrSet = !executionCommand.resultData.stderr.toString().isEmpty();
+        if (executionCommand.resultData.exitCode != 0 || stderrSet) {
+            Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
+            if (stderrSet)
+                statOutput.append("\n").append(executionCommand.resultData.stderr.toString());
+            statOutput.append("\n").append("exit code: ").append(executionCommand.resultData.exitCode.toString());
+        }
+
+        return statOutput;
     }
 
 }
