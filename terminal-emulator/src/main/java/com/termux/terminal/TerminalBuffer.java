@@ -151,10 +151,12 @@ public final class TerminalBuffer {
 
     private int calcShiftDownOfTopRow(int newRows, int[] cursor, long currentStyle) {
         int shiftDownOfTopRow = mScreenRows - newRows;
-        if (shiftDownOfTopRow > 0 && shiftDownOfTopRow < mScreenRows) {
+        final boolean isShrinking = shiftDownOfTopRow > 0 && shiftDownOfTopRow < mScreenRows;
+        final boolean isExpanding = shiftDownOfTopRow < 0;
+        if (isShrinking) {
             // Shrinking. Check if we can skip blank rows at bottom below cursor.
             shiftDownOfTopRow = shrinkingRows(cursor, shiftDownOfTopRow);
-        } else if (shiftDownOfTopRow < 0) {
+        } else if (isExpanding) {
             // Negative shift down = expanding. Only move screen up if there is transcript to show:
             shiftDownOfTopRow = expandingRows(currentStyle, shiftDownOfTopRow);
         }
@@ -165,8 +167,10 @@ public final class TerminalBuffer {
         for (int i = mScreenRows - 1; i > 0; i--) {
             if (cursor[1] >= i) break;
             int r = externalToInternalRow(i);
-            if (mLines[r] == null || mLines[r].isBlank()) {
-                if (--shiftDownOfTopRow == 0) break;
+            final boolean isLineEmpty = mLines[r] == null || mLines[r].isBlank();
+            if (isLineEmpty) {
+                final boolean isShrinkingEnd = --shiftDownOfTopRow == 0;
+                if (isShrinkingEnd) break;
             }
         }
         return shiftDownOfTopRow;
