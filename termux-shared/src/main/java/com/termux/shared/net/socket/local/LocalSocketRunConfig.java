@@ -211,6 +211,11 @@ public class LocalSocketRunConfig implements Serializable {
         return config.getLogString();
     }
 
+    /**
+     * Get log variables {@link List<Pair<String, Object>>} for {@link LocalSocketRunConfig}.
+     *
+     * @return Returns the log variables in list {@link List<Pair<String, Object>>}.
+     */
     private List<Pair<String, Object>> getLogVariableList() {
         List<Pair<String, Object>> logVariableList = new ArrayList<Pair<String, Object>>() {{
             add(Pair.create("Path", mPath));
@@ -233,7 +238,7 @@ public class LocalSocketRunConfig implements Serializable {
         List<Pair<String, Object>> logVariableList = getLogVariableList();
 
         logString.append(mTitle).append(" Socket Server Run Config:");
-        
+
         for(Pair<String, Object> logVar: logVariableList) {
             logString.append("\n").append(Logger.getSingleLineLogStringEntry(logVar.first, logVar.second, "-"));
         }
