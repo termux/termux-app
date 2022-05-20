@@ -1,6 +1,6 @@
 package com.termux.terminal;
 
-public class UpdateOldBuffer implements ResizeBuffer {
+public final class UpdateOldBuffer implements ResizeBuffer {
     TerminalBuffer mTerminalBuffer;
 
     public UpdateOldBuffer(TerminalBuffer terminalBuffer) {
