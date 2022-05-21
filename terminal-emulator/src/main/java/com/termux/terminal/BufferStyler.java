@@ -1,6 +1,6 @@
 package com.termux.terminal;
 
-public class BufferStyler {
+public final class BufferStyler {
 
     TerminalBuffer mTerminalBuffer;
 

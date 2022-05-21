@@ -1,6 +1,6 @@
 package com.termux.terminal;
 
-public class FastResize implements ResizeBuffer {
+public final class FastResize implements ResizeBuffer {
     TerminalBuffer mTerminalBuffer;
 
     public FastResize(TerminalBuffer terminalBuffer) {
