@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.view.ActionMode;
 
 import com.termux.terminal.TerminalBuffer;
+import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.WcWidth;
 import com.termux.view.TerminalView;
 
@@ -68,7 +69,8 @@ public class TextSelectionCursorModel {
         this.mIsSelectingText = is;
     }
 
-    public void setSelectionPositionBlank(TerminalBuffer screen, TerminalView terminalView) {
+    public void setSelectionPositionBlank(TerminalEmulator mEmulator) {
+        TerminalBuffer screen = mEmulator.getScreen();
         String blankSpace = " ";
         String blank = "";
 
@@ -77,13 +79,15 @@ public class TextSelectionCursorModel {
             while (mSelX1 > 0 && !blank.equals(screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1))) {
                 mSelX1--;
             }
-            while (mSelX2 < terminalView.mEmulator.mColumns - 1 && !blank.equals(screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1))) {
+            while (mSelX2 < mEmulator.mColumns - 1 && !blank.equals(screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1))) {
                 mSelX2++;
             }
         }
     }
 
-    public void updatePosAtStartHandle(TerminalBuffer screen, int x, int y, int scrollRows, TerminalView terminalView) {
+    public void updatePosAtStartHandle(int x, int y, TerminalView terminalView) {
+        TerminalBuffer screen = terminalView.mEmulator.getScreen();
+        final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
         mSelX1 = terminalView.getCursorX(x);
         mSelY1 = terminalView.getCursorY(y);
         if (mSelX1 < 0) {
@@ -126,7 +130,9 @@ public class TextSelectionCursorModel {
         mSelX1 = getValidCurX(screen, mSelY1, mSelX1);
     }
 
-    public void updatePosAtEndHandle(TerminalBuffer screen, int x, int y, int scrollRows, TerminalView terminalView) {
+    public void updatePosAtEndHandle(int x, int y, TerminalView terminalView) {
+        TerminalBuffer screen = terminalView.mEmulator.getScreen();
+        final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
         mSelX2 = terminalView.getCursorX(x);
         mSelY2 = terminalView.getCursorY(y);
         if (mSelX2 < 0) {

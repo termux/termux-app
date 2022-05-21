@@ -91,9 +91,7 @@ public class TextSelectionCursorController implements CursorController {
         int[] columnAndRow = terminalView.getColumnAndRow(event, true);
         textSelectionCursorModel.setSelectionPosition(columnAndRow);
 
-        TerminalBuffer screen = terminalView.mEmulator.getScreen();
-
-        textSelectionCursorModel.setSelectionPositionBlank(screen, terminalView);
+        textSelectionCursorModel.setSelectionPositionBlank(terminalView.mEmulator);
     }
     
     public void setActionModeCallBacks() {
@@ -200,12 +198,10 @@ public class TextSelectionCursorController implements CursorController {
 
     @Override
     public void updatePosition(TextSelectionHandleView handle, int x, int y) {
-        TerminalBuffer screen = terminalView.mEmulator.getScreen();
-        final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
         if (handle == mStartHandle) {
-            textSelectionCursorModel.updatePosAtStartHandle(screen, x, y, scrollRows, terminalView);
+            textSelectionCursorModel.updatePosAtStartHandle(x, y, terminalView);
         } else {
-            textSelectionCursorModel.updatePosAtEndHandle(screen, x, y, scrollRows, terminalView);
+            textSelectionCursorModel.updatePosAtEndHandle(x, y, terminalView);
         }
 
         terminalView.invalidate();
