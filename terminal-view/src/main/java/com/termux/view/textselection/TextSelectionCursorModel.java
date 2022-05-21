@@ -7,14 +7,14 @@ import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.WcWidth;
 import com.termux.view.TerminalView;
 
-public class TextSelectionModel {
+public class TextSelectionCursorModel {
     private boolean mIsSelectingText = false;
     private long mShowStartTime = System.currentTimeMillis();
 
     private final int mHandleHeight;
     private int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
 
-    TextSelectionModel(int handleHeight) {
+    TextSelectionCursorModel(int handleHeight) {
         this.mHandleHeight = handleHeight;
     }
 
