@@ -101,7 +101,7 @@ public class PeerCred {
         StringBuilder logString = new StringBuilder();
 
         logString.append("Peer Cred:");
-        
+
         for (Pair<String, String> logVar: getLogVariableList()) {
             String label = logVar.first;
             String object = logVar.second;
@@ -134,12 +134,18 @@ public class PeerCred {
         StringBuilder markdownString = new StringBuilder();
 
         markdownString.append("## ").append("Peer Cred");
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Process", getProcessString(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User", getUserString(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Group", getGroupString(), "-"));
 
-        if (cmdline != null)
-            markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry("Cmdline", cmdline, "-"));
+        for (Pair<String, String> logVar: getLogVariableList()) {
+            String label = logVar.first;
+            String object = logVar.second;
+            switch(label) {
+                case "Cmdline":
+                    if (label != null) markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry(label, object, "-"));
+                    break;
+                default:
+                    markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(label, object, "-"));
+            }
+        }
 
         return markdownString.toString();
     }
