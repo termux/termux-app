@@ -171,43 +171,50 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         // ELse find the part of the extra keys/terminal that is hidden and add a margin accordingly
         else {
             int pxHidden = bottomSpaceViewRect.bottom - windowAvailableRect.bottom;
-
             addShortRootViewLogging(root_view_logging_enabled,  "pxHidden " + pxHidden + ", bottom " + bottomMargin);
 
-            boolean canSetMargin = bottomMargin != pxHidden;
+            boolean canSetMargin = (pxHidden > 0 && bottomMargin > 0)? true: (bottomMargin != pxHidden);
 
-            // If invisible despite margin, i.e a margin was added, but the bottom of bottomSpaceViewRect
-            // is still below that of windowAvailableRect, this will trigger OnGlobalLayoutListener
-            // again, so that margins are set properly. May happen when toolbar/extra keys is disabled
-            // and enabled from left drawer, just like case for isVisibleBecauseExtraMargin.
-            // onMeasure: Setting bottom margin to 176
-            // onGlobalLayout: windowAvailableRect 1232, bottomSpaceViewRect 1408, diff 176, bottom 176, isVisible false, isVisibleBecauseMargin false, isVisibleBecauseExtraMargin false
-            // onGlobalLayout: Bottom margin already equals 176
-            if (pxHidden > 0 && bottomMargin > 0) {
-                if (pxHidden != bottomMargin) {
-                    addShortRootViewLogging(root_view_logging_enabled, "Force setting margin to 0 since not visible due to wrong margin");
-                    pxHidden = 0;
-                } else {
-                    addShortRootViewLogging(root_view_logging_enabled, "Force setting margin since not visible despite required margin");
-                }
-                canSetMargin = true;
-            }
+            pxHidden = getPxHidden(bottomMargin, root_view_logging_enabled, pxHidden);
 
-            if (pxHidden  < 0) {
-                addShortRootViewLogging(root_view_logging_enabled, "Force setting margin to 0 since new margin is negative");
+
+            setMargin(params, root_view_logging_enabled, pxHidden, canSetMargin);
+        }
+    }
+
+    private void setMargin(FrameLayout.LayoutParams params, boolean root_view_logging_enabled, int pxHidden, boolean canSetMargin) {
+        if (canSetMargin) {
+            addShortRootViewLogging(root_view_logging_enabled, "Setting bottom margin to " + pxHidden);
+            params.setMargins(0, 0, 0, pxHidden);
+            setLayoutParams(params);
+            lastMarginBottom = pxHidden;
+        } else {
+            addShortRootViewLogging(root_view_logging_enabled, "Bottom margin already equals " + pxHidden);
+        }
+    }
+
+    private int getPxHidden(int bottomMargin, boolean root_view_logging_enabled, int pxHidden) {
+        // If invisible despite margin, i.e a margin was added, but the bottom of bottomSpaceViewRect
+        // is still below that of windowAvailableRect, this will trigger OnGlobalLayoutListener
+        // again, so that margins are set properly. May happen when toolbar/extra keys is disabled
+        // and enabled from left drawer, just like case for isVisibleBecauseExtraMargin.
+        // onMeasure: Setting bottom margin to 176
+        // onGlobalLayout: windowAvailableRect 1232, bottomSpaceViewRect 1408, diff 176, bottom 176, isVisible false, isVisibleBecauseMargin false, isVisibleBecauseExtraMargin false
+        // onGlobalLayout: Bottom margin already equals 176
+        if (pxHidden > 0 && bottomMargin > 0) {
+            if (pxHidden != bottomMargin) {
+                addShortRootViewLogging(root_view_logging_enabled, "Force setting margin to 0 since not visible due to wrong margin");
                 pxHidden = 0;
-            }
-
-
-            if (canSetMargin) {
-                addShortRootViewLogging(root_view_logging_enabled, "Setting bottom margin to " + pxHidden);
-                params.setMargins(0, 0, 0, pxHidden);
-                setLayoutParams(params);
-                lastMarginBottom = pxHidden;
             } else {
-                addShortRootViewLogging(root_view_logging_enabled, "Bottom margin already equals " + pxHidden);
+                addShortRootViewLogging(root_view_logging_enabled, "Force setting margin since not visible despite required margin");
             }
         }
+
+        if (pxHidden < 0) {
+            addShortRootViewLogging(root_view_logging_enabled, "Force setting margin to 0 since new margin is negative");
+            pxHidden = 0;
+        }
+        return pxHidden;
     }
 
     private void setMargin(FrameLayout.LayoutParams params, int bottomMargin, boolean isVisibleBecauseExtraMargin, boolean root_view_logging_enabled) {
