@@ -26,7 +26,9 @@ public class ReflectionUtils {
      * https://developer.android.com/guide/app-compatibility/restrictions-non-sdk-interfaces
      */
     public static void bypassHiddenAPIReflectionRestrictions() {
-        if (!HIDDEN_API_REFLECTION_RESTRICTIONS_BYPASSED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        boolean isBuildVersionOverP = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
+
+        if (!HIDDEN_API_REFLECTION_RESTRICTIONS_BYPASSED && isBuildVersionOverP) {
             Logger.logDebug(LOG_TAG, "Bypassing android hidden api reflection restrictions");
             HiddenApiBypass.addHiddenApiExemptions("");
             HIDDEN_API_REFLECTION_RESTRICTIONS_BYPASSED = true;
@@ -37,10 +39,6 @@ public class ReflectionUtils {
     public static boolean areHiddenAPIReflectionRestrictionsBypassed() {
         return HIDDEN_API_REFLECTION_RESTRICTIONS_BYPASSED;
     }
-
-
-
-
 
     /**
      * Get a {@link Field} for the specified class.
@@ -61,15 +59,12 @@ public class ReflectionUtils {
         }
     }
 
-
-
     /** Class that represents result of invoking a field. */
     public static class FieldInvokeResult extends InvokeResult {
         FieldInvokeResult(boolean success, Object value) {
             super(success, value);
         }
     }
-
 
     /**
      * Get a value for a {@link Field} of an object for the specified class.
@@ -93,10 +88,6 @@ public class ReflectionUtils {
             return new FieldInvokeResult(false, null);
         }
     }
-
-
-
-
 
     /**
      * Wrapper for {@link #getDeclaredMethod(Class, String, Class[])} without parameters.
@@ -126,8 +117,6 @@ public class ReflectionUtils {
         }
     }
 
-
-
     /**
      * Wrapper for {@link #invokeVoidMethod(Method, Object, Object...)} without arguments.
      */
@@ -154,8 +143,6 @@ public class ReflectionUtils {
             return false;
         }
     }
-
-
 
     /** Class that represents result of invoking a method that has a non-void return type. */
     public static class MethodInvokeResult extends InvokeResult{
@@ -193,8 +180,6 @@ public class ReflectionUtils {
             return new MethodInvokeResult(false, null);
         }
     }
-
-
 
     /**
      * Wrapper for {@link #getConstructor(String, Class[])} without parameters.
@@ -236,8 +221,6 @@ public class ReflectionUtils {
             return null;
         }
     }
-
-
 
     /**
      * Wrapper for {@link #invokeConstructor(Constructor, Object...)} without arguments.

@@ -1,5 +1,7 @@
 package com.termux.shared.net.socket.local;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 
 import com.termux.shared.file.FileUtils;
@@ -8,6 +10,8 @@ import com.termux.shared.markdown.MarkdownUtils;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -207,20 +211,37 @@ public class LocalSocketRunConfig implements Serializable {
         return config.getLogString();
     }
 
+    /**
+     * Get log variables {@link List<Pair<String, Object>>} for {@link LocalSocketRunConfig}.
+     *
+     * @return Returns the log variables in list {@link List<Pair<String, Object>>}.
+     */
+    private List<Pair<String, Object>> getLogVariableList() {
+        List<Pair<String, Object>> logVariableList = new ArrayList<Pair<String, Object>>() {{
+            add(Pair.create("Path", mPath));
+            add(Pair.create("AbstractNamespaceSocket", mAbstractNamespaceSocket));
+            add(Pair.create("LocalSocketManagerClient", mLocalSocketManagerClient.getClass().getName()));
+            add(Pair.create("FD", mFD));
+            add(Pair.create("ReceiveTimeout", getReceiveTimeout()));
+            add(Pair.create("SendTimeout", getSendTimeout()));
+            add(Pair.create("Deadline", getDeadline()));
+            add(Pair.create("Backlog", getBacklog()));
+        }};
+        return logVariableList;
+    }
+
     /** Get a log {@link String} for the {@link LocalSocketRunConfig}. */
     @NonNull
     public String getLogString() {
         StringBuilder logString = new StringBuilder();
 
         logString.append(mTitle).append(" Socket Server Run Config:");
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("Path", mPath, "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("AbstractNamespaceSocket", mAbstractNamespaceSocket, "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("LocalSocketManagerClient", mLocalSocketManagerClient.getClass().getName(), "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("FD", mFD, "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("ReceiveTimeout", getReceiveTimeout(), "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("SendTimeout", getSendTimeout(), "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("Deadline", getDeadline(), "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("Backlog", getBacklog(), "-"));
+        
+        for(Pair<String, Object> logVar: getLogVariableList()) {
+            String label = logVar.first;
+            Object object = logVar.second;
+            logString.append("\n").append(Logger.getSingleLineLogStringEntry(label, object, "-"));
+        }
 
         return logString.toString();
     }
@@ -242,14 +263,12 @@ public class LocalSocketRunConfig implements Serializable {
         StringBuilder markdownString = new StringBuilder();
 
         markdownString.append("## ").append(mTitle).append(" Socket Server Run Config");
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Path", mPath, "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("AbstractNamespaceSocket", mAbstractNamespaceSocket, "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("LocalSocketManagerClient", mLocalSocketManagerClient.getClass().getName(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("FD", mFD, "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("ReceiveTimeout", getReceiveTimeout(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("SendTimeout", getSendTimeout(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Deadline", getDeadline(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Backlog", getBacklog(), "-"));
+
+        for(Pair<String, Object> logVar: getLogVariableList()) {
+            String label = logVar.first;
+            Object object = logVar.second;
+            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(label, object, "-"));
+        }
 
         return markdownString.toString();
     }

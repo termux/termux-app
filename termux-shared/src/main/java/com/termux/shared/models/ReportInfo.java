@@ -1,9 +1,14 @@
 package com.termux.shared.models;
 
+import android.util.Pair;
+
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.android.AndroidUtils;
+import com.termux.shared.net.socket.local.LocalClientSocket;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An object that stored info for {@link com.termux.shared.activities.ReportActivity}.
@@ -72,6 +77,20 @@ public class ReportInfo implements Serializable {
     }
 
     /**
+     * Get log variables {@link List < Pair <String, Object>>} for {@link ReportInfo}.
+     *
+     * @return Returns the log variables in list {@link List< Pair <String, Object>>}.
+     */
+    private static List<Pair<String, Object>> getLogVariableList(final ReportInfo reportInfo) {
+        List<Pair<String, Object>> logVariableList = new ArrayList<Pair<String, Object>>() {{
+            add(Pair.create("User Action", reportInfo.userAction));
+            add(Pair.create("Sender", reportInfo.sender));
+            add(Pair.create("Report Timestamp", reportInfo.reportTimestamp));
+        }};
+        return logVariableList;
+    }
+
+    /**
      * Get a markdown {@link String} for {@link ReportInfo}.
      *
      * @param reportInfo The {@link ReportInfo} to convert.
@@ -84,9 +103,13 @@ public class ReportInfo implements Serializable {
 
         if (reportInfo.addReportInfoHeaderToMarkdown) {
             markdownString.append("## Report Info\n\n");
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User Action", reportInfo.userAction, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Sender", reportInfo.sender, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Report Timestamp", reportInfo.reportTimestamp, "-"));
+
+            for (Pair<String, Object> logVar: getLogVariableList(reportInfo)) {
+                String label = logVar.first;
+                Object object = logVar.second;
+                markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(label, object, "-"));
+            }
+
             markdownString.append("\n##\n\n");
         }
 
