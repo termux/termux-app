@@ -174,7 +174,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
 
             addShortRootViewLogging(root_view_logging_enabled,  "pxHidden " + pxHidden + ", bottom " + bottomMargin);
 
-            boolean setMargin = bottomMargin != pxHidden;
+            boolean canSetMargin = bottomMargin != pxHidden;
 
             // If invisible despite margin, i.e a margin was added, but the bottom of bottomSpaceViewRect
             // is still below that of windowAvailableRect, this will trigger OnGlobalLayoutListener
@@ -190,7 +190,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
                 } else {
                     addShortRootViewLogging(root_view_logging_enabled, "Force setting margin since not visible despite required margin");
                 }
-                setMargin = true;
+                canSetMargin = true;
             }
 
             if (pxHidden  < 0) {
@@ -199,7 +199,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             }
 
 
-            if (setMargin) {
+            if (canSetMargin) {
                 addShortRootViewLogging(root_view_logging_enabled, "Setting bottom margin to " + pxHidden);
                 params.setMargins(0, 0, 0, pxHidden);
                 setLayoutParams(params);
@@ -211,7 +211,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
     }
 
     private void setMargin(FrameLayout.LayoutParams params, int bottomMargin, boolean isVisibleBecauseExtraMargin, boolean root_view_logging_enabled) {
-        if (canSettingMargin(bottomMargin, isVisibleBecauseExtraMargin, root_view_logging_enabled)) {
+        if (canSetMargin(bottomMargin, isVisibleBecauseExtraMargin, root_view_logging_enabled)) {
             addShortRootViewLogging(root_view_logging_enabled, "Setting bottom margin to 0");
             params.setMargins(0, 0, 0, 0);
             setLayoutParams(params);
@@ -227,8 +227,8 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         }
     }
 
-    private boolean canSettingMargin(int bottomMargin, boolean isVisibleBecauseExtraMargin, boolean root_view_logging_enabled) {
-        boolean setMargin = bottomMargin != 0;
+    private boolean canSetMargin(int bottomMargin, boolean isVisibleBecauseExtraMargin, boolean root_view_logging_enabled) {
+        boolean canSetMargin = bottomMargin != 0;
 
         // If visible because of extra margin, i.e the bottom of bottomSpaceViewRect is above that of windowAvailableRect
         // onGlobalLayout: windowAvailableRect 1408, bottomSpaceViewRect 1232, diff -176, bottom 0, isVisible true, isVisibleBecauseMargin false, isVisibleBecauseExtraMargin false
@@ -240,12 +240,12 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
                 lastMarginBottomExtraTime = System.currentTimeMillis();
                 // lastMarginBottom must be invalid. May also happen when keyboards are changed.
                 lastMarginBottom = null;
-                setMargin = true;
+                canSetMargin = true;
             } else {
                 addShortRootViewLogging(root_view_logging_enabled, "Ignoring resetting margin since visible due to extra margin since called to quickly");
             }
         }
-        return setMargin;
+        return canSetMargin;
     }
 
     private void checkTime4PreventLoops(boolean root_view_logging_enabled) {
