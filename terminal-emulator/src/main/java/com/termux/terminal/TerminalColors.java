@@ -46,9 +46,7 @@ public final class TerminalColors {
             throw new IllegalArgumentException("Wrong Prefix Format: '" + colorString + "'");
         }
 
-        int componentLength = getComponentLength(colorString, skipInitial, skipBetween);
-
-        return parseRGB(colorString, skipInitial, skipBetween, componentLength);
+        return parseRGB(colorString, skipInitial, skipBetween);
     }
 
     private static int getComponentLength(String colorString, int skipInitial, int skipBetween) {
@@ -59,8 +57,9 @@ public final class TerminalColors {
         return charsForColors / 3;
     }
 
-    private static int parseRGB(String colorString, int skipInitial, int skipBetween, int componentLength) {
-        double mult = 255 / (Math.pow(2, componentLength * 4) - 1);
+    private static int parseRGB(String colorString, int skipInitial, int skipBetween) {
+        final int componentLength = getComponentLength(colorString, skipInitial, skipBetween);
+        final double mult = 255 / (Math.pow(2, componentLength * 4) - 1);
         try {
             int currentPosition = skipInitial;
             String rString = colorString.substring(currentPosition, currentPosition + componentLength);
