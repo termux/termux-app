@@ -36,6 +36,7 @@ import com.termux.shared.shell.command.ExecutionCommand.Runner;
 public class RunCommandService extends Service {
 
     private static final String LOG_TAG = "RunCommandService";
+    public static final int GRAY = 0xFF607D8B;
 
     class LocalBinder extends Binder {
         public final RunCommandService service = RunCommandService.this;
@@ -272,7 +273,7 @@ public class RunCommandService extends Service {
         builder.setSmallIcon(R.drawable.ic_service_notification);
 
         // Set background color for small notification icon
-        builder.setColor(0xFF607D8B);
+        builder.setColor(GRAY);
 
         return builder.build();
     }
