@@ -105,7 +105,9 @@ public class ReportInfo implements Serializable {
             markdownString.append("## Report Info\n\n");
 
             for (Pair<String, Object> logVar: getLogVariableList(reportInfo)) {
-                markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(logVar.first, logVar.second, "-"));
+                String label = logVar.first;
+                Object object = logVar.second;
+                markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(label, object, "-"));
             }
 
             markdownString.append("\n##\n\n");
