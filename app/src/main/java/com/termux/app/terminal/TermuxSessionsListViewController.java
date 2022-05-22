@@ -43,11 +43,7 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-        View sessionRowView = convertView;
-        if (sessionRowView == null) {
-            LayoutInflater inflater = mActivity.getLayoutInflater();
-            sessionRowView = inflater.inflate(R.layout.item_terminal_sessions_list, parent, false);
-        }
+        View sessionRowView = getSessionRowView(convertView, parent);
 
         TextView sessionTitleView = sessionRowView.findViewById(R.id.session_title);
 
@@ -57,6 +53,11 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
             return sessionRowView;
         }
 
+        applySessionViewStyled(position, sessionTitleView, sessionAtRow);
+        return sessionRowView;
+    }
+
+    private void applySessionViewStyled(int position, TextView sessionTitleView, TerminalSession sessionAtRow) {
         boolean shouldEnableDarkTheme = ThemeUtils.shouldEnableDarkTheme(mActivity, NightMode.getAppNightMode().getName());
 
         if (shouldEnableDarkTheme) {
@@ -65,6 +66,26 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
             );
         }
 
+        setFullSessionTitle(position, sessionTitleView, sessionAtRow);
+
+        boolean sessionRunning = isSessionRunning(sessionTitleView, sessionAtRow);
+        int defaultColor = shouldEnableDarkTheme ? Color.WHITE : Color.BLACK;
+        int color = sessionRunning || sessionAtRow.getExitStatus() == 0 ? defaultColor : Color.RED;
+        sessionTitleView.setTextColor(color);
+    }
+
+    private boolean isSessionRunning(TextView sessionTitleView, TerminalSession sessionAtRow) {
+        boolean sessionRunning = sessionAtRow.isRunning();
+
+        if (sessionRunning) {
+            sessionTitleView.setPaintFlags(sessionTitleView.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+        } else {
+            sessionTitleView.setPaintFlags(sessionTitleView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+        return sessionRunning;
+    }
+
+    private void setFullSessionTitle(int position, TextView sessionTitleView, TerminalSession sessionAtRow) {
         String name = sessionAtRow.mSessionName;
         String sessionTitle = sessionAtRow.getTitle();
 
@@ -73,22 +94,23 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         String sessionTitlePart = (TextUtils.isEmpty(sessionTitle) ? "" : ((sessionNamePart.isEmpty() ? "" : "\n") + sessionTitle));
 
         String fullSessionTitle = numberPart + sessionNamePart + sessionTitlePart;
+        applyFullSessionTitleStyled(sessionTitleView, numberPart, sessionNamePart, fullSessionTitle);
+    }
+
+    private void applyFullSessionTitleStyled(TextView sessionTitleView, String numberPart, String sessionNamePart, String fullSessionTitle) {
         SpannableString fullSessionTitleStyled = new SpannableString(fullSessionTitle);
         fullSessionTitleStyled.setSpan(boldSpan, 0, numberPart.length() + sessionNamePart.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         fullSessionTitleStyled.setSpan(italicSpan, numberPart.length() + sessionNamePart.length(), fullSessionTitle.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         sessionTitleView.setText(fullSessionTitleStyled);
+    }
 
-        boolean sessionRunning = sessionAtRow.isRunning();
-
-        if (sessionRunning) {
-            sessionTitleView.setPaintFlags(sessionTitleView.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
-        } else {
-            sessionTitleView.setPaintFlags(sessionTitleView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+    private View getSessionRowView(View convertView, ViewGroup parent) {
+        View sessionRowView = convertView;
+        if (sessionRowView == null) {
+            LayoutInflater inflater = mActivity.getLayoutInflater();
+            sessionRowView = inflater.inflate(R.layout.item_terminal_sessions_list, parent, false);
         }
-        int defaultColor = shouldEnableDarkTheme ? Color.WHITE : Color.BLACK;
-        int color = sessionRunning || sessionAtRow.getExitStatus() == 0 ? defaultColor : Color.RED;
-        sessionTitleView.setTextColor(color);
         return sessionRowView;
     }
 
