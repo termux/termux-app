@@ -72,10 +72,6 @@ public class DebuggingPreferencesDataStore extends PreferenceDataStore {
 
     }
 
-    private boolean isDisability(String key) {
-        return mPreferences == null || key == null;
-    }
-
     @Override
     public boolean getBoolean(String key, boolean defValue) {
         if (isDisability(key)) return false;
