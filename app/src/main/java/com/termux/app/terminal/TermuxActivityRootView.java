@@ -164,8 +164,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             // set appropriate margins when views are changed quickly since some changes
             // may be missed.
             if (isVisibleBecauseMargin) {
-                if (root_view_logging_enabled)
-                    Logger.logVerbose(LOG_TAG, "Visible due to margin");
+                addShortRootViewLogging(root_view_logging_enabled, "Visible due to margin");
 
                 // Once the view has been redrawn with new margin, we set margin back to 0 so that
                 // when next time onMeasure() is called, margin 0 is used. This is necessary for
@@ -179,8 +178,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
                     lastMarginBottomTime = System.currentTimeMillis();
                     marginBottom = 0;
                 } else {
-                    if (root_view_logging_enabled)
-                        Logger.logVerbose(LOG_TAG, "Ignoring restoring marginBottom to 0 since called to quickly");
+                    addShortRootViewLogging(root_view_logging_enabled, "Ignoring restoring marginBottom to 0 since called to quickly");
                 }
 
                 return;
@@ -194,26 +192,22 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             if (isVisibleBecauseExtraMargin) {
                 // Adding time check since prevents infinite loops, like in landscape mode in freeform mode in Taskbar
                 if ((System.currentTimeMillis() - lastMarginBottomExtraTime) > 40) {
-                    if (root_view_logging_enabled)
-                        Logger.logVerbose(LOG_TAG, "Resetting margin since visible due to extra margin");
+                    addShortRootViewLogging(root_view_logging_enabled, "Resetting margin since visible due to extra margin");
                     lastMarginBottomExtraTime = System.currentTimeMillis();
                     // lastMarginBottom must be invalid. May also happen when keyboards are changed.
                     lastMarginBottom = null;
                     setMargin = true;
                 } else {
-                    if (root_view_logging_enabled)
-                        Logger.logVerbose(LOG_TAG, "Ignoring resetting margin since visible due to extra margin since called to quickly");
+                    addShortRootViewLogging(root_view_logging_enabled, "Ignoring resetting margin since visible due to extra margin since called to quickly");
                 }
             }
 
             if (setMargin) {
-                if (root_view_logging_enabled)
-                    Logger.logVerbose(LOG_TAG, "Setting bottom margin to 0");
+                addShortRootViewLogging(root_view_logging_enabled, "Setting bottom margin to 0");
                 params.setMargins(0, 0, 0, 0);
                 setLayoutParams(params);
             } else {
-                if (root_view_logging_enabled)
-                    Logger.logVerbose(LOG_TAG, "Bottom margin already equals 0");
+                addShortRootViewLogging(root_view_logging_enabled, "Bottom margin already equals 0");
                 // This is done so that when next time onMeasure() is called, lastMarginBottom is used.
                 // This is done since we **expect** the keyboard to have same dimensions next time layout
                 // changes, so best set margin while view is drawn the first time, otherwise it will
@@ -227,8 +221,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         else {
             int pxHidden = bottomSpaceViewRect.bottom - windowAvailableRect.bottom;
 
-            if (root_view_logging_enabled)
-                Logger.logVerbose(LOG_TAG, "pxHidden " + pxHidden + ", bottom " + params.bottomMargin);
+            addShortRootViewLogging(root_view_logging_enabled,  "pxHidden " + pxHidden + ", bottom " + params.bottomMargin);
 
             boolean setMargin = params.bottomMargin != pxHidden;
 
@@ -241,34 +234,34 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             // onGlobalLayout: Bottom margin already equals 176
             if (pxHidden > 0 && params.bottomMargin > 0) {
                 if (pxHidden != params.bottomMargin) {
-                    if (root_view_logging_enabled)
-                        Logger.logVerbose(LOG_TAG, "Force setting margin to 0 since not visible due to wrong margin");
+                    addShortRootViewLogging(root_view_logging_enabled, "Force setting margin to 0 since not visible due to wrong margin");
                     pxHidden = 0;
                 } else {
-                    if (root_view_logging_enabled)
-                        Logger.logVerbose(LOG_TAG, "Force setting margin since not visible despite required margin");
+                    addShortRootViewLogging(root_view_logging_enabled, "Force setting margin since not visible despite required margin");
                 }
                 setMargin = true;
             }
 
             if (pxHidden  < 0) {
-                if (root_view_logging_enabled)
-                    Logger.logVerbose(LOG_TAG, "Force setting margin to 0 since new margin is negative");
+                addShortRootViewLogging(root_view_logging_enabled, "Force setting margin to 0 since new margin is negative");
                 pxHidden = 0;
             }
 
 
             if (setMargin) {
-                if (root_view_logging_enabled)
-                    Logger.logVerbose(LOG_TAG, "Setting bottom margin to " + pxHidden);
+                addShortRootViewLogging(root_view_logging_enabled, "Setting bottom margin to " + pxHidden);
                 params.setMargins(0, 0, 0, pxHidden);
                 setLayoutParams(params);
                 lastMarginBottom = pxHidden;
             } else {
-                if (root_view_logging_enabled)
-                    Logger.logVerbose(LOG_TAG, "Bottom margin already equals " + pxHidden);
+                addShortRootViewLogging(root_view_logging_enabled, "Bottom margin already equals " + pxHidden);
             }
         }
+    }
+
+    private void addShortRootViewLogging(boolean root_view_logging_enabled, String message) {
+        if (root_view_logging_enabled)
+            Logger.logVerbose(LOG_TAG, message);
     }
 
     public static class WindowInsetsListener implements View.OnApplyWindowInsetsListener {
