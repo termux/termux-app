@@ -1,5 +1,7 @@
 package com.termux.shared.net.socket.local;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 
 import com.termux.shared.data.DataUtils;
@@ -15,6 +17,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /** The client socket for {@link LocalSocketManager}. */
 public class LocalClientSocket implements Closeable {
@@ -359,7 +363,18 @@ public class LocalClientSocket implements Closeable {
         return new InputStreamReader(getInputStream());
     }
 
-
+    /**
+     * Get log variables {@link List < Pair <String, Object>>} for {@link LocalClientSocket}.
+     *
+     * @return Returns the log variables in list {@link List<Pair<String, Object>>}.
+     */
+    private List<Pair<String, Object>> getLogVariableList() {
+        List<Pair<String, Object>> logVariableList = new ArrayList<Pair<String, Object>>() {{
+            add(Pair.create("FD", mFD));
+            add(Pair.create("Creation Time", mCreationTime));
+        }};
+        return logVariableList;
+    }
 
     /** Get a log {@link String} for the {@link LocalClientSocket}. */
     @NonNull
@@ -367,8 +382,11 @@ public class LocalClientSocket implements Closeable {
         StringBuilder logString = new StringBuilder();
 
         logString.append("Client Socket:");
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("FD", mFD, "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("Creation Time", mCreationTime, "-"));
+
+        for (Pair<String, Object> logVar: getLogVariableList()) {
+            logString.append("\n").append(Logger.getSingleLineLogStringEntry(logVar.first, logVar.second, "-"));
+        }
+
         logString.append("\n\n\n");
 
         logString.append(mPeerCred.getLogString());
@@ -382,8 +400,11 @@ public class LocalClientSocket implements Closeable {
         StringBuilder markdownString = new StringBuilder();
 
         markdownString.append("## ").append("Client Socket");
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("FD", mFD, "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Creation Time", mCreationTime, "-"));
+
+        for (Pair<String, Object> logVar: getLogVariableList()) {
+            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(logVar.first, logVar.second, "-"));
+        }
+
         markdownString.append("\n\n\n");
 
         markdownString.append(mPeerCred.getMarkdownString());

@@ -8,15 +8,15 @@ public final class TextFinder {
         mTerminalBuffer = terminalBuffer;
     }
 
-    public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines, boolean joinFullLines) {
+    public String getSelectedText(Cursor cursor1, Cursor cursor2, boolean joinBackLines, boolean joinFullLines) {
         final StringBuilder builder = new StringBuilder();
 
-        if (selY1 < -mTerminalBuffer.getActiveTranscriptRows()) selY1 = -mTerminalBuffer.getActiveTranscriptRows();
-        if (selY2 >= mTerminalBuffer.mScreenRows) selY2 = mTerminalBuffer.mScreenRows - 1;
+        if (cursor1.getRow() < -mTerminalBuffer.getActiveTranscriptRows()) cursor1.setRow(-mTerminalBuffer.getActiveTranscriptRows());
+        if (cursor2.getRow() >= mTerminalBuffer.mScreenRows) cursor2.setRow(mTerminalBuffer.mScreenRows - 1);
 
-        for (int row = selY1; row <= selY2; row++) {
-            final int x1 = (row == selY1) ? selX1 : 0;
-            final int x2 = getX2(selX2, selY2, row);
+        for (int row = cursor1.getRow(); row <= cursor2.getRow(); row++) {
+            final int x1 = (row == cursor1.getRow()) ? cursor1.getColumn() : 0;
+            final int x2 = getX2(cursor2, row);
 
             final TerminalRow lineObject = mTerminalBuffer.mLines[mTerminalBuffer.externalToInternalRow(row)];
             final int x1Index = lineObject.findStartOfColumn(x1);
@@ -29,14 +29,14 @@ public final class TextFinder {
             checkAndAppendLineText(builder, x1Index, line, lastPrintingCharIndex);
 
             final boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
-            checkAndAppendNewLine(builder, row, selY2, joinBackLines, joinFullLines, rowLineWrap, lineFillsWidth);
+            checkAndAppendNewLine(builder, row, cursor2.getRow(), joinBackLines, joinFullLines, rowLineWrap, lineFillsWidth);
         }
         return builder.toString();
     }
 
-    private int getX2(int selX2, int selY2, int row) {
-        if (row == selY2) {
-            int x2 = selX2 + 1;
+    private int getX2(Cursor cursor, int row) {
+        if (row == cursor.getRow()) {
+            int x2 = cursor.getColumn() + 1;
             if (x2 < mTerminalBuffer.mColumns) return x2;
         }
         return mTerminalBuffer.mColumns;
@@ -88,7 +88,7 @@ public final class TextFinder {
         int y2 = lineWrapEnds(y);
 
         // Get the text for the whole wrapped line
-        String text = getSelectedText(0, y1, mTerminalBuffer.mColumns, y2, true, true);
+        String text = getSelectedText(new Cursor(0, y1), new Cursor(mTerminalBuffer.mColumns, y2), true, true);
         // The index of x in text
         int textOffset = (y - y1) * mTerminalBuffer.mColumns + x;
 
@@ -119,7 +119,7 @@ public final class TextFinder {
 
     private int lineWrapStarts(int y) {
         int y1 = y;
-        while (y1 > 0 && !getSelectedText(0, y1 - 1, mTerminalBuffer.mColumns, y, true, true).contains("\n")) {
+        while (y1 > 0 && !getSelectedText(new Cursor(0, y1 - 1), new Cursor(mTerminalBuffer.mColumns, y), true, true).contains("\n")) {
             y1--;
         }
         return y1;
@@ -127,7 +127,7 @@ public final class TextFinder {
 
     private int lineWrapEnds(int y) {
         int y2 = y;
-        while (y2 < mTerminalBuffer.mScreenRows && !getSelectedText(0, y, mTerminalBuffer.mColumns, y2 + 1, true, true).contains("\n")) {
+        while (y2 < mTerminalBuffer.mScreenRows && !getSelectedText(new Cursor(0, y), new Cursor(mTerminalBuffer.mColumns, y2 + 1), true, true).contains("\n")) {
             y2++;
         }
         return y2;
