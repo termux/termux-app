@@ -120,22 +120,18 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
     public void onGlobalLayout() {
         if (mActivity == null || !mActivity.isVisible()) return;
 
-        View bottomSpaceView = mActivity.getTermuxActivityBottomSpaceView();
-        if (bottomSpaceView == null) return;
-
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
 
-        // Get the position Rects of the bottom space view and the main window holding it
-        Rect[] windowAndViewRects = ViewUtils.getWindowAndViewRects(bottomSpaceView, mStatusBarHeight);
-        if (windowAndViewRects == null)
-            return;
+        Rect[] windowAndViewRects = getwindowAndViewRects();
+        if (windowAndViewRects == null) return;
 
         Rect windowAvailableRect = windowAndViewRects[0];
         Rect bottomSpaceViewRect = windowAndViewRects[1];
 
         // If the bottomSpaceViewRect is inside the windowAvailableRect, then it must be completely visible
 
-        boolean isVisibleBecauseMargin = (windowAvailableRect.bottom == bottomSpaceViewRect.bottom) && params.bottomMargin > 0;
+        int bottomMargin = params.bottomMargin;
+        boolean isVisibleBecauseMargin = (windowAvailableRect.bottom == bottomSpaceViewRect.bottom) && bottomMargin > 0;
         boolean isVisibleBecauseExtraMargin = ((bottomSpaceViewRect.bottom - windowAvailableRect.bottom) < 0);
 
         boolean root_view_logging_enabled = ROOT_VIEW_LOGGING_ENABLED;
@@ -145,7 +141,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             Logger.logVerbose(LOG_TAG, "windowAvailableRect " + ViewUtils.toRectString(windowAvailableRect) + ", bottomSpaceViewRect " + ViewUtils.toRectString(bottomSpaceViewRect));
             Logger.logVerbose(LOG_TAG, "windowAvailableRect.bottom " + windowAvailableRect.bottom +
                 ", bottomSpaceViewRect.bottom " +bottomSpaceViewRect.bottom +
-                ", diff " + (bottomSpaceViewRect.bottom - windowAvailableRect.bottom) + ", bottom " + params.bottomMargin +
+                ", diff " + (bottomSpaceViewRect.bottom - windowAvailableRect.bottom) + ", bottom " + bottomMargin +
                 ", isVisible " + windowAvailableRect.contains(bottomSpaceViewRect) + ", isRectAbove " + ViewUtils.isRectAbove(windowAvailableRect, bottomSpaceViewRect) +
                 ", isVisibleBecauseMargin " + isVisibleBecauseMargin + ", isVisibleBecauseExtraMargin " + isVisibleBecauseExtraMargin);
         }
@@ -165,65 +161,20 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             // may be missed.
             if (isVisibleBecauseMargin) {
                 addShortRootViewLogging(root_view_logging_enabled, "Visible due to margin");
-
-                // Once the view has been redrawn with new margin, we set margin back to 0 so that
-                // when next time onMeasure() is called, margin 0 is used. This is necessary for
-                // cases when view has been redrawn with new margin because bottom space view was
-                // hidden by keyboard and then view was redrawn again due to layout change (like
-                // keyboard symbol view is switched to), android will add margin below its new position
-                // if its greater than 0, which was already above the keyboard creating x2x margin.
-                // Adding time check since moving split screen divider in landscape causes jitter
-                // and prevents some infinite loops
-                if ((System.currentTimeMillis() - lastMarginBottomTime) > 40) {
-                    lastMarginBottomTime = System.currentTimeMillis();
-                    marginBottom = 0;
-                } else {
-                    addShortRootViewLogging(root_view_logging_enabled, "Ignoring restoring marginBottom to 0 since called to quickly");
-                }
+                checkTime4PreventLoops(root_view_logging_enabled);
 
                 return;
             }
 
-            boolean setMargin = params.bottomMargin != 0;
-
-            // If visible because of extra margin, i.e the bottom of bottomSpaceViewRect is above that of windowAvailableRect
-            // onGlobalLayout: windowAvailableRect 1408, bottomSpaceViewRect 1232, diff -176, bottom 0, isVisible true, isVisibleBecauseMargin false, isVisibleBecauseExtraMargin false
-            // onGlobalLayout: Bottom margin already equals 0
-            if (isVisibleBecauseExtraMargin) {
-                // Adding time check since prevents infinite loops, like in landscape mode in freeform mode in Taskbar
-                if ((System.currentTimeMillis() - lastMarginBottomExtraTime) > 40) {
-                    addShortRootViewLogging(root_view_logging_enabled, "Resetting margin since visible due to extra margin");
-                    lastMarginBottomExtraTime = System.currentTimeMillis();
-                    // lastMarginBottom must be invalid. May also happen when keyboards are changed.
-                    lastMarginBottom = null;
-                    setMargin = true;
-                } else {
-                    addShortRootViewLogging(root_view_logging_enabled, "Ignoring resetting margin since visible due to extra margin since called to quickly");
-                }
-            }
-
-            if (setMargin) {
-                addShortRootViewLogging(root_view_logging_enabled, "Setting bottom margin to 0");
-                params.setMargins(0, 0, 0, 0);
-                setLayoutParams(params);
-            } else {
-                addShortRootViewLogging(root_view_logging_enabled, "Bottom margin already equals 0");
-                // This is done so that when next time onMeasure() is called, lastMarginBottom is used.
-                // This is done since we **expect** the keyboard to have same dimensions next time layout
-                // changes, so best set margin while view is drawn the first time, otherwise it will
-                // cause a jitter when OnGlobalLayoutListener is called with margin 0 and it sets the
-                // likely same lastMarginBottom again and requesting a redraw. Hopefully, this logic
-                // works fine for all cases.
-                marginBottom = lastMarginBottom;
-            }
+            setMargin(params, bottomMargin, isVisibleBecauseExtraMargin, root_view_logging_enabled);
         }
         // ELse find the part of the extra keys/terminal that is hidden and add a margin accordingly
         else {
             int pxHidden = bottomSpaceViewRect.bottom - windowAvailableRect.bottom;
 
-            addShortRootViewLogging(root_view_logging_enabled,  "pxHidden " + pxHidden + ", bottom " + params.bottomMargin);
+            addShortRootViewLogging(root_view_logging_enabled,  "pxHidden " + pxHidden + ", bottom " + bottomMargin);
 
-            boolean setMargin = params.bottomMargin != pxHidden;
+            boolean setMargin = bottomMargin != pxHidden;
 
             // If invisible despite margin, i.e a margin was added, but the bottom of bottomSpaceViewRect
             // is still below that of windowAvailableRect, this will trigger OnGlobalLayoutListener
@@ -232,8 +183,8 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             // onMeasure: Setting bottom margin to 176
             // onGlobalLayout: windowAvailableRect 1232, bottomSpaceViewRect 1408, diff 176, bottom 176, isVisible false, isVisibleBecauseMargin false, isVisibleBecauseExtraMargin false
             // onGlobalLayout: Bottom margin already equals 176
-            if (pxHidden > 0 && params.bottomMargin > 0) {
-                if (pxHidden != params.bottomMargin) {
+            if (pxHidden > 0 && bottomMargin > 0) {
+                if (pxHidden != bottomMargin) {
                     addShortRootViewLogging(root_view_logging_enabled, "Force setting margin to 0 since not visible due to wrong margin");
                     pxHidden = 0;
                 } else {
@@ -257,6 +208,72 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
                 addShortRootViewLogging(root_view_logging_enabled, "Bottom margin already equals " + pxHidden);
             }
         }
+    }
+
+    private void setMargin(FrameLayout.LayoutParams params, int bottomMargin, boolean isVisibleBecauseExtraMargin, boolean root_view_logging_enabled) {
+        if (canSettingMargin(bottomMargin, isVisibleBecauseExtraMargin, root_view_logging_enabled)) {
+            addShortRootViewLogging(root_view_logging_enabled, "Setting bottom margin to 0");
+            params.setMargins(0, 0, 0, 0);
+            setLayoutParams(params);
+        } else {
+            addShortRootViewLogging(root_view_logging_enabled, "Bottom margin already equals 0");
+            // This is done so that when next time onMeasure() is called, lastMarginBottom is used.
+            // This is done since we **expect** the keyboard to have same dimensions next time layout
+            // changes, so best set margin while view is drawn the first time, otherwise it will
+            // cause a jitter when OnGlobalLayoutListener is called with margin 0 and it sets the
+            // likely same lastMarginBottom again and requesting a redraw. Hopefully, this logic
+            // works fine for all cases.
+            marginBottom = lastMarginBottom;
+        }
+    }
+
+    private boolean canSettingMargin(int bottomMargin, boolean isVisibleBecauseExtraMargin, boolean root_view_logging_enabled) {
+        boolean setMargin = bottomMargin != 0;
+
+        // If visible because of extra margin, i.e the bottom of bottomSpaceViewRect is above that of windowAvailableRect
+        // onGlobalLayout: windowAvailableRect 1408, bottomSpaceViewRect 1232, diff -176, bottom 0, isVisible true, isVisibleBecauseMargin false, isVisibleBecauseExtraMargin false
+        // onGlobalLayout: Bottom margin already equals 0
+        if (isVisibleBecauseExtraMargin) {
+            // Adding time check since prevents infinite loops, like in landscape mode in freeform mode in Taskbar
+            if ((System.currentTimeMillis() - lastMarginBottomExtraTime) > 40) {
+                addShortRootViewLogging(root_view_logging_enabled, "Resetting margin since visible due to extra margin");
+                lastMarginBottomExtraTime = System.currentTimeMillis();
+                // lastMarginBottom must be invalid. May also happen when keyboards are changed.
+                lastMarginBottom = null;
+                setMargin = true;
+            } else {
+                addShortRootViewLogging(root_view_logging_enabled, "Ignoring resetting margin since visible due to extra margin since called to quickly");
+            }
+        }
+        return setMargin;
+    }
+
+    private void checkTime4PreventLoops(boolean root_view_logging_enabled) {
+        // Once the view has been redrawn with new margin, we set margin back to 0 so that
+        // when next time onMeasure() is called, margin 0 is used. This is necessary for
+        // cases when view has been redrawn with new margin because bottom space view was
+        // hidden by keyboard and then view was redrawn again due to layout change (like
+        // keyboard symbol view is switched to), android will add margin below its new position
+        // if its greater than 0, which was already above the keyboard creating x2x margin.
+        // Adding time check since moving split screen divider in landscape causes jitter
+        // and prevents some infinite loops
+        if ((System.currentTimeMillis() - lastMarginBottomTime) > 40) {
+            lastMarginBottomTime = System.currentTimeMillis();
+            marginBottom = 0;
+        } else {
+            addShortRootViewLogging(root_view_logging_enabled, "Ignoring restoring marginBottom to 0 since called to quickly");
+        }
+    }
+
+    private Rect[] getwindowAndViewRects() {
+        View bottomSpaceView = mActivity.getTermuxActivityBottomSpaceView();
+        if (bottomSpaceView == null) return null;
+
+        // Get the position Rects of the bottom space view and the main window holding it
+        Rect[] windowAndViewRects = ViewUtils.getWindowAndViewRects(bottomSpaceView, mStatusBarHeight);
+        if (windowAndViewRects == null)
+            return null;
+        return windowAndViewRects;
     }
 
     private void addShortRootViewLogging(boolean root_view_logging_enabled, String message) {
