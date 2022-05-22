@@ -123,11 +123,6 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         View bottomSpaceView = mActivity.getTermuxActivityBottomSpaceView();
         if (bottomSpaceView == null) return;
 
-        boolean root_view_logging_enabled = ROOT_VIEW_LOGGING_ENABLED;
-
-        if (root_view_logging_enabled)
-            Logger.logVerbose(LOG_TAG, ":\nonGlobalLayout:");
-
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
 
         // Get the position Rects of the bottom space view and the main window holding it
@@ -139,12 +134,14 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         Rect bottomSpaceViewRect = windowAndViewRects[1];
 
         // If the bottomSpaceViewRect is inside the windowAvailableRect, then it must be completely visible
-        //boolean isVisible = windowAvailableRect.contains(bottomSpaceViewRect); // rect.right comparison often fails in landscape
-        boolean isVisible = ViewUtils.isRectAbove(windowAvailableRect, bottomSpaceViewRect);
+
         boolean isVisibleBecauseMargin = (windowAvailableRect.bottom == bottomSpaceViewRect.bottom) && params.bottomMargin > 0;
         boolean isVisibleBecauseExtraMargin = ((bottomSpaceViewRect.bottom - windowAvailableRect.bottom) < 0);
 
+        boolean root_view_logging_enabled = ROOT_VIEW_LOGGING_ENABLED;
+
         if (root_view_logging_enabled) {
+            Logger.logVerbose(LOG_TAG, ":\nonGlobalLayout:");
             Logger.logVerbose(LOG_TAG, "windowAvailableRect " + ViewUtils.toRectString(windowAvailableRect) + ", bottomSpaceViewRect " + ViewUtils.toRectString(bottomSpaceViewRect));
             Logger.logVerbose(LOG_TAG, "windowAvailableRect.bottom " + windowAvailableRect.bottom +
                 ", bottomSpaceViewRect.bottom " +bottomSpaceViewRect.bottom +
@@ -154,6 +151,8 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         }
 
         // If the bottomSpaceViewRect is visible, then remove the margin if needed
+        //boolean isVisible = windowAvailableRect.contains(bottomSpaceViewRect); // rect.right comparison often fails in landscape
+        boolean isVisible = ViewUtils.isRectAbove(windowAvailableRect, bottomSpaceViewRect);
         if (isVisible) {
             // If visible because of margin, i.e the bottom of bottomSpaceViewRect equals that of windowAvailableRect
             // and a margin has been added
