@@ -101,12 +101,18 @@ public class PeerCred {
         StringBuilder logString = new StringBuilder();
 
         logString.append("Peer Cred:");
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("Process", getProcessString(), "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("User", getUserString(), "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("Group", getGroupString(), "-"));
-
-        if (cmdline != null)
-            logString.append("\n").append(Logger.getMultiLineLogStringEntry("Cmdline", cmdline, "-"));
+        
+        for (Pair<String, String> logVar: getLogVariableList()) {
+            String label = logVar.first;
+            String object = logVar.second;
+            switch(label) {
+                case "Cmdline":
+                    if (label != null) logString.append("\n").append(Logger.getMultiLineLogStringEntry(label, object, "-"));
+                    break;
+                default:
+                    logString.append("\n").append(Logger.getSingleLineLogStringEntry(label, object, "-"));
+            }
+        }
 
         return logString.toString();
     }
