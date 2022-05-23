@@ -41,6 +41,47 @@ public class Errno {
         map.put(type + ":" + code, this);
     }
 
+    /** The {@link Class} that defines a builder for {@link Errno} class. */
+    public static class ErrnoBuilder {
+        private String type;
+        private int code;
+        private String message;
+
+        /**
+         * Set the {@param type} for {@link Errno}.
+         *
+         * @param type The unique type of the {@link Errno}.
+         */
+        public ErrnoBuilder setType(@NonNull String type) {
+            this.type = type;
+            return this;
+        }
+
+        /**
+         * Set the {@param code} for {@link Errno}.
+         *
+         * @param code The unique code of the {@link Errno}.
+         */
+        public ErrnoBuilder setCode(int code) {
+            this.code = code;
+            return this;
+        }
+
+        /**
+         * Set the {@param message} for {@link Errno}.
+         */
+        public ErrnoBuilder setMessage(String message) {
+            this.message = message;
+            return this;
+        }
+
+        /** returns new {@link Errno} object. */
+        public Errno build() {
+            Errno errno = new Errno(this.type, this.code, this.message);
+            return errno;
+        }
+    }
+
     @NonNull
     @Override
     public String toString() {
