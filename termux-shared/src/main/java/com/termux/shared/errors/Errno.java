@@ -5,6 +5,7 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 
 import com.termux.shared.logger.Logger;
+import com.termux.shared.errors.Error.ErrorBuilder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -103,13 +104,24 @@ public class Errno {
     public Error getError(List<Throwable> throwablesList, Object... args) {
         try {
             if (throwablesList == null)
-                return new Error(getType(), getCode(), String.format(getMessage(), args));
+                return new ErrorBuilder().setType(getType())
+                                               .setCode(getCode())
+                                               .setMessage(String.format(getMessage(), args))
+                                               .build();
             else
-                return new Error(getType(), getCode(), String.format(getMessage(), args), throwablesList);
+                return new ErrorBuilder().setType(getType())
+                                               .setCode(getCode())
+                                               .setMessage(String.format(getMessage(), args))
+                                               .setThrowableList(throwablesList)
+                                               .build();
         } catch (Exception e) {
             Logger.logWarn(LOG_TAG, "Exception raised while calling String.format() for error message of errno " + this + " with args" + Arrays.toString(args) + "\n" + e.getMessage());
             // Return unformatted message as a backup
-            return new Error(getType(), getCode(), getMessage() + ": " + Arrays.toString(args), throwablesList);
+            return new ErrorBuilder().setType(getType())
+                                           .setCode(getCode())
+                                           .setMessage(getMessage() + ": " + Arrays.toString(args))
+                                           .setThrowableList(throwablesList)
+                                           .build();
         }
     }
 
