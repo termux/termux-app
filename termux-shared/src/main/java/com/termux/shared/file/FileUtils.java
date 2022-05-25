@@ -1883,7 +1883,7 @@ public class FileUtils {
         Errno shortErrno = FileUtilsErrno.ERRNO_SHORT_MAPPING.get(Errno.valueOf(type, error.getCode()));
         if (shortErrno == null) return error;
 
-        List<Throwable> throwables = error.getThrowablesList();
+        List<Throwable> throwables = error.getThrowableList();
         if (throwables.isEmpty())
             return shortErrno.getError(DataUtils.getDefaultIfNull(error.getLabel(), "file"));
         else

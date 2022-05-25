@@ -23,7 +23,7 @@ public class Error implements Serializable {
     /** The error message. */
     private String message;
     /** The error exceptions. */
-    private List<Throwable> throwablesList = new ArrayList<>();
+    private List<Throwable> throwableList = new ArrayList<>();
 
     private static final String LOG_TAG = "Error";
 
@@ -32,8 +32,8 @@ public class Error implements Serializable {
         InitError(null, null, null, null);
     }
 
-    public Error(String type, Integer code, String message, List<Throwable> throwablesList) {
-        InitError(type, code, message, throwablesList);
+    public Error(String type, Integer code, String message, List<Throwable> throwableList) {
+        InitError(type, code, message, throwableList);
     }
 
     public Error(String type, Integer code, String message, Throwable throwable) {
@@ -44,8 +44,8 @@ public class Error implements Serializable {
         InitError(type, code, message, null);
     }
 
-    public Error(Integer code, String message, List<Throwable> throwablesList) {
-        InitError(null, code, message, throwablesList);
+    public Error(Integer code, String message, List<Throwable> throwableList) {
+        InitError(null, code, message, throwableList);
     }
 
     public Error(Integer code, String message, Throwable throwable) {
@@ -60,8 +60,8 @@ public class Error implements Serializable {
         InitError(null, null, message, Collections.singletonList(throwable));
     }
 
-    public Error(String message, List<Throwable> throwablesList) {
-        InitError(null, null, message, throwablesList);
+    public Error(String message, List<Throwable> throwableList) {
+        InitError(null, null, message, throwableList);
     }
 
     public Error(String message) {
@@ -82,7 +82,50 @@ public class Error implements Serializable {
         this.message = message;
 
         if (throwablesList != null)
-            this.throwablesList = throwablesList;
+            this.throwableList = throwablesList;
+    }
+
+    /** The {@link Class} that defines a builder for {@link Error} class. */
+    public static class ErrorBuilder {
+        private String type = null;
+        private Integer code = null;
+        private String message = null;
+        private List<Throwable> throwableList = new ArrayList<>();
+
+        public ErrorBuilder setType(String type) {
+            if (type != null && !type.isEmpty())
+                this.type = type;
+            else
+                this.type = Errno.TYPE;
+            return this;
+        }
+
+        public ErrorBuilder setCode(Integer code) {
+            if (code != null && code > Errno.ERRNO_SUCCESS.getCode())
+                this.code = code;
+            else
+                this.code = Errno.ERRNO_SUCCESS.getCode();
+            return this;
+        }
+
+        public ErrorBuilder setMessage(String message) {
+            this.message = message;
+            return this;
+        }
+
+        public ErrorBuilder setThrowableList(Throwable throwable) {
+            return this.setThrowableList(Collections.singletonList(throwable));
+        }
+
+        public ErrorBuilder setThrowableList(List<Throwable> throwableList) {
+            if (throwableList != null)
+                this.throwableList = throwableList;
+            return this;
+        }
+
+        public Error build() {
+            return new Error(type, code, message, throwableList);
+        }
     }
 
     public Error setLabel(String label) {
@@ -117,8 +160,8 @@ public class Error implements Serializable {
             this.message = this.message + message;
     }
 
-    public List<Throwable> getThrowablesList() {
-        return Collections.unmodifiableList(throwablesList);
+    public List<Throwable> getThrowableList() {
+        return Collections.unmodifiableList(throwableList);
     }
 
 
@@ -147,7 +190,7 @@ public class Error implements Serializable {
 
     public synchronized boolean setStateFailed(String type, int code, String message, List<Throwable> throwablesList) {
         this.message = message;
-        this.throwablesList = throwablesList;
+        this.throwableList = throwablesList;
 
         if (type != null && !type.isEmpty())
             this.type = type;
@@ -209,7 +252,7 @@ public class Error implements Serializable {
 
         logString.append(getCodeString());
         logString.append("\n").append(getTypeAndMessageLogString());
-        if (throwablesList != null && throwablesList.size() > 0)
+        if (throwableList != null && throwableList.size() > 0)
             logString.append("\n").append(geStackTracesLogString());
 
         return logString.toString();
@@ -271,8 +314,8 @@ public class Error implements Serializable {
 
         markdownString.append(MarkdownUtils.getSingleLineMarkdownStringEntry("Error Code", getCode(), "-"));
         markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry(
-            (Errno.TYPE.equals(getType()) ? "Error Message" : "Error Message (" + getType() + ")"), message, "-"));
-        if (throwablesList != null && throwablesList.size() > 0)
+                (Errno.TYPE.equals(getType()) ? "Error Message" : "Error Message (" + getType() + ")"), message, "-"));
+        if (throwableList != null && throwableList.size() > 0)
             markdownString.append("\n\n").append(geStackTracesMarkdownString());
 
         return markdownString.toString();
@@ -288,11 +331,11 @@ public class Error implements Serializable {
     }
 
     public String geStackTracesLogString() {
-        return Logger.getStackTracesString("StackTraces:", Logger.getStackTracesStringArray(throwablesList));
+        return Logger.getStackTracesString("StackTraces:", Logger.getStackTracesStringArray(throwableList));
     }
 
     public String geStackTracesMarkdownString() {
-        return Logger.getStackTracesMarkdownString("StackTraces", Logger.getStackTracesStringArray(throwablesList));
+        return Logger.getStackTracesMarkdownString("StackTraces", Logger.getStackTracesStringArray(throwableList));
     }
 
 }
