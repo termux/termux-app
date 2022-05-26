@@ -31,10 +31,10 @@ public class RootPreferencesFragment extends PreferenceFragmentCompat {
 
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
+        new configureTermuxAPIPreference();
         new Thread() {
             @Override
             public void run() {
-                configureTermuxAPIPreference(context);
                 configureTermuxFloatPreference(context);
                 configureTermuxTaskerPreference(context);
                 configureTermuxWidgetPreference(context);
@@ -44,14 +44,14 @@ public class RootPreferencesFragment extends PreferenceFragmentCompat {
         }.start();
     }
 
-    private void configureTermuxAPIPreference(@NonNull Context context) {
-        Preference termuxAPIPreference = findPreference("termux_api");
-        if (termuxAPIPreference != null) {
-            TermuxAPIAppSharedPreferences preferences = TermuxAPIAppSharedPreferences.build(context, false);
-            // If failed to get app preferences, then likely app is not installed, so do not show its preference
-            termuxAPIPreference.setVisible(preferences != null);
-        }
-    }
+//    private void configureTermuxAPIPreference(@NonNull Context context) {
+//        Preference termuxAPIPreference = findPreference("termux_api");
+//        if (termuxAPIPreference != null) {
+//            TermuxAPIAppSharedPreferences preferences = TermuxAPIAppSharedPreferences.build(context, false);
+//            // If failed to get app preferences, then likely app is not installed, so do not show its preference
+//            termuxAPIPreference.setVisible(preferences != null);
+//        }
+//    }
 
     private void configureTermuxFloatPreference(@NonNull Context context) {
         Preference termuxFloatPreference = findPreference("termux_float");
