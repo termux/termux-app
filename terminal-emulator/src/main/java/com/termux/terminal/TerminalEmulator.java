@@ -41,45 +41,6 @@ public final class TerminalEmulator {
     /** Used for invalid data - http://en.wikipedia.org/wiki/Replacement_character#Replacement_character */
     public static final int UNICODE_REPLACEMENT_CHAR = 0xFFFD;
 
-    /** Escape processing: Not currently in an escape sequence. */
-    private static final int ESC_NONE = 0;
-    /** Escape processing: Have seen an ESC character - proceed to {@link #doEsc(int)} */
-    private static final int ESC = 1;
-    /** Escape processing: Have seen ESC POUND */
-    private static final int ESC_POUND = 2;
-    /** Escape processing: Have seen ESC and a character-set-select ( char */
-    private static final int ESC_SELECT_LEFT_PAREN = 3;
-    /** Escape processing: Have seen ESC and a character-set-select ) char */
-    private static final int ESC_SELECT_RIGHT_PAREN = 4;
-    /** Escape processing: "ESC [" or CSI (Control Sequence Introducer). */
-    private static final int ESC_CSI = 6;
-    /** Escape processing: ESC [ ? */
-    private static final int ESC_CSI_QUESTIONMARK = 7;
-    /** Escape processing: ESC [ $ */
-    private static final int ESC_CSI_DOLLAR = 8;
-    /** Escape processing: ESC % */
-    private static final int ESC_PERCENT = 9;
-    /** Escape processing: ESC ] (AKA OSC - Operating System Controls) */
-    private static final int ESC_OSC = 10;
-    /** Escape processing: ESC ] (AKA OSC - Operating System Controls) ESC */
-    private static final int ESC_OSC_ESC = 11;
-    /** Escape processing: ESC [ > */
-    private static final int ESC_CSI_BIGGERTHAN = 12;
-    /** Escape procession: "ESC P" or Device Control String (DCS) */
-    private static final int ESC_P = 13;
-    /** Escape processing: CSI > */
-    private static final int ESC_CSI_QUESTIONMARK_ARG_DOLLAR = 14;
-    /** Escape processing: CSI $ARGS ' ' */
-    private static final int ESC_CSI_ARGS_SPACE = 15;
-    /** Escape processing: CSI $ARGS '*' */
-    private static final int ESC_CSI_ARGS_ASTERIX = 16;
-    /** Escape processing: CSI " */
-    private static final int ESC_CSI_DOUBLE_QUOTE = 17;
-    /** Escape processing: CSI ' */
-    private static final int ESC_CSI_SINGLE_QUOTE = 18;
-    /** Escape processing: CSI ! */
-    private static final int ESC_CSI_EXCLAMATION = 19;
-
     /** The number of parameter arguments. This name comes from the ANSI standard for terminal escape codes. */
     private static final int MAX_ESCAPE_PARAMETERS = 16;
 
@@ -183,7 +144,7 @@ public final class TerminalEmulator {
     private boolean mContinueSequence;
 
     /** The current state of the escape sequence state machine. One of the ESC_* constants. */
-    private int mEscapeState;
+    private EscapeState mEscapeState;
 
     private final SavedScreenState mSavedStateMain = new SavedScreenState();
     private final SavedScreenState mSavedStateAlt = new SavedScreenState();
@@ -550,7 +511,7 @@ public final class TerminalEmulator {
             case 0: // Null character (NUL, ^@). Do nothing.
                 break;
             case 7: // Bell (BEL, ^G, \a). If in an OSC sequence, BEL may terminate a string; otherwise signal bell.
-                if (mEscapeState == ESC_OSC)
+                if (mEscapeState instanceof EscOscState)
                     doOsc(b);
                 else
                     mSession.onBell();
@@ -593,18 +554,18 @@ public final class TerminalEmulator {
                 break;
             case 24: // CAN.
             case 26: // SUB.
-                if (mEscapeState != ESC_NONE) {
+                if (!(mEscapeState instanceof EscNoneState)) {
                     // FIXME: What is this??
-                    mEscapeState = ESC_NONE;
+                    mEscapeState = new EscNoneState();
                     emitCodePoint(127);
                 }
                 break;
             case 27: // ESC
                 // Starts an escape sequence unless we're parsing a string
-                if (mEscapeState == ESC_P) {
+                if (mEscapeState instanceof EscPState) {
                     // XXX: Ignore escape when reading device control sequence, since it may be part of string terminator.
                     return;
-                } else if (mEscapeState != ESC_OSC) {
+                } else if (!(mEscapeState instanceof EscOscState)) {
                     startEscapeSequence();
                 } else {
                     doOsc(b);
@@ -612,393 +573,14 @@ public final class TerminalEmulator {
                 break;
             default:
                 mContinueSequence = false;
-                switch (mEscapeState) {
-                    case ESC_NONE:
-                        if (b >= 32) emitCodePoint(b);
-                        break;
-                    case ESC:
-                        doEsc(b);
-                        break;
-                    case ESC_POUND:
-                        doEscPound(b);
-                        break;
-                    case ESC_SELECT_LEFT_PAREN: // Designate G0 Character Set (ISO 2022, VT100).
-                        mUseLineDrawingG0 = (b == '0');
-                        break;
-                    case ESC_SELECT_RIGHT_PAREN: // Designate G1 Character Set (ISO 2022, VT100).
-                        mUseLineDrawingG1 = (b == '0');
-                        break;
-                    case ESC_CSI:
-                        doCsi(b);
-                        break;
-                    case ESC_CSI_EXCLAMATION:
-                        if (b == 'p') { // Soft terminal reset (DECSTR, http://vt100.net/docs/vt510-rm/DECSTR).
-                            reset();
-                        } else {
-                            unknownSequence(b);
-                        }
-                        break;
-                    case ESC_CSI_QUESTIONMARK:
-                        doCsiQuestionMark(b);
-                        break;
-                    case ESC_CSI_BIGGERTHAN:
-                        doCsiBiggerThan(b);
-                        break;
-                    case ESC_CSI_DOLLAR:
-                        boolean originMode = isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE);
-                        int effectiveTopMargin = originMode ? mTopMargin : 0;
-                        int effectiveBottomMargin = originMode ? mBottomMargin : mRows;
-                        int effectiveLeftMargin = originMode ? mLeftMargin : 0;
-                        int effectiveRightMargin = originMode ? mRightMargin : mColumns;
-                        switch (b) {
-                            case 'v': // ${CSI}${SRC_TOP}${SRC_LEFT}${SRC_BOTTOM}${SRC_RIGHT}${SRC_PAGE}${DST_TOP}${DST_LEFT}${DST_PAGE}$v"
-                                // Copy rectangular area (DECCRA - http://vt100.net/docs/vt510-rm/DECCRA):
-                                // "If Pbs is greater than Pts, or Pls is greater than Prs, the terminal ignores DECCRA.
-                                // The coordinates of the rectangular area are affected by the setting of origin mode (DECOM).
-                                // DECCRA is not affected by the page margins.
-                                // The copied text takes on the line attributes of the destination area.
-                                // If the value of Pt, Pl, Pb, or Pr exceeds the width or height of the active page, then the value
-                                // is treated as the width or height of that page.
-                                // If the destination area is partially off the page, then DECCRA clips the off-page data.
-                                // DECCRA does not change the active cursor position."
-                                int topSource = Math.min(getArg(0, 1, true) - 1 + effectiveTopMargin, mRows);
-                                int leftSource = Math.min(getArg(1, 1, true) - 1 + effectiveLeftMargin, mColumns);
-                                // Inclusive, so do not subtract one:
-                                int bottomSource = Math.min(Math.max(getArg(2, mRows, true) + effectiveTopMargin, topSource), mRows);
-                                int rightSource = Math.min(Math.max(getArg(3, mColumns, true) + effectiveLeftMargin, leftSource), mColumns);
-                                // int sourcePage = getArg(4, 1, true);
-                                int destionationTop = Math.min(getArg(5, 1, true) - 1 + effectiveTopMargin, mRows);
-                                int destinationLeft = Math.min(getArg(6, 1, true) - 1 + effectiveLeftMargin, mColumns);
-                                // int destinationPage = getArg(7, 1, true);
-                                int heightToCopy = Math.min(mRows - destionationTop, bottomSource - topSource);
-                                int widthToCopy = Math.min(mColumns - destinationLeft, rightSource - leftSource);
-                                mScreen.blockCopy(leftSource, topSource, widthToCopy, heightToCopy, destinationLeft, destionationTop);
-                                break;
-                            case '{': // ${CSI}${TOP}${LEFT}${BOTTOM}${RIGHT}${"
-                                // Selective erase rectangular area (DECSERA - http://www.vt100.net/docs/vt510-rm/DECSERA).
-                            case 'x': // ${CSI}${CHAR};${TOP}${LEFT}${BOTTOM}${RIGHT}$x"
-                                // Fill rectangular area (DECFRA - http://www.vt100.net/docs/vt510-rm/DECFRA).
-                            case 'z': // ${CSI}$${TOP}${LEFT}${BOTTOM}${RIGHT}$z"
-                                // Erase rectangular area (DECERA - http://www.vt100.net/docs/vt510-rm/DECERA).
-                                boolean erase = b != 'x';
-                                boolean selective = b == '{';
-                                // Only DECSERA keeps visual attributes, DECERA does not:
-                                boolean keepVisualAttributes = erase && selective;
-                                int argIndex = 0;
-                                int fillChar = erase ? ' ' : getArg(argIndex++, -1, true);
-                                // "Pch can be any value from 32 to 126 or from 160 to 255. If Pch is not in this range, then the
-                                // terminal ignores the DECFRA command":
-                                if ((fillChar >= 32 && fillChar <= 126) || (fillChar >= 160 && fillChar <= 255)) {
-                                    // "If the value of Pt, Pl, Pb, or Pr exceeds the width or height of the active page, the value
-                                    // is treated as the width or height of that page."
-                                    int top = Math.min(getArg(argIndex++, 1, true) + effectiveTopMargin, effectiveBottomMargin + 1);
-                                    int left = Math.min(getArg(argIndex++, 1, true) + effectiveLeftMargin, effectiveRightMargin + 1);
-                                    int bottom = Math.min(getArg(argIndex++, mRows, true) + effectiveTopMargin, effectiveBottomMargin);
-                                    int right = Math.min(getArg(argIndex, mColumns, true) + effectiveLeftMargin, effectiveRightMargin);
-                                    long style = getStyle();
-                                    for (int row = top - 1; row < bottom; row++)
-                                        for (int col = left - 1; col < right; col++)
-                                            if (!selective || (TextStyle.decodeEffect(mScreen.getStyleAt(row, col)) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED) == 0)
-                                                mScreen.setChar(col, row, fillChar, keepVisualAttributes ? mScreen.getStyleAt(row, col) : style);
-                                }
-                                break;
-                            case 'r': // "${CSI}${TOP}${LEFT}${BOTTOM}${RIGHT}${ATTRIBUTES}$r"
-                                // Change attributes in rectangular area (DECCARA - http://vt100.net/docs/vt510-rm/DECCARA).
-                            case 't': // "${CSI}${TOP}${LEFT}${BOTTOM}${RIGHT}${ATTRIBUTES}$t"
-                                // Reverse attributes in rectangular area (DECRARA - http://www.vt100.net/docs/vt510-rm/DECRARA).
-                                boolean reverse = b == 't';
-                                // FIXME: "coordinates of the rectangular area are affected by the setting of origin mode (DECOM)".
-                                int top = Math.min(getArg(0, 1, true) - 1, effectiveBottomMargin) + effectiveTopMargin;
-                                int left = Math.min(getArg(1, 1, true) - 1, effectiveRightMargin) + effectiveLeftMargin;
-                                int bottom = Math.min(getArg(2, mRows, true) + 1, effectiveBottomMargin - 1) + effectiveTopMargin;
-                                int right = Math.min(getArg(3, mColumns, true) + 1, effectiveRightMargin - 1) + effectiveLeftMargin;
-                                if (mArgIndex >= 4) {
-                                    if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
-                                    for (int i = 4; i <= mArgIndex; i++) {
-                                        int bits = 0;
-                                        boolean setOrClear = true; // True if setting, false if clearing.
-                                        switch (getArg(i, 0, false)) {
-                                            case 0: // Attributes off (no bold, no underline, no blink, positive image).
-                                                bits = (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE | TextStyle.CHARACTER_ATTRIBUTE_BLINK
-                                                    | TextStyle.CHARACTER_ATTRIBUTE_INVERSE);
-                                                if (!reverse) setOrClear = false;
-                                                break;
-                                            case 1: // Bold.
-                                                bits = TextStyle.CHARACTER_ATTRIBUTE_BOLD;
-                                                break;
-                                            case 4: // Underline.
-                                                bits = TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
-                                                break;
-                                            case 5: // Blink.
-                                                bits = TextStyle.CHARACTER_ATTRIBUTE_BLINK;
-                                                break;
-                                            case 7: // Negative image.
-                                                bits = TextStyle.CHARACTER_ATTRIBUTE_INVERSE;
-                                                break;
-                                            case 22: // No bold.
-                                                bits = TextStyle.CHARACTER_ATTRIBUTE_BOLD;
-                                                setOrClear = false;
-                                                break;
-                                            case 24: // No underline.
-                                                bits = TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
-                                                setOrClear = false;
-                                                break;
-                                            case 25: // No blink.
-                                                bits = TextStyle.CHARACTER_ATTRIBUTE_BLINK;
-                                                setOrClear = false;
-                                                break;
-                                            case 27: // Positive image.
-                                                bits = TextStyle.CHARACTER_ATTRIBUTE_INVERSE;
-                                                setOrClear = false;
-                                                break;
-                                        }
-                                        if (reverse && !setOrClear) {
-                                            // Reverse attributes in rectangular area ignores non-(1,4,5,7) bits.
-                                        } else {
-                                            mScreen.setOrClearEffect(bits, setOrClear, reverse, isDecsetInternalBitSet(DECSET_BIT_RECTANGULAR_CHANGEATTRIBUTE),
-                                                effectiveLeftMargin, effectiveRightMargin, top, left, bottom, right);
-                                        }
-                                    }
-                                } else {
-                                    // Do nothing.
-                                }
-                                break;
-                            default:
-                                unknownSequence(b);
-                        }
-                        break;
-                    case ESC_CSI_DOUBLE_QUOTE:
-                        if (b == 'q') {
-                            // http://www.vt100.net/docs/vt510-rm/DECSCA
-                            int arg = getArg0(0);
-                            if (arg == 0 || arg == 2) {
-                                // DECSED and DECSEL can erase characters.
-                                mEffect &= ~TextStyle.CHARACTER_ATTRIBUTE_PROTECTED;
-                            } else if (arg == 1) {
-                                // DECSED and DECSEL cannot erase characters.
-                                mEffect |= TextStyle.CHARACTER_ATTRIBUTE_PROTECTED;
-                            } else {
-                                unknownSequence(b);
-                            }
-                        } else {
-                            unknownSequence(b);
-                        }
-                        break;
-                    case ESC_CSI_SINGLE_QUOTE:
-                        if (b == '}') { // Insert Ps Column(s) (default = 1) (DECIC), VT420 and up.
-                            int columnsAfterCursor = mRightMargin - mCursorCol;
-                            int columnsToInsert = Math.min(getArg0(1), columnsAfterCursor);
-                            int columnsToMove = columnsAfterCursor - columnsToInsert;
-                            mScreen.blockCopy(mCursorCol, 0, columnsToMove, mRows, mCursorCol + columnsToInsert, 0);
-                            blockClear(mCursorCol, 0, columnsToInsert, mRows);
-                        } else if (b == '~') { // Delete Ps Column(s) (default = 1) (DECDC), VT420 and up.
-                            int columnsAfterCursor = mRightMargin - mCursorCol;
-                            int columnsToDelete = Math.min(getArg0(1), columnsAfterCursor);
-                            int columnsToMove = columnsAfterCursor - columnsToDelete;
-                            mScreen.blockCopy(mCursorCol + columnsToDelete, 0, columnsToMove, mRows, mCursorCol, 0);
-                        } else {
-                            unknownSequence(b);
-                        }
-                        break;
-                    case ESC_PERCENT:
-                        break;
-                    case ESC_OSC:
-                        doOsc(b);
-                        break;
-                    case ESC_OSC_ESC:
-                        doOscEsc(b);
-                        break;
-                    case ESC_P:
-                        doDeviceControl(b);
-                        break;
-                    case ESC_CSI_QUESTIONMARK_ARG_DOLLAR:
-                        if (b == 'p') {
-                            // Request DEC private mode (DECRQM).
-                            int mode = getArg0(0);
-                            int value;
-                            if (mode == 47 || mode == 1047 || mode == 1049) {
-                                // This state is carried by mScreen pointer.
-                                value = (mScreen == mAltBuffer) ? 1 : 2;
-                            } else {
-                                int internalBit = mapDecSetBitToInternalBit(mode);
-                                if (internalBit != -1) {
-                                    value = isDecsetInternalBitSet(internalBit) ? 1 : 2; // 1=set, 2=reset.
-                                } else {
-                                    Logger.logError(mClient, LOG_TAG, "Got DECRQM for unrecognized private DEC mode=" + mode);
-                                    value = 0; // 0=not recognized, 3=permanently set, 4=permanently reset
-                                }
-                            }
-                            mSession.write(String.format(Locale.US, "\033[?%d;%d$y", mode, value));
-                        } else {
-                            unknownSequence(b);
-                        }
-                        break;
-                    case ESC_CSI_ARGS_SPACE:
-                        int arg = getArg0(0);
-                        switch (b) {
-                            case 'q': // "${CSI}${STYLE} q" - set cursor style (http://www.vt100.net/docs/vt510-rm/DECSCUSR).
-                                switch (arg) {
-                                    case 0: // Blinking block.
-                                    case 1: // Blinking block.
-                                    case 2: // Steady block.
-                                        mCursorStyle = TERMINAL_CURSOR_STYLE_BLOCK;
-                                        break;
-                                    case 3: // Blinking underline.
-                                    case 4: // Steady underline.
-                                        mCursorStyle = TERMINAL_CURSOR_STYLE_UNDERLINE;
-                                        break;
-                                    case 5: // Blinking bar (xterm addition).
-                                    case 6: // Steady bar (xterm addition).
-                                        mCursorStyle = TERMINAL_CURSOR_STYLE_BAR;
-                                        break;
-                                }
-                                break;
-                            case 't':
-                            case 'u':
-                                // Set margin-bell volume - ignore.
-                                break;
-                            default:
-                                unknownSequence(b);
-                        }
-                        break;
-                    case ESC_CSI_ARGS_ASTERIX:
-                        int attributeChangeExtent = getArg0(0);
-                        if (b == 'x' && (attributeChangeExtent >= 0 && attributeChangeExtent <= 2)) {
-                            // Select attribute change extent (DECSACE - http://www.vt100.net/docs/vt510-rm/DECSACE).
-                            setDecsetinternalBit(DECSET_BIT_RECTANGULAR_CHANGEATTRIBUTE, attributeChangeExtent == 2);
-                        } else {
-                            unknownSequence(b);
-                        }
-                        break;
-                    default:
-                        unknownSequence(b);
-                        break;
+                if (mEscapeState != null) {
+                    mEscapeState.processCodePoint(b);
                 }
-                if (!mContinueSequence) mEscapeState = ESC_NONE;
+                else {
+                    unknownSequence(b);
+                }
+                if (!mContinueSequence) mEscapeState = new EscNoneState();
                 break;
-        }
-    }
-
-    /** When in {@link #ESC_P} ("device control") sequence. */
-    private void doDeviceControl(int b) {
-        switch (b) {
-            case (byte) '\\': // End of ESC \ string Terminator
-            {
-                String dcs = mOSCOrDeviceControlArgs.toString();
-                // DCS $ q P t ST. Request Status String (DECRQSS)
-                if (dcs.startsWith("$q")) {
-                    if (dcs.equals("$q\"p")) {
-                        // DECSCL, conformance level, http://www.vt100.net/docs/vt510-rm/DECSCL:
-                        String csiString = "64;1\"p";
-                        mSession.write("\033P1$r" + csiString + "\033\\");
-                    } else {
-                        finishSequenceAndLogError("Unrecognized DECRQSS string: '" + dcs + "'");
-                    }
-                } else if (dcs.startsWith("+q")) {
-                    // Request Termcap/Terminfo String. The string following the "q" is a list of names encoded in
-                    // hexadecimal (2 digits per character) separated by ; which correspond to termcap or terminfo key
-                    // names.
-                    // Two special features are also recognized, which are not key names: Co for termcap colors (or colors
-                    // for terminfo colors), and TN for termcap name (or name for terminfo name).
-                    // xterm responds with DCS 1 + r P t ST for valid requests, adding to P t an = , and the value of the
-                    // corresponding string that xterm would send, or DCS 0 + r P t ST for invalid requests. The strings are
-                    // encoded in hexadecimal (2 digits per character).
-                    // Example:
-                    // :kr=\EOC: ks=\E[?1h\E=: ku=\EOA: le=^H:mb=\E[5m:md=\E[1m:\
-                    // where
-                    // kd=down-arrow key
-                    // kl=left-arrow key
-                    // kr=right-arrow key
-                    // ku=up-arrow key
-                    // #2=key_shome, "shifted home"
-                    // #4=key_sleft, "shift arrow left"
-                    // %i=key_sright, "shift arrow right"
-                    // *7=key_send, "shifted end"
-                    // k1=F1 function key
-
-                    // Example: Request for ku is "ESC P + q 6 b 7 5 ESC \", where 6b7d=ku in hexadecimal.
-                    // Xterm response in normal cursor mode:
-                    // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x5B 0x41 = 27 91 65 = ESC [ A
-                    // Xterm response in application cursor mode:
-                    // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x4F 0x41 = 27 91 65 = ESC 0 A
-
-                    // #4 is "shift arrow left":
-                    // *** Device Control (DCS) for '#4'- 'ESC P + q 23 34 ESC \'
-                    // Response: <27> P 1 + r 2 3 3 4 = 1 B 5 B 3 1 3 B 3 2 4 4 <27> \
-                    // where 0x1B 0x5B 0x31 0x3B 0x32 0x44 = ESC [ 1 ; 2 D
-                    // which we find in: TermKeyListener.java: KEY_MAP.put(KEYMOD_SHIFT | KEYCODE_DPAD_LEFT, "\033[1;2D");
-
-                    // See http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V40G_HTML/MAN/MAN4/0178____.HTM for what to
-                    // respond, as well as http://www.freebsd.org/cgi/man.cgi?query=termcap&sektion=5#CAPABILITIES for
-                    // the meaning of e.g. "ku", "kd", "kr", "kl"
-
-                    for (String part : dcs.substring(2).split(";")) {
-                        if (part.length() % 2 == 0) {
-                            StringBuilder transBuffer = new StringBuilder();
-                            char c;
-                            for (int i = 0; i < part.length(); i += 2) {
-                                try {
-                                    c = (char) Long.decode("0x" + part.charAt(i) + "" + part.charAt(i + 1)).longValue();
-                                } catch (NumberFormatException e) {
-                                    Logger.logStackTraceWithMessage(mClient, LOG_TAG, "Invalid device termcap/terminfo encoded name \"" + part + "\"", e);
-                                    continue;
-                                }
-                                transBuffer.append(c);
-                            }
-
-                            String trans = transBuffer.toString();
-                            String responseValue;
-                            switch (trans) {
-                                case "Co":
-                                case "colors":
-                                    responseValue = "256"; // Number of colors.
-                                    break;
-                                case "TN":
-                                case "name":
-                                    responseValue = "xterm";
-                                    break;
-                                default:
-                                    responseValue = KeyHandler.getCodeFromTermcap(trans, isDecsetInternalBitSet(DECSET_BIT_APPLICATION_CURSOR_KEYS),
-                                        isDecsetInternalBitSet(DECSET_BIT_APPLICATION_KEYPAD));
-                                    break;
-                            }
-                            if (responseValue == null) {
-                                switch (trans) {
-                                    case "%1": // Help key - ignore
-                                    case "&8": // Undo key - ignore.
-                                        break;
-                                    default:
-                                        Logger.logWarn(mClient, LOG_TAG, "Unhandled termcap/terminfo name: '" + trans + "'");
-                                }
-                                // Respond with invalid request:
-                                mSession.write("\033P0+r" + part + "\033\\");
-                            } else {
-                                StringBuilder hexEncoded = new StringBuilder();
-                                for (int j = 0; j < responseValue.length(); j++) {
-                                    hexEncoded.append(String.format("%02X", (int) responseValue.charAt(j)));
-                                }
-                                mSession.write("\033P1+r" + part + "=" + hexEncoded + "\033\\");
-                            }
-                        } else {
-                            Logger.logError(mClient, LOG_TAG, "Invalid device termcap/terminfo name of odd length: " + part);
-                        }
-                    }
-                } else {
-                    if (LOG_ESCAPE_SEQUENCES)
-                        Logger.logError(mClient, LOG_TAG, "Unrecognized device control string: " + dcs);
-                }
-                finishSequence();
-            }
-            break;
-            default:
-                if (mOSCOrDeviceControlArgs.length() > MAX_OSC_STRING_LENGTH) {
-                    // Too long.
-                    mOSCOrDeviceControlArgs.setLength(0);
-                    finishSequence();
-                } else {
-                    mOSCOrDeviceControlArgs.appendCodePoint(b);
-                    continueSequence(mEscapeState);
-                }
         }
     }
 
@@ -1006,91 +588,6 @@ public final class TerminalEmulator {
         for (int i = mCursorCol + 1; i < mColumns; i++)
             if (mTabStop[i] && --numTabs == 0) return Math.min(i, mRightMargin);
         return mRightMargin - 1;
-    }
-
-    /** Process byte while in the {@link #ESC_CSI_QUESTIONMARK} escape state. */
-    private void doCsiQuestionMark(int b) {
-        switch (b) {
-            case 'J': // Selective erase in display (DECSED) - http://www.vt100.net/docs/vt510-rm/DECSED.
-            case 'K': // Selective erase in line (DECSEL) - http://vt100.net/docs/vt510-rm/DECSEL.
-                mAboutToAutoWrap = false;
-                int fillChar = ' ';
-                int startCol = -1;
-                int startRow = -1;
-                int endCol = -1;
-                int endRow = -1;
-                boolean justRow = (b == 'K');
-                switch (getArg0(0)) {
-                    case 0: // Erase from the active position to the end, inclusive (default).
-                        startCol = mCursorCol;
-                        startRow = mCursorRow;
-                        endCol = mColumns;
-                        endRow = justRow ? (mCursorRow + 1) : mRows;
-                        break;
-                    case 1: // Erase from start to the active position, inclusive.
-                        startCol = 0;
-                        startRow = justRow ? mCursorRow : 0;
-                        endCol = mCursorCol + 1;
-                        endRow = mCursorRow + 1;
-                        break;
-                    case 2: // Erase all of the display/line.
-                        startCol = 0;
-                        startRow = justRow ? mCursorRow : 0;
-                        endCol = mColumns;
-                        endRow = justRow ? (mCursorRow + 1) : mRows;
-                        break;
-                    default:
-                        unknownSequence(b);
-                        break;
-                }
-                long style = getStyle();
-                for (int row = startRow; row < endRow; row++) {
-                    for (int col = startCol; col < endCol; col++) {
-                        if ((TextStyle.decodeEffect(mScreen.getStyleAt(row, col)) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED) == 0)
-                            mScreen.setChar(col, row, fillChar, style);
-                    }
-                }
-                break;
-            case 'h':
-            case 'l':
-                if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
-                for (int i = 0; i <= mArgIndex; i++)
-                    doDecSetOrReset(b == 'h', mArgs[i]);
-                break;
-            case 'n': // Device Status Report (DSR, DEC-specific).
-                switch (getArg0(-1)) {
-                    case 6:
-                        // Extended Cursor Position (DECXCPR - http://www.vt100.net/docs/vt510-rm/DECXCPR). Page=1.
-                        mSession.write(String.format(Locale.US, "\033[?%d;%d;1R", mCursorRow + 1, mCursorCol + 1));
-                        break;
-                    default:
-                        finishSequence();
-                        return;
-                }
-                break;
-            case 'r':
-            case 's':
-                if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
-                for (int i = 0; i <= mArgIndex; i++) {
-                    int externalBit = mArgs[i];
-                    int internalBit = mapDecSetBitToInternalBit(externalBit);
-                    if (internalBit == -1) {
-                        Logger.logWarn(mClient, LOG_TAG, "Ignoring request to save/recall decset bit=" + externalBit);
-                    } else {
-                        if (b == 's') {
-                            mSavedDecSetFlags |= internalBit;
-                        } else {
-                            doDecSetOrReset((mSavedDecSetFlags & internalBit) != 0, externalBit);
-                        }
-                    }
-                }
-                break;
-            case '$':
-                continueSequence(ESC_CSI_QUESTIONMARK_ARG_DOLLAR);
-                return;
-            default:
-                parseArg(b);
-        }
     }
 
     public void doDecSetOrReset(boolean setting, int externalBit) {
@@ -1193,88 +690,8 @@ public final class TerminalEmulator {
         }
     }
 
-    private void doCsiBiggerThan(int b) {
-        switch (b) {
-            case 'c': // "${CSI}>c" or "${CSI}>c". Secondary Device Attributes (DA2).
-                // Originally this was used for the terminal to respond with "identification code, firmware version level,
-                // and hardware options" (http://vt100.net/docs/vt510-rm/DA2), with the first "41" meaning the VT420
-                // terminal type. This is not used anymore, but the second version level field has been changed by xterm
-                // to mean it's release number ("patch numbers" listed at http://invisible-island.net/xterm/xterm.log.html),
-                // and some applications use it as a feature check:
-                // * tmux used to have a "xterm won't reach version 500 for a while so set that as the upper limit" check,
-                // and then check "xterm_version > 270" if rectangular area operations such as DECCRA could be used.
-                // * vim checks xterm version number >140 for "Request termcap/terminfo string" functionality >276 for SGR
-                // mouse report.
-                // The third number is a keyboard identifier not used nowadays.
-                mSession.write("\033[>41;320;0c");
-                break;
-            case 'm':
-                // https://bugs.launchpad.net/gnome-terminal/+bug/96676/comments/25
-                // Depending on the first number parameter, this can set one of the xterm resources
-                // modifyKeyboard, modifyCursorKeys, modifyFunctionKeys and modifyOtherKeys.
-                // http://invisible-island.net/xterm/manpage/xterm.html#RESOURCES
-
-                // * modifyKeyboard (parameter=1):
-                // Normally xterm makes a special case regarding modifiers (shift, control, etc.) to handle special keyboard
-                // layouts (legacy and vt220). This is done to provide compatible keyboards for DEC VT220 and related
-                // terminals that implement user-defined keys (UDK).
-                // The bits of the resource value selectively enable modification of the given category when these keyboards
-                // are selected. The default is "0":
-                // (0) The legacy/vt220 keyboards interpret only the Control-modifier when constructing numbered
-                // function-keys. Other special keys are not modified.
-                // (1) allows modification of the numeric keypad
-                // (2) allows modification of the editing keypad
-                // (4) allows modification of function-keys, overrides use of Shift-modifier for UDK.
-                // (8) allows modification of other special keys
-
-                // * modifyCursorKeys (parameter=2):
-                // Tells how to handle the special case where Control-, Shift-, Alt- or Meta-modifiers are used to add a
-                // parameter to the escape sequence returned by a cursor-key. The default is "2".
-                // - Set it to -1 to disable it.
-                // - Set it to 0 to use the old/obsolete behavior.
-                // - Set it to 1 to prefix modified sequences with CSI.
-                // - Set it to 2 to force the modifier to be the second parameter if it would otherwise be the first.
-                // - Set it to 3 to mark the sequence with a ">" to hint that it is private.
-
-                // * modifyFunctionKeys (parameter=3):
-                // Tells how to handle the special case where Control-, Shift-, Alt- or Meta-modifiers are used to add a
-                // parameter to the escape sequence returned by a (numbered) function-
-                // key. The default is "2". The resource values are similar to modifyCursorKeys:
-                // Set it to -1 to permit the user to use shift- and control-modifiers to construct function-key strings
-                // using the normal encoding scheme.
-                // - Set it to 0 to use the old/obsolete behavior.
-                // - Set it to 1 to prefix modified sequences with CSI.
-                // - Set it to 2 to force the modifier to be the second parameter if it would otherwise be the first.
-                // - Set it to 3 to mark the sequence with a ">" to hint that it is private.
-                // If modifyFunctionKeys is zero, xterm uses Control- and Shift-modifiers to allow the user to construct
-                // numbered function-keys beyond the set provided by the keyboard:
-                // (Control) adds the value given by the ctrlFKeys resource.
-                // (Shift) adds twice the value given by the ctrlFKeys resource.
-                // (Control/Shift) adds three times the value given by the ctrlFKeys resource.
-                //
-                // As a special case, legacy (when oldFunctionKeys is true) or vt220 (when sunKeyboard is true)
-                // keyboards interpret only the Control-modifier when constructing numbered function-keys.
-                // This is done to provide compatible keyboards for DEC VT220 and related terminals that
-                // implement user-defined keys (UDK).
-
-                // * modifyOtherKeys (parameter=4):
-                // Like modifyCursorKeys, tells xterm to construct an escape sequence for other keys (such as "2") when
-                // modified by Control-, Alt- or Meta-modifiers. This feature does not apply to function keys and
-                // well-defined keys such as ESC or the control keys. The default is "0".
-                // (0) disables this feature.
-                // (1) enables this feature for keys except for those with well-known behavior, e.g., Tab, Backarrow and
-                // some special control character cases, e.g., Control-Space to make a NUL.
-                // (2) enables this feature for keys including the exceptions listed.
-                Logger.logError(mClient, LOG_TAG, "(ignored) CSI > MODIFY RESOURCE: " + getArg0(-1) + " to " + getArg1(-1));
-                break;
-            default:
-                parseArg(b);
-                break;
-        }
-    }
-
     private void startEscapeSequence() {
-        mEscapeState = ESC;
+        mEscapeState = new EscState();
         mArgIndex = 0;
         Arrays.fill(mArgs, -1);
     }
@@ -1296,111 +713,9 @@ public final class TerminalEmulator {
         }
     }
 
-    private void continueSequence(int state) {
+    private void continueSequence(EscapeState state) {
         mEscapeState = state;
         mContinueSequence = true;
-    }
-
-    private void doEscPound(int b) {
-        switch (b) {
-            case '8': // Esc # 8 - DEC screen alignment test - fill screen with E's.
-                mScreen.blockSet(0, 0, mColumns, mRows, 'E', getStyle());
-                break;
-            default:
-                unknownSequence(b);
-                break;
-        }
-    }
-
-    /** Encountering a character in the {@link #ESC} state. */
-    private void doEsc(int b) {
-        switch (b) {
-            case '#':
-                continueSequence(ESC_POUND);
-                break;
-            case '(':
-                continueSequence(ESC_SELECT_LEFT_PAREN);
-                break;
-            case ')':
-                continueSequence(ESC_SELECT_RIGHT_PAREN);
-                break;
-            case '6': // Back index (http://www.vt100.net/docs/vt510-rm/DECBI). Move left, insert blank column if start.
-                if (mCursorCol > mLeftMargin) {
-                    mCursorCol--;
-                } else {
-                    int rows = mBottomMargin - mTopMargin;
-                    mScreen.blockCopy(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin - 1, rows, mLeftMargin + 1, mTopMargin);
-                    mScreen.blockSet(mLeftMargin, mTopMargin, 1, rows, ' ', TextStyle.encode(mForeColor, mBackColor, 0));
-                }
-                break;
-            case '7': // DECSC save cursor - http://www.vt100.net/docs/vt510-rm/DECSC
-                saveCursor();
-                break;
-            case '8': // DECRC restore cursor - http://www.vt100.net/docs/vt510-rm/DECRC
-                restoreCursor();
-                break;
-            case '9': // Forward Index (http://www.vt100.net/docs/vt510-rm/DECFI). Move right, insert blank column if end.
-                if (mCursorCol < mRightMargin - 1) {
-                    mCursorCol++;
-                } else {
-                    int rows = mBottomMargin - mTopMargin;
-                    mScreen.blockCopy(mLeftMargin + 1, mTopMargin, mRightMargin - mLeftMargin - 1, rows, mLeftMargin, mTopMargin);
-                    mScreen.blockSet(mRightMargin - 1, mTopMargin, 1, rows, ' ', TextStyle.encode(mForeColor, mBackColor, 0));
-                }
-                break;
-            case 'c': // RIS - Reset to Initial State (http://vt100.net/docs/vt510-rm/RIS).
-                reset();
-                mMainBuffer.clearTranscript();
-                blockClear(0, 0, mColumns, mRows);
-                setCursorPosition(0, 0);
-                break;
-            case 'D': // INDEX
-                doLinefeed();
-                break;
-            case 'E': // Next line (http://www.vt100.net/docs/vt510-rm/NEL).
-                setCursorCol(isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE) ? mLeftMargin : 0);
-                doLinefeed();
-                break;
-            case 'F': // Cursor to lower-left corner of screen
-                setCursorRowCol(0, mBottomMargin - 1);
-                break;
-            case 'H': // Tab set
-                mTabStop[mCursorCol] = true;
-                break;
-            case 'M': // "${ESC}M" - reverse index (RI).
-                // http://www.vt100.net/docs/vt100-ug/chapter3.html: "Move the active position to the same horizontal
-                // position on the preceding line. If the active position is at the top margin, a scroll down is performed".
-                if (mCursorRow <= mTopMargin) {
-                    mScreen.blockCopy(0, mTopMargin, mColumns, mBottomMargin - (mTopMargin + 1), 0, mTopMargin + 1);
-                    blockClear(0, mTopMargin, mColumns);
-                } else {
-                    mCursorRow--;
-                }
-                break;
-            case 'N': // SS2, ignore.
-            case '0': // SS3, ignore.
-                break;
-            case 'P': // Device control string
-                mOSCOrDeviceControlArgs.setLength(0);
-                continueSequence(ESC_P);
-                break;
-            case '[':
-                continueSequence(ESC_CSI);
-                break;
-            case '=': // DECKPAM
-                setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, true);
-                break;
-            case ']': // OSC
-                mOSCOrDeviceControlArgs.setLength(0);
-                continueSequence(ESC_OSC);
-                break;
-            case '>': // DECKPNM
-                setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, false);
-                break;
-            default:
-                unknownSequence(b);
-                break;
-        }
     }
 
     /** DECSC save cursor - http://www.vt100.net/docs/vt510-rm/DECSC . See {@link #restoreCursor()}. */
@@ -1429,327 +744,6 @@ public final class TerminalEmulator {
         mUseLineDrawingG0 = state.mUseLineDrawingG0;
         mUseLineDrawingG1 = state.mUseLineDrawingG1;
         mUseLineDrawingUsesG0 = state.mUseLineDrawingUsesG0;
-    }
-
-    /** Following a CSI - Control Sequence Introducer, "\033[". {@link #ESC_CSI}. */
-    private void doCsi(int b) {
-        switch (b) {
-            case '!':
-                continueSequence(ESC_CSI_EXCLAMATION);
-                break;
-            case '"':
-                continueSequence(ESC_CSI_DOUBLE_QUOTE);
-                break;
-            case '\'':
-                continueSequence(ESC_CSI_SINGLE_QUOTE);
-                break;
-            case '$':
-                continueSequence(ESC_CSI_DOLLAR);
-                break;
-            case '*':
-                continueSequence(ESC_CSI_ARGS_ASTERIX);
-                break;
-            case '@': {
-                // "CSI{n}@" - Insert ${n} space characters (ICH) - http://www.vt100.net/docs/vt510-rm/ICH.
-                mAboutToAutoWrap = false;
-                int columnsAfterCursor = mColumns - mCursorCol;
-                int spacesToInsert = Math.min(getArg0(1), columnsAfterCursor);
-                int charsToMove = columnsAfterCursor - spacesToInsert;
-                mScreen.blockCopy(mCursorCol, mCursorRow, charsToMove, 1, mCursorCol + spacesToInsert, mCursorRow);
-                blockClear(mCursorCol, mCursorRow, spacesToInsert);
-            }
-            break;
-            case 'A': // "CSI${n}A" - Cursor up (CUU) ${n} rows.
-                setCursorRow(Math.max(0, mCursorRow - getArg0(1)));
-                break;
-            case 'B': // "CSI${n}B" - Cursor down (CUD) ${n} rows.
-                setCursorRow(Math.min(mRows - 1, mCursorRow + getArg0(1)));
-                break;
-            case 'C': // "CSI${n}C" - Cursor forward (CUF).
-            case 'a': // "CSI${n}a" - Horizontal position relative (HPR). From ISO-6428/ECMA-48.
-                setCursorCol(Math.min(mRightMargin - 1, mCursorCol + getArg0(1)));
-                break;
-            case 'D': // "CSI${n}D" - Cursor backward (CUB) ${n} columns.
-                setCursorCol(Math.max(mLeftMargin, mCursorCol - getArg0(1)));
-                break;
-            case 'E': // "CSI{n}E - Cursor Next Line (CNL). From ISO-6428/ECMA-48.
-                setCursorPosition(0, mCursorRow + getArg0(1));
-                break;
-            case 'F': // "CSI{n}F - Cursor Previous Line (CPL). From ISO-6428/ECMA-48.
-                setCursorPosition(0, mCursorRow - getArg0(1));
-                break;
-            case 'G': // "CSI${n}G" - Cursor horizontal absolute (CHA) to column ${n}.
-                setCursorCol(Math.min(Math.max(1, getArg0(1)), mColumns) - 1);
-                break;
-            case 'H': // "${CSI}${ROW};${COLUMN}H" - Cursor position (CUP).
-            case 'f': // "${CSI}${ROW};${COLUMN}f" - Horizontal and Vertical Position (HVP).
-                setCursorPosition(getArg1(1) - 1, getArg0(1) - 1);
-                break;
-            case 'I': // Cursor Horizontal Forward Tabulation (CHT). Move the active position n tabs forward.
-                setCursorCol(nextTabStop(getArg0(1)));
-                break;
-            case 'J': // "${CSI}${0,1,2,3}J" - Erase in Display (ED)
-                // ED ignores the scrolling margins.
-                switch (getArg0(0)) {
-                    case 0: // Erase from the active position to the end of the screen, inclusive (default).
-                        blockClear(mCursorCol, mCursorRow, mColumns - mCursorCol);
-                        blockClear(0, mCursorRow + 1, mColumns, mRows - (mCursorRow + 1));
-                        break;
-                    case 1: // Erase from start of the screen to the active position, inclusive.
-                        blockClear(0, 0, mColumns, mCursorRow);
-                        blockClear(0, mCursorRow, mCursorCol + 1);
-                        break;
-                    case 2: // Erase all of the display - all lines are erased, changed to single-width, and the cursor does not
-                        // move..
-                        blockClear(0, 0, mColumns, mRows);
-                        break;
-                    case 3: // Delete all lines saved in the scrollback buffer (xterm etc)
-                        mMainBuffer.clearTranscript();
-                        break;
-                    default:
-                        unknownSequence(b);
-                        return;
-                }
-                mAboutToAutoWrap = false;
-                break;
-            case 'K': // "CSI{n}K" - Erase in line (EL).
-                switch (getArg0(0)) {
-                    case 0: // Erase from the cursor to the end of the line, inclusive (default)
-                        blockClear(mCursorCol, mCursorRow, mColumns - mCursorCol);
-                        break;
-                    case 1: // Erase from the start of the screen to the cursor, inclusive.
-                        blockClear(0, mCursorRow, mCursorCol + 1);
-                        break;
-                    case 2: // Erase all of the line.
-                        blockClear(0, mCursorRow, mColumns);
-                        break;
-                    default:
-                        unknownSequence(b);
-                        return;
-                }
-                mAboutToAutoWrap = false;
-                break;
-            case 'L': // "${CSI}{N}L" - insert ${N} lines (IL).
-            {
-                int linesAfterCursor = mBottomMargin - mCursorRow;
-                int linesToInsert = Math.min(getArg0(1), linesAfterCursor);
-                int linesToMove = linesAfterCursor - linesToInsert;
-                mScreen.blockCopy(0, mCursorRow, mColumns, linesToMove, 0, mCursorRow + linesToInsert);
-                blockClear(0, mCursorRow, mColumns, linesToInsert);
-            }
-            break;
-            case 'M': // "${CSI}${N}M" - delete N lines (DL).
-            {
-                mAboutToAutoWrap = false;
-                int linesAfterCursor = mBottomMargin - mCursorRow;
-                int linesToDelete = Math.min(getArg0(1), linesAfterCursor);
-                int linesToMove = linesAfterCursor - linesToDelete;
-                mScreen.blockCopy(0, mCursorRow + linesToDelete, mColumns, linesToMove, 0, mCursorRow);
-                blockClear(0, mCursorRow + linesToMove, mColumns, linesToDelete);
-            }
-            break;
-            case 'P': // "${CSI}{N}P" - delete ${N} characters (DCH).
-            {
-                // http://www.vt100.net/docs/vt510-rm/DCH: "If ${N} is greater than the number of characters between the
-                // cursor and the right margin, then DCH only deletes the remaining characters.
-                // As characters are deleted, the remaining characters between the cursor and right margin move to the left.
-                // Character attributes move with the characters. The terminal adds blank spaces with no visual character
-                // attributes at the right margin. DCH has no effect outside the scrolling margins."
-                mAboutToAutoWrap = false;
-                int cellsAfterCursor = mColumns - mCursorCol;
-                int cellsToDelete = Math.min(getArg0(1), cellsAfterCursor);
-                int cellsToMove = cellsAfterCursor - cellsToDelete;
-                mScreen.blockCopy(mCursorCol + cellsToDelete, mCursorRow, cellsToMove, 1, mCursorCol, mCursorRow);
-                blockClear(mCursorCol + cellsToMove, mCursorRow, cellsToDelete);
-            }
-            break;
-            case 'S': { // "${CSI}${N}S" - scroll up ${N} lines (default = 1) (SU).
-                final int linesToScroll = getArg0(1);
-                for (int i = 0; i < linesToScroll; i++)
-                    scrollDownOneLine();
-                break;
-            }
-            case 'T':
-                if (mArgIndex == 0) {
-                    // "${CSI}${N}T" - Scroll down N lines (default = 1) (SD).
-                    // http://vt100.net/docs/vt510-rm/SD: "N is the number of lines to move the user window up in page
-                    // memory. N new lines appear at the top of the display. N old lines disappear at the bottom of the
-                    // display. You cannot pan past the top margin of the current page".
-                    final int linesToScrollArg = getArg0(1);
-                    final int linesBetweenTopAndBottomMargins = mBottomMargin - mTopMargin;
-                    final int linesToScroll = Math.min(linesBetweenTopAndBottomMargins, linesToScrollArg);
-                    mScreen.blockCopy(0, mTopMargin, mColumns, linesBetweenTopAndBottomMargins - linesToScroll, 0, mTopMargin + linesToScroll);
-                    blockClear(0, mTopMargin, mColumns, linesToScroll);
-                } else {
-                    // "${CSI}${func};${startx};${starty};${firstrow};${lastrow}T" - initiate highlight mouse tracking.
-                    unimplementedSequence(b);
-                }
-                break;
-            case 'X': // "${CSI}${N}X" - Erase ${N:=1} character(s) (ECH). FIXME: Clears character attributes?
-                mAboutToAutoWrap = false;
-                mScreen.blockSet(mCursorCol, mCursorRow, Math.min(getArg0(1), mColumns - mCursorCol), 1, ' ', getStyle());
-                break;
-            case 'Z': // Cursor Backward Tabulation (CBT). Move the active position n tabs backward.
-                int numberOfTabs = getArg0(1);
-                int newCol = mLeftMargin;
-                for (int i = mCursorCol - 1; i >= 0; i--)
-                    if (mTabStop[i]) {
-                        if (--numberOfTabs == 0) {
-                            newCol = Math.max(i, mLeftMargin);
-                            break;
-                        }
-                    }
-                mCursorCol = newCol;
-                break;
-            case '?': // Esc [ ? -- start of a private mode set
-                continueSequence(ESC_CSI_QUESTIONMARK);
-                break;
-            case '>': // "Esc [ >" --
-                continueSequence(ESC_CSI_BIGGERTHAN);
-                break;
-            case '`': // Horizontal position absolute (HPA - http://www.vt100.net/docs/vt510-rm/HPA).
-                setCursorColRespectingOriginMode(getArg0(1) - 1);
-                break;
-            case 'b': // Repeat the preceding graphic character Ps times (REP).
-                if (mLastEmittedCodePoint == -1) break;
-                final int numRepeat = getArg0(1);
-                for (int i = 0; i < numRepeat; i++) emitCodePoint(mLastEmittedCodePoint);
-                break;
-            case 'c': // Primary Device Attributes (http://www.vt100.net/docs/vt510-rm/DA1) if argument is missing or zero.
-                // The important part that may still be used by some (tmux stores this value but does not currently use it)
-                // is the first response parameter identifying the terminal service class, where we send 64 for "vt420".
-                // This is followed by a list of attributes which is probably unused by applications. Send like xterm.
-                if (getArg0(0) == 0) mSession.write("\033[?64;1;2;6;9;15;18;21;22c");
-                break;
-            case 'd': // ESC [ Pn d - Vert Position Absolute
-                setCursorRow(Math.min(Math.max(1, getArg0(1)), mRows) - 1);
-                break;
-            case 'e': // Vertical Position Relative (VPR). From ISO-6429 (ECMA-48).
-                setCursorPosition(mCursorCol, mCursorRow + getArg0(1));
-                break;
-            // case 'f': "${CSI}${ROW};${COLUMN}f" - Horizontal and Vertical Position (HVP). Grouped with case 'H'.
-            case 'g': // Clear tab stop
-                switch (getArg0(0)) {
-                    case 0:
-                        mTabStop[mCursorCol] = false;
-                        break;
-                    case 3:
-                        for (int i = 0; i < mColumns; i++) {
-                            mTabStop[i] = false;
-                        }
-                        break;
-                    default:
-                        // Specified to have no effect.
-                        break;
-                }
-                break;
-            case 'h': // Set Mode
-                doSetMode(true);
-                break;
-            case 'l': // Reset Mode
-                doSetMode(false);
-                break;
-            case 'm': // Esc [ Pn m - character attributes. (can have up to 16 numerical arguments)
-                selectGraphicRendition();
-                break;
-            case 'n': // Esc [ Pn n - ECMA-48 Status Report Commands
-                // sendDeviceAttributes()
-                switch (getArg0(0)) {
-                    case 5: // Device status report (DSR):
-                        // Answer is ESC [ 0 n (Terminal OK).
-                        byte[] dsr = {(byte) 27, (byte) '[', (byte) '0', (byte) 'n'};
-                        mSession.write(dsr, 0, dsr.length);
-                        break;
-                    case 6: // Cursor position report (CPR):
-                        // Answer is ESC [ y ; x R, where x,y is
-                        // the cursor location.
-                        mSession.write(String.format(Locale.US, "\033[%d;%dR", mCursorRow + 1, mCursorCol + 1));
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case 'r': // "CSI${top};${bottom}r" - set top and bottom Margins (DECSTBM).
-            {
-                // https://vt100.net/docs/vt510-rm/DECSTBM.html
-                // The top margin defaults to 1, the bottom margin defaults to mRows.
-                // The escape sequence numbers top 1..23, but we number top 0..22.
-                // The escape sequence numbers bottom 2..24, and so do we (because we use a zero based numbering
-                // scheme, but we store the first line below the bottom-most scrolling line.
-                // As a result, we adjust the top line by -1, but we leave the bottom line alone.
-                // Also require that top + 2 <= bottom.
-                mTopMargin = Math.max(0, Math.min(getArg0(1) - 1, mRows - 2));
-                mBottomMargin = Math.max(mTopMargin + 2, Math.min(getArg1(mRows), mRows));
-
-                // DECSTBM moves the cursor to column 1, line 1 of the page respecting origin mode.
-                setCursorPosition(0, 0);
-            }
-            break;
-            case 's':
-                if (isDecsetInternalBitSet(DECSET_BIT_LEFTRIGHT_MARGIN_MODE)) {
-                    // Set left and right margins (DECSLRM - http://www.vt100.net/docs/vt510-rm/DECSLRM).
-                    mLeftMargin = Math.min(getArg0(1) - 1, mColumns - 2);
-                    mRightMargin = Math.max(mLeftMargin + 1, Math.min(getArg1(mColumns), mColumns));
-                    // DECSLRM moves the cursor to column 1, line 1 of the page.
-                    setCursorPosition(0, 0);
-                } else {
-                    // Save cursor (ANSI.SYS), available only when DECLRMM is disabled.
-                    saveCursor();
-                }
-                break;
-            case 't': // Window manipulation (from dtterm, as well as extensions)
-                switch (getArg0(0)) {
-                    case 11: // Report xterm window state. If the xterm window is open (non-iconified), it returns CSI 1 t .
-                        mSession.write("\033[1t");
-                        break;
-                    case 13: // Report xterm window position. Result is CSI 3 ; x ; y t
-                        mSession.write("\033[3;0;0t");
-                        break;
-                    case 14: // Report xterm window in pixels. Result is CSI 4 ; height ; width t
-                        // We just report characters time 12 here.
-                        mSession.write(String.format(Locale.US, "\033[4;%d;%dt", mRows * 12, mColumns * 12));
-                        break;
-                    case 18: // Report the size of the text area in characters. Result is CSI 8 ; height ; width t
-                        mSession.write(String.format(Locale.US, "\033[8;%d;%dt", mRows, mColumns));
-                        break;
-                    case 19: // Report the size of the screen in characters. Result is CSI 9 ; height ; width t
-                        // We report the same size as the view, since it's the view really isn't resizable from the shell.
-                        mSession.write(String.format(Locale.US, "\033[9;%d;%dt", mRows, mColumns));
-                        break;
-                    case 20: // Report xterm windows icon label. Result is OSC L label ST. Disabled due to security concerns:
-                        mSession.write("\033]LIconLabel\033\\");
-                        break;
-                    case 21: // Report xterm windows title. Result is OSC l label ST. Disabled due to security concerns:
-                        mSession.write("\033]l\033\\");
-                        break;
-                    case 22:
-                        // 22;0 -> Save xterm icon and window title on stack.
-                        // 22;1 -> Save xterm icon title on stack.
-                        // 22;2 -> Save xterm window title on stack.
-                        mTitleStack.push(mTitle);
-                        if (mTitleStack.size() > 20) {
-                            // Limit size
-                            mTitleStack.remove(0);
-                        }
-                        break;
-                    case 23: // Like 22 above but restore from stack.
-                        if (!mTitleStack.isEmpty()) setTitle(mTitleStack.pop());
-                        break;
-                    default:
-                        // Ignore window manipulation.
-                        break;
-                }
-                break;
-            case 'u': // Restore cursor (ANSI.SYS).
-                restoreCursor();
-                break;
-            case ' ':
-                continueSequence(ESC_CSI_ARGS_SPACE);
-                break;
-            default:
-                parseArg(b);
-                break;
-        }
     }
 
     /** Select Graphic Rendition (SGR) - see http://en.wikipedia.org/wiki/ANSI_escape_code#graphics. */
@@ -1865,25 +859,10 @@ public final class TerminalEmulator {
                 doOscSetTextParameters("\007");
                 break;
             case 27: // Escape.
-                continueSequence(ESC_OSC_ESC);
+                continueSequence(new EscOscEscState());
                 break;
             default:
                 collectOSCArgs(b);
-                break;
-        }
-    }
-
-    private void doOscEsc(int b) {
-        switch (b) {
-            case '\\':
-                doOscSetTextParameters("\033\\");
-                break;
-            default:
-                // The ESC character was not followed by a \, so insert the ESC and
-                // the current character in arg buffer.
-                collectOSCArgs(27);
-                collectOSCArgs(b);
-                continueSequence(ESC_OSC);
                 break;
         }
     }
@@ -2163,7 +1142,7 @@ public final class TerminalEmulator {
             StringBuilder buf = new StringBuilder();
             buf.append(errorType);
             buf.append(", escapeState=");
-            buf.append(mEscapeState);
+            buf.append(mEscapeState.getStateCode());
             boolean firstArg = true;
             if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
             for (int i = 0; i <= mArgIndex; i++) {
@@ -2189,7 +1168,7 @@ public final class TerminalEmulator {
     }
 
     private void finishSequence() {
-        mEscapeState = ESC_NONE;
+        mEscapeState = new EscNoneState();
     }
 
     /**
@@ -2382,7 +1361,7 @@ public final class TerminalEmulator {
         setCursorStyle();
         mArgIndex = 0;
         mContinueSequence = false;
-        mEscapeState = ESC_NONE;
+        mEscapeState = new EscNoneState();
         mInsertMode = false;
         mTopMargin = mLeftMargin = 0;
         mBottomMargin = mRows;
@@ -2457,4 +1436,1220 @@ public final class TerminalEmulator {
             + "," + mLeftMargin + "}]";
     }
 
+
+
+
+    abstract class EscapeState {
+        public abstract void processCodePoint(int b);
+        public abstract int getStateCode();
+    }
+
+    /** Escape processing: Not currently in an escape sequence. */
+    final class EscNoneState extends EscapeState {
+        EscNoneState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            if (b >= 32) emitCodePoint(b);
+        }
+
+        @Override
+        public int getStateCode() {
+            return 0;
+        }
+    }
+
+    /** Escape processing: Have seen an ESC character */
+    final class EscState extends EscapeState {
+        EscState() {
+
+        }
+
+        /** Encountering a character in the ESC state. */
+        @Override
+        public void processCodePoint(int b) {
+            switch (b) {
+                case '#':
+                    continueSequence(new EscPoundState());
+                    break;
+                case '(':
+                    continueSequence(new EscSelectLeftParenState());
+                    break;
+                case ')':
+                    continueSequence(new EscSelectRightParenState());
+                    break;
+                case '6': // Back index (http://www.vt100.net/docs/vt510-rm/DECBI). Move left, insert blank column if start.
+                    if (mCursorCol > mLeftMargin) {
+                        mCursorCol--;
+                    } else {
+                        int rows = mBottomMargin - mTopMargin;
+                        mScreen.blockCopy(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin - 1, rows, mLeftMargin + 1, mTopMargin);
+                        mScreen.blockSet(mLeftMargin, mTopMargin, 1, rows, ' ', TextStyle.encode(mForeColor, mBackColor, 0));
+                    }
+                    break;
+                case '7': // DECSC save cursor - http://www.vt100.net/docs/vt510-rm/DECSC
+                    saveCursor();
+                    break;
+                case '8': // DECRC restore cursor - http://www.vt100.net/docs/vt510-rm/DECRC
+                    restoreCursor();
+                    break;
+                case '9': // Forward Index (http://www.vt100.net/docs/vt510-rm/DECFI). Move right, insert blank column if end.
+                    if (mCursorCol < mRightMargin - 1) {
+                        mCursorCol++;
+                    } else {
+                        int rows = mBottomMargin - mTopMargin;
+                        mScreen.blockCopy(mLeftMargin + 1, mTopMargin, mRightMargin - mLeftMargin - 1, rows, mLeftMargin, mTopMargin);
+                        mScreen.blockSet(mRightMargin - 1, mTopMargin, 1, rows, ' ', TextStyle.encode(mForeColor, mBackColor, 0));
+                    }
+                    break;
+                case 'c': // RIS - Reset to Initial State (http://vt100.net/docs/vt510-rm/RIS).
+                    reset();
+                    mMainBuffer.clearTranscript();
+                    blockClear(0, 0, mColumns, mRows);
+                    setCursorPosition(0, 0);
+                    break;
+                case 'D': // INDEX
+                    doLinefeed();
+                    break;
+                case 'E': // Next line (http://www.vt100.net/docs/vt510-rm/NEL).
+                    setCursorCol(isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE) ? mLeftMargin : 0);
+                    doLinefeed();
+                    break;
+                case 'F': // Cursor to lower-left corner of screen
+                    setCursorRowCol(0, mBottomMargin - 1);
+                    break;
+                case 'H': // Tab set
+                    mTabStop[mCursorCol] = true;
+                    break;
+                case 'M': // "${ESC}M" - reverse index (RI).
+                    // http://www.vt100.net/docs/vt100-ug/chapter3.html: "Move the active position to the same horizontal
+                    // position on the preceding line. If the active position is at the top margin, a scroll down is performed".
+                    if (mCursorRow <= mTopMargin) {
+                        mScreen.blockCopy(0, mTopMargin, mColumns, mBottomMargin - (mTopMargin + 1), 0, mTopMargin + 1);
+                        blockClear(0, mTopMargin, mColumns);
+                    } else {
+                        mCursorRow--;
+                    }
+                    break;
+                case 'N': // SS2, ignore.
+                case '0': // SS3, ignore.
+                    break;
+                case 'P': // Device control string
+                    mOSCOrDeviceControlArgs.setLength(0);
+                    continueSequence(new EscPState());
+                    break;
+                case '[':
+                    continueSequence(new EscCsiState());
+                    break;
+                case '=': // DECKPAM
+                    setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, true);
+                    break;
+                case ']': // OSC
+                    mOSCOrDeviceControlArgs.setLength(0);
+                    continueSequence(new EscOscState());
+                    break;
+                case '>': // DECKPNM
+                    setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, false);
+                    break;
+                default:
+                    unknownSequence(b);
+                    break;
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 1;
+        }
+    }
+
+    /** Escape processing: Have seen ESC POUND */
+    final class EscPoundState extends EscapeState {
+        EscPoundState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            if (b == '8') { // Esc # 8 - DEC screen alignment test - fill screen with E's.
+                mScreen.blockSet(0, 0, mColumns, mRows, 'E', getStyle());
+            } else {
+                unknownSequence(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 2;
+        }
+    }
+
+    /** Escape processing: Have seen ESC and a character-set-select ( char */
+    final class EscSelectLeftParenState extends EscapeState {
+        EscSelectLeftParenState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            mUseLineDrawingG0 = (b == '0');
+        }
+
+        @Override
+        public int getStateCode() {
+            return 3;
+        }
+    }
+
+    /** Escape processing: Have seen ESC and a character-set-select ) char */
+    final class EscSelectRightParenState extends EscapeState {
+        EscSelectRightParenState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            mUseLineDrawingG1 = (b == '0');
+        }
+
+        @Override
+        public int getStateCode() {
+            return 4;
+        }
+    }
+
+    /** Escape processing: Have seen ESC and a character-set-select ) char */
+    final class EscCsiState extends EscapeState {
+        EscCsiState() {
+
+        }
+
+        /** Following a CSI - Control Sequence Introducer, "\033[". */
+        @Override
+        public void processCodePoint(int b) {
+            switch (b) {
+                case '!':
+                    continueSequence(new EscCsiExclamationState());
+                    break;
+                case '"':
+                    continueSequence(new EscCsiDoubleQuoteState());
+                    break;
+                case '\'':
+                    continueSequence(new EscCsiSingleQuoteState());
+                    break;
+                case '$':
+                    continueSequence(new EscCsiDollarState());
+                    break;
+                case '*':
+                    continueSequence(new EscCsiArgsAsterixState());
+                    break;
+                case '@': {
+                    // "CSI{n}@" - Insert ${n} space characters (ICH) - http://www.vt100.net/docs/vt510-rm/ICH.
+                    mAboutToAutoWrap = false;
+                    int columnsAfterCursor = mColumns - mCursorCol;
+                    int spacesToInsert = Math.min(getArg0(1), columnsAfterCursor);
+                    int charsToMove = columnsAfterCursor - spacesToInsert;
+                    mScreen.blockCopy(mCursorCol, mCursorRow, charsToMove, 1, mCursorCol + spacesToInsert, mCursorRow);
+                    blockClear(mCursorCol, mCursorRow, spacesToInsert);
+                }
+                break;
+                case 'A': // "CSI${n}A" - Cursor up (CUU) ${n} rows.
+                    setCursorRow(Math.max(0, mCursorRow - getArg0(1)));
+                    break;
+                case 'B': // "CSI${n}B" - Cursor down (CUD) ${n} rows.
+                    setCursorRow(Math.min(mRows - 1, mCursorRow + getArg0(1)));
+                    break;
+                case 'C': // "CSI${n}C" - Cursor forward (CUF).
+                case 'a': // "CSI${n}a" - Horizontal position relative (HPR). From ISO-6428/ECMA-48.
+                    setCursorCol(Math.min(mRightMargin - 1, mCursorCol + getArg0(1)));
+                    break;
+                case 'D': // "CSI${n}D" - Cursor backward (CUB) ${n} columns.
+                    setCursorCol(Math.max(mLeftMargin, mCursorCol - getArg0(1)));
+                    break;
+                case 'E': // "CSI{n}E - Cursor Next Line (CNL). From ISO-6428/ECMA-48.
+                    setCursorPosition(0, mCursorRow + getArg0(1));
+                    break;
+                case 'F': // "CSI{n}F - Cursor Previous Line (CPL). From ISO-6428/ECMA-48.
+                    setCursorPosition(0, mCursorRow - getArg0(1));
+                    break;
+                case 'G': // "CSI${n}G" - Cursor horizontal absolute (CHA) to column ${n}.
+                    setCursorCol(Math.min(Math.max(1, getArg0(1)), mColumns) - 1);
+                    break;
+                case 'H': // "${CSI}${ROW};${COLUMN}H" - Cursor position (CUP).
+                case 'f': // "${CSI}${ROW};${COLUMN}f" - Horizontal and Vertical Position (HVP).
+                    setCursorPosition(getArg1(1) - 1, getArg0(1) - 1);
+                    break;
+                case 'I': // Cursor Horizontal Forward Tabulation (CHT). Move the active position n tabs forward.
+                    setCursorCol(nextTabStop(getArg0(1)));
+                    break;
+                case 'J': // "${CSI}${0,1,2,3}J" - Erase in Display (ED)
+                    // ED ignores the scrolling margins.
+                    switch (getArg0(0)) {
+                        case 0: // Erase from the active position to the end of the screen, inclusive (default).
+                            blockClear(mCursorCol, mCursorRow, mColumns - mCursorCol);
+                            blockClear(0, mCursorRow + 1, mColumns, mRows - (mCursorRow + 1));
+                            break;
+                        case 1: // Erase from start of the screen to the active position, inclusive.
+                            blockClear(0, 0, mColumns, mCursorRow);
+                            blockClear(0, mCursorRow, mCursorCol + 1);
+                            break;
+                        case 2: // Erase all of the display - all lines are erased, changed to single-width, and the cursor does not
+                            // move..
+                            blockClear(0, 0, mColumns, mRows);
+                            break;
+                        case 3: // Delete all lines saved in the scrollback buffer (xterm etc)
+                            mMainBuffer.clearTranscript();
+                            break;
+                        default:
+                            unknownSequence(b);
+                            return;
+                    }
+                    mAboutToAutoWrap = false;
+                    break;
+                case 'K': // "CSI{n}K" - Erase in line (EL).
+                    switch (getArg0(0)) {
+                        case 0: // Erase from the cursor to the end of the line, inclusive (default)
+                            blockClear(mCursorCol, mCursorRow, mColumns - mCursorCol);
+                            break;
+                        case 1: // Erase from the start of the screen to the cursor, inclusive.
+                            blockClear(0, mCursorRow, mCursorCol + 1);
+                            break;
+                        case 2: // Erase all of the line.
+                            blockClear(0, mCursorRow, mColumns);
+                            break;
+                        default:
+                            unknownSequence(b);
+                            return;
+                    }
+                    mAboutToAutoWrap = false;
+                    break;
+                case 'L': // "${CSI}{N}L" - insert ${N} lines (IL).
+                {
+                    int linesAfterCursor = mBottomMargin - mCursorRow;
+                    int linesToInsert = Math.min(getArg0(1), linesAfterCursor);
+                    int linesToMove = linesAfterCursor - linesToInsert;
+                    mScreen.blockCopy(0, mCursorRow, mColumns, linesToMove, 0, mCursorRow + linesToInsert);
+                    blockClear(0, mCursorRow, mColumns, linesToInsert);
+                }
+                break;
+                case 'M': // "${CSI}${N}M" - delete N lines (DL).
+                {
+                    mAboutToAutoWrap = false;
+                    int linesAfterCursor = mBottomMargin - mCursorRow;
+                    int linesToDelete = Math.min(getArg0(1), linesAfterCursor);
+                    int linesToMove = linesAfterCursor - linesToDelete;
+                    mScreen.blockCopy(0, mCursorRow + linesToDelete, mColumns, linesToMove, 0, mCursorRow);
+                    blockClear(0, mCursorRow + linesToMove, mColumns, linesToDelete);
+                }
+                break;
+                case 'P': // "${CSI}{N}P" - delete ${N} characters (DCH).
+                {
+                    // http://www.vt100.net/docs/vt510-rm/DCH: "If ${N} is greater than the number of characters between the
+                    // cursor and the right margin, then DCH only deletes the remaining characters.
+                    // As characters are deleted, the remaining characters between the cursor and right margin move to the left.
+                    // Character attributes move with the characters. The terminal adds blank spaces with no visual character
+                    // attributes at the right margin. DCH has no effect outside the scrolling margins."
+                    mAboutToAutoWrap = false;
+                    int cellsAfterCursor = mColumns - mCursorCol;
+                    int cellsToDelete = Math.min(getArg0(1), cellsAfterCursor);
+                    int cellsToMove = cellsAfterCursor - cellsToDelete;
+                    mScreen.blockCopy(mCursorCol + cellsToDelete, mCursorRow, cellsToMove, 1, mCursorCol, mCursorRow);
+                    blockClear(mCursorCol + cellsToMove, mCursorRow, cellsToDelete);
+                }
+                break;
+                case 'S': { // "${CSI}${N}S" - scroll up ${N} lines (default = 1) (SU).
+                    final int linesToScroll = getArg0(1);
+                    for (int i = 0; i < linesToScroll; i++)
+                        scrollDownOneLine();
+                    break;
+                }
+                case 'T':
+                    if (mArgIndex == 0) {
+                        // "${CSI}${N}T" - Scroll down N lines (default = 1) (SD).
+                        // http://vt100.net/docs/vt510-rm/SD: "N is the number of lines to move the user window up in page
+                        // memory. N new lines appear at the top of the display. N old lines disappear at the bottom of the
+                        // display. You cannot pan past the top margin of the current page".
+                        final int linesToScrollArg = getArg0(1);
+                        final int linesBetweenTopAndBottomMargins = mBottomMargin - mTopMargin;
+                        final int linesToScroll = Math.min(linesBetweenTopAndBottomMargins, linesToScrollArg);
+                        mScreen.blockCopy(0, mTopMargin, mColumns, linesBetweenTopAndBottomMargins - linesToScroll, 0, mTopMargin + linesToScroll);
+                        blockClear(0, mTopMargin, mColumns, linesToScroll);
+                    } else {
+                        // "${CSI}${func};${startx};${starty};${firstrow};${lastrow}T" - initiate highlight mouse tracking.
+                        unimplementedSequence(b);
+                    }
+                    break;
+                case 'X': // "${CSI}${N}X" - Erase ${N:=1} character(s) (ECH). FIXME: Clears character attributes?
+                    mAboutToAutoWrap = false;
+                    mScreen.blockSet(mCursorCol, mCursorRow, Math.min(getArg0(1), mColumns - mCursorCol), 1, ' ', getStyle());
+                    break;
+                case 'Z': // Cursor Backward Tabulation (CBT). Move the active position n tabs backward.
+                    int numberOfTabs = getArg0(1);
+                    int newCol = mLeftMargin;
+                    for (int i = mCursorCol - 1; i >= 0; i--)
+                        if (mTabStop[i]) {
+                            if (--numberOfTabs == 0) {
+                                newCol = Math.max(i, mLeftMargin);
+                                break;
+                            }
+                        }
+                    mCursorCol = newCol;
+                    break;
+                case '?': // Esc [ ? -- start of a private mode set
+                    continueSequence(new EscCsiQuestionMarkState());
+                    break;
+                case '>': // "Esc [ >" --
+                    continueSequence(new EscCsiBiggerThanState());
+                    break;
+                case '`': // Horizontal position absolute (HPA - http://www.vt100.net/docs/vt510-rm/HPA).
+                    setCursorColRespectingOriginMode(getArg0(1) - 1);
+                    break;
+                case 'b': // Repeat the preceding graphic character Ps times (REP).
+                    if (mLastEmittedCodePoint == -1) break;
+                    final int numRepeat = getArg0(1);
+                    for (int i = 0; i < numRepeat; i++) emitCodePoint(mLastEmittedCodePoint);
+                    break;
+                case 'c': // Primary Device Attributes (http://www.vt100.net/docs/vt510-rm/DA1) if argument is missing or zero.
+                    // The important part that may still be used by some (tmux stores this value but does not currently use it)
+                    // is the first response parameter identifying the terminal service class, where we send 64 for "vt420".
+                    // This is followed by a list of attributes which is probably unused by applications. Send like xterm.
+                    if (getArg0(0) == 0) mSession.write("\033[?64;1;2;6;9;15;18;21;22c");
+                    break;
+                case 'd': // ESC [ Pn d - Vert Position Absolute
+                    setCursorRow(Math.min(Math.max(1, getArg0(1)), mRows) - 1);
+                    break;
+                case 'e': // Vertical Position Relative (VPR). From ISO-6429 (ECMA-48).
+                    setCursorPosition(mCursorCol, mCursorRow + getArg0(1));
+                    break;
+                // case 'f': "${CSI}${ROW};${COLUMN}f" - Horizontal and Vertical Position (HVP). Grouped with case 'H'.
+                case 'g': // Clear tab stop
+                    switch (getArg0(0)) {
+                        case 0:
+                            mTabStop[mCursorCol] = false;
+                            break;
+                        case 3:
+                            for (int i = 0; i < mColumns; i++) {
+                                mTabStop[i] = false;
+                            }
+                            break;
+                        default:
+                            // Specified to have no effect.
+                            break;
+                    }
+                    break;
+                case 'h': // Set Mode
+                    doSetMode(true);
+                    break;
+                case 'l': // Reset Mode
+                    doSetMode(false);
+                    break;
+                case 'm': // Esc [ Pn m - character attributes. (can have up to 16 numerical arguments)
+                    selectGraphicRendition();
+                    break;
+                case 'n': // Esc [ Pn n - ECMA-48 Status Report Commands
+                    // sendDeviceAttributes()
+                    switch (getArg0(0)) {
+                        case 5: // Device status report (DSR):
+                            // Answer is ESC [ 0 n (Terminal OK).
+                            byte[] dsr = {(byte) 27, (byte) '[', (byte) '0', (byte) 'n'};
+                            mSession.write(dsr, 0, dsr.length);
+                            break;
+                        case 6: // Cursor position report (CPR):
+                            // Answer is ESC [ y ; x R, where x,y is
+                            // the cursor location.
+                            mSession.write(String.format(Locale.US, "\033[%d;%dR", mCursorRow + 1, mCursorCol + 1));
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case 'r': // "CSI${top};${bottom}r" - set top and bottom Margins (DECSTBM).
+                {
+                    // https://vt100.net/docs/vt510-rm/DECSTBM.html
+                    // The top margin defaults to 1, the bottom margin defaults to mRows.
+                    // The escape sequence numbers top 1..23, but we number top 0..22.
+                    // The escape sequence numbers bottom 2..24, and so do we (because we use a zero based numbering
+                    // scheme, but we store the first line below the bottom-most scrolling line.
+                    // As a result, we adjust the top line by -1, but we leave the bottom line alone.
+                    // Also require that top + 2 <= bottom.
+                    mTopMargin = Math.max(0, Math.min(getArg0(1) - 1, mRows - 2));
+                    mBottomMargin = Math.max(mTopMargin + 2, Math.min(getArg1(mRows), mRows));
+
+                    // DECSTBM moves the cursor to column 1, line 1 of the page respecting origin mode.
+                    setCursorPosition(0, 0);
+                }
+                break;
+                case 's':
+                    if (isDecsetInternalBitSet(DECSET_BIT_LEFTRIGHT_MARGIN_MODE)) {
+                        // Set left and right margins (DECSLRM - http://www.vt100.net/docs/vt510-rm/DECSLRM).
+                        mLeftMargin = Math.min(getArg0(1) - 1, mColumns - 2);
+                        mRightMargin = Math.max(mLeftMargin + 1, Math.min(getArg1(mColumns), mColumns));
+                        // DECSLRM moves the cursor to column 1, line 1 of the page.
+                        setCursorPosition(0, 0);
+                    } else {
+                        // Save cursor (ANSI.SYS), available only when DECLRMM is disabled.
+                        saveCursor();
+                    }
+                    break;
+                case 't': // Window manipulation (from dtterm, as well as extensions)
+                    switch (getArg0(0)) {
+                        case 11: // Report xterm window state. If the xterm window is open (non-iconified), it returns CSI 1 t .
+                            mSession.write("\033[1t");
+                            break;
+                        case 13: // Report xterm window position. Result is CSI 3 ; x ; y t
+                            mSession.write("\033[3;0;0t");
+                            break;
+                        case 14: // Report xterm window in pixels. Result is CSI 4 ; height ; width t
+                            // We just report characters time 12 here.
+                            mSession.write(String.format(Locale.US, "\033[4;%d;%dt", mRows * 12, mColumns * 12));
+                            break;
+                        case 18: // Report the size of the text area in characters. Result is CSI 8 ; height ; width t
+                            mSession.write(String.format(Locale.US, "\033[8;%d;%dt", mRows, mColumns));
+                            break;
+                        case 19: // Report the size of the screen in characters. Result is CSI 9 ; height ; width t
+                            // We report the same size as the view, since it's the view really isn't resizable from the shell.
+                            mSession.write(String.format(Locale.US, "\033[9;%d;%dt", mRows, mColumns));
+                            break;
+                        case 20: // Report xterm windows icon label. Result is OSC L label ST. Disabled due to security concerns:
+                            mSession.write("\033]LIconLabel\033\\");
+                            break;
+                        case 21: // Report xterm windows title. Result is OSC l label ST. Disabled due to security concerns:
+                            mSession.write("\033]l\033\\");
+                            break;
+                        case 22:
+                            // 22;0 -> Save xterm icon and window title on stack.
+                            // 22;1 -> Save xterm icon title on stack.
+                            // 22;2 -> Save xterm window title on stack.
+                            mTitleStack.push(mTitle);
+                            if (mTitleStack.size() > 20) {
+                                // Limit size
+                                mTitleStack.remove(0);
+                            }
+                            break;
+                        case 23: // Like 22 above but restore from stack.
+                            if (!mTitleStack.isEmpty()) setTitle(mTitleStack.pop());
+                            break;
+                        default:
+                            // Ignore window manipulation.
+                            break;
+                    }
+                    break;
+                case 'u': // Restore cursor (ANSI.SYS).
+                    restoreCursor();
+                    break;
+                case ' ':
+                    continueSequence(new EscCsiArgSpaceState());
+                    break;
+                default:
+                    parseArg(b);
+                    break;
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 6;
+        }
+    }
+
+    /** Escape processing: ESC [ ? */
+    final class EscCsiQuestionMarkState extends EscapeState {
+        EscCsiQuestionMarkState() {
+
+        }
+
+        /** Process byte while in the escape state. */
+        @Override
+        public void processCodePoint(int b) {
+            switch (b) {
+                case 'J': // Selective erase in display (DECSED) - http://www.vt100.net/docs/vt510-rm/DECSED.
+                case 'K': // Selective erase in line (DECSEL) - http://vt100.net/docs/vt510-rm/DECSEL.
+                    mAboutToAutoWrap = false;
+                    int fillChar = ' ';
+                    int startCol = -1;
+                    int startRow = -1;
+                    int endCol = -1;
+                    int endRow = -1;
+                    boolean justRow = (b == 'K');
+                    switch (getArg0(0)) {
+                        case 0: // Erase from the active position to the end, inclusive (default).
+                            startCol = mCursorCol;
+                            startRow = mCursorRow;
+                            endCol = mColumns;
+                            endRow = justRow ? (mCursorRow + 1) : mRows;
+                            break;
+                        case 1: // Erase from start to the active position, inclusive.
+                            startCol = 0;
+                            startRow = justRow ? mCursorRow : 0;
+                            endCol = mCursorCol + 1;
+                            endRow = mCursorRow + 1;
+                            break;
+                        case 2: // Erase all of the display/line.
+                            startCol = 0;
+                            startRow = justRow ? mCursorRow : 0;
+                            endCol = mColumns;
+                            endRow = justRow ? (mCursorRow + 1) : mRows;
+                            break;
+                        default:
+                            unknownSequence(b);
+                            break;
+                    }
+                    long style = getStyle();
+                    for (int row = startRow; row < endRow; row++) {
+                        for (int col = startCol; col < endCol; col++) {
+                            if ((TextStyle.decodeEffect(mScreen.getStyleAt(row, col)) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED) == 0)
+                                mScreen.setChar(col, row, fillChar, style);
+                        }
+                    }
+                    break;
+                case 'h':
+                case 'l':
+                    if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
+                    for (int i = 0; i <= mArgIndex; i++)
+                        doDecSetOrReset(b == 'h', mArgs[i]);
+                    break;
+                case 'n': // Device Status Report (DSR, DEC-specific).
+                    if (getArg0(-1) == 6) {// Extended Cursor Position (DECXCPR - http://www.vt100.net/docs/vt510-rm/DECXCPR). Page=1.
+                        mSession.write(String.format(Locale.US, "\033[?%d;%d;1R", mCursorRow + 1, mCursorCol + 1));
+                    } else {
+                        finishSequence();
+                        return;
+                    }
+                    break;
+                case 'r':
+                case 's':
+                    if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
+                    for (int i = 0; i <= mArgIndex; i++) {
+                        int externalBit = mArgs[i];
+                        int internalBit = mapDecSetBitToInternalBit(externalBit);
+                        if (internalBit == -1) {
+                            Logger.logWarn(mClient, LOG_TAG, "Ignoring request to save/recall decset bit=" + externalBit);
+                        } else {
+                            if (b == 's') {
+                                mSavedDecSetFlags |= internalBit;
+                            } else {
+                                doDecSetOrReset((mSavedDecSetFlags & internalBit) != 0, externalBit);
+                            }
+                        }
+                    }
+                    break;
+                case '$':
+                    continueSequence(new EscCsiQuestionMarkArgDollarState());
+                    return;
+                default:
+                    parseArg(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 7;
+        }
+    }
+
+    /** Escape processing: ESC [ $ */
+    final class EscCsiDollarState extends EscapeState {
+        EscCsiDollarState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            boolean originMode = isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE);
+            int effectiveTopMargin = originMode ? mTopMargin : 0;
+            int effectiveBottomMargin = originMode ? mBottomMargin : mRows;
+            int effectiveLeftMargin = originMode ? mLeftMargin : 0;
+            int effectiveRightMargin = originMode ? mRightMargin : mColumns;
+            switch (b) {
+                case 'v': // ${CSI}${SRC_TOP}${SRC_LEFT}${SRC_BOTTOM}${SRC_RIGHT}${SRC_PAGE}${DST_TOP}${DST_LEFT}${DST_PAGE}$v"
+                    // Copy rectangular area (DECCRA - http://vt100.net/docs/vt510-rm/DECCRA):
+                    // "If Pbs is greater than Pts, or Pls is greater than Prs, the terminal ignores DECCRA.
+                    // The coordinates of the rectangular area are affected by the setting of origin mode (DECOM).
+                    // DECCRA is not affected by the page margins.
+                    // The copied text takes on the line attributes of the destination area.
+                    // If the value of Pt, Pl, Pb, or Pr exceeds the width or height of the active page, then the value
+                    // is treated as the width or height of that page.
+                    // If the destination area is partially off the page, then DECCRA clips the off-page data.
+                    // DECCRA does not change the active cursor position."
+                    int topSource = Math.min(getArg(0, 1, true) - 1 + effectiveTopMargin, mRows);
+                    int leftSource = Math.min(getArg(1, 1, true) - 1 + effectiveLeftMargin, mColumns);
+                    // Inclusive, so do not subtract one:
+                    int bottomSource = Math.min(Math.max(getArg(2, mRows, true) + effectiveTopMargin, topSource), mRows);
+                    int rightSource = Math.min(Math.max(getArg(3, mColumns, true) + effectiveLeftMargin, leftSource), mColumns);
+                    // int sourcePage = getArg(4, 1, true);
+                    int destionationTop = Math.min(getArg(5, 1, true) - 1 + effectiveTopMargin, mRows);
+                    int destinationLeft = Math.min(getArg(6, 1, true) - 1 + effectiveLeftMargin, mColumns);
+                    // int destinationPage = getArg(7, 1, true);
+                    int heightToCopy = Math.min(mRows - destionationTop, bottomSource - topSource);
+                    int widthToCopy = Math.min(mColumns - destinationLeft, rightSource - leftSource);
+                    mScreen.blockCopy(leftSource, topSource, widthToCopy, heightToCopy, destinationLeft, destionationTop);
+                    break;
+                case '{': // ${CSI}${TOP}${LEFT}${BOTTOM}${RIGHT}${"
+                    // Selective erase rectangular area (DECSERA - http://www.vt100.net/docs/vt510-rm/DECSERA).
+                case 'x': // ${CSI}${CHAR};${TOP}${LEFT}${BOTTOM}${RIGHT}$x"
+                    // Fill rectangular area (DECFRA - http://www.vt100.net/docs/vt510-rm/DECFRA).
+                case 'z': // ${CSI}$${TOP}${LEFT}${BOTTOM}${RIGHT}$z"
+                    // Erase rectangular area (DECERA - http://www.vt100.net/docs/vt510-rm/DECERA).
+                    boolean erase = b != 'x';
+                    boolean selective = b == '{';
+                    // Only DECSERA keeps visual attributes, DECERA does not:
+                    boolean keepVisualAttributes = erase && selective;
+                    int argIndex = 0;
+                    int fillChar = erase ? ' ' : getArg(argIndex++, -1, true);
+                    // "Pch can be any value from 32 to 126 or from 160 to 255. If Pch is not in this range, then the
+                    // terminal ignores the DECFRA command":
+                    if ((fillChar >= 32 && fillChar <= 126) || (fillChar >= 160 && fillChar <= 255)) {
+                        // "If the value of Pt, Pl, Pb, or Pr exceeds the width or height of the active page, the value
+                        // is treated as the width or height of that page."
+                        int top = Math.min(getArg(argIndex++, 1, true) + effectiveTopMargin, effectiveBottomMargin + 1);
+                        int left = Math.min(getArg(argIndex++, 1, true) + effectiveLeftMargin, effectiveRightMargin + 1);
+                        int bottom = Math.min(getArg(argIndex++, mRows, true) + effectiveTopMargin, effectiveBottomMargin);
+                        int right = Math.min(getArg(argIndex, mColumns, true) + effectiveLeftMargin, effectiveRightMargin);
+                        long style = getStyle();
+                        for (int row = top - 1; row < bottom; row++)
+                            for (int col = left - 1; col < right; col++)
+                                if (!selective || (TextStyle.decodeEffect(mScreen.getStyleAt(row, col)) & TextStyle.CHARACTER_ATTRIBUTE_PROTECTED) == 0)
+                                    mScreen.setChar(col, row, fillChar, keepVisualAttributes ? mScreen.getStyleAt(row, col) : style);
+                    }
+                    break;
+                case 'r': // "${CSI}${TOP}${LEFT}${BOTTOM}${RIGHT}${ATTRIBUTES}$r"
+                    // Change attributes in rectangular area (DECCARA - http://vt100.net/docs/vt510-rm/DECCARA).
+                case 't': // "${CSI}${TOP}${LEFT}${BOTTOM}${RIGHT}${ATTRIBUTES}$t"
+                    // Reverse attributes in rectangular area (DECRARA - http://www.vt100.net/docs/vt510-rm/DECRARA).
+                    boolean reverse = b == 't';
+                    // FIXME: "coordinates of the rectangular area are affected by the setting of origin mode (DECOM)".
+                    int top = Math.min(getArg(0, 1, true) - 1, effectiveBottomMargin) + effectiveTopMargin;
+                    int left = Math.min(getArg(1, 1, true) - 1, effectiveRightMargin) + effectiveLeftMargin;
+                    int bottom = Math.min(getArg(2, mRows, true) + 1, effectiveBottomMargin - 1) + effectiveTopMargin;
+                    int right = Math.min(getArg(3, mColumns, true) + 1, effectiveRightMargin - 1) + effectiveLeftMargin;
+                    if (mArgIndex >= 4) {
+                        if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
+                        for (int i = 4; i <= mArgIndex; i++) {
+                            int bits = 0;
+                            boolean setOrClear = true; // True if setting, false if clearing.
+                            switch (getArg(i, 0, false)) {
+                                case 0: // Attributes off (no bold, no underline, no blink, positive image).
+                                    bits = (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE | TextStyle.CHARACTER_ATTRIBUTE_BLINK
+                                        | TextStyle.CHARACTER_ATTRIBUTE_INVERSE);
+                                    if (!reverse) setOrClear = false;
+                                    break;
+                                case 1: // Bold.
+                                    bits = TextStyle.CHARACTER_ATTRIBUTE_BOLD;
+                                    break;
+                                case 4: // Underline.
+                                    bits = TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                                    break;
+                                case 5: // Blink.
+                                    bits = TextStyle.CHARACTER_ATTRIBUTE_BLINK;
+                                    break;
+                                case 7: // Negative image.
+                                    bits = TextStyle.CHARACTER_ATTRIBUTE_INVERSE;
+                                    break;
+                                case 22: // No bold.
+                                    bits = TextStyle.CHARACTER_ATTRIBUTE_BOLD;
+                                    setOrClear = false;
+                                    break;
+                                case 24: // No underline.
+                                    bits = TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                                    setOrClear = false;
+                                    break;
+                                case 25: // No blink.
+                                    bits = TextStyle.CHARACTER_ATTRIBUTE_BLINK;
+                                    setOrClear = false;
+                                    break;
+                                case 27: // Positive image.
+                                    bits = TextStyle.CHARACTER_ATTRIBUTE_INVERSE;
+                                    setOrClear = false;
+                                    break;
+                            }
+                            if (reverse && !setOrClear) {
+                                // Reverse attributes in rectangular area ignores non-(1,4,5,7) bits.
+                            } else {
+                                mScreen.setOrClearEffect(bits, setOrClear, reverse, isDecsetInternalBitSet(DECSET_BIT_RECTANGULAR_CHANGEATTRIBUTE),
+                                    effectiveLeftMargin, effectiveRightMargin, top, left, bottom, right);
+                            }
+                        }
+                    } else {
+                        // Do nothing.
+                    }
+                    break;
+                default:
+                    unknownSequence(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 8;
+        }
+    }
+
+    /** Escape processing: ESC % */
+    final class EscPercentState extends EscapeState {
+        EscPercentState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+
+        }
+
+        @Override
+        public int getStateCode() {
+            return 9;
+        }
+    }
+
+    /** Escape processing: ESC ] (AKA OSC - Operating System Controls) */
+    final class EscOscState extends EscapeState {
+        EscOscState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            doOsc(b);
+        }
+
+        @Override
+        public int getStateCode() {
+            return 10;
+        }
+    }
+
+    /** Escape processing: ESC ] (AKA OSC - Operating System Controls) ESC */
+    final class EscOscEscState extends EscapeState {
+        EscOscEscState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            if (b == '\\') {
+                doOscSetTextParameters("\033\\");
+            } else {// The ESC character was not followed by a \, so insert the ESC and
+                // the current character in arg buffer.
+                collectOSCArgs(27);
+                collectOSCArgs(b);
+                continueSequence(new EscOscState());
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 11;
+        }
+    }
+
+    /** Escape processing: ESC [ > */
+    final class EscCsiBiggerThanState extends EscapeState {
+        EscCsiBiggerThanState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            switch (b) {
+                case 'c': // "${CSI}>c" or "${CSI}>c". Secondary Device Attributes (DA2).
+                    // Originally this was used for the terminal to respond with "identification code, firmware version level,
+                    // and hardware options" (http://vt100.net/docs/vt510-rm/DA2), with the first "41" meaning the VT420
+                    // terminal type. This is not used anymore, but the second version level field has been changed by xterm
+                    // to mean it's release number ("patch numbers" listed at http://invisible-island.net/xterm/xterm.log.html),
+                    // and some applications use it as a feature check:
+                    // * tmux used to have a "xterm won't reach version 500 for a while so set that as the upper limit" check,
+                    // and then check "xterm_version > 270" if rectangular area operations such as DECCRA could be used.
+                    // * vim checks xterm version number >140 for "Request termcap/terminfo string" functionality >276 for SGR
+                    // mouse report.
+                    // The third number is a keyboard identifier not used nowadays.
+                    mSession.write("\033[>41;320;0c");
+                    break;
+                case 'm':
+                    // https://bugs.launchpad.net/gnome-terminal/+bug/96676/comments/25
+                    // Depending on the first number parameter, this can set one of the xterm resources
+                    // modifyKeyboard, modifyCursorKeys, modifyFunctionKeys and modifyOtherKeys.
+                    // http://invisible-island.net/xterm/manpage/xterm.html#RESOURCES
+
+                    // * modifyKeyboard (parameter=1):
+                    // Normally xterm makes a special case regarding modifiers (shift, control, etc.) to handle special keyboard
+                    // layouts (legacy and vt220). This is done to provide compatible keyboards for DEC VT220 and related
+                    // terminals that implement user-defined keys (UDK).
+                    // The bits of the resource value selectively enable modification of the given category when these keyboards
+                    // are selected. The default is "0":
+                    // (0) The legacy/vt220 keyboards interpret only the Control-modifier when constructing numbered
+                    // function-keys. Other special keys are not modified.
+                    // (1) allows modification of the numeric keypad
+                    // (2) allows modification of the editing keypad
+                    // (4) allows modification of function-keys, overrides use of Shift-modifier for UDK.
+                    // (8) allows modification of other special keys
+
+                    // * modifyCursorKeys (parameter=2):
+                    // Tells how to handle the special case where Control-, Shift-, Alt- or Meta-modifiers are used to add a
+                    // parameter to the escape sequence returned by a cursor-key. The default is "2".
+                    // - Set it to -1 to disable it.
+                    // - Set it to 0 to use the old/obsolete behavior.
+                    // - Set it to 1 to prefix modified sequences with CSI.
+                    // - Set it to 2 to force the modifier to be the second parameter if it would otherwise be the first.
+                    // - Set it to 3 to mark the sequence with a ">" to hint that it is private.
+
+                    // * modifyFunctionKeys (parameter=3):
+                    // Tells how to handle the special case where Control-, Shift-, Alt- or Meta-modifiers are used to add a
+                    // parameter to the escape sequence returned by a (numbered) function-
+                    // key. The default is "2". The resource values are similar to modifyCursorKeys:
+                    // Set it to -1 to permit the user to use shift- and control-modifiers to construct function-key strings
+                    // using the normal encoding scheme.
+                    // - Set it to 0 to use the old/obsolete behavior.
+                    // - Set it to 1 to prefix modified sequences with CSI.
+                    // - Set it to 2 to force the modifier to be the second parameter if it would otherwise be the first.
+                    // - Set it to 3 to mark the sequence with a ">" to hint that it is private.
+                    // If modifyFunctionKeys is zero, xterm uses Control- and Shift-modifiers to allow the user to construct
+                    // numbered function-keys beyond the set provided by the keyboard:
+                    // (Control) adds the value given by the ctrlFKeys resource.
+                    // (Shift) adds twice the value given by the ctrlFKeys resource.
+                    // (Control/Shift) adds three times the value given by the ctrlFKeys resource.
+                    //
+                    // As a special case, legacy (when oldFunctionKeys is true) or vt220 (when sunKeyboard is true)
+                    // keyboards interpret only the Control-modifier when constructing numbered function-keys.
+                    // This is done to provide compatible keyboards for DEC VT220 and related terminals that
+                    // implement user-defined keys (UDK).
+
+                    // * modifyOtherKeys (parameter=4):
+                    // Like modifyCursorKeys, tells xterm to construct an escape sequence for other keys (such as "2") when
+                    // modified by Control-, Alt- or Meta-modifiers. This feature does not apply to function keys and
+                    // well-defined keys such as ESC or the control keys. The default is "0".
+                    // (0) disables this feature.
+                    // (1) enables this feature for keys except for those with well-known behavior, e.g., Tab, Backarrow and
+                    // some special control character cases, e.g., Control-Space to make a NUL.
+                    // (2) enables this feature for keys including the exceptions listed.
+                    Logger.logError(mClient, LOG_TAG, "(ignored) CSI > MODIFY RESOURCE: " + getArg0(-1) + " to " + getArg1(-1));
+                    break;
+                default:
+                    parseArg(b);
+                    break;
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 12;
+        }
+    }
+
+    /** Escape procession: "ESC P" or Device Control String (DCS) */
+    final class EscPState extends EscapeState {
+        EscPState() {
+
+        }
+
+        /** device control sequence. */
+        @Override
+        public void processCodePoint(int b) {
+            if (b == (byte) '\\') { // End of ESC \ string Terminator
+                String dcs = mOSCOrDeviceControlArgs.toString();
+                // DCS $ q P t ST. Request Status String (DECRQSS)
+                if (dcs.startsWith("$q")) {
+                    if (dcs.equals("$q\"p")) {
+                        // DECSCL, conformance level, http://www.vt100.net/docs/vt510-rm/DECSCL:
+                        String csiString = "64;1\"p";
+                        mSession.write("\033P1$r" + csiString + "\033\\");
+                    } else {
+                        finishSequenceAndLogError("Unrecognized DECRQSS string: '" + dcs + "'");
+                    }
+                } else if (dcs.startsWith("+q")) {
+                    // Request Termcap/Terminfo String. The string following the "q" is a list of names encoded in
+                    // hexadecimal (2 digits per character) separated by ; which correspond to termcap or terminfo key
+                    // names.
+                    // Two special features are also recognized, which are not key names: Co for termcap colors (or colors
+                    // for terminfo colors), and TN for termcap name (or name for terminfo name).
+                    // xterm responds with DCS 1 + r P t ST for valid requests, adding to P t an = , and the value of the
+                    // corresponding string that xterm would send, or DCS 0 + r P t ST for invalid requests. The strings are
+                    // encoded in hexadecimal (2 digits per character).
+                    // Example:
+                    // :kr=\EOC: ks=\E[?1h\E=: ku=\EOA: le=^H:mb=\E[5m:md=\E[1m:\
+                    // where
+                    // kd=down-arrow key
+                    // kl=left-arrow key
+                    // kr=right-arrow key
+                    // ku=up-arrow key
+                    // #2=key_shome, "shifted home"
+                    // #4=key_sleft, "shift arrow left"
+                    // %i=key_sright, "shift arrow right"
+                    // *7=key_send, "shifted end"
+                    // k1=F1 function key
+
+                    // Example: Request for ku is "ESC P + q 6 b 7 5 ESC \", where 6b7d=ku in hexadecimal.
+                    // Xterm response in normal cursor mode:
+                    // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x5B 0x41 = 27 91 65 = ESC [ A
+                    // Xterm response in application cursor mode:
+                    // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x4F 0x41 = 27 91 65 = ESC 0 A
+
+                    // #4 is "shift arrow left":
+                    // *** Device Control (DCS) for '#4'- 'ESC P + q 23 34 ESC \'
+                    // Response: <27> P 1 + r 2 3 3 4 = 1 B 5 B 3 1 3 B 3 2 4 4 <27> \
+                    // where 0x1B 0x5B 0x31 0x3B 0x32 0x44 = ESC [ 1 ; 2 D
+                    // which we find in: TermKeyListener.java: KEY_MAP.put(KEYMOD_SHIFT | KEYCODE_DPAD_LEFT, "\033[1;2D");
+
+                    // See http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V40G_HTML/MAN/MAN4/0178____.HTM for what to
+                    // respond, as well as http://www.freebsd.org/cgi/man.cgi?query=termcap&sektion=5#CAPABILITIES for
+                    // the meaning of e.g. "ku", "kd", "kr", "kl"
+
+                    for (String part : dcs.substring(2).split(";")) {
+                        if (part.length() % 2 == 0) {
+                            StringBuilder transBuffer = new StringBuilder();
+                            char c;
+                            for (int i = 0; i < part.length(); i += 2) {
+                                try {
+                                    c = (char) Long.decode("0x" + part.charAt(i) + "" + part.charAt(i + 1)).longValue();
+                                } catch (NumberFormatException e) {
+                                    Logger.logStackTraceWithMessage(mClient, LOG_TAG, "Invalid device termcap/terminfo encoded name \"" + part + "\"", e);
+                                    continue;
+                                }
+                                transBuffer.append(c);
+                            }
+
+                            String trans = transBuffer.toString();
+                            String responseValue;
+                            switch (trans) {
+                                case "Co":
+                                case "colors":
+                                    responseValue = "256"; // Number of colors.
+                                    break;
+                                case "TN":
+                                case "name":
+                                    responseValue = "xterm";
+                                    break;
+                                default:
+                                    responseValue = KeyHandler.getCodeFromTermcap(trans, isDecsetInternalBitSet(DECSET_BIT_APPLICATION_CURSOR_KEYS),
+                                        isDecsetInternalBitSet(DECSET_BIT_APPLICATION_KEYPAD));
+                                    break;
+                            }
+                            if (responseValue == null) {
+                                switch (trans) {
+                                    case "%1": // Help key - ignore
+                                    case "&8": // Undo key - ignore.
+                                        break;
+                                    default:
+                                        Logger.logWarn(mClient, LOG_TAG, "Unhandled termcap/terminfo name: '" + trans + "'");
+                                }
+                                // Respond with invalid request:
+                                mSession.write("\033P0+r" + part + "\033\\");
+                            } else {
+                                StringBuilder hexEncoded = new StringBuilder();
+                                for (int j = 0; j < responseValue.length(); j++) {
+                                    hexEncoded.append(String.format("%02X", (int) responseValue.charAt(j)));
+                                }
+                                mSession.write("\033P1+r" + part + "=" + hexEncoded + "\033\\");
+                            }
+                        } else {
+                            Logger.logError(mClient, LOG_TAG, "Invalid device termcap/terminfo name of odd length: " + part);
+                        }
+                    }
+                } else {
+                    if (LOG_ESCAPE_SEQUENCES)
+                        Logger.logError(mClient, LOG_TAG, "Unrecognized device control string: " + dcs);
+                }
+                finishSequence();
+            } else {
+                if (mOSCOrDeviceControlArgs.length() > MAX_OSC_STRING_LENGTH) {
+                    // Too long.
+                    mOSCOrDeviceControlArgs.setLength(0);
+                    finishSequence();
+                } else {
+                    mOSCOrDeviceControlArgs.appendCodePoint(b);
+                    continueSequence(mEscapeState);
+                }
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 13;
+        }
+    }
+
+    /** Escape processing: CSI > */
+    final class EscCsiQuestionMarkArgDollarState extends EscapeState {
+        EscCsiQuestionMarkArgDollarState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            if (b == 'p') {
+                // Request DEC private mode (DECRQM).
+                int mode = getArg0(0);
+                int value;
+                if (mode == 47 || mode == 1047 || mode == 1049) {
+                    // This state is carried by mScreen pointer.
+                    value = (mScreen == mAltBuffer) ? 1 : 2;
+                } else {
+                    int internalBit = mapDecSetBitToInternalBit(mode);
+                    if (internalBit != -1) {
+                        value = isDecsetInternalBitSet(internalBit) ? 1 : 2; // 1=set, 2=reset.
+                    } else {
+                        Logger.logError(mClient, LOG_TAG, "Got DECRQM for unrecognized private DEC mode=" + mode);
+                        value = 0; // 0=not recognized, 3=permanently set, 4=permanently reset
+                    }
+                }
+                mSession.write(String.format(Locale.US, "\033[?%d;%d$y", mode, value));
+            } else {
+                unknownSequence(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 14;
+        }
+    }
+
+    /** Escape processing: CSI $ARGS ' ' */
+    final class EscCsiArgSpaceState extends EscapeState {
+        EscCsiArgSpaceState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            int arg = getArg0(0);
+            switch (b) {
+                case 'q': // "${CSI}${STYLE} q" - set cursor style (http://www.vt100.net/docs/vt510-rm/DECSCUSR).
+                    switch (arg) {
+                        case 0: // Blinking block.
+                        case 1: // Blinking block.
+                        case 2: // Steady block.
+                            mCursorStyle = TERMINAL_CURSOR_STYLE_BLOCK;
+                            break;
+                        case 3: // Blinking underline.
+                        case 4: // Steady underline.
+                            mCursorStyle = TERMINAL_CURSOR_STYLE_UNDERLINE;
+                            break;
+                        case 5: // Blinking bar (xterm addition).
+                        case 6: // Steady bar (xterm addition).
+                            mCursorStyle = TERMINAL_CURSOR_STYLE_BAR;
+                            break;
+                    }
+                    break;
+                case 't':
+                case 'u':
+                    // Set margin-bell volume - ignore.
+                    break;
+                default:
+                    unknownSequence(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 15;
+        }
+    }
+
+    /** Escape processing: CSI $ARGS '*' */
+    final class EscCsiArgsAsterixState extends EscapeState {
+        EscCsiArgsAsterixState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            int attributeChangeExtent = getArg0(0);
+            if (b == 'x' && (attributeChangeExtent >= 0 && attributeChangeExtent <= 2)) {
+                // Select attribute change extent (DECSACE - http://www.vt100.net/docs/vt510-rm/DECSACE).
+                setDecsetinternalBit(DECSET_BIT_RECTANGULAR_CHANGEATTRIBUTE, attributeChangeExtent == 2);
+            } else {
+                unknownSequence(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 16;
+        }
+    }
+
+    /** Escape processing: CSI " */
+    final class EscCsiDoubleQuoteState extends EscapeState {
+        EscCsiDoubleQuoteState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            if (b == 'q') {
+                // http://www.vt100.net/docs/vt510-rm/DECSCA
+                int arg = getArg0(0);
+                if (arg == 0 || arg == 2) {
+                    // DECSED and DECSEL can erase characters.
+                    mEffect &= ~TextStyle.CHARACTER_ATTRIBUTE_PROTECTED;
+                } else if (arg == 1) {
+                    // DECSED and DECSEL cannot erase characters.
+                    mEffect |= TextStyle.CHARACTER_ATTRIBUTE_PROTECTED;
+                } else {
+                    unknownSequence(b);
+                }
+            } else {
+                unknownSequence(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 17;
+        }
+    }
+
+    /** Escape processing: CSI ' */
+    final class EscCsiSingleQuoteState extends EscapeState {
+        EscCsiSingleQuoteState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            if (b == '}') { // Insert Ps Column(s) (default = 1) (DECIC), VT420 and up.
+                int columnsAfterCursor = mRightMargin - mCursorCol;
+                int columnsToInsert = Math.min(getArg0(1), columnsAfterCursor);
+                int columnsToMove = columnsAfterCursor - columnsToInsert;
+                mScreen.blockCopy(mCursorCol, 0, columnsToMove, mRows, mCursorCol + columnsToInsert, 0);
+                blockClear(mCursorCol, 0, columnsToInsert, mRows);
+            } else if (b == '~') { // Delete Ps Column(s) (default = 1) (DECDC), VT420 and up.
+                int columnsAfterCursor = mRightMargin - mCursorCol;
+                int columnsToDelete = Math.min(getArg0(1), columnsAfterCursor);
+                int columnsToMove = columnsAfterCursor - columnsToDelete;
+                mScreen.blockCopy(mCursorCol + columnsToDelete, 0, columnsToMove, mRows, mCursorCol, 0);
+            } else {
+                unknownSequence(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 18;
+        }
+    }
+
+    /** Escape processing: CSI ! */
+    final class EscCsiExclamationState extends EscapeState {
+        EscCsiExclamationState() {
+
+        }
+
+        @Override
+        public void processCodePoint(int b) {
+            if (b == 'p') { // Soft terminal reset (DECSTR, http://vt100.net/docs/vt510-rm/DECSTR).
+                reset();
+            } else {
+                unknownSequence(b);
+            }
+        }
+
+        @Override
+        public int getStateCode() {
+            return 19;
+        }
+    }
 }
+
