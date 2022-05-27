@@ -5,13 +5,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.BadParcelableException;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Parcel;
+import android.os.NetworkOnMainThreadException;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.os.RemoteException;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,9 +25,9 @@ import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.net.socket.local.ILocalSocketManager;
 import com.termux.shared.net.socket.local.LocalClientSocket;
-import com.termux.shared.net.socket.local.LocalServerSocket;
 import com.termux.shared.net.socket.local.LocalSocketManager;
 import com.termux.shared.net.socket.local.LocalSocketRunConfig;
+import com.termux.shared.net.socket.local.PeerCred;
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
 
 import java.io.File;
@@ -138,15 +138,27 @@ public class PluginService extends Service
         if (mConnectedPlugins.get(pid) != null) return; // client already in list
         try {
             mConnectedPlugins.put(pid, new Plugin(pid, uid, callback));
-        } catch (RemoteException ignored) {}
+        } catch (RemoteException ignored) {} // RemoteException is thrown if the callback binder is already dead, plugin isn't added to the list
+    }
+    
+    @NonNull
+    private Plugin checkClient() throws IllegalStateException {
+        Plugin p = mConnectedPlugins.get(Binder.getCallingPid());
+        if (p == null)  {
+            Logger.logDebug("client not in list");
+            throw new IllegalStateException("Please call setCallbackBinder first");
+        }
+        return p;
     }
     
     
-    private void checkClient() throws IllegalStateException {
-        if (! mConnectedPlugins.containsKey(Binder.getCallingPid())) Logger.logDebug("client not in list");
-        if (! mConnectedPlugins.containsKey(Binder.getCallingPid())) throw new IllegalStateException("Please call setCallbackBinder first");
+    private void atPluginDeath(@NonNull Plugin p, Runnable r) {
+        try {
+            p.callback.asBinder().linkToDeath(r::run, 0);
+        } catch (RemoteException e) {
+            r.run();
+        }
     }
-    
     
     
     private class PluginServiceBinder extends IPluginService.Stub {
@@ -265,37 +277,59 @@ public class PluginService extends Service
         }
     
         
-        @NonNull
         @Override
-        public ParcelFileDescriptor listenOnSocketFile(String name) {
+        public void listenOnSocketFile(String name) {
             externalAppsOrThrow();
             if (name == null) throw new NullPointerException("Passed name is null");
-            checkClient();
+            Plugin p = checkClient();
             
             String socketPath = fileInPluginDirOrThrow(name);
     
             
-            // passing null for localSocketManagerClient here should be okay, because the handler methods don't get called
-            @SuppressWarnings("ConstantConditions")
-            LocalSocketRunConfig conf = new LocalSocketRunConfig(BinderUtils.getCallerPackageName(PluginService.this) + " socket: " + name, socketPath, null);
+            LocalSocketRunConfig conf = new LocalSocketRunConfig(BinderUtils.getCallerPackageName(PluginService.this) + " socket: " + name, socketPath, new ILocalSocketManager()
+            {
+                @Nullable
+                @Override
+                public Thread.UncaughtExceptionHandler getLocalSocketManagerClientThreadUEH(@NonNull LocalSocketManager localSocketManager) {
+                    return null;
+                }
+    
+                @Override
+                public void onError(@NonNull LocalSocketManager localSocketManager, @Nullable LocalClientSocket clientSocket, @NonNull Error error) {
+                    Logger.logDebug("PluginService:ILocalSocketManager", "Error: "+error.getErrorLogString());
+                }
+    
+                @Override
+                public void onDisallowedClientConnected(@NonNull LocalSocketManager localSocketManager, @NonNull LocalClientSocket clientSocket, @NonNull Error error) {
+                    PeerCred pc = clientSocket.getPeerCred();
+                    Logger.logDebug("PluginService:ILocalSocketManager", "Connection from a disallowed UID on a plugin socket detected:\n UID: "+pc.uid+
+                        "\n Name: "+pc.pname+ "\n Cmdline: "+pc.cmdline+ "\n pid: "+pc.pid);
+                }
+    
+                @Override
+                public void onClientAccepted(@NonNull LocalSocketManager localSocketManager, @NonNull LocalClientSocket clientSocket) {
+                    try {
+                        p.callback.socketConnection(name, ParcelFileDescriptor.fromFd(clientSocket.getFD()));
+                    }
+                    catch (RemoteException | BadParcelableException | IllegalArgumentException | IllegalStateException
+                           | NullPointerException | SecurityException | UnsupportedOperationException | NetworkOnMainThreadException | IOException e) {
+                        Logger.logStackTrace("PluginService:ILocalSocketManager", e);
+                    }
+                    try {
+                        clientSocket.close(); // close the socket, the plugin received a dup of the fd
+                    }
+                    catch (IOException e) {
+                        Logger.logStackTrace("PluginService:ILocalSocketManager", e);
+                    }
+                }
+            });
             LocalSocketManager m = new LocalSocketManager(PluginService.this, conf);
-            Error err = m.createSocket();
+            Error err = m.start();
             if (err != null) {
                 throw new UnsupportedOperationException("Error: "+err.getErrorLogString());
             }
-    
-            ParcelFileDescriptor socketPfd;
-    
-            try {
-                socketPfd = ParcelFileDescriptor.fromFd(conf.getFD());
-            }
-            catch (IOException e) {
-                throw new UnsupportedOperationException(e);
-            } finally {
-                m.getServerSocket().closeServerSocket(true);
-            }
             
-            return socketPfd;
+            atPluginDeath(p, m::stop);
         }
         
     

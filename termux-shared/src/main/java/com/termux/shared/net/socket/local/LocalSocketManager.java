@@ -85,25 +85,6 @@ public class LocalSocketManager {
         mIsRunning = true;
         return mServerSocket.start();
     }
-    
-    /**
-     * Create the {@link LocalServerSocket} but don't start the handler thread.
-     * You can use this to pass the server socket file descriptor to another application.
-     */
-    public synchronized Error createSocket() {
-        Logger.logDebugExtended(LOG_TAG, "start\n" + mLocalSocketRunConfig);
-        
-        if (!localSocketLibraryLoaded) {
-            try {
-                Logger.logDebug(LOG_TAG, "Loading \"" + LOCAL_SOCKET_LIBRARY + "\" library");
-                System.loadLibrary(LOCAL_SOCKET_LIBRARY);
-                localSocketLibraryLoaded = true;
-            } catch (Exception e) {
-                return LocalSocketErrno.ERRNO_START_LOCAL_SOCKET_LIB_LOAD_FAILED_WITH_EXCEPTION.getError(e, LOCAL_SOCKET_LIBRARY,  e.getMessage());
-            }
-        }
-        return mServerSocket.createSocket();
-    }
 
     /**
      * Stop the {@link LocalServerSocket} and stop listening for new {@link LocalClientSocket}.

@@ -25,8 +25,13 @@ interface IPluginCallback {
     */
     int getCallbackVersion() = 1;
     
-    
-    
+    /**
+    * This gets called when a connection is made on a socket created with {@link com.termux.plugin_aidl.IPluginService#listenOnSocketFile}.
+    * 
+    * @param sockname The name of socket file the connection was made on (the relative path to the plugin directory).
+    * @param connection The connection file descriptor.
+    */
+    void socketConnection(String sockname, in ParcelFileDescriptor connection) = 2;
     
     
     
