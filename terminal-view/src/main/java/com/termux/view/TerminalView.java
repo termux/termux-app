@@ -817,9 +817,6 @@ public final class TerminalView extends View {
             // of the more normal ones from ASCII that terminal programs expect - the
             // desire to input the original characters should be low.
             switch (codePoint) {
-                case 0x02DC: // SMALL TILDE.
-                    codePoint = 0x007E; // TILDE (~).
-                    break;
                 case 0x02CB: // MODIFIER LETTER GRAVE ACCENT.
                     codePoint = 0x0060; // GRAVE ACCENT (`).
                     break;
