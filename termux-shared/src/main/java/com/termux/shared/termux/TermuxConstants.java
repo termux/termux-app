@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.42.0
+ * Version: v0.43.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -242,6 +242,9 @@ import java.util.List;
  *
  * - 0.42.0 (2022-04-29)
  *      - Added `APK_RELEASE_TERMUX_DEVS` and `APK_RELEASE_TERMUX_DEVS_SIGNING_CERTIFICATE_SHA256_DIGEST`.
+ *
+ * - 0.43.0 (2022-05-29)
+ *      - Changed `TERMUX_SUPPORT_EMAIL_URL` to support@termux.dev.
  */
 
 /**
@@ -546,10 +549,10 @@ public final class TermuxConstants {
 
 
     /** Termux support email url */
-    public static final String TERMUX_SUPPORT_EMAIL_URL = "termuxreports@groups.io"; // Default: "termuxreports@groups.io"
+    public static final String TERMUX_SUPPORT_EMAIL_URL = "support@termux.dev"; // Default: "support@termux.dev"
 
     /** Termux support email mailto url */
-    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:termuxreports@groups.io"
+    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:support@termux.dev"
 
 
     /** Termux Reddit subreddit */
