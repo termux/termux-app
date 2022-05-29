@@ -1,13 +1,17 @@
 package com.termux.shared.shell.command.result;
 
 import android.app.PendingIntent;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.models.ReportInfo;
 
+import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 
 public class ResultConfig {
 
@@ -91,6 +95,25 @@ public class ResultConfig {
 
         return logString.toString();
     }
+
+    /**
+     * Get log variables {@link List < Pair <String, Object>>} for {@link ResultConfig}.
+     *
+     * @return Returns the result pending intent variables in list {@link List<  Pair  <String, String>>}.
+     */
+    private List<Pair<String, String>> getResultPendingIntentVariableList() {
+        List<Pair<String, String>> variableList = new ArrayList<Pair<String, String>>() {{
+            add(Pair.create("Result Bundle Key", resultBundleKey));
+            add(Pair.create("Result Stdout Key", resultStdoutKey));
+            add(Pair.create("Result Stderr Key", resultStderrKey));
+            add(Pair.create("Result Exit Code Key", resultExitCodeKey));
+            add(Pair.create("Result Err Code Key", resultErrCodeKey));
+            add(Pair.create("Result Error Key", resultErrmsgKey));
+            add(Pair.create("Result Stdout Original Length Key", resultStdoutOriginalLengthKey));
+            add(Pair.create("Result Stderr Original Length Key", resultStderrOriginalLengthKey));
+        }};
+        return variableList;
+    }
     
     public String getResultPendingIntentVariablesLogString(boolean ignoreNull) {
         if (resultPendingIntent == null) return "Result PendingIntent Creator: -";
@@ -99,24 +122,30 @@ public class ResultConfig {
 
         resultPendingIntentVariablesString.append("Result PendingIntent Creator: `").append(resultPendingIntent.getCreatorPackage()).append("`");
 
-        if (!ignoreNull || resultBundleKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Bundle Key", resultBundleKey, "-"));
-        if (!ignoreNull || resultStdoutKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Stdout Key", resultStdoutKey, "-"));
-        if (!ignoreNull || resultStderrKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Stderr Key", resultStderrKey, "-"));
-        if (!ignoreNull || resultExitCodeKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Exit Code Key", resultExitCodeKey, "-"));
-        if (!ignoreNull || resultErrCodeKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Err Code Key", resultErrCodeKey, "-"));
-        if (!ignoreNull || resultErrmsgKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Error Key", resultErrmsgKey, "-"));
-        if (!ignoreNull || resultStdoutOriginalLengthKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Stdout Original Length Key", resultStdoutOriginalLengthKey, "-"));
-        if (!ignoreNull || resultStderrOriginalLengthKey != null)
-            resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Stderr Original Length Key", resultStderrOriginalLengthKey, "-"));
+        for (Pair<String, String> logVar: getResultPendingIntentVariableList()) {
+            if (!ignoreNull || logVar.second != null) {
+                resultPendingIntentVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry(logVar.first, logVar.second, "-"));
+            }
+        }
 
         return resultPendingIntentVariablesString.toString();
+    }
+
+    /**
+     * Get log variables {@link List < Pair <String, Object>>} for {@link ResultConfig}.
+     *
+     * @return Returns the result directory variables in list {@link List<  Pair  <String, Object>>}.
+     */
+    private static List<Pair<String, Object>> getResultDirectoryVariableList(final ResultConfig resultConfig) {
+        List<Pair<String, Object>> variableList = new ArrayList<Pair<String, Object>>() {{
+            add(Pair.create("Result Directory Path", resultConfig.resultDirectoryPath));
+            add(Pair.create("Result Single File", resultConfig.resultSingleFile));
+            add(Pair.create("Result File Basename", resultConfig.resultFileBasename));
+            add(Pair.create("Result File Output Format", resultConfig.resultFileOutputFormat));
+            add(Pair.create("Result File Error Format", resultConfig.resultFileErrorFormat));
+            add(Pair.create("Result Files Suffix", resultConfig.resultFilesSuffix));
+        }};
+        return variableList;
     }
 
     public String getResultDirectoryVariablesLogString(boolean ignoreNull) {
@@ -124,17 +153,20 @@ public class ResultConfig {
 
         StringBuilder resultDirectoryVariablesString = new StringBuilder();
 
-        resultDirectoryVariablesString.append(Logger.getSingleLineLogStringEntry("Result Directory Path", resultDirectoryPath, "-"));
-
-        resultDirectoryVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Single File", resultSingleFile, "-"));
-        if (!ignoreNull || resultFileBasename != null)
-            resultDirectoryVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result File Basename", resultFileBasename, "-"));
-        if (!ignoreNull || resultFileOutputFormat != null)
-            resultDirectoryVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result File Output Format", resultFileOutputFormat, "-"));
-        if (!ignoreNull || resultFileErrorFormat != null)
-            resultDirectoryVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result File Error Format", resultFileErrorFormat, "-"));
-        if (!ignoreNull || resultFilesSuffix != null)
-            resultDirectoryVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry("Result Files Suffix", resultFilesSuffix, "-"));
+        for (Pair<String, Object> logVar: getResultDirectoryVariableList(this)) {
+            switch(logVar.first) {
+                case "Result Directory Path":
+                    resultDirectoryVariablesString.append(Logger.getSingleLineLogStringEntry(logVar.first, logVar.second, "-"));
+                    break;
+                case "Result Single File":
+                    resultDirectoryVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry(logVar.first, logVar.second, "-"));
+                    break;
+                default:
+                    if (!ignoreNull || logVar.second != null) {
+                        resultDirectoryVariablesString.append("\n").append(Logger.getSingleLineLogStringEntry(logVar.first, logVar.second, "-"));
+                    }
+            }
+        }
 
         return resultDirectoryVariablesString.toString();
     }
@@ -156,12 +188,9 @@ public class ResultConfig {
             markdownString.append("**Result PendingIntent Creator:** -  ");
 
         if (resultConfig.resultDirectoryPath != null) {
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Result Directory Path", resultConfig.resultDirectoryPath, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Result Single File", resultConfig.resultSingleFile, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Result File Basename", resultConfig.resultFileBasename, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Result File Output Format", resultConfig.resultFileOutputFormat, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Result File Error Format", resultConfig.resultFileErrorFormat, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Result Files Suffix", resultConfig.resultFilesSuffix, "-"));
+            for (Pair<String, Object> logVar: getResultDirectoryVariableList(resultConfig)) {
+                markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(logVar.first, logVar.second, "-"));
+            }
         }
 
         return markdownString.toString();
