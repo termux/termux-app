@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.PopupWindow;
 
 import com.termux.view.R;
 import com.termux.view.TerminalView;
+import com.termux.view.support.PopupWindowCompatGingerbread;
 
 @SuppressLint("ViewConstructor")
 public class TextSelectionHandleView extends View {
@@ -68,13 +70,18 @@ public class TextSelectionHandleView extends View {
             android.R.attr.textSelectHandleWindowStyle);
         mHandle.setSplitTouchEnabled(true);
         mHandle.setClippingEnabled(false);
-        mHandle.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
         mHandle.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         mHandle.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         mHandle.setBackgroundDrawable(null);
         mHandle.setAnimationStyle(0);
-        mHandle.setEnterTransition(null);
-        mHandle.setExitTransition(null);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mHandle.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
+            mHandle.setEnterTransition(null);
+            mHandle.setExitTransition(null);
+        } else {
+            PopupWindowCompatGingerbread.setWindowLayoutType(mHandle, WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
+        }
         mHandle.setContentView(this);
     }
 

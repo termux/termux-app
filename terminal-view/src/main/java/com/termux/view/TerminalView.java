@@ -1245,6 +1245,7 @@ public final class TerminalView extends View {
      * Define functions required for long hold toolbar.
      */
     private final Runnable mShowFloatingToolbar = new Runnable() {
+        @RequiresApi(api = Build.VERSION_CODES.M)
         @Override
         public void run() {
             if (getTextSelectionActionMode() != null) {
@@ -1253,6 +1254,7 @@ public final class TerminalView extends View {
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void showFloatingToolbar() {
         if (getTextSelectionActionMode() != null) {
             int delay = ViewConfiguration.getDoubleTapTimeout();
@@ -1260,6 +1262,7 @@ public final class TerminalView extends View {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     void hideFloatingToolbar() {
         if (getTextSelectionActionMode() != null) {
             removeCallbacks(mShowFloatingToolbar);
@@ -1268,7 +1271,7 @@ public final class TerminalView extends View {
     }
 
     public void updateFloatingToolbarVisibility(MotionEvent event) {
-        if (getTextSelectionActionMode() != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getTextSelectionActionMode() != null) {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_MOVE:
                     hideFloatingToolbar();

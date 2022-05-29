@@ -50,8 +50,8 @@ tasks.withType(Test) {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.3.0'
-    testImplementation 'junit:junit:4.13.2'
+    implementation "androidx.annotation:annotation:1.3.0"
+    testImplementation "junit:junit:4.13.2"
 }
 
 task sourceJar(type: Jar) {
