@@ -213,6 +213,7 @@ public class LocalSocketRunConfig implements Serializable {
         StringBuilder logString = new StringBuilder();
 
         logString.append(mTitle).append(" Socket Server Run Config:");
+<<<<<<< HEAD
         logString.append("\n").append(Logger.getSingleLineLogStringEntry("Path", mPath, "-"));
         logString.append("\n").append(Logger.getSingleLineLogStringEntry("AbstractNamespaceSocket", mAbstractNamespaceSocket, "-"));
         logString.append("\n").append(Logger.getSingleLineLogStringEntry("LocalSocketManagerClient", mLocalSocketManagerClient.getClass().getName(), "-"));
@@ -221,6 +222,14 @@ public class LocalSocketRunConfig implements Serializable {
         logString.append("\n").append(Logger.getSingleLineLogStringEntry("SendTimeout", getSendTimeout(), "-"));
         logString.append("\n").append(Logger.getSingleLineLogStringEntry("Deadline", getDeadline(), "-"));
         logString.append("\n").append(Logger.getSingleLineLogStringEntry("Backlog", getBacklog(), "-"));
+=======
+        
+        for(Pair<String, Object> logVar: getLogVariableList()) {
+            String label = logVar.first;
+            Object object = logVar.second;
+            logString.append("\n").append(Logger.getSingleLineLogStringEntry(label, object, "-"));
+        }
+>>>>>>> 1677e24... Changed: Add explaining variables to `getLogString()` and `getMarkdownString()` in `ReportInfo.java`, `LocalClientSocket.java` and `LocalSocketRunConfig.java`.
 
         return logString.toString();
     }
@@ -242,6 +251,7 @@ public class LocalSocketRunConfig implements Serializable {
         StringBuilder markdownString = new StringBuilder();
 
         markdownString.append("## ").append(mTitle).append(" Socket Server Run Config");
+<<<<<<< HEAD
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Path", mPath, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("AbstractNamespaceSocket", mAbstractNamespaceSocket, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("LocalSocketManagerClient", mLocalSocketManagerClient.getClass().getName(), "-"));
@@ -250,6 +260,14 @@ public class LocalSocketRunConfig implements Serializable {
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("SendTimeout", getSendTimeout(), "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Deadline", getDeadline(), "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Backlog", getBacklog(), "-"));
+=======
+
+        for(Pair<String, Object> logVar: getLogVariableList()) {
+            String label = logVar.first;
+            Object object = logVar.second;
+            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(label, object, "-"));
+        }
+>>>>>>> 1677e24... Changed: Add explaining variables to `getLogString()` and `getMarkdownString()` in `ReportInfo.java`, `LocalClientSocket.java` and `LocalSocketRunConfig.java`.
 
         return markdownString.toString();
     }

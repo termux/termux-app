@@ -384,7 +384,9 @@ public class LocalClientSocket implements Closeable {
         logString.append("Client Socket:");
 
         for (Pair<String, Object> logVar: getLogVariableList()) {
-            logString.append("\n").append(Logger.getSingleLineLogStringEntry(logVar.first, logVar.second, "-"));
+            String label = logVar.first;
+            Object object = logVar.second;
+            logString.append("\n").append(Logger.getSingleLineLogStringEntry(label, object, "-"));
         }
 
         logString.append("\n\n\n");
@@ -402,7 +404,9 @@ public class LocalClientSocket implements Closeable {
         markdownString.append("## ").append("Client Socket");
 
         for (Pair<String, Object> logVar: getLogVariableList()) {
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(logVar.first, logVar.second, "-"));
+            String label = logVar.first;
+            Object object = logVar.second;
+            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(label, object, "-"));
         }
 
         markdownString.append("\n\n\n");

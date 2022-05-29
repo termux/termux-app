@@ -84,9 +84,19 @@ public class ReportInfo implements Serializable {
 
         if (reportInfo.addReportInfoHeaderToMarkdown) {
             markdownString.append("## Report Info\n\n");
+<<<<<<< HEAD
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User Action", reportInfo.userAction, "-"));
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Sender", reportInfo.sender, "-"));
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Report Timestamp", reportInfo.reportTimestamp, "-"));
+=======
+
+            for (Pair<String, Object> logVar: getLogVariableList(reportInfo)) {
+                String label = logVar.first;
+                Object object = logVar.second;
+                markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(label, object, "-"));
+            }
+
+>>>>>>> 1677e24... Changed: Add explaining variables to `getLogString()` and `getMarkdownString()` in `ReportInfo.java`, `LocalClientSocket.java` and `LocalSocketRunConfig.java`.
             markdownString.append("\n##\n\n");
         }
 
