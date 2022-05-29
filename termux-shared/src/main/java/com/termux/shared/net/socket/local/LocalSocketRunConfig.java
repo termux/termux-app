@@ -235,11 +235,9 @@ public class LocalSocketRunConfig implements Serializable {
     public String getLogString() {
         StringBuilder logString = new StringBuilder();
 
-        List<Pair<String, Object>> logVariableList = getLogVariableList();
-
         logString.append(mTitle).append(" Socket Server Run Config:");
-
-        for(Pair<String, Object> logVar: logVariableList) {
+        
+        for(Pair<String, Object> logVar: getLogVariableList()) {
             logString.append("\n").append(Logger.getSingleLineLogStringEntry(logVar.first, logVar.second, "-"));
         }
 
@@ -262,11 +260,9 @@ public class LocalSocketRunConfig implements Serializable {
     public String getMarkdownString() {
         StringBuilder markdownString = new StringBuilder();
 
-        List<Pair<String, Object>> logVariableList = getLogVariableList();
-
         markdownString.append("## ").append(mTitle).append(" Socket Server Run Config");
 
-        for(Pair<String, Object> logVar: logVariableList) {
+        for(Pair<String, Object> logVar: getLogVariableList()) {
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry(logVar.first, logVar.second, "-"));
         }
 
