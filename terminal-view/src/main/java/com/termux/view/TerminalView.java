@@ -83,6 +83,12 @@ public final class TerminalView extends View {
 
     private final boolean mAccessibilityEnabled;
 
+    /** The {@link KeyEvent} is generated from a virtual keyboard, like manually with the {@link KeyEvent#KeyEvent(int, int)} constructor. */
+    public final static int KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD = KeyCharacterMap.VIRTUAL_KEYBOARD; // -1
+
+    /** The {@link KeyEvent} is generated from a non-physical device, like if 0 value is returned by {@link KeyEvent#getDeviceId()}. */
+    public final static int KEY_EVENT_SOURCE_SOFT_KEYBOARD = 0;
+
     private static final String LOG_TAG = "TerminalView";
 
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
@@ -380,7 +386,7 @@ public final class TerminalView extends View {
                         }
                     }
 
-                    inputCodePoint(codePoint, ctrlHeld, false);
+                    inputCodePoint(KEY_EVENT_SOURCE_SOFT_KEYBOARD, codePoint, ctrlHeld, false);
                 }
             }
 
@@ -755,7 +761,7 @@ public final class TerminalView extends View {
         if ((result & KeyCharacterMap.COMBINING_ACCENT) != 0) {
             // If entered combining accent previously, write it out:
             if (mCombiningAccent != 0)
-                inputCodePoint(mCombiningAccent, controlDown, leftAltDown);
+                inputCodePoint(event.getDeviceId(), mCombiningAccent, controlDown, leftAltDown);
             mCombiningAccent = result & KeyCharacterMap.COMBINING_ACCENT_MASK;
         } else {
             if (mCombiningAccent != 0) {
@@ -763,7 +769,7 @@ public final class TerminalView extends View {
                 if (combinedChar > 0) result = combinedChar;
                 mCombiningAccent = 0;
             }
-            inputCodePoint(result, controlDown, leftAltDown);
+            inputCodePoint(event.getDeviceId(), result, controlDown, leftAltDown);
         }
 
         if (mCombiningAccent != oldCombiningAccent) invalidate();
@@ -771,9 +777,9 @@ public final class TerminalView extends View {
         return true;
     }
 
-    public void inputCodePoint(int codePoint, boolean controlDownFromEvent, boolean leftAltDownFromEvent) {
+    public void inputCodePoint(int eventSource, int codePoint, boolean controlDownFromEvent, boolean leftAltDownFromEvent) {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
-            mClient.logInfo(LOG_TAG, "inputCodePoint(codePoint=" + codePoint + ", controlDownFromEvent=" + controlDownFromEvent + ", leftAltDownFromEvent="
+            mClient.logInfo(LOG_TAG, "inputCodePoint(eventSource=" + eventSource + ", codePoint=" + codePoint + ", controlDownFromEvent=" + controlDownFromEvent + ", leftAltDownFromEvent="
                 + leftAltDownFromEvent + ")");
         }
 
@@ -813,19 +819,22 @@ public final class TerminalView extends View {
         }
 
         if (codePoint > -1) {
-            // Work around bluetooth keyboards sending funny unicode characters instead
-            // of the more normal ones from ASCII that terminal programs expect - the
-            // desire to input the original characters should be low.
-            switch (codePoint) {
-                case 0x02DC: // SMALL TILDE.
-                    codePoint = 0x007E; // TILDE (~).
-                    break;
-                case 0x02CB: // MODIFIER LETTER GRAVE ACCENT.
-                    codePoint = 0x0060; // GRAVE ACCENT (`).
-                    break;
-                case 0x02C6: // MODIFIER LETTER CIRCUMFLEX ACCENT.
-                    codePoint = 0x005E; // CIRCUMFLEX ACCENT (^).
-                    break;
+            // If not virtual or soft keyboard.
+            if (eventSource > KEY_EVENT_SOURCE_SOFT_KEYBOARD) {
+                // Work around bluetooth keyboards sending funny unicode characters instead
+                // of the more normal ones from ASCII that terminal programs expect - the
+                // desire to input the original characters should be low.
+                switch (codePoint) {
+                    case 0x02DC: // SMALL TILDE.
+                        codePoint = 0x007E; // TILDE (~).
+                        break;
+                    case 0x02CB: // MODIFIER LETTER GRAVE ACCENT.
+                        codePoint = 0x0060; // GRAVE ACCENT (`).
+                        break;
+                    case 0x02C6: // MODIFIER LETTER CIRCUMFLEX ACCENT.
+                        codePoint = 0x005E; // CIRCUMFLEX ACCENT (^).
+                        break;
+                }
             }
 
             // If left alt, send escape before the code point to make e.g. Alt+B and Alt+F work in readline:
@@ -1245,6 +1254,7 @@ public final class TerminalView extends View {
      * Define functions required for long hold toolbar.
      */
     private final Runnable mShowFloatingToolbar = new Runnable() {
+        @RequiresApi(api = Build.VERSION_CODES.M)
         @Override
         public void run() {
             if (getTextSelectionActionMode() != null) {
@@ -1253,6 +1263,7 @@ public final class TerminalView extends View {
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void showFloatingToolbar() {
         if (getTextSelectionActionMode() != null) {
             int delay = ViewConfiguration.getDoubleTapTimeout();
@@ -1260,6 +1271,7 @@ public final class TerminalView extends View {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     void hideFloatingToolbar() {
         if (getTextSelectionActionMode() != null) {
             removeCallbacks(mShowFloatingToolbar);
@@ -1268,7 +1280,7 @@ public final class TerminalView extends View {
     }
 
     public void updateFloatingToolbarVisibility(MotionEvent event) {
-        if (getTextSelectionActionMode() != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getTextSelectionActionMode() != null) {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_MOVE:
                     hideFloatingToolbar();

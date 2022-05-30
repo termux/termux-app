@@ -95,9 +95,14 @@ public class TermuxShellUtils {
             environment.add("PATH= " + System.getenv("PATH"));
         } else {
             environment.add("LANG=en_US.UTF-8");
-            environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
             environment.add("PWD=" + workingDirectory);
             environment.add("TMPDIR=" + TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH);
+            if (TermuxBootstrap.isAppPackageVariantAPTAndroid5()) {
+                environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + ":" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/applets");
+                environment.add("LD_LIBRARY_PATH=" + TermuxConstants.TERMUX_LIB_PREFIX_DIR_PATH);
+            } else {
+                environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
+            }
         }
 
         return environment.toArray(new String[0]);

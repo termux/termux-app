@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.41.0
+ * Version: v0.44.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -239,6 +239,15 @@ import java.util.List;
  *
  * - 0.41.0 (2022-04-17)
  *      - Added `TERMUX_APP.TERMUX_AM_SOCKET_FILE_PATH`.
+ *
+ * - 0.42.0 (2022-04-29)
+ *      - Added `APK_RELEASE_TERMUX_DEVS` and `APK_RELEASE_TERMUX_DEVS_SIGNING_CERTIFICATE_SHA256_DIGEST`.
+ *
+ * - 0.43.0 (2022-05-29)
+ *      - Changed `TERMUX_SUPPORT_EMAIL_URL` to support@termux.dev.
+ *
+ * - 0.44.0 (2022-05-29)
+ *      - Changed `TERMUX_APP.APPS_DIR_PATH` basename from `termux-app` to `com.termux`.
  */
 
 /**
@@ -450,6 +459,12 @@ public final class TermuxConstants {
     /** Google Play Store APK release signing certificate SHA-256 digest */
     public static final String APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST = "738F0A30A04D3C8A1BE304AF18D0779BCF3EA88FB60808F657A3521861C2EBF9"; // Default: "738F0A30A04D3C8A1BE304AF18D0779BCF3EA88FB60808F657A3521861C2EBF9"
 
+    /** Termux Devs APK release */
+    public static final String APK_RELEASE_TERMUX_DEVS = "Termux Devs"; // Default: "Termux Devs"
+
+    /** Termux Devs APK release signing certificate SHA-256 digest */
+    public static final String APK_RELEASE_TERMUX_DEVS_SIGNING_CERTIFICATE_SHA256_DIGEST = "F7A038EB551F1BE8FDF388686B784ABAB4552A5D82DF423E3D8F1B5CBE1C69AE"; // Default: "F7A038EB551F1BE8FDF388686B784ABAB4552A5D82DF423E3D8F1B5CBE1C69AE"
+
 
 
 
@@ -537,10 +552,10 @@ public final class TermuxConstants {
 
 
     /** Termux support email url */
-    public static final String TERMUX_SUPPORT_EMAIL_URL = "termuxreports@groups.io"; // Default: "termuxreports@groups.io"
+    public static final String TERMUX_SUPPORT_EMAIL_URL = "support@termux.dev"; // Default: "support@termux.dev"
 
     /** Termux support email mailto url */
-    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:termuxreports@groups.io"
+    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:support@termux.dev"
 
 
     /** Termux Reddit subreddit */
@@ -884,10 +899,10 @@ public final class TermuxConstants {
     public static final class TERMUX_APP {
 
         /** Termux apps directory path */
-        public static final String APPS_DIR_PATH = TERMUX_APPS_DIR_PATH + "/termux-app"; // Default: "/data/data/com.termux/files/apps/termux-app"
+        public static final String APPS_DIR_PATH = TERMUX_APPS_DIR_PATH + "/" + TERMUX_PACKAGE_NAME; // Default: "/data/data/com.termux/files/apps/com.termux"
 
         /** termux-am socket file path */
-        public static final String TERMUX_AM_SOCKET_FILE_PATH = APPS_DIR_PATH + "/termux-am/am.sock"; // Default: "/data/data/com.termux/files/apps/termux-app/termux-am/am.sock"
+        public static final String TERMUX_AM_SOCKET_FILE_PATH = APPS_DIR_PATH + "/termux-am/am.sock"; // Default: "/data/data/com.termux/files/apps/com.termux/termux-am/am.sock"
 
 
         /** Termux app core activity name. */
