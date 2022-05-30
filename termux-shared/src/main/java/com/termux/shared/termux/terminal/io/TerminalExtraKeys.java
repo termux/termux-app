@@ -1,5 +1,6 @@
 package com.termux.shared.termux.terminal.io;
 
+import android.os.Build;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -9,6 +10,7 @@ import com.google.android.material.button.MaterialButton;
 import com.termux.shared.termux.extrakeys.ExtraKeyButton;
 import com.termux.shared.termux.extrakeys.ExtraKeysView;
 import com.termux.shared.termux.extrakeys.SpecialButton;
+import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalView;
 
 import static com.termux.shared.termux.extrakeys.ExtraKeysConstants.PRIMARY_KEY_CODES_FOR_STRINGS;
@@ -63,9 +65,15 @@ public class TerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
             mTerminalView.onKeyDown(keyCode, keyEvent);
         } else {
             // not a control char
-            key.codePoints().forEach(codePoint -> {
-                mTerminalView.inputCodePoint(codePoint, ctrlDown, altDown);
-            });
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                key.codePoints().forEach(codePoint -> {
+                    mTerminalView.inputCodePoint(TerminalView.KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD, codePoint, ctrlDown, altDown);
+                });
+            } else {
+                TerminalSession session = mTerminalView.getCurrentSession();
+                if (session != null && key.length() > 0)
+                    session.write(key);
+            }
         }
     }
 

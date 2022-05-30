@@ -8,11 +8,13 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.UserHandle;
 import android.os.UserManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
@@ -507,6 +509,7 @@ public class PackageUtils {
      * @param context The {@link Context} for the package.
      * @return Returns the serial number. This will be {@code null} if failed to get it.
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Nullable
     public static Long getUserIdForPackage(@NonNull Context context) {
         UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
@@ -521,6 +524,7 @@ public class PackageUtils {
      * @param context The {@link Context} for operations.
      * @return Returns {@code true} if the current user is the primary user, otherwise [@code false}.
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public static boolean isCurrentUserThePrimaryUser(@NonNull Context context) {
         Long userId = getUserIdForPackage(context);
         return userId != null && userId == 0;

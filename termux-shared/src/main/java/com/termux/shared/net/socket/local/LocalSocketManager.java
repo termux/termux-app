@@ -75,8 +75,10 @@ public class LocalSocketManager {
                 Logger.logDebug(LOG_TAG, "Loading \"" + LOCAL_SOCKET_LIBRARY + "\" library");
                 System.loadLibrary(LOCAL_SOCKET_LIBRARY);
                 localSocketLibraryLoaded = true;
-            } catch (Exception e) {
-                return LocalSocketErrno.ERRNO_START_LOCAL_SOCKET_LIB_LOAD_FAILED_WITH_EXCEPTION.getError(e, LOCAL_SOCKET_LIBRARY,  e.getMessage());
+            } catch (Throwable t) {
+                Error error = LocalSocketErrno.ERRNO_START_LOCAL_SOCKET_LIB_LOAD_FAILED_WITH_EXCEPTION.getError(t, LOCAL_SOCKET_LIBRARY,  t.getMessage());
+                Logger.logErrorExtended(LOG_TAG, error.getErrorLogString());
+                return error;
             }
         }
 

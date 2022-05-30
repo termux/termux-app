@@ -3,6 +3,7 @@ package com.termux.view.textselection;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -153,6 +154,12 @@ public class TextSelectionCursorController implements CursorController {
 
         };
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            mActionMode = terminalView.startActionMode(callback);
+            return;
+        }
+
+        //noinspection NewApi
         mActionMode = terminalView.startActionMode(new ActionMode.Callback2() {
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {

@@ -4,7 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.graphics.drawable.Icon;
+import android.os.Build;
 import android.os.Environment;
 
 import androidx.annotation.Nullable;
@@ -403,25 +403,10 @@ public class TermuxPluginUtils {
                                                                                  final PendingIntent contentIntent,
                                                                                  final PendingIntent deleteIntent,
                                                                                  final int notificationMode) {
-        Notification.Builder builder =  NotificationUtils.geNotificationBuilder(termuxPackageContext,
+        return TermuxNotificationUtils.getTermuxOrPluginAppNotificationBuilder(
+            currentPackageContext, termuxPackageContext,
             TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
             title, notificationText, notificationBigText, contentIntent, deleteIntent, notificationMode);
-
-        if (builder == null)  return null;
-
-        // Enable timestamp
-        builder.setShowWhen(true);
-
-        // Set notification icon
-        builder.setSmallIcon(Icon.createWithResource(currentPackageContext, R.drawable.ic_error_notification));
-
-        // Set background color for small notification icon
-        builder.setColor(0xFF607D8B);
-
-        // Dismiss on click
-        builder.setAutoCancel(true);
-
-        return builder;
     }
 
     /**
@@ -431,6 +416,7 @@ public class TermuxPluginUtils {
      * @param context The {@link Context} for operations.
      */
     public static void setupPluginCommandErrorsNotificationChannel(final Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationUtils.setupNotificationChannel(context, TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID,
             TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
     }
