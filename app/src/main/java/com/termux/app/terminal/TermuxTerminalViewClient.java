@@ -576,9 +576,10 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         // in TerminalView layout to fix the issue.
 
         // If soft keyboard is disabled by user for Termux (check function docs for Termux behaviour info)
-        if (KeyboardUtils.shouldSoftKeyboardBeDisabled(mActivity,
+        boolean keyboardDisabledByUser = KeyboardUtils.shouldSoftKeyboardBeDisabled(mActivity,
             mActivity.getPreferences().isSoftKeyboardEnabled(),
-            mActivity.getPreferences().isSoftKeyboardEnabledOnlyIfNoHardware())) {
+            mActivity.getPreferences().isSoftKeyboardEnabledOnlyIfNoHardware());
+        if (keyboardDisabledByUser) {
             Logger.logVerbose(LOG_TAG, "Maintaining disabled soft keyboard");
             KeyboardUtils.disableSoftKeyboard(mActivity, mActivity.getTerminalView());
             mActivity.getTerminalView().requestFocus();
@@ -596,7 +597,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             KeyboardUtils.clearDisableSoftKeyboardFlags(mActivity);
 
             // If soft keyboard is to be hidden on startup
-            if (isStartup && mActivity.getProperties().shouldSoftKeyboardBeHiddenOnStartup()) {
+            boolean keyboardHidden = isStartup && mActivity.getProperties().shouldSoftKeyboardBeHiddenOnStartup();
+            if (keyboardHidden) {
                 Logger.logVerbose(LOG_TAG, "Hiding soft keyboard on startup");
                 // Required to keep keyboard hidden when Termux app is switched back from another app
                 KeyboardUtils.setSoftKeyboardAlwaysHiddenFlags(mActivity);
@@ -659,7 +661,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     public void setTerminalCursorBlinkerState(boolean start) {
         if (start) {
             // If set/update the cursor blinking rate is successful, then enable cursor blinker
-            if (mActivity.getTerminalView().setTerminalCursorBlinkerRate(mActivity.getProperties().getTerminalCursorBlinkRate()))
+            boolean cursorBlinkerRateUpdate = mActivity.getTerminalView().setTerminalCursorBlinkerRate(mActivity.getProperties().getTerminalCursorBlinkRate());
+            if (cursorBlinkerRateUpdate)
                 mActivity.getTerminalView().setTerminalCursorBlinkerState(true, true);
             else
                 Logger.logError(LOG_TAG,"Failed to start cursor blinker");
@@ -685,20 +688,17 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     }
 
     public void showUrlSelection() {
-        TerminalSession session = mActivity.getCurrentSession();
-        if (session == null) return;
+        final CharSequence[] urls = getUrls();
+        if (urls == null) return;
 
-        String text = ShellUtils.getTerminalSessionTranscriptText(session, true, true);
+        final AlertDialog dialog = getClickedUrlDialog(urls);
 
-        LinkedHashSet<CharSequence> urlSet = TermuxUrlUtils.extractUrls(text);
-        if (urlSet.isEmpty()) {
-            new AlertDialog.Builder(mActivity).setMessage(R.string.title_select_url_none_found).show();
-            return;
-        }
+        checkUrlLongPress(urls, dialog);
 
-        final CharSequence[] urls = urlSet.toArray(new CharSequence[0]);
-        Collections.reverse(Arrays.asList(urls)); // Latest first.
+        dialog.show();
+    }
 
+    private AlertDialog getClickedUrlDialog(CharSequence[] urls) {
         // Click to copy url to clipboard:
         final AlertDialog dialog = new AlertDialog.Builder(mActivity).setItems(urls, (di, which) -> {
             String url = (String) urls[which];
@@ -706,19 +706,37 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             clipboard.setPrimaryClip(new ClipData(null, new String[]{"text/plain"}, new ClipData.Item(url)));
             Toast.makeText(mActivity, R.string.msg_select_url_copied_to_clipboard, Toast.LENGTH_LONG).show();
         }).setTitle(R.string.title_select_url_dialog).create();
+        return dialog;
+    }
 
+    private CharSequence[] getUrls() {
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session == null) return null;
+
+        String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, true, true);
+
+        LinkedHashSet<CharSequence> urlSet = TermuxUrlUtils.extractUrls(transcriptText);
+        if (urlSet.isEmpty()) {
+            new AlertDialog.Builder(mActivity).setMessage(R.string.title_select_url_none_found).show();
+            return null;
+        }
+
+        final CharSequence[] urls = urlSet.toArray(new CharSequence[0]);
+        Collections.reverse(Arrays.asList(urls)); // Latest first.
+        return urls;
+    }
+
+    private void checkUrlLongPress(CharSequence[] urls, AlertDialog dialog) {
         // Long press to open URL:
         dialog.setOnShowListener(di -> {
-            ListView lv = dialog.getListView(); // this is a ListView with your "buds" in it
-            lv.setOnItemLongClickListener((parent, view, position, id) -> {
+            ListView dialogListView = dialog.getListView(); // this is a ListView with your "buds" in it
+            dialogListView.setOnItemLongClickListener((parent, view, position, id) -> {
                 dialog.dismiss();
                 String url = (String) urls[position];
                 ShareUtils.openUrl(mActivity, url);
                 return true;
             });
         });
-
-        dialog.show();
     }
 
     public void reportIssueFromTranscript() {
@@ -743,45 +761,57 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             public void run() {
                 StringBuilder reportString = new StringBuilder();
 
-                String title = TermuxConstants.TERMUX_APP_NAME + " Report Issue";
+                addReportHeader(reportString, transcriptText);
 
-                reportString.append("## Transcript\n");
-                reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptText, true));
-                reportString.append("\n##\n");
+                addReportBody(reportString, addTermuxDebugInfo);
 
-                if (addTermuxDebugInfo) {
-                    reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGES));
-                } else {
-                    reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, TermuxUtils.AppInfoMode.TERMUX_PACKAGE));
-                }
-
-                reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(mActivity));
-
-                if (TermuxBootstrap.isAppPackageManagerAPT()) {
-                    String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
-                    if (termuxAptInfo != null)
-                        reportString.append("\n\n").append(termuxAptInfo);
-                }
-
-                if (addTermuxDebugInfo) {
-                    String termuxDebugInfo = TermuxUtils.getTermuxDebugMarkdownString(mActivity);
-                    if (termuxDebugInfo != null)
-                        reportString.append("\n\n").append(termuxDebugInfo);
-                }
-
-                String userActionName = UserAction.REPORT_ISSUE_FROM_TRANSCRIPT.getName();
-
-                ReportInfo reportInfo = new ReportInfo(userActionName,
-                    TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title);
-                reportInfo.setReportString(reportString.toString());
-                reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity));
-                reportInfo.setReportSaveFileLabelAndPath(userActionName,
-                    Environment.getExternalStorageDirectory() + "/" +
-                        FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+                ReportInfo reportInfo = updateReportInfo(reportString);
 
                 ReportActivity.startReportActivity(mActivity, reportInfo);
             }
         }.start();
+    }
+
+    private void addReportBody(StringBuilder reportString, boolean addTermuxDebugInfo) {
+        if (addTermuxDebugInfo) {
+            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGES));
+        } else {
+            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, TermuxUtils.AppInfoMode.TERMUX_PACKAGE));
+        }
+
+        reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(mActivity));
+
+        if (TermuxBootstrap.isAppPackageManagerAPT()) {
+            String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
+            if (termuxAptInfo != null)
+                reportString.append("\n\n").append(termuxAptInfo);
+        }
+
+        if (addTermuxDebugInfo) {
+            String termuxDebugInfo = TermuxUtils.getTermuxDebugMarkdownString(mActivity);
+            if (termuxDebugInfo != null)
+                reportString.append("\n\n").append(termuxDebugInfo);
+        }
+    }
+
+    private void addReportHeader(StringBuilder reportString, String transcriptText) {
+        reportString.append("## Transcript\n");
+        reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptText, true));
+        reportString.append("\n##\n");
+    }
+
+    private ReportInfo updateReportInfo(StringBuilder reportString) {
+        String userActionName = UserAction.REPORT_ISSUE_FROM_TRANSCRIPT.getName();
+        String title = TermuxConstants.TERMUX_APP_NAME + " Report Issue";
+
+        ReportInfo reportInfo = new ReportInfo(userActionName,
+            TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title);
+        reportInfo.setReportString(reportString.toString());
+        reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity));
+        reportInfo.setReportSaveFileLabelAndPath(userActionName,
+            Environment.getExternalStorageDirectory() + "/" +
+                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+        return reportInfo;
     }
 
     public void doPaste() {
