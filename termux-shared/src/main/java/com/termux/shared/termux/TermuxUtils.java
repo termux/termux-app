@@ -50,13 +50,25 @@ public class TermuxUtils {
     private static final String LOG_TAG = "TermuxUtils";
 
     /**
-     * Get the {@link Context} for {@link TermuxConstants#TERMUX_PACKAGE_NAME} package.
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_PACKAGE_NAME} package with the
+     * {@link Context#CONTEXT_RESTRICTED} flag.
      *
      * @param context The {@link Context} to use to get the {@link Context} of the package.
      * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
      */
     public static Context getTermuxPackageContext(@NonNull Context context) {
         return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_PACKAGE_NAME);
+    }
+
+    /**
+     * Get the {@link Context} for {@link TermuxConstants#TERMUX_PACKAGE_NAME} package with the
+     * {@link Context#CONTEXT_INCLUDE_CODE} flag.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the package.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    public static Context getTermuxPackageContextWithCode(@NonNull Context context) {
+        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_PACKAGE_NAME, Context.CONTEXT_INCLUDE_CODE);
     }
 
     /**

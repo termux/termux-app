@@ -31,7 +31,7 @@ public class PackageUtils {
     private static final String LOG_TAG = "PackageUtils";
 
     /**
-     * Get the {@link Context} for the package name.
+     * Get the {@link Context} for the package name with {@link Context#CONTEXT_RESTRICTED} flags.
      *
      * @param context The {@link Context} to use to get the {@link Context} of the {@code packageName}.
      * @param packageName The package name whose {@link Context} to get.
@@ -39,10 +39,23 @@ public class PackageUtils {
      */
     @Nullable
     public static Context getContextForPackage(@NonNull final Context context, String packageName) {
+       return getContextForPackage(context, packageName, Context.CONTEXT_RESTRICTED);
+    }
+
+    /**
+     * Get the {@link Context} for the package name.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the {@code packageName}.
+     * @param packageName The package name whose {@link Context} to get.
+     * @param flags The flags for {@link Context} type.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static Context getContextForPackage(@NonNull final Context context, String packageName, int flags) {
         try {
-            return context.createPackageContext(packageName, Context.CONTEXT_RESTRICTED);
+            return context.createPackageContext(packageName, flags);
         } catch (Exception e) {
-            Logger.logVerbose(LOG_TAG, "Failed to get \"" + packageName + "\" package context: " + e.getMessage());
+            Logger.logVerbose(LOG_TAG, "Failed to get \"" + packageName + "\" package context with flags " + flags + ": " + e.getMessage());
             return null;
         }
     }
