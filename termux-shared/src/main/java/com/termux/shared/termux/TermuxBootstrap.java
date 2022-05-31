@@ -1,12 +1,21 @@
 package com.termux.shared.termux;
 
+import android.content.Context;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.shared.logger.Logger;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP;
 
 public class TermuxBootstrap {
 
     private static final String LOG_TAG = "TermuxBootstrap";
+
+    /** The field name used by Termux app to store package variant in
+     * {@link TERMUX_APP#BUILD_CONFIG_CLASS_NAME} class. */
+    public static final String BUILD_CONFIG_FIELD_TERMUX_PACKAGE_VARIANT = "TERMUX_PACKAGE_VARIANT";
+
 
     /** The {@link PackageManager} for the bootstrap in the app APK added in app/build.gradle. */
     public static PackageManager TERMUX_APP_PACKAGE_MANAGER;
@@ -14,7 +23,7 @@ public class TermuxBootstrap {
     /** The {@link PackageVariant} for the bootstrap in the app APK added in app/build.gradle. */
     public static PackageVariant TERMUX_APP_PACKAGE_VARIANT;
 
-    /** Set name as app wide night mode value. */
+    /** Set {@link #TERMUX_APP_PACKAGE_VARIANT} and {@link #TERMUX_APP_PACKAGE_MANAGER} from {@code packageVariantName} passed. */
     public static void setTermuxPackageManagerAndVariant(@Nullable String packageVariantName) {
         TERMUX_APP_PACKAGE_VARIANT = PackageVariant.variantOf(packageVariantName);
         if (TERMUX_APP_PACKAGE_VARIANT == null) {
@@ -32,6 +41,42 @@ public class TermuxBootstrap {
         }
 
         Logger.logVerbose(LOG_TAG, "Set TERMUX_APP_PACKAGE_MANAGER to \"" + TERMUX_APP_PACKAGE_MANAGER + "\"");
+    }
+
+    /**
+     * Set {@link #TERMUX_APP_PACKAGE_VARIANT} and {@link #TERMUX_APP_PACKAGE_MANAGER} with the
+     * {@link #BUILD_CONFIG_FIELD_TERMUX_PACKAGE_VARIANT} field value from the
+     * {@link TERMUX_APP#BUILD_CONFIG_CLASS_NAME} class of the Termux app APK installed on the device.
+     * This can only be used by apps that share `sharedUserId` with the Termux app and can be used
+     * by plugin apps.
+     *
+     * @param currentPackageContext The context of current package.
+     */
+    public static void setTermuxPackageManagerAndVariantFromTermuxApp(@NonNull Context currentPackageContext) {
+        String packageVariantName = getTermuxAppBuildConfigPackageVariantFromTermuxApp(currentPackageContext);
+        if (packageVariantName != null) {
+            TermuxBootstrap.setTermuxPackageManagerAndVariant(packageVariantName);
+        } else {
+            Logger.logError(LOG_TAG, "Failed to set TERMUX_APP_PACKAGE_VARIANT and TERMUX_APP_PACKAGE_MANAGER from the termux app");
+        }
+    }
+
+    /**
+     * Get {@link #BUILD_CONFIG_FIELD_TERMUX_PACKAGE_VARIANT} field value from the
+     * {@link TERMUX_APP#BUILD_CONFIG_CLASS_NAME} class of the Termux app APK installed on the device.
+     * This can only be used by apps that share `sharedUserId` with the Termux app.
+     *
+     * @param currentPackageContext The context of current package.
+     * @return Returns the field value, otherwise {@code null} if an exception was raised or failed
+     * to get termux app package context.
+     */
+    public static String getTermuxAppBuildConfigPackageVariantFromTermuxApp(@NonNull Context currentPackageContext) {
+        try {
+            return (String) TermuxUtils.getTermuxAppAPKBuildConfigClassField(currentPackageContext, BUILD_CONFIG_FIELD_TERMUX_PACKAGE_VARIANT);
+        } catch (Exception e) {
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to get \"" + BUILD_CONFIG_FIELD_TERMUX_PACKAGE_VARIANT + "\" value from \"" + TERMUX_APP.BUILD_CONFIG_CLASS_NAME + "\" class", e);
+            return null;
+        }
     }
 
 

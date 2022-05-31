@@ -77,6 +77,8 @@ public class ReflectionUtils {
     /**
      * Get a value for a {@link Field} of an object for the specified class.
      *
+     * Trying to access {@code null} fields will result in {@link NoSuchFieldException}.
+     *
      * @param clazz The {@link Class} to which the object belongs to.
      * @param fieldName The name of the {@link Field}.
      * @param object The {@link Object} instance from which to get the field value.
