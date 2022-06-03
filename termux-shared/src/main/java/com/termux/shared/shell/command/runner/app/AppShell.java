@@ -75,8 +75,15 @@ public final class AppShell {
             executionCommand.workingDirectory = "/";
 
         String[] env = shellEnvironmentClient.buildEnvironment(context, executionCommand.isFailsafe, executionCommand.workingDirectory);
+        // Transform executable path to shell/session name, e.g. "/bin/do-something.sh" => "do-something.sh".
+        String executableBasename = ShellUtils.getExecutableBasename(executionCommand.executable);
+
+        if (executionCommand.shellName == null)
+            executionCommand.shellName = executableBasename;
 
         final String[] commandArray = shellEnvironmentClient.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
+        if (executionCommand.commandLabel == null)
+            executionCommand.commandLabel = executableBasename;
 
         if (!executionCommand.setState(ExecutionState.EXECUTING)) {
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), context.getString(R.string.error_failed_to_execute_app_shell_command, executionCommand.getCommandIdAndLabelLogString()));
@@ -87,11 +94,6 @@ public final class AppShell {
         // No need to log stdin if logging is disabled, like for app internal scripts
         Logger.logDebugExtended(LOG_TAG, ExecutionCommand.getExecutionInputLogString(executionCommand,
             true, Logger.shouldEnableLoggingForCustomLogLevel(executionCommand.backgroundCustomLogLevel)));
-
-        String taskName = ShellUtils.getExecutableBasename(executionCommand.executable);
-
-        if (executionCommand.commandLabel == null)
-            executionCommand.commandLabel = taskName;
 
         // Exec the process
         final Process process;

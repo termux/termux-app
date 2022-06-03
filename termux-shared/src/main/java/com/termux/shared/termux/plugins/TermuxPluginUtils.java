@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.shared.R;
@@ -104,6 +105,28 @@ public class TermuxPluginUtils {
     }
 
     /**
+     * Set {@link ExecutionCommand} state to {@link Errno#ERRNO_FAILED} with {@code errmsg} and
+     * process error with {@link #processPluginExecutionCommandError(Context, String, ExecutionCommand, boolean)}.
+     *
+     *
+     * @param context The {@link Context} for operations.
+     * @param logTag The log tag to use for logging.
+     * @param executionCommand The {@link ExecutionCommand} that failed.
+     * @param forceNotification If set to {@code true}, then a flash and notification will be shown
+     *                          regardless of if pending intent is {@code null} or
+     *                          {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
+     *                          is {@code false}.
+     * @param errmsg The error message to set.
+     */
+    public static void setAndProcessPluginExecutionCommandError(final Context context, String logTag,
+                                                          final ExecutionCommand executionCommand,
+                                                          boolean forceNotification,
+                                                          @NonNull String errmsg) {
+        executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
+        processPluginExecutionCommandError(context, logTag, executionCommand, forceNotification);
+    }
+
+    /**
      * Process {@link ExecutionCommand} error.
      *
      * The ExecutionCommand currentState must be equal to {@link ExecutionCommand.ExecutionState#FAILED}.
@@ -128,7 +151,9 @@ public class TermuxPluginUtils {
      *                          {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
      *                          is {@code false}.
      */
-    public static void processPluginExecutionCommandError(final Context context, String logTag, final ExecutionCommand executionCommand, boolean forceNotification) {
+    public static void processPluginExecutionCommandError(final Context context, String logTag,
+                                                          final ExecutionCommand executionCommand,
+                                                          boolean forceNotification) {
         if (context == null || executionCommand == null) return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
