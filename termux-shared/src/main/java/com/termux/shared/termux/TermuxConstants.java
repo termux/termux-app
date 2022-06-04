@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.47.0
+ * Version: v0.48.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -261,6 +261,10 @@ import java.util.List;
  * - 0.47.0 (2022-06-04)
  *      - Added `TERMUX_SITE` and `TERMUX_SITE_URL`.
  *      - Changed `TERMUX_DONATE_URL`.
+ *
+ * - 0.48.0 (2022-06-04)
+ *      - Removed `TERMUX_GAME_PACKAGES_GITHUB_*`, `TERMUX_SCIENCE_PACKAGES_GITHUB_*`,
+ *          `TERMUX_ROOT_PACKAGES_GITHUB_*`, `TERMUX_UNSTABLE_PACKAGES_GITHUB_*`
  */
 
 /**
@@ -492,46 +496,6 @@ public final class TermuxConstants {
     public static final String TERMUX_PACKAGES_GITHUB_REPO_URL = TERMUX_GITHUB_ORGANIZATION_URL + "/" + TERMUX_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/termux/termux-packages"
     /** Termux Packages Github issues repo url */
     public static final String TERMUX_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/termux-packages/issues"
-
-
-    /** Termux Game Packages Github repo name */
-    public static final String TERMUX_GAME_PACKAGES_GITHUB_REPO_NAME = "game-packages"; // Default: "game-packages"
-    /** Termux Game Packages Github repo url */
-    public static final String TERMUX_GAME_PACKAGES_GITHUB_REPO_URL = TERMUX_GITHUB_ORGANIZATION_URL + "/" + TERMUX_GAME_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/termux/game-packages"
-    /** Termux Game Packages Github issues repo url */
-    public static final String TERMUX_GAME_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_GAME_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/game-packages/issues"
-
-
-    /** Termux Science Packages Github repo name */
-    public static final String TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_NAME = "science-packages"; // Default: "science-packages"
-    /** Termux Science Packages Github repo url */
-    public static final String TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_URL = TERMUX_GITHUB_ORGANIZATION_URL + "/" + TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/termux/science-packages"
-    /** Termux Science Packages Github issues repo url */
-    public static final String TERMUX_SCIENCE_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/science-packages/issues"
-
-
-    /** Termux Root Packages Github repo name */
-    public static final String TERMUX_ROOT_PACKAGES_GITHUB_REPO_NAME = "termux-root-packages"; // Default: "termux-root-packages"
-    /** Termux Root Packages Github repo url */
-    public static final String TERMUX_ROOT_PACKAGES_GITHUB_REPO_URL = TERMUX_GITHUB_ORGANIZATION_URL + "/" + TERMUX_ROOT_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/termux/termux-root-packages"
-    /** Termux Root Packages Github issues repo url */
-    public static final String TERMUX_ROOT_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_ROOT_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/termux-root-packages/issues"
-
-
-    /** Termux Unstable Packages Github repo name */
-    public static final String TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_NAME = "unstable-packages"; // Default: "unstable-packages"
-    /** Termux Unstable Packages Github repo url */
-    public static final String TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_URL = TERMUX_GITHUB_ORGANIZATION_URL + "/" + TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/termux/unstable-packages"
-    /** Termux Unstable Packages Github issues repo url */
-    public static final String TERMUX_UNSTABLE_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/unstable-packages/issues"
-
-
-    /** Termux X11 Packages Github repo name */
-    public static final String TERMUX_X11_PACKAGES_GITHUB_REPO_NAME = "x11-packages"; // Default: "x11-packages"
-    /** Termux X11 Packages Github repo url */
-    public static final String TERMUX_X11_PACKAGES_GITHUB_REPO_URL = TERMUX_GITHUB_ORGANIZATION_URL + "/" + TERMUX_X11_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/termux/x11-packages"
-    /** Termux X11 Packages Github issues repo url */
-    public static final String TERMUX_X11_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_X11_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/termux/x11-packages/issues"
 
 
     /** Termux API apt package name */
