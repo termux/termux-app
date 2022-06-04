@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.46.0
+ * Version: v0.47.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -257,6 +257,10 @@ import java.util.List;
  *          `TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_SESSION_NAME` to `*.EXTRA_SHELL_NAME`,
  *          `TERMUX_APP.TERMUX_SERVICE.EXTRA_SESSION_CREATE_MODE` to `*.EXTRA_SHELL_CREATE_MODE` and
  *          `TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_SESSION_CREATE_MODE` to `*.EXTRA_SHELL_CREATE_MODE`.
+ *
+ * - 0.47.0 (2022-06-04)
+ *      - Added `TERMUX_SITE` and `TERMUX_SITE_URL`.
+ *      - Changed `TERMUX_DONATE_URL`.
  */
 
 /**
@@ -547,6 +551,12 @@ public final class TermuxConstants {
      * Termux miscellaneous urls.
      */
 
+    /** Termux Site */
+    public static final String TERMUX_SITE = TERMUX_APP_NAME + " Site"; // Default: "Termux Site"
+
+    /** Termux Site url */
+    public static final String TERMUX_SITE_URL = "https://termux.dev"; // Default: "https://termux.dev"
+
     /** Termux Wiki */
     public static final String TERMUX_WIKI = TERMUX_APP_NAME + " Wiki"; // Default: "Termux Wiki"
 
@@ -575,7 +585,7 @@ public final class TermuxConstants {
 
 
     /** Termux donate url */
-    public static final String TERMUX_DONATE_URL = TERMUX_PACKAGES_GITHUB_REPO_URL + "/wiki/Donate"; // Default: "https://github.com/termux/termux-packages/wiki/Donate"
+    public static final String TERMUX_DONATE_URL = TERMUX_SITE_URL + "/donate"; // Default: "https://termux.dev/donate"
 
 
 
