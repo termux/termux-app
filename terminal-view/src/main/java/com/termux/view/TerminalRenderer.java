@@ -20,6 +20,7 @@ public final class TerminalRenderer {
 
     final int mTextSize;
     final Typeface mTypeface;
+    final Typeface mItalicTypeface;
     private final Paint mTextPaint = new Paint();
 
     /** The width of a single mono spaced character obtained by {@link Paint#measureText(String)} on a single 'X'. */
@@ -33,9 +34,10 @@ public final class TerminalRenderer {
 
     private final float[] asciiMeasures = new float[127];
 
-    public TerminalRenderer(int textSize, Typeface typeface) {
+    public TerminalRenderer(int textSize, Typeface typeface, Typeface italicTypeface) {
         mTextSize = textSize;
         mTypeface = typeface;
+        mItalicTypeface = italicTypeface;
 
         mTextPaint.setTypeface(typeface);
         mTextPaint.setAntiAlias(true);
@@ -226,9 +228,17 @@ public final class TerminalRenderer {
                 foreColor = 0xFF000000 + (red << 16) + (green << 8) + blue;
             }
 
+            mTextPaint.setTypeface(mTypeface);
+            if (italic)
+                mTextPaint.setTypeface(mItalicTypeface);
+
             mTextPaint.setFakeBoldText(bold);
             mTextPaint.setUnderlineText(underline);
-            mTextPaint.setTextSkewX(italic ? -0.35f : 0.f);
+
+            mTextPaint.setTextSkewX(0.f);
+            if (italic && mItalicTypeface.equals(mTypeface))
+                mTextPaint.setTextSkewX(-0.35f);
+
             mTextPaint.setStrikeThruText(strikeThrough);
             mTextPaint.setColor(foreColor);
 
