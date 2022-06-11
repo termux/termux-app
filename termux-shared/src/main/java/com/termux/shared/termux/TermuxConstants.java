@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.48.0
+ * Version: v0.49.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -265,6 +265,9 @@ import java.util.List;
  * - 0.48.0 (2022-06-04)
  *      - Removed `TERMUX_GAME_PACKAGES_GITHUB_*`, `TERMUX_SCIENCE_PACKAGES_GITHUB_*`,
  *          `TERMUX_ROOT_PACKAGES_GITHUB_*`, `TERMUX_UNSTABLE_PACKAGES_GITHUB_*`
+ *
+ * - 0.49.0 (2022-06-10)
+ *      - Added `TERMUX_ENV_PREFIX_ROOT`.
  */
 
 /**
@@ -870,6 +873,9 @@ public final class TermuxConstants {
     /** The alternate comma character (U+201A, &sbquo;, &#8218;, single low-9 quotation mark) that
      * may be used instead of {@link #COMMA_NORMAL} */
     public static final String COMMA_ALTERNATIVE = "‚"; // Default: "‚"
+
+    /** Environment variable prefix root for the Termux app. */
+    public static final String TERMUX_ENV_PREFIX_ROOT = "TERMUX";
 
 
 
