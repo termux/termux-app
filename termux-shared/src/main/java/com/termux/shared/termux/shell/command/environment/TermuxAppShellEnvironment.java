@@ -161,4 +161,12 @@ public class TermuxAppShellEnvironment {
         }
     }
 
+    /** Update {@link #ENV_TERMUX_APP__AM_SOCKET_SERVER_ENABLED} value in {@code environment}. */
+    public synchronized static void updateTermuxAppAMSocketServerEnabled(@NonNull Context currentPackageContext) {
+        if (termuxAppEnvironment == null) return;
+        termuxAppEnvironment.remove(ENV_TERMUX_APP__AM_SOCKET_SERVER_ENABLED);
+        ShellEnvironmentUtils.putToEnvIfSet(termuxAppEnvironment, ENV_TERMUX_APP__AM_SOCKET_SERVER_ENABLED,
+            TermuxAmSocketServer.getTermuxAppAMSocketServerEnabled(currentPackageContext));
+    }
+
 }

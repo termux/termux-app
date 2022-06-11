@@ -92,6 +92,7 @@ public class TermuxAmSocketServer {
         // exported in shell sessions and tasks and if state is changed, then env of older shells will
         // retain invalid value. User should force stop the app to update state after changing prop.
         TERMUX_APP_AM_SOCKET_SERVER_ENABLED = enabled;
+        TermuxAppShellEnvironment.updateTermuxAppAMSocketServerEnabled(context);
     }
 
     /**
