@@ -376,6 +376,28 @@ public class PackageUtils {
 
 
     /**
+     * Get the base apk path for the package associated with the {@code context}.
+     *
+     * @param context The {@link Context} for the package.
+     * @return Returns the base apk path.
+     */
+    public static String getBaseAPKPathForPackage(@NonNull final Context context) {
+        return getBaseAPKPathForPackage(context.getApplicationInfo());
+    }
+
+    /**
+     * Get the base apk path for the package associated with the {@code applicationInfo}.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the base apk path.
+     */
+    public static String getBaseAPKPathForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        return applicationInfo.publicSourceDir;
+    }
+
+
+
+    /**
      * Check if the app associated with the {@code context} has {@link ApplicationInfo#FLAG_DEBUGGABLE}
      * set.
      *
