@@ -7,14 +7,16 @@ import android.system.OsConstants;
 
 import androidx.annotation.NonNull;
 
+import com.google.common.base.Joiner;
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.shell.command.ExecutionCommand;
+import com.termux.shared.shell.command.environment.ShellEnvironmentUtils;
 import com.termux.shared.shell.command.result.ResultData;
 import com.termux.shared.errors.Errno;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.shell.command.ExecutionCommand.ExecutionState;
-import com.termux.shared.shell.ShellEnvironmentClient;
+import com.termux.shared.shell.command.environment.IShellEnvironment;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.shell.StreamGobbler;
 
@@ -22,6 +24,9 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * A class that maintains info for background app shells run with {@link Runtime#exec(String[], String[], File)}.
@@ -50,14 +55,16 @@ public final class AppShell {
      * The  {@link ExecutionCommand#commandLabel}, {@link ExecutionCommand#arguments} and
      * {@link ExecutionCommand#workingDirectory} may optionally be set.
      *
-     * @param context The {@link Context} for operations.
+     * @param currentPackageContext The {@link Context} for operations. This must be the context for
+     *                              the current package and not the context of a `sharedUserId` package,
+     *                              since environment setup may be dependent on current package.
      * @param executionCommand The {@link ExecutionCommand} containing the information for execution command.
      * @param appShellClient The {@link AppShellClient} interface implementation.
      *                           The {@link AppShellClient#onAppShellExited(AppShell)} will
      *                           be called regardless of {@code isSynchronous} value but not if
      *                           {@code null} is returned by this method. This can
      *                           optionally be {@code null}.
-     * @param shellEnvironmentClient The {@link ShellEnvironmentClient} interface implementation.
+     * @param shellEnvironmentClient The {@link IShellEnvironment} interface implementation.
      * @param isSynchronous If set to {@code true}, then the command will be executed in the
      *                      caller thread and results returned synchronously in the {@link ExecutionCommand}
      *                      sub object of the {@link AppShell} returned.
@@ -65,9 +72,9 @@ public final class AppShell {
      *                      asynchronously in the background and control is returned to the caller thread.
      * @return Returns the {@link AppShell}. This will be {@code null} if failed to start the execution command.
      */
-    public static AppShell execute(@NonNull final Context context, @NonNull ExecutionCommand executionCommand,
+    public static AppShell execute(@NonNull final Context currentPackageContext, @NonNull ExecutionCommand executionCommand,
                                    final AppShellClient appShellClient,
-                                   @NonNull final ShellEnvironmentClient shellEnvironmentClient,
+                                   @NonNull final IShellEnvironment shellEnvironmentClient,
                                    final boolean isSynchronous) {
         if (executionCommand.executable == null || executionCommand.executable.isEmpty()) {
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(),
@@ -81,19 +88,27 @@ public final class AppShell {
         if (executionCommand.workingDirectory.isEmpty())
             executionCommand.workingDirectory = "/";
 
-        String[] env = shellEnvironmentClient.buildEnvironment(context, executionCommand.isFailsafe, executionCommand.workingDirectory);
         // Transform executable path to shell/session name, e.g. "/bin/do-something.sh" => "do-something.sh".
         String executableBasename = ShellUtils.getExecutableBasename(executionCommand.executable);
 
         if (executionCommand.shellName == null)
             executionCommand.shellName = executableBasename;
 
-        final String[] commandArray = shellEnvironmentClient.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
         if (executionCommand.commandLabel == null)
             executionCommand.commandLabel = executableBasename;
 
+        // Setup command args
+        final String[] commandArray = shellEnvironmentClient.setupShellCommandArguments(executionCommand.executable, executionCommand.arguments);
+
+        // Setup command environment
+        HashMap<String, String> environment = shellEnvironmentClient.setupShellCommandEnvironment(currentPackageContext,
+            executionCommand);
+        List<String> environmentList = ShellEnvironmentUtils.convertEnvironmentToEnviron(environment);
+        Collections.sort(environmentList);
+        String[] environmentArray = environmentList.toArray(new String[0]);
+
         if (!executionCommand.setState(ExecutionState.EXECUTING)) {
-            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), context.getString(R.string.error_failed_to_execute_app_shell_command, executionCommand.getCommandIdAndLabelLogString()));
+            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), currentPackageContext.getString(R.string.error_failed_to_execute_app_shell_command, executionCommand.getCommandIdAndLabelLogString()));
             AppShell.processAppShellResult(null, executionCommand);
             return null;
         }
@@ -101,22 +116,23 @@ public final class AppShell {
         // No need to log stdin if logging is disabled, like for app internal scripts
         Logger.logDebugExtended(LOG_TAG, ExecutionCommand.getExecutionInputLogString(executionCommand,
             true, Logger.shouldEnableLoggingForCustomLogLevel(executionCommand.backgroundCustomLogLevel)));
+        Logger.logVerboseExtended(LOG_TAG, "\"" + executionCommand.getCommandIdAndLabelLogString() + "\" AppShell Environment:\n" +
+            Joiner.on("\n").join(environmentArray));
 
         // Exec the process
         final Process process;
         try {
-            process = Runtime.getRuntime().exec(commandArray, env, new File(executionCommand.workingDirectory));
+            process = Runtime.getRuntime().exec(commandArray, environmentArray, new File(executionCommand.workingDirectory));
         } catch (IOException e) {
-            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), context.getString(R.string.error_failed_to_execute_app_shell_command, executionCommand.getCommandIdAndLabelLogString()), e);
+            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), currentPackageContext.getString(R.string.error_failed_to_execute_app_shell_command, executionCommand.getCommandIdAndLabelLogString()), e);
             AppShell.processAppShellResult(null, executionCommand);
             return null;
         }
 
         final AppShell appShell = new AppShell(process, executionCommand, appShellClient);
-
         if (isSynchronous) {
             try {
-                appShell.executeInner(context);
+                appShell.executeInner(currentPackageContext);
             } catch (IllegalThreadStateException | InterruptedException e) {
                 // TODO: Should either of these be handled or returned?
             }
@@ -125,7 +141,7 @@ public final class AppShell {
                 @Override
                 public void run() {
                     try {
-                        appShell.executeInner(context);
+                        appShell.executeInner(currentPackageContext);
                     } catch (IllegalThreadStateException | InterruptedException e) {
                         // TODO: Should either of these be handled or returned?
                     }
@@ -274,10 +290,10 @@ public final class AppShell {
      * then the {@link AppShellClient#onAppShellExited(AppShell)} callback will be called.
      *
      * @param appShell The {@link AppShell}, which should be set if
-     *                  {@link #execute(Context, ExecutionCommand, AppShellClient, ShellEnvironmentClient, boolean)}
+     *                  {@link #execute(Context, ExecutionCommand, AppShellClient, IShellEnvironment, HashMap, boolean)}
      *                   successfully started the process.
      * @param executionCommand The {@link ExecutionCommand}, which should be set if
-     *                          {@link #execute(Context, ExecutionCommand, AppShellClient, ShellEnvironmentClient, boolean)}
+     *                          {@link #execute(Context, ExecutionCommand, AppShellClient, IShellEnvironment, HashMap, boolean)}
      *                          failed to start the process.
      */
     private static void processAppShellResult(final AppShell appShell, ExecutionCommand executionCommand) {

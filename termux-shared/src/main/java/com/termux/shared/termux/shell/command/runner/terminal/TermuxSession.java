@@ -5,17 +5,23 @@ import android.system.OsConstants;
 
 import androidx.annotation.NonNull;
 
+import com.google.common.base.Joiner;
 import com.termux.shared.R;
 import com.termux.shared.shell.command.ExecutionCommand;
+import com.termux.shared.shell.command.environment.ShellEnvironmentUtils;
+import com.termux.shared.shell.command.environment.UnixShellEnvironment;
 import com.termux.shared.shell.command.result.ResultData;
 import com.termux.shared.errors.Errno;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.shell.ShellEnvironmentClient;
+import com.termux.shared.shell.command.environment.IShellEnvironment;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * A class that maintains info for foreground Termux sessions.
@@ -49,11 +55,13 @@ public class TermuxSession {
      * If {@link ExecutionCommand#executable} is {@code null}, then a default shell is automatically
      * chosen.
      *
-     * @param context The {@link Context} for operations.
+     * @param currentPackageContext The {@link Context} for operations. This must be the context for
+     *                              the current package and not the context of a `sharedUserId` package,
+     *                              since environment setup may be dependent on current package.
      * @param executionCommand The {@link ExecutionCommand} containing the information for execution command.
      * @param terminalSessionClient The {@link TerminalSessionClient} interface implementation.
      * @param termuxSessionClient The {@link TermuxSessionClient} interface implementation.
-     * @param shellEnvironmentClient The {@link ShellEnvironmentClient} interface implementation.
+     * @param shellEnvironmentClient The {@link IShellEnvironment} interface implementation.
      * @param setStdoutOnExit If set to {@code true}, then the {@link ResultData#stdout}
      *                        available in the {@link TermuxSessionClient#onTermuxSessionExited(TermuxSession)}
      *                        callback will be set to the {@link TerminalSession} transcript. The session
@@ -63,9 +71,9 @@ public class TermuxSession {
      *                        since this requires extra processing to get it.
      * @return Returns the {@link TermuxSession}. This will be {@code null} if failed to start the execution command.
      */
-    public static TermuxSession execute(@NonNull final Context context, @NonNull ExecutionCommand executionCommand,
+    public static TermuxSession execute(@NonNull final Context currentPackageContext, @NonNull ExecutionCommand executionCommand,
                                         @NonNull final TerminalSessionClient terminalSessionClient, final TermuxSessionClient termuxSessionClient,
-                                        @NonNull final ShellEnvironmentClient shellEnvironmentClient,
+                                        @NonNull final IShellEnvironment shellEnvironmentClient,
                                         final boolean setStdoutOnExit) {
         if (executionCommand.executable != null && executionCommand.executable.isEmpty())
             executionCommand.executable = null;
@@ -73,8 +81,6 @@ public class TermuxSession {
             executionCommand.workingDirectory = shellEnvironmentClient.getDefaultWorkingDirectoryPath();
         if (executionCommand.workingDirectory.isEmpty())
             executionCommand.workingDirectory = "/";
-
-        String[] environment = shellEnvironmentClient.buildEnvironment(context, executionCommand.isFailsafe, executionCommand.workingDirectory);
 
         String defaultBinPath = shellEnvironmentClient.getDefaultBinPath();
         if (defaultBinPath.isEmpty())
@@ -108,30 +114,42 @@ public class TermuxSession {
 
         }
 
-        String[] processArgs = shellEnvironmentClient.setupProcessArgs(executionCommand.executable, executionCommand.arguments);
+        // Setup command args
+        String[] commandArgs = shellEnvironmentClient.setupShellCommandArguments(executionCommand.executable, executionCommand.arguments);
 
-        executionCommand.executable = processArgs[0];
+        executionCommand.executable = commandArgs[0];
         String processName = (isLoginShell ? "-" : "") + ShellUtils.getExecutableBasename(executionCommand.executable);
 
-        String[] arguments = new String[processArgs.length];
+        String[] arguments = new String[commandArgs.length];
         arguments[0] = processName;
-        if (processArgs.length > 1) System.arraycopy(processArgs, 1, arguments, 1, processArgs.length - 1);
+        if (commandArgs.length > 1) System.arraycopy(commandArgs, 1, arguments, 1, commandArgs.length - 1);
 
         executionCommand.arguments = arguments;
 
         if (executionCommand.commandLabel == null)
             executionCommand.commandLabel = processName;
 
+        // Setup command environment
+        HashMap<String, String> environment = shellEnvironmentClient.setupShellCommandEnvironment(currentPackageContext,
+            executionCommand);
+        List<String> environmentList = ShellEnvironmentUtils.convertEnvironmentToEnviron(environment);
+        Collections.sort(environmentList);
+        String[] environmentArray = environmentList.toArray(new String[0]);
+
         if (!executionCommand.setState(ExecutionCommand.ExecutionState.EXECUTING)) {
-            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), context.getString(R.string.error_failed_to_execute_termux_session_command, executionCommand.getCommandIdAndLabelLogString()));
+            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), currentPackageContext.getString(R.string.error_failed_to_execute_termux_session_command, executionCommand.getCommandIdAndLabelLogString()));
             TermuxSession.processTermuxSessionResult(null, executionCommand);
             return null;
         }
 
         Logger.logDebugExtended(LOG_TAG, executionCommand.toString());
+        Logger.logVerboseExtended(LOG_TAG, "\"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession Environment:\n" +
+            Joiner.on("\n").join(environmentArray));
 
         Logger.logDebug(LOG_TAG, "Running \"" + executionCommand.getCommandIdAndLabelLogString() + "\" TermuxSession");
-        TerminalSession terminalSession = new TerminalSession(executionCommand.executable, executionCommand.workingDirectory, executionCommand.arguments, environment, executionCommand.terminalTranscriptRows, terminalSessionClient);
+        TerminalSession terminalSession = new TerminalSession(executionCommand.executable,
+            executionCommand.workingDirectory, executionCommand.arguments, environmentArray,
+            executionCommand.terminalTranscriptRows, terminalSessionClient);
 
         if (executionCommand.shellName != null) {
             terminalSession.mSessionName = executionCommand.shellName;
@@ -219,10 +237,10 @@ public class TermuxSession {
      * callback will be called.
      *
      * @param termuxSession The {@link TermuxSession}, which should be set if
-     *                  {@link #execute(Context, ExecutionCommand, TerminalSessionClient, TermuxSessionClient, ShellEnvironmentClient, boolean)}
+     *                  {@link #execute(Context, ExecutionCommand, TerminalSessionClient, TermuxSessionClient, IShellEnvironment, HashMap, boolean)}
      *                   successfully started the process.
      * @param executionCommand The {@link ExecutionCommand}, which should be set if
-     *                          {@link #execute(Context, ExecutionCommand, TerminalSessionClient, TermuxSessionClient, ShellEnvironmentClient, boolean)}
+     *                          {@link #execute(Context, ExecutionCommand, TerminalSessionClient, TermuxSessionClient, IShellEnvironment, HashMap, boolean)}
      *                          failed to start the process.
      */
     private static void processTermuxSessionResult(final TermuxSession termuxSession, ExecutionCommand executionCommand) {

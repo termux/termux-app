@@ -11,7 +11,7 @@ import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.shared.errors.Error;
 import com.termux.shared.file.FileUtilsErrno;
-import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
+import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 import com.termux.shared.shell.command.runner.app.AppShell;
 import com.termux.shared.android.AndroidUtils;
 import com.termux.shared.termux.TermuxConstants;
@@ -364,7 +364,7 @@ public class TermuxFileUtils {
             statScript.toString() + "\n", "/", ExecutionCommand.Runner.APP_SHELL.getName(), true);
         executionCommand.commandLabel = TermuxConstants.TERMUX_APP_NAME + " Files Stat Command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
-        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
+        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironment(), true);
         if (appShell == null || !executionCommand.isSuccessful()) {
             Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             return null;

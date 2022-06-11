@@ -28,7 +28,7 @@ import com.termux.shared.errors.Errno;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.shell.command.runner.app.AppShell;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
-import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
+import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 import com.termux.shared.termux.shell.TermuxShellUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
@@ -469,7 +469,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
             Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
-        AppShell newTermuxTask = AppShell.execute(this, executionCommand, this, new TermuxShellEnvironmentClient(), false);
+        AppShell newTermuxTask = AppShell.execute(this, executionCommand, this,
+            new TermuxShellEnvironment(),false);
         if (newTermuxTask == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxTask command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             // If the execution command was started for a plugin, then process the error
@@ -578,7 +579,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         // Otherwise if command was manually started by the user like by adding a new terminal session,
         // then no need to set stdout
         executionCommand.terminalTranscriptRows = mProperties.getTerminalTranscriptRows();
-        TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(), this, new TermuxShellEnvironmentClient(), executionCommand.isPluginExecutionCommand);
+        TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(),
+            this, new TermuxShellEnvironment(), executionCommand.isPluginExecutionCommand);
         if (newTermuxSession == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxSession command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             // If the execution command was started for a plugin, then process the error

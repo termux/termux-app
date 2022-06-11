@@ -23,7 +23,7 @@ import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.shared.errors.Error;
 import com.termux.shared.android.PackageUtils;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP;
-import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
+import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 
 import org.apache.commons.io.IOUtils;
 
@@ -597,7 +597,7 @@ public class TermuxUtils {
             null, ExecutionCommand.Runner.APP_SHELL.getName(), false);
         executionCommand.commandLabel = "APT Info Command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
-        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
+        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironment(), true);
         if (appShell == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
             Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             return null;
@@ -656,7 +656,7 @@ public class TermuxUtils {
             null, logcatScript + "\n", "/", ExecutionCommand.Runner.APP_SHELL.getName(), true);
         executionCommand.commandLabel = "Logcat dump command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
-        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironmentClient(), true);
+        AppShell appShell = AppShell.execute(context, executionCommand, null, new TermuxShellEnvironment(), true);
         if (appShell == null || !executionCommand.isSuccessful()) {
             Logger.logErrorExtended(LOG_TAG, executionCommand.toString());
             return null;
