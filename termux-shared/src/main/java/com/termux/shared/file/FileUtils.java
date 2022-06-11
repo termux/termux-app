@@ -991,7 +991,7 @@ public class FileUtils {
                     return FileUtilsErrno.ERRNO_CANNOT_OVERWRITE_A_DIFFERENT_FILE_TYPE.getError(label + "source file", mode.toLowerCase(), srcFilePath, destFilePath, destFileType.getName(), srcFileType.getName());
 
                 // Delete the destination file
-                error = deleteFile(label + "destination file", destFilePath, true);
+                error = deleteFile(label + "destination", destFilePath, true);
                 if (error != null)
                     return error;
             }
@@ -1038,7 +1038,7 @@ public class FileUtils {
                     } else {
                         // read the target for the source file and create a symlink at dest
                         // source file metadata will be lost
-                        error = createSymlinkFile(label + "dest file", Os.readlink(srcFilePath), destFilePath);
+                        error = createSymlinkFile(label + "dest", Os.readlink(srcFilePath), destFilePath);
                         if (error != null)
                             return error;
                     }
@@ -1055,7 +1055,7 @@ public class FileUtils {
             // If source file had to be moved
             if (moveFile) {
                 // Delete the source file since copying would have succeeded
-                error = deleteFile(label + "source file", srcFilePath, true);
+                error = deleteFile(label + "source", srcFilePath, true);
                 if (error != null)
                     return error;
             }
