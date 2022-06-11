@@ -69,6 +69,13 @@ public final class AppShell {
                                    final AppShellClient appShellClient,
                                    @NonNull final ShellEnvironmentClient shellEnvironmentClient,
                                    final boolean isSynchronous) {
+        if (executionCommand.executable == null || executionCommand.executable.isEmpty()) {
+            executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(),
+                currentPackageContext.getString(R.string.error_executable_unset, executionCommand.getCommandIdAndLabelLogString()));
+            AppShell.processAppShellResult(null, executionCommand);
+            return null;
+        }
+
         if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty())
             executionCommand.workingDirectory = shellEnvironmentClient.getDefaultWorkingDirectoryPath();
         if (executionCommand.workingDirectory.isEmpty())
