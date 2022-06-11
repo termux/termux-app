@@ -22,6 +22,7 @@ import com.termux.R;
 import com.termux.app.event.SystemEventReceiver;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.TermuxTerminalSessionServiceClient;
+import com.termux.shared.shell.command.runner.nativerunner.NativeShell;
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.net.uri.UriUtils;
@@ -287,6 +288,11 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             else
                 mShellManager.mTermuxTasks.remove(termuxTasks.get(i));
         }
+    
+        List<NativeShell> termuxNativeTasks = new ArrayList<>(mShellManager.mTermuxNativeTasks);
+        for (int i = 0; i < termuxNativeTasks.size(); i++) {
+            termuxNativeTasks.get(i).kill();
+        }
 
         for (int i = 0; i < pendingPluginExecutionCommands.size(); i++) {
             ExecutionCommand executionCommand = pendingPluginExecutionCommands.get(i);
@@ -423,8 +429,22 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             TermuxPluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
         }
     }
-
-
+    
+    /**
+     * Executes a NativeShell as a TermuxTask.
+     */
+    public NativeShell executeNativeShell(ExecutionCommand executionCommand, String[] environment, NativeShell.Client client) {
+        final NativeShell[] shell = new NativeShell[1];
+        shell[0] = new NativeShell(executionCommand, (exitCode, error) -> {
+            mHandler.post(() -> {
+                mShellManager.mTermuxNativeTasks.remove(shell[0]);
+                updateNotification();
+            });
+            client.terminated(exitCode, error);
+        }, environment);
+        shell[0].execute();
+        return shell[0];
+    }
 
 
 
@@ -789,7 +809,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
         // Set notification text
         int sessionCount = getTermuxSessionsSize();
-        int taskCount = mShellManager.mTermuxTasks.size();
+        int taskCount = mShellManager.mTermuxTasks.size() + mShellManager.mTermuxNativeTasks.size();
         String notificationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
         if (taskCount > 0) {
             notificationText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");

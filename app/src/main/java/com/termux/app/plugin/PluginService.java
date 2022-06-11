@@ -7,11 +7,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.BadParcelableException;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.NetworkOnMainThreadException;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.os.RemoteException;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +22,7 @@ import androidx.annotation.Nullable;
 import com.termux.app.TermuxService;
 import com.termux.plugin_aidl.IPluginCallback;
 import com.termux.plugin_aidl.IPluginService;
+import com.termux.plugin_aidl.Task;
 import com.termux.shared.android.BinderUtils;
 import com.termux.shared.errors.Error;
 import com.termux.shared.file.FileUtils;
@@ -28,13 +32,21 @@ import com.termux.shared.net.socket.local.LocalClientSocket;
 import com.termux.shared.net.socket.local.LocalSocketManager;
 import com.termux.shared.net.socket.local.LocalSocketRunConfig;
 import com.termux.shared.net.socket.local.PeerCred;
+import com.termux.shared.shell.command.ExecutionCommand;
+import com.termux.shared.shell.command.runner.nativerunner.NativeShell;
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,11 +57,46 @@ public class PluginService extends Service
 {
     private final static String LOG_TAG = "PluginService";
     
+    
+    // map of connected clients by PID
+    private final Map<Integer, Plugin> mConnectedPlugins = Collections.synchronizedMap(new HashMap<>());
+    private final PluginServiceBinder mBinder = new PluginServiceBinder();
+    private TermuxService mTermuxService; // can be null if TermuxService gets temporarily destroyed
+    private final ServiceConnection mTermuxServiceConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mTermuxService = ((TermuxService.LocalBinder) service).service;
+        }
+        
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mTermuxService = null;
+        }
+        
+        @Override
+        public void onBindingDied(ComponentName name) {
+            mTermuxService = null;
+            Logger.logError("Binding to TermuxService died"); // this should never happen, as TermuxService is in the same process
+        }
+        
+        @Override
+        public void onNullBinding(ComponentName name) {
+            // this should never happen, as TermuxService returns its Binder
+            Logger.logError("TermuxService onBind returned no Binder");
+        }
+    };
+    private final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
+    
+    
+    
     /**
      * Internal representation of a connected plugin for the service.
      */
     private class Plugin {
         int pid, uid;
+        
+        Map<Integer, NativeShell> tasks = Collections.synchronizedMap(new HashMap<>());
     
         @NonNull IPluginCallback callback;
         int cachedCallbackVersion;
@@ -88,35 +135,6 @@ public class PluginService extends Service
     public void onDestroy() {
         unbindService(mTermuxServiceConnection);
     }
-    
-    // map of connected clients by PID
-    private final Map<Integer, Plugin> mConnectedPlugins = Collections.synchronizedMap(new HashMap<>());
-    private final PluginServiceBinder mBinder = new PluginServiceBinder();
-    private TermuxService mTermuxService; // can be null if TermuxService gets temporarily destroyed
-    private final ServiceConnection mTermuxServiceConnection = new ServiceConnection()
-    {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mTermuxService = ((TermuxService.LocalBinder) service).service;
-        }
-    
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mTermuxService = null;
-        }
-    
-        @Override
-        public void onBindingDied(ComponentName name) {
-            mTermuxService = null;
-            Logger.logError("Binding to TermuxService died"); // this should never happen, as TermuxService is in the same process
-        }
-    
-        @Override
-        public void onNullBinding(ComponentName name) {
-            // this should never happen, as TermuxService returns its Binder
-            Logger.logError("TermuxService onBind returned no Binder");
-        }
-    };
     
     
     @Override
@@ -263,17 +281,144 @@ public class PluginService extends Service
         
         
         @Override
-        public ParcelFileDescriptor[] runTask(String commandPath, String[] arguments, ParcelFileDescriptor stdin, String workdir, String commandLabel, String commandDescription, String commandHelp) {
+        public Task runTask(String commandPath, String[] arguments, ParcelFileDescriptor stdin, String workdir, String[] environment) {
             externalAppsOrThrow();
             if (commandPath == null) throw new NullPointerException("Passed commandPath is null");
-            checkClient();
+            if (stdin == null) throw new NullPointerException("Passed stdin is null");
+            Plugin p = checkClient();
             BinderUtils.enforceRunCommandPermission(PluginService.this);
             
             
-            // TODO run the task with mTermuxService
+            final Object sync = new Object();
+            final RuntimeException[] ex = new RuntimeException[1];
+            final boolean[] finished = {false};
+            final NativeShell[] shell = new NativeShell[1];
+            // create pipes
+            final ParcelFileDescriptor[] out = new ParcelFileDescriptor[2];
+            final ParcelFileDescriptor[] in = new ParcelFileDescriptor[2];
             
+            ParcelFileDescriptor[] pipes;
+            try {
+                pipes = ParcelFileDescriptor.createPipe();
+            }
+            catch (IOException e) {
+                try {
+                    stdin.close();
+                } catch (IOException ignored) {}
+                throw new RuntimeException(e);
+            }
+            in[0] = pipes[0];
+            out[0] = pipes[1];
             
-            return null;
+            try {
+                pipes = ParcelFileDescriptor.createPipe();
+            }
+            catch (IOException e) {
+                try {
+                    stdin.close();
+                } catch (IOException ignored) {}
+                try {
+                    out[0].close();
+                } catch (IOException ignored) {}
+                try {
+                    in[0].close();
+                } catch (IOException ignored) {}
+                throw new RuntimeException(e);
+            }
+            in[1] = pipes[0];
+            out[1] = pipes[1];
+            
+            mMainThreadHandler.post(() -> {
+                TermuxService s = mTermuxService;
+                if (s == null) {
+                    synchronized (sync) {
+                        ex[0] = new IllegalStateException("Termux service unavailable");
+                        finished[0] = true;
+                        sync.notifyAll();
+                        return;
+                    }
+                }
+                try {
+                    ExecutionCommand cmd = new ExecutionCommand();
+                    cmd.executable = commandPath;
+                    cmd.workingDirectory = workdir;
+                    cmd.arguments = arguments;
+                    cmd.stdinFD = stdin;
+                    cmd.stdoutFD = out[0];
+                    cmd.stderrFD = out[1];
+                    /*
+                    try {
+                        ParcelFileDescriptor od = out[0].dup();
+                        new Thread(() -> {
+                            try {
+                                BufferedWriter w = new BufferedWriter(new FileWriter(od.getFileDescriptor()));
+                                w.write("test");
+                                w.flush();
+                                w.close();
+                            } catch (Exception ignored) {ignored.printStackTrace();}
+                        }).start();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    
+                     */
+                    
+                    shell[0] = s.executeNativeShell(cmd, environment, (exitCode, error) -> {
+                        try {
+                            Logger.logDebug("NativeShell", "exit: "+exitCode);
+                            // TODO callback
+                        } catch (Exception ignored) {}
+                    });
+                    p.tasks.put(shell[0].getPid(), shell[0]);
+                    synchronized (sync) {
+                        finished[0] = true;
+                        sync.notifyAll();
+                    }
+                } catch (RuntimeException e) {
+                    synchronized (sync) {
+                        ex[0] = e;
+                        finished[0] = true;
+                        sync.notifyAll();
+                    }
+                }
+            });
+            
+            while (! finished[0]) {
+                synchronized (sync) {
+                    try {
+                        sync.wait();
+                    }
+                    catch (InterruptedException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
+            // make sure to not leak file descriptors
+            if (ex[0] != null) {
+                try {
+                    stdin.close();
+                } catch (IOException ignored) {}
+                try {
+                    out[0].close();
+                } catch (IOException ignored) {}
+                try {
+                    out[1].close();
+                } catch (IOException ignored) {}
+                try {
+                    in[0].close();
+                } catch (IOException ignored) {}
+                try {
+                    in[1].close();
+                } catch (IOException ignored) {}
+                throw ex[0];
+            }
+            
+            Task t = new Task();
+            t.stdout = in[0];
+            t.stderr = in[1];
+            t.pid = shell[0].getPid();
+            return t;
         }
     
         

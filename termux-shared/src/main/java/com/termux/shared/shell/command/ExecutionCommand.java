@@ -2,6 +2,7 @@ package com.termux.shared.shell.command;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -163,8 +164,15 @@ public class ExecutionCommand {
     public String stdin;
     /** The current working directory for the {@link ExecutionCommand}. */
     public String workingDirectory;
-
-
+    
+    /** The file descriptor the executable will read from. */
+    public ParcelFileDescriptor stdinFD;
+    /** The file descriptor the executable will write standard output to. */
+    public ParcelFileDescriptor stdoutFD;
+    /** The file descriptor the executable will write error output to. */
+    public ParcelFileDescriptor stderrFD;
+    
+    
     /** The terminal transcript rows for the {@link ExecutionCommand}. */
     public Integer terminalTranscriptRows;
 

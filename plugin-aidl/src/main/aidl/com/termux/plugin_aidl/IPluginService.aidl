@@ -4,7 +4,7 @@ import android.os.ParcelFileDescriptor;
 import android.app.PendingIntent;
 
 import com.termux.plugin_aidl.IPluginCallback;
-
+import com.termux.plugin_aidl.Task;
 
 /**
 * All available methods in {@link com.termux.app.plugin.PluginService}.
@@ -42,13 +42,10 @@ interface IPluginService {
     
     
     /**
-    * Runs a command like through a RUN_COMMAND intent.
-    * For documentation of the parameters, see <a href="https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent#run_command-intent-command-extras">the wiki</a>.
-    * If a parameter is null it is treated the same as if the extra isn't in the intent.
-    * <br><br>
-    * This method runs synchronously and returns stout in [0] of the result array and stderr in [1].
+    * Runs a command in a Termux task in the background.
+    * stdin, commandPath and workdir are required parameters.
     */
-    ParcelFileDescriptor[] runTask(String commandPath, in String[] arguments, in ParcelFileDescriptor stdin, String workdir, String commandLabel, String commandDescription, String commandHelp) = 3;
+    Task runTask(String commandPath, in String[] arguments, in ParcelFileDescriptor stdin, String workdir, in String[] environment) = 3;
     
     /**
     * This creates a socket file with name under {@link com.termux.shared.termux.TermuxConstants#TERMUX_PLUGINS_DIR_PATH}/&lt;package name of caller&gt;.

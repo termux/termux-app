@@ -212,3 +212,107 @@ JNIEXPORT void JNICALL Java_com_termux_terminal_JNI_close(JNIEnv* TERMUX_UNUSED(
 {
     close(fileDescriptor);
 }
+
+
+
+int create_task(JNIEnv* env, const char* cmd, const char* cwd, char** argv, char** envp, int stdinfd, int stdoutfd, int stderrfd) {
+    pid_t pid = fork();
+    if (pid < 0) {
+        return throw_runtime_exception(env, "Fork failed");
+    } else if (pid > 0) {
+        return pid;
+    } else {
+        // Clear signals which the Android java process may have blocked:
+        sigset_t signals_to_unblock;
+        sigfillset(&signals_to_unblock);
+        sigprocmask(SIG_UNBLOCK, &signals_to_unblock, 0);
+        
+        setsid();
+
+        dup2(stdinfd, 0);
+        dup2(stdoutfd, 1);
+        dup2(stderrfd, 2);
+
+        DIR* self_dir = opendir("/proc/self/fd");
+        if (self_dir != NULL) {
+            int self_dir_fd = dirfd(self_dir);
+            struct dirent* entry;
+            while ((entry = readdir(self_dir)) != NULL) {
+                int fd = atoi(entry->d_name);
+                if (fd > 2 && fd != self_dir_fd) close(fd);
+            }
+            closedir(self_dir);
+        }
+
+        clearenv();
+        if (envp) for (; *envp; ++envp) putenv(*envp);
+
+        if (chdir(cwd) != 0) {
+            char* error_message;
+            // No need to free asprintf()-allocated memory since doing execvp() or exit() below.
+            if (asprintf(&error_message, "chdir(\"%s\")", cwd) == -1) error_message = "chdir()";
+            perror(error_message);
+            fflush(stderr);
+        }
+        execvp(cmd, argv);
+        // Show terminal output about failing exec() call:
+        char* error_message;
+        if (asprintf(&error_message, "exec(\"%s\")", cmd) == -1) error_message = "exec()";
+        perror(error_message);
+        _exit(1);
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_com_termux_terminal_JNI_createTask(JNIEnv *env, jclass TERMUX_UNUSED(clazz), jstring cmd, jstring cwd,
+                                        jobjectArray args, jobjectArray envVars, jint stdinfd,
+                                        jint stdoutfd, jint stderrfd) {
+    jsize size = args ? (*env)->GetArrayLength(env, args) : 0;
+    char** argv = NULL;
+    if (size > 0) {
+        argv = (char**) malloc((size + 1) * sizeof(char*));
+        if (!argv) return throw_runtime_exception(env, "Couldn't allocate argv array");
+        for (int i = 0; i < size; ++i) {
+            jstring arg_java_string = (jstring) (*env)->GetObjectArrayElement(env, args, i);
+            char const* arg_utf8 = (*env)->GetStringUTFChars(env, arg_java_string, NULL);
+            if (!arg_utf8) return throw_runtime_exception(env, "GetStringUTFChars() failed for argv");
+            argv[i] = strdup(arg_utf8);
+            (*env)->ReleaseStringUTFChars(env, arg_java_string, arg_utf8);
+        }
+        argv[size] = NULL;
+    }
+
+    size = envVars ? (*env)->GetArrayLength(env, envVars) : 0;
+    char** envp = NULL;
+    if (size > 0) {
+        envp = (char**) malloc((size + 1) * sizeof(char *));
+        if (!envp) return throw_runtime_exception(env, "malloc() for envp array failed");
+        for (int i = 0; i < size; ++i) {
+            jstring env_java_string = (jstring) (*env)->GetObjectArrayElement(env, envVars, i);
+            char const* env_utf8 = (*env)->GetStringUTFChars(env, env_java_string, 0);
+            if (!env_utf8) return throw_runtime_exception(env, "GetStringUTFChars() failed for env");
+            envp[i] = strdup(env_utf8);
+            (*env)->ReleaseStringUTFChars(env, env_java_string, env_utf8);
+        }
+        envp[size] = NULL;
+    }
+
+    int procId;
+    char const* cmd_cwd = (*env)->GetStringUTFChars(env, cwd, NULL);
+    char const* cmd_utf8 = (*env)->GetStringUTFChars(env, cmd, NULL);
+    procId = create_task(env, cmd_utf8, cmd_cwd, argv, envp, stdinfd, stdoutfd, stderrfd);
+    (*env)->ReleaseStringUTFChars(env, cmd, cmd_utf8);
+    (*env)->ReleaseStringUTFChars(env, cmd, cmd_cwd);
+
+    if (argv) {
+        for (char** tmp = argv; *tmp; ++tmp) free(*tmp);
+        free(argv);
+    }
+    if (envp) {
+        for (char** tmp = envp; *tmp; ++tmp) free(*tmp);
+        free(envp);
+    }
+
+    return procId;
+}
+
