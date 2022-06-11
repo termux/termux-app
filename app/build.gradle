@@ -9,7 +9,7 @@ ext {
     // Bootstrap of a different variant must not be manually installed by the user after app installation
     // by replacing $PREFIX since app code is dependant on the variant used to build the APK.
     // Currently supported values are: [ "apt-android-7" "apt-android-5" ]
-    packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7" // Default: "apt-android-7"
+    packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-5" // Default: "apt-android-7"
 }
 
 android {
@@ -214,11 +214,11 @@ task downloadBootstraps() {
     doLast {
         def packageVariant = project.ext.packageVariant
         if (packageVariant == "apt-android-7") {
-            def version = "2022.04.28-r5" + "+" + packageVariant
-            downloadBootstrap("aarch64", "4a51a7eb209fe82efc24d52e3cccc13165f27377290687cb82038cbd8e948430", version)
-            downloadBootstrap("arm", "6459a786acbae50d4c8a36fa1c3de6a4dd2d482572f6d54f73274709bd627325", version)
-            downloadBootstrap("i686", "919d212b2f19e08600938db4079e794e947365022dbfd50ac342c50fcedcd7be", version)
-            downloadBootstrap("x86_64", "61b02fdc03ea4f5d9da8d8cf018013fdc6659e6da6cbf44e9b24d1c623580b89", version)
+            def version = "2022.06.05-r1" + "+" + packageVariant
+            downloadBootstrap("aarch64", "6ff0328e01f34122a69d702a15ad4e052a4b0f4da8479bb94ee4d2d2b0d5fab6", version)
+            downloadBootstrap("arm", "a9fb261456579f1258dd3418c126a6131403c2e3960aa597e3d5f7e4f9144b88", version)
+            downloadBootstrap("i686", "4eb490bd45e6654663d2035d362d3760e92add36f44153f2a9bce21e04fc4759", version)
+            downloadBootstrap("x86_64", "2696db4b6513bb932bcb1abdbfc8ebe3e645c6645708094115dc382718a2d7d7", version)
         } else if (packageVariant == "apt-android-5") {
             def version = "2022.04.28-r6" + "+" + packageVariant
             downloadBootstrap("aarch64", "913609d439415c828c5640be1b0561467e539cb1c7080662decaaca2fb4820e7", version)
