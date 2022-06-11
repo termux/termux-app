@@ -6,6 +6,7 @@ import android.system.Os;
 import android.system.OsConstants;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.common.base.Joiner;
 import com.termux.shared.R;
@@ -65,6 +66,8 @@ public final class AppShell {
      *                           {@code null} is returned by this method. This can
      *                           optionally be {@code null}.
      * @param shellEnvironmentClient The {@link IShellEnvironment} interface implementation.
+     * @param additionalEnvironment The additional shell environment variables to export. Existing
+     *                              variables will be overridden.
      * @param isSynchronous If set to {@code true}, then the command will be executed in the
      *                      caller thread and results returned synchronously in the {@link ExecutionCommand}
      *                      sub object of the {@link AppShell} returned.
@@ -75,6 +78,7 @@ public final class AppShell {
     public static AppShell execute(@NonNull final Context currentPackageContext, @NonNull ExecutionCommand executionCommand,
                                    final AppShellClient appShellClient,
                                    @NonNull final IShellEnvironment shellEnvironmentClient,
+                                   @Nullable HashMap<String, String> additionalEnvironment,
                                    final boolean isSynchronous) {
         if (executionCommand.executable == null || executionCommand.executable.isEmpty()) {
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(),
@@ -103,6 +107,8 @@ public final class AppShell {
         // Setup command environment
         HashMap<String, String> environment = shellEnvironmentClient.setupShellCommandEnvironment(currentPackageContext,
             executionCommand);
+        if (additionalEnvironment != null)
+            environment.putAll(additionalEnvironment);
         List<String> environmentList = ShellEnvironmentUtils.convertEnvironmentToEnviron(environment);
         Collections.sort(environmentList);
         String[] environmentArray = environmentList.toArray(new String[0]);

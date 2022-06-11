@@ -467,7 +467,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
         AppShell newTermuxTask = AppShell.execute(this, executionCommand, this,
-            new TermuxShellEnvironment(),false);
+            new TermuxShellEnvironment(), null,false);
         if (newTermuxTask == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxTask command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             // If the execution command was started for a plugin, then process the error
@@ -579,7 +579,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         // then no need to set stdout
         executionCommand.terminalTranscriptRows = mProperties.getTerminalTranscriptRows();
         TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(),
-            this, new TermuxShellEnvironment(), executionCommand.isPluginExecutionCommand);
+            this, new TermuxShellEnvironment(), null, executionCommand.isPluginExecutionCommand);
         if (newTermuxSession == null) {
             Logger.logError(LOG_TAG, "Failed to execute new TermuxSession command for:\n" + executionCommand.getCommandIdAndLabelLogString());
             // If the execution command was started for a plugin, then process the error
