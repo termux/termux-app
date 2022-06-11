@@ -28,6 +28,11 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
         shellCommandShellEnvironment = new TermuxShellCommandShellEnvironment();
     }
 
+    /** Init {@link TermuxShellEnvironment} constants and caches. */
+    public synchronized static void init(@NonNull Context currentPackageContext) {
+        TermuxAppShellEnvironment.setTermuxAppEnvironment(currentPackageContext);
+    }
+
     /** Get shell environment for Termux. */
     @NonNull
     @Override

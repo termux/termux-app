@@ -60,6 +60,9 @@ public class TermuxApplication extends Application {
             }
 
             TermuxAmSocketServer.setupTermuxAmSocketServer(context);
+
+        // Init TermuxShellEnvironment constants and caches after everything has been setup including termux-am-socket server
+        TermuxShellEnvironment.init(this);
         }
     }
 
