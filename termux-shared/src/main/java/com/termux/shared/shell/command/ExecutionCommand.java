@@ -140,7 +140,8 @@ public class ExecutionCommand {
 
     }
 
-    /** The optional unique id for the {@link ExecutionCommand}. */
+    /** The optional unique id for the {@link ExecutionCommand}. This should equal -1 if execution
+     * command is not going to be managed by a shell manager. */
     public Integer id;
 
     /** The process id of command. */

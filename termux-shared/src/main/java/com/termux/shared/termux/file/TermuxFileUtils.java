@@ -360,7 +360,7 @@ public class TermuxFileUtils {
             .append("/system/bin/grep -E '( /data )|( /data/data )|( /data/user/[0-9]+ )' /proc/self/mountinfo 2>&1 | /system/bin/grep -v '/data_mirror' 2>&1");
 
         // Run script
-        ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh", null,
+        ExecutionCommand executionCommand = new ExecutionCommand(-1, "/system/bin/sh", null,
             statScript.toString() + "\n", "/", ExecutionCommand.Runner.APP_SHELL.getName(), true);
         executionCommand.commandLabel = TermuxConstants.TERMUX_APP_NAME + " Files Stat Command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;

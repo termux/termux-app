@@ -592,7 +592,7 @@ public class TermuxUtils {
 
         aptInfoScript = aptInfoScript.replaceAll(Pattern.quote("@TERMUX_PREFIX@"), TermuxConstants.TERMUX_PREFIX_DIR_PATH);
 
-        ExecutionCommand executionCommand = new ExecutionCommand(1,
+        ExecutionCommand executionCommand = new ExecutionCommand(-1,
             TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash", null, aptInfoScript,
             null, ExecutionCommand.Runner.APP_SHELL.getName(), false);
         executionCommand.commandLabel = "APT Info Command";
@@ -652,7 +652,7 @@ public class TermuxUtils {
 
         // Run script
         // Logging must be disabled for output of logcat command itself in StreamGobbler
-        ExecutionCommand executionCommand = new ExecutionCommand(1, "/system/bin/sh",
+        ExecutionCommand executionCommand = new ExecutionCommand(-1, "/system/bin/sh",
             null, logcatScript + "\n", "/", ExecutionCommand.Runner.APP_SHELL.getName(), true);
         executionCommand.commandLabel = "Logcat dump command";
         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_OFF;
