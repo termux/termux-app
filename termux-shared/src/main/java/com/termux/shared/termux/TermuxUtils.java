@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -272,6 +273,17 @@ public class TermuxUtils {
     }
 
 
+
+    /** Returns {@code true} if {@link Uri} has `package:` scheme for {@link TermuxConstants#TERMUX_PACKAGE_NAME} or its sub plugin package. */
+    public static boolean isUriDataForTermuxOrPluginPackage(@NonNull Uri data) {
+        return data.toString().equals("package:" + TermuxConstants.TERMUX_PACKAGE_NAME) ||
+            data.toString().startsWith("package:" + TermuxConstants.TERMUX_PACKAGE_NAME + ".");
+    }
+
+    /** Returns {@code true} if {@link Uri} has `package:` scheme for {@link TermuxConstants#TERMUX_PACKAGE_NAME} sub plugin package. */
+    public static boolean isUriDataForTermuxPluginPackage(@NonNull Uri data) {
+        return data.toString().startsWith("package:" + TermuxConstants.TERMUX_PACKAGE_NAME + ".");
+    }
 
     /**
      * Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
