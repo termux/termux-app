@@ -1,7 +1,7 @@
 package com.termux.shared.termux.settings.preferences;
 
 /*
- * Version: v0.15.0
+ * Version: v0.16.0
  *
  * Changelog
  *
@@ -65,7 +65,13 @@ package com.termux.shared.termux.settings.preferences;
  * - 0.15.0 (2021-09-05)
  *      - Added following to `TERMUX_TASKER_APP`:
  *          `KEY_LAST_PENDING_INTENT_REQUEST_CODE` and `DEFAULT_VALUE_KEY_LAST_PENDING_INTENT_REQUEST_CODE`.
+ *
+ * - 0.16.0 (2022-06-11)
+ *      - Added following to `TERMUX_APP`:
+ *          `KEY_APP_SHELL_NUMBER_SINCE_BOOT` and `KEY_TERMINAL_SESSION_NUMBER_SINCE_BOOT`.
  */
+
+import com.termux.shared.shell.command.ExecutionCommand;
 
 /**
  * A class that defines shared constants of the SharedPreferences used by Termux app and its plugins.
@@ -142,6 +148,18 @@ public final class TermuxPreferenceConstants {
          */
         public static final String KEY_LAST_NOTIFICATION_ID = "last_notification_id";
         public static final int DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID = 0;
+
+        /**
+         * The {@link ExecutionCommand.Runner#APP_SHELL} number after termux app process since boot.
+         */
+        public static final String KEY_APP_SHELL_NUMBER_SINCE_BOOT = "app_shell_number_since_boot";
+        public static final int DEFAULT_VALUE_APP_SHELL_NUMBER_SINCE_BOOT = 0;
+
+        /**
+         * The {@link ExecutionCommand.Runner#TERMINAL_SESSION} number after termux app process since boot.
+         */
+        public static final String KEY_TERMINAL_SESSION_NUMBER_SINCE_BOOT = "terminal_session_number_since_boot";
+        public static final int DEFAULT_VALUE_TERMINAL_SESSION_NUMBER_SINCE_BOOT = 0;
 
 
         /**

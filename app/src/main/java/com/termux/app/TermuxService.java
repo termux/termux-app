@@ -170,6 +170,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         actionReleaseWakeLock(false);
         if (!mWantsToStop)
             killAllTermuxExecutionCommands();
+
+        TermuxShellManager.onAppExit(this);
         runStopForeground();
     }
 
@@ -463,6 +465,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             return null;
         }
 
+        executionCommand.setShellCommandShellEnvironment = true;
+
         if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
             Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
@@ -571,13 +575,15 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             return null;
         }
 
+        executionCommand.setShellCommandShellEnvironment = true;
+        executionCommand.terminalTranscriptRows = mProperties.getTerminalTranscriptRows();
+
         if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE)
             Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
         // If the execution command was started for a plugin, only then will the stdout be set
         // Otherwise if command was manually started by the user like by adding a new terminal session,
         // then no need to set stdout
-        executionCommand.terminalTranscriptRows = mProperties.getTerminalTranscriptRows();
         TermuxSession newTermuxSession = TermuxSession.execute(this, executionCommand, getTermuxTerminalSessionClient(),
             this, new TermuxShellEnvironment(), null, executionCommand.isPluginExecutionCommand);
         if (newTermuxSession == null) {

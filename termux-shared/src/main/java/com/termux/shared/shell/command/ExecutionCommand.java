@@ -195,6 +195,10 @@ public class ExecutionCommand {
     /** The {@link ShellCreateMode} of commands. */
     public String shellCreateMode;
 
+    /** Whether to set {@link ExecutionCommand} shell environment. */
+    public boolean setShellCommandShellEnvironment;
+
+
 
 
     /** The command label for the {@link ExecutionCommand}. */
@@ -396,6 +400,8 @@ public class ExecutionCommand {
             logString.append("\n").append(executionCommand.getShellCreateModeLogString());
         }
 
+        logString.append("\n").append(executionCommand.getSetRunnerShellEnvironmentLogString());
+
         if (!ignoreNull || executionCommand.commandIntent != null)
             logString.append("\n").append(executionCommand.getCommandIntentLogString());
 
@@ -490,7 +496,7 @@ public class ExecutionCommand {
 
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Shell Name", executionCommand.shellName, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Shell Create Mode", executionCommand.shellCreateMode, "-"));
-
+        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Set Shell Command Shell Environment", executionCommand.setShellCommandShellEnvironment, "-"));
 
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("isPluginExecutionCommand", executionCommand.isPluginExecutionCommand, "-"));
 
@@ -586,6 +592,10 @@ public class ExecutionCommand {
 
     public String getShellCreateModeLogString() {
         return Logger.getSingleLineLogStringEntry("Shell Create Mode", shellCreateMode, "-");
+    }
+
+    public String getSetRunnerShellEnvironmentLogString() {
+        return "Set Shell Command Shell Environment: `" + setShellCommandShellEnvironment + "`";
     }
 
     public String getCommandDescriptionLogString() {

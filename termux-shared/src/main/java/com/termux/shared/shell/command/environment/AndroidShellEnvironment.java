@@ -20,6 +20,12 @@ import java.util.HashMap;
  */
 public class AndroidShellEnvironment extends UnixShellEnvironment {
 
+    protected ShellCommandShellEnvironment shellCommandShellEnvironment;
+
+    public AndroidShellEnvironment() {
+        shellCommandShellEnvironment = new ShellCommandShellEnvironment();
+    }
+
     /** Get shell environment for Android. */
     @NonNull
     @Override
@@ -84,6 +90,9 @@ public class AndroidShellEnvironment extends UnixShellEnvironment {
             workingDirectory != null && !workingDirectory.isEmpty() ? new File(workingDirectory).getAbsolutePath() : // PWD must be absolute path
             getDefaultWorkingDirectoryPath());
         ShellEnvironmentUtils.createHomeDir(environment);
+
+        if (executionCommand.setShellCommandShellEnvironment && shellCommandShellEnvironment != null)
+            environment.putAll(shellCommandShellEnvironment.getEnvironment(currentPackageContext, executionCommand));
 
         return environment;
     }

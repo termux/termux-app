@@ -188,6 +188,38 @@ public class SharedPreferenceUtils {
             sharedPreferences.edit().putInt(key, value).apply();
     }
 
+    /**
+     * Set an {@code int} in {@link SharedPreferences}.
+     *
+     * @param sharedPreferences The {@link SharedPreferences} to set the value in.
+     * @param key The key for the value.
+     * @param def The default value if failed to read a valid value.
+     * @param commitToFile If set to {@code true}, then value will be set to shared preferences
+     *                     in-memory cache and the file synchronously. Ideally, only to be used for
+     *                     multi-process use-cases.
+     * @param resetValue The value if not {@code null} that should be set if current or incremented
+     *                   value is less than 0.
+     * @return Returns the {@code int} value stored in {@link SharedPreferences} before increment,
+     * otherwise returns default if failed to read a valid value, like in case of an exception.
+     */
+    @SuppressLint("ApplySharedPref")
+    public static int getAndIncrementInt(SharedPreferences sharedPreferences, String key, int def,
+                                         boolean commitToFile, Integer resetValue) {
+        if (sharedPreferences == null) {
+            Logger.logError(LOG_TAG, "Ignoring incrementing int value for the \"" + key + "\" key into null shared preferences.");
+            return def;
+        }
+
+        int curValue = getInt(sharedPreferences, key, def);
+        if (resetValue != null && (curValue < 0)) curValue = resetValue;
+
+        int newValue = curValue + 1;
+        if (resetValue != null && newValue < 0) newValue = resetValue;
+
+        setInt(sharedPreferences, key, newValue, commitToFile);
+        return curValue;
+    }
+
 
 
     /**

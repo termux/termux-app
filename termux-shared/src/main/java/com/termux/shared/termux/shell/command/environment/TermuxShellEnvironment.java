@@ -23,6 +23,10 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
     /** Environment variable for the termux {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH}. */
     public static final String ENV_PREFIX = "PREFIX";
 
+    public TermuxShellEnvironment() {
+        super();
+        shellCommandShellEnvironment = new TermuxShellCommandShellEnvironment();
+    }
 
     /** Get shell environment for Termux. */
     @NonNull
