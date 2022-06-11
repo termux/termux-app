@@ -324,7 +324,7 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
             reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(currentPackageContext, appInfoMode, currentPackageName));
 
         if (addDeviceInfo)
-            reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(currentPackageContext));
+            reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(currentPackageContext, true));
 
         String userActionName = UserAction.CRASH_REPORT.getName();
 

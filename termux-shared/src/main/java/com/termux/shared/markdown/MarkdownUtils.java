@@ -106,6 +106,10 @@ public class MarkdownUtils {
 
 
 
+    public static String getLiteralSingleLineMarkdownStringEntry(String label, Object object, String def) {
+        return "**" + label + "**: " + (object != null ? object.toString() : def) +  "  ";
+    }
+
     public static String getSingleLineMarkdownStringEntry(String label, Object object, String def) {
         if (object != null)
             return "**" + label + "**: " + getMarkdownCodeForString(object.toString(), false) +  "  ";
