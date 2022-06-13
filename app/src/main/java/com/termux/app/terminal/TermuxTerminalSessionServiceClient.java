@@ -21,4 +21,11 @@ public class TermuxTerminalSessionServiceClient extends TermuxTerminalSessionCli
         this.mService = service;
     }
 
+    @Override
+    public void setTerminalShellPid(@NonNull TerminalSession terminalSession, int pid) {
+        TermuxSession termuxSession = mService.getTermuxSessionForTerminalSession(terminalSession);
+        if (termuxSession != null)
+            termuxSession.getExecutionCommand().mPid = pid;
+    }
+
 }
