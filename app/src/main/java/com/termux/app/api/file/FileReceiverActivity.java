@@ -1,5 +1,6 @@
-package com.termux.filepicker;
+package com.termux.app.api.file;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.termux.R;
+import com.termux.shared.android.PackageUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.net.uri.UriUtils;
@@ -17,9 +19,12 @@ import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.net.uri.UriScheme;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.app.TermuxService;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
+import com.termux.shared.termux.settings.properties.TermuxPropertyConstants;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -31,7 +36,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-public class TermuxFileReceiverActivity extends AppCompatActivity {
+public class FileReceiverActivity extends AppCompatActivity {
 
     static final String TERMUX_RECEIVEDIR = TermuxConstants.TERMUX_FILES_DIR_PATH + "/home/downloads";
     static final String EDITOR_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-file-editor";
@@ -47,7 +52,7 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
 
     private static final String API_TAG = TermuxConstants.TERMUX_APP_NAME + "FileReceiver";
 
-    private static final String LOG_TAG = "TermuxFileReceiverActivity";
+    private static final String LOG_TAG = "FileReceiverActivity";
 
     static boolean isSharedTextAnUrl(String sharedText) {
         return Patterns.WEB_URL.matcher(sharedText).matches()
@@ -172,7 +177,7 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
                 final Uri scriptUri = UriUtils.getFileUri(EDITOR_PROGRAM);
 
                 Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
-                executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
+                executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
                 executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
                 startService(executeIntent);
                 finish();
@@ -182,7 +187,7 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
 
                 Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE);
                 executeIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, TERMUX_RECEIVEDIR);
-                executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
+                executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
                 startService(executeIntent);
                 finish();
             },
@@ -236,10 +241,45 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
         final Uri urlOpenerProgramUri = UriUtils.getFileUri(URL_OPENER_PROGRAM);
 
         Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, urlOpenerProgramUri);
-        executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
+        executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
         executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{url});
         startService(executeIntent);
         finish();
+    }
+
+    /**
+     * Update {@link TERMUX_APP#FILE_SHARE_RECEIVER_ACTIVITY_CLASS_NAME} component state depending on
+     * {@link TermuxPropertyConstants#KEY_DISABLE_FILE_SHARE_RECEIVER} value and
+     * {@link TERMUX_APP#FILE_VIEW_RECEIVER_ACTIVITY_CLASS_NAME} component state depending on
+     * {@link TermuxPropertyConstants#KEY_DISABLE_FILE_VIEW_RECEIVER} value.
+     */
+    public static void updateFileReceiverActivityComponentsState(@NonNull Context context) {
+        new Thread() {
+            @Override
+            public void run() {
+                TermuxAppSharedProperties properties = TermuxAppSharedProperties.getProperties();
+
+                String errmsg;
+                boolean state;
+
+                state = !properties.isFileShareReceiverDisabled();
+                Logger.logVerbose(LOG_TAG, "Setting " + TERMUX_APP.FILE_SHARE_RECEIVER_ACTIVITY_CLASS_NAME + " component state to " + state);
+                errmsg = PackageUtils.setComponentState(context,TermuxConstants.TERMUX_PACKAGE_NAME,
+                    TERMUX_APP.FILE_SHARE_RECEIVER_ACTIVITY_CLASS_NAME,
+                    state, null, false, false);
+                if (errmsg != null)
+                    Logger.logError(LOG_TAG, errmsg);
+
+                state = !properties.isFileViewReceiverDisabled();
+                Logger.logVerbose(LOG_TAG, "Setting " + TERMUX_APP.FILE_VIEW_RECEIVER_ACTIVITY_CLASS_NAME + " component state to " + state);
+                errmsg = PackageUtils.setComponentState(context,TermuxConstants.TERMUX_PACKAGE_NAME,
+                    TERMUX_APP.FILE_VIEW_RECEIVER_ACTIVITY_CLASS_NAME,
+                    state, null, false, false);
+                if (errmsg != null)
+                    Logger.logError(LOG_TAG, errmsg);
+
+            }
+        }.start();
     }
 
 }

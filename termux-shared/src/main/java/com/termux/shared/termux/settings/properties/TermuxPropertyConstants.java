@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * Version: v0.17.0
+ * Version: v0.18.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -77,6 +77,9 @@ import java.util.Set;
  *
  * - 0.17.0 (2022-03-17)
  *      - Add `KEY_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT`.
+ *
+ * - 0.18.0 (2022-06-13)
+ *      - Add `KEY_DISABLE_FILE_SHARE_RECEIVER` and `KEY_DISABLE_FILE_VIEW_RECEIVER`.
  */
 
 /**
@@ -95,6 +98,14 @@ public final class TermuxPropertyConstants {
     private static final String LOG_TAG = "TermuxPropertyConstants";
 
     /* boolean */
+
+    /** Defines the key for whether file share receiver of the app is enabled. */
+    public static final String KEY_DISABLE_FILE_SHARE_RECEIVER =  "disable-file-share-receiver"; // Default: "disable-file-share-receiver"
+
+    /** Defines the key for whether file view receiver of the app is enabled. */
+    public static final String KEY_DISABLE_FILE_VIEW_RECEIVER =  "disable-file-view-receiver"; // Default: "disable-file-view-receiver"
+
+
 
     /** Defines the key for whether hardware keyboard shortcuts are enabled. */
     public static final String KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS =  "disable-hardware-keyboard-shortcuts"; // Default: "disable-hardware-keyboard-shortcuts"
@@ -380,6 +391,8 @@ public final class TermuxPropertyConstants {
      * */
     public static final Set<String> TERMUX_APP_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         /* boolean */
+        KEY_DISABLE_FILE_SHARE_RECEIVER,
+        KEY_DISABLE_FILE_VIEW_RECEIVER,
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
@@ -426,6 +439,8 @@ public final class TermuxPropertyConstants {
      * default: false
      */
     public static final Set<String> TERMUX_DEFAULT_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+        KEY_DISABLE_FILE_SHARE_RECEIVER,
+        KEY_DISABLE_FILE_VIEW_RECEIVER,
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,

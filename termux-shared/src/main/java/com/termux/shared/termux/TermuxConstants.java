@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.50.0
+ * Version: v0.51.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -271,6 +271,9 @@ import java.util.List;
  *
  * - 0.50.0 (2022-06-11)
  *      - Added `TERMUX_CONFIG_PREFIX_DIR_PATH`, `TERMUX_ENV_FILE_PATH` and `TERMUX_ENV_TEMP_FILE_PATH`.
+ *
+ * - 0.51.0 (2022-06-13)
+ *      - Added `TERMUX_APP.FILE_SHARE_RECEIVER_ACTIVITY_CLASS_NAME` and `TERMUX_APP.FILE_VIEW_RECEIVER_ACTIVITY_CLASS_NAME`.
  */
 
 /**
@@ -907,8 +910,15 @@ public final class TermuxConstants {
         /** termux-am socket file path */
         public static final String TERMUX_AM_SOCKET_FILE_PATH = APPS_DIR_PATH + "/termux-am/am.sock"; // Default: "/data/data/com.termux/files/apps/com.termux/termux-am/am.sock"
 
+
         /** Termux app BuildConfig class name */
         public static final String BUILD_CONFIG_CLASS_NAME = TERMUX_PACKAGE_NAME + ".BuildConfig"; // Default: "com.termux.BuildConfig"
+
+        /** Termux app FileShareReceiverActivity class name */
+        public static final String FILE_SHARE_RECEIVER_ACTIVITY_CLASS_NAME = TERMUX_PACKAGE_NAME + ".app.api.file.FileShareReceiverActivity"; // Default: "com.termux.app.api.file.FileShareReceiverActivity"
+
+        /** Termux app FileViewReceiverActivity class name */
+        public static final String FILE_VIEW_RECEIVER_ACTIVITY_CLASS_NAME = TERMUX_PACKAGE_NAME + ".app.api.file.FileViewReceiverActivity"; // Default: "com.termux.app.api.file.FileViewReceiverActivity"
 
 
         /** Termux app core activity name. */

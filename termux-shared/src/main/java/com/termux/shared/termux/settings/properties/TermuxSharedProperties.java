@@ -563,6 +563,15 @@ public abstract class TermuxSharedProperties {
     public boolean shouldAllowExternalApps() {
         return (boolean) getInternalPropertyValue(TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true);
     }
+
+    public boolean isFileShareReceiverDisabled() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_FILE_SHARE_RECEIVER, true);
+    }
+
+    public boolean isFileViewReceiverDisabled() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_FILE_VIEW_RECEIVER, true);
+    }
+
     public boolean areHardwareKeyboardShortcutsDisabled() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS, true);
     }
