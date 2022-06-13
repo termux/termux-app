@@ -710,6 +710,13 @@ public class PackageUtils {
     }
 
 
+    /** Wrapper for {@link #setComponentState(Context, String, String, boolean, String, boolean, boolean)} with
+     * {@code alwaysShowToast} {@code true}. */
+    public static String setComponentState(@NonNull final Context context, @NonNull String packageName,
+                                           @NonNull String className, boolean newState, String toastString,
+                                           boolean showErrorMessage) {
+        return setComponentState(context, packageName, className, newState, toastString, showErrorMessage, true);
+    }
 
     /**
      * Enable or disable a {@link ComponentName} with a call to
@@ -718,28 +725,46 @@ public class PackageUtils {
      * @param context The {@link Context} for operations.
      * @param packageName The package name of the component.
      * @param className The {@link Class} name of the component.
-     * @param state If component should be enabled or disabled.
+     * @param newState If component should be enabled or disabled.
      * @param toastString If this is not {@code null} or empty, then a toast before setting state.
      * @param showErrorMessage If an error message toast should be shown.
+     * @param alwaysShowToast If toast should always be shown even if current state matches new state.
      * @return Returns the errmsg if failed to set state, otherwise {@code null}.
      */
     @Nullable
     public static String setComponentState(@NonNull final Context context, @NonNull String packageName,
-                                           @NonNull String className, boolean state, String toastString,
-                                           boolean showErrorMessage) {
+                                           @NonNull String className, boolean newState, String toastString,
+                                           boolean alwaysShowToast, boolean showErrorMessage) {
         try {
             PackageManager packageManager = context.getPackageManager();
             if (packageManager != null) {
-                ComponentName componentName = new ComponentName(packageName, className);
+                if (toastString != null && alwaysShowToast) {
+                    Logger.showToast(context, toastString, true);
+                    toastString = null;
+                }
+
+                Boolean currentlyDisabled = PackageUtils.isComponentDisabled(context, packageName, className, false);
+                if (currentlyDisabled == null)
+                    throw new UnsupportedOperationException("Failed to find if component currently disabled");
+
+                Boolean setState = null;
+                if (newState && currentlyDisabled)
+                    setState = true;
+                else if (!newState && !currentlyDisabled)
+                    setState = false;
+
+                if (setState == null) return null;
+
                 if (toastString != null) Logger.showToast(context, toastString, true);
+                ComponentName componentName = new ComponentName(packageName, className);
                 packageManager.setComponentEnabledSetting(componentName,
-                    state ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    setState ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
             }
             return null;
         } catch (final Exception e) {
             String errmsg = context.getString(
-                state ? R.string.error_enable_component_failed : R.string.error_disable_component_failed,
+                newState ? R.string.error_enable_component_failed : R.string.error_disable_component_failed,
                 packageName, className) + ": " + e.getMessage();
             if (showErrorMessage)
                 Logger.showToast(context, errmsg, true);
