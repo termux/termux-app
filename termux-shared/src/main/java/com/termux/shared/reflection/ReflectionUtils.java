@@ -28,7 +28,12 @@ public class ReflectionUtils {
     public static void bypassHiddenAPIReflectionRestrictions() {
         if (!HIDDEN_API_REFLECTION_RESTRICTIONS_BYPASSED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             Logger.logDebug(LOG_TAG, "Bypassing android hidden api reflection restrictions");
-            HiddenApiBypass.addHiddenApiExemptions("");
+            try {
+                HiddenApiBypass.addHiddenApiExemptions("");
+            } catch (Throwable t) {
+                Logger.logStackTraceWithMessage(LOG_TAG, "Failed to bypass hidden API reflection restrictions", t);
+            }
+
             HIDDEN_API_REFLECTION_RESTRICTIONS_BYPASSED = true;
         }
     }
