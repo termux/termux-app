@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.termux.shared.R;
+import com.termux.shared.logger.Logger;
 
 public class MessageDialogUtils {
 
@@ -74,7 +77,19 @@ public class MessageDialogUtils {
         if (onDismiss != null)
             builder.setOnDismissListener(onDismiss);
 
-        builder.show();
+        AlertDialog dialog = builder.create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Logger.logError("dialog");
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            if (button != null)
+                button.setTextColor(Color.BLACK);
+            button = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            if (button != null)
+                button.setTextColor(Color.BLACK);
+        });
+
+        dialog.show();
     }
 
     public static void exitAppWithErrorMessage(Context context, String titleText, String messageText) {
