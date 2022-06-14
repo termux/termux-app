@@ -151,6 +151,19 @@ public class TerminalTest extends TerminalTestCase {
 		assertEquals(TextStyle.COLOR_INDEX_FOREGROUND, mTerminal.mForeColor);
 		assertEquals(TextStyle.COLOR_INDEX_BACKGROUND, mTerminal.mBackColor);
 
+		// Test CSI resetting to default if sequence starts with ; or has sequential ;;
+        // Check TerminalEmulator.parseArg()
+        enterString("\033[31m\033[m");
+        assertEquals(TextStyle.COLOR_INDEX_FOREGROUND, mTerminal.mForeColor);
+        enterString("\033[31m\033[;m");
+        assertEquals(TextStyle.COLOR_INDEX_FOREGROUND, mTerminal.mForeColor);
+        enterString("\033[31m\033[0m");
+        assertEquals(TextStyle.COLOR_INDEX_FOREGROUND, mTerminal.mForeColor);
+        enterString("\033[31m\033[0;m");
+        assertEquals(TextStyle.COLOR_INDEX_FOREGROUND, mTerminal.mForeColor);
+        enterString("\033[31;;m");
+        assertEquals(TextStyle.COLOR_INDEX_FOREGROUND, mTerminal.mForeColor);
+
 		// 256 colors:
 		enterString("\033[38;5;119m");
 		assertEquals(119, mTerminal.mForeColor);

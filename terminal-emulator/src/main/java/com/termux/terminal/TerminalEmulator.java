@@ -126,6 +126,10 @@ public final class TerminalEmulator {
     private String mTitle;
     private final Stack<String> mTitleStack = new Stack<>();
 
+    /** If processing first character of first parameter of {@link #ESC_CSI}. */
+    private boolean mIsCSIStart;
+    /** The last character processed of a parameter of {@link #ESC_CSI}. */
+    private Integer mLastCSIArg;
 
     /** The cursor position. Between (0,0) and (mRows-1, mColumns-1). */
     private int mCursorRow, mCursorCol;
@@ -1386,6 +1390,8 @@ public final class TerminalEmulator {
                 break;
             case '[':
                 continueSequence(ESC_CSI);
+                mIsCSIStart = true;
+                mLastCSIArg = null;
                 break;
             case '=': // DECKPAM
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, true);
@@ -2093,28 +2099,55 @@ public final class TerminalEmulator {
         }
     }
 
-    /** Process the next ASCII character of a parameter. */
-    private void parseArg(int b) {
-        if (b >= '0' && b <= '9') {
-            if (mArgIndex < mArgs.length) {
-                int oldValue = mArgs[mArgIndex];
-                int thisDigit = b - '0';
-                int value;
-                if (oldValue >= 0) {
-                    value = oldValue * 10 + thisDigit;
-                } else {
-                    value = thisDigit;
+    /**
+     * Process the next ASCII character of a parameter.
+     *
+     * Parameter characters modify the action or interpretation of the sequence. You can use up to
+     * 16 parameters per sequence. You must use the ; character to separate parameters.
+     * All parameters are unsigned, positive decimal integers, with the most significant
+     * digit sent first. Any parameter greater than 9999 (decimal) is set to 9999
+     * (decimal). If you do not specify a value, a 0 value is assumed. A 0 value
+     * or omitted parameter indicates a default value for the sequence. For most
+     * sequences, the default value is 1.
+     *
+     * https://vt100.net/docs/vt510-rm/chapter4.html#S4.3.3
+     * */
+    private void parseArg(int inputByte) {
+        int[] bytes = new int[]{inputByte};
+        // Only doing this for ESC_CSI and not for other ESC_CSI_* since they seem to be using their
+        // own defaults with getArg*() calls, but there may be missed cases
+        if (mEscapeState == ESC_CSI) {
+            if ((mIsCSIStart && inputByte == ';') || // If sequence starts with a ; character, like \033[;m
+                (!mIsCSIStart && mLastCSIArg != null && mLastCSIArg == ';'  && inputByte == ';')) {  // If sequence contains sequential ; characters, like \033[;;m
+                bytes = new int[]{'0', ';'}; // Assume 0 was passed
+            }
+        }
+
+        mIsCSIStart = false;
+
+        for (int b : bytes) {
+            if (b >= '0' && b <= '9') {
+                if (mArgIndex < mArgs.length) {
+                    int oldValue = mArgs[mArgIndex];
+                    int thisDigit = b - '0';
+                    int value;
+                    if (oldValue >= 0) {
+                        value = oldValue * 10 + thisDigit;
+                    } else {
+                        value = thisDigit;
+                    }
+                    mArgs[mArgIndex] = value;
                 }
-                mArgs[mArgIndex] = value;
+                continueSequence(mEscapeState);
+            } else if (b == ';') {
+                if (mArgIndex < mArgs.length) {
+                    mArgIndex++;
+                }
+                continueSequence(mEscapeState);
+            } else {
+                unknownSequence(b);
             }
-            continueSequence(mEscapeState);
-        } else if (b == ';') {
-            if (mArgIndex < mArgs.length) {
-                mArgIndex++;
-            }
-            continueSequence(mEscapeState);
-        } else {
-            unknownSequence(b);
+            mLastCSIArg = b;
         }
     }
 
