@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.51.0
+ * Version: v0.52.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -274,6 +274,9 @@ import java.util.List;
  *
  * - 0.51.0 (2022-06-13)
  *      - Added `TERMUX_APP.FILE_SHARE_RECEIVER_ACTIVITY_CLASS_NAME` and `TERMUX_APP.FILE_VIEW_RECEIVER_ACTIVITY_CLASS_NAME`.
+ *
+ * - 0.52.0 (2022-06-18)
+ *      - Added `TERMUX_PREFIX_DIR_IGNORED_SUB_FILES_PATHS_TO_CONSIDER_AS_EMPTY`.
  */
 
 /**
@@ -679,6 +682,11 @@ public final class TermuxConstants {
     public static final String TERMUX_APPS_DIR_PATH = TERMUX_FILES_DIR_PATH + "/apps"; // Default: "/data/data/com.termux/files/apps"
     /** Termux and plugin apps directory */
     public static final File TERMUX_APPS_DIR = new File(TERMUX_APPS_DIR_PATH);
+
+
+    /** Termux app $PREFIX directory path ignored sub file paths to consider it empty */
+    public static final List<String> TERMUX_PREFIX_DIR_IGNORED_SUB_FILES_PATHS_TO_CONSIDER_AS_EMPTY = Arrays.asList(
+        TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH, TermuxConstants.TERMUX_ENV_TEMP_FILE_PATH, TermuxConstants.TERMUX_ENV_FILE_PATH);
 
 
 
