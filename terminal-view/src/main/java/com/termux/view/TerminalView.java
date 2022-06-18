@@ -409,19 +409,29 @@ public final class TerminalView extends View {
     }
 
     public void onScreenUpdated() {
+        onScreenUpdated(false);
+    }
+
+    public void onScreenUpdated(boolean skipScrolling) {
         if (mEmulator == null) return;
 
         int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
         if (mTopRow < -rowsInHistory) mTopRow = -rowsInHistory;
 
-        boolean skipScrolling = false;
-        if (isSelectingText()) {
+        if (isSelectingText() || mEmulator.isAutoScrollDisabled()) {
+
             // Do not scroll when selecting text.
             int rowShift = mEmulator.getScrollCounter();
             if (-mTopRow + rowShift > rowsInHistory) {
                 // .. unless we're hitting the end of history transcript, in which
                 // case we abort text selection and scroll to end.
-                stopTextSelectionMode();
+                if (isSelectingText())
+                    stopTextSelectionMode();
+
+                if (mEmulator.isAutoScrollDisabled()) {
+                    mTopRow = -rowsInHistory;
+                    skipScrolling = true;
+                }
             } else {
                 skipScrolling = true;
                 mTopRow -= rowShift;
