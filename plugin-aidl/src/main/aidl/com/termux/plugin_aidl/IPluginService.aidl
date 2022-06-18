@@ -43,9 +43,25 @@ interface IPluginService {
     
     /**
     * Runs a command in a Termux task in the background.
-    * stdin, commandPath and workdir are required parameters.
+    * stdin, commandPath and workdir are required parameters.<br>
+    * When a Task exists, the {@link com.termux.plugin_aidl.IPluginCallback#taskFinished} callback gets invoked.
+    *
+    * @param commandPath The full absolute path of the command binary to run.
+    * @param arguments The command line arguments for the command. The first argument should be the same as {@code commandPath} (this fill be the 0th argument).
+    * @param stdin The {@link android.os.ParcelFileDescriptor} used for the standard input of the command. You can e.g. create a pipe and use the read end here.
+    * @param workdir The working directory of the command, also as an absolute path.
+    * @param environment Additional environment variables for the command. Can be {@code null}.
+    * @return A {@link com.termux.plugin_aidl.Task} that represents the running Task. It contains pipes for reading stdout and stderr.
     */
     Task runTask(String commandPath, in String[] arguments, in ParcelFileDescriptor stdin, String workdir, in String[] environment) = 3;
+    
+    /**
+    * Send a signal to a Task.
+    * @param pid The pid of the Task to kill.
+    * @param signal The signal number to use. Using {@code kill -l} in bash and other shells lists the signals with their numbers.
+    * @return Returns true if there was a Task with this pid, false if there was none.
+    */
+    boolean signalTask(int pid, int signal) = 4;
     
     /**
     * This creates a socket file with name under {@link com.termux.shared.termux.TermuxConstants#TERMUX_PLUGINS_DIR_PATH}/&lt;package name of caller&gt;.
@@ -53,7 +69,7 @@ interface IPluginService {
     * 
     * @param name Name of the socket file.
     */
-    void listenOnSocketFile(String name) = 4;
+    void listenOnSocketFile(String name) = 5;
     
     
     /**
@@ -62,7 +78,7 @@ interface IPluginService {
     * @param name Name of the file.
     * @þaram mode Mode to use.
     */
-    ParcelFileDescriptor openFile(String name, String mode) = 5;
+    ParcelFileDescriptor openFile(String name, String mode) = 6;
     
     
     

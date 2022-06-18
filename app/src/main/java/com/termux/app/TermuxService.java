@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.Process;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -291,7 +292,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     
         List<NativeShell> termuxNativeTasks = new ArrayList<>(mShellManager.mTermuxNativeTasks);
         for (int i = 0; i < termuxNativeTasks.size(); i++) {
-            termuxNativeTasks.get(i).kill();
+            termuxNativeTasks.get(i).kill(Process.SIGNAL_KILL);
         }
 
         for (int i = 0; i < pendingPluginExecutionCommands.size(); i++) {
@@ -442,7 +443,14 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             });
             client.terminated(exitCode, error);
         }, environment);
-        shell[0].execute();
+        mShellManager.mTermuxNativeTasks.add(shell[0]);
+        
+        if (shell[0].execute()) {
+            updateNotification();
+        } else {
+            // gets removed automatically by the callback
+            return null;
+        }
         return shell[0];
     }
 

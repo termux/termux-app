@@ -35,15 +35,13 @@ import com.termux.shared.net.socket.local.PeerCred;
 import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.shared.shell.command.runner.nativerunner.NativeShell;
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
+import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -284,13 +282,24 @@ public class PluginService extends Service
         public Task runTask(String commandPath, String[] arguments, ParcelFileDescriptor stdin, String workdir, String[] environment) {
             externalAppsOrThrow();
             if (commandPath == null) throw new NullPointerException("Passed commandPath is null");
+            if (workdir == null) throw new NullPointerException("Passed workdir is null");
             if (stdin == null) throw new NullPointerException("Passed stdin is null");
             Plugin p = checkClient();
             BinderUtils.enforceRunCommandPermission(PluginService.this);
             
             
+            
+            
+            List<String> env = (environment != null) ? Arrays.asList(environment) : new ArrayList<>();
+            env.addAll(Arrays.asList(new TermuxShellEnvironmentClient().
+                buildEnvironment(PluginService.this, 
+                    false,
+                    workdir)));
+            String[] realEnvironment = env.toArray(new String[0]);
+            
+            
             final Object sync = new Object();
-            final RuntimeException[] ex = new RuntimeException[1];
+            final Exception[] ex = new Exception[1];
             final boolean[] finished = {false};
             final NativeShell[] shell = new NativeShell[1];
             // create pipes
@@ -327,7 +336,8 @@ public class PluginService extends Service
             }
             in[1] = pipes[0];
             out[1] = pipes[1];
-            
+    
+            // start the Task on the main thread, TermuxService is not synchronized itself
             mMainThreadHandler.post(() -> {
                 TermuxService s = mTermuxService;
                 if (s == null) {
@@ -346,31 +356,27 @@ public class PluginService extends Service
                     cmd.stdinFD = stdin;
                     cmd.stdoutFD = out[0];
                     cmd.stderrFD = out[1];
-                    /*
-                    try {
-                        ParcelFileDescriptor od = out[0].dup();
-                        new Thread(() -> {
+                    
+                    shell[0] = s.executeNativeShell(cmd, realEnvironment, (exitCode, error) -> {
+                        if (error != null) {
+                            ex[0] = error;
+                        } else {
+                            p.tasks.remove(shell[0].getPid());
                             try {
-                                BufferedWriter w = new BufferedWriter(new FileWriter(od.getFileDescriptor()));
-                                w.write("test");
-                                w.flush();
-                                w.close();
-                            } catch (Exception ignored) {ignored.printStackTrace();}
-                        }).start();
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    
-                     */
-                    
-                    shell[0] = s.executeNativeShell(cmd, environment, (exitCode, error) -> {
-                        try {
-                            Logger.logDebug("NativeShell", "exit: "+exitCode);
-                            // TODO callback
-                        } catch (Exception ignored) {}
+                                p.callback.taskFinished(shell[0].getPid(), exitCode);
+                            } catch (Exception ignored) {}
+                        }
                     });
-                    p.tasks.put(shell[0].getPid(), shell[0]);
+                    if (shell[0] != null) {
+                        p.tasks.put(shell[0].getPid(), shell[0]);
+                    } else {
+                        while (ex[0] == null) {
+                            // wait until the exception is caught if the Task could not be started
+                            try {
+                                Thread.sleep(1);
+                            } catch (InterruptedException ignored) {}
+                        }
+                    }
                     synchronized (sync) {
                         finished[0] = true;
                         sync.notifyAll();
@@ -411,7 +417,7 @@ public class PluginService extends Service
                 try {
                     in[1].close();
                 } catch (IOException ignored) {}
-                throw ex[0];
+                throw new RuntimeException(ex[0]);
             }
             
             Task t = new Task();
@@ -421,7 +427,22 @@ public class PluginService extends Service
             return t;
         }
     
-        
+        @Override
+        public boolean signalTask(int pid, int signal) {
+            Plugin p = checkClient();
+            BinderUtils.enforceRunCommandPermission(PluginService.this);
+            
+            // only allow to signal processes that were started as Tasks by the plugin
+            NativeShell shell = p.tasks.get(pid);
+            if (shell != null) {
+                shell.kill(signal);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    
+    
         @Override
         public void listenOnSocketFile(String name) {
             externalAppsOrThrow();

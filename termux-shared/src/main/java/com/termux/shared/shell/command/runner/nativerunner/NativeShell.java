@@ -1,10 +1,7 @@
 package com.termux.shared.shell.command.runner.nativerunner;
 
 
-import android.os.ParcelFileDescriptor;
 import android.os.Process;
-
-import androidx.annotation.Nullable;
 
 import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.terminal.JNI;
@@ -42,7 +39,7 @@ public final class NativeShell
         void terminated(int exitCode, Exception error);
     }
     
-    public synchronized void execute() {
+    public synchronized boolean execute() {
         try {
             pid = JNI.createTask(exe.executable, exe.workingDirectory, exe.arguments, env, exe.stdinFD.getFd(), exe.stdoutFD.getFd(), exe.stderrFD.getFd());
             new Thread(() -> {
@@ -50,7 +47,8 @@ public final class NativeShell
                 client.terminated(exit, null);
                 pid = -1;
             }).start();
-        } catch (RuntimeException e) {
+            return true;
+        } catch (Exception e) {
             client.terminated(0, e);
         } finally {
             // close the ParcelFileDescriptors
@@ -64,11 +62,12 @@ public final class NativeShell
                 exe.stderrFD.close();
             } catch (IOException ignored) {}
         }
+        return false;
     }
     
-    public synchronized void kill() {
+    public synchronized void kill(int signal) {
         if (pid != -1)
-            Process.killProcess(pid);
+            Process.sendSignal(pid, signal);
     }
     
     public synchronized int getPid() {

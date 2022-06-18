@@ -34,7 +34,13 @@ interface IPluginCallback {
     void socketConnection(String sockname, in ParcelFileDescriptor connection) = 2;
     
     
-    
+    /**
+    * Gets called when a started Task exits.
+    * 
+    * @param pid The pid of the task that exited.
+    * @param code The exit code of the Task. Negative values indicate the Task was killed by a signal. The signal number is then {@code -code}.
+    */
+    void taskFinished(int pid, int code) = 3;
     
     
     
