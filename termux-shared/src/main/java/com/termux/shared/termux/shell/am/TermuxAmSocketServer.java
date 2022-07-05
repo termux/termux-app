@@ -13,6 +13,7 @@ import com.termux.shared.net.socket.local.LocalServerSocket;
 import com.termux.shared.net.socket.local.LocalSocketManager;
 import com.termux.shared.net.socket.local.LocalSocketManagerClientBase;
 import com.termux.shared.net.socket.local.LocalSocketRunConfig;
+import com.termux.shared.shell.am.AmSocketServerRunConfig;
 import com.termux.shared.shell.am.AmSocketServer;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
@@ -101,10 +102,10 @@ public class TermuxAmSocketServer {
     public static synchronized void start(@NonNull Context context) {
         stop();
 
-        LocalSocketRunConfig localSocketRunConfig = new LocalSocketRunConfig(TITLE,
+        AmSocketServerRunConfig amSocketServerRunConfig = new AmSocketServerRunConfig(TITLE,
             TermuxConstants.TERMUX_APP.TERMUX_AM_SOCKET_FILE_PATH, new TermuxAmSocketServerClient());
 
-        termuxAmSocketServer = AmSocketServer.start(context, localSocketRunConfig);
+        termuxAmSocketServer = AmSocketServer.start(context, amSocketServerRunConfig);
     }
 
     /**
