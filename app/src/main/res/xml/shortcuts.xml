@@ -26,7 +26,7 @@
     <shortcut
         android:shortcutId="new_failsafe_session"
         android:enabled="true"
-        android:icon="@drawable/ic_new_session"
+        android:icon="@drawable/ic_new_failsafe"
         android:shortcutShortLabel="@string/action_new_session_failsafe"
         tools:targetApi="n_mr1">
         <intent
@@ -41,7 +41,7 @@
     <shortcut
         android:shortcutId="settings"
         android:enabled="true"
-        android:icon="@drawable/ic_settings"
+        android:icon="@drawable/ic_settings_shortcut"
         android:shortcutShortLabel="@string/action_open_settings"
         tools:targetApi="n_mr1">
         <intent
