@@ -214,11 +214,11 @@ task downloadBootstraps() {
     doLast {
         def packageVariant = project.ext.packageVariant
         if (packageVariant == "apt-android-7") {
-            def version = "2022.07.03-r1" + "+" + packageVariant
-            downloadBootstrap("aarch64", "c6ac9a15650e26a72746249ca5919d92eced08749f812ee83ad4e2bc26fd5e6b", version)
-            downloadBootstrap("arm", "e035f0b15daa99dfee45f88fe17e91f621ae41394e584ae2eea93d2c613d4bb8", version)
-            downloadBootstrap("i686", "112fb86dd854eeddea490c24a696d27f93f1ed3977c7953ac9b015433ec84656", version)
-            downloadBootstrap("x86_64", "e0f162ed04065cc0a317704d7caecbb4954e1b29e66be58b33bdb8433c7cd6b3", version)
+            def version = "2022.07.31-r1" + "+" + packageVariant
+            downloadBootstrap("aarch64", "ff4711f5fdd0dbb1b904a6e7ad0534cb2926f54756f6ca2fa0d3b6084a8df8bf", version)
+            downloadBootstrap("arm", "81f10d638e18969006a3fbb5dc6eb3879e23fee85df5b0976809fbe7d0810458", version)
+            downloadBootstrap("i686", "9f9c03597e06e6433a85b1a125134c561cc2e89b2d9724e60f57312e2306f7ac", version)
+            downloadBootstrap("x86_64", "6f9ce5546d1e50065be6431bb21ef87deb9c7bf5fc795b47349fd58c13c2754d", version)
         } else if (packageVariant == "apt-android-5") {
             def version = "2022.04.28-r6" + "+" + packageVariant
             downloadBootstrap("aarch64", "913609d439415c828c5640be1b0561467e539cb1c7080662decaaca2fb4820e7", version)
