@@ -34,7 +34,7 @@ import com.termux.shared.net.socket.local.PeerCred;
 import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.shared.shell.command.runner.nativerunner.NativeShell;
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
-import com.termux.shared.termux.shell.TermuxShellEnvironmentClient;
+import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -330,10 +330,10 @@ public class PluginService extends Service
             
             
             List<String> env = (environment != null) ? Arrays.asList(environment) : new ArrayList<>();
-            env.addAll(Arrays.asList(new TermuxShellEnvironmentClient().
-                buildEnvironment(PluginService.this, 
-                    false,
-                    workdir)));
+            Map<String, String> termuxEnv = new TermuxShellEnvironment().getEnvironment(PluginService.this, false);
+            for (Map.Entry<String, String> evar : termuxEnv.entrySet()) {
+                env.add(evar.getKey()+"="+evar.getValue());
+            }
             String[] realEnvironment = env.toArray(new String[0]);
             
             
