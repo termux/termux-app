@@ -24,6 +24,30 @@ import com.termux.plugin_aidl.Task;
 */
 interface IPluginService {
     
+    /**
+    * Binds the service with @{link android.content.Context#BIND_WAIVE_PRIORITY}, meaning the plugins needs other components for the system not to kill it.
+    */
+    const int PRIORITY_MIN = 0;
+    
+    /**
+    * Uses no flags to bind the service.
+    */
+    const int PRIORITY_NORMAL = 1;
+    
+    /**
+    * Binds the service with @{link android.content.Context#BIND_IMPORTANT}, which should give the plugin the same priority as Termux in terms of OOM killing.
+    */
+    const int PRIORITY_IMPORTANT = 2;
+    
+    /**
+    * Binds the service with @{link android.content.Context#BIND_ABOVE_CLIENT}, which would make Termux get killed first on OOM.
+    * This should be used if you really don't want the plugin killed while a program uses it, and your plugin has a small memory footprint.
+    * Another solution for that is to make your own foreground service, but the undismissable notification could be annoying for users, so this is given as an option.
+    */
+    const int PRIORITY_MAX = 3;
+    
+    
+    
     
     /**
     * This or {@link com.termux.plugin_aidl.IPluginService#setCallbackService} has to be called before any other method.
@@ -33,12 +57,15 @@ interface IPluginService {
     
     /**
     * This or {@link com.termux.plugin_aidl.IPluginService#setCallbackBinder} has to be called before any other method.
-    * It initialized the internal representation of the connected plugin and sets the callback binder to the binder returned by the bound service.
+    * It initializes the internal representation of the connected plugin and sets the callback binder to the binder returned by the bound service.
+    * You can call other methods shortly after getCallbackVersion has been called in the supplied service.
+    * If it's too early the methods will throw an {@link IllegalStateException} which can be caught.
     * 
     * @param componentName This is the relative part of a component name string.
     * The package name is always taken from the calling binder package for security reasons.
+    * @param priority This is the priority Termux should bind the service with. See the PRIORITY_* constants for more info.
     */
-    void setCallbackService(String componentName) = 2;
+    void setCallbackService(String componentName, int priority) = 2;
     
     
     /**

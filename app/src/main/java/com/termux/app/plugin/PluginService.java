@@ -14,7 +14,6 @@ import android.os.NetworkOnMainThreadException;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.os.RemoteException;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -97,7 +96,8 @@ public class PluginService extends Service
         Map<Integer, NativeShell> tasks = Collections.synchronizedMap(new HashMap<>());
     
         @NonNull IPluginCallback callback;
-        int cachedCallbackVersion;
+        final int cachedCallbackVersion;
+        ServiceConnection con = null;
         
         Plugin(int pid, int uid, @NonNull IPluginCallback callback) throws RemoteException {
             this.pid = pid;
@@ -105,6 +105,11 @@ public class PluginService extends Service
             this.callback = callback;
             callback.asBinder().linkToDeath(() -> mConnectedPlugins.remove(pid), 0); // remove self when the callback binder dies
             cachedCallbackVersion = callback.getCallbackVersion();
+        }
+    
+        Plugin(int pid, int uid, @NonNull IPluginCallback callback, ServiceConnection con) throws RemoteException {
+            this(pid, uid, callback);
+            this.con = con;
         }
         
         
@@ -132,6 +137,13 @@ public class PluginService extends Service
     @Override
     public void onDestroy() {
         unbindService(mTermuxServiceConnection);
+        for (Map.Entry<Integer, Plugin> e : mConnectedPlugins.entrySet()) {
+            if (e.getValue().con != null) {
+                try {
+                    unbindService(e.getValue().con);
+                } catch (IllegalArgumentException ignored) {}
+            }
+        }
     }
     
     
@@ -149,11 +161,21 @@ public class PluginService extends Service
      * If not already, this creates an entry in the map of connected plugins for the current Binder client.
      */
     private void addClient(@NonNull IPluginCallback callback) {
-        int pid = Binder.getCallingPid(), uid = Binder.getCallingPid();
+        int pid = Binder.getCallingPid(), uid = Binder.getCallingUid();
         if (pid == Process.myPid()) return; // no client connected
         if (mConnectedPlugins.get(pid) != null) return; // client already in list
         try {
             mConnectedPlugins.put(pid, new Plugin(pid, uid, callback));
+        } catch (RemoteException ignored) {} // RemoteException is thrown if the callback binder is already dead, plugin isn't added to the list
+    }
+    
+    /**
+     * If not already, this creates an entry in the map of connected plugins for the current Binder client.
+     */
+    private void addClientWithCallbackService(@NonNull IPluginCallback callback, int pid, int uid, @NonNull ServiceConnection con) {
+        if (mConnectedPlugins.get(pid) != null) return; // client already in list
+        try {
+            mConnectedPlugins.put(pid, new Plugin(pid, uid, callback, con));
         } catch (RemoteException ignored) {} // RemoteException is thrown if the callback binder is already dead, plugin isn't added to the list
     }
     
@@ -212,69 +234,86 @@ public class PluginService extends Service
         public void setCallbackBinder(IPluginCallback callback) {
             externalAppsOrThrow();
             if (callback == null) throw new NullPointerException("Passed callback binder is null");
+            if (mConnectedPlugins.get(Binder.getCallingPid()) != null) {
+                throw new IllegalStateException("Callback binder already set (there is only one global connection to the plugin service, all new ones use the already initialized one)");
+            }
             addClient(callback);
         }
     
         @Override
-        public void setCallbackService(String componentNameString) {
+        public void setCallbackService(String componentNameString, int priority) {
             externalAppsOrThrow();
             if (componentNameString == null) throw new NullPointerException("Passed componentName is null");
             
             String callerPackageName = BinderUtils.getCallerPackageNameOrNull(PluginService.this);
             if (callerPackageName == null) throw new NullPointerException("Caller package is null");
             
+            if (priority != PRIORITY_MIN &&
+                priority != PRIORITY_NORMAL &&
+                priority != PRIORITY_IMPORTANT &&
+                priority != PRIORITY_MAX)
+                throw new IllegalArgumentException("Invalid priority parameter");
+    
+            if (mConnectedPlugins.get(Binder.getCallingPid()) != null) {
+                throw new IllegalStateException("Callback binder already set (there is only one global connection to the plugin service, all new ones use the already initialized one)");
+            }
+            
             ComponentName componentName = ComponentName.createRelative(callerPackageName, componentNameString);
             Intent callbackStartIntent = new Intent();
             callbackStartIntent.setComponent(componentName);
-    
-    
-            final boolean[] bindingFinished = {false};
-            final IBinder[] callbackBinder = new IBinder[] {null};
+            
+            final int pid = Binder.getCallingPid();
+            final int uid = Binder.getCallingUid();
             
             ServiceConnection con = new ServiceConnection()
             {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
-                    callbackBinder[0] = service;
-                    bindingFinished[0] = true;
-                    synchronized (callbackBinder) {
-                        callbackBinder.notifyAll();
-                    }
+                    addClientWithCallbackService(IPluginCallback.Stub.asInterface(service), pid, uid, this);
                 }
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
-                    unbindService(this);
+                    try {
+                        PluginService.this.unbindService(this);
+                    } catch (IllegalArgumentException ignored) {}
                 }
                 @Override
                 public void onBindingDied(ComponentName name) {
-                    unbindService(this);
+                    try {
+                        PluginService.this.unbindService(this);
+                    } catch (IllegalArgumentException ignored) {}
                 }
                 @Override
                 public void onNullBinding(ComponentName name) {
-                    bindingFinished[0] = true;
-                    synchronized (callbackBinder) {
-                        callbackBinder.notifyAll();
-                    }
-                    unbindService(this);
+                    Logger.logDebug("Null binding for callback service");
+                    try {
+                        PluginService.this.unbindService(this);
+                    } catch (IllegalArgumentException ignored) {}
                 }
             };
             
-            PluginService.this.bindService(callbackStartIntent, con, Context.BIND_ALLOW_OOM_MANAGEMENT);
-            
-            while (! bindingFinished[0]) {
-                try {
-                    synchronized (callbackBinder) {
-                        callbackBinder.wait();
-                    }
+            try {
+                boolean ret;
+                switch (priority) {
+                    case PRIORITY_MIN:
+                        ret = PluginService.this.bindService(callbackStartIntent, con, Context.BIND_WAIVE_PRIORITY | Context.BIND_AUTO_CREATE);
+                        break;
+                    case PRIORITY_IMPORTANT:
+                        ret = PluginService.this.bindService(callbackStartIntent, con, Context.BIND_IMPORTANT | Context.BIND_AUTO_CREATE);
+                        break;
+                    case PRIORITY_MAX:
+                        ret = PluginService.this.bindService(callbackStartIntent, con, Context.BIND_ABOVE_CLIENT | Context.BIND_AUTO_CREATE);
+                        break;
+                    case PRIORITY_NORMAL:
+                    default:
+                        ret = PluginService.this.bindService(callbackStartIntent, con, Context.BIND_AUTO_CREATE);
                 }
-                catch (InterruptedException ignored) {}
+                if (! ret) {
+                    throw new IllegalStateException("Cannot start service");
+                }
+            } catch (SecurityException e) {
+                throw new IllegalArgumentException("Service not found or requires permissions");
             }
-            
-            if (callbackBinder[0] == null) {
-                throw new IllegalArgumentException("Could not bind callback service: "+componentNameString);
-            }
-            
-            addClient(IPluginCallback.Stub.asInterface(callbackBinder[0]));
         }
         
         

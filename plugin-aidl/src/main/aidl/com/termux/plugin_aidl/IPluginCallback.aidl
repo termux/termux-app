@@ -27,6 +27,7 @@ interface IPluginCallback {
     
     /**
     * This gets called when a connection is made on a socket created with {@link com.termux.plugin_aidl.IPluginService#listenOnSocketFile}.
+    * <br>Added in version 1.
     * 
     * @param sockname The name of socket file the connection was made on (the relative path to the plugin directory).
     * @param connection The connection file descriptor.
@@ -36,6 +37,7 @@ interface IPluginCallback {
     
     /**
     * Gets called when a started Task exits.
+    * <br>Added in version 1.
     * 
     * @param pid The pid of the task that exited.
     * @param code The exit code of the Task. Negative values indicate the Task was killed by a signal. The signal number is then {@code -code}.

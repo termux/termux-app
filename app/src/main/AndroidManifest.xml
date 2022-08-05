@@ -30,6 +30,7 @@
     <permission
         android:name="${TERMUX_PACKAGE_NAME}.permission.TERMUX_SIGNATURE"
         android:protectionLevel="signature" />
+    <uses-permission android:name="${TERMUX_PACKAGE_NAME}.permission.TERMUX_SIGNATURE" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
