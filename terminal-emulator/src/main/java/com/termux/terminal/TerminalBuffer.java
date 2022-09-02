@@ -1,6 +1,14 @@
 package com.termux.terminal;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+
+import android.os.SystemClock;
 
 /**
  * A circular buffer of {@link TerminalRow}:s which keeps notes about what is visible on a logical screen and the scroll
@@ -20,6 +28,203 @@ public final class TerminalBuffer {
     /** The index in the circular buffer where the visible screen starts. */
     private int mScreenFirstRow = 0;
 
+    final private int MAX_SIXELS = 1024;
+    private Bitmap sixelBitmap[];
+    private int sixelCellW[];
+    private int sixelCellH[];
+    private int sixelWidth[];
+    private int sixelHeight[];
+    private int sixelNum = -1;
+    private int sixelX;
+    private int sixelY;
+    private int[] sixelColorMap;
+    private int sixelColor;
+    private long sixelLastGC;
+    private boolean sixelHasBitmaps = false;
+    final private int sixelInitialColorMap[] = {0xFF000000, 0xFF3333CC, 0xFFCC2323, 0xFF33CC33, 0xFFCC33CC, 0xFF33CCCC, 0xFFCCCC33, 0xFF777777,
+                                                0xFF444444, 0xFF565699, 0xFF994444, 0xFF569956, 0xFF995699, 0xFF569999, 0xFF999956, 0xFFCCCCCC};
+
+    private Bitmap resizeBitmap(Bitmap bm, int w, int h) {
+        int[] pixels = new int[bm.getAllocationByteCount()];
+        bm.getPixels(pixels, 0, bm.getWidth(), 0, 0, bm.getWidth(), bm.getHeight());
+        Bitmap newbm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        newbm.setPixels(pixels, 0, bm.getWidth(), 0, 0, bm.getWidth(), bm.getHeight());
+        return newbm;
+    }
+
+    public Bitmap getSixelBitmap(int codePoint, long style) {
+        int sn = (int)(style & 0xffff0000) >> 16 ;
+        return sixelBitmap[sn];
+    }
+
+    public Rect getSixelRect(int codePoint, long style ) {
+        int sn = (int)(style & 0xffff0000) >> 16 ;
+        int x = (int)((style >> 48) & 0xfff);
+        int y = (int)((style >> 32) & 0xfff);
+        Rect r = new Rect(x * sixelCellW[sn], y * sixelCellH[sn], (x+1) * sixelCellW[sn], (y+1) * sixelCellH[sn]);
+        return r;
+    }
+
+    public void sixelStart(int width, int height) {
+        sixelNum++;
+        if (sixelNum >= MAX_SIXELS) {
+            sixelNum = 0;
+        }
+        sixelBitmap[sixelNum] = Bitmap.createBitmap( width, height, Bitmap.Config.ARGB_8888);
+        sixelBitmap[sixelNum].eraseColor(0);
+        sixelWidth[sixelNum] = 0;
+        sixelHeight[sixelNum] = 0;
+        sixelX = 0;
+        sixelY = 0;
+        sixelColorMap = new int[256];
+        for (int i=0; i<16; i++) {
+            sixelColorMap[i] = sixelInitialColorMap[i];
+        }
+    }
+
+    public void sixelChar(int c, int rep) {
+        if (c == '$') {
+            sixelX = 0;
+            return;
+        }
+        if (c == '-') {
+            sixelX = 0;
+            sixelY += 6;
+            return;
+        }
+        if (sixelBitmap[sixelNum].getWidth() < sixelX + rep) {
+            sixelBitmap[sixelNum] = resizeBitmap(sixelBitmap[sixelNum], sixelX + rep + 100, sixelBitmap[sixelNum].getHeight());
+        }
+        if (sixelBitmap[sixelNum].getHeight() < sixelY + 6) {
+            // Very unlikely to resize both at the same time
+            sixelBitmap[sixelNum] = resizeBitmap(sixelBitmap[sixelNum], sixelBitmap[sixelNum].getWidth(), sixelY + 100);
+        }
+        while (rep-- > 0) {
+            if (c >= '?' && c <= '~') {
+                int b = c - '?';
+                for (int i = 0 ; i < 6 ; i++) {
+                    if ((b & (1<<i)) != 0) {
+                        sixelBitmap[sixelNum].setPixel(sixelX, sixelY + i, sixelColor);
+                    }
+                }
+                sixelX += 1;
+                if (sixelX > sixelWidth[sixelNum]) {
+                    sixelWidth[sixelNum] = sixelX;
+                }
+                if (sixelY + 6 > sixelHeight[sixelNum]) {
+                    sixelHeight[sixelNum] = sixelY + 6;
+                }
+            }
+        }
+    }
+
+    public void sixelSetColor(int col) {
+        if (col >= 0 && col < 256) {
+            sixelColor = sixelColorMap[col];
+        }
+    }
+
+    public void sixelSetColor(int col, int r, int g, int b) {
+        if (col >= 0 && col < 256) {
+            int red = Math.min(255, r*255/100);
+            int green = Math.min(255, g*255/100);
+            int blue = Math.min(255, b*255/100);
+            sixelColor = 0xff000000 + (red << 16) + (green << 8) + blue;
+            sixelColorMap[col] = sixelColor;
+        }
+    }
+
+    public int sixelEnd(int Y, int X, int cellW, int cellH) {
+        sixelCellW[sixelNum] = cellW;
+        sixelCellH[sixelNum] = cellH;
+        int w = Math.min(mColumns - X,(sixelWidth[sixelNum] + cellW - 1) / cellW);
+        int h = (sixelHeight[sixelNum] + cellH - 1) / cellH;
+        int s = 0;
+        for (int i=0; i<h; i++) {
+            if (Y+i-s == mScreenRows) {
+                scrollDownOneLine(0, mScreenRows, TextStyle.NORMAL);
+                s++;
+            }
+            for (int j=0; j<w ; j++) {
+                setChar(X+j, Y+i-s, '+', ((long)sixelNum << 16) | ((long)i << 32) | ((long)j << 48) | TextStyle.BITMAP);
+            }
+        }
+        if (w * cellW < sixelBitmap[sixelNum].getWidth()) {
+            sixelBitmap[sixelNum] = Bitmap.createBitmap(sixelBitmap[sixelNum], 0, 0, w * cellW, sixelBitmap[sixelNum].getHeight());
+        }
+        sixelHasBitmaps = true;
+        sixelGC(30000);
+        return h - s;
+    }
+
+    public int[] addImage(byte[] image, int Y, int X, int cellW, int cellH, int width, int height, boolean aspect) {
+        Bitmap bm = BitmapFactory.decodeByteArray(image, 0, image.length);
+        if (bm == null) {
+            return new int[] {0,0};
+        }
+
+        if (width > 0 || height > 0) {
+            if (aspect) {
+                double wFactor = 9999.0;
+                double hFactor = 9999.0;
+                if (width > 0) {
+                    wFactor = (double)width / bm.getWidth();
+                }
+                if (height > 0) {
+                    hFactor = (double)height / bm.getHeight();
+                }
+                double factor = Math.min(wFactor, hFactor);
+                bm = Bitmap.createScaledBitmap(bm, (int)(factor * bm.getWidth()), (int)(factor * bm.getHeight()), true);
+            } else {
+                if (height <= 0) {
+                    height = bm.getHeight();
+                }
+                if (width <= 0) {
+                    width = bm.getWidth();
+                }
+                bm = Bitmap.createScaledBitmap(bm, width, height, true);
+            }
+            if (bm == null) {
+                return new int[] {0,0};
+            }
+        }
+        sixelNum++;
+        if (sixelNum >= MAX_SIXELS) {
+            sixelNum = 0;
+        }
+        sixelBitmap[sixelNum] = bm;
+        sixelWidth[sixelNum] = sixelBitmap[sixelNum].getWidth();
+        sixelHeight[sixelNum] = sixelBitmap[sixelNum].getHeight();
+        if ((sixelWidth[sixelNum] % cellW) != 0 || (sixelHeight[sixelNum] % cellH) != 0) {
+            sixelBitmap[sixelNum] = resizeBitmap(bm, ((sixelWidth[sixelNum]-1) / cellW) * cellW + cellW, ((sixelHeight[sixelNum]-1) / cellH) * cellH + cellH);
+        }
+        int lines = sixelEnd(Y, X, cellW, cellH);
+        return new int[] {lines, (sixelWidth[sixelNum] + cellW - 1) / cellW};
+    }
+
+    public void sixelGC(int timeDelta) {
+        if (!sixelHasBitmaps || sixelLastGC + timeDelta > SystemClock.uptimeMillis()) {
+            return;
+        }
+        Set<Integer> bitmaps = new HashSet<Integer>();
+        for (int line = 0; line < mLines.length; line++) {
+            if(mLines[line] != null && mLines[line].mHasBitmap) {
+                for (int column = 0; column < mColumns; column++) {
+                    final long st = mLines[line].getStyle(column);
+                    if (TextStyle.decodeBitmap(st)) {
+                        bitmaps.add((int)(st >> 16) & 0xffff);
+                    }
+                }
+            }
+        }
+        for (int bm = 0; bm < MAX_SIXELS; bm++) {
+            if (bm != sixelNum && sixelBitmap[bm] != null && !bitmaps.contains(bm)) {
+                sixelBitmap[bm] = null;
+            }
+        }
+        sixelLastGC = SystemClock.uptimeMillis();
+    }
+
     /**
      * Create a transcript screen.
      *
@@ -35,6 +240,12 @@ public final class TerminalBuffer {
         mLines = new TerminalRow[totalRows];
 
         blockSet(0, 0, columns, screenRows, ' ', TextStyle.NORMAL);
+        sixelBitmap = new Bitmap[MAX_SIXELS];
+        sixelCellW = new int[MAX_SIXELS];
+        sixelCellH = new int[MAX_SIXELS];
+        sixelWidth = new int[MAX_SIXELS];
+        sixelHeight = new int[MAX_SIXELS];
+        sixelLastGC = SystemClock.uptimeMillis();
     }
 
     public String getTranscriptText() {
@@ -401,6 +612,28 @@ public final class TerminalBuffer {
         if (mLines[blankRow] == null) {
             mLines[blankRow] = new TerminalRow(mColumns, style);
         } else {
+            // find if a bitmap is completely scrolled out
+            Set<Integer> bitmaps = new HashSet<Integer>();
+            if(mLines[blankRow].mHasBitmap) {
+                for (int column = 0; column < mColumns; column++) {
+                    final long st = mLines[blankRow].getStyle(column);
+                    if (TextStyle.decodeBitmap(st)) {
+                        bitmaps.add((int)(st >> 16) & 0xffff);
+                    }
+                }
+                TerminalRow nextLine =  mLines[(blankRow + 1) % mTotalRows];
+                if(nextLine.mHasBitmap) {
+                    for (int column = 0; column < mColumns; column++) {
+                        final long st = nextLine.getStyle(column);
+                        if (TextStyle.decodeBitmap(st)) {
+                            bitmaps.remove((int)(st >> 16) & 0xffff);
+                        }
+                    }
+                }
+                for(Integer bm: bitmaps) {
+                    sixelBitmap[bm] = null;
+                }
+            }
             mLines[blankRow].clear(style);
         }
     }
@@ -492,6 +725,10 @@ public final class TerminalBuffer {
             Arrays.fill(mLines, mScreenFirstRow - mActiveTranscriptRows, mScreenFirstRow, null);
         }
         mActiveTranscriptRows = 0;
+        for(int i = 0; i < MAX_SIXELS; i++) {
+            sixelBitmap[i] = null;
+        }
+        sixelHasBitmaps = false;
     }
 
 }

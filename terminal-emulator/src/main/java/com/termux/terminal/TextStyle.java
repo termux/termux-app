@@ -35,6 +35,8 @@ public final class TextStyle {
     private final static int CHARACTER_ATTRIBUTE_TRUECOLOR_FOREGROUND = 1 << 9;
     /** If true (24-bit) color is used for the cell for foreground. */
     private final static int CHARACTER_ATTRIBUTE_TRUECOLOR_BACKGROUND= 1 << 10;
+    /** If true, character represents a bitmap slice, not text. */
+    public final static int BITMAP = 1 << 15;
 
     public final static int COLOR_INDEX_FOREGROUND = 256;
     public final static int COLOR_INDEX_BACKGROUND = 257;
@@ -85,6 +87,10 @@ public final class TextStyle {
 
     public static int decodeEffect(long style) {
         return (int) (style & 0b11111111111);
+    }
+
+    public static boolean decodeBitmap(long style) {
+        return (style & 0x8000) != 0;
     }
 
 }

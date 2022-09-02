@@ -3,6 +3,7 @@ package com.termux.terminal;
 import android.util.Base64;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
@@ -79,6 +80,9 @@ public final class TerminalEmulator {
     private static final int ESC_CSI_SINGLE_QUOTE = 18;
     /** Escape processing: CSI ! */
     private static final int ESC_CSI_EXCLAMATION = 19;
+    /** Escape processing: APC */
+    private static final int ESC_APC = 20;
+    private static final int ESC_APC_ESC = 21;
 
     /** The number of parameter arguments. This name comes from the ANSI standard for terminal escape codes. */
     private static final int MAX_ESCAPE_PARAMETERS = 16;
@@ -188,6 +192,10 @@ public final class TerminalEmulator {
 
     /** The current state of the escape sequence state machine. One of the ESC_* constants. */
     private int mEscapeState;
+    private boolean ESC_P_escape = false;
+    private boolean ESC_P_sixel = false;
+    private ArrayList<Byte> ESC_OSC_data;
+    private int ESC_OSC_colon = 0;
 
     private final SavedScreenState mSavedStateMain = new SavedScreenState();
     private final SavedScreenState mSavedStateAlt = new SavedScreenState();
@@ -262,6 +270,13 @@ public final class TerminalEmulator {
     public final TerminalColors mColors = new TerminalColors();
 
     private static final String LOG_TAG = "TerminalEmulator";
+
+    private int cellW = 12, cellH = 12;
+
+    public void setCellSize(int w, int h) {
+        cellW = w;
+        cellH = h;
+    }
 
     private boolean isDecsetInternalBitSet(int bit) {
         return (mCurrentDecSetFlags & bit) != 0;
@@ -553,13 +568,15 @@ public final class TerminalEmulator {
     }
 
     public void processCodePoint(int b) {
+        mScreen.sixelGC(300000);
         switch (b) {
             case 0: // Null character (NUL, ^@). Do nothing.
                 break;
             case 7: // Bell (BEL, ^G, \a). If in an OSC sequence, BEL may terminate a string; otherwise signal bell.
                 if (mEscapeState == ESC_OSC)
                     doOsc(b);
-                else
+                else if (mEscapeState == ESC_APC)
+                    doApc(b);
                     mSession.onBell();
                 break;
             case 8: // Backspace (BS, ^H).
@@ -587,10 +604,16 @@ public final class TerminalEmulator {
             case 10: // Line feed (LF, \n).
             case 11: // Vertical tab (VT, \v).
             case 12: // Form feed (FF, \f).
-                doLinefeed();
+                if(!ESC_P_sixel) {
+                    // Ignore CR/LF inside sixels
+                    doLinefeed();
+                }
                 break;
             case 13: // Carriage return (CR, \r).
-                setCursorCol(mLeftMargin);
+                if(!ESC_P_sixel) {
+                    // Ignore CR/LF inside sixels
+                    setCursorCol(mLeftMargin);
+                }
                 break;
             case 14: // Shift Out (Ctrl-N, SO) → Switch to Alternate Character Set. This invokes the G1 character set.
                 mUseLineDrawingUsesG0 = false;
@@ -610,9 +633,14 @@ public final class TerminalEmulator {
                 // Starts an escape sequence unless we're parsing a string
                 if (mEscapeState == ESC_P) {
                     // XXX: Ignore escape when reading device control sequence, since it may be part of string terminator.
+                    ESC_P_escape = true;
                     return;
                 } else if (mEscapeState != ESC_OSC) {
-                    startEscapeSequence();
+                    if (mEscapeState != ESC_APC) {
+                        startEscapeSequence();
+                    } else {
+                        doApc(b);
+                    }
                 } else {
                     doOsc(b);
                 }
@@ -809,6 +837,12 @@ public final class TerminalEmulator {
                         break;
                     case ESC_PERCENT:
                         break;
+                    case ESC_APC:
+                        doApc(b);
+                        break;
+                    case ESC_APC_ESC:
+                        doApcEsc(b);
+                        break;
                     case ESC_OSC:
                         doOsc(b);
                         break;
@@ -888,8 +922,17 @@ public final class TerminalEmulator {
 
     /** When in {@link #ESC_P} ("device control") sequence. */
     private void doDeviceControl(int b) {
-        switch (b) {
-            case (byte) '\\': // End of ESC \ string Terminator
+        boolean firstSixel = false;
+        if (!ESC_P_sixel && (b=='$' || b=='-' || b=='#')) {
+            //Check if sixel sequence that needs breaking
+            String dcs = mOSCOrDeviceControlArgs.toString();
+            if (dcs.matches("[0-9;]*q.*")) {
+                firstSixel = true;
+            }
+        }
+        if (firstSixel || (ESC_P_escape && b == '\\') || (ESC_P_sixel && (b=='$' || b=='-' || b=='#')))
+            // ESC \ terminates OSC
+            // Sixel sequences may be very long. '$' and '!' are natural for breaking the sequence.
             {
                 String dcs = mOSCOrDeviceControlArgs.toString();
                 // DCS $ q P t ST. Request Status String (DECRQSS)
@@ -990,14 +1033,102 @@ public final class TerminalEmulator {
                             Logger.logError(mClient, LOG_TAG, "Invalid device termcap/terminfo name of odd length: " + part);
                         }
                     }
+                } else if (ESC_P_sixel || dcs.matches("[0-9;]*q.*")) {
+                    int pos = 0;
+                    if (!ESC_P_sixel) {
+                        ESC_P_sixel = true;
+                        mScreen.sixelStart(100, 100);
+                        while (dcs.codePointAt(pos) != 'q') {
+                            pos++;
+                        }
+                        pos++;
+                    }
+                    if (b=='$' || b=='-') {
+                        // Add to string
+                        dcs = dcs + (char)b;
+                    }
+                    int rep = 1;
+                    while (pos < dcs.length()) {
+                        if (dcs.codePointAt(pos) == '"') {
+                            pos++;
+                            int args[]={0,0,0,0};
+                            int arg = 0;
+                            while (pos < dcs.length() && ((dcs.codePointAt(pos) >= '0' && dcs.codePointAt(pos) <= '9') || dcs.codePointAt(pos) == ';')) {
+                                if (dcs.codePointAt(pos) >= '0' && dcs.codePointAt(pos) <= '9') {
+                                    args[arg] = args[arg] * 10 + dcs.codePointAt(pos) - '0';
+                                } else {
+                                    arg++;
+                                    if (arg > 3) {
+                                        break;
+                                    }
+                                }
+                                pos++;
+                            }
+                            if (pos == dcs.length()) {
+                                break;
+                            }
+                        } else if (dcs.codePointAt(pos) == '#') {
+                            int col = 0;
+                            pos++;
+                            while (pos < dcs.length() && dcs.codePointAt(pos) >= '0' && dcs.codePointAt(pos) <= '9') {
+                                col = col * 10 + dcs.codePointAt(pos++) - '0';
+                            }
+                            if (pos == dcs.length() || dcs.codePointAt(pos) != ';') {
+                                mScreen.sixelSetColor(col);
+                            } else {
+                                pos++;
+                                int args[]={0,0,0,0};
+                                int arg = 0;
+                                while (pos < dcs.length() && ((dcs.codePointAt(pos) >= '0' && dcs.codePointAt(pos) <= '9') || dcs.codePointAt(pos) == ';')) {
+                                    if (dcs.codePointAt(pos) >= '0' && dcs.codePointAt(pos) <= '9') {
+                                        args[arg] = args[arg] * 10 + dcs.codePointAt(pos) - '0';
+                                    } else {
+                                        arg++;
+                                        if (arg > 3) {
+                                            break;
+                                        }
+                                    }
+                                    pos++;
+                                }
+                                if (args[0] == 2) {
+                                    mScreen.sixelSetColor(col, args[1], args[2], args[3]);
+                                }
+                            }
+                        } else if (dcs.codePointAt(pos) == '!') {
+                            rep = 0;
+                            pos++;
+                            while (pos < dcs.length() && dcs.codePointAt(pos) >= '0' && dcs.codePointAt(pos) <= '9') {
+                                rep = rep * 10 + dcs.codePointAt(pos++) - '0';
+                            }
+                        } else if (dcs.codePointAt(pos) == '$' || dcs.codePointAt(pos) == '-' || (dcs.codePointAt(pos) >= '?' && dcs.codePointAt(pos) <= '~')) {
+                            mScreen.sixelChar(dcs.codePointAt(pos++), rep);
+                            rep = 1;
+                        } else {
+                            pos++;
+                        }
+                    }
+                    if (b == '\\') {
+                        ESC_P_sixel = false;
+                        int n = mScreen.sixelEnd(mCursorRow, mCursorCol, cellW, cellH);
+                        for(;n>0;n--) {
+                            doLinefeed();
+                        }
+                    } else {
+                        mOSCOrDeviceControlArgs.setLength(0);
+                        if (b=='#') {
+                            mOSCOrDeviceControlArgs.appendCodePoint(b);
+                        }
+                        // Do not finish sequence
+                        continueSequence(mEscapeState);
+                        return;
+                    }
                 } else {
                     if (LOG_ESCAPE_SEQUENCES)
                         Logger.logError(mClient, LOG_TAG, "Unrecognized device control string: " + dcs);
                 }
                 finishSequence();
-            }
-            break;
-            default:
+            } else {
+                ESC_P_escape = false;
                 if (mOSCOrDeviceControlArgs.length() > MAX_OSC_STRING_LENGTH) {
                     // Too long.
                     mOSCOrDeviceControlArgs.setLength(0);
@@ -1006,7 +1137,7 @@ public final class TerminalEmulator {
                     mOSCOrDeviceControlArgs.appendCodePoint(b);
                     continueSequence(mEscapeState);
                 }
-        }
+            }
     }
 
     private int nextTabStop(int numTabs) {
@@ -1389,6 +1520,7 @@ public final class TerminalEmulator {
                 break;
             case 'P': // Device control string
                 mOSCOrDeviceControlArgs.setLength(0);
+                ESC_P_escape = false;
                 continueSequence(ESC_P);
                 break;
             case '[':
@@ -1402,9 +1534,14 @@ public final class TerminalEmulator {
             case ']': // OSC
                 mOSCOrDeviceControlArgs.setLength(0);
                 continueSequence(ESC_OSC);
+                ESC_OSC_colon = -1;
                 break;
             case '>': // DECKPNM
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, false);
+                break;
+            case '_': // APC
+                mOSCOrDeviceControlArgs.setLength(0);
+                continueSequence(ESC_APC);
                 break;
             default:
                 unknownSequence(b);
@@ -1628,7 +1765,7 @@ public final class TerminalEmulator {
                 // The important part that may still be used by some (tmux stores this value but does not currently use it)
                 // is the first response parameter identifying the terminal service class, where we send 64 for "vt420".
                 // This is followed by a list of attributes which is probably unused by applications. Send like xterm.
-                if (getArg0(0) == 0) mSession.write("\033[?64;1;2;6;9;15;18;21;22c");
+                if (getArg0(0) == 0) mSession.write("\033[?64;1;2;4;6;9;15;18;21;22c");
                 break;
             case 'd': // ESC [ Pn d - Vert Position Absolute
                 setCursorRow(Math.min(Math.max(1, getArg0(1)), mRows) - 1);
@@ -1715,8 +1852,10 @@ public final class TerminalEmulator {
                         mSession.write("\033[3;0;0t");
                         break;
                     case 14: // Report xterm window in pixels. Result is CSI 4 ; height ; width t
-                        // We just report characters time 12 here.
-                        mSession.write(String.format(Locale.US, "\033[4;%d;%dt", mRows * 12, mColumns * 12));
+                        mSession.write(String.format(Locale.US, "\033[4;%d;%dt", mRows * cellH, mColumns * cellW));
+                        break;
+                    case 16: // Report xterm window in pixels. Result is CSI 4 ; height ; width t
+                        mSession.write(String.format(Locale.US, "\033[6;%d;%dt", cellH, cellW));
                         break;
                     case 18: // Report the size of the text area in characters. Result is CSI 8 ; height ; width t
                         mSession.write(String.format(Locale.US, "\033[8;%d;%dt", mRows, mColumns));
@@ -1868,6 +2007,33 @@ public final class TerminalEmulator {
         }
     }
 
+    private void doApc(int b) {
+        switch (b) {
+            case 7: // Bell.
+                break;
+            case 27: // Escape.
+                continueSequence(ESC_APC_ESC);
+                break;
+            default:
+                collectOSCArgs(b);
+                continueSequence(ESC_OSC);
+        }
+    }
+
+    private void doApcEsc(int b) {
+        switch (b) {
+            case '\\':
+                break;
+            default:
+                // The ESC character was not followed by a \, so insert the ESC and
+                // the current character in arg buffer.
+                collectOSCArgs(27);
+                collectOSCArgs(b);
+                continueSequence(ESC_APC);
+                break;
+        }
+    }
+
     private void doOsc(int b) {
         switch (b) {
             case 7: // Bell.
@@ -1878,6 +2044,22 @@ public final class TerminalEmulator {
                 break;
             default:
                 collectOSCArgs(b);
+                if (ESC_OSC_colon == -1 && b == ':') {
+                    // Collect base64 data for OSC 1337
+                    ESC_OSC_colon = mOSCOrDeviceControlArgs.length();
+                    ESC_OSC_data = new ArrayList<Byte>(65536);
+                } else if (ESC_OSC_colon >= 0 && mOSCOrDeviceControlArgs.length() - ESC_OSC_colon == 4) {
+                    try {
+                        byte[] decoded = Base64.decode(mOSCOrDeviceControlArgs.substring(ESC_OSC_colon), 0);
+                        for (int i = 0 ; i < decoded.length; i++) {
+                            ESC_OSC_data.add(decoded[i]);
+                        }
+                    } catch(Exception e) {
+                        // Ignore non-Base64 data.
+                    }
+                    mOSCOrDeviceControlArgs.setLength(ESC_OSC_colon);
+
+                }
                 break;
         }
     }
@@ -2034,6 +2216,105 @@ public final class TerminalEmulator {
                 mSession.onColorsChanged();
                 break;
             case 119: // Reset highlight color.
+                break;
+            case 1337: // iTerm extemsions
+                if (textParameter.startsWith("File=")) {
+                    int pos = 5;
+                    boolean inline = false;
+                    boolean aspect = true;
+                    int width = -1;
+                    int height = -1;
+                    while (pos < textParameter.length()) {
+                        int eqpos = textParameter.indexOf('=', pos);
+                        if (eqpos == -1) {
+                            break;
+                        }
+                        int semicolonpos = textParameter.indexOf(';', eqpos);
+                        if (semicolonpos == -1) {
+                            semicolonpos = textParameter.length() - 1;
+                        }
+                        String k = textParameter.substring(pos, eqpos);
+                        String v = textParameter.substring(eqpos + 1, semicolonpos);
+                        pos = semicolonpos + 1;
+                        if (k.equalsIgnoreCase("inline")) {
+                            inline = v.equals("1");
+                        }
+                        if (k.equalsIgnoreCase("preserveAspectRatio")) {
+                            aspect = ! v.equals("0");
+                        }
+                        if (k.equalsIgnoreCase("width")) {
+                            double factor = cellW;
+                            int div = 1;
+                            int e = v.length();
+                            if (v.endsWith("px")) {
+                                factor = 1;
+                                e -= 2;
+                            } else if (v.endsWith("%")) {
+                                factor = 0.01 * cellW * mColumns;
+                                e -= 1;
+                            }
+                            try {
+                                width = (int)(factor * Integer.parseInt(v.substring(0,e)));
+                            } catch(Exception ex) {
+                            }
+                        }
+                        if (k.equalsIgnoreCase("height")) {
+                            double factor = cellH;
+                            int div = 1;
+                            int e = v.length();
+                            if (v.endsWith("px")) {
+                                factor = 1;
+                                e -= 2;
+                            } else if (v.endsWith("%")) {
+                                factor = 0.01 * cellH * mRows;
+                                e -= 1;
+                            }
+                            try {
+                                height = (int)(factor * Integer.parseInt(v.substring(0,e)));
+                            } catch(Exception ex) {
+                            }
+                        }
+                    }
+                    if (!inline) {
+                        finishSequence();
+                        return;
+                    }
+                    if (ESC_OSC_colon >= 0 && mOSCOrDeviceControlArgs.length() > ESC_OSC_colon) {
+                        while (mOSCOrDeviceControlArgs.length() - ESC_OSC_colon < 4) {
+                            mOSCOrDeviceControlArgs.append('=');
+                        }
+                        try {
+                            byte[] decoded = Base64.decode(mOSCOrDeviceControlArgs.substring(ESC_OSC_colon), 0);
+                            for (int i = 0 ; i < decoded.length; i++) {
+                                ESC_OSC_data.add(decoded[i]);
+                            }
+                        } catch(Exception e) {
+                            // Ignore non-Base64 data.
+                        }
+                        mOSCOrDeviceControlArgs.setLength(ESC_OSC_colon);
+                    }
+                    if (ESC_OSC_colon >= 0) {
+                        byte[] result = new byte[ESC_OSC_data.size()];
+                        for(int i = 0; i < ESC_OSC_data.size(); i++) {
+                            result[i] = ESC_OSC_data.get(i).byteValue();
+                        }
+                        int[] res = mScreen.addImage(result, mCursorRow, mCursorCol, cellW, cellH, width, height, aspect);
+                        int col = res[1] + mCursorCol;
+                        if (col < mColumns -1) {
+                            res[0] -= 1;
+                        } else {
+                            col = 0;
+                        }
+                        for(;res[0] > 0; res[0]--) {
+                            doLinefeed();
+                        }
+                        mCursorCol = col;
+                        ESC_OSC_data.clear();
+                    } else {
+                    }
+                } else if (textParameter.startsWith("ReportCellSize")) {
+                    mSession.write(String.format(Locale.US, "\0331337;ReportCellSize=%d;%d\007", cellH, cellW));
+                }
                 break;
             default:
                 unknownParameter(value);
