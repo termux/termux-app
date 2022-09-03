@@ -204,7 +204,7 @@ public final class TerminalBuffer {
     }
 
     public void sixelGC(int timeDelta) {
-        if (sixelHasBitmaps && sixelLastGC + timeDelta > SystemClock.uptimeMillis()) {
+        if (!sixelHasBitmaps || sixelLastGC + timeDelta > SystemClock.uptimeMillis()) {
             return;
         }
         Set<Integer> bitmaps = new HashSet<Integer>();
@@ -219,7 +219,7 @@ public final class TerminalBuffer {
             }
         }
         for (int bm = 0; bm < MAX_SIXELS; bm++) {
-            if (sixelBitmap[bm] != null && !bitmaps.contains(bm)) {
+            if (bm != sixelNum && sixelBitmap[bm] != null && !bitmaps.contains(bm)) {
                 sixelBitmap[bm] = null;
             }
         }
