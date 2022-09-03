@@ -1,6 +1,7 @@
 package com.termux.app.terminal;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -27,6 +28,7 @@ import com.termux.shared.termux.terminal.io.BellHandler;
 import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
+import com.termux.terminal.TerminalSessionClient;
 import com.termux.terminal.TextStyle;
 
 import java.io.File;
@@ -34,7 +36,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase {
+/** The {@link TerminalSessionClient} implementation that may require an {@link Activity} for its interface methods. */
+public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionClientBase {
 
     private final TermuxActivity mActivity;
 
@@ -44,9 +47,9 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
 
     private int mBellSoundId;
 
-    private static final String LOG_TAG = "TermuxTerminalSessionClient";
+    private static final String LOG_TAG = "TermuxTerminalSessionActivityClient";
 
-    public TermuxTerminalSessionClient(TermuxActivity activity) {
+    public TermuxTerminalSessionActivityClient(TermuxActivity activity) {
         this.mActivity = activity;
     }
 
@@ -238,7 +241,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     public void setTerminalShellPid(@NonNull TerminalSession terminalSession, int pid) {
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
-
+        
         TermuxSession termuxSession = service.getTermuxSessionForTerminalSession(terminalSession);
         if (termuxSession != null)
             termuxSession.getExecutionCommand().mPid = pid;
@@ -357,7 +360,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
         if (service != null) {
             TermuxSession termuxSession = service.getTermuxSessionForTerminalSession(sessionToRename);
             if (termuxSession != null)
-                termuxSession.getExecutionCommand().sessionName = text;
+                termuxSession.getExecutionCommand().shellName = text;
         }
     }
 

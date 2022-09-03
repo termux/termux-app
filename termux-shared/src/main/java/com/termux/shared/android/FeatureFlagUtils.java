@@ -80,19 +80,6 @@ public class FeatureFlagUtils {
 
     public static final String FEATURE_FLAGS_CLASS = "android.util.FeatureFlagUtils";
 
-    /**
-     * If set to false, then will disable trimming of phantom process and processes using excessive
-     * CPU. Flag is available on Pixel Android 12L beta 3 and Android 13. Availability on other
-     * devices will depend on if other vendors merged the 09dcdad5 commit or not in their releases
-     * and if they actually want to support the flag.
-     *
-     * https://github.com/termux/termux-app/issues/2366
-     * https://issuetracker.google.com/u/1/issues/205156966#comment28
-     * https://cs.android.com/android/_/android/platform/frameworks/base/+/09dcdad5
-     * https://github.com/agnostic-apollo/Android-Docs/tree/master/ocs/apps/processes/phantom-cached-and-empty-processes.md
-     */
-    public static final String SETTINGS_ENABLE_MONITOR_PHANTOM_PROCS = "settings_enable_monitor_phantom_procs";
-
     private static final String LOG_TAG = "FeatureFlagUtils";
 
     /**
@@ -133,6 +120,7 @@ public class FeatureFlagUtils {
      * @param feature The {@link String} name for feature.
      * @return Returns {@link FeatureFlagValue}.
      */
+    @NonNull
     public static FeatureFlagValue getFeatureFlagValueString(@NonNull Context context, @NonNull String feature) {
         Boolean featureFlagExists = featureFlagExists(feature);
         if (featureFlagExists == null) {

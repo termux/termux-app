@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Primitives;
+import com.termux.shared.file.FileUtils;
+import com.termux.shared.file.filesystem.FileType;
 import com.termux.shared.logger.Logger;
 
 import java.io.File;
@@ -16,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -251,6 +254,38 @@ public class SharedProperties {
             return sharedPropertiesParser.preProcessPropertiesOnReadFromDisk(context, properties);
         else
             return properties;
+    }
+
+    /** Returns the first {@link File} found in
+     * {@code propertiesFilePaths} from which app properties can be loaded. If the {@link File} found
+     * is not a regular file or is not readable, then {@code null} is returned. Symlinks **will not**
+     * be followed for potential security reasons.
+     *
+     * @param propertiesFilePaths The {@link List<String>} containing properties file paths.
+     * @param logTag If log tag to use for logging errors.
+     * @return Returns the {@link File} object for Termux:Float app properties.
+     */
+    public static File getPropertiesFileFromList(List<String> propertiesFilePaths, @NonNull String logTag) {
+        if (propertiesFilePaths == null || propertiesFilePaths.size() == 0)
+            return null;
+
+        for(String propertiesFilePath : propertiesFilePaths) {
+            File propertiesFile = new File(propertiesFilePath);
+
+            // Symlinks **will not** be followed.
+            FileType fileType = FileUtils.getFileType(propertiesFilePath, false);
+            if (fileType == FileType.REGULAR) {
+                if (propertiesFile.canRead())
+                    return propertiesFile;
+                else
+                    Logger.logWarn(logTag, "Ignoring properties file at \"" + propertiesFilePath + "\" since it is not readable");
+            } else if (fileType != FileType.NO_EXIST) {
+                Logger.logWarn(logTag, "Ignoring properties file at \"" + propertiesFilePath + "\" of type: \"" + fileType.getName() + "\"");
+            }
+        }
+
+        Logger.logDebug(logTag, "No readable properties file found at: " + propertiesFilePaths);
+        return null;
     }
 
 

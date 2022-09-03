@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 public class LocalSocketRunConfig implements Serializable {
 
     /** The {@link LocalSocketManager} title. */
-    private final String mTitle;
+    protected final String mTitle;
 
     /**
      * The {@link LocalServerSocket} path.
@@ -40,19 +40,19 @@ public class LocalSocketRunConfig implements Serializable {
      *
      * Max allowed length is 108 bytes as per sun_path size (UNIX_PATH_MAX) on Linux.
      */
-    private final String mPath;
+    protected final String mPath;
 
     /** If abstract namespace {@link LocalServerSocket} instead of filesystem. */
     protected final boolean mAbstractNamespaceSocket;
 
     /** The {@link ILocalSocketManager} client for the {@link LocalSocketManager}. */
-    private final ILocalSocketManager mLocalSocketManagerClient;
+    protected final ILocalSocketManager mLocalSocketManagerClient;
 
     /**
      * The {@link LocalServerSocket} file descriptor.
      * Value will be `>= 0` if socket has been created successfully and `-1` if not created or closed.
      */
-    private int mFD = -1;
+    protected int mFD = -1;
 
     /**
      * The {@link LocalClientSocket} receiving (SO_RCVTIMEO) timeout in milliseconds.
@@ -61,7 +61,7 @@ public class LocalSocketRunConfig implements Serializable {
      * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/services/core/java/com/android/server/am/NativeCrashListener.java;l=55
      * Defaults to {@link #DEFAULT_RECEIVE_TIMEOUT}.
      */
-    private Integer mReceiveTimeout;
+    protected Integer mReceiveTimeout;
     public static final int DEFAULT_RECEIVE_TIMEOUT = 10000;
 
     /**
@@ -71,7 +71,7 @@ public class LocalSocketRunConfig implements Serializable {
      * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/services/core/java/com/android/server/am/NativeCrashListener.java;l=55
      * Defaults to {@link #DEFAULT_SEND_TIMEOUT}.
      */
-    private Integer mSendTimeout;
+    protected Integer mSendTimeout;
     public static final int DEFAULT_SEND_TIMEOUT = 10000;
 
     /**
@@ -80,7 +80,7 @@ public class LocalSocketRunConfig implements Serializable {
      * deadline.
      * Defaults to {@link #DEFAULT_DEADLINE}.
      */
-    private Long mDeadline;
+    protected Long mDeadline;
     public static final int DEFAULT_DEADLINE = 0;
 
     /**
@@ -91,7 +91,7 @@ public class LocalSocketRunConfig implements Serializable {
      * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/net/LocalSocketManager.java;l=31
      * Defaults to {@link #DEFAULT_BACKLOG}.
      */
-    private Integer mBacklog;
+    protected Integer mBacklog;
     public static final int DEFAULT_BACKLOG = 50;
 
 

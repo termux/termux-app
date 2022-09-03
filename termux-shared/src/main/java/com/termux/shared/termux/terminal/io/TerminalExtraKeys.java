@@ -67,7 +67,7 @@ public class TerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
             // not a control char
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 key.codePoints().forEach(codePoint -> {
-                    mTerminalView.inputCodePoint(codePoint, ctrlDown, altDown);
+                    mTerminalView.inputCodePoint(TerminalView.KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD, codePoint, ctrlDown, altDown);
                 });
             } else {
                 TerminalSession session = mTerminalView.getCurrentSession();

@@ -12,6 +12,7 @@ import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -20,24 +21,35 @@ public abstract class TermuxSharedProperties {
 
     protected final Context mContext;
     protected final String mLabel;
-    protected final File mPropertiesFile;
-    protected final SharedProperties mSharedProperties;
+    protected final List<String> mPropertiesFilePaths;
+    protected final Set<String> mPropertiesList;
+    protected final SharedPropertiesParser mSharedPropertiesParser;
+    protected File mPropertiesFile;
+    protected SharedProperties mSharedProperties;
 
     public static final String LOG_TAG = "TermuxSharedProperties";
 
-    public TermuxSharedProperties(@NonNull Context context, @NonNull String label, File propertiesFile,
+    public TermuxSharedProperties(@NonNull Context context, @NonNull String label, List<String> propertiesFilePaths,
                                   @NonNull Set<String> propertiesList, @NonNull SharedPropertiesParser sharedPropertiesParser) {
         mContext = context.getApplicationContext();
         mLabel = label;
-        mPropertiesFile = propertiesFile;
-        mSharedProperties = new SharedProperties(context, mPropertiesFile, propertiesList, sharedPropertiesParser);
+        mPropertiesFilePaths = propertiesFilePaths;
+        mPropertiesList = propertiesList;
+        mSharedPropertiesParser = sharedPropertiesParser;
         loadTermuxPropertiesFromDisk();
     }
 
     /**
      * Reload the termux properties from disk into an in-memory cache.
      */
-    public void loadTermuxPropertiesFromDisk() {
+    public synchronized void loadTermuxPropertiesFromDisk() {
+        // Properties files must be searched everytime since no file may exist when constructor is
+        // called or a higher priority file may have been created afterward. Otherwise, if no file
+        // was found, then default props would keep loading, since mSharedProperties would be null. #2836
+        mPropertiesFile = SharedProperties.getPropertiesFileFromList(mPropertiesFilePaths, LOG_TAG);
+        mSharedProperties = null;
+        mSharedProperties = new SharedProperties(mContext, mPropertiesFile, mPropertiesList, mSharedPropertiesParser);
+
         mSharedProperties.loadPropertiesFromDisk();
         dumpPropertiesToLog();
         dumpInternalPropertiesToLog();
@@ -167,8 +179,8 @@ public abstract class TermuxSharedProperties {
 
 
     /**
-     * Get the internal {@link Object} value for the key passed from the file returned by
-     * {@link TermuxPropertyConstants#getTermuxPropertiesFile()}. The {@link Properties} object is
+     * Get the internal {@link Object} value for the key passed from the first file found in
+     * {@link TermuxConstants#TERMUX_PROPERTIES_FILE_PATHS_LIST}. The {@link Properties} object is
      * read directly from the file and internal value is returned for the property value against the key.
      *
      * @param context The context for operations.
@@ -177,7 +189,9 @@ public abstract class TermuxSharedProperties {
      * the object stored against the key is {@code null}.
      */
     public static Object getTermuxInternalPropertyValue(Context context, String key) {
-        return SharedProperties.getInternalProperty(context, TermuxPropertyConstants.getTermuxPropertiesFile(), key, new SharedPropertiesParserClient());
+        return SharedProperties.getInternalProperty(context,
+            SharedProperties.getPropertiesFileFromList(TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST, LOG_TAG),
+            key, new SharedPropertiesParserClient());
     }
 
     /**
@@ -563,6 +577,15 @@ public abstract class TermuxSharedProperties {
     public boolean shouldAllowExternalApps() {
         return (boolean) getInternalPropertyValue(TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true);
     }
+
+    public boolean isFileShareReceiverDisabled() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_FILE_SHARE_RECEIVER, true);
+    }
+
+    public boolean isFileViewReceiverDisabled() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_FILE_VIEW_RECEIVER, true);
+    }
+
     public boolean areHardwareKeyboardShortcutsDisabled() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS, true);
     }

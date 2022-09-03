@@ -83,6 +83,12 @@ public final class TerminalView extends View {
 
     private final boolean mAccessibilityEnabled;
 
+    /** The {@link KeyEvent} is generated from a virtual keyboard, like manually with the {@link KeyEvent#KeyEvent(int, int)} constructor. */
+    public final static int KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD = KeyCharacterMap.VIRTUAL_KEYBOARD; // -1
+
+    /** The {@link KeyEvent} is generated from a non-physical device, like if 0 value is returned by {@link KeyEvent#getDeviceId()}. */
+    public final static int KEY_EVENT_SOURCE_SOFT_KEYBOARD = 0;
+
     private static final String LOG_TAG = "TerminalView";
 
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
@@ -380,7 +386,7 @@ public final class TerminalView extends View {
                         }
                     }
 
-                    inputCodePoint(codePoint, ctrlHeld, false);
+                    inputCodePoint(KEY_EVENT_SOURCE_SOFT_KEYBOARD, codePoint, ctrlHeld, false);
                 }
             }
 
@@ -403,19 +409,29 @@ public final class TerminalView extends View {
     }
 
     public void onScreenUpdated() {
+        onScreenUpdated(false);
+    }
+
+    public void onScreenUpdated(boolean skipScrolling) {
         if (mEmulator == null) return;
 
         int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
         if (mTopRow < -rowsInHistory) mTopRow = -rowsInHistory;
 
-        boolean skipScrolling = false;
-        if (isSelectingText()) {
+        if (isSelectingText() || mEmulator.isAutoScrollDisabled()) {
+
             // Do not scroll when selecting text.
             int rowShift = mEmulator.getScrollCounter();
             if (-mTopRow + rowShift > rowsInHistory) {
                 // .. unless we're hitting the end of history transcript, in which
                 // case we abort text selection and scroll to end.
-                stopTextSelectionMode();
+                if (isSelectingText())
+                    stopTextSelectionMode();
+
+                if (mEmulator.isAutoScrollDisabled()) {
+                    mTopRow = -rowsInHistory;
+                    skipScrolling = true;
+                }
             } else {
                 skipScrolling = true;
                 mTopRow -= rowShift;
@@ -755,7 +771,7 @@ public final class TerminalView extends View {
         if ((result & KeyCharacterMap.COMBINING_ACCENT) != 0) {
             // If entered combining accent previously, write it out:
             if (mCombiningAccent != 0)
-                inputCodePoint(mCombiningAccent, controlDown, leftAltDown);
+                inputCodePoint(event.getDeviceId(), mCombiningAccent, controlDown, leftAltDown);
             mCombiningAccent = result & KeyCharacterMap.COMBINING_ACCENT_MASK;
         } else {
             if (mCombiningAccent != 0) {
@@ -763,7 +779,7 @@ public final class TerminalView extends View {
                 if (combinedChar > 0) result = combinedChar;
                 mCombiningAccent = 0;
             }
-            inputCodePoint(result, controlDown, leftAltDown);
+            inputCodePoint(event.getDeviceId(), result, controlDown, leftAltDown);
         }
 
         if (mCombiningAccent != oldCombiningAccent) invalidate();
@@ -771,9 +787,9 @@ public final class TerminalView extends View {
         return true;
     }
 
-    public void inputCodePoint(int codePoint, boolean controlDownFromEvent, boolean leftAltDownFromEvent) {
+    public void inputCodePoint(int eventSource, int codePoint, boolean controlDownFromEvent, boolean leftAltDownFromEvent) {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
-            mClient.logInfo(LOG_TAG, "inputCodePoint(codePoint=" + codePoint + ", controlDownFromEvent=" + controlDownFromEvent + ", leftAltDownFromEvent="
+            mClient.logInfo(LOG_TAG, "inputCodePoint(eventSource=" + eventSource + ", codePoint=" + codePoint + ", controlDownFromEvent=" + controlDownFromEvent + ", leftAltDownFromEvent="
                 + leftAltDownFromEvent + ")");
         }
 
@@ -813,19 +829,22 @@ public final class TerminalView extends View {
         }
 
         if (codePoint > -1) {
-            // Work around bluetooth keyboards sending funny unicode characters instead
-            // of the more normal ones from ASCII that terminal programs expect - the
-            // desire to input the original characters should be low.
-            switch (codePoint) {
-                case 0x02DC: // SMALL TILDE.
-                    codePoint = 0x007E; // TILDE (~).
-                    break;
-                case 0x02CB: // MODIFIER LETTER GRAVE ACCENT.
-                    codePoint = 0x0060; // GRAVE ACCENT (`).
-                    break;
-                case 0x02C6: // MODIFIER LETTER CIRCUMFLEX ACCENT.
-                    codePoint = 0x005E; // CIRCUMFLEX ACCENT (^).
-                    break;
+            // If not virtual or soft keyboard.
+            if (eventSource > KEY_EVENT_SOURCE_SOFT_KEYBOARD) {
+                // Work around bluetooth keyboards sending funny unicode characters instead
+                // of the more normal ones from ASCII that terminal programs expect - the
+                // desire to input the original characters should be low.
+                switch (codePoint) {
+                    case 0x02DC: // SMALL TILDE.
+                        codePoint = 0x007E; // TILDE (~).
+                        break;
+                    case 0x02CB: // MODIFIER LETTER GRAVE ACCENT.
+                        codePoint = 0x0060; // GRAVE ACCENT (`).
+                        break;
+                    case 0x02C6: // MODIFIER LETTER CIRCUMFLEX ACCENT.
+                        codePoint = 0x005E; // CIRCUMFLEX ACCENT (^).
+                        break;
+                }
             }
 
             // If left alt, send escape before the code point to make e.g. Alt+B and Alt+F work in readline:

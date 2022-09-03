@@ -4,8 +4,10 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.shared.R;
@@ -103,6 +105,28 @@ public class TermuxPluginUtils {
     }
 
     /**
+     * Set {@link ExecutionCommand} state to {@link Errno#ERRNO_FAILED} with {@code errmsg} and
+     * process error with {@link #processPluginExecutionCommandError(Context, String, ExecutionCommand, boolean)}.
+     *
+     *
+     * @param context The {@link Context} for operations.
+     * @param logTag The log tag to use for logging.
+     * @param executionCommand The {@link ExecutionCommand} that failed.
+     * @param forceNotification If set to {@code true}, then a flash and notification will be shown
+     *                          regardless of if pending intent is {@code null} or
+     *                          {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
+     *                          is {@code false}.
+     * @param errmsg The error message to set.
+     */
+    public static void setAndProcessPluginExecutionCommandError(final Context context, String logTag,
+                                                          final ExecutionCommand executionCommand,
+                                                          boolean forceNotification,
+                                                          @NonNull String errmsg) {
+        executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
+        processPluginExecutionCommandError(context, logTag, executionCommand, forceNotification);
+    }
+
+    /**
      * Process {@link ExecutionCommand} error.
      *
      * The ExecutionCommand currentState must be equal to {@link ExecutionCommand.ExecutionState#FAILED}.
@@ -127,7 +151,9 @@ public class TermuxPluginUtils {
      *                          {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
      *                          is {@code false}.
      */
-    public static void processPluginExecutionCommandError(final Context context, String logTag, final ExecutionCommand executionCommand, boolean forceNotification) {
+    public static void processPluginExecutionCommandError(final Context context, String logTag,
+                                                          final ExecutionCommand executionCommand,
+                                                          boolean forceNotification) {
         if (context == null || executionCommand == null) return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
@@ -336,7 +362,7 @@ public class TermuxPluginUtils {
                 callingPackageName != null ? callingPackageName : currentPackageName));
 
         if (addDeviceInfo)
-            reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(currentPackageContext));
+            reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(currentPackageContext, true));
 
         String userActionName = UserAction.PLUGIN_EXECUTION_COMMAND.getName();
 
@@ -415,6 +441,7 @@ public class TermuxPluginUtils {
      * @param context The {@link Context} for operations.
      */
     public static void setupPluginCommandErrorsNotificationChannel(final Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationUtils.setupNotificationChannel(context, TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID,
             TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
     }

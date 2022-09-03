@@ -1,17 +1,13 @@
 package com.termux.shared.termux.shell;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.termux.shared.errors.Error;
 import com.termux.shared.file.filesystem.FileTypes;
-import com.termux.shared.termux.TermuxBootstrap;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.android.PackageUtils;
-import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -25,97 +21,14 @@ import java.util.List;
 
 public class TermuxShellUtils {
 
-    public static String TERMUX_VERSION_NAME;
-    public static String TERMUX_IS_DEBUGGABLE_BUILD;
-    public static String TERMUX_APP_PID;
-    public static String TERMUX_APK_RELEASE;
-    public static Boolean TERMUX_APP_AM_SOCKET_SERVER_ENABLED;
-
-    public static String TERMUX_API_VERSION_NAME;
-
-
     private static final String LOG_TAG = "TermuxShellUtils";
 
-    public static String getDefaultWorkingDirectoryPath() {
-        return TermuxConstants.TERMUX_HOME_DIR_PATH;
-    }
-
-    public static String getDefaultBinPath() {
-        return TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH;
-    }
-
-    public static String[] buildEnvironment(Context currentPackageContext, boolean isFailSafe, String workingDirectory) {
-        TermuxConstants.TERMUX_HOME_DIR.mkdirs();
-
-        if (workingDirectory == null || workingDirectory.isEmpty())
-            workingDirectory = getDefaultWorkingDirectoryPath();
-
-        List<String> environment = new ArrayList<>();
-
-        loadTermuxEnvVariables(currentPackageContext);
-
-        if (TERMUX_VERSION_NAME != null)
-            environment.add("TERMUX_VERSION=" + TERMUX_VERSION_NAME);
-        if (TERMUX_IS_DEBUGGABLE_BUILD != null)
-            environment.add("TERMUX_IS_DEBUGGABLE_BUILD=" + TERMUX_IS_DEBUGGABLE_BUILD);
-        if (TERMUX_APP_PID != null)
-            environment.add("TERMUX_APP_PID=" + TERMUX_APP_PID);
-        if (TERMUX_APK_RELEASE != null)
-            environment.add("TERMUX_APK_RELEASE=" + TERMUX_APK_RELEASE);
-        if (TermuxBootstrap.TERMUX_APP_PACKAGE_MANAGER != null)
-            environment.add("TERMUX_APP_PACKAGE_MANAGER=" + TermuxBootstrap.TERMUX_APP_PACKAGE_MANAGER.getName());
-        if (TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT != null)
-            environment.add("TERMUX_APP_PACKAGE_VARIANT=" + TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT.getName());
-        if (TERMUX_APP_AM_SOCKET_SERVER_ENABLED != null)
-            environment.add("TERMUX_APP_AM_SOCKET_SERVER_ENABLED=" + TERMUX_APP_AM_SOCKET_SERVER_ENABLED);
-
-        if (TERMUX_API_VERSION_NAME != null)
-            environment.add("TERMUX_API_VERSION=" + TERMUX_API_VERSION_NAME);
-
-        environment.add("TERM=xterm-256color");
-        environment.add("COLORTERM=truecolor");
-        environment.add("HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH);
-        environment.add("PREFIX=" + TermuxConstants.TERMUX_PREFIX_DIR_PATH);
-        environment.add("BOOTCLASSPATH=" + System.getenv("BOOTCLASSPATH"));
-        environment.add("ANDROID_ROOT=" + System.getenv("ANDROID_ROOT"));
-        environment.add("ANDROID_DATA=" + System.getenv("ANDROID_DATA"));
-        // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
-        // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
-        environment.add("EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE"));
-
-        // These variables are needed if running on Android 10 and higher.
-        addToEnvIfPresent(environment, "ANDROID_ART_ROOT");
-        addToEnvIfPresent(environment, "DEX2OATBOOTCLASSPATH");
-        addToEnvIfPresent(environment, "ANDROID_I18N_ROOT");
-        addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
-        addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
-
-        if (isFailSafe) {
-            // Keep the default path so that system binaries can be used in the failsafe session.
-            environment.add("PATH= " + System.getenv("PATH"));
-        } else {
-            environment.add("LANG=en_US.UTF-8");
-            environment.add("PWD=" + workingDirectory);
-            environment.add("TMPDIR=" + TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH);
-            if (TermuxBootstrap.isAppPackageVariantAPTAndroid5()) {
-                environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + ":" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/applets");
-                environment.add("LD_LIBRARY_PATH=" + TermuxConstants.TERMUX_LIB_PREFIX_DIR_PATH);
-            } else {
-                environment.add("PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
-            }
-        }
-
-        return environment.toArray(new String[0]);
-    }
-
-    public static void addToEnvIfPresent(List<String> environment, String name) {
-        String value = System.getenv(name);
-        if (value != null) {
-            environment.add(name + "=" + value);
-        }
-    }
-
-    public static String[] setupProcessArgs(@NonNull String fileToExecute, String[] arguments) {
+    /**
+     * Setup shell command arguments for the execute. The file interpreter may be prefixed to
+     * command arguments if needed.
+     */
+    @NonNull
+    public static String[] setupShellCommandArguments(@NonNull String executable, @Nullable String[] arguments) {
         // The file to execute may either be:
         // - An elf file, in which we execute it directly.
         // - A script file without shebang, which we execute with our standard shell $PREFIX/bin/sh instead of the
@@ -123,7 +36,7 @@ public class TermuxShellUtils {
         // - A file with shebang, which we try to handle with e.g. /bin/foo -> $PREFIX/bin/foo.
         String interpreter = null;
         try {
-            File file = new File(fileToExecute);
+            File file = new File(executable);
             try (FileInputStream in = new FileInputStream(file)) {
                 byte[] buffer = new byte[256];
                 int bytesRead = in.read(buffer);
@@ -140,9 +53,9 @@ public class TermuxShellUtils {
                                     // Skip whitespace after shebang.
                                 } else {
                                     // End of shebang.
-                                    String executable = builder.toString();
-                                    if (executable.startsWith("/usr") || executable.startsWith("/bin")) {
-                                        String[] parts = executable.split("/");
+                                    String shebangExecutable = builder.toString();
+                                    if (shebangExecutable.startsWith("/usr") || shebangExecutable.startsWith("/bin")) {
+                                        String[] parts = shebangExecutable.split("/");
                                         String binary = parts[parts.length - 1];
                                         interpreter = TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/" + binary;
                                     }
@@ -164,11 +77,12 @@ public class TermuxShellUtils {
 
         List<String> result = new ArrayList<>();
         if (interpreter != null) result.add(interpreter);
-        result.add(fileToExecute);
+        result.add(executable);
         if (arguments != null) Collections.addAll(result, arguments);
         return result.toArray(new String[0]);
     }
 
+    /** Clear files under {@link TermuxConstants#TERMUX_TMP_PREFIX_DIR_PATH}. */
     public static void clearTermuxTMPDIR(boolean onlyIfExists) {
         // Existence check before clearing may be required since clearDirectory() will automatically
         // re-create empty directory if doesn't exist, which should not be done for things like
@@ -202,43 +116,6 @@ public class TermuxShellUtils {
             if (error != null) {
                 Logger.logErrorExtended(LOG_TAG, "Failed to delete files from termux $TMPDIR older than " + days + " days\n" + error);
             }
-        }
-    }
-
-    public static void loadTermuxEnvVariables(Context currentPackageContext) {
-        String termuxAPKReleaseOld = TERMUX_APK_RELEASE;
-        TERMUX_VERSION_NAME = TERMUX_IS_DEBUGGABLE_BUILD = TERMUX_APP_PID = TERMUX_APK_RELEASE = null;
-
-        // Check if Termux app is installed and not disabled
-        if (TermuxUtils.isTermuxAppInstalled(currentPackageContext) == null) {
-            // This function may be called by a different package like a plugin, so we get version for Termux package via its context
-            Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
-            if (termuxPackageContext != null) {
-                TERMUX_VERSION_NAME = PackageUtils.getVersionNameForPackage(termuxPackageContext);
-                TERMUX_IS_DEBUGGABLE_BUILD = PackageUtils.isAppForPackageADebuggableBuild(termuxPackageContext) ? "1" : "0";
-
-                TERMUX_APP_PID = TermuxUtils.getTermuxAppPID(currentPackageContext);
-
-                // Getting APK signature is a slightly expensive operation, so do it only when needed
-                if (termuxAPKReleaseOld == null) {
-                    String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(termuxPackageContext);
-                    if (signingCertificateSHA256Digest != null)
-                        TERMUX_APK_RELEASE = TermuxUtils.getAPKRelease(signingCertificateSHA256Digest).replaceAll("[^a-zA-Z]", "_").toUpperCase();
-                } else {
-                    TERMUX_APK_RELEASE = termuxAPKReleaseOld;
-                }
-            }
-        }
-
-
-        TERMUX_API_VERSION_NAME = null;
-
-        // Check if Termux:API app is installed and not disabled
-        if (TermuxUtils.isTermuxAPIAppInstalled(currentPackageContext) == null) {
-            // This function may be called by a different package like a plugin, so we get version for Termux:API package via its context
-            Context termuxAPIPackageContext = TermuxUtils.getTermuxAPIPackageContext(currentPackageContext);
-            if (termuxAPIPackageContext != null)
-                TERMUX_API_VERSION_NAME = PackageUtils.getVersionNameForPackage(termuxAPIPackageContext);
         }
     }
 

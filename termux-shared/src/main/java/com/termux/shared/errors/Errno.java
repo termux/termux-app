@@ -110,4 +110,9 @@ public class Errno {
         }
     }
 
+    public boolean equalsErrorTypeAndCode(Error error) {
+        if (error == null) return false;
+        return type.equals(error.getType()) && code == error.getCode();
+    }
+
 }

@@ -2,6 +2,7 @@ package com.termux.shared.termux.shell.am;
 
 import android.content.Context;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -12,13 +13,14 @@ import com.termux.shared.net.socket.local.LocalServerSocket;
 import com.termux.shared.net.socket.local.LocalSocketManager;
 import com.termux.shared.net.socket.local.LocalSocketManagerClientBase;
 import com.termux.shared.net.socket.local.LocalSocketRunConfig;
+import com.termux.shared.shell.am.AmSocketServerRunConfig;
 import com.termux.shared.shell.am.AmSocketServer;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.settings.properties.TermuxPropertyConstants;
-import com.termux.shared.termux.shell.TermuxShellUtils;
+import com.termux.shared.termux.shell.command.environment.TermuxAppShellEnvironment;
 
 /**
  * A wrapper for {@link AmSocketServer} for termux-app usage.
@@ -48,7 +50,7 @@ import com.termux.shared.termux.shell.TermuxShellUtils;
  * require termux-app to be force stopped and restarted.
  *
  * The current state of the server can be checked with the
- * {@link TermuxShellUtils#TERMUX_APP_AM_SOCKET_SERVER_ENABLED} env variable, which is exported
+ * {@link TermuxAppShellEnvironment#ENV_TERMUX_APP__AM_SOCKET_SERVER_ENABLED} env variable, which is exported
  * for all shell sessions and tasks.
  *
  * https://github.com/termux/termux-am-socket
@@ -62,6 +64,10 @@ public class TermuxAmSocketServer {
 
     /** The static instance for the {@link TermuxAmSocketServer} {@link LocalSocketManager}. */
     private static LocalSocketManager termuxAmSocketServer;
+
+    /** Whether {@link TermuxAmSocketServer} is enabled and running or not. */
+    @Keep
+    protected static Boolean TERMUX_APP_AM_SOCKET_SERVER_ENABLED;
 
     /**
      * Setup the {@link AmSocketServer} {@link LocalServerSocket} and start listening for
@@ -86,7 +92,8 @@ public class TermuxAmSocketServer {
         // Once termux-app has started, the server state must not be changed since the variable is
         // exported in shell sessions and tasks and if state is changed, then env of older shells will
         // retain invalid value. User should force stop the app to update state after changing prop.
-        TermuxShellUtils.TERMUX_APP_AM_SOCKET_SERVER_ENABLED = enabled;
+        TERMUX_APP_AM_SOCKET_SERVER_ENABLED = enabled;
+        TermuxAppShellEnvironment.updateTermuxAppAMSocketServerEnabled(context);
     }
 
     /**
@@ -95,10 +102,10 @@ public class TermuxAmSocketServer {
     public static synchronized void start(@NonNull Context context) {
         stop();
 
-        LocalSocketRunConfig localSocketRunConfig = new LocalSocketRunConfig(TITLE,
+        AmSocketServerRunConfig amSocketServerRunConfig = new AmSocketServerRunConfig(TITLE,
             TermuxConstants.TERMUX_APP.TERMUX_AM_SOCKET_FILE_PATH, new TermuxAmSocketServerClient());
 
-        termuxAmSocketServer = AmSocketServer.start(context, localSocketRunConfig);
+        termuxAmSocketServer = AmSocketServer.start(context, amSocketServerRunConfig);
     }
 
     /**
@@ -156,6 +163,21 @@ public class TermuxAmSocketServer {
         TermuxPluginUtils.sendPluginCommandErrorNotification(context, LOG_TAG,
             localSocketRunConfig.getTitle() + " Socket Server Error", error.getMinimalErrorString(),
             LocalSocketManager.getErrorMarkdownString(error, localSocketRunConfig, clientSocket));
+    }
+
+
+
+    public static Boolean getTermuxAppAMSocketServerEnabled(@NonNull Context currentPackageContext) {
+        boolean isTermuxApp = TermuxConstants.TERMUX_PACKAGE_NAME.equals(currentPackageContext.getPackageName());
+        if (isTermuxApp) {
+            return TERMUX_APP_AM_SOCKET_SERVER_ENABLED;
+        } else {
+            // Currently, unsupported since plugin app processes don't know that value is set in termux
+            // app process TermuxAmSocketServer class. A binder API or a way to check if server is actually
+            // running needs to be used. Long checks would also not be possible on main application thread
+            return null;
+        }
+
     }
 
 

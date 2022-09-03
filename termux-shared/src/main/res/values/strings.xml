@@ -36,6 +36,13 @@
     <string name="error_attempted_to_check_for_permissions_not_requested">Attempted to check for permissions that have not been requested in app manifest: %1$s</string>
     <string name="error_attempted_to_ask_for_permissions_not_requested">Attempted to ask for permissions that have not been requested in app manifest: %1$s</string>
     <string name="error_has_not_requested_legacy_external_storage">The \"%1$s\" package is targeting targetSdkVersion %2$d and is running on android sdk %3$d but has not set requestLegacyExternalStorage to true in app manifest</string>
+    <string name="msg_requires_dump_and_package_usage_stats_permissions">Requires `DUMP` and `PACKAGE_USAGE_STATS` permission</string>
+    <string name="error_display_over_other_apps_permission_not_granted">%1$s requires
+        \"Display over other apps\" permission to start activities and services from background on Android >= 10.
+        Grants it from Android Settings -> Apps -> %1$s -> Advanced -> Draw over other apps.
+        The permission name may be different on different devices, like on Xiaomi, its called
+        \"Display pop-up windows while running in the background\", check https://dontkillmyapp.com
+        for device specific issues.</string>
 
 
 
@@ -62,6 +69,7 @@
 
     <!-- Shell -->
     <string name="error_sending_sigkill_to_process">Sending SIGKILL to process on user request or because android is killing the execution service</string>
+    <string name="error_executable_unset">Executable not set \"%1$s\" for shell command</string>
     <string name="error_execution_cancelled">Execution has been cancelled since execution service is being killed</string>
     <string name="error_failed_to_execute_termux_session_command">Failed to execute \"%1$s\" termux session command</string>
     <string name="error_failed_to_execute_app_shell_command">Failed to execute \"%1$s\" app shell command</string>

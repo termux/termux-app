@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.file.LinkOption;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Iterator;
@@ -183,6 +184,118 @@ public class FileUtils {
 
         return false;
     }
+
+
+
+    /**
+     * Validate that directory is empty or contains only files in {@code ignoredSubFilePaths}.
+     *
+     * If parent path of an ignored file exists, but ignored file itself does not exist, then directory
+     * is not considered empty.
+     *
+     * @param label The optional label for directory to check. This can optionally be {@code null}.
+     * @param filePath The {@code path} for directory to check.
+     * @param ignoredSubFilePaths The list of absolute file paths under {@code filePath} dir.
+     *                            Validation is done for the paths.
+     * @param ignoreNonExistentFile The {@code boolean} that decides if it should be considered an
+     *                              error if file to be checked doesn't exist.
+     * @return Returns {@code null} if directory is empty or contains only files in {@code ignoredSubFilePaths}.
+     * Returns {@code FileUtilsErrno#ERRNO_NON_EMPTY_DIRECTORY_FILE} if a file was found that did not
+     * exist in the {@code ignoredSubFilePaths}, otherwise returns an appropriate {@code error} if
+     * checking was not successful.
+     */
+    public static Error validateDirectoryFileEmptyOrOnlyContainsSpecificFiles(String label, String filePath,
+                                                                              final List<String> ignoredSubFilePaths,
+                                                                              final boolean ignoreNonExistentFile) {
+        label = (label == null || label.isEmpty() ? "" : label + " ");
+        if (filePath == null || filePath.isEmpty()) return FunctionErrno.ERRNO_NULL_OR_EMPTY_PARAMETER.getError(label + "file path", "isDirectoryFileEmptyOrOnlyContainsSpecificFiles");
+
+        try {
+            File file = new File(filePath);
+            FileType fileType = getFileType(filePath, false);
+
+            // If file exists but not a directory file
+            if (fileType != FileType.NO_EXIST && fileType != FileType.DIRECTORY) {
+                return FileUtilsErrno.ERRNO_NON_DIRECTORY_FILE_FOUND.getError(label + "directory", filePath).setLabel(label + "directory");
+            }
+
+            // If file does not exist
+            if (fileType == FileType.NO_EXIST) {
+                // If checking is to be ignored if file does not exist
+                if (ignoreNonExistentFile)
+                    return null;
+                else {
+                    label += "directory to check if is empty or only contains specific files";
+                    return FileUtilsErrno.ERRNO_FILE_NOT_FOUND_AT_PATH.getError(label, filePath).setLabel(label);
+                }
+            }
+
+            File[] subFiles = file.listFiles();
+            if (subFiles == null || subFiles.length == 0)
+                return null;
+
+            // If sub files exists but no file should be ignored
+            if (ignoredSubFilePaths == null || ignoredSubFilePaths.size() == 0)
+                return FileUtilsErrno.ERRNO_NON_EMPTY_DIRECTORY_FILE.getError(label, filePath);
+
+            // If a sub file does not exist in ignored file path
+            if (nonIgnoredSubFileExists(subFiles, ignoredSubFilePaths)) {
+                return FileUtilsErrno.ERRNO_NON_EMPTY_DIRECTORY_FILE.getError(label, filePath);
+            }
+
+        } catch (Exception e) {
+            return FileUtilsErrno.ERRNO_VALIDATE_DIRECTORY_EMPTY_OR_ONLY_CONTAINS_SPECIFIC_FILES_FAILED_WITH_EXCEPTION.getError(e, label + "directory", filePath, e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if {@code subFiles} contains contains a file not in {@code ignoredSubFilePaths}.
+     *
+     * If parent path of an ignored file exists, but ignored file itself does not exist, then directory
+     * is not considered empty.
+     *
+     * This function should ideally not be called by itself but through
+     * {@link #validateDirectoryFileEmptyOrOnlyContainsSpecificFiles(String, String, List, boolean)}.
+     *
+     * @param subFiles The list of files of a directory to check.
+     * @param ignoredSubFilePaths The list of absolute file paths under {@code filePath} dir.
+     *                            Validation is done for the paths.
+     * @return Returns {@code true} if a file was found that did not exist in the {@code ignoredSubFilePaths},
+     * otherwise  {@code false}.
+     */
+    public static boolean nonIgnoredSubFileExists(File[] subFiles, @NonNull List<String> ignoredSubFilePaths) {
+        if (subFiles == null || subFiles.length == 0) return false;
+
+        String subFilePath;
+        for (File subFile : subFiles) {
+            subFilePath = subFile.getAbsolutePath();
+            // If sub file does not exist in ignored sub file paths
+            if (!ignoredSubFilePaths.contains(subFilePath)) {
+                boolean isParentPath = false;
+                for (String ignoredSubFilePath : ignoredSubFilePaths) {
+                    if (ignoredSubFilePath.startsWith(subFilePath + "/") && fileExists(ignoredSubFilePath, false)) {
+                        isParentPath = true;
+                        break;
+                    }
+                }
+                // If sub file is not a parent of any existing ignored sub file paths
+                if (!isParentPath) {
+                    return true;
+                }
+            }
+                
+            if (getFileType(subFilePath, false) == FileType.DIRECTORY) {
+                // If non ignored sub file found, then early exit, otherwise continue looking
+                if (nonIgnoredSubFileExists(subFile.listFiles(), ignoredSubFilePaths))
+                     return true;
+            }
+        }
+
+        return false;
+    }
+
 
 
     /**
@@ -991,7 +1104,7 @@ public class FileUtils {
                     return FileUtilsErrno.ERRNO_CANNOT_OVERWRITE_A_DIFFERENT_FILE_TYPE.getError(label + "source file", mode.toLowerCase(), srcFilePath, destFilePath, destFileType.getName(), srcFileType.getName());
 
                 // Delete the destination file
-                error = deleteFile(label + "destination file", destFilePath, true);
+                error = deleteFile(label + "destination", destFilePath, true);
                 if (error != null)
                     return error;
             }
@@ -1038,7 +1151,7 @@ public class FileUtils {
                     } else {
                         // read the target for the source file and create a symlink at dest
                         // source file metadata will be lost
-                        error = createSymlinkFile(label + "dest file", Os.readlink(srcFilePath), destFilePath);
+                        error = createSymlinkFile(label + "dest", Os.readlink(srcFilePath), destFilePath);
                         if (error != null)
                             return error;
                     }
@@ -1055,7 +1168,7 @@ public class FileUtils {
             // If source file had to be moved
             if (moveFile) {
                 // Delete the source file since copying would have succeeded
-                error = deleteFile(label + "source file", srcFilePath, true);
+                error = deleteFile(label + "source", srcFilePath, true);
                 if (error != null)
                     return error;
             }

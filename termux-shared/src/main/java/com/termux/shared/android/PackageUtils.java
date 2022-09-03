@@ -31,7 +31,7 @@ public class PackageUtils {
     private static final String LOG_TAG = "PackageUtils";
 
     /**
-     * Get the {@link Context} for the package name.
+     * Get the {@link Context} for the package name with {@link Context#CONTEXT_RESTRICTED} flags.
      *
      * @param context The {@link Context} to use to get the {@link Context} of the {@code packageName}.
      * @param packageName The package name whose {@link Context} to get.
@@ -39,10 +39,23 @@ public class PackageUtils {
      */
     @Nullable
     public static Context getContextForPackage(@NonNull final Context context, String packageName) {
+       return getContextForPackage(context, packageName, Context.CONTEXT_RESTRICTED);
+    }
+
+    /**
+     * Get the {@link Context} for the package name.
+     *
+     * @param context The {@link Context} to use to get the {@link Context} of the {@code packageName}.
+     * @param packageName The package name whose {@link Context} to get.
+     * @param flags The flags for {@link Context} type.
+     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
+     */
+    @Nullable
+    public static Context getContextForPackage(@NonNull final Context context, String packageName, int flags) {
         try {
-            return context.createPackageContext(packageName, Context.CONTEXT_RESTRICTED);
+            return context.createPackageContext(packageName, flags);
         } catch (Exception e) {
-            Logger.logVerbose(LOG_TAG, "Failed to get \"" + packageName + "\" package context: " + e.getMessage());
+            Logger.logVerbose(LOG_TAG, "Failed to get \"" + packageName + "\" package context with flags " + flags + ": " + e.getMessage());
             return null;
         }
     }
@@ -184,6 +197,55 @@ public class PackageUtils {
     }
 
     /**
+     * Get the {@code seInfo} {@link Field} of the {@link ApplicationInfo} class.
+     *
+     * String retrieved from the seinfo tag found in selinux policy. This value can be set through
+     * the mac_permissions.xml policy construct. This value is used for setting an SELinux security
+     * context on the process as well as its data directory.
+     *
+     * https://cs.android.com/android/platform/superproject/+/android-7.1.0_r1:frameworks/base/core/java/android/content/pm/ApplicationInfo.java;l=609
+     * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/content/pm/ApplicationInfo.java;l=981
+     * https://cs.android.com/android/platform/superproject/+/android-7.0.0_r1:frameworks/base/services/core/java/com/android/server/pm/SELinuxMMAC.java;l=282
+     * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/services/core/java/com/android/server/pm/SELinuxMMAC.java;l=375
+     * https://cs.android.com/android/_/android/platform/frameworks/base/+/be0b8896d1bc385d4c8fb54c21929745935dcbea
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the selinux info or {@code null} if an exception was raised.
+     */
+    @Nullable
+    public static String getApplicationInfoSeInfoForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        ReflectionUtils.bypassHiddenAPIReflectionRestrictions();
+        try {
+            return (String) ReflectionUtils.invokeField(ApplicationInfo.class, Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? "seinfo" : "seInfo", applicationInfo).value;
+        } catch (Exception e) {
+            // ClassCastException may be thrown
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to get seInfo field value for ApplicationInfo class", e);
+            return null;
+        }
+    }
+
+    /**
+     * Get the {@code seInfoUser} {@link Field} of the {@link ApplicationInfo} class.
+     *
+     * Also check {@link #getApplicationInfoSeInfoForPackage(ApplicationInfo)}.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the selinux info user or {@code null} if an exception was raised.
+     */
+    @Nullable
+    public static String getApplicationInfoSeInfoUserForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null;
+        ReflectionUtils.bypassHiddenAPIReflectionRestrictions();
+        try {
+            return (String) ReflectionUtils.invokeField(ApplicationInfo.class, "seInfoUser", applicationInfo).value;
+        } catch (Exception e) {
+            // ClassCastException may be thrown
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to get seInfoUser field value for ApplicationInfo class", e);
+            return null;
+        }
+    }
+
+    /**
      * Get the {@code privateFlags} {@link Field} of the {@link ApplicationInfo} class.
      *
      * @param fieldName The name of the field to get.
@@ -309,6 +371,28 @@ public class PackageUtils {
      */
     public static int getTargetSDKForPackage(@NonNull final ApplicationInfo applicationInfo) {
         return applicationInfo.targetSdkVersion;
+    }
+
+
+
+    /**
+     * Get the base apk path for the package associated with the {@code context}.
+     *
+     * @param context The {@link Context} for the package.
+     * @return Returns the base apk path.
+     */
+    public static String getBaseAPKPathForPackage(@NonNull final Context context) {
+        return getBaseAPKPathForPackage(context.getApplicationInfo());
+    }
+
+    /**
+     * Get the base apk path for the package associated with the {@code applicationInfo}.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the base apk path.
+     */
+    public static String getBaseAPKPathForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        return applicationInfo.publicSourceDir;
     }
 
 
@@ -626,6 +710,13 @@ public class PackageUtils {
     }
 
 
+    /** Wrapper for {@link #setComponentState(Context, String, String, boolean, String, boolean, boolean)} with
+     * {@code alwaysShowToast} {@code true}. */
+    public static String setComponentState(@NonNull final Context context, @NonNull String packageName,
+                                           @NonNull String className, boolean newState, String toastString,
+                                           boolean showErrorMessage) {
+        return setComponentState(context, packageName, className, newState, toastString, showErrorMessage, true);
+    }
 
     /**
      * Enable or disable a {@link ComponentName} with a call to
@@ -634,28 +725,46 @@ public class PackageUtils {
      * @param context The {@link Context} for operations.
      * @param packageName The package name of the component.
      * @param className The {@link Class} name of the component.
-     * @param state If component should be enabled or disabled.
+     * @param newState If component should be enabled or disabled.
      * @param toastString If this is not {@code null} or empty, then a toast before setting state.
      * @param showErrorMessage If an error message toast should be shown.
+     * @param alwaysShowToast If toast should always be shown even if current state matches new state.
      * @return Returns the errmsg if failed to set state, otherwise {@code null}.
      */
     @Nullable
     public static String setComponentState(@NonNull final Context context, @NonNull String packageName,
-                                           @NonNull String className, boolean state, String toastString,
-                                           boolean showErrorMessage) {
+                                           @NonNull String className, boolean newState, String toastString,
+                                           boolean alwaysShowToast, boolean showErrorMessage) {
         try {
             PackageManager packageManager = context.getPackageManager();
             if (packageManager != null) {
-                ComponentName componentName = new ComponentName(packageName, className);
+                if (toastString != null && alwaysShowToast) {
+                    Logger.showToast(context, toastString, true);
+                    toastString = null;
+                }
+
+                Boolean currentlyDisabled = PackageUtils.isComponentDisabled(context, packageName, className, false);
+                if (currentlyDisabled == null)
+                    throw new UnsupportedOperationException("Failed to find if component currently disabled");
+
+                Boolean setState = null;
+                if (newState && currentlyDisabled)
+                    setState = true;
+                else if (!newState && !currentlyDisabled)
+                    setState = false;
+
+                if (setState == null) return null;
+
                 if (toastString != null) Logger.showToast(context, toastString, true);
+                ComponentName componentName = new ComponentName(packageName, className);
                 packageManager.setComponentEnabledSetting(componentName,
-                    state ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    setState ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
             }
             return null;
         } catch (final Exception e) {
             String errmsg = context.getString(
-                state ? R.string.error_enable_component_failed : R.string.error_disable_component_failed,
+                newState ? R.string.error_enable_component_failed : R.string.error_disable_component_failed,
                 packageName, className) + ": " + e.getMessage();
             if (showErrorMessage)
                 Logger.showToast(context, errmsg, true);

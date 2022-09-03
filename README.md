@@ -152,8 +152,8 @@ The main ones are the following.
 - [Termux Reddit community](https://reddit.com/r/termux)
 - [Termux User Matrix Channel](https://matrix.to/#/#termux_termux:gitter.im) ([Gitter](https://gitter.im/termux/termux))
 - [Termux Dev Matrix Channel](https://matrix.to/#/#termux_dev:gitter.im) ([Gitter](https://gitter.im/termux/dev))
-- [Termux Twitter](https://twitter.com/termux/)
-- [Termux Reports Email](mailto:termuxreports@groups.io)
+- [Termux Twitter](https://twitter.com/termuxdevs)
+- [Termux Support Email](mailto:support@termux.dev)
 
 ### Wikis
 

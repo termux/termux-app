@@ -4,12 +4,16 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.termux.shared.errors.Errno;
 import com.termux.shared.file.FileUtils;
+import com.termux.shared.file.FileUtilsErrno;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.errors.Error;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
 
 public class FileUtilsTests {
 
@@ -67,6 +71,15 @@ public class FileUtilsTests {
 
         String dir1__sub_dir1_label = "dir1/sub_dir1";
         String dir1__sub_dir1_path = dir1_path + "/sub_dir1";
+
+        String dir1__sub_dir2_label = "dir1/sub_dir2";
+        String dir1__sub_dir2_path = dir1_path + "/sub_dir2";
+
+        String dir1__sub_dir3_label = "dir1/sub_dir3";
+        String dir1__sub_dir3_path = dir1_path + "/sub_dir3";
+
+        String dir1__sub_dir3__sub_reg1_label = "dir1/sub_dir3/sub_reg1";
+        String dir1__sub_dir3__sub_reg1_path = dir1__sub_dir3_path + "/sub_reg1";
 
         String dir1__sub_reg1_label = "dir1/sub_reg1";
         String dir1__sub_reg1_path = dir1_path + "/sub_reg1";
@@ -274,6 +287,72 @@ public class FileUtilsTests {
         if (FileUtils.fileExists(path, false))
             throwException("The " + label + " regular file still exist after deletion");
 
+
+        List<String> ignoredSubFilePaths = Arrays.asList(dir1__sub_dir2_path, dir1__sub_dir3__sub_reg1_path);
+
+        // Create dir1 directory file
+        error = FileUtils.createDirectoryFile(dir1_label, dir1_path);
+        assertEqual("Failed to create " + dir1_label + " directory file", null, error);
+
+        // Test empty dir
+        error = FileUtils.validateDirectoryFileEmptyOrOnlyContainsSpecificFiles(dir1_label, dir1_path, ignoredSubFilePaths, false);
+        assertEqual("Failed to validate if " + dir1_label + " directory file is empty", null, error);
+
+
+        // Create dir1/sub_dir3 directory file
+        label = dir1__sub_dir3_label; path = dir1__sub_dir3_path;
+        error = FileUtils.createDirectoryFile(label, path);
+        assertEqual("Failed to create " + label + " directory file", null, error);
+        if (!FileUtils.directoryFileExists(path, false))
+            throwException("The " + label + " directory file does not exist as expected after creation");
+
+        // Test parent dir existing of non existing ignored regular file
+        error = FileUtils.validateDirectoryFileEmptyOrOnlyContainsSpecificFiles(dir1_label, dir1_path, ignoredSubFilePaths, false);
+        assertErrnoEqual("Failed to validate if " + dir1_label + " directory file is empty with parent dir existing of non existing ignored regular file", FileUtilsErrno.ERRNO_NON_EMPTY_DIRECTORY_FILE, error);
+
+
+        // Write "line1" to dir1/sub_dir3/sub_reg1 regular file
+        label = dir1__sub_dir3__sub_reg1_label; path = dir1__sub_dir3__sub_reg1_path;
+        error = FileUtils.writeTextToFile(label, path, Charset.defaultCharset(), "line1", false);
+        assertEqual("Failed to write string to " + label + " file with append mode false", null, error);
+        if (!FileUtils.regularFileExists(path, false))
+            throwException("The " + label + " file does not exist as expected after writing to it with append mode false");
+
+        // Test ignored regular file existing
+        error = FileUtils.validateDirectoryFileEmptyOrOnlyContainsSpecificFiles(dir1_label, dir1_path, ignoredSubFilePaths, false);
+        assertEqual("Failed to validate if " + dir1_label + " directory file is empty with ignored regular file existing", null, error);
+
+
+        // Create dir1/sub_dir2 directory file
+        label = dir1__sub_dir2_label; path = dir1__sub_dir2_path;
+        error = FileUtils.createDirectoryFile(label, path);
+        assertEqual("Failed to create " + label + " directory file", null, error);
+        if (!FileUtils.directoryFileExists(path, false))
+            throwException("The " + label + " directory file does not exist as expected after creation");
+
+        // Test ignored dir file existing
+        error = FileUtils.validateDirectoryFileEmptyOrOnlyContainsSpecificFiles(dir1_label, dir1_path, ignoredSubFilePaths, false);
+        assertEqual("Failed to validate if " + dir1_label + " directory file is empty with ignored dir file existing", null, error);
+
+
+        // Create dir1/sub_dir1 directory file
+        label = dir1__sub_dir1_label; path = dir1__sub_dir1_path;
+        error = FileUtils.createDirectoryFile(label, path);
+        assertEqual("Failed to create " + label + " directory file", null, error);
+        if (!FileUtils.directoryFileExists(path, false))
+            throwException("The " + label + " directory file does not exist as expected after creation");
+
+        // Test non ignored dir file existing
+        error = FileUtils.validateDirectoryFileEmptyOrOnlyContainsSpecificFiles(dir1_label, dir1_path, ignoredSubFilePaths, false);
+        assertErrnoEqual("Failed to validate if " + dir1_label + " directory file is empty with non ignored dir file existing", FileUtilsErrno.ERRNO_NON_EMPTY_DIRECTORY_FILE, error);
+
+
+        // Delete dir1 directory file
+        label = dir1_label; path = dir1_path;
+        error = FileUtils.deleteDirectoryFile(label, path, false);
+        assertEqual("Failed to delete " + label + " directory file", null, error);
+
+
         FileUtils.getFileType("/dev/ptmx", false);
         FileUtils.getFileType("/dev/null", false);
     }
@@ -298,6 +377,13 @@ public class FileUtilsTests {
 
         return isEquals(expected, actual);
     }
+
+    public static void assertErrnoEqual(@NonNull final String message, final Errno expected, final Error actual) throws Exception {
+        if ((expected == null && actual != null) || (expected != null && !expected.equalsErrorTypeAndCode(actual)))
+            throwException(message + "\nexpected: \"" + expected + "\"\nactual: \"" + actual + "\"\nFull Error:\n" + (actual != null ? actual.toString() : ""));
+    }
+
+
 
     private static boolean isEquals(String expected, String actual) {
         return expected.equals(actual);

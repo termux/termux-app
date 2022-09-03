@@ -54,7 +54,7 @@ public final class TerminalBuffer {
     }
 
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines) {
-        return getSelectedText(selX1, selY1, selX2, selY2, true, false);
+        return getSelectedText(selX1, selY1, selX2, selY2, joinBackLines, false);
     }
 
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines, boolean joinFullLines) {

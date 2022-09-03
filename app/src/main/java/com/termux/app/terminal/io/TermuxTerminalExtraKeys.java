@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.termux.app.TermuxActivity;
-import com.termux.app.terminal.TermuxTerminalSessionClient;
+import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.extrakeys.ExtraKeysConstants;
@@ -26,18 +26,18 @@ public class TermuxTerminalExtraKeys extends TerminalExtraKeys {
 
     final TermuxActivity mActivity;
     final TermuxTerminalViewClient mTermuxTerminalViewClient;
-    final TermuxTerminalSessionClient mTermuxTerminalSessionClient;
+    final TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
 
     private static final String LOG_TAG = "TermuxTerminalExtraKeys";
 
     public TermuxTerminalExtraKeys(TermuxActivity activity, @NonNull TerminalView terminalView,
                                    TermuxTerminalViewClient termuxTerminalViewClient,
-                                   TermuxTerminalSessionClient termuxTerminalSessionClient) {
+                                   TermuxTerminalSessionActivityClient termuxTerminalSessionActivityClient) {
         super(terminalView);
 
         mActivity = activity;
         mTermuxTerminalViewClient = termuxTerminalViewClient;
-        mTermuxTerminalSessionClient = termuxTerminalSessionClient;
+        mTermuxTerminalSessionActivityClient = termuxTerminalSessionActivityClient;
 
         setExtraKeys();
     }
@@ -94,8 +94,12 @@ public class TermuxTerminalExtraKeys extends TerminalExtraKeys {
             else
                 drawerLayout.openDrawer(Gravity.LEFT);
         } else if ("PASTE".equals(key)) {
-            if(mTermuxTerminalSessionClient != null)
-                mTermuxTerminalSessionClient.onPasteTextFromClipboard(null);
+            if(mTermuxTerminalSessionActivityClient != null)
+                mTermuxTerminalSessionActivityClient.onPasteTextFromClipboard(null);
+        }  else if ("SCROLL".equals(key)) {
+            TerminalView terminalView = mTermuxTerminalViewClient.getActivity().getTerminalView();
+            if (terminalView != null && terminalView.mEmulator != null)
+                terminalView.mEmulator.toggleAutoScrollDisabled();
         } else {
             super.onTerminalExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, fnDown);
         }

@@ -1,5 +1,6 @@
 package com.termux.shared.shell.am;
 
+import android.Manifest;
 import android.app.Application;
 import android.content.Context;
 
@@ -7,6 +8,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.am.Am;
+import com.termux.shared.R;
+import com.termux.shared.android.PackageUtils;
+import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.errors.Error;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.net.socket.local.ILocalSocketManager;
@@ -40,8 +44,9 @@ import java.util.List;
  * 1. Optionally extend {@link AmSocketServerClient}, the implementation for
  *    {@link ILocalSocketManager} that will receive call backs from the server including
  *    when client connects via {@link ILocalSocketManager#onClientAccepted(LocalSocketManager, LocalClientSocket)}.
- * 2. Create a {@link LocalSocketRunConfig} instance with the run config of the am server. It would
- *    be better to use a filesystem socket instead of abstract namespace socket for security reasons.
+ * 2. Create a {@link AmSocketServerRunConfig} instance which extends from {@link LocalSocketRunConfig}
+ *    with the run config of the am server. It would  be better to use a filesystem socket instead
+ *    of abstract namespace socket for security reasons.
  * 3. Call {@link #start(Context, LocalSocketRunConfig)} to start the server and store the {@link LocalSocketManager}
  *    instance returned.
  * 4. Stop server if needed with a call to {@link LocalSocketManager#stop()} on the
@@ -104,10 +109,13 @@ public class AmSocketServer {
         Logger.logDebug(LOG_TAG, "am command received from peer " + clientSocket.getPeerCred().getMinimalString() +
             "\n" + ExecutionCommand.getArgumentsLogString("am command", amCommandArray));
 
+        AmSocketServerRunConfig amSocketServerRunConfig = (AmSocketServerRunConfig) localSocketManager.getLocalSocketRunConfig();
+
         // Run am command and send its result to the client
         StringBuilder stdout = new StringBuilder();
         StringBuilder stderr = new StringBuilder();
-        error = runAmCommand(localSocketManager.getContext(), amCommandArray, stdout, stderr);
+        error = runAmCommand(localSocketManager.getContext(), amCommandArray, stdout, stderr,
+            amSocketServerRunConfig.shouldCheckDisplayOverAppsPermission());
         if (error != null) {
             sendResultToClient(localSocketManager, clientSocket, 1, stdout.toString(),
                 !stderr.toString().isEmpty() ? stderr + "\n\n" + error : error.toString());
@@ -194,15 +202,26 @@ public class AmSocketServer {
      * @param amCommandArray The am command array.
      * @param stdout The {@link StringBuilder} to set stdout in that is returned by the am command.
      * @param stderr The {@link StringBuilder} to set stderr in that is returned by the am command.
+     * @param checkDisplayOverAppsPermission Check if {@link Manifest.permission#SYSTEM_ALERT_WINDOW}
+     *                                       has been granted if running on Android `>= 10` and
+     *                                       starting activity or service.
      * @return Returns the {@code error} if am command failed, otherwise {@code null}.
      */
     public static Error runAmCommand(@NonNull Context context,
                                      String[] amCommandArray,
-                                     @NonNull StringBuilder stdout, @NonNull StringBuilder stderr) {
+                                     @NonNull StringBuilder stdout, @NonNull StringBuilder stderr,
+                                     boolean checkDisplayOverAppsPermission) {
         try (ByteArrayOutputStream stdoutByteStream = new ByteArrayOutputStream();
              PrintStream stdoutPrintStream = new PrintStream(stdoutByteStream);
              ByteArrayOutputStream stderrByteStream = new ByteArrayOutputStream();
              PrintStream stderrPrintStream = new PrintStream(stderrByteStream)) {
+
+            if (checkDisplayOverAppsPermission && amCommandArray.length >= 1 &&
+                (amCommandArray[0].equals("start") || amCommandArray[0].equals("startservice")) &&
+                !PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(context, true)) {
+                throw new IllegalStateException(context.getString(R.string.error_display_over_other_apps_permission_not_granted,
+                    PackageUtils.getAppNameForPackage(context)));
+            }
 
             new Am(stdoutPrintStream, stderrPrintStream, (Application) context.getApplicationContext()).run(amCommandArray);
 

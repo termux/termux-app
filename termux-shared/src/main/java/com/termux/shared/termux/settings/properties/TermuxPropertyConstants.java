@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * Version: v0.17.0
+ * Version: v0.18.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -77,6 +77,9 @@ import java.util.Set;
  *
  * - 0.17.0 (2022-03-17)
  *      - Add `KEY_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT`.
+ *
+ * - 0.18.0 (2022-06-13)
+ *      - Add `KEY_DISABLE_FILE_SHARE_RECEIVER` and `KEY_DISABLE_FILE_VIEW_RECEIVER`.
  */
 
 /**
@@ -95,6 +98,14 @@ public final class TermuxPropertyConstants {
     private static final String LOG_TAG = "TermuxPropertyConstants";
 
     /* boolean */
+
+    /** Defines the key for whether file share receiver of the app is enabled. */
+    public static final String KEY_DISABLE_FILE_SHARE_RECEIVER =  "disable-file-share-receiver"; // Default: "disable-file-share-receiver"
+
+    /** Defines the key for whether file view receiver of the app is enabled. */
+    public static final String KEY_DISABLE_FILE_VIEW_RECEIVER =  "disable-file-view-receiver"; // Default: "disable-file-view-receiver"
+
+
 
     /** Defines the key for whether hardware keyboard shortcuts are enabled. */
     public static final String KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS =  "disable-hardware-keyboard-shortcuts"; // Default: "disable-hardware-keyboard-shortcuts"
@@ -380,6 +391,8 @@ public final class TermuxPropertyConstants {
      * */
     public static final Set<String> TERMUX_APP_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         /* boolean */
+        KEY_DISABLE_FILE_SHARE_RECEIVER,
+        KEY_DISABLE_FILE_VIEW_RECEIVER,
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
@@ -426,6 +439,8 @@ public final class TermuxPropertyConstants {
      * default: false
      */
     public static final Set<String> TERMUX_DEFAULT_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
+        KEY_DISABLE_FILE_SHARE_RECEIVER,
+        KEY_DISABLE_FILE_VIEW_RECEIVER,
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
@@ -462,59 +477,5 @@ public final class TermuxPropertyConstants {
      */
     public static final Set<String> TERMUX_DEFAULT_INVERETED_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
     ));
-
-
-
-
-
-    /** Returns the first {@link File} found in
-     * {@link TermuxConstants#TERMUX_PROPERTIES_FILE_PATHS_LIST} via a call to
-     * {@link #getPropertiesFile(List)}.
-     *
-     * @return Returns the {@link File} object for Termux app properties.
-     */
-    public static File getTermuxPropertiesFile() {
-        return getPropertiesFile(TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST);
-    }
-
-    /** Returns the first {@link File} found in
-     * {@link TermuxConstants#TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST} via a call to
-     * {@link #getPropertiesFile(List)}.
-     *
-     * @return Returns the {@link File} object for Termux:Float app properties.
-     */
-    public static File getTermuxFloatPropertiesFile() {
-        return getPropertiesFile(TermuxConstants.TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST);
-    }
-
-    /** Returns the first {@link File} found in
-     * {@code propertiesFilePaths} from which app properties can be loaded. If the {@link File} found
-     * is not a regular file or is not readable, then {@code null} is returned. Symlinks **will not**
-     * be followed for potential security reasons.
-     *
-     * @return Returns the {@link File} object for Termux:Float app properties.
-     */
-    public static File getPropertiesFile(List<String> propertiesFilePaths) {
-        if (propertiesFilePaths == null || propertiesFilePaths.size() == 0)
-            return null;
-
-        for(String propertiesFilePath : propertiesFilePaths) {
-            File propertiesFile = new File(propertiesFilePath);
-
-            // Symlinks **will not** be followed.
-            FileType fileType = FileUtils.getFileType(propertiesFilePath, false);
-            if (fileType == FileType.REGULAR) {
-                if (propertiesFile.canRead())
-                    return propertiesFile;
-                else
-                    Logger.logWarn(LOG_TAG, "Ignoring properties file at \"" + propertiesFilePath + "\" since it is not readable");
-            } else if (fileType != FileType.NO_EXIST) {
-                Logger.logWarn(LOG_TAG, "Ignoring properties file at \"" + propertiesFilePath + "\" of type: \"" + fileType.getName() + "\"");
-            }
-        }
-
-        Logger.logDebug(LOG_TAG, "No readable properties file found at: " + propertiesFilePaths);
-        return null;
-    }
 
 }
