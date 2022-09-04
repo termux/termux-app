@@ -575,9 +575,12 @@ public final class TerminalEmulator {
             case 7: // Bell (BEL, ^G, \a). If in an OSC sequence, BEL may terminate a string; otherwise signal bell.
                 if (mEscapeState == ESC_OSC)
                     doOsc(b);
-                else if (mEscapeState == ESC_APC)
-                    doApc(b);
+                else {
+                    if (mEscapeState == ESC_APC) {
+                        doApc(b);
+                    }
                     mSession.onBell();
+                }
                 break;
             case 8: // Backspace (BS, ^H).
                 if (mLeftMargin == mCursorCol) {
