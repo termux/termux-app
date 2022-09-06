@@ -48,7 +48,9 @@ public final class TerminalBuffer {
         int[] pixels = new int[bm.getAllocationByteCount()];
         bm.getPixels(pixels, 0, bm.getWidth(), 0, 0, bm.getWidth(), bm.getHeight());
         Bitmap newbm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        newbm.setPixels(pixels, 0, bm.getWidth(), 0, 0, bm.getWidth(), bm.getHeight());
+        int newWidth = Math.min(bm.getWidth(), w);
+        int newHeight = Math.min(bm.getHeight(), h);
+        newbm.setPixels(pixels, 0, bm.getWidth(), 0, 0, newWidth, newHeight);
         return newbm;
     }
 
@@ -70,7 +72,12 @@ public final class TerminalBuffer {
         if (sixelNum >= MAX_SIXELS) {
             sixelNum = 0;
         }
-        sixelBitmap[sixelNum] = Bitmap.createBitmap( width, height, Bitmap.Config.ARGB_8888);
+        try {
+            sixelBitmap[sixelNum] = Bitmap.createBitmap( width, height, Bitmap.Config.ARGB_8888);
+        } catch (OutOfMemoryError e) {
+            sixelBitmap[sixelNum] = null;
+            sixelNum--;
+        }
         sixelBitmap[sixelNum].eraseColor(0);
         sixelWidth[sixelNum] = 0;
         sixelHeight[sixelNum] = 0;
@@ -83,6 +90,9 @@ public final class TerminalBuffer {
     }
 
     public void sixelChar(int c, int rep) {
+        if (sixelBitmap[sixelNum] == null) {
+            return;
+        }
         if (c == '$') {
             sixelX = 0;
             return;
@@ -93,11 +103,23 @@ public final class TerminalBuffer {
             return;
         }
         if (sixelBitmap[sixelNum].getWidth() < sixelX + rep) {
-            sixelBitmap[sixelNum] = resizeBitmap(sixelBitmap[sixelNum], sixelX + rep + 100, sixelBitmap[sixelNum].getHeight());
+            try {
+                sixelBitmap[sixelNum] = resizeBitmap(sixelBitmap[sixelNum], sixelX + rep + 100, sixelBitmap[sixelNum].getHeight());
+            } catch(OutOfMemoryError e) {
+            }
         }
         if (sixelBitmap[sixelNum].getHeight() < sixelY + 6) {
             // Very unlikely to resize both at the same time
-            sixelBitmap[sixelNum] = resizeBitmap(sixelBitmap[sixelNum], sixelBitmap[sixelNum].getWidth(), sixelY + 100);
+            try {
+                sixelBitmap[sixelNum] = resizeBitmap(sixelBitmap[sixelNum], sixelBitmap[sixelNum].getWidth(), sixelY + 100);
+            } catch(OutOfMemoryError e) {
+            }
+        }
+        if (sixelX + rep > sixelBitmap[sixelNum].getWidth()) {
+            rep = sixelBitmap[sixelNum].getWidth() - sixelX;
+        }
+        if ( sixelY + 5 > sixelBitmap[sixelNum].getHeight()) {
+            return;
         }
         while (rep-- > 0) {
             if (c >= '?' && c <= '~') {
@@ -135,6 +157,9 @@ public final class TerminalBuffer {
     }
 
     public int sixelEnd(int Y, int X, int cellW, int cellH) {
+        if (sixelBitmap[sixelNum] == null) {
+            return 0;
+        }
         sixelCellW[sixelNum] = cellW;
         sixelCellH[sixelNum] = cellH;
         int w = Math.min(mColumns - X,(sixelWidth[sixelNum] + cellW - 1) / cellW);
@@ -158,7 +183,11 @@ public final class TerminalBuffer {
     }
 
     public int[] addImage(byte[] image, int Y, int X, int cellW, int cellH, int width, int height, boolean aspect) {
-        Bitmap bm = BitmapFactory.decodeByteArray(image, 0, image.length);
+        Bitmap bm = null;
+        try {
+            bm = BitmapFactory.decodeByteArray(image, 0, image.length);
+        } catch(OutOfMemoryError e) {
+        }
         if (bm == null) {
             return new int[] {0,0};
         }
@@ -174,7 +203,11 @@ public final class TerminalBuffer {
                     hFactor = (double)height / bm.getHeight();
                 }
                 double factor = Math.min(wFactor, hFactor);
-                bm = Bitmap.createScaledBitmap(bm, (int)(factor * bm.getWidth()), (int)(factor * bm.getHeight()), true);
+                try {
+                    bm = Bitmap.createScaledBitmap(bm, (int)(factor * bm.getWidth()), (int)(factor * bm.getHeight()), true);
+                } catch(OutOfMemoryError e) {
+                    bm = null;
+                }
             } else {
                 if (height <= 0) {
                     height = bm.getHeight();
@@ -182,7 +215,11 @@ public final class TerminalBuffer {
                 if (width <= 0) {
                     width = bm.getWidth();
                 }
-                bm = Bitmap.createScaledBitmap(bm, width, height, true);
+                try {
+                    bm = Bitmap.createScaledBitmap(bm, width, height, true);
+                } catch(OutOfMemoryError e) {
+                    bm = null;
+                }
             }
             if (bm == null) {
                 return new int[] {0,0};
@@ -195,11 +232,19 @@ public final class TerminalBuffer {
         sixelBitmap[sixelNum] = bm;
         sixelWidth[sixelNum] = sixelBitmap[sixelNum].getWidth();
         sixelHeight[sixelNum] = sixelBitmap[sixelNum].getHeight();
-        if ((sixelWidth[sixelNum] % cellW) != 0 || (sixelHeight[sixelNum] % cellH) != 0) {
-            sixelBitmap[sixelNum] = resizeBitmap(bm, ((sixelWidth[sixelNum]-1) / cellW) * cellW + cellW, ((sixelHeight[sixelNum]-1) / cellH) * cellH + cellH);
+        if (sixelWidth[sixelNum] > cellW * mColumns || (sixelWidth[sixelNum] % cellW) != 0 || (sixelHeight[sixelNum] % cellH) != 0) {
+            try {
+                sixelBitmap[sixelNum] = resizeBitmap(bm, Math.min(cellW * mColumns, ((sixelWidth[sixelNum]-1) / cellW) * cellW + cellW),
+                                                 ((sixelHeight[sixelNum]-1) / cellH) * cellH + cellH);
+            } catch(OutOfMemoryError e) {
+                sixelBitmap[sixelNum] = null;
+                sixelNum--;
+                return new int[] {0,0};
+            }
         }
         int lines = sixelEnd(Y, X, cellW, cellH);
         return new int[] {lines, (sixelWidth[sixelNum] + cellW - 1) / cellW};
+
     }
 
     public void sixelGC(int timeDelta) {
