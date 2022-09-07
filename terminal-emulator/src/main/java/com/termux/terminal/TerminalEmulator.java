@@ -585,7 +585,7 @@ public final class TerminalEmulator {
             return;
         }
 
-        mScreen.sixelGC(300000);
+        mScreen.bitmapGC(300000);
         switch (b) {
             case 0: // Null character (NUL, ^@). Do nothing.
                 break;
@@ -624,13 +624,13 @@ public final class TerminalEmulator {
             case 10: // Line feed (LF, \n).
             case 11: // Vertical tab (VT, \v).
             case 12: // Form feed (FF, \f).
-                if(!ESC_P_sixel) {
+                if(mEscapeState != ESC_P || !ESC_P_sixel) {
                     // Ignore CR/LF inside sixels
                     doLinefeed();
                 }
                 break;
             case 13: // Carriage return (CR, \r).
-                if(!ESC_P_sixel) {
+                if(mEscapeState != ESC_P || !ESC_P_sixel) {
                     // Ignore CR/LF inside sixels
                     setCursorCol(mLeftMargin);
                 }
@@ -2774,6 +2774,10 @@ public final class TerminalEmulator {
 
         mColors.reset();
         mSession.onColorsChanged();
+
+        ESC_P_escape = false;
+        ESC_P_sixel = false;
+        ESC_OSC_colon = -1;
     }
 
     public String getSelectedText(int x1, int y1, int x2, int y2) {
