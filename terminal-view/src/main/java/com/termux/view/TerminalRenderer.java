@@ -103,7 +103,7 @@ public final class TerminalRenderer {
                 final int charsForCodePoint = charIsHighsurrogate ? 2 : 1;
                 final int codePoint = charIsHighsurrogate ? Character.toCodePoint(charAtIndex, line[currentCharIndex + 1]) : charAtIndex;
                 final long style = lineObject.getStyle(column);
-                if (TextStyle.decodeBitmap(style)) {
+                if (TextStyle.isBitmap(style)) {
                     Bitmap bm = mEmulator.getScreen().getSixelBitmap(codePoint, style);
                     if (bm != null) {
                         float left = column * mFontWidth;

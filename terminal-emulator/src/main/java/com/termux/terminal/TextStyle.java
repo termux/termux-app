@@ -89,8 +89,24 @@ public final class TextStyle {
         return (int) (style & 0b11111111111);
     }
 
-    public static boolean decodeBitmap(long style) {
+    public static long encodeBitmap(int num, int X, int Y) {
+        return ((long)num << 16) | ((long)Y << 32) | ((long)X << 48) | BITMAP;
+        }
+
+    public static boolean isBitmap(long style) {
         return (style & 0x8000) != 0;
+    }
+
+    public static int bitmapNum(long style) {
+        return (int)(style & 0xffff0000) >> 16;
+    }
+
+    public static int bitmapX(long style) {
+        return (int)((style >> 48) & 0xfff);
+    }
+
+    public static int bitmapY(long style) {
+        return (int)((style >> 32) & 0xfff);
     }
 
 }

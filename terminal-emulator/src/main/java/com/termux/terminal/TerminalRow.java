@@ -132,7 +132,7 @@ public final class TerminalRow {
 
         mStyle[columnToSet] = style;
 
-        if (!mHasBitmap && TextStyle.decodeBitmap(style)) {
+        if (!mHasBitmap && TextStyle.isBitmap(style)) {
             mHasBitmap = true;
         }
 
