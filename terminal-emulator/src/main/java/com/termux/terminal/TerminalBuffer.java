@@ -611,7 +611,8 @@ public final class TerminalBuffer {
                 }
             }
         }
-        for (Integer bn: bitmaps.keySet()) {
+        Set<Integer> keys = new HashSet<Integer>(bitmaps.keySet());
+        for (Integer bn: keys) {
             if (!used.contains(bn)) {
                 bitmaps.remove(bn);
             }
