@@ -77,6 +77,13 @@ public class TerminalBitmap {
                 bm = BitmapFactory.decodeByteArray(image, 0, image.length, scaleOptions);
             } catch (Exception e) {
                 Logger.logWarn(null, LOG_TAG, "Out of memory, cannot decode image");
+                bitmap = null;
+                return;
+            }
+            if (bm == null) {
+                Logger.logWarn(null, LOG_TAG, "Could not decode image");
+                bitmap = null;
+                return;
             }
             int maxWidth = (screen.mColumns - X) * cellW;
             if (newWidth > maxWidth) {
