@@ -607,14 +607,14 @@ public final class TerminalEmulator {
             case 10: // Line feed (LF, \n).
             case 11: // Vertical tab (VT, \v).
             case 12: // Form feed (FF, \f).
-                if(mEscapeState != ESC_P || !ESC_P_sixel) {
-                    // Ignore CR/LF inside sixels
+                if((mEscapeState != ESC_P || !ESC_P_sixel) && ESC_OSC_colon <= 0) {
+                    // Ignore CR/LF inside sixels or iterm2 data
                     doLinefeed();
                 }
                 break;
             case 13: // Carriage return (CR, \r).
-                if(mEscapeState != ESC_P || !ESC_P_sixel) {
-                    // Ignore CR/LF inside sixels
+                if((mEscapeState != ESC_P || !ESC_P_sixel) && ESC_OSC_colon <= 0) {
+                    // Ignore CR/LF inside sixels or iterm2 data
                     setCursorCol(mLeftMargin);
                 }
                 break;
@@ -2085,6 +2085,8 @@ public final class TerminalEmulator {
     /** An Operating System Controls (OSC) Set Text Parameters. May come here from BEL or ST. */
     private void doOscSetTextParameters(String bellOrStringTerminator) {
         int value = -1;
+        int osc_colon = ESC_OSC_colon;
+        ESC_OSC_colon = -1;
         String textParameter = "";
         // Extract initial $value from initial "$value;..." string.
         for (int mOSCArgTokenizerIndex = 0; mOSCArgTokenizerIndex < mOSCOrDeviceControlArgs.length(); mOSCArgTokenizerIndex++) {
@@ -2282,21 +2284,21 @@ public final class TerminalEmulator {
                         finishSequence();
                         return;
                     }
-                    if (ESC_OSC_colon >= 0 && mOSCOrDeviceControlArgs.length() > ESC_OSC_colon) {
-                        while (mOSCOrDeviceControlArgs.length() - ESC_OSC_colon < 4) {
+                    if (osc_colon >= 0 && mOSCOrDeviceControlArgs.length() > osc_colon) {
+                        while (mOSCOrDeviceControlArgs.length() - osc_colon < 4) {
                             mOSCOrDeviceControlArgs.append('=');
                         }
                         try {
-                            byte[] decoded = Base64.decode(mOSCOrDeviceControlArgs.substring(ESC_OSC_colon), 0);
+                            byte[] decoded = Base64.decode(mOSCOrDeviceControlArgs.substring(osc_colon), 0);
                             for (int i = 0 ; i < decoded.length; i++) {
                                 ESC_OSC_data.add(decoded[i]);
                             }
                         } catch(Exception e) {
                             // Ignore non-Base64 data.
                         }
-                        mOSCOrDeviceControlArgs.setLength(ESC_OSC_colon);
+                        mOSCOrDeviceControlArgs.setLength(osc_colon);
                     }
-                    if (ESC_OSC_colon >= 0) {
+                    if (osc_colon >= 0) {
                         byte[] result = new byte[ESC_OSC_data.size()];
                         for(int i = 0; i < ESC_OSC_data.size(); i++) {
                             result[i] = ESC_OSC_data.get(i).byteValue();
