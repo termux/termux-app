@@ -1587,8 +1587,8 @@ public final class TerminalEmulator {
                     final int linesToScrollArg = getArg0(1);
                     final int linesBetweenTopAndBottomMargins = mBottomMargin - mTopMargin;
                     final int linesToScroll = Math.min(linesBetweenTopAndBottomMargins, linesToScrollArg);
-                    mScreen.blockCopy(0, mTopMargin, mColumns, linesBetweenTopAndBottomMargins - linesToScroll, 0, mTopMargin + linesToScroll);
-                    blockClear(0, mTopMargin, mColumns, linesToScroll);
+                    mScreen.blockCopy(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, linesBetweenTopAndBottomMargins - linesToScroll, mLeftMargin, mTopMargin + linesToScroll);
+                    blockClear(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, linesToScroll);
                 } else {
                     // "${CSI}${func};${startx};${starty};${firstrow};${lastrow}T" - initiate highlight mouse tracking.
                     unimplementedSequence(b);
