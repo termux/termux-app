@@ -1,13 +1,13 @@
 package com.termux.shared.termux.settings.preferences;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.shared.android.PackageUtils;
+import com.termux.shared.settings.preferences.AppSharedPreferences;
 import com.termux.shared.settings.preferences.SharedPreferenceUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
@@ -15,11 +15,7 @@ import com.termux.shared.data.DataUtils;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
 
-public class TermuxAppSharedPreferences {
-
-    private final Context mContext;
-    private final SharedPreferences mSharedPreferences;
-    private final SharedPreferences mMultiProcessSharedPreferences;
+public class TermuxAppSharedPreferences extends AppSharedPreferences {
 
     private int MIN_FONTSIZE;
     private int MAX_FONTSIZE;
@@ -28,10 +24,11 @@ public class TermuxAppSharedPreferences {
     private static final String LOG_TAG = "TermuxAppSharedPreferences";
 
     private TermuxAppSharedPreferences(@NonNull Context context) {
-        mContext = context;
-        mSharedPreferences = getPrivateSharedPreferences(mContext);
-        mMultiProcessSharedPreferences = getPrivateAndMultiProcessSharedPreferences(mContext);
-
+        super(context,
+            SharedPreferenceUtils.getPrivateSharedPreferences(context,
+                TermuxConstants.TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION),
+            SharedPreferenceUtils.getPrivateAndMultiProcessSharedPreferences(context,
+                TermuxConstants.TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION));
 
         setFontVariables(context);
     }
@@ -67,17 +64,6 @@ public class TermuxAppSharedPreferences {
             return null;
         else
             return new TermuxAppSharedPreferences(termuxPackageContext);
-    }
-
-    private static SharedPreferences getPrivateSharedPreferences(Context context) {
-        if (context == null) return null;
-        return SharedPreferenceUtils.getPrivateSharedPreferences(context, TermuxConstants.TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
-    }
-
-
-    private static SharedPreferences getPrivateAndMultiProcessSharedPreferences(Context context) {
-        if (context == null) return null;
-        return SharedPreferenceUtils.getPrivateAndMultiProcessSharedPreferences(context, TermuxConstants.TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
     }
 
 
