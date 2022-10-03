@@ -177,20 +177,16 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
     public void onCopyTextToClipboard(TerminalSession session, String text) {
         if (!mActivity.isVisible()) return;
 
-        ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboard.setPrimaryClip(new ClipData(null, new String[]{"text/plain"}, new ClipData.Item(text)));
+        ShareUtils.copyTextToClipboard(mActivity, text);
     }
 
     @Override
     public void onPasteTextFromClipboard(TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
-        ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clipData = clipboard.getPrimaryClip();
-        if (clipData != null) {
-            CharSequence paste = clipData.getItemAt(0).coerceToText(mActivity);
-            if (!TextUtils.isEmpty(paste)) mActivity.getTerminalView().mEmulator.paste(paste.toString());
-        }
+        String text = ShareUtils.getTextStringFromClipboardIfSet(mActivity, true);
+        if (text != null)
+            mActivity.getTerminalView().mEmulator.paste(text);
     }
 
     @Override

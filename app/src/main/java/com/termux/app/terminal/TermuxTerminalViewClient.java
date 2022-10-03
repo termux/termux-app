@@ -670,9 +670,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         // Click to copy url to clipboard:
         final AlertDialog dialog = new AlertDialog.Builder(mActivity).setItems(urls, (di, which) -> {
             String url = (String) urls[which];
-            ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
-            clipboard.setPrimaryClip(new ClipData(null, new String[]{"text/plain"}, new ClipData.Item(url)));
-            Toast.makeText(mActivity, R.string.msg_select_url_copied_to_clipboard, Toast.LENGTH_LONG).show();
+            ShareUtils.copyTextToClipboard(mActivity, url, mActivity.getString(R.string.msg_select_url_copied_to_clipboard));
         }).setTitle(R.string.title_select_url_dialog).create();
 
         // Long press to open URL:
@@ -748,12 +746,9 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         if (session == null) return;
         if (!session.isRunning()) return;
 
-        ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clipData = clipboard.getPrimaryClip();
-        if (clipData == null) return;
-        CharSequence paste = clipData.getItemAt(0).coerceToText(mActivity);
-        if (!TextUtils.isEmpty(paste))
-            session.getEmulator().paste(paste.toString());
+        String text = ShareUtils.getTextStringFromClipboardIfSet(mActivity, true);
+        if (text != null)
+            session.getEmulator().paste(text);
     }
 
 }
