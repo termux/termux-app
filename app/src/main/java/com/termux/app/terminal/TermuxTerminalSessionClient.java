@@ -15,6 +15,7 @@ import android.widget.ListView;
 import com.termux.R;
 import com.termux.shared.shell.TermuxSession;
 import com.termux.shared.interact.TextInputDialogUtils;
+import com.termux.shared.interact.ShareUtils;
 import com.termux.app.TermuxActivity;
 import com.termux.shared.terminal.TermuxTerminalSessionClientBase;
 import com.termux.shared.termux.TermuxConstants;
