@@ -566,11 +566,14 @@ public final class TerminalView extends View {
                 if (action == MotionEvent.ACTION_DOWN) showContextMenu();
                 return true;
             } else if (event.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
-                ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clipData = clipboard.getPrimaryClip();
+                ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clipData = clipboardManager.getPrimaryClip();
                 if (clipData != null) {
-                    CharSequence paste = clipData.getItemAt(0).coerceToText(getContext());
-                    if (!TextUtils.isEmpty(paste)) mEmulator.paste(paste.toString());
+                    ClipData.Item clipItem = clipData.getItemAt(0);
+                    if (clipItem != null) {
+                        CharSequence text = clipItem.coerceToText(getContext());
+                        if (!TextUtils.isEmpty(text)) mEmulator.paste(text.toString());
+                    }
                 }
             } else if (mEmulator.isMouseTrackingActive()) { // BUTTON_PRIMARY.
                 switch (event.getAction()) {
