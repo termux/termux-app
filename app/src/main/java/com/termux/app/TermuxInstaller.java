@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
 import android.system.Os;
+import android.util.Log;
 import android.util.Pair;
 import android.view.WindowManager;
 
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static com.termux.shared.termux.TermuxConstants.TERMUX_HOME_DIR;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_PREFIX_DIR;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_PREFIX_DIR_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_STAGING_PREFIX_DIR;
@@ -397,7 +399,7 @@ public final class TermuxInstaller {
             public void run() {
                 try {
 
-                    final File targetFile = new File(TermuxService.HOME_PATH, APPLIST_CACHE_FILE);
+                    final File targetFile = new File(TERMUX_HOME_DIR, APPLIST_CACHE_FILE);
                     final FileOutputStream outStream = new FileOutputStream(targetFile);
                     final PrintStream printStream = new PrintStream(outStream);
 
@@ -430,7 +432,7 @@ public final class TermuxInstaller {
                 }
             }
         }.start();
-    };
+    }
 
     private static Error ensureDirectoryExists(File directory) {
         return FileUtils.createDirectoryFile(directory.getAbsolutePath());
