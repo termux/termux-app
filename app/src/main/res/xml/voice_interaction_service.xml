@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<voice-interaction-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sessionService="com.termux.app.voice.VoiceCommandSessionService"
+    android:recognitionService="com.termux.app.voice.VoiceCommandRecognitionService"
+    android:settingsActivity="com.termux.app.activities.SettingsActivity"
+    android:supportsAssist="true"
+    android:supportsLaunchVoiceAssistFromKeyguard="true"
+    android:supportsLocalInteraction="true">
+
+</voice-interaction-service>

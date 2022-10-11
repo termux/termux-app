@@ -35,3 +35,8 @@ local.properties
 .swp
 ehthumbs.db
 Thumbs.db
+
+.project
+.settings
+.classpath
+tags
