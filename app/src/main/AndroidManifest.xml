@@ -34,6 +34,9 @@
     <uses-permission android:name="android.permission.DUMP" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- voice commands -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
 
@@ -70,6 +73,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
+                <action android:name="android.intent.action.VOICE_COMMAND"/>
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
 
@@ -208,6 +212,29 @@
             <intent-filter>
                 <action android:name="${TERMUX_PACKAGE_NAME}.RUN_COMMAND" />
             </intent-filter>
+        </service>
+
+        <service
+            android:name=".app.voice.VoiceCommandService"
+            android:label="@string/application_name"
+            android:permission="android.permission.BIND_VOICE_INTERACTION">
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/voice_interaction_service"/>
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".app.voice.VoiceCommandRecognitionService">
+            <intent-filter>
+                <action android:name="android.speech.RecognitionService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.speech"
+                android:resource="@xml/voice_recognition_service" />
         </service>
 
 
