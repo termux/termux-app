@@ -66,6 +66,12 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
      * Should be called when mActivity.onStart() is called
      */
     public void onStart() {
+    }
+
+    /**
+     * Should be called when mActivity.onResume() is called
+     */
+    public void onResume() {
         // The service has connected, but data may have changed since we were last in the foreground.
         // Get the session stored in shared preferences stored by {@link #onStop} if its valid,
         // otherwise get the last session currently running.
@@ -77,12 +83,6 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         // The current terminal session may have changed while being away, force
         // a refresh of the displayed terminal.
         mActivity.getTerminalView().onScreenUpdated();
-    }
-
-    /**
-     * Should be called when mActivity.onResume() is called
-     */
-    public void onResume() {
         // Just initialize the mBellSoundPool and load the sound, otherwise bell might not run
         // the first time bell key is pressed and play() is called, since sound may not be loaded
         // quickly enough before the call to play(). https://stackoverflow.com/questions/35435625
