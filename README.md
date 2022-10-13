@@ -6,7 +6,6 @@ This fork is being regularly updated and developed by chedim as keyboard-driven 
 Android application names can be entered directly as bash commands or as arguments to `termux-launch`:
 ![termux-launcher](https://user-images.githubusercontent.com/807041/195166525-f2c1097a-2369-49eb-a8d5-ce43c3f83883.jpeg)
 
-Please note that you need to also install [customized termux-api](https://github.com/chedim/termux-api) for termux-launch to work.
 Inspired by Thewisenerd's [termux-setup-apps patch](https://github.com/thewisenerd/termux-app/commit/b877a81b999179af2d702b8929b6d20e29dde054)
 
 Note that this repository is for the app itself (the user interface and the terminal emulation). For the packages installable inside the app, see [termux/termux-packages](https://github.com/termux/termux-packages).
