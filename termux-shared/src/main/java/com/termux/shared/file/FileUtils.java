@@ -1,5 +1,6 @@
 package com.termux.shared.file;
 
+import android.content.Context;
 import android.os.Build;
 import android.system.Os;
 
@@ -15,6 +16,7 @@ import com.termux.shared.errors.Errno;
 import com.termux.shared.errors.Error;
 import com.termux.shared.errors.FunctionErrno;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 
@@ -25,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -1578,6 +1581,17 @@ public class FileUtils {
         }
 
         return null;
+    }
+
+    public static Error copyResourceToFile(Context context, int resource, String filePath, Charset charset) {
+        String data;
+        try {
+            data = IOUtils.toString(context.getResources().openRawResource(resource), charset);
+        } catch (IOException e) {
+            return FileUtilsErrno.ERRNO_READING_TEXT_FROM_FILE_FAILED_WITH_EXCEPTION.getError(e, "resource", resource, e.getMessage());
+        }
+
+        return writeTextToFile("resource #" + resource, filePath, charset, data, false);
     }
 
     public static class ReadSerializableObjectResult {

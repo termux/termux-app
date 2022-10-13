@@ -1,14 +1,26 @@
 package com.termux.shared.shell.command.environment;
 
 import static com.termux.shared.shell.command.environment.UnixShellEnvironment.*;
+import static com.termux.shared.termux.TermuxConstants.TERMUX_HOME_DIR;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.termux.shared.R;
 import com.termux.shared.errors.Error;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -167,14 +179,68 @@ public class ShellEnvironmentUtils {
 
 
     /** Create HOME directory in environment {@link Map} if set. */
-    public static void createHomeDir(@NonNull HashMap<String, String> environment) {
+    public static void createHomeDir(@NonNull Context context, @NonNull HashMap<String, String> environment) {
         String homeDirectory = environment.get(ENV_HOME);
         if (homeDirectory != null && !homeDirectory.isEmpty()) {
             Error error = FileUtils.createDirectoryFile("shell home", homeDirectory);
             if (error != null) {
                 Logger.logErrorExtended(LOG_TAG, "Failed to create shell home directory\n" + error.toString());
             }
+
+            FileUtils.copyResourceToFile(context, R.raw.bashrc, homeDirectory + "/.bashrc", Charset.defaultCharset());
+            setupAppListCache(context, true);
         }
     }
 
+    public static void setupAppListCache(final Context context, boolean lock) {
+        final String LOG_TAG = "termux-applist";
+        final String APPLIST_CACHE_FILE = ".apps";
+        final File targetFile = new File(TERMUX_HOME_DIR, APPLIST_CACHE_FILE);
+        Thread t = new Thread() {
+            public void run() {
+                try {
+
+                    if (targetFile.exists()) {
+                        targetFile.createNewFile();
+                    }
+
+                    final FileOutputStream outStream = new FileOutputStream(targetFile);
+                    final PrintStream printStream = new PrintStream(outStream);
+
+                    final PackageManager pm = context.getPackageManager();
+                    List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+                    for (ApplicationInfo packageInfo : packages) {
+                        final String  packageName     = packageInfo.packageName;
+                        final String  appName         = packageInfo.loadLabel(pm).toString();
+                        final String  sourceDir       = packageInfo.sourceDir;
+                        final Intent LaunchActivity  = pm.getLaunchIntentForPackage(packageName);
+                        final Boolean isSystemApp     = ((packageInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 1) ? true : false;
+
+                        Log.d(LOG_TAG, "[" + LaunchActivity + "] : [" + packageName + "] : [" + isSystemApp + "] : [" + appName + "]");
+                        if (LaunchActivity == null) {
+                            continue;
+                        }
+
+                        final String  LaunchComponent = LaunchActivity.getComponent().flattenToShortString();
+                        printStream.print( appName + "|" + LaunchComponent + "|" + packageName + "|" + isSystemApp + "\n");
+                    } // for package in packages
+
+                    // close file
+                    printStream.flush();
+                    printStream.close();
+                    outStream.flush();
+                    outStream.close();
+
+                } catch (Exception e) {
+                    Log.e(LOG_TAG, "Error setting up applist-cache", e);
+                }
+            }
+        };
+
+        if (lock) {
+            t.run();
+        } else {
+            t.start();
+        }
+    }
 }

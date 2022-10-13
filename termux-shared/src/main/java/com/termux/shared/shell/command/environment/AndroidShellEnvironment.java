@@ -89,7 +89,7 @@ public class AndroidShellEnvironment extends UnixShellEnvironment {
         environment.put(ENV_PWD,
             workingDirectory != null && !workingDirectory.isEmpty() ? new File(workingDirectory).getAbsolutePath() : // PWD must be absolute path
             getDefaultWorkingDirectoryPath());
-        ShellEnvironmentUtils.createHomeDir(environment);
+        ShellEnvironmentUtils.createHomeDir(currentPackageContext, environment);
 
         if (executionCommand.setShellCommandShellEnvironment && shellCommandShellEnvironment != null)
             environment.putAll(shellCommandShellEnvironment.getEnvironment(currentPackageContext, executionCommand));

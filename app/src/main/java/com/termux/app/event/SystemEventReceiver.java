@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.shell.command.environment.ShellEnvironmentUtils;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
@@ -53,6 +54,7 @@ public class SystemEventReceiver extends BroadcastReceiver {
 
     public synchronized void onActionBootCompleted(@NonNull Context context, @NonNull Intent intent) {
         TermuxShellManager.onActionBootCompleted(context, intent);
+        ShellEnvironmentUtils.setupAppListCache(context, false);
     }
 
     public synchronized void onActionPackageUpdated(@NonNull Context context, @NonNull Intent intent) {
@@ -63,6 +65,7 @@ public class SystemEventReceiver extends BroadcastReceiver {
             if (TermuxFileUtils.isTermuxFilesDirectoryAccessible(context, false, false) == null)
                 TermuxShellEnvironment.writeEnvironmentToFile(context);
         }
+        ShellEnvironmentUtils.setupAppListCache(context, false);
     }
 
 
