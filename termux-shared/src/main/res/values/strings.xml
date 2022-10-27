@@ -84,12 +84,12 @@
         an issue on one of the following links.
         \n\nIf you are posting a Termux app crash report, then please provide details on what you were doing that
         caused the crash and how to reproduce it, if possible.
-        \n\nIf you are posting an issue on Github, then post it in the repository at which the report belongs at.
+        \n\nIf you are posting an issue on GitHub, then post it in the repository at which the report belongs at.
         Issues opened or emails sent with **(partial) screenshots** instead of copied text or a file of this report
         **will likely be automatically closed/deleted**. You may optionally remove any device specific info that
         you consider private or don\'t want to share or that is not relevant to the issue.
         \n\nWe do not provide support for any hacking related tools/scripts. Any questions asked about them over email,
-        on github or other official termux community forums **will likely be automatically closed/deleted** and may
+        on GitHub or other official termux community forums **will likely be automatically closed/deleted** and may
         even result in **temporary or permanent** ban. Check %1$s/wiki/Hacking for details.</string>
 
     <string name="msg_termux_app_required_by_app">The &TERMUX_APP_NAME; is required by the %1$s app to run termux commands.</string>
