@@ -214,6 +214,21 @@
                     If it causes screen flickering on your devices, then disable it. (Default)</string>
 
 
+        <!-- Termux Style Preferences -->
+        <string name="termux_style_preferences_title">Termux Style</string>
+        <string name="termux_style_preferences_summary">Preferences for termux style</string>
+
+            <!-- Background Category -->
+            <string name="termux_background_header">Background</string>
+
+                <!-- Background Image -->
+                <string name="termux_background_image_enabled_title">Background Image Enabled</string>
+                <string name="termux_background_image_enabled_off">Background image will be disabled.
+                    To enable it appropriate portrait and landscape file should be present.
+                    If you want to set new background, set it from context menu by long click on terminal. (Default)</string>
+                <string name="termux_background_image_enabled_on">Background image will be enabled.</string>
+
+
 
     <!-- Termux:API App Preferences -->
     <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;</string>
