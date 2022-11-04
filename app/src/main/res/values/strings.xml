@@ -82,6 +82,10 @@
     <string name="title_confirm_kill_process">Really kill this session?</string>
 
     <string name="action_style_terminal">Style</string>
+    <string name="action_font_and_color">Font and Color</string>
+    <string name="action_set_background_image">Set background image</string>
+    <string name="action_remove_background_image">Remove background image</string>
+
     <string name="action_toggle_keep_screen_on">Keep screen on</string>
     <string name="action_open_help">Help</string>
     <string name="action_open_settings">Settings</string>
@@ -125,6 +129,13 @@
     <string name="title_file_received">Save file in ~/downloads/</string>
     <string name="action_file_received_edit">Edit</string>
     <string name="action_file_received_open_directory">Open directory</string>
+
+
+
+    <!-- Termux Background Manager -->
+    <string name="title_restore_background_image">Background image detected. Do you want to restore it?</string>
+    <string name="error_background_image_loading_failed">Couldn\'t load background image. Setting background color.</string>
+    <string name="error_background_image_loading_from_gallery_failed">Failed to load image. Try another image.</string>
 
 
 
