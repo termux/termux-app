@@ -48,7 +48,7 @@ public final class ImageUtils {
     public static final String ANY_IMAGE_TYPE = IMAGE_TYPE + "/*";
 
 
-    private static final String LOG_TAG = "FileUtils";
+    private static final String LOG_TAG = "ImageUtils";
 
     /**
      * Don't let anyone instantiate this class.
