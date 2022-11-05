@@ -261,13 +261,7 @@ public class DataUtils {
      * Wrapper for {@link #getIntColorFromString(String, int, boolean)} with `setAlpha` `false`.
      */
     public static int getIntColorFromString(String value, int def) {
-        if (value == null) return def;
-
-        try {
-            return Color.parseColor(value);
-        } catch (Exception e) {
-            return def;
-        }
+        return getIntColorFromString(value, def, false);
     }
 
     /**

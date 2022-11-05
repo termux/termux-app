@@ -3,14 +3,17 @@ package com.termux.app.style;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.viewpager.widget.ViewPager;
 
 import com.termux.R;
 import com.termux.app.TermuxActivity;
@@ -21,7 +24,9 @@ import com.termux.shared.file.FileUtils;
 import com.termux.shared.image.ImageUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.extrakeys.ExtraKeysView;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.shared.theme.ThemeUtils;
 import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TextStyle;
@@ -179,6 +184,7 @@ public class TermuxBackgroundManager {
     public void updateBackground(boolean forced) {
         if (!mActivity.isVisible()) return;
 
+        Log.d("FF", " " + mActivity.getPreferences().isBackgroundImageEnabled());
         if (mActivity.getPreferences().isBackgroundImageEnabled()) {
 
             Drawable drawable = mActivity.getWindow().getDecorView().getBackground();
@@ -193,6 +199,8 @@ public class TermuxBackgroundManager {
         } else {
             updateBackgroundColor();
         }
+
+        updateToolbarBackground();
     }
 
     /**
@@ -228,6 +236,7 @@ public class TermuxBackgroundManager {
 
                 // Since loading of image is failed, Set background to solid color.
                 updateBackgroundColor();
+                notifyBackgroundUpdated(false);
             }
 
         } else {
@@ -236,6 +245,30 @@ public class TermuxBackgroundManager {
             // Image files are unable to load so set background to solid color and notify update.
             updateBackgroundColor();
             notifyBackgroundUpdated(false);
+        }
+    }
+
+    /**
+     * Set backgroudn of the ExtraKey toolbar and buttons.
+     * Must be called when background preference is changed.
+     */
+    public void updateToolbarBackground() {
+        ViewPager viewPager = mActivity.getTerminalToolbarViewPager();
+        ExtraKeysView extraKeysView = mActivity.getExtraKeysView();
+
+        if (viewPager == null || extraKeysView == null) {
+            return;
+        }
+
+        if (mPreferences.isBackgroundImageEnabled()) {
+            // Set overlay background to ToolbarViewPager and make button transparent.
+            mActivity.getTerminalToolbarViewPager().setBackgroundColor(mActivity.getProperties().getBackgroundOverlayColor());
+            extraKeysView.setButtonBackgroundColor(Color.TRANSPARENT);
+
+        } else {
+            // Use default background color of ToolbarViewPager and button.
+            viewPager.setBackgroundColor(Color.BLACK);
+            extraKeysView.setButtonBackgroundColor(ThemeUtils.getSystemAttrColor(mActivity, ExtraKeysView.ATTR_BUTTON_BACKGROUND_COLOR, ExtraKeysView.DEFAULT_BUTTON_BACKGROUND_COLOR));
         }
     }
 
@@ -248,7 +281,7 @@ public class TermuxBackgroundManager {
      */
     public void notifyBackgroundUpdated(boolean isImage) {
         mPreferences.setBackgroundImageEnabled(isImage);
-        TermuxActivity.updateTermuxActivityStyling(mActivity, true);
+        TermuxActivity.updateTermuxActivityStyling(mActivity, false);
     }
 
 }

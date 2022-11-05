@@ -55,6 +55,9 @@ public class TerminalToolbarViewPager {
                     FullScreenWorkAround.apply(mActivity);
                 }
 
+                // Update toolbar background corresponding to prefs
+                mActivity.getmTermuxBackgroundManager().updateToolbarBackground();
+
             } else {
                 layout = inflater.inflate(R.layout.view_terminal_toolbar_text_input, collection, false);
                 final EditText editText = layout.findViewById(R.id.terminal_toolbar_text_input);
