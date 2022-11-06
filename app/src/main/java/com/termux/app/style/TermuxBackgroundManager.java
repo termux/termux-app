@@ -1,12 +1,14 @@
 package com.termux.app.style;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
@@ -31,6 +33,9 @@ import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TextStyle;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class TermuxBackgroundManager {
 
     /** Require {@link TermuxActivity} to perform operations. */
@@ -42,6 +47,12 @@ public class TermuxBackgroundManager {
     /** Termux app shared preferences manager. */
     private final TermuxAppSharedPreferences mPreferences;
 
+    /** ExecutorService to execute task in background. */
+    private final ExecutorService executor;
+
+    /** Handler allows to send and process {@link  android.os.Message Message}. */
+    private final Handler handler;
+
 
     private static final String LOG_TAG = "TermuxBackgroundManager";
 
@@ -49,6 +60,8 @@ public class TermuxBackgroundManager {
         this.mActivity = activity;
         this.mPreferences = activity.getPreferences();
         this.mActivityResultLauncher = registerActivityResultLauncher();
+        this.executor = Executors.newSingleThreadExecutor();
+        this.handler = new Handler(Looper.getMainLooper());
     }
 
     /**
@@ -62,7 +75,7 @@ public class TermuxBackgroundManager {
 
             if (uri != null) {
                 try {
-                    new Thread(() -> {
+                    executor.execute(() -> {
                         Bitmap bitmap = ImageUtils.getBitmap(mActivity, uri);
 
                         if (bitmap == null) {
@@ -70,28 +83,21 @@ public class TermuxBackgroundManager {
                             return;
                         }
 
-                        Point size = ViewUtils.getDisplaySize(mActivity, false);
-                        boolean isLandscape = ViewUtils.getDisplayOrientation(mActivity) == Configuration.ORIENTATION_LANDSCAPE;
-                        Error error;
+                        ImageUtils.compressAndSaveBitmap(bitmap, TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH);
+                        boolean success = generateImageFiles(mActivity, bitmap);
 
-                        if (isLandscape) {
-                            error = ImageUtils.saveForDisplayResolution(bitmap, size, TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH, TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH);
+                        if (success) {
+                            notifyBackgroundUpdated(true);
+
+                            Logger.logInfo(LOG_TAG, "Image received successfully from the gallary.");
+                            Logger.logDebug(LOG_TAG, "Storing background original image to " + TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH);
+                            Logger.logDebug(LOG_TAG, "Storing background portrait image to " + TermuxConstants.TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH);
+                            Logger.logDebug(LOG_TAG, "Storing background landscape image to " + TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH);
 
                         } else {
-                            error = ImageUtils.saveForDisplayResolution(bitmap, DataUtils.swap(size), TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH, TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH);
-                        }
-
-                        if (error != null) {
                             Logger.logErrorAndShowToast(mActivity, LOG_TAG, mActivity.getString(R.string.error_background_image_loading_from_gallery_failed));
-                            return;
                         }
-
-                        notifyBackgroundUpdated(true);
-
-                        Logger.logInfo(LOG_TAG, "Image received successfully from the gallary.");
-                        Logger.logDebug(LOG_TAG, "Storing background portrait image to " + TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH);
-                        Logger.logDebug(LOG_TAG, "Storing background landscape image to " + TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH);
-                    }).start();
+                    });
 
                 } catch (Exception e) {
                     Logger.logStackTraceWithMessage(LOG_TAG, "Failed to load image", e);
@@ -108,15 +114,23 @@ public class TermuxBackgroundManager {
      * @param context The context for operation.
      * @return Returns whether the optimized background image exist or not.
      */
-    public static boolean isImageFilesExist(@NonNull Context context) {
+    public static boolean isImageFilesExist(@NonNull Context context, boolean shouldGenerate) {
         boolean isLandscape = (ViewUtils.getDisplayOrientation(context) == Configuration.ORIENTATION_LANDSCAPE);
-        Point size = ViewUtils.getDisplaySize(context, false);
+        Point size = ViewUtils.getDisplaySize(context, true);
 
-        String imagePath1 = isLandscape ? TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH : TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH;
+        String imagePath1 = isLandscape ? TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH : TermuxConstants.TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH;
 
-        String imagePath2 = isLandscape ? TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH : TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH;
+        String imagePath2 = isLandscape ? TermuxConstants.TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH : TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH;
 
-        return ImageUtils.isImageOptimized(imagePath1, size) && ImageUtils.isImageOptimized(imagePath2, DataUtils.swap(size));
+        boolean exist = ImageUtils.isImageOptimized(imagePath1, size)
+            && ImageUtils.isImageOptimized(imagePath2, DataUtils.swap(size));
+
+        if (!exist && shouldGenerate && ImageUtils.isImage(TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH)) {
+            Bitmap bitmap = ImageUtils.getBitmap(TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH);
+            return generateImageFiles(context, bitmap);
+        }
+
+        return exist;
     }
 
 
@@ -125,7 +139,7 @@ public class TermuxBackgroundManager {
      * Enable background image loading. If the image already exist then ask for restore otherwise pick from gallery.
      */
     public void setBackgroundImage() {
-        if (!mPreferences.isBackgroundImageEnabled() && isImageFilesExist(mActivity)) {
+        if (!mPreferences.isBackgroundImageEnabled() && isImageFilesExist(mActivity, true)) {
             restoreBackgroundImages();
 
         } else {
@@ -142,8 +156,7 @@ public class TermuxBackgroundManager {
      */
     public void removeBackgroundImage(boolean deleteFiles) {
         if (deleteFiles) {
-            FileUtils.deleteRegularFile(null, TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH, true);
-            FileUtils.deleteRegularFile(null, TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH, true);
+            FileUtils.deleteDirectoryFile(null, TermuxConstants.TERMUX_BACKGROUND_DIR_PATH, true);
         }
 
         notifyBackgroundUpdated(false);
@@ -173,6 +186,35 @@ public class TermuxBackgroundManager {
         b.show();
     }
 
+    /**
+     * Generate background image files using original image. {@link Context}
+     * passed to this method must be of an {@link Activity} to determine the size
+     * of display.
+     *
+     * @param context The context require for the operations.
+     * @param bitmap Image bitmap to save as background.
+     * @return Returns whether the images generated successfully.
+     */
+    public static boolean generateImageFiles(@NonNull Context context, Bitmap bitmap) {
+
+        if (bitmap == null || !(context instanceof Activity)) {
+            return false;
+        }
+
+        Point size = ViewUtils.getDisplaySize(context, true);
+        boolean isLandscape = ViewUtils.getDisplayOrientation(context) == Configuration.ORIENTATION_LANDSCAPE;
+        Error error;
+
+        if (isLandscape) {
+            error = ImageUtils.saveForDisplayResolution(bitmap, size, TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH, TermuxConstants.TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH);
+
+        } else {
+            error = ImageUtils.saveForDisplayResolution(bitmap, DataUtils.swap(size), TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH, TermuxConstants.TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH);
+        }
+
+        return error == null;
+    }
+
 
     /**
      * Updates background to image or solid color. If forced then load again even if
@@ -184,7 +226,6 @@ public class TermuxBackgroundManager {
     public void updateBackground(boolean forced) {
         if (!mActivity.isVisible()) return;
 
-        Log.d("FF", " " + mActivity.getPreferences().isBackgroundImageEnabled());
         if (mActivity.getPreferences().isBackgroundImageEnabled()) {
 
             Drawable drawable = mActivity.getWindow().getDecorView().getBackground();
@@ -221,28 +262,30 @@ public class TermuxBackgroundManager {
      */
     public void updateBackgroundImage() {
         boolean isLandscape = ViewUtils.getDisplayOrientation(mActivity) == Configuration.ORIENTATION_LANDSCAPE;
+        String imagePath = isLandscape ? TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH : TermuxConstants.TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH;
 
-        String imagePath = isLandscape ? TermuxConstants.TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH : TermuxConstants.TERMUX_BACKGROUND_IMAGE_PATH;
+        try {
+            // Performing on main Thread may cause ANR and lag.
+            executor.execute(() -> {
+                if (isImageFilesExist(mActivity, true)) {
+                    Drawable drawable = ImageUtils.getDrawable(imagePath);
+                    ImageUtils.addOverlay(drawable, mActivity.getProperties().getBackgroundOverlayColor());
 
-        if (isImageFilesExist(mActivity)) {
-            try {
-                Drawable drawable = ImageUtils.getDrawable(imagePath);
-                ImageUtils.addOverlay(drawable, mActivity.getProperties().getBackgroundOverlayColor());
-                mActivity.getWindow().getDecorView().setBackground(drawable);
+                    handler.post(() -> mActivity.getWindow().getDecorView().setBackground(drawable));
+                } else {
+                    Logger.logErrorAndShowToast(mActivity, LOG_TAG, mActivity.getString(R.string.error_background_image_loading_failed));
 
-            } catch (Exception e) {
-                Logger.logStackTraceWithMessage(LOG_TAG, "Failed to load image", e);
-                Logger.showToast(mActivity, mActivity.getString(R.string.error_background_image_loading_from_gallery_failed), true);
+                    // Image files are unable to load so set background to solid color and notify update.
+                    handler.post(this::updateBackgroundColor);
+                    notifyBackgroundUpdated(false);
+                }
+            });
 
-                // Since loading of image is failed, Set background to solid color.
-                updateBackgroundColor();
-                notifyBackgroundUpdated(false);
-            }
+        } catch (Exception e) {
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to load image", e);
+            Logger.showToast(mActivity, mActivity.getString(R.string.error_background_image_loading_failed), true);
 
-        } else {
-            Logger.logErrorAndShowToast(mActivity, LOG_TAG, mActivity.getString(R.string.error_background_image_loading_failed));
-
-            // Image files are unable to load so set background to solid color and notify update.
+            // Since loading of image is failed, Set background to solid color.
             updateBackgroundColor();
             notifyBackgroundUpdated(false);
         }

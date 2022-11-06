@@ -45,7 +45,7 @@ public class TermuxStylePreferencesFragment extends PreferenceFragmentCompat {
 
             // If background image preference is disabled and background images are
             // missing, then don't allow user to enable it from setting.
-            if (!preferences.isBackgroundImageEnabled() && !TermuxBackgroundManager.isImageFilesExist(context)) {
+            if (!preferences.isBackgroundImageEnabled() && !TermuxBackgroundManager.isImageFilesExist(context, false)) {
                 backgroundImagePreference.setEnabled(false);
             }
         }

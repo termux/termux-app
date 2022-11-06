@@ -81,6 +81,18 @@ public final class ImageUtils {
     }
 
     /**
+     * Generate image bitmap from the path.
+     *
+     * @param path The path for image file
+     * @return Bitmap generated from image path, if fails to
+     * to generate returns {@code null}
+     */
+    public static Bitmap getBitmap(String path) {
+        return BitmapFactory.decodeFile(path);
+    }
+
+
+    /**
      * Creates an centered and resized {@link Bitmap} according to given size.
      *
      * @param bitmap Original bitmap source to resize.
@@ -201,13 +213,26 @@ public final class ImageUtils {
         }
 
         BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, opt);
 
-        opt.inJustDecodeBounds = true;
         int imgWidth = opt.outWidth;
         int imgHeight = opt.outHeight;
 
         return Math.abs(imgWidth - width) <= tolerance && Math.abs(imgHeight - height) <= tolerance;
+    }
+
+    public static boolean isImage(String path) {
+        if (!FileUtils.regularFileExists(path, false)) {
+            Logger.logInfo(LOG_TAG, "Image file " + path + " does not exist.");
+            return false;
+        }
+
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, opt);
+
+        return opt.outWidth != -1 && opt.outHeight != -1;
     }
 
     /**
