@@ -10,6 +10,7 @@ import android.graphics.BlendModeColorFilter;
 import android.graphics.ImageDecoder;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
@@ -174,9 +175,9 @@ public final class ImageUtils {
     public static void addOverlay(Drawable drawable, int color) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            drawable.setColorFilter(new BlendModeColorFilter(color, BlendMode.MULTIPLY));
+            drawable.setColorFilter(new BlendModeColorFilter(color, BlendMode.DARKEN));
         } else {
-            drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY);
+            drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.DARKEN));
         }
     }
 
