@@ -36,7 +36,8 @@ public interface IShellEnvironment {
      * @return Should return the final process arguments.
      */
     @NonNull
-    String[] setupShellCommandArguments(@NonNull String fileToExecute, @Nullable String[] arguments);
+    String[] setupShellCommandArguments(
+            @NonNull String fileToExecute, @Nullable String[] arguments);
 
     /**
      * Setup shell command environment to be used for commands.
@@ -46,7 +47,6 @@ public interface IShellEnvironment {
      * @return Should return the shell environment.
      */
     @NonNull
-    HashMap<String, String> setupShellCommandEnvironment(@NonNull Context currentPackageContext,
-                                                         @NonNull ExecutionCommand executionCommand);
-
+    HashMap<String, String> setupShellCommandEnvironment(
+            @NonNull Context currentPackageContext, @NonNull ExecutionCommand executionCommand);
 }

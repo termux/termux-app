@@ -27,7 +27,6 @@ public class Error implements Serializable {
 
     private static final String LOG_TAG = "Error";
 
-
     public Error() {
         InitError(null, null, null, null);
     }
@@ -68,21 +67,17 @@ public class Error implements Serializable {
         InitError(null, null, message, null);
     }
 
-    private void InitError(String type, Integer code, String message, List<Throwable> throwablesList) {
-        if (type != null && !type.isEmpty())
-            this.type = type;
-        else
-            this.type = Errno.TYPE;
+    private void InitError(
+            String type, Integer code, String message, List<Throwable> throwablesList) {
+        if (type != null && !type.isEmpty()) this.type = type;
+        else this.type = Errno.TYPE;
 
-        if (code != null && code > Errno.ERRNO_SUCCESS.getCode())
-            this.code = code;
-        else
-            this.code = Errno.ERRNO_SUCCESS.getCode();
+        if (code != null && code > Errno.ERRNO_SUCCESS.getCode()) this.code = code;
+        else this.code = Errno.ERRNO_SUCCESS.getCode();
 
         this.message = message;
 
-        if (throwablesList != null)
-            this.throwablesList = throwablesList;
+        if (throwablesList != null) this.throwablesList = throwablesList;
     }
 
     public Error setLabel(String label) {
@@ -93,7 +88,6 @@ public class Error implements Serializable {
     public String getLabel() {
         return label;
     }
-
 
     public String getType() {
         return type;
@@ -108,28 +102,31 @@ public class Error implements Serializable {
     }
 
     public void prependMessage(String message) {
-        if (message != null && isStateFailed())
-            this.message = message + this.message;
+        if (message != null && isStateFailed()) this.message = message + this.message;
     }
 
     public void appendMessage(String message) {
-        if (message != null && isStateFailed())
-            this.message = this.message + message;
+        if (message != null && isStateFailed()) this.message = this.message + message;
     }
 
     public List<Throwable> getThrowablesList() {
         return Collections.unmodifiableList(throwablesList);
     }
 
-
     public synchronized boolean setStateFailed(@NonNull Error error) {
         return setStateFailed(error.getType(), error.getCode(), error.getMessage(), null);
     }
 
     public synchronized boolean setStateFailed(@NonNull Error error, Throwable throwable) {
-        return setStateFailed(error.getType(), error.getCode(), error.getMessage(), Collections.singletonList(throwable));
+        return setStateFailed(
+                error.getType(),
+                error.getCode(),
+                error.getMessage(),
+                Collections.singletonList(throwable));
     }
-    public synchronized boolean setStateFailed(@NonNull Error error, List<Throwable> throwablesList) {
+
+    public synchronized boolean setStateFailed(
+            @NonNull Error error, List<Throwable> throwablesList) {
         return setStateFailed(error.getType(), error.getCode(), error.getMessage(), throwablesList);
     }
 
@@ -141,22 +138,29 @@ public class Error implements Serializable {
         return setStateFailed(this.type, code, message, Collections.singletonList(throwable));
     }
 
-    public synchronized boolean setStateFailed(int code, String message, List<Throwable> throwablesList) {
+    public synchronized boolean setStateFailed(
+            int code, String message, List<Throwable> throwablesList) {
         return setStateFailed(this.type, code, message, throwablesList);
     }
 
-    public synchronized boolean setStateFailed(String type, int code, String message, List<Throwable> throwablesList) {
+    public synchronized boolean setStateFailed(
+            String type, int code, String message, List<Throwable> throwablesList) {
         this.message = message;
         this.throwablesList = throwablesList;
 
-        if (type != null && !type.isEmpty())
-            this.type = type;
+        if (type != null && !type.isEmpty()) this.type = type;
 
         if (code > Errno.ERRNO_SUCCESS.getCode()) {
             this.code = code;
             return true;
         } else {
-            Logger.logWarn(LOG_TAG, "Ignoring invalid error code value \"" + code + "\". Force setting it to RESULT_CODE_FAILED \"" + Errno.ERRNO_FAILED.getCode() + "\"");
+            Logger.logWarn(
+                    LOG_TAG,
+                    "Ignoring invalid error code value \""
+                            + code
+                            + "\". Force setting it to RESULT_CODE_FAILED \""
+                            + Errno.ERRNO_FAILED.getCode()
+                            + "\"");
             this.code = Errno.ERRNO_FAILED.getCode();
             return false;
         }
@@ -166,14 +170,11 @@ public class Error implements Serializable {
         return code > Errno.ERRNO_SUCCESS.getCode();
     }
 
-
     @NonNull
     @Override
     public String toString() {
         return getErrorLogString(this);
     }
-
-
 
     /**
      * Log the {@link Error} and show a toast for the minimal {@link String} for the {@link Error}.
@@ -191,7 +192,6 @@ public class Error implements Serializable {
         Logger.logErrorExtended(logTag, getErrorLogString());
         Logger.showToast(context, getMinimalErrorLogString(), true);
     }
-
 
     /**
      * Get a log friendly {@link String} for {@link Error} error parameters.
@@ -269,30 +269,41 @@ public class Error implements Serializable {
     public String getErrorMarkdownString() {
         StringBuilder markdownString = new StringBuilder();
 
-        markdownString.append(MarkdownUtils.getSingleLineMarkdownStringEntry("Error Code", getCode(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry(
-            (Errno.TYPE.equals(getType()) ? "Error Message" : "Error Message (" + getType() + ")"), message, "-"));
+        markdownString.append(
+                MarkdownUtils.getSingleLineMarkdownStringEntry("Error Code", getCode(), "-"));
+        markdownString
+                .append("\n")
+                .append(
+                        MarkdownUtils.getMultiLineMarkdownStringEntry(
+                                (Errno.TYPE.equals(getType())
+                                        ? "Error Message"
+                                        : "Error Message (" + getType() + ")"),
+                                message,
+                                "-"));
         if (throwablesList != null && throwablesList.size() > 0)
             markdownString.append("\n\n").append(geStackTracesMarkdownString());
 
         return markdownString.toString();
     }
 
-
     public String getCodeString() {
         return Logger.getSingleLineLogStringEntry("Error Code", code, "-");
     }
 
     public String getTypeAndMessageLogString() {
-        return Logger.getMultiLineLogStringEntry(Errno.TYPE.equals(type) ? "Error Message" : "Error Message (" + type + ")", message, "-");
+        return Logger.getMultiLineLogStringEntry(
+                Errno.TYPE.equals(type) ? "Error Message" : "Error Message (" + type + ")",
+                message,
+                "-");
     }
 
     public String geStackTracesLogString() {
-        return Logger.getStackTracesString("StackTraces:", Logger.getStackTracesStringArray(throwablesList));
+        return Logger.getStackTracesString(
+                "StackTraces:", Logger.getStackTracesStringArray(throwablesList));
     }
 
     public String geStackTracesMarkdownString() {
-        return Logger.getStackTracesMarkdownString("StackTraces", Logger.getStackTracesStringArray(throwablesList));
+        return Logger.getStackTracesMarkdownString(
+                "StackTraces", Logger.getStackTracesStringArray(throwablesList));
     }
-
 }

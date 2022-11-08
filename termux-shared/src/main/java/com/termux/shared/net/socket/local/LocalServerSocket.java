@@ -30,9 +30,9 @@ public class LocalServerSocket implements Closeable {
     @NonNull protected final Thread mClientSocketListener;
 
     /**
-     * The required permissions for server socket file parent directory.
-     * Creation of a new socket will fail if the server starter app process does not have
-     * write and search (execute) permission on the directory in which the socket is created.
+     * The required permissions for server socket file parent directory. Creation of a new socket
+     * will fail if the server starter app process does not have write and search (execute)
+     * permission on the directory in which the socket is created.
      */
     public static final String SERVER_SOCKET_PARENT_DIRECTORY_PERMISSIONS = "rwx"; // Default: "rwx"
 
@@ -54,7 +54,8 @@ public class LocalServerSocket implements Closeable {
 
         String path = mLocalSocketRunConfig.getPath();
         if (path == null || path.isEmpty()) {
-            return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_NULL_OR_EMPTY.getError(mLocalSocketRunConfig.getTitle());
+            return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_NULL_OR_EMPTY.getError(
+                    mLocalSocketRunConfig.getTitle());
         }
         if (!mLocalSocketRunConfig.isAbstractNamespaceSocket()) {
             path = FileUtils.getCanonicalPath(path, null);
@@ -64,12 +65,14 @@ public class LocalServerSocket implements Closeable {
         // prevent useless parent directory creation since createServerSocket() call will fail since
         // there is a native check as well.
         if (path.getBytes(StandardCharsets.UTF_8).length > 108) {
-            return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_TOO_LONG.getError(mLocalSocketRunConfig.getTitle(), path);
+            return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_TOO_LONG.getError(
+                    mLocalSocketRunConfig.getTitle(), path);
         }
 
         int backlog = mLocalSocketRunConfig.getBacklog();
         if (backlog <= 0) {
-            return LocalSocketErrno.ERRNO_SERVER_SOCKET_BACKLOG_INVALID.getError(mLocalSocketRunConfig.getTitle(), backlog);
+            return LocalSocketErrno.ERRNO_SERVER_SOCKET_BACKLOG_INVALID.getError(
+                    mLocalSocketRunConfig.getTitle(), backlog);
         }
 
         Error error;
@@ -77,41 +80,52 @@ public class LocalServerSocket implements Closeable {
         // If server socket is not in abstract namespace
         if (!mLocalSocketRunConfig.isAbstractNamespaceSocket()) {
             if (!path.startsWith("/"))
-                return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_NOT_ABSOLUTE.getError(mLocalSocketRunConfig.getTitle(), path);
+                return LocalSocketErrno.ERRNO_SERVER_SOCKET_PATH_NOT_ABSOLUTE.getError(
+                        mLocalSocketRunConfig.getTitle(), path);
 
-            // Create the server socket file parent directory and set SERVER_SOCKET_PARENT_DIRECTORY_PERMISSIONS if missing
+            // Create the server socket file parent directory and set
+            // SERVER_SOCKET_PARENT_DIRECTORY_PERMISSIONS if missing
             String socketParentPath = new File(path).getParent();
-            error = FileUtils.validateDirectoryFileExistenceAndPermissions(mLocalSocketRunConfig.getTitle() + " server socket file parent",
-                socketParentPath,
-                null, true,
-                SERVER_SOCKET_PARENT_DIRECTORY_PERMISSIONS, true, true,
-                false, false);
-            if (error != null)
-                return error;
-
+            error =
+                    FileUtils.validateDirectoryFileExistenceAndPermissions(
+                            mLocalSocketRunConfig.getTitle() + " server socket file parent",
+                            socketParentPath,
+                            null,
+                            true,
+                            SERVER_SOCKET_PARENT_DIRECTORY_PERMISSIONS,
+                            true,
+                            true,
+                            false,
+                            false);
+            if (error != null) return error;
 
             // Delete the server socket file to stop any existing servers and for bind() to succeed
             error = deleteServerSocketFile();
-            if (error != null)
-                return error;
+            if (error != null) return error;
         }
 
         // Create the server socket
-        JniResult result = LocalSocketManager.createServerSocket(mLocalSocketRunConfig.getLogTitle() + " (server)",
-            path.getBytes(StandardCharsets.UTF_8), backlog);
+        JniResult result =
+                LocalSocketManager.createServerSocket(
+                        mLocalSocketRunConfig.getLogTitle() + " (server)",
+                        path.getBytes(StandardCharsets.UTF_8),
+                        backlog);
         if (result == null || result.retval != 0) {
-            return LocalSocketErrno.ERRNO_CREATE_SERVER_SOCKET_FAILED.getError(mLocalSocketRunConfig.getTitle(), JniResult.getErrorString(result));
+            return LocalSocketErrno.ERRNO_CREATE_SERVER_SOCKET_FAILED.getError(
+                    mLocalSocketRunConfig.getTitle(), JniResult.getErrorString(result));
         }
 
         int fd = result.intData;
         if (fd < 0) {
-            return LocalSocketErrno.ERRNO_SERVER_SOCKET_FD_INVALID.getError(fd, mLocalSocketRunConfig.getTitle());
+            return LocalSocketErrno.ERRNO_SERVER_SOCKET_FD_INVALID.getError(
+                    fd, mLocalSocketRunConfig.getTitle());
         }
 
         // Update fd to signify that server socket has been created successfully
         mLocalSocketRunConfig.setFD(fd);
 
-        mClientSocketListener.setUncaughtExceptionHandler(mLocalSocketManager.getLocalSocketManagerClientThreadUEH());
+        mClientSocketListener.setUncaughtExceptionHandler(
+                mLocalSocketManager.getLocalSocketManagerClientThreadUEH());
 
         try {
             // Start listening to server clients
@@ -130,11 +144,11 @@ public class LocalServerSocket implements Closeable {
         try {
             // Stop the LocalClientSocket listener.
             mClientSocketListener.interrupt();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         Error error = closeServerSocket(false);
-        if (error != null)
-            return error;
+        if (error != null) return error;
 
         return deleteServerSocketFile();
     }
@@ -146,9 +160,10 @@ public class LocalServerSocket implements Closeable {
         try {
             close();
         } catch (IOException e) {
-            Error error = LocalSocketErrno.ERRNO_CLOSE_SERVER_SOCKET_FAILED_WITH_EXCEPTION.getError(e, mLocalSocketRunConfig.getTitle(), e.getMessage());
-            if (logErrorMessage)
-                Logger.logErrorExtended(LOG_TAG, error.getErrorLogString());
+            Error error =
+                    LocalSocketErrno.ERRNO_CLOSE_SERVER_SOCKET_FAILED_WITH_EXCEPTION.getError(
+                            e, mLocalSocketRunConfig.getTitle(), e.getMessage());
+            if (logErrorMessage) Logger.logErrorExtended(LOG_TAG, error.getErrorLogString());
             return error;
         }
 
@@ -163,7 +178,9 @@ public class LocalServerSocket implements Closeable {
         int fd = mLocalSocketRunConfig.getFD();
 
         if (fd >= 0) {
-            JniResult result = LocalSocketManager.closeSocket(mLocalSocketRunConfig.getLogTitle() + " (server)", fd);
+            JniResult result =
+                    LocalSocketManager.closeSocket(
+                            mLocalSocketRunConfig.getLogTitle() + " (server)", fd);
             if (result == null || result.retval != 0) {
                 throw new IOException(JniResult.getErrorString(result));
             }
@@ -178,9 +195,11 @@ public class LocalServerSocket implements Closeable {
      */
     private Error deleteServerSocketFile() {
         if (!mLocalSocketRunConfig.isAbstractNamespaceSocket())
-            return FileUtils.deleteSocketFile(mLocalSocketRunConfig.getTitle() + " server socket file", mLocalSocketRunConfig.getPath(), true);
-        else
-            return null;
+            return FileUtils.deleteSocketFile(
+                    mLocalSocketRunConfig.getTitle() + " server socket file",
+                    mLocalSocketRunConfig.getPath(),
+                    true);
+        else return null;
     }
 
     /** Listen and accept new {@link LocalClientSocket}. */
@@ -195,25 +214,34 @@ public class LocalServerSocket implements Closeable {
                 return null;
             }
 
-            JniResult result = LocalSocketManager.accept(mLocalSocketRunConfig.getLogTitle() + " (client)", fd);
+            JniResult result =
+                    LocalSocketManager.accept(
+                            mLocalSocketRunConfig.getLogTitle() + " (client)", fd);
             if (result == null || result.retval != 0) {
                 mLocalSocketManager.onError(
-                    LocalSocketErrno.ERRNO_ACCEPT_CLIENT_SOCKET_FAILED.getError(mLocalSocketRunConfig.getTitle(), JniResult.getErrorString(result)));
+                        LocalSocketErrno.ERRNO_ACCEPT_CLIENT_SOCKET_FAILED.getError(
+                                mLocalSocketRunConfig.getTitle(),
+                                JniResult.getErrorString(result)));
                 continue;
             }
 
             clientFD = result.intData;
             if (clientFD < 0) {
                 mLocalSocketManager.onError(
-                    LocalSocketErrno.ERRNO_CLIENT_SOCKET_FD_INVALID.getError(clientFD, mLocalSocketRunConfig.getTitle()));
+                        LocalSocketErrno.ERRNO_CLIENT_SOCKET_FD_INVALID.getError(
+                                clientFD, mLocalSocketRunConfig.getTitle()));
                 continue;
             }
 
             PeerCred peerCred = new PeerCred();
-            result = LocalSocketManager.getPeerCred(mLocalSocketRunConfig.getLogTitle() + " (client)", clientFD, peerCred);
+            result =
+                    LocalSocketManager.getPeerCred(
+                            mLocalSocketRunConfig.getLogTitle() + " (client)", clientFD, peerCred);
             if (result == null || result.retval != 0) {
                 mLocalSocketManager.onError(
-                    LocalSocketErrno.ERRNO_GET_CLIENT_SOCKET_PEER_UID_FAILED.getError(mLocalSocketRunConfig.getTitle(), JniResult.getErrorString(result)));
+                        LocalSocketErrno.ERRNO_GET_CLIENT_SOCKET_PEER_UID_FAILED.getError(
+                                mLocalSocketRunConfig.getTitle(),
+                                JniResult.getErrorString(result)));
                 LocalClientSocket.closeClientSocket(mLocalSocketManager, clientFD);
                 continue;
             }
@@ -221,19 +249,30 @@ public class LocalServerSocket implements Closeable {
             int peerUid = peerCred.uid;
             if (peerUid < 0) {
                 mLocalSocketManager.onError(
-                    LocalSocketErrno.ERRNO_CLIENT_SOCKET_PEER_UID_INVALID.getError(peerUid, mLocalSocketRunConfig.getTitle()));
+                        LocalSocketErrno.ERRNO_CLIENT_SOCKET_PEER_UID_INVALID.getError(
+                                peerUid, mLocalSocketRunConfig.getTitle()));
                 LocalClientSocket.closeClientSocket(mLocalSocketManager, clientFD);
                 continue;
             }
 
-            LocalClientSocket clientSocket =  new LocalClientSocket(mLocalSocketManager, clientFD, peerCred);
-            Logger.logVerbose(LOG_TAG, "Client socket accept for \"" + mLocalSocketRunConfig.getTitle() + "\" server\n" + clientSocket.getLogString());
+            LocalClientSocket clientSocket =
+                    new LocalClientSocket(mLocalSocketManager, clientFD, peerCred);
+            Logger.logVerbose(
+                    LOG_TAG,
+                    "Client socket accept for \""
+                            + mLocalSocketRunConfig.getTitle()
+                            + "\" server\n"
+                            + clientSocket.getLogString());
 
-            // Only allow connection if the peer has the same uid as server app's user id or root user id
-            if (peerUid != mLocalSocketManager.getContext().getApplicationInfo().uid && peerUid != 0) {
-                mLocalSocketManager.onDisallowedClientConnected(clientSocket,
-                    LocalSocketErrno.ERRNO_CLIENT_SOCKET_PEER_UID_DISALLOWED.getError(clientSocket.getPeerCred().getMinimalString(),
-                        mLocalSocketManager.getLocalSocketRunConfig().getTitle()));
+            // Only allow connection if the peer has the same uid as server app's user id or root
+            // user id
+            if (peerUid != mLocalSocketManager.getContext().getApplicationInfo().uid
+                    && peerUid != 0) {
+                mLocalSocketManager.onDisallowedClientConnected(
+                        clientSocket,
+                        LocalSocketErrno.ERRNO_CLIENT_SOCKET_PEER_UID_DISALLOWED.getError(
+                                clientSocket.getPeerCred().getMinimalString(),
+                                mLocalSocketManager.getLocalSocketRunConfig().getTitle()));
                 clientSocket.closeClientSocket(true);
                 continue;
             }
@@ -242,10 +281,10 @@ public class LocalServerSocket implements Closeable {
         }
     }
 
-
-
-
-    /** The {@link LocalClientSocket} listener {@link java.lang.Runnable} for {@link LocalServerSocket}. */
+    /**
+     * The {@link LocalClientSocket} listener {@link java.lang.Runnable} for {@link
+     * LocalServerSocket}.
+     */
     protected class ClientSocketListener implements Runnable {
 
         @Override
@@ -260,8 +299,7 @@ public class LocalServerSocket implements Closeable {
                         clientSocket = null;
                         clientSocket = accept();
                         // If server socket is closed, then stop listener thread.
-                        if (clientSocket == null)
-                            break;
+                        if (clientSocket == null) break;
 
                         Error error;
 
@@ -279,25 +317,29 @@ public class LocalServerSocket implements Closeable {
                             continue;
                         }
 
-                        // Start new thread for client logic and pass control to ILocalSocketManager implementation
+                        // Start new thread for client logic and pass control to ILocalSocketManager
+                        // implementation
                         mLocalSocketManager.onClientAccepted(clientSocket);
                     } catch (Throwable t) {
-                        mLocalSocketManager.onError(clientSocket,
-                            LocalSocketErrno.ERRNO_CLIENT_SOCKET_LISTENER_FAILED_WITH_EXCEPTION.getError(t, mLocalSocketRunConfig.getTitle(), t.getMessage()));
-                        if (clientSocket != null)
-                            clientSocket.closeClientSocket(true);
+                        mLocalSocketManager.onError(
+                                clientSocket,
+                                LocalSocketErrno.ERRNO_CLIENT_SOCKET_LISTENER_FAILED_WITH_EXCEPTION
+                                        .getError(
+                                                t,
+                                                mLocalSocketRunConfig.getTitle(),
+                                                t.getMessage()));
+                        if (clientSocket != null) clientSocket.closeClientSocket(true);
                     }
                 }
             } catch (Exception ignored) {
             } finally {
                 try {
                     close();
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
 
             Logger.logVerbose(LOG_TAG, "ClientSocketListener end");
         }
-
     }
-
 }

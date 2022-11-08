@@ -10,11 +10,13 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
 
     private static TermuxAppSharedProperties properties;
 
-
     private TermuxAppSharedProperties(@NonNull Context context) {
-        super(context, TermuxConstants.TERMUX_APP_NAME,
-            TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST, TermuxPropertyConstants.TERMUX_APP_PROPERTIES_LIST,
-            new TermuxSharedProperties.SharedPropertiesParserClient());
+        super(
+                context,
+                TermuxConstants.TERMUX_APP_NAME,
+                TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST,
+                TermuxPropertyConstants.TERMUX_APP_PROPERTIES_LIST,
+                new TermuxSharedProperties.SharedPropertiesParserClient());
     }
 
     /**
@@ -24,8 +26,7 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
      * @return Returns the {@link TermuxAppSharedProperties}.
      */
     public static TermuxAppSharedProperties init(@NonNull Context context) {
-        if (properties == null)
-            properties = new TermuxAppSharedProperties(context);
+        if (properties == null) properties = new TermuxAppSharedProperties(context);
 
         return properties;
     }
@@ -38,5 +39,4 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
     public static TermuxAppSharedProperties getProperties() {
         return properties;
     }
-
 }

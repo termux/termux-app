@@ -9,7 +9,6 @@ import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 
 import java.lang.reflect.Field;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +32,8 @@ public class ShellUtils {
 
     /** Setup shell command arguments for the execute. */
     @NonNull
-    public static String[] setupShellCommandArguments(@NonNull String executable, @Nullable String[] arguments) {
+    public static String[] setupShellCommandArguments(
+            @NonNull String executable, @Nullable String[] arguments) {
         List<String> result = new ArrayList<>();
         result.add(executable);
         if (arguments != null) Collections.addAll(result, arguments);
@@ -46,10 +46,9 @@ public class ShellUtils {
         return FileUtils.getFileBasename(executable);
     }
 
-
-
     /** Get transcript for {@link TerminalSession}. */
-    public static String getTerminalSessionTranscriptText(TerminalSession terminalSession, boolean linesJoined, boolean trim) {
+    public static String getTerminalSessionTranscriptText(
+            TerminalSession terminalSession, boolean linesJoined, boolean trim) {
         if (terminalSession == null) return null;
 
         TerminalEmulator terminalEmulator = terminalSession.getEmulator();
@@ -60,17 +59,13 @@ public class ShellUtils {
 
         String transcriptText;
 
-        if (linesJoined)
-            transcriptText = terminalBuffer.getTranscriptTextWithFullLinesJoined();
-        else
-            transcriptText = terminalBuffer.getTranscriptTextWithoutJoinedLines();
+        if (linesJoined) transcriptText = terminalBuffer.getTranscriptTextWithFullLinesJoined();
+        else transcriptText = terminalBuffer.getTranscriptTextWithoutJoinedLines();
 
         if (transcriptText == null) return null;
 
-        if (trim)
-            transcriptText = transcriptText.trim();
+        if (trim) transcriptText = transcriptText.trim();
 
         return transcriptText;
     }
-
 }

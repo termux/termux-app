@@ -21,8 +21,8 @@ public class SpecialButton {
      * Initialize a {@link SpecialButton}.
      *
      * @param key The unique key name for the special button. The key is registered in {@link #map}
-     *            with which the {@link SpecialButton} can be retrieved via a call to
-     *            {@link #valueOf(String)}.
+     *     with which the {@link SpecialButton} can be retrieved via a call to {@link
+     *     #valueOf(String)}.
      */
     public SpecialButton(@NonNull final String key) {
         this.key = key;
@@ -48,5 +48,4 @@ public class SpecialButton {
     public String toString() {
         return key;
     }
-
 }

@@ -9,53 +9,41 @@ import java.io.StringWriter;
 public class Logger {
 
     public static void logError(TerminalSessionClient client, String logTag, String message) {
-        if (client != null)
-            client.logError(logTag, message);
-        else
-            Log.e(logTag, message);
+        if (client != null) client.logError(logTag, message);
+        else Log.e(logTag, message);
     }
 
     public static void logWarn(TerminalSessionClient client, String logTag, String message) {
-        if (client != null)
-            client.logWarn(logTag, message);
-        else
-            Log.w(logTag, message);
+        if (client != null) client.logWarn(logTag, message);
+        else Log.w(logTag, message);
     }
 
     public static void logInfo(TerminalSessionClient client, String logTag, String message) {
-        if (client != null)
-            client.logInfo(logTag, message);
-        else
-            Log.i(logTag, message);
+        if (client != null) client.logInfo(logTag, message);
+        else Log.i(logTag, message);
     }
 
     public static void logDebug(TerminalSessionClient client, String logTag, String message) {
-        if (client != null)
-            client.logDebug(logTag, message);
-        else
-            Log.d(logTag, message);
+        if (client != null) client.logDebug(logTag, message);
+        else Log.d(logTag, message);
     }
 
     public static void logVerbose(TerminalSessionClient client, String logTag, String message) {
-        if (client != null)
-            client.logVerbose(logTag, message);
-        else
-            Log.v(logTag, message);
+        if (client != null) client.logVerbose(logTag, message);
+        else Log.v(logTag, message);
     }
 
-    public static void logStackTraceWithMessage(TerminalSessionClient client, String tag, String message, Throwable throwable) {
+    public static void logStackTraceWithMessage(
+            TerminalSessionClient client, String tag, String message, Throwable throwable) {
         logError(client, tag, getMessageAndStackTraceString(message, throwable));
     }
 
     public static String getMessageAndStackTraceString(String message, Throwable throwable) {
-        if (message == null && throwable == null)
-            return null;
+        if (message == null && throwable == null) return null;
         else if (message != null && throwable != null)
             return message + ":\n" + getStackTraceString(throwable);
-        else if (throwable == null)
-            return message;
-        else
-            return getStackTraceString(throwable);
+        else if (throwable == null) return message;
+        else return getStackTraceString(throwable);
     }
 
     public static String getStackTraceString(Throwable throwable) {
@@ -76,5 +64,4 @@ public class Logger {
 
         return stackTraceString;
     }
-
 }

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -27,62 +26,40 @@
 package com.termux.shared.file.filesystem;
 
 /**
- * Defines the bits for use with the {@link FileAttributes#permissions()
- * permissions} attribute.
+ * Defines the bits for use with the {@link FileAttributes#permissions() permissions} attribute.
  *
- * <p> The {@link FileAttributes} class defines methods for manipulating
- * set of permissions.
+ * <p>The {@link FileAttributes} class defines methods for manipulating set of permissions.
  *
- * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:libcore/ojluni/src/main/java/java/nio/file/attribute/PosixFilePermission.java
+ * <p>https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:libcore/ojluni/src/main/java/java/nio/file/attribute/PosixFilePermission.java
  *
  * @since 1.7
  */
-
 public enum FilePermission {
 
-    /**
-     * Read permission, owner.
-     */
+    /** Read permission, owner. */
     OWNER_READ,
 
-    /**
-     * Write permission, owner.
-     */
+    /** Write permission, owner. */
     OWNER_WRITE,
 
-    /**
-     * Execute/search permission, owner.
-     */
+    /** Execute/search permission, owner. */
     OWNER_EXECUTE,
 
-    /**
-     * Read permission, group.
-     */
+    /** Read permission, group. */
     GROUP_READ,
 
-    /**
-     * Write permission, group.
-     */
+    /** Write permission, group. */
     GROUP_WRITE,
 
-    /**
-     * Execute/search permission, group.
-     */
+    /** Execute/search permission, group. */
     GROUP_EXECUTE,
 
-    /**
-     * Read permission, others.
-     */
+    /** Read permission, others. */
     OTHERS_READ,
 
-    /**
-     * Write permission, others.
-     */
+    /** Write permission, others. */
     OTHERS_WRITE,
 
-    /**
-     * Execute/search permission, others.
-     */
+    /** Execute/search permission, others. */
     OTHERS_EXECUTE
-
 }

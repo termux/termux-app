@@ -1,13 +1,11 @@
 package com.termux.shared.models;
 
-import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.android.AndroidUtils;
+import com.termux.shared.markdown.MarkdownUtils;
 
 import java.io.Serializable;
 
-/**
- * An object that stored info for {@link com.termux.shared.activities.ReportActivity}.
- */
+/** An object that stored info for {@link com.termux.shared.activities.ReportActivity}. */
 public class ReportInfo implements Serializable {
 
     /** The user action that was being processed for which the report was generated. */
@@ -26,8 +24,10 @@ public class ReportInfo implements Serializable {
     /** The markdown report text suffix. Will not be part of copy and share operations, etc. */
     public String reportStringSuffix;
 
-    /** If set to {@code true}, then report header info will be added to the report when markdown is
-     * generated. */
+    /**
+     * If set to {@code true}, then report header info will be added to the report when markdown is
+     * generated.
+     */
     public boolean addReportInfoHeaderToMarkdown = false;
 
     /** The label for the report file to save if user selects menu_item_save_report_to_file. */
@@ -58,7 +58,8 @@ public class ReportInfo implements Serializable {
         this.addReportInfoHeaderToMarkdown = addReportInfoHeaderToMarkdown;
     }
 
-    public void setReportSaveFileLabelAndPath(String reportSaveFileLabel, String reportSaveFilePath) {
+    public void setReportSaveFileLabelAndPath(
+            String reportSaveFileLabel, String reportSaveFilePath) {
         setReportSaveFileLabel(reportSaveFileLabel);
         setReportSaveFilePath(reportSaveFilePath);
     }
@@ -84,9 +85,21 @@ public class ReportInfo implements Serializable {
 
         if (reportInfo.addReportInfoHeaderToMarkdown) {
             markdownString.append("## Report Info\n\n");
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User Action", reportInfo.userAction, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Sender", reportInfo.sender, "-"));
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Report Timestamp", reportInfo.reportTimestamp, "-"));
+            markdownString
+                    .append("\n")
+                    .append(
+                            MarkdownUtils.getSingleLineMarkdownStringEntry(
+                                    "User Action", reportInfo.userAction, "-"));
+            markdownString
+                    .append("\n")
+                    .append(
+                            MarkdownUtils.getSingleLineMarkdownStringEntry(
+                                    "Sender", reportInfo.sender, "-"));
+            markdownString
+                    .append("\n")
+                    .append(
+                            MarkdownUtils.getSingleLineMarkdownStringEntry(
+                                    "Report Timestamp", reportInfo.reportTimestamp, "-"));
             markdownString.append("\n##\n\n");
         }
 
@@ -94,5 +107,4 @@ public class ReportInfo implements Serializable {
 
         return markdownString.toString();
     }
-
 }

@@ -10,23 +10,24 @@ import com.google.common.base.Strings;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Collections;
 
 public class DataUtils {
 
-    /** Max safe limit of data size to prevent TransactionTooLargeException when transferring data
-     * inside or to other apps via transactions. */
+    /**
+     * Max safe limit of data size to prevent TransactionTooLargeException when transferring data
+     * inside or to other apps via transactions.
+     */
     public static final int TRANSACTION_SIZE_LIMIT_IN_BYTES = 100 * 1024; // 100KB
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
-    public static String getTruncatedCommandOutput(String text, int maxLength, boolean fromEnd, boolean onNewline, boolean addPrefix) {
+    public static String getTruncatedCommandOutput(
+            String text, int maxLength, boolean fromEnd, boolean onNewline, boolean addPrefix) {
         if (text == null) return null;
 
         String prefix = "(truncated) ";
 
-        if (addPrefix)
-            maxLength = maxLength - prefix.length();
+        if (addPrefix) maxLength = maxLength - prefix.length();
 
         if (maxLength < 0 || text.length() < maxLength) return text;
 
@@ -44,8 +45,7 @@ public class DataUtils {
             text = text.substring(cutOffIndex);
         }
 
-        if (addPrefix)
-            text = prefix + text;
+        if (addPrefix) text = prefix + text;
 
         return text;
     }
@@ -57,8 +57,9 @@ public class DataUtils {
      * @param find The sub string to replace.
      * @param replace The sub string to replace with.
      */
-    public static void replaceSubStringsInStringArrayItems(String[] array, String find, String replace) {
-        if(array == null || array.length == 0) return;
+    public static void replaceSubStringsInStringArrayItems(
+            String[] array, String find, String replace) {
+        if (array == null || array.length == 0) return;
 
         for (int i = 0; i < array.length; i++) {
             array[i] = array[i].replace(find, replace);
@@ -71,15 +72,14 @@ public class DataUtils {
      * @param value The {@link String} value.
      * @param def The default value if failed to read a valid value.
      * @return Returns the {@code float} value after parsing the {@link String} value, otherwise
-     * returns default if failed to read a valid value, like in case of an exception.
+     *     returns default if failed to read a valid value, like in case of an exception.
      */
     public static float getFloatFromString(String value, float def) {
         if (value == null) return def;
 
         try {
             return Float.parseFloat(value);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return def;
         }
     }
@@ -90,15 +90,14 @@ public class DataUtils {
      * @param value The {@link String} value.
      * @param def The default value if failed to read a valid value.
      * @return Returns the {@code int} value after parsing the {@link String} value, otherwise
-     * returns default if failed to read a valid value, like in case of an exception.
+     *     returns default if failed to read a valid value, like in case of an exception.
      */
     public static int getIntFromString(String value, int def) {
         if (value == null) return def;
 
         try {
             return Integer.parseInt(value);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return def;
         }
     }
@@ -136,35 +135,25 @@ public class DataUtils {
      * @param bundle The {@link Bundle} to get the value from.
      * @param key The key for the value.
      * @param def The default value if failed to read a valid value.
-     * @return Returns the {@code int} value after parsing the {@link String} value stored in
-     * {@link Bundle}, otherwise returns default if failed to read a valid value,
-     * like in case of an exception.
+     * @return Returns the {@code int} value after parsing the {@link String} value stored in {@link
+     *     Bundle}, otherwise returns default if failed to read a valid value, like in case of an
+     *     exception.
      */
     public static int getIntStoredAsStringFromBundle(Bundle bundle, String key, int def) {
         if (bundle == null) return def;
         return getIntFromString(bundle.getString(key, Integer.toString(def)), def);
     }
 
-
-
-    /**
-     * If value is not in the range [min, max], set it to either min or max.
-     */
+    /** If value is not in the range [min, max], set it to either min or max. */
     public static int clamp(int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
     }
 
-    /**
-     * If value is not in the range [min, max], set it to default.
-     */
+    /** If value is not in the range [min, max], set it to default. */
     public static float rangedOrDefault(float value, float def, float min, float max) {
-        if (value < min || value > max)
-            return def;
-        else
-            return value;
+        if (value < min || value > max) return def;
+        else return value;
     }
-
-
 
     /**
      * Add a space indent to a {@link String}. Each indent is 4 space characters long.
@@ -174,10 +163,8 @@ public class DataUtils {
      * @return Returns the indented {@link String}.
      */
     public static String getSpaceIndentedString(String string, int count) {
-        if (string == null || string.isEmpty())
-            return string;
-        else
-            return getIndentedString(string, "    ", count);
+        if (string == null || string.isEmpty()) return string;
+        else return getIndentedString(string, "    ", count);
     }
 
     /**
@@ -188,10 +175,8 @@ public class DataUtils {
      * @return Returns the indented {@link String}.
      */
     public static String getTabIndentedString(String string, int count) {
-        if (string == null || string.isEmpty())
-            return string;
-        else
-            return getIndentedString(string, "\t", count);
+        if (string == null || string.isEmpty()) return string;
+        else return getIndentedString(string, "\t", count);
     }
 
     /**
@@ -203,13 +188,9 @@ public class DataUtils {
      * @return Returns the indented {@link String}.
      */
     public static String getIndentedString(String string, @NonNull String indent, int count) {
-        if (string == null || string.isEmpty())
-            return string;
-        else
-            return string.replaceAll("(?m)^", Strings.repeat(indent, Math.max(count, 1)));
+        if (string == null || string.isEmpty()) return string;
+        else return string.replaceAll("(?m)^", Strings.repeat(indent, Math.max(count, 1)));
     }
-
-
 
     /**
      * Get the object itself if it is not {@code null}, otherwise default.
@@ -227,7 +208,8 @@ public class DataUtils {
      *
      * @param value The {@link String} to check.
      * @param def The default {@link String}.
-     * @return Returns {@code value} if it is not {@code null} or empty, otherwise returns {@code def}.
+     * @return Returns {@code value} if it is not {@code null} or empty, otherwise returns {@code
+     *     def}.
      */
     public static String getDefaultIfUnset(@Nullable String value, String def) {
         return (value == null || value.isEmpty()) ? def : value;
@@ -237,8 +219,6 @@ public class DataUtils {
     public static boolean isNullOrEmpty(String string) {
         return string == null || string.isEmpty();
     }
-
-
 
     /** Get size of a serializable object. */
     public static long getSerializedSize(Serializable object) {
@@ -254,5 +234,4 @@ public class DataUtils {
             return -1;
         }
     }
-
 }

@@ -42,7 +42,6 @@ public enum NightMode {
         return mode;
     }
 
-
     /** Get {@link NightMode} for {@code name} if found, otherwise {@code null}. */
     @Nullable
     public static NightMode modeOf(String name) {
@@ -61,7 +60,6 @@ public enum NightMode {
         NightMode nightMode = modeOf(name);
         return nightMode != null ? nightMode : def;
     }
-
 
     /** Set {@link #APP_NIGHT_MODE}. */
     public static void setAppNightMode(@Nullable String name) {
@@ -82,10 +80,8 @@ public enum NightMode {
     /** Get {@link #APP_NIGHT_MODE}. */
     @NonNull
     public static NightMode getAppNightMode() {
-        if (APP_NIGHT_MODE == null)
-            APP_NIGHT_MODE =  SYSTEM;
+        if (APP_NIGHT_MODE == null) APP_NIGHT_MODE = SYSTEM;
 
         return APP_NIGHT_MODE;
     }
-
 }

@@ -20,11 +20,11 @@ public class TerminalIOPreferencesFragment extends PreferenceFragmentCompat {
         if (context == null) return;
 
         PreferenceManager preferenceManager = getPreferenceManager();
-        preferenceManager.setPreferenceDataStore(TerminalIOPreferencesDataStore.getInstance(context));
+        preferenceManager.setPreferenceDataStore(
+                TerminalIOPreferencesDataStore.getInstance(context));
 
         setPreferencesFromResource(R.xml.termux_terminal_io_preferences, rootKey);
     }
-
 }
 
 class TerminalIOPreferencesDataStore extends PreferenceDataStore {
@@ -46,8 +46,6 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
         return mInstance;
     }
 
-
-
     @Override
     public void putBoolean(String key, boolean value) {
         if (mPreferences == null) return;
@@ -55,7 +53,7 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
 
         switch (key) {
             case "soft_keyboard_enabled":
-                    mPreferences.setSoftKeyboardEnabled(value);
+                mPreferences.setSoftKeyboardEnabled(value);
                 break;
             case "soft_keyboard_enabled_only_if_no_hardware":
                 mPreferences.setSoftKeyboardEnabledOnlyIfNoHardware(value);
@@ -78,5 +76,4 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
                 return false;
         }
     }
-
 }

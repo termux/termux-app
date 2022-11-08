@@ -12,9 +12,9 @@ import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
-import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
-import com.termux.shared.termux.shell.am.TermuxAmSocketServer;
 import com.termux.shared.termux.shell.TermuxShellManager;
+import com.termux.shared.termux.shell.am.TermuxAmSocketServer;
+import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 
 public class TermuxApplication extends Application {
@@ -34,7 +34,8 @@ public class TermuxApplication extends Application {
 
         Logger.logDebug("Starting Application");
 
-        // Set TermuxBootstrap.TERMUX_APP_PACKAGE_MANAGER and TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT
+        // Set TermuxBootstrap.TERMUX_APP_PACKAGE_MANAGER and
+        // TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT
         TermuxBootstrap.setTermuxPackageManagerAndVariant(BuildConfig.TERMUX_PACKAGE_VARIANT);
 
         // Init app wide SharedProperties loaded from termux.properties
@@ -55,7 +56,8 @@ public class TermuxApplication extends Application {
 
             error = TermuxFileUtils.isAppsTermuxAppDirectoryAccessible(true, true);
             if (error != null) {
-                Logger.logErrorExtended(LOG_TAG, "Create apps/termux-app directory failed\n" + error);
+                Logger.logErrorExtended(
+                        LOG_TAG, "Create apps/termux-app directory failed\n" + error);
                 return;
             }
 
@@ -65,7 +67,8 @@ public class TermuxApplication extends Application {
             Logger.logErrorExtended(LOG_TAG, "Termux files directory is not accessible\n" + error);
         }
 
-        // Init TermuxShellEnvironment constants and caches after everything has been setup including termux-am-socket server
+        // Init TermuxShellEnvironment constants and caches after everything has been setup
+        // including termux-am-socket server
         TermuxShellEnvironment.init(this);
 
         if (isTermuxFilesDirectoryAccessible) {
@@ -76,10 +79,10 @@ public class TermuxApplication extends Application {
     public static void setLogConfig(Context context) {
         Logger.setDefaultLogTag(TermuxConstants.TERMUX_APP_NAME);
 
-        // Load the log level from shared preferences and set it to the {@link Logger.CURRENT_LOG_LEVEL}
+        // Load the log level from shared preferences and set it to the {@link
+        // Logger.CURRENT_LOG_LEVEL}
         TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
         if (preferences == null) return;
         preferences.setLogLevel(null, preferences.getLogLevel());
     }
-
 }

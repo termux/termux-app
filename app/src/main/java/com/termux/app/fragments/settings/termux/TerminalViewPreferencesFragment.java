@@ -20,11 +20,11 @@ public class TerminalViewPreferencesFragment extends PreferenceFragmentCompat {
         if (context == null) return;
 
         PreferenceManager preferenceManager = getPreferenceManager();
-        preferenceManager.setPreferenceDataStore(TerminalViewPreferencesDataStore.getInstance(context));
+        preferenceManager.setPreferenceDataStore(
+                TerminalViewPreferencesDataStore.getInstance(context));
 
         setPreferencesFromResource(R.xml.termux_terminal_view_preferences, rootKey);
     }
-
 }
 
 class TerminalViewPreferencesDataStore extends PreferenceDataStore {
@@ -46,8 +46,6 @@ class TerminalViewPreferencesDataStore extends PreferenceDataStore {
         return mInstance;
     }
 
-
-
     @Override
     public void putBoolean(String key, boolean value) {
         if (mPreferences == null) return;
@@ -55,7 +53,7 @@ class TerminalViewPreferencesDataStore extends PreferenceDataStore {
 
         switch (key) {
             case "terminal_margin_adjustment":
-                    mPreferences.setTerminalMarginAdjustment(value);
+                mPreferences.setTerminalMarginAdjustment(value);
                 break;
             default:
                 break;
@@ -73,5 +71,4 @@ class TerminalViewPreferencesDataStore extends PreferenceDataStore {
                 return false;
         }
     }
-
 }

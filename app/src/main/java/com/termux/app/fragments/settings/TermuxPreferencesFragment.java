@@ -24,7 +24,6 @@ public class TermuxPreferencesFragment extends PreferenceFragmentCompat {
 
         setPreferencesFromResource(R.xml.termux_preferences, rootKey);
     }
-
 }
 
 class TermuxPreferencesDataStore extends PreferenceDataStore {
@@ -45,5 +44,4 @@ class TermuxPreferencesDataStore extends PreferenceDataStore {
         }
         return mInstance;
     }
-
 }

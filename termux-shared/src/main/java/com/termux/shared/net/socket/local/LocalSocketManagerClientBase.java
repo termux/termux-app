@@ -12,36 +12,42 @@ public abstract class LocalSocketManagerClientBase implements ILocalSocketManage
     @Nullable
     @Override
     public Thread.UncaughtExceptionHandler getLocalSocketManagerClientThreadUEH(
-        @NonNull LocalSocketManager localSocketManager) {
+            @NonNull LocalSocketManager localSocketManager) {
         return null;
     }
 
     @Override
-    public void onError(@NonNull LocalSocketManager localSocketManager,
-                        @Nullable LocalClientSocket clientSocket, @NonNull Error error) {
+    public void onError(
+            @NonNull LocalSocketManager localSocketManager,
+            @Nullable LocalClientSocket clientSocket,
+            @NonNull Error error) {
         // Only log if log level is debug or higher since PeerCred.cmdline may contain private info
         Logger.logErrorPrivate(getLogTag(), "onError");
-        Logger.logErrorPrivateExtended(getLogTag(), LocalSocketManager.getErrorLogString(error,
-            localSocketManager.getLocalSocketRunConfig(), clientSocket));
+        Logger.logErrorPrivateExtended(
+                getLogTag(),
+                LocalSocketManager.getErrorLogString(
+                        error, localSocketManager.getLocalSocketRunConfig(), clientSocket));
     }
 
     @Override
-    public void onDisallowedClientConnected(@NonNull LocalSocketManager localSocketManager,
-                                            @NonNull LocalClientSocket clientSocket, @NonNull Error error) {
+    public void onDisallowedClientConnected(
+            @NonNull LocalSocketManager localSocketManager,
+            @NonNull LocalClientSocket clientSocket,
+            @NonNull Error error) {
         Logger.logWarn(getLogTag(), "onDisallowedClientConnected");
-        Logger.logWarnExtended(getLogTag(), LocalSocketManager.getErrorLogString(error,
-            localSocketManager.getLocalSocketRunConfig(), clientSocket));
+        Logger.logWarnExtended(
+                getLogTag(),
+                LocalSocketManager.getErrorLogString(
+                        error, localSocketManager.getLocalSocketRunConfig(), clientSocket));
     }
 
     @Override
-    public void onClientAccepted(@NonNull LocalSocketManager localSocketManager,
-                                 @NonNull LocalClientSocket clientSocket) {
+    public void onClientAccepted(
+            @NonNull LocalSocketManager localSocketManager,
+            @NonNull LocalClientSocket clientSocket) {
         // Just close socket and let child class handle any required communication
         clientSocket.closeClientSocket(true);
     }
 
-
-
     protected abstract String getLogTag();
-
 }

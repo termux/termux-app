@@ -33,15 +33,14 @@ import androidx.annotation.NonNull;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unix implementation of PosixFileAttributes.
  * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:libcore/ojluni/src/main/java/sun/nio/fs/UnixFileAttributes.java
  */
-
 public class FileAttributes {
     private String filePath;
     private FileDescriptor fileDescriptor;
@@ -82,8 +81,7 @@ public class FileAttributes {
 
         if (filePath == null || filePath.isEmpty())
             fileAttributes = new FileAttributes((String) null);
-        else
-            fileAttributes = new FileAttributes(new File(filePath).getAbsolutePath());
+        else fileAttributes = new FileAttributes(new File(filePath).getAbsolutePath());
 
         if (followLinks) {
             NativeDispatcher.stat(filePath, fileAttributes);
@@ -104,12 +102,9 @@ public class FileAttributes {
     }
 
     public String file() {
-        if (filePath != null)
-            return filePath;
-        else if (fileDescriptor != null)
-            return fileDescriptor.toString();
-        else
-            return null;
+        if (filePath != null) return filePath;
+        else if (fileDescriptor != null) return fileDescriptor.toString();
+        else return null;
     }
 
     // package-private
@@ -212,16 +207,16 @@ public class FileAttributes {
 
     public boolean isOther() {
         int type = st_mode & UnixConstants.S_IFMT;
-        return (type != UnixConstants.S_IFREG &&
-            type != UnixConstants.S_IFDIR &&
-            type != UnixConstants.S_IFLNK);
+        return (type != UnixConstants.S_IFREG
+                && type != UnixConstants.S_IFDIR
+                && type != UnixConstants.S_IFLNK);
     }
 
     public boolean isDevice() {
         int type = st_mode & UnixConstants.S_IFMT;
-        return (type == UnixConstants.S_IFCHR ||
-            type == UnixConstants.S_IFBLK ||
-            type == UnixConstants.S_IFIFO);
+        return (type == UnixConstants.S_IFCHR
+                || type == UnixConstants.S_IFBLK
+                || type == UnixConstants.S_IFIFO);
     }
 
     public long size() {
@@ -265,26 +260,17 @@ public class FileAttributes {
         int bits = (st_mode & UnixConstants.S_IAMB);
         HashSet<FilePermission> perms = new HashSet<>();
 
-        if ((bits & UnixConstants.S_IRUSR) > 0)
-            perms.add(FilePermission.OWNER_READ);
-        if ((bits & UnixConstants.S_IWUSR) > 0)
-            perms.add(FilePermission.OWNER_WRITE);
-        if ((bits & UnixConstants.S_IXUSR) > 0)
-            perms.add(FilePermission.OWNER_EXECUTE);
+        if ((bits & UnixConstants.S_IRUSR) > 0) perms.add(FilePermission.OWNER_READ);
+        if ((bits & UnixConstants.S_IWUSR) > 0) perms.add(FilePermission.OWNER_WRITE);
+        if ((bits & UnixConstants.S_IXUSR) > 0) perms.add(FilePermission.OWNER_EXECUTE);
 
-        if ((bits & UnixConstants.S_IRGRP) > 0)
-            perms.add(FilePermission.GROUP_READ);
-        if ((bits & UnixConstants.S_IWGRP) > 0)
-            perms.add(FilePermission.GROUP_WRITE);
-        if ((bits & UnixConstants.S_IXGRP) > 0)
-            perms.add(FilePermission.GROUP_EXECUTE);
+        if ((bits & UnixConstants.S_IRGRP) > 0) perms.add(FilePermission.GROUP_READ);
+        if ((bits & UnixConstants.S_IWGRP) > 0) perms.add(FilePermission.GROUP_WRITE);
+        if ((bits & UnixConstants.S_IXGRP) > 0) perms.add(FilePermission.GROUP_EXECUTE);
 
-        if ((bits & UnixConstants.S_IROTH) > 0)
-            perms.add(FilePermission.OTHERS_READ);
-        if ((bits & UnixConstants.S_IWOTH) > 0)
-            perms.add(FilePermission.OTHERS_WRITE);
-        if ((bits & UnixConstants.S_IXOTH) > 0)
-            perms.add(FilePermission.OTHERS_EXECUTE);
+        if ((bits & UnixConstants.S_IROTH) > 0) perms.add(FilePermission.OTHERS_READ);
+        if ((bits & UnixConstants.S_IWOTH) > 0) perms.add(FilePermission.OTHERS_WRITE);
+        if ((bits & UnixConstants.S_IXOTH) > 0) perms.add(FilePermission.OTHERS_EXECUTE);
 
         return perms;
     }
@@ -414,5 +400,4 @@ public class FileAttributes {
 
         return logString.toString();
     }
-
 }

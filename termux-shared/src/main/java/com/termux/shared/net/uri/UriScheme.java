@@ -5,7 +5,7 @@ import android.net.Uri;
 /**
  * The {@link Uri} schemes.
  *
- * https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+ * <p>https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
  * https://en.wikipedia.org/wiki/List_of_URI_schemes
  */
 public class UriScheme {
@@ -24,5 +24,4 @@ public class UriScheme {
 
     /* Hypertext Transfer Protocol Secure. */
     public static final String SCHEME_HTTPS = "https";
-
 }

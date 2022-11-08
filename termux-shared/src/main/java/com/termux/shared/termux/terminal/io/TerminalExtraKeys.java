@@ -1,5 +1,7 @@
 package com.termux.shared.termux.terminal.io;
 
+import static com.termux.shared.termux.extrakeys.ExtraKeysConstants.PRIMARY_KEY_CODES_FOR_STRINGS;
+
 import android.os.Build;
 import android.view.KeyEvent;
 import android.view.View;
@@ -12,9 +14,6 @@ import com.termux.shared.termux.extrakeys.ExtraKeysView;
 import com.termux.shared.termux.extrakeys.SpecialButton;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalView;
-
-import static com.termux.shared.termux.extrakeys.ExtraKeysConstants.PRIMARY_KEY_CODES_FOR_STRINGS;
-
 
 public class TerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
 
@@ -43,7 +42,10 @@ public class TerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
                     fnDown = true;
                 } else {
                     onTerminalExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, fnDown);
-                    ctrlDown = false; altDown = false; shiftDown = false; fnDown = false;
+                    ctrlDown = false;
+                    altDown = false;
+                    shiftDown = false;
+                    fnDown = false;
                 }
             }
         } else {
@@ -51,7 +53,13 @@ public class TerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
         }
     }
 
-    protected void onTerminalExtraKeyButtonClick(View view, String key, boolean ctrlDown, boolean altDown, boolean shiftDown, boolean fnDown) {
+    protected void onTerminalExtraKeyButtonClick(
+            View view,
+            String key,
+            boolean ctrlDown,
+            boolean altDown,
+            boolean shiftDown,
+            boolean fnDown) {
         if (PRIMARY_KEY_CODES_FOR_STRINGS.containsKey(key)) {
             Integer keyCode = PRIMARY_KEY_CODES_FOR_STRINGS.get(key);
             if (keyCode == null) return;
@@ -66,20 +74,25 @@ public class TerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
         } else {
             // not a control char
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                key.codePoints().forEach(codePoint -> {
-                    mTerminalView.inputCodePoint(TerminalView.KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD, codePoint, ctrlDown, altDown);
-                });
+                key.codePoints()
+                        .forEach(
+                                codePoint -> {
+                                    mTerminalView.inputCodePoint(
+                                            TerminalView.KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD,
+                                            codePoint,
+                                            ctrlDown,
+                                            altDown);
+                                });
             } else {
                 TerminalSession session = mTerminalView.getCurrentSession();
-                if (session != null && key.length() > 0)
-                    session.write(key);
+                if (session != null && key.length() > 0) session.write(key);
             }
         }
     }
 
     @Override
-    public boolean performExtraKeyButtonHapticFeedback(View view, ExtraKeyButton buttonInfo, MaterialButton button) {
+    public boolean performExtraKeyButtonHapticFeedback(
+            View view, ExtraKeyButton buttonInfo, MaterialButton button) {
         return false;
     }
-
 }

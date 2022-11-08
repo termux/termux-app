@@ -7,12 +7,11 @@ import android.view.ViewGroup;
 import com.termux.app.TermuxActivity;
 
 /**
- * Work around for fullscreen mode in Termux to fix ExtraKeysView not being visible.
- * This class is derived from:
+ * Work around for fullscreen mode in Termux to fix ExtraKeysView not being visible. This class is
+ * derived from:
  * https://stackoverflow.com/questions/7417123/android-how-to-adjust-layout-in-full-screen-mode-when-softkeyboard-is-visible
- * and has some additional tweaks
- * ---
- * For more information, see https://issuetracker.google.com/issues/36911528
+ * and has some additional tweaks --- For more information, see
+ * https://issuetracker.google.com/issues/36911528
  */
 public class FullScreenWorkAround {
     private final View mChildOfContent;
@@ -20,7 +19,6 @@ public class FullScreenWorkAround {
     private final ViewGroup.LayoutParams mViewGroupLayoutParams;
 
     private final int mNavBarHeight;
-
 
     public static void apply(TermuxActivity activity) {
         new FullScreenWorkAround(activity);
@@ -31,7 +29,9 @@ public class FullScreenWorkAround {
         mChildOfContent = content.getChildAt(0);
         mViewGroupLayoutParams = mChildOfContent.getLayoutParams();
         mNavBarHeight = activity.getNavBarHeight();
-        mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
+        mChildOfContent
+                .getViewTreeObserver()
+                .addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
     }
 
     private void possiblyResizeChildOfContent() {
@@ -44,7 +44,8 @@ public class FullScreenWorkAround {
 
                 // ensures that usable layout space does not extend behind the
                 // soft keyboard, causing the extra keys to not be visible
-                mViewGroupLayoutParams.height = (usableHeightSansKeyboard - heightDifference) + getNavBarHeight();
+                mViewGroupLayoutParams.height =
+                        (usableHeightSansKeyboard - heightDifference) + getNavBarHeight();
             } else {
                 // keyboard probably just became hidden
                 mViewGroupLayoutParams.height = usableHeightSansKeyboard;
@@ -63,6 +64,4 @@ public class FullScreenWorkAround {
         mChildOfContent.getWindowVisibleDisplayFrame(r);
         return (r.bottom - r.top);
     }
-
 }
-

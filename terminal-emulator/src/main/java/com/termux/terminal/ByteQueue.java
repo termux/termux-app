@@ -53,8 +53,8 @@ final class ByteQueue {
 
     /**
      * Attempt to write the specified portion of the provided buffer to the queue.
-     * <p/>
-     * Returns whether the output was totally written, false if it was closed before.
+     *
+     * <p>Returns whether the output was totally written, false if it was closed before.
      */
     public boolean write(byte[] buffer, int offset, int lengthToWrite) {
         if (lengthToWrite + offset > buffer.length) {
@@ -76,7 +76,8 @@ final class ByteQueue {
                 }
                 if (!mOpen) return false;
                 final boolean wasEmpty = mStoredBytes == 0;
-                int bytesToWriteBeforeWaiting = Math.min(lengthToWrite, bufferLength - mStoredBytes);
+                int bytesToWriteBeforeWaiting =
+                        Math.min(lengthToWrite, bufferLength - mStoredBytes);
                 lengthToWrite -= bytesToWriteBeforeWaiting;
 
                 while (bytesToWriteBeforeWaiting > 0) {

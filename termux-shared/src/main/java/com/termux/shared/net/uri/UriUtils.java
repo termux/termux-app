@@ -13,14 +13,14 @@ public class UriUtils {
     /**
      * Get the full file path from a {@link Uri} including the fragment.
      *
-     * If the {@link Uri} was created from file path with {@link Uri#parse(String)}, like "am"
+     * <p>If the {@link Uri} was created from file path with {@link Uri#parse(String)}, like "am"
      * command "-d" option does, and the path contained a "#", then anything after it would become
      * the fragment and {@link Uri#getPath()} will only return the path before it, which would be
      * invalid. The fragment must be manually appended to the path to get the full path.
      *
-     * If the {@link Uri} was created with {@link Uri.Builder} and path was set
-     * with {@link Uri.Builder#path(String)}, then "#" will automatically be encoded to "%23"
-     * and separate fragment will not exist.
+     * <p>If the {@link Uri} was created with {@link Uri.Builder} and path was set with {@link
+     * Uri.Builder#path(String)}, then "#" will automatically be encoded to "%23" and separate
+     * fragment will not exist.
      *
      * @param uri The {@link Uri} to get file path from.
      * @return Returns the file path if found, otherwise {@code null}.
@@ -75,7 +75,11 @@ public class UriUtils {
      * @return Returns the {@link Uri}.
      */
     public static Uri getFileUri(@NonNull String authority, @NonNull String path) {
-        return new Uri.Builder().scheme(UriScheme.SCHEME_FILE).authority(authority).path(path).build();
+        return new Uri.Builder()
+                .scheme(UriScheme.SCHEME_FILE)
+                .authority(authority)
+                .path(path)
+                .build();
     }
 
     /**
@@ -96,7 +100,10 @@ public class UriUtils {
      * @return Returns the {@link Uri}.
      */
     public static Uri getContentUri(@NonNull String authority, @NonNull String path) {
-        return new Uri.Builder().scheme(UriScheme.SCHEME_CONTENT).authority(authority).path(path).build();
+        return new Uri.Builder()
+                .scheme(UriScheme.SCHEME_CONTENT)
+                .authority(authority)
+                .path(path)
+                .build();
     }
-
 }

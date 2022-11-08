@@ -15,7 +15,11 @@ public class NativeDispatcher {
         try {
             fileAttributes.loadFromStructStat(Os.stat(filePath));
         } catch (ErrnoException e) {
-            throw new IOException("Failed to run Os.stat() on file at path \"" + filePath + "\": " + e.getMessage());
+            throw new IOException(
+                    "Failed to run Os.stat() on file at path \""
+                            + filePath
+                            + "\": "
+                            + e.getMessage());
         }
     }
 
@@ -25,26 +29,36 @@ public class NativeDispatcher {
         try {
             fileAttributes.loadFromStructStat(Os.lstat(filePath));
         } catch (ErrnoException e) {
-            throw new IOException("Failed to run Os.lstat() on file at path \"" + filePath + "\": " + e.getMessage());
+            throw new IOException(
+                    "Failed to run Os.lstat() on file at path \""
+                            + filePath
+                            + "\": "
+                            + e.getMessage());
         }
     }
 
-    public static void fstat(FileDescriptor fileDescriptor, FileAttributes fileAttributes) throws IOException {
+    public static void fstat(FileDescriptor fileDescriptor, FileAttributes fileAttributes)
+            throws IOException {
         validateFileDescriptor(fileDescriptor);
 
         try {
             fileAttributes.loadFromStructStat(Os.fstat(fileDescriptor));
         } catch (ErrnoException e) {
-            throw new IOException("Failed to run Os.fstat() on file descriptor \"" + fileDescriptor.toString() + "\": " + e.getMessage());
+            throw new IOException(
+                    "Failed to run Os.fstat() on file descriptor \""
+                            + fileDescriptor.toString()
+                            + "\": "
+                            + e.getMessage());
         }
     }
 
     public static void validateFileExistence(String filePath) throws IOException {
-        if (filePath == null || filePath.isEmpty()) throw new IOException("The path is null or empty");
+        if (filePath == null || filePath.isEmpty())
+            throw new IOException("The path is null or empty");
 
         File file = new File(filePath);
 
-        //if (!file.exists())
+        // if (!file.exists())
         //    throw new IOException("No such file or directory: \"" + filePath + "\"");
     }
 
@@ -54,5 +68,4 @@ public class NativeDispatcher {
         if (!fileDescriptor.valid())
             throw new IOException("No such file descriptor: \"" + fileDescriptor.toString() + "\"");
     }
-
 }

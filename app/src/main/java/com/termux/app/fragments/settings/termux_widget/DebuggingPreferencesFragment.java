@@ -24,7 +24,8 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
         if (context == null) return;
 
         PreferenceManager preferenceManager = getPreferenceManager();
-        preferenceManager.setPreferenceDataStore(DebuggingPreferencesDataStore.getInstance(context));
+        preferenceManager.setPreferenceDataStore(
+                DebuggingPreferencesDataStore.getInstance(context));
 
         setPreferencesFromResource(R.xml.termux_widget_debugging_preferences, rootKey);
 
@@ -37,11 +38,13 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
 
         ListPreference logLevelListPreference = findPreference("log_level");
         if (logLevelListPreference != null) {
-            TermuxWidgetAppSharedPreferences preferences = TermuxWidgetAppSharedPreferences.build(context, true);
+            TermuxWidgetAppSharedPreferences preferences =
+                    TermuxWidgetAppSharedPreferences.build(context, true);
             if (preferences == null) return;
 
-            com.termux.app.fragments.settings.termux.DebuggingPreferencesFragment.
-                setLogLevelListPreferenceData(logLevelListPreference, context, preferences.getLogLevel(true));
+            com.termux.app.fragments.settings.termux.DebuggingPreferencesFragment
+                    .setLogLevelListPreferenceData(
+                            logLevelListPreference, context, preferences.getLogLevel(true));
             loggingCategory.addPreference(logLevelListPreference);
         }
     }
@@ -65,8 +68,6 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
         }
         return mInstance;
     }
-
-
 
     @Override
     @Nullable
@@ -97,5 +98,4 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
                 break;
         }
     }
-
 }

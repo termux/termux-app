@@ -34,7 +34,8 @@ public class SettingsProviderUtils {
     }
 
     /**
-     * Get settings key value from {@link SettingNamespace} namespace and of {@link SettingType} type.
+     * Get settings key value from {@link SettingNamespace} namespace and of {@link SettingType}
+     * type.
      *
      * @param context The {@link Context} for operations.
      * @param namespace The {@link SettingNamespace} in which to get key value from.
@@ -44,8 +45,12 @@ public class SettingsProviderUtils {
      * @return Returns the key value. This will be {@code null} if an exception is raised.
      */
     @Nullable
-    public static Object getSettingsValue(@NonNull Context context, @NonNull SettingNamespace namespace,
-                                          @NonNull SettingType type, @NonNull String key, @Nullable Object def) {
+    public static Object getSettingsValue(
+            @NonNull Context context,
+            @NonNull SettingNamespace namespace,
+            @NonNull SettingType type,
+            @NonNull String key,
+            @Nullable Object def) {
         try {
             switch (namespace) {
                 case GLOBAL:
@@ -91,9 +96,16 @@ public class SettingsProviderUtils {
         } catch (Settings.SettingNotFoundException e) {
             // Ignore
         } catch (Exception e) {
-            Logger.logError(LOG_TAG, "Failed to get \"" + key + "\" key value from settings \"" + namespace.name() + "\" namespace of type \"" + type.name() + "\"");
+            Logger.logError(
+                    LOG_TAG,
+                    "Failed to get \""
+                            + key
+                            + "\" key value from settings \""
+                            + namespace.name()
+                            + "\" namespace of type \""
+                            + type.name()
+                            + "\"");
         }
         return def;
     }
-
 }

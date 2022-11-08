@@ -9,8 +9,7 @@ import com.termux.view.TerminalViewClient;
 
 public class TermuxTerminalViewClientBase implements TerminalViewClient {
 
-    public TermuxTerminalViewClientBase() {
-    }
+    public TermuxTerminalViewClientBase() {}
 
     @Override
     public float onScale(float scale) {
@@ -18,8 +17,7 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
     }
 
     @Override
-    public void onSingleTapUp(MotionEvent e) {
-    }
+    public void onSingleTapUp(MotionEvent e) {}
 
     public boolean shouldBackButtonBeMappedToEscape() {
         return false;
@@ -39,8 +37,7 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
     }
 
     @Override
-    public void copyModeChanged(boolean copyMode) {
-    }
+    public void copyModeChanged(boolean copyMode) {}
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession session) {
@@ -77,17 +74,13 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
         return false;
     }
 
-
-
     @Override
     public boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session) {
         return false;
     }
 
     @Override
-    public void onEmulatorSet() {
-
-    }
+    public void onEmulatorSet() {}
 
     @Override
     public void logError(String tag, String message) {
@@ -123,5 +116,4 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
     public void logStackTrace(String tag, Exception e) {
         Logger.logStackTrace(tag, e);
     }
-
 }

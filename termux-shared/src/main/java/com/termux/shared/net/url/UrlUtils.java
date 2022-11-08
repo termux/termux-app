@@ -41,7 +41,14 @@ public class UrlUtils {
             return new URL(new URL(base), destination).toString();
         } catch (MalformedURLException e) {
             if (logError)
-                Logger.logError(LOG_TAG, "Failed to join url base \"" + base + "\" and destination \"" + destination + "\": " + e.getMessage());
+                Logger.logError(
+                        LOG_TAG,
+                        "Failed to join url base \""
+                                + base
+                                + "\" and destination \""
+                                + destination
+                                + "\": "
+                                + e.getMessage());
             return null;
         }
     }
@@ -101,13 +108,14 @@ public class UrlUtils {
     /** Remove "https://www.", "https://", "www.", etc */
     public static String removeProtocol(String urlString) {
         if (urlString == null) return null;
-        return urlString.replaceFirst("^(http[s]?://www\\.|http[s]?://|www\\.)","");
+        return urlString.replaceFirst("^(http[s]?://www\\.|http[s]?://|www\\.)", "");
     }
 
     public static boolean areUrlsEqual(String url1, String url2) {
         if (url1 == null && url2 == null) return true;
         if (url1 == null || url2 == null) return false;
-        return UrlUtils.removeProtocol(url1).replaceAll("/+$", "").equals(UrlUtils.removeProtocol(url2).replaceAll("/+$", ""));
+        return UrlUtils.removeProtocol(url1)
+                .replaceAll("/+$", "")
+                .equals(UrlUtils.removeProtocol(url2).replaceAll("/+$", ""));
     }
-
 }

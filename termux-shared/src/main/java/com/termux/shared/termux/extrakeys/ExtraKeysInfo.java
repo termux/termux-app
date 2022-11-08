@@ -1,7 +1,6 @@
 package com.termux.shared.termux.extrakeys;
 
 import android.view.View;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 
@@ -17,123 +16,112 @@ import org.json.JSONObject;
  * A {@link Class} that defines the info needed by {@link ExtraKeysView} to display the extra key
  * views.
  *
- * The {@code propertiesInfo} passed to the constructors of this class must be json array of arrays.
- * Each array element of the json array will be considered a separate row of keys.
- * Each key can either be simple string that defines the name of the key or a json dict that defines
- * advance info for the key. The syntax can be `'KEY'` or `{key: 'KEY'}`.
- * For example `HOME` or `{key: 'HOME', ...}.
+ * <p>The {@code propertiesInfo} passed to the constructors of this class must be json array of
+ * arrays. Each array element of the json array will be considered a separate row of keys. Each key
+ * can either be simple string that defines the name of the key or a json dict that defines advance
+ * info for the key. The syntax can be `'KEY'` or `{key: 'KEY'}`. For example `HOME` or `{key:
+ * 'HOME', ...}.
  *
- * In advance json dict mode, the key can also be a sequence of space separated keys instead of one
- * key. This can be done by replacing `key` key/value pair of the dict with a `macro` key/value pair.
- * The syntax is `{macro: 'KEY COMBINATION'}`. For example {macro: 'HOME RIGHT', ...}.
+ * <p>In advance json dict mode, the key can also be a sequence of space separated keys instead of
+ * one key. This can be done by replacing `key` key/value pair of the dict with a `macro` key/value
+ * pair. The syntax is `{macro: 'KEY COMBINATION'}`. For example {macro: 'HOME RIGHT', ...}.
  *
- * In advance json dict mode, you can define a nested json dict with the `popup` key which will be
- * used as the popup key and will be triggered on swipe up. The syntax can be
- * `{key: 'KEY', popup: 'POPUP_KEY'}` or `{key: 'KEY', popup: {macro: 'KEY COMBINATION', display: 'Key combo'}}`.
+ * <p>In advance json dict mode, you can define a nested json dict with the `popup` key which will
+ * be used as the popup key and will be triggered on swipe up. The syntax can be `{key: 'KEY',
+ * popup: 'POPUP_KEY'}` or `{key: 'KEY', popup: {macro: 'KEY COMBINATION', display: 'Key combo'}}`.
  * For example `{key: 'HOME', popup: {KEY: 'END', ...}, ...}`.
  *
- * In advance json dict mode, the key can also have a custom display name that can be used as the
- * text to display on the button by defining the `display` key. The syntax is `{display: 'DISPLAY'}`.
- * For example {display: 'Custom name', ...}.
+ * <p>In advance json dict mode, the key can also have a custom display name that can be used as the
+ * text to display on the button by defining the `display` key. The syntax is `{display:
+ * 'DISPLAY'}`. For example {display: 'Custom name', ...}.
  *
- * Examples:
- * {@code
- * # Empty:
- * []
+ * <p>Examples: {@code # Empty: []
  *
- * # Single row:
- * [[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]
+ * <p># Single row: [[ESC, TAB, CTRL, ALT, {key: '-', popup: '|'}, DOWN, UP]]
  *
- * # 2 row:
- * [['ESC','/',{key: '-', popup: '|'},'HOME','UP','END','PGUP'],
+ * <p># 2 row: [['ESC','/',{key: '-', popup: '|'},'HOME','UP','END','PGUP'],
  * ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN']]
  *
- * # Advance:
- * [[
- *   {key: ESC, popup: {macro: "CTRL f d", display: "tmux exit"}},
- *   {key: CTRL, popup: {macro: "CTRL f BKSP", display: "tmux ←"}},
- *   {key: ALT, popup: {macro: "CTRL f TAB", display: "tmux →"}},
- *   {key: TAB, popup: {macro: "ALT a", display: A-a}},
- *   {key: LEFT, popup: HOME},
- *   {key: DOWN, popup: PGDN},
- *   {key: UP, popup: PGUP},
- *   {key: RIGHT, popup: END},
- *   {macro: "ALT j", display: A-j, popup: {macro: "ALT g", display: A-g}},
- *   {key: KEYBOARD, popup: {macro: "CTRL d", display: exit}}
- * ]]
+ * <p># Advance: [[ {key: ESC, popup: {macro: "CTRL f d", display: "tmux exit"}}, {key: CTRL, popup:
+ * {macro: "CTRL f BKSP", display: "tmux ←"}}, {key: ALT, popup: {macro: "CTRL f TAB", display:
+ * "tmux →"}}, {key: TAB, popup: {macro: "ALT a", display: A-a}}, {key: LEFT, popup: HOME}, {key:
+ * DOWN, popup: PGDN}, {key: UP, popup: PGUP}, {key: RIGHT, popup: END}, {macro: "ALT j", display:
+ * A-j, popup: {macro: "ALT g", display: A-g}}, {key: KEYBOARD, popup: {macro: "CTRL d", display:
+ * exit}} ]]
  *
- * }
+ * <p>}
  *
- * Aliases are also allowed for the keys that you can pass as {@code extraKeyAliasMap}. Check
+ * <p>Aliases are also allowed for the keys that you can pass as {@code extraKeyAliasMap}. Check
  * {@link ExtraKeysConstants#CONTROL_CHARS_ALIASES}.
  *
- * Its up to the {@link ExtraKeysView.IExtraKeysView} client on how to handle individual key values
- * of an {@link ExtraKeyButton}. They are sent as is via
- * {@link ExtraKeysView.IExtraKeysView#onExtraKeyButtonClick(View, ExtraKeyButton, MaterialButton)}. The
- * {@link TerminalExtraKeys} which is an implementation of the interface,
- * checks if the key is one of {@link ExtraKeysConstants#PRIMARY_KEY_CODES_FOR_STRINGS} and generates
- * a {@link android.view.KeyEvent} for it, and if its not, then converts the key to code points by
- * calling {@link CharSequence#codePoints()} and passes them to the terminal as literal strings.
+ * <p>Its up to the {@link ExtraKeysView.IExtraKeysView} client on how to handle individual key
+ * values of an {@link ExtraKeyButton}. They are sent as is via {@link
+ * ExtraKeysView.IExtraKeysView#onExtraKeyButtonClick(View, ExtraKeyButton, MaterialButton)}. The
+ * {@link TerminalExtraKeys} which is an implementation of the interface, checks if the key is one
+ * of {@link ExtraKeysConstants#PRIMARY_KEY_CODES_FOR_STRINGS} and generates a {@link
+ * android.view.KeyEvent} for it, and if its not, then converts the key to code points by calling
+ * {@link CharSequence#codePoints()} and passes them to the terminal as literal strings.
  *
- * Examples:
- * {@code
- * "ENTER" will trigger the ENTER keycode
- * "LEFT" will trigger the LEFT keycode and be displayed as "←"
- * "→" will input a "→" character
- * "−" will input a "−" character
- * "-_-" will input the string "-_-"
- * }
+ * <p>Examples: {@code "ENTER" will trigger the ENTER keycode "LEFT" will trigger the LEFT keycode
+ * and be displayed as "←" "→" will input a "→" character "−" will input a "−" character "-_-" will
+ * input the string "-_-" }
  *
- * For more info, check https://wiki.termux.com/wiki/Touch_Keyboard.
+ * <p>For more info, check https://wiki.termux.com/wiki/Touch_Keyboard.
  */
 public class ExtraKeysInfo {
 
-    /**
-     * Matrix of buttons to be displayed in {@link ExtraKeysView}.
-     */
+    /** Matrix of buttons to be displayed in {@link ExtraKeysView}. */
     private final ExtraKeyButton[][] mButtons;
 
     /**
      * Initialize {@link ExtraKeysInfo}.
      *
-     * @param propertiesInfo The {@link String} containing the info to create the {@link ExtraKeysInfo}.
-     *                       Check the class javadoc for details.
+     * @param propertiesInfo The {@link String} containing the info to create the {@link
+     *     ExtraKeysInfo}. Check the class javadoc for details.
      * @param style The style to pass to {@link #getCharDisplayMapForStyle(String)} to get the
-     *              {@link ExtraKeysConstants.ExtraKeyDisplayMap} that defines the display text
-     *              mapping for the keys if a custom value is not defined by
-     *              {@link ExtraKeyButton#KEY_DISPLAY_NAME} for a key.
+     *     {@link ExtraKeysConstants.ExtraKeyDisplayMap} that defines the display text mapping for
+     *     the keys if a custom value is not defined by {@link ExtraKeyButton#KEY_DISPLAY_NAME} for
+     *     a key.
      * @param extraKeyAliasMap The {@link ExtraKeysConstants.ExtraKeyDisplayMap} that defines the
-     *                           aliases for the actual key names. You can create your own or
-     *                           optionally pass {@link ExtraKeysConstants#CONTROL_CHARS_ALIASES}.
+     *     aliases for the actual key names. You can create your own or optionally pass {@link
+     *     ExtraKeysConstants#CONTROL_CHARS_ALIASES}.
      */
-    public ExtraKeysInfo(@NonNull String propertiesInfo, String style,
-                         @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap) throws JSONException {
-        mButtons = initExtraKeysInfo(propertiesInfo, getCharDisplayMapForStyle(style), extraKeyAliasMap);
+    public ExtraKeysInfo(
+            @NonNull String propertiesInfo,
+            String style,
+            @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap)
+            throws JSONException {
+        mButtons =
+                initExtraKeysInfo(
+                        propertiesInfo, getCharDisplayMapForStyle(style), extraKeyAliasMap);
     }
 
     /**
      * Initialize {@link ExtraKeysInfo}.
      *
-     * @param propertiesInfo The {@link String} containing the info to create the {@link ExtraKeysInfo}.
-     *                       Check the class javadoc for details.
+     * @param propertiesInfo The {@link String} containing the info to create the {@link
+     *     ExtraKeysInfo}. Check the class javadoc for details.
      * @param extraKeyDisplayMap The {@link ExtraKeysConstants.ExtraKeyDisplayMap} that defines the
-     *                           display text mapping for the keys if a custom value is not defined
-     *                           by {@link ExtraKeyButton#KEY_DISPLAY_NAME} for a key. You can create
-     *                           your own or optionally pass one of the values defined in
-     *                           {@link #getCharDisplayMapForStyle(String)}.
+     *     display text mapping for the keys if a custom value is not defined by {@link
+     *     ExtraKeyButton#KEY_DISPLAY_NAME} for a key. You can create your own or optionally pass
+     *     one of the values defined in {@link #getCharDisplayMapForStyle(String)}.
      * @param extraKeyAliasMap The {@link ExtraKeysConstants.ExtraKeyDisplayMap} that defines the
-     *                           aliases for the actual key names. You can create your own or
-     *                           optionally pass {@link ExtraKeysConstants#CONTROL_CHARS_ALIASES}.
+     *     aliases for the actual key names. You can create your own or optionally pass {@link
+     *     ExtraKeysConstants#CONTROL_CHARS_ALIASES}.
      */
-    public ExtraKeysInfo(@NonNull String propertiesInfo,
-                         @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyDisplayMap,
-                         @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap) throws JSONException {
+    public ExtraKeysInfo(
+            @NonNull String propertiesInfo,
+            @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyDisplayMap,
+            @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap)
+            throws JSONException {
         mButtons = initExtraKeysInfo(propertiesInfo, extraKeyDisplayMap, extraKeyAliasMap);
     }
 
-    private ExtraKeyButton[][] initExtraKeysInfo(@NonNull String propertiesInfo,
-                                                 @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyDisplayMap,
-                                                 @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap) throws JSONException {
+    private ExtraKeyButton[][] initExtraKeysInfo(
+            @NonNull String propertiesInfo,
+            @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyDisplayMap,
+            @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap)
+            throws JSONException {
         // Convert String propertiesInfo to Array of Arrays
         JSONArray arr = new JSONArray(propertiesInfo);
         Object[][] matrix = new Object[arr.length()][];
@@ -161,9 +149,13 @@ public class ExtraKeysInfo {
                     button = new ExtraKeyButton(jobject, extraKeyDisplayMap, extraKeyAliasMap);
                 } else {
                     // a popup
-                    JSONObject popupJobject = normalizeKeyConfig(jobject.get(ExtraKeyButton.KEY_POPUP));
-                    ExtraKeyButton popup = new ExtraKeyButton(popupJobject, extraKeyDisplayMap, extraKeyAliasMap);
-                    button = new ExtraKeyButton(jobject, popup, extraKeyDisplayMap, extraKeyAliasMap);
+                    JSONObject popupJobject =
+                            normalizeKeyConfig(jobject.get(ExtraKeyButton.KEY_POPUP));
+                    ExtraKeyButton popup =
+                            new ExtraKeyButton(popupJobject, extraKeyDisplayMap, extraKeyAliasMap);
+                    button =
+                            new ExtraKeyButton(
+                                    jobject, popup, extraKeyDisplayMap, extraKeyAliasMap);
                 }
 
                 buttons[i][j] = button;
@@ -174,8 +166,9 @@ public class ExtraKeysInfo {
     }
 
     /**
-     * Convert "value" -> {"key": "value"}. Required by
-     * {@link ExtraKeyButton#ExtraKeyButton(JSONObject, ExtraKeyButton, ExtraKeysConstants.ExtraKeyDisplayMap, ExtraKeysConstants.ExtraKeyDisplayMap)}.
+     * Convert "value" -> {"key": "value"}. Required by {@link
+     * ExtraKeyButton#ExtraKeyButton(JSONObject, ExtraKeyButton,
+     * ExtraKeysConstants.ExtraKeyDisplayMap, ExtraKeysConstants.ExtraKeyDisplayMap)}.
      */
     private static JSONObject normalizeKeyConfig(Object key) throws JSONException {
         JSONObject jobject;
@@ -209,5 +202,4 @@ public class ExtraKeysInfo {
                 return EXTRA_KEY_DISPLAY_MAPS.DEFAULT_CHAR_DISPLAY;
         }
     }
-
 }

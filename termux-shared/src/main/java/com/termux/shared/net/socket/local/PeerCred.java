@@ -35,8 +35,11 @@ public class PeerCred {
     public String cmdline;
 
     PeerCred() {
-        // Initialize to -1 instead of 0 in case a failed getPeerCred()/getsockopt() call somehow doesn't report failure and returns the uid of root
-        pid = -1; uid = -1; gid = -1;
+        // Initialize to -1 instead of 0 in case a failed getPeerCred()/getsockopt() call somehow
+        // doesn't report failure and returns the uid of root
+        pid = -1;
+        uid = -1;
+        gid = -1;
     }
 
     /** Set data that was not set by JNI. */
@@ -47,12 +50,10 @@ public class PeerCred {
 
     /** Set {@link #uname} and {@link #gname} if not set. */
     public void fillUnameAndGname(@NonNull Context context) {
-       uname = UserUtils.getNameForUid(context, uid);
+        uname = UserUtils.getNameForUid(context, uid);
 
-       if (gid != uid)
-           gname = UserUtils.getNameForUid(context, gid);
-       else
-           gname = uname;
+        if (gid != uid) gname = UserUtils.getNameForUid(context, gid);
+        else gname = uname;
     }
 
     /** Set {@link #pname} if not set. */
@@ -60,8 +61,7 @@ public class PeerCred {
         // If jni did not set process name since it wouldn't be able to access /proc/<pid> of other
         // users/apps, then try to see if any app has that pid, but this wouldn't check child
         // processes of the app.
-        if (pid > 0 && pname == null)
-            pname = ProcessUtils.getAppProcessNameForPid(context, pid);
+        if (pid > 0 && pname == null) pname = ProcessUtils.getAppProcessNameForPid(context, pid);
     }
 
     /**
@@ -82,12 +82,20 @@ public class PeerCred {
         StringBuilder logString = new StringBuilder();
 
         logString.append("Peer Cred:");
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("Process", getProcessString(), "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("User", getUserString(), "-"));
-        logString.append("\n").append(Logger.getSingleLineLogStringEntry("Group", getGroupString(), "-"));
+        logString
+                .append("\n")
+                .append(Logger.getSingleLineLogStringEntry("Process", getProcessString(), "-"));
+        logString
+                .append("\n")
+                .append(Logger.getSingleLineLogStringEntry("User", getUserString(), "-"));
+        logString
+                .append("\n")
+                .append(Logger.getSingleLineLogStringEntry("Group", getGroupString(), "-"));
 
         if (cmdline != null)
-            logString.append("\n").append(Logger.getMultiLineLogStringEntry("Cmdline", cmdline, "-"));
+            logString
+                    .append("\n")
+                    .append(Logger.getMultiLineLogStringEntry("Cmdline", cmdline, "-"));
 
         return logString.toString();
     }
@@ -109,19 +117,38 @@ public class PeerCred {
         StringBuilder markdownString = new StringBuilder();
 
         markdownString.append("## ").append("Peer Cred");
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Process", getProcessString(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User", getUserString(), "-"));
-        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Group", getGroupString(), "-"));
+        markdownString
+                .append("\n")
+                .append(
+                        MarkdownUtils.getSingleLineMarkdownStringEntry(
+                                "Process", getProcessString(), "-"));
+        markdownString
+                .append("\n")
+                .append(
+                        MarkdownUtils.getSingleLineMarkdownStringEntry(
+                                "User", getUserString(), "-"));
+        markdownString
+                .append("\n")
+                .append(
+                        MarkdownUtils.getSingleLineMarkdownStringEntry(
+                                "Group", getGroupString(), "-"));
 
         if (cmdline != null)
-            markdownString.append("\n").append(MarkdownUtils.getMultiLineMarkdownStringEntry("Cmdline", cmdline, "-"));
+            markdownString
+                    .append("\n")
+                    .append(MarkdownUtils.getMultiLineMarkdownStringEntry("Cmdline", cmdline, "-"));
 
         return markdownString.toString();
     }
 
     @NonNull
     public String getMinimalString() {
-        return "process=" + getProcessString() + ", user=" + getUserString() + ", group=" + getGroupString();
+        return "process="
+                + getProcessString()
+                + ", user="
+                + getUserString()
+                + ", group="
+                + getGroupString();
     }
 
     @NonNull
@@ -138,5 +165,4 @@ public class PeerCred {
     public String getGroupString() {
         return gname != null ? gid + " (" + gname + ")" : String.valueOf(gid);
     }
-
 }

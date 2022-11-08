@@ -12,24 +12,31 @@ public class AppSharedPreferences {
     /** The {@link Context} for operations. */
     protected final Context mContext;
 
-    /** The {@link SharedPreferences} that ideally should be created with {@link SharedPreferenceUtils#getPrivateSharedPreferences(Context, String)}. */
+    /**
+     * The {@link SharedPreferences} that ideally should be created with {@link
+     * SharedPreferenceUtils#getPrivateSharedPreferences(Context, String)}.
+     */
     protected final SharedPreferences mSharedPreferences;
 
-    /** The {@link SharedPreferences}that ideally should be created with {@link SharedPreferenceUtils#getPrivateAndMultiProcessSharedPreferences(Context, String)}. */
+    /**
+     * The {@link SharedPreferences}that ideally should be created with {@link
+     * SharedPreferenceUtils#getPrivateAndMultiProcessSharedPreferences(Context, String)}.
+     */
     protected final SharedPreferences mMultiProcessSharedPreferences;
 
-    protected AppSharedPreferences(@NonNull Context context, @Nullable SharedPreferences sharedPreferences) {
+    protected AppSharedPreferences(
+            @NonNull Context context, @Nullable SharedPreferences sharedPreferences) {
         this(context, sharedPreferences, null);
     }
 
-    protected AppSharedPreferences(@NonNull Context context, @Nullable SharedPreferences sharedPreferences,
-                                   @Nullable SharedPreferences multiProcessSharedPreferences) {
+    protected AppSharedPreferences(
+            @NonNull Context context,
+            @Nullable SharedPreferences sharedPreferences,
+            @Nullable SharedPreferences multiProcessSharedPreferences) {
         mContext = context;
         mSharedPreferences = sharedPreferences;
         mMultiProcessSharedPreferences = multiProcessSharedPreferences;
     }
-
-
 
     /** Get {@link #mContext}. */
     public Context getContext() {
@@ -45,5 +52,4 @@ public class AppSharedPreferences {
     public SharedPreferences getMultiProcessSharedPreferences() {
         return mMultiProcessSharedPreferences;
     }
-
 }

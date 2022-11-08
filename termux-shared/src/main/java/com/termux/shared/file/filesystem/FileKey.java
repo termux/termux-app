@@ -29,7 +29,6 @@ package com.termux.shared.file.filesystem;
  * Container for device/inode to uniquely identify file.
  * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:libcore/ojluni/src/main/java/sun/nio/fs/UnixFileKey.java
  */
-
 public class FileKey {
     private final long st_dev;
     private final long st_ino;
@@ -41,17 +40,14 @@ public class FileKey {
 
     @Override
     public int hashCode() {
-        return (int)(st_dev ^ (st_dev >>> 32)) +
-            (int)(st_ino ^ (st_ino >>> 32));
+        return (int) (st_dev ^ (st_dev >>> 32)) + (int) (st_ino ^ (st_ino >>> 32));
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this)
-            return true;
-        if (!(obj instanceof FileKey))
-            return false;
-        FileKey other = (FileKey)obj;
+        if (obj == this) return true;
+        if (!(obj instanceof FileKey)) return false;
+        FileKey other = (FileKey) obj;
         return (this.st_dev == other.st_dev) && (this.st_ino == other.st_ino);
     }
 
@@ -59,10 +55,10 @@ public class FileKey {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("(dev=")
-            .append(Long.toHexString(st_dev))
-            .append(",ino=")
-            .append(st_ino)
-            .append(')');
+                .append(Long.toHexString(st_dev))
+                .append(",ino=")
+                .append(st_ino)
+                .append(')');
         return sb.toString();
     }
 }

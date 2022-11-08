@@ -24,9 +24,9 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.termux.shared.R;
 import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.R;
 import com.termux.shared.models.TextIOInfo;
 import com.termux.shared.view.KeyboardUtils;
 
@@ -37,14 +37,16 @@ import java.util.Locale;
 /**
  * An activity to edit or view text based on config passed as {@link TextIOInfo}.
  *
- * Add Following to `AndroidManifest.xml` to use in an app:
+ * <p>Add Following to `AndroidManifest.xml` to use in an app:
  *
- * {@code ` <activity android:name="com.termux.shared.activities.TextIOActivity" android:theme="@style/Theme.AppCompat.TermuxTextIOActivity" />` }
+ * <p>{@code ` <activity android:name="com.termux.shared.activities.TextIOActivity"
+ * android:theme="@style/Theme.AppCompat.TermuxTextIOActivity" />` }
  */
 public class TextIOActivity extends AppCompatActivity {
 
     private static final String CLASS_NAME = ReportActivity.class.getCanonicalName();
-    public static final String EXTRA_TEXT_IO_INFO_OBJECT = CLASS_NAME + ".EXTRA_TEXT_IO_INFO_OBJECT";
+    public static final String EXTRA_TEXT_IO_INFO_OBJECT =
+            CLASS_NAME + ".EXTRA_TEXT_IO_INFO_OBJECT";
 
     private TextView mTextIOLabel;
     private View mTextIOLabelSeparator;
@@ -79,10 +81,8 @@ public class TextIOActivity extends AppCompatActivity {
 
         mBundle = null;
         Intent intent = getIntent();
-        if (intent != null)
-            mBundle = intent.getExtras();
-        else if (savedInstanceState != null)
-            mBundle = savedInstanceState;
+        if (intent != null) mBundle = intent.getExtras();
+        else if (savedInstanceState != null) mBundle = savedInstanceState;
 
         updateUI();
     }
@@ -101,20 +101,20 @@ public class TextIOActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private void updateUI() {
         if (mBundle == null) {
-            finish(); return;
+            finish();
+            return;
         }
 
         mTextIOInfo = (TextIOInfo) mBundle.getSerializable(EXTRA_TEXT_IO_INFO_OBJECT);
         if (mTextIOInfo == null) {
-            finish(); return;
+            finish();
+            return;
         }
 
         final ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            if (mTextIOInfo.getTitle() != null)
-                actionBar.setTitle(mTextIOInfo.getTitle());
-            else
-                actionBar.setTitle("Text Input");
+            if (mTextIOInfo.getTitle() != null) actionBar.setTitle(mTextIOInfo.getTitle());
+            else actionBar.setTitle("Text Input");
 
             if (mTextIOInfo.shouldShowBackButtonInActionBar()) {
                 actionBar.setDisplayHomeAsUpEnabled(true);
@@ -128,12 +128,17 @@ public class TextIOActivity extends AppCompatActivity {
             mTextIOLabel.setVisibility(View.VISIBLE);
             mTextIOLabelSeparator.setVisibility(View.VISIBLE);
             mTextIOLabel.setText(mTextIOInfo.getLabel());
-            mTextIOLabel.setFilters(new InputFilter[] { new InputFilter.LengthFilter(TextIOInfo.LABEL_SIZE_LIMIT_IN_BYTES) });
+            mTextIOLabel.setFilters(
+                    new InputFilter[] {
+                        new InputFilter.LengthFilter(TextIOInfo.LABEL_SIZE_LIMIT_IN_BYTES)
+                    });
             mTextIOLabel.setTextSize(mTextIOInfo.getLabelSize());
             mTextIOLabel.setTextColor(mTextIOInfo.getLabelColor());
-            mTextIOLabel.setTypeface(Typeface.create(mTextIOInfo.getLabelTypeFaceFamily(), mTextIOInfo.getLabelTypeFaceStyle()));
+            mTextIOLabel.setTypeface(
+                    Typeface.create(
+                            mTextIOInfo.getLabelTypeFaceFamily(),
+                            mTextIOInfo.getLabelTypeFaceStyle()));
         }
-
 
         if (mTextIOInfo.isHorizontallyScrollable()) {
             mTextIOHorizontalScrollView.setEnabled(true);
@@ -153,12 +158,16 @@ public class TextIOActivity extends AppCompatActivity {
         }
 
         mTextIOText.setText(mTextIOInfo.getText());
-        mTextIOText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(mTextIOInfo.getTextLengthLimit()) });
+        mTextIOText.setFilters(
+                new InputFilter[] {new InputFilter.LengthFilter(mTextIOInfo.getTextLengthLimit())});
         mTextIOText.setTextSize(mTextIOInfo.getTextSize());
         mTextIOText.setTextColor(mTextIOInfo.getTextColor());
-        mTextIOText.setTypeface(Typeface.create(mTextIOInfo.getTextTypeFaceFamily(), mTextIOInfo.getTextTypeFaceStyle()));
+        mTextIOText.setTypeface(
+                Typeface.create(
+                        mTextIOInfo.getTextTypeFaceFamily(), mTextIOInfo.getTextTypeFaceStyle()));
 
-        // setTextIsSelectable must be called after changing KeyListener to regain focusability and selectivity
+        // setTextIsSelectable must be called after changing KeyListener to regain focusability and
+        // selectivity
         if (mTextIOInfo.isEditingTextDisabled()) {
             mTextIOText.setCursorVisible(false);
             mTextIOText.setKeyListener(null);
@@ -169,17 +178,22 @@ public class TextIOActivity extends AppCompatActivity {
             mTextIOTextCharacterUsage.setVisibility(View.VISIBLE);
             updateTextIOTextCharacterUsage(mTextIOInfo.getText());
 
-            mTextIOText.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {}
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    if (editable != null)
-                        updateTextIOTextCharacterUsage(editable.toString());
-                }
-            });
+            mTextIOText.addTextChangedListener(
+                    new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(
+                                CharSequence s, int start, int count, int after) {}
+
+                        @Override
+                        public void onTextChanged(
+                                CharSequence s, int start, int before, int count) {}
+
+                        @Override
+                        public void afterTextChanged(Editable editable) {
+                            if (editable != null)
+                                updateTextIOTextCharacterUsage(editable.toString());
+                        }
+                    });
         } else {
             mTextIOTextCharacterUsage.setVisibility(View.GONE);
             mTextIOText.addTextChangedListener(null);
@@ -187,14 +201,18 @@ public class TextIOActivity extends AppCompatActivity {
     }
 
     private void updateTextIOInfoText() {
-        if (mTextIOText != null)
-            mTextIOInfo.setText(mTextIOText.getText().toString());
+        if (mTextIOText != null) mTextIOInfo.setText(mTextIOText.getText().toString());
     }
 
     private void updateTextIOTextCharacterUsage(String text) {
         if (text == null) text = "";
         if (mTextIOTextCharacterUsage != null)
-            mTextIOTextCharacterUsage.setText(String.format(Locale.getDefault(), "%1$d/%2$d", text.length(), mTextIOInfo.getTextLengthLimit()));
+            mTextIOTextCharacterUsage.setText(
+                    String.format(
+                            Locale.getDefault(),
+                            "%1$d/%2$d",
+                            text.length(),
+                            mTextIOInfo.getTextLengthLimit()));
     }
 
     @Override
@@ -215,13 +233,13 @@ public class TextIOActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         String text = "";
-        if (mTextIOText != null)
-            text = mTextIOText.getText().toString();
+        if (mTextIOText != null) text = mTextIOText.getText().toString();
 
         int id = item.getItemId();
         if (id == android.R.id.home) {
             confirm();
-        } if (id == R.id.menu_item_cancel) {
+        }
+        if (id == R.id.menu_item_cancel) {
             cancel();
         } else if (id == R.id.menu_item_share_text) {
             ShareUtils.shareText(this, mTextIOInfo.getTitle(), text);
@@ -267,12 +285,12 @@ public class TextIOActivity extends AppCompatActivity {
      * @param context The {@link Context} for operations.
      * @param textIOInfo The {@link TextIOInfo} containing info for the edit text.
      */
-    public static Intent newInstance(@NonNull final Context context, @NonNull final TextIOInfo textIOInfo) {
+    public static Intent newInstance(
+            @NonNull final Context context, @NonNull final TextIOInfo textIOInfo) {
         Intent intent = new Intent(context, TextIOActivity.class);
         Bundle bundle = new Bundle();
         bundle.putSerializable(EXTRA_TEXT_IO_INFO_OBJECT, textIOInfo);
         intent.putExtras(bundle);
         return intent;
     }
-
 }

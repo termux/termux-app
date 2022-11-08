@@ -16,13 +16,6 @@
 
 package com.termux.shared.shell;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Locale;
-
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,15 +23,23 @@ import androidx.annotation.WorkerThread;
 
 import com.termux.shared.logger.Logger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * Thread utility class continuously reading from an InputStream
  *
- * https://github.com/Chainfire/libsuperuser/blob/1.1.0.201907261845/libsuperuser/src/eu/chainfire/libsuperuser/Shell.java#L141
+ * <p>https://github.com/Chainfire/libsuperuser/blob/1.1.0.201907261845/libsuperuser/src/eu/chainfire/libsuperuser/Shell.java#L141
  * https://github.com/Chainfire/libsuperuser/blob/1.1.0.201907261845/libsuperuser/src/eu/chainfire/libsuperuser/StreamGobbler.java
  */
 @SuppressWarnings({"WeakerAccess"})
 public class StreamGobbler extends Thread {
     private static int threadCounter = 0;
+
     private static int incThreadCounter() {
         synchronized (StreamGobbler.class) {
             int ret = threadCounter;
@@ -47,70 +48,57 @@ public class StreamGobbler extends Thread {
         }
     }
 
-    /**
-     * Line callback interface
-     */
+    /** Line callback interface */
     public interface OnLineListener {
         /**
-         * <p>Line callback</p>
+         * Line callback
          *
-         * <p>This callback should process the line as quickly as possible.
-         * Delays in this callback may pause the native process or even
-         * result in a deadlock</p>
+         * <p>This callback should process the line as quickly as possible. Delays in this callback
+         * may pause the native process or even result in a deadlock
          *
          * @param line String that was gobbled
          */
         void onLine(String line);
     }
 
-    /**
-     * Stream closed callback interface
-     */
+    /** Stream closed callback interface */
     public interface OnStreamClosedListener {
-        /**
-         * <p>Stream closed callback</p>
-         */
+        /** Stream closed callback */
         void onStreamClosed();
     }
 
-    @NonNull
-    private final String shell;
-    @NonNull
-    private final InputStream inputStream;
-    @NonNull
-    private final BufferedReader reader;
-    @Nullable
-    private final List<String> listWriter;
-    @Nullable
-    private final StringBuilder stringWriter;
-    @Nullable
-    private final OnLineListener lineListener;
-    @Nullable
-    private final OnStreamClosedListener streamClosedListener;
-    @Nullable
-    private final Integer mLogLevel;
+    @NonNull private final String shell;
+    @NonNull private final InputStream inputStream;
+    @NonNull private final BufferedReader reader;
+    @Nullable private final List<String> listWriter;
+    @Nullable private final StringBuilder stringWriter;
+    @Nullable private final OnLineListener lineListener;
+    @Nullable private final OnStreamClosedListener streamClosedListener;
+    @Nullable private final Integer mLogLevel;
     private volatile boolean active = true;
     private volatile boolean calledOnClose = false;
 
     private static final String LOG_TAG = "StreamGobbler";
 
     /**
-     * <p>StreamGobbler constructor</p>
+     * StreamGobbler constructor
      *
-     * <p>We use this class because shell STDOUT and STDERR should be read as quickly as
-     * possible to prevent a deadlock from occurring, or Process.waitFor() never
-     * returning (as the buffer is full, pausing the native process)</p>
+     * <p>We use this class because shell STDOUT and STDERR should be read as quickly as possible to
+     * prevent a deadlock from occurring, or Process.waitFor() never returning (as the buffer is
+     * full, pausing the native process)
      *
      * @param shell Name of the shell
      * @param inputStream InputStream to read from
      * @param outputList {@literal List<String>} to write to, or null
-     * @param logLevel The custom log level to use for logging the command output. If set to
-     *                 {@code null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
+     * @param logLevel The custom log level to use for logging the command output. If set to {@code
+     *     null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
      */
     @AnyThread
-    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream,
-                         @Nullable List<String> outputList,
-                         @Nullable Integer logLevel) {
+    public StreamGobbler(
+            @NonNull String shell,
+            @NonNull InputStream inputStream,
+            @Nullable List<String> outputList,
+            @Nullable Integer logLevel) {
         super("Gobbler#" + incThreadCounter());
         this.shell = shell;
         this.inputStream = inputStream;
@@ -125,24 +113,25 @@ public class StreamGobbler extends Thread {
     }
 
     /**
-     * <p>StreamGobbler constructor</p>
+     * StreamGobbler constructor
      *
-     * <p>We use this class because shell STDOUT and STDERR should be read as quickly as
-     * possible to prevent a deadlock from occurring, or Process.waitFor() never
-     * returning (as the buffer is full, pausing the native process)</p>
-     * Do not use this for concurrent reading for STDOUT and STDERR for the same StringBuilder since
-     * its not synchronized.
+     * <p>We use this class because shell STDOUT and STDERR should be read as quickly as possible to
+     * prevent a deadlock from occurring, or Process.waitFor() never returning (as the buffer is
+     * full, pausing the native process) Do not use this for concurrent reading for STDOUT and
+     * STDERR for the same StringBuilder since its not synchronized.
      *
      * @param shell Name of the shell
      * @param inputStream InputStream to read from
      * @param outputString {@literal List<String>} to write to, or null
-     * @param logLevel The custom log level to use for logging the command output. If set to
-     *                 {@code null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
+     * @param logLevel The custom log level to use for logging the command output. If set to {@code
+     *     null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
      */
     @AnyThread
-    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream,
-                         @Nullable StringBuilder outputString,
-                         @Nullable Integer logLevel) {
+    public StreamGobbler(
+            @NonNull String shell,
+            @NonNull InputStream inputStream,
+            @Nullable StringBuilder outputString,
+            @Nullable Integer logLevel) {
         super("Gobbler#" + incThreadCounter());
         this.shell = shell;
         this.inputStream = inputStream;
@@ -157,24 +146,26 @@ public class StreamGobbler extends Thread {
     }
 
     /**
-     * <p>StreamGobbler constructor</p>
+     * StreamGobbler constructor
      *
-     * <p>We use this class because shell STDOUT and STDERR should be read as quickly as
-     * possible to prevent a deadlock from occurring, or Process.waitFor() never
-     * returning (as the buffer is full, pausing the native process)</p>
+     * <p>We use this class because shell STDOUT and STDERR should be read as quickly as possible to
+     * prevent a deadlock from occurring, or Process.waitFor() never returning (as the buffer is
+     * full, pausing the native process)
      *
      * @param shell Name of the shell
      * @param inputStream InputStream to read from
      * @param onLineListener OnLineListener callback
      * @param onStreamClosedListener OnStreamClosedListener callback
-     * @param logLevel The custom log level to use for logging the command output. If set to
-     *                 {@code null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
+     * @param logLevel The custom log level to use for logging the command output. If set to {@code
+     *     null}, then {@link Logger#LOG_LEVEL_VERBOSE} will be used.
      */
     @AnyThread
-    public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream,
-                         @Nullable OnLineListener onLineListener,
-                         @Nullable OnStreamClosedListener onStreamClosedListener,
-                         @Nullable Integer logLevel) {
+    public StreamGobbler(
+            @NonNull String shell,
+            @NonNull InputStream inputStream,
+            @Nullable OnLineListener onLineListener,
+            @Nullable OnStreamClosedListener onStreamClosedListener,
+            @Nullable Integer logLevel) {
         super("Gobbler#" + incThreadCounter());
         this.shell = shell;
         this.inputStream = inputStream;
@@ -193,7 +184,12 @@ public class StreamGobbler extends Thread {
         String defaultLogTag = Logger.getDefaultLogTag();
         boolean loggingEnabled = Logger.shouldEnableLoggingForCustomLogLevel(mLogLevel);
         if (loggingEnabled)
-            Logger.logVerbose(LOG_TAG, "Using custom log level: " + mLogLevel + ", current log level: " + Logger.getLogLevel());
+            Logger.logVerbose(
+                    LOG_TAG,
+                    "Using custom log level: "
+                            + mLogLevel
+                            + ", current log level: "
+                            + Logger.getLogLevel());
 
         // keep reading the InputStream until it ends (or an error occurs)
         // optionally pausing when a command is executed that consumes the InputStream itself
@@ -201,7 +197,14 @@ public class StreamGobbler extends Thread {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (loggingEnabled)
-                    Logger.logVerboseForce(defaultLogTag + "Command", String.format(Locale.ENGLISH, "[%s] %s", shell, line)); // This will get truncated by LOGGER_ENTRY_MAX_LEN, likely 4KB
+                    Logger.logVerboseForce(
+                            defaultLogTag + "Command",
+                            String.format(
+                                    Locale.ENGLISH,
+                                    "[%s] %s",
+                                    shell,
+                                    line)); // This will get truncated by LOGGER_ENTRY_MAX_LEN,
+                                            // likely 4KB
 
                 if (stringWriter != null) stringWriter.append(line).append("\n");
                 if (listWriter != null) listWriter.add(line);
@@ -239,9 +242,7 @@ public class StreamGobbler extends Thread {
         }
     }
 
-    /**
-     * <p>Resume consuming the input from the stream</p>
-     */
+    /** Resume consuming the input from the stream */
     @AnyThread
     public void resumeGobbling() {
         if (!active) {
@@ -253,9 +254,9 @@ public class StreamGobbler extends Thread {
     }
 
     /**
-     * <p>Suspend gobbling, so other code may read from the InputStream instead</p>
+     * Suspend gobbling, so other code may read from the InputStream instead
      *
-     * <p>This should <i>only</i> be called from the OnLineListener callback!</p>
+     * <p>This should <i>only</i> be called from the OnLineListener callback!
      */
     @AnyThread
     public void suspendGobbling() {
@@ -266,9 +267,9 @@ public class StreamGobbler extends Thread {
     }
 
     /**
-     * <p>Wait for gobbling to be suspended</p>
+     * Wait for gobbling to be suspended
      *
-     * <p>Obviously this cannot be called from the same thread as {@link #suspendGobbling()}</p>
+     * <p>Obviously this cannot be called from the same thread as {@link #suspendGobbling()}
      */
     @WorkerThread
     public void waitForSuspend() {
@@ -284,7 +285,7 @@ public class StreamGobbler extends Thread {
     }
 
     /**
-     * <p>Is gobbling suspended ?</p>
+     * Is gobbling suspended ?
      *
      * @return is gobbling suspended?
      */
@@ -296,7 +297,7 @@ public class StreamGobbler extends Thread {
     }
 
     /**
-     * <p>Get current source InputStream</p>
+     * Get current source InputStream
      *
      * @return source InputStream
      */
@@ -307,7 +308,7 @@ public class StreamGobbler extends Thread {
     }
 
     /**
-     * <p>Get current OnLineListener</p>
+     * Get current OnLineListener
      *
      * @return OnLineListener
      */

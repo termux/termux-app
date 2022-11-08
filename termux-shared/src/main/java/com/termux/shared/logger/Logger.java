@@ -23,7 +23,8 @@ public class Logger {
     private static String DEFAULT_LOG_TAG = "Logger";
 
     public static final int LOG_LEVEL_OFF = 0; // log nothing
-    public static final int LOG_LEVEL_NORMAL = 1; // start logging error, warn and info messages and stacktraces
+    public static final int LOG_LEVEL_NORMAL =
+            1; // start logging error, warn and info messages and stacktraces
     public static final int LOG_LEVEL_DEBUG = 2; // start logging debug messages
     public static final int LOG_LEVEL_VERBOSE = 3; // start logging verbose messages
 
@@ -35,10 +36,10 @@ public class Logger {
      * The maximum size of the log entry payload that can be written to the logger. An attempt to
      * write more than this amount will result in a truncated log entry.
      *
-     * The limit is 4068 but this includes log tag and log level prefix "D/" before log tag and ": "
-     * suffix after it.
+     * <p>The limit is 4068 but this includes log tag and log level prefix "D/" before log tag and
+     * ": " suffix after it.
      *
-     * #define LOGGER_ENTRY_MAX_PAYLOAD 4068
+     * <p>#define LOGGER_ENTRY_MAX_PAYLOAD 4068
      * https://cs.android.com/android/_/android/platform/system/core/+/android10-release:liblog/include/log/log_read.h;l=127
      */
     public static final int LOGGER_ENTRY_MAX_PAYLOAD = 4068; // 4068 bytes
@@ -46,12 +47,10 @@ public class Logger {
     /**
      * The maximum safe size of the log entry payload that can be written to the logger, based on
      * {@link #LOGGER_ENTRY_MAX_PAYLOAD}. Using 4000 as a safe limit to give log tag and its
-     * prefix/suffix max 68 characters for itself. Use "log*Extended()" functions to use max possible
-     * limit if tag is already known.
+     * prefix/suffix max 68 characters for itself. Use "log*Extended()" functions to use max
+     * possible limit if tag is already known.
      */
     public static final int LOGGER_ENTRY_MAX_SAFE_PAYLOAD = 4000; // 4000 bytes
-
-
 
     public static void logMessage(int logPriority, String tag, String message) {
         if (logPriority == Log.ERROR && CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL)
@@ -73,12 +72,13 @@ public class Logger {
         int nextNewlineIndex;
         String prefix = "";
 
-        // -8 for prefix "(xx/xx)" (max 99 sections), - log tag length, -4 for log tag prefix "D/" and suffix ": "
+        // -8 for prefix "(xx/xx)" (max 99 sections), - log tag length, -4 for log tag prefix "D/"
+        // and suffix ": "
         int maxEntrySize = LOGGER_ENTRY_MAX_PAYLOAD - 8 - getFullTag(tag).length() - 4;
 
         List<String> messagesList = new ArrayList<>();
 
-        while(!message.isEmpty()) {
+        while (!message.isEmpty()) {
             if (message.length() > maxEntrySize) {
                 cutOffIndex = maxEntrySize;
                 nextNewlineIndex = message.lastIndexOf('\n', cutOffIndex);
@@ -93,14 +93,11 @@ public class Logger {
             }
         }
 
-        for(int i=0; i<messagesList.size(); i++) {
-            if (messagesList.size() > 1)
-                prefix = "(" + (i + 1) + "/" + messagesList.size() + ")\n";
+        for (int i = 0; i < messagesList.size(); i++) {
+            if (messagesList.size() > 1) prefix = "(" + (i + 1) + "/" + messagesList.size() + ")\n";
             logMessage(logLevel, tag, prefix + messagesList.get(i));
         }
     }
-
-
 
     public static void logError(String tag, String message) {
         logMessage(Log.ERROR, tag, message);
@@ -118,29 +115,22 @@ public class Logger {
         logExtendedMessage(Log.ERROR, DEFAULT_LOG_TAG, message);
     }
 
-
-
     public static void logErrorPrivate(String tag, String message) {
-        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
-            logMessage(Log.ERROR, tag, message);
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG) logMessage(Log.ERROR, tag, message);
     }
 
     public static void logErrorPrivate(String message) {
-        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
-            logMessage(Log.ERROR, DEFAULT_LOG_TAG, message);
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG) logMessage(Log.ERROR, DEFAULT_LOG_TAG, message);
     }
 
     public static void logErrorPrivateExtended(String tag, String message) {
-        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
-            logExtendedMessage(Log.ERROR, tag, message);
+        if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG) logExtendedMessage(Log.ERROR, tag, message);
     }
 
     public static void logErrorPrivateExtended(String message) {
         if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG)
             logExtendedMessage(Log.ERROR, DEFAULT_LOG_TAG, message);
     }
-
-
 
     public static void logWarn(String tag, String message) {
         logMessage(Log.WARN, tag, message);
@@ -158,8 +148,6 @@ public class Logger {
         logExtendedMessage(Log.WARN, DEFAULT_LOG_TAG, message);
     }
 
-
-
     public static void logInfo(String tag, String message) {
         logMessage(Log.INFO, tag, message);
     }
@@ -176,8 +164,6 @@ public class Logger {
         logExtendedMessage(Log.INFO, DEFAULT_LOG_TAG, message);
     }
 
-
-
     public static void logDebug(String tag, String message) {
         logMessage(Log.DEBUG, tag, message);
     }
@@ -193,8 +179,6 @@ public class Logger {
     public static void logDebugExtended(String message) {
         logExtendedMessage(Log.DEBUG, DEFAULT_LOG_TAG, message);
     }
-
-
 
     public static void logVerbose(String tag, String message) {
         logMessage(Log.VERBOSE, tag, message);
@@ -216,8 +200,6 @@ public class Logger {
         Log.v(tag, message);
     }
 
-
-
     public static void logInfoAndShowToast(Context context, String tag, String message) {
         if (CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL) {
             logInfo(tag, message);
@@ -228,8 +210,6 @@ public class Logger {
     public static void logInfoAndShowToast(Context context, String message) {
         logInfoAndShowToast(context, DEFAULT_LOG_TAG, message);
     }
-
-
 
     public static void logErrorAndShowToast(Context context, String tag, String message) {
         if (CURRENT_LOG_LEVEL >= LOG_LEVEL_NORMAL) {
@@ -242,8 +222,6 @@ public class Logger {
         logErrorAndShowToast(context, DEFAULT_LOG_TAG, message);
     }
 
-
-
     public static void logDebugAndShowToast(Context context, String tag, String message) {
         if (CURRENT_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
             logDebug(tag, message);
@@ -254,8 +232,6 @@ public class Logger {
     public static void logDebugAndShowToast(Context context, String message) {
         logDebugAndShowToast(context, DEFAULT_LOG_TAG, message);
     }
-
-
 
     public static void logStackTraceWithMessage(String tag, String message, Throwable throwable) {
         Logger.logErrorExtended(tag, getMessageAndStackTraceString(message, throwable));
@@ -273,37 +249,29 @@ public class Logger {
         logStackTraceWithMessage(DEFAULT_LOG_TAG, null, throwable);
     }
 
-
-
-    public static void logStackTracesWithMessage(String tag, String message, List<Throwable> throwablesList) {
+    public static void logStackTracesWithMessage(
+            String tag, String message, List<Throwable> throwablesList) {
         Logger.logErrorExtended(tag, getMessageAndStackTracesString(message, throwablesList));
     }
 
-
-
     public static String getMessageAndStackTraceString(String message, Throwable throwable) {
-        if (message == null && throwable == null)
-            return null;
+        if (message == null && throwable == null) return null;
         else if (message != null && throwable != null)
             return message + ":\n" + getStackTraceString(throwable);
-        else if (throwable == null)
-            return message;
-        else
-            return getStackTraceString(throwable);
+        else if (throwable == null) return message;
+        else return getStackTraceString(throwable);
     }
 
-    public static String getMessageAndStackTracesString(String message, List<Throwable> throwablesList) {
-        if (message == null && (throwablesList == null || throwablesList.size() == 0))
-            return null;
+    public static String getMessageAndStackTracesString(
+            String message, List<Throwable> throwablesList) {
+        if (message == null && (throwablesList == null || throwablesList.size() == 0)) return null;
         else if (message != null && (throwablesList != null && throwablesList.size() != 0))
-            return message + ":\n" + getStackTracesString(null, getStackTracesStringArray(throwablesList));
-        else if (throwablesList == null || throwablesList.size() == 0)
-            return message;
-        else
-            return getStackTracesString(null, getStackTracesStringArray(throwablesList));
+            return message
+                    + ":\n"
+                    + getStackTracesString(null, getStackTracesStringArray(throwablesList));
+        else if (throwablesList == null || throwablesList.size() == 0) return message;
+        else return getStackTracesString(null, getStackTracesStringArray(throwablesList));
     }
-
-
 
     public static String getStackTraceString(Throwable throwable) {
         if (throwable == null) return null;
@@ -324,8 +292,6 @@ public class Logger {
         return stackTraceString;
     }
 
-
-
     public static String[] getStackTracesStringArray(Throwable throwable) {
         return getStackTracesStringArray(Collections.singletonList(throwable));
     }
@@ -339,8 +305,6 @@ public class Logger {
         return stackTraceStringArray;
     }
 
-
-
     public static String getStackTracesString(String label, String[] stackTraceStringArray) {
         if (label == null) label = "StackTraces:";
         StringBuilder stackTracesString = new StringBuilder(label);
@@ -352,14 +316,18 @@ public class Logger {
                 if (stackTraceStringArray.length > 1)
                     stackTracesString.append("\n\nStacktrace ").append(i + 1);
 
-                stackTracesString.append("\n```\n").append(stackTraceStringArray[i]).append("\n```\n");
+                stackTracesString
+                        .append("\n```\n")
+                        .append(stackTraceStringArray[i])
+                        .append("\n```\n");
             }
         }
 
         return stackTracesString.toString();
     }
 
-    public static String getStackTracesMarkdownString(String label, String[] stackTraceStringArray) {
+    public static String getStackTracesMarkdownString(
+            String label, String[] stackTraceStringArray) {
         if (label == null) label = "StackTraces";
         StringBuilder stackTracesString = new StringBuilder("### " + label);
 
@@ -370,7 +338,10 @@ public class Logger {
                 if (stackTraceStringArray.length > 1)
                     stackTracesString.append("\n\n\n#### Stacktrace ").append(i + 1);
 
-                stackTracesString.append("\n\n```\n").append(stackTraceStringArray[i]).append("\n```");
+                stackTracesString
+                        .append("\n\n```\n")
+                        .append(stackTraceStringArray[i])
+                        .append("\n```");
             }
         }
 
@@ -380,31 +351,33 @@ public class Logger {
     }
 
     public static String getSingleLineLogStringEntry(String label, Object object, String def) {
-        if (object != null)
-            return label + ": `" + object + "`";
-        else
-            return  label + ": "  +  def;
+        if (object != null) return label + ": `" + object + "`";
+        else return label + ": " + def;
     }
 
     public static String getMultiLineLogStringEntry(String label, Object object, String def) {
-        if (object != null)
-            return label + ":\n```\n" + object + "\n```\n";
-        else
-            return  label + ": "  +  def;
+        if (object != null) return label + ":\n```\n" + object + "\n```\n";
+        else return label + ": " + def;
     }
 
-
-
-    public static void showToast(final Context context, final String toastText, boolean longDuration) {
+    public static void showToast(
+            final Context context, final String toastText, boolean longDuration) {
         if (context == null || DataUtils.isNullOrEmpty(toastText)) return;
 
-        new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, toastText, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show());
+        new Handler(Looper.getMainLooper())
+                .post(
+                        () ->
+                                Toast.makeText(
+                                                context,
+                                                toastText,
+                                                longDuration
+                                                        ? Toast.LENGTH_LONG
+                                                        : Toast.LENGTH_SHORT)
+                                        .show());
     }
 
-
-
     public static CharSequence[] getLogLevelsArray() {
-        return new CharSequence[]{
+        return new CharSequence[] {
             String.valueOf(LOG_LEVEL_OFF),
             String.valueOf(LOG_LEVEL_NORMAL),
             String.valueOf(LOG_LEVEL_DEBUG),
@@ -412,35 +385,45 @@ public class Logger {
         };
     }
 
-    public static CharSequence[] getLogLevelLabelsArray(Context context, CharSequence[] logLevels, boolean addDefaultTag) {
+    public static CharSequence[] getLogLevelLabelsArray(
+            Context context, CharSequence[] logLevels, boolean addDefaultTag) {
         if (logLevels == null) return null;
 
         CharSequence[] logLevelLabels = new CharSequence[logLevels.length];
 
-        for(int i=0; i<logLevels.length; i++) {
-            logLevelLabels[i] = getLogLevelLabel(context, Integer.parseInt(logLevels[i].toString()), addDefaultTag);
+        for (int i = 0; i < logLevels.length; i++) {
+            logLevelLabels[i] =
+                    getLogLevelLabel(
+                            context, Integer.parseInt(logLevels[i].toString()), addDefaultTag);
         }
 
         return logLevelLabels;
     }
 
-    public static String getLogLevelLabel(final Context context, final int logLevel, final boolean addDefaultTag) {
+    public static String getLogLevelLabel(
+            final Context context, final int logLevel, final boolean addDefaultTag) {
         String logLabel;
         switch (logLevel) {
-            case LOG_LEVEL_OFF: logLabel = context.getString(R.string.log_level_off); break;
-            case LOG_LEVEL_NORMAL: logLabel = context.getString(R.string.log_level_normal); break;
-            case LOG_LEVEL_DEBUG: logLabel = context.getString(R.string.log_level_debug); break;
-            case LOG_LEVEL_VERBOSE: logLabel = context.getString(R.string.log_level_verbose); break;
-            default: logLabel = context.getString(R.string.log_level_unknown); break;
+            case LOG_LEVEL_OFF:
+                logLabel = context.getString(R.string.log_level_off);
+                break;
+            case LOG_LEVEL_NORMAL:
+                logLabel = context.getString(R.string.log_level_normal);
+                break;
+            case LOG_LEVEL_DEBUG:
+                logLabel = context.getString(R.string.log_level_debug);
+                break;
+            case LOG_LEVEL_VERBOSE:
+                logLabel = context.getString(R.string.log_level_verbose);
+                break;
+            default:
+                logLabel = context.getString(R.string.log_level_unknown);
+                break;
         }
 
-        if (addDefaultTag && logLevel == DEFAULT_LOG_LEVEL)
-            return logLabel + " (default)";
-        else
-            return logLabel;
+        if (addDefaultTag && logLevel == DEFAULT_LOG_LEVEL) return logLabel + " (default)";
+        else return logLabel;
     }
-
-
 
     @NonNull
     public static String getDefaultLogTag() {
@@ -448,55 +431,61 @@ public class Logger {
     }
 
     /**
-     * IllegalArgumentException will be thrown if tag.length() > 23 for Nougat (7.0) and prior releases.
-     * https://developer.android.com/reference/android/util/Log#isLoggable(java.lang.String,%20int) */
+     * IllegalArgumentException will be thrown if tag.length() > 23 for Nougat (7.0) and prior
+     * releases.
+     * https://developer.android.com/reference/android/util/Log#isLoggable(java.lang.String,%20int)
+     */
     public static void setDefaultLogTag(@NonNull String defaultLogTag) {
-        DEFAULT_LOG_TAG = defaultLogTag.length() >= 23 ? defaultLogTag.substring(0, 22) : defaultLogTag;
+        DEFAULT_LOG_TAG =
+                defaultLogTag.length() >= 23 ? defaultLogTag.substring(0, 22) : defaultLogTag;
     }
-
-
 
     public static int getLogLevel() {
         return CURRENT_LOG_LEVEL;
     }
 
     public static int setLogLevel(Context context, int logLevel) {
-        if (isLogLevelValid(logLevel))
-            CURRENT_LOG_LEVEL = logLevel;
-        else
-            CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
+        if (isLogLevelValid(logLevel)) CURRENT_LOG_LEVEL = logLevel;
+        else CURRENT_LOG_LEVEL = DEFAULT_LOG_LEVEL;
 
         if (context != null)
-            showToast(context, context.getString(R.string.log_level_value, getLogLevelLabel(context, CURRENT_LOG_LEVEL, false)),true);
+            showToast(
+                    context,
+                    context.getString(
+                            R.string.log_level_value,
+                            getLogLevelLabel(context, CURRENT_LOG_LEVEL, false)),
+                    true);
 
         return CURRENT_LOG_LEVEL;
     }
 
-    /** The colon character ":" must not exist inside the tag, otherwise the `logcat` command
-     * filterspecs arguments `<tag>[:priority]` will not work and will throw `Invalid filter expression`
-     * error.
+    /**
+     * The colon character ":" must not exist inside the tag, otherwise the `logcat` command
+     * filterspecs arguments `<tag>[:priority]` will not work and will throw `Invalid filter
+     * expression` error.
      * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r4:system/logging/liblog/logprint.cpp;l=363
      * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r4:system/logging/logcat/logcat.cpp;l=884
-     * */
+     */
     public static String getFullTag(String tag) {
-        if (DEFAULT_LOG_TAG.equals(tag))
-            return tag;
-        else
-            return DEFAULT_LOG_TAG + "." + tag;
+        if (DEFAULT_LOG_TAG.equals(tag)) return tag;
+        else return DEFAULT_LOG_TAG + "." + tag;
     }
 
     public static boolean isLogLevelValid(Integer logLevel) {
         return (logLevel != null && logLevel >= LOG_LEVEL_OFF && logLevel <= MAX_LOG_LEVEL);
     }
 
-    /** Check if custom log level is valid and >= {@link #CURRENT_LOG_LEVEL}. If custom log level is
-     * not valid then {@link #LOG_LEVEL_VERBOSE} must be >= {@link #CURRENT_LOG_LEVEL}. */
+    /**
+     * Check if custom log level is valid and >= {@link #CURRENT_LOG_LEVEL}. If custom log level is
+     * not valid then {@link #LOG_LEVEL_VERBOSE} must be >= {@link #CURRENT_LOG_LEVEL}.
+     */
     public static boolean shouldEnableLoggingForCustomLogLevel(Integer customLogLevel) {
         if (CURRENT_LOG_LEVEL <= LOG_LEVEL_OFF) return false;
-        if (customLogLevel == null) return CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE; // Use default app log level
+        if (customLogLevel == null)
+            return CURRENT_LOG_LEVEL >= LOG_LEVEL_VERBOSE; // Use default app log level
         if (customLogLevel <= LOG_LEVEL_OFF) return false;
-        customLogLevel = Logger.isLogLevelValid(customLogLevel) ? customLogLevel: Logger.LOG_LEVEL_VERBOSE;
+        customLogLevel =
+                Logger.isLogLevelValid(customLogLevel) ? customLogLevel : Logger.LOG_LEVEL_VERBOSE;
         return (customLogLevel >= CURRENT_LOG_LEVEL);
     }
-
 }

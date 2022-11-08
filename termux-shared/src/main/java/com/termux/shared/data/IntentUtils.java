@@ -12,18 +12,19 @@ public class IntentUtils {
 
     private static final String LOG_TAG = "IntentUtils";
 
-
     /**
      * Get a {@link String} extra from an {@link Intent} if its not {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
      * @param key The {@link String} key name.
      * @param def The default value if extra is not set.
-     * @param throwExceptionIfNotSet If set to {@code true}, then an exception will be thrown if extra
-     *                               is not set.
+     * @param throwExceptionIfNotSet If set to {@code true}, then an exception will be thrown if
+     *     extra is not set.
      * @return Returns the {@link String} extra if set, otherwise {@code null}.
      */
-    public static String getStringExtraIfSet(@NonNull Intent intent, String key, String def, boolean throwExceptionIfNotSet) throws Exception {
+    public static String getStringExtraIfSet(
+            @NonNull Intent intent, String key, String def, boolean throwExceptionIfNotSet)
+            throws Exception {
         String value = getStringExtraIfSet(intent, key, def);
         if (value == null && throwExceptionIfNotSet)
             throw new Exception("The \"" + key + "\" key string value is null or empty");
@@ -41,10 +42,8 @@ public class IntentUtils {
     public static String getStringExtraIfSet(@NonNull Intent intent, String key, String def) {
         String value = intent.getStringExtra(key);
         if (value == null || value.isEmpty()) {
-            if (def != null && !def.isEmpty())
-                return def;
-            else
-                return null;
+            if (def != null && !def.isEmpty()) return def;
+            else return null;
         }
         return value;
     }
@@ -66,13 +65,10 @@ public class IntentUtils {
             }
 
             return Integer.parseInt(value);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return def;
         }
     }
-
-
 
     /**
      * Get a {@link String[]} extra from an {@link Intent} if its not {@code null} or empty.
@@ -80,11 +76,13 @@ public class IntentUtils {
      * @param intent The {@link Intent} to get the extra from.
      * @param key The {@link String} key name.
      * @param def The default value if extra is not set.
-     * @param throwExceptionIfNotSet If set to {@code true}, then an exception will be thrown if extra
-     *                               is not set.
+     * @param throwExceptionIfNotSet If set to {@code true}, then an exception will be thrown if
+     *     extra is not set.
      * @return Returns the {@link String[]} extra if set, otherwise {@code null}.
      */
-    public static String[] getStringArrayExtraIfSet(@NonNull Intent intent, String key, String[] def, boolean throwExceptionIfNotSet) throws Exception {
+    public static String[] getStringArrayExtraIfSet(
+            @NonNull Intent intent, String key, String[] def, boolean throwExceptionIfNotSet)
+            throws Exception {
         String[] value = getStringArrayExtraIfSet(intent, key, def);
         if (value == null && throwExceptionIfNotSet)
             throw new Exception("The \"" + key + "\" key string array is null or empty");
@@ -102,10 +100,8 @@ public class IntentUtils {
     public static String[] getStringArrayExtraIfSet(Intent intent, String key, String[] def) {
         String[] value = intent.getStringArrayExtra(key);
         if (value == null || value.length == 0) {
-            if (def != null && def.length != 0)
-                return def;
-            else
-                return null;
+            if (def != null && def.length != 0) return def;
+            else return null;
         }
         return value;
     }
@@ -122,8 +118,7 @@ public class IntentUtils {
         StringBuilder bundleString = new StringBuilder("Bundle[\n");
         boolean first = true;
         for (String key : bundle.keySet()) {
-            if (!first)
-                bundleString.append("\n");
+            if (!first) bundleString.append("\n");
 
             bundleString.append(key).append(": `");
 
@@ -162,5 +157,4 @@ public class IntentUtils {
         bundleString.append("\n]");
         return bundleString.toString();
     }
-
 }

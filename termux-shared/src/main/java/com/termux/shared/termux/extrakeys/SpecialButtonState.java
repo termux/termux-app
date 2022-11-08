@@ -12,8 +12,10 @@ public class SpecialButtonState {
     boolean isCreated = false;
     /** If special button is active. */
     boolean isActive = false;
-    /** If special button is locked due to long hold on it and should not be deactivated if its
-     * state is read. */
+    /**
+     * If special button is locked due to long hold on it and should not be deactivated if its state
+     * is read.
+     */
     boolean isLocked = false;
 
     List<MaterialButton> buttons = new ArrayList<>();
@@ -23,8 +25,8 @@ public class SpecialButtonState {
     /**
      * Initialize a {@link SpecialButtonState} to maintain state of a {@link SpecialButton}.
      *
-     * @param extraKeysView The {@link ExtraKeysView} instance in which the {@link SpecialButton}
-     *                      is to be registered.
+     * @param extraKeysView The {@link ExtraKeysView} instance in which the {@link SpecialButton} is
+     *     to be registered.
      */
     public SpecialButtonState(ExtraKeysView extraKeysView) {
         mExtraKeysView = extraKeysView;
@@ -39,7 +41,10 @@ public class SpecialButtonState {
     public void setIsActive(boolean value) {
         isActive = value;
         for (MaterialButton button : buttons) {
-            button.setTextColor(value ? mExtraKeysView.getButtonActiveTextColor() : mExtraKeysView.getButtonTextColor());
+            button.setTextColor(
+                    value
+                            ? mExtraKeysView.getButtonActiveTextColor()
+                            : mExtraKeysView.getButtonTextColor());
         }
     }
 
@@ -47,5 +52,4 @@ public class SpecialButtonState {
     public void setIsLocked(boolean value) {
         isLocked = value;
     }
-
 }

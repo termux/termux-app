@@ -47,8 +47,8 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
     }
 
     /**
-     * Set default uncaught crash handler of the app to {@link CrashHandler} for Termux app
-     * and its plugins to log crashes at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}.
+     * Set default uncaught crash handler of the app to {@link CrashHandler} for Termux app and its
+     * plugins to log crashes at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}.
      */
     public static void setDefaultCrashHandler(@NonNull final Context context) {
         CrashHandler.setDefaultCrashHandler(context, new TermuxCrashUtils(TYPE.UNCAUGHT_EXCEPTION));
@@ -63,23 +63,28 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
     }
 
     /**
-     * Get {@link CrashHandler} for Termux app and its plugins that can be set as the uncaught
-     * crash handler of a non-main thread to log crashes at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}.
+     * Get {@link CrashHandler} for Termux app and its plugins that can be set as the uncaught crash
+     * handler of a non-main thread to log crashes at {@link
+     * TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}.
      */
     public static CrashHandler getCrashHandler(@NonNull final Context context) {
         return CrashHandler.getCrashHandler(context, new TermuxCrashUtils(TYPE.CAUGHT_EXCEPTION));
     }
 
     /**
-     * Log a crash to {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH} and notify termux app
-     * by sending it the {@link TERMUX_APP.TERMUX_ACTIVITY#ACTION_NOTIFY_APP_CRASH} broadcast.
+     * Log a crash to {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH} and notify termux app by
+     * sending it the {@link TERMUX_APP.TERMUX_ACTIVITY#ACTION_NOTIFY_APP_CRASH} broadcast.
      *
      * @param context The {@link Context} for operations.
      * @param throwable The {@link Throwable} thrown for the crash.
      */
     public static void logCrash(@NonNull final Context context, final Throwable throwable) {
         if (throwable == null) return;
-        CrashHandler.logCrash(context, new TermuxCrashUtils(TYPE.CAUGHT_EXCEPTION), Thread.currentThread(), throwable);
+        CrashHandler.logCrash(
+                context,
+                new TermuxCrashUtils(TYPE.CAUGHT_EXCEPTION),
+                Thread.currentThread(),
+                throwable);
     }
 
     @Override
@@ -88,30 +93,42 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
     }
 
     @Override
-    public void onPostLogCrash(final Context currentPackageContext, Thread thread, Throwable throwable) {
+    public void onPostLogCrash(
+            final Context currentPackageContext, Thread thread, Throwable throwable) {
         if (currentPackageContext == null) return;
         String currentPackageName = currentPackageContext.getPackageName();
 
         // Do not notify if is a non-termux app
         final Context context = TermuxUtils.getTermuxPackageContext(currentPackageContext);
         if (context == null) {
-            Logger.logWarn(LOG_TAG, "Ignoring call to onPostLogCrash() since failed to get \"" + TermuxConstants.TERMUX_PACKAGE_NAME + "\" package context from \"" + currentPackageName + "\" context");
+            Logger.logWarn(
+                    LOG_TAG,
+                    "Ignoring call to onPostLogCrash() since failed to get \""
+                            + TermuxConstants.TERMUX_PACKAGE_NAME
+                            + "\" package context from \""
+                            + currentPackageName
+                            + "\" context");
             return;
         }
 
-        // If an uncaught exception, then do not notify since the termux app itself would be crashing
-        if (TYPE.UNCAUGHT_EXCEPTION.equals(mType) && TermuxConstants.TERMUX_PACKAGE_NAME.equals(currentPackageName))
-            return;
+        // If an uncaught exception, then do not notify since the termux app itself would be
+        // crashing
+        if (TYPE.UNCAUGHT_EXCEPTION.equals(mType)
+                && TermuxConstants.TERMUX_PACKAGE_NAME.equals(currentPackageName)) return;
 
-        String message = TERMUX_APP.TERMUX_ACTIVITY_NAME + " that \"" + currentPackageName + "\" app crashed";
+        String message =
+                TERMUX_APP.TERMUX_ACTIVITY_NAME
+                        + " that \""
+                        + currentPackageName
+                        + "\" app crashed";
 
-       try {
-           Logger.logInfo(LOG_TAG, "Sending broadcast to notify " + message);
+        try {
+            Logger.logInfo(LOG_TAG, "Sending broadcast to notify " + message);
             Intent intent = new Intent(TERMUX_APP.TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH);
             intent.setPackage(TermuxConstants.TERMUX_PACKAGE_NAME);
             context.sendBroadcast(intent);
         } catch (Exception e) {
-            Logger.logStackTraceWithMessage(LOG_TAG,"Failed to notify " + message, e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to notify " + message, e);
         }
     }
 
@@ -127,27 +144,36 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
     }
 
     /**
-     * Notify the user of an app crash by reading the crash info from the crash log file
-     * at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}. The crash log file would have been
-     * created by {@link com.termux.shared.crash.CrashHandler}.
+     * Notify the user of an app crash by reading the crash info from the crash log file at {@link
+     * TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}. The crash log file would have been created by
+     * {@link com.termux.shared.crash.CrashHandler}.
      *
-     * If the crash log file exists and is not empty and
-     * {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED} is
-     * enabled, then a notification will be shown for the crash on the
-     * {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME} channel, otherwise nothing will be done.
+     * <p>If the crash log file exists and is not empty and {@link
+     * TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED} is enabled, then
+     * a notification will be shown for the crash on the {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME} channel, otherwise nothing
+     * will be done.
      *
-     * After reading from the crash log file, it will be moved to {@link TermuxConstants#TERMUX_CRASH_LOG_BACKUP_FILE_PATH}.
+     * <p>After reading from the crash log file, it will be moved to {@link
+     * TermuxConstants#TERMUX_CRASH_LOG_BACKUP_FILE_PATH}.
      *
      * @param currentPackageContext The {@link Context} of current package.
      * @param logTagParam The log tag to use for logging.
      */
-    public static void notifyAppCrashFromCrashLogFile(final Context currentPackageContext, final String logTagParam) {
+    public static void notifyAppCrashFromCrashLogFile(
+            final Context currentPackageContext, final String logTagParam) {
         if (currentPackageContext == null) return;
         String currentPackageName = currentPackageContext.getPackageName();
 
         final Context context = TermuxUtils.getTermuxPackageContext(currentPackageContext);
         if (context == null) {
-            Logger.logWarn(LOG_TAG, "Ignoring call to notifyAppCrash() since failed to get \"" + TermuxConstants.TERMUX_PACKAGE_NAME + "\" package context from \"" + currentPackageName + "\" context");
+            Logger.logWarn(
+                    LOG_TAG,
+                    "Ignoring call to notifyAppCrash() since failed to get \""
+                            + TermuxConstants.TERMUX_PACKAGE_NAME
+                            + "\" package context from \""
+                            + currentPackageName
+                            + "\" context");
             return;
         }
 
@@ -155,8 +181,7 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
         if (preferences == null) return;
 
         // If user has disabled notifications for crashes
-        if (!preferences.areCrashReportNotificationsEnabled(false))
-            return;
+        if (!preferences.areCrashReportNotificationsEnabled(false)) return;
 
         new Thread() {
             @Override
@@ -166,44 +191,57 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
         }.start();
     }
 
-    private static synchronized void notifyAppCrashFromCrashLogFileInner(final Context context, final String logTagParam) {
+    private static synchronized void notifyAppCrashFromCrashLogFileInner(
+            final Context context, final String logTagParam) {
         String logTag = DataUtils.getDefaultIfNull(logTagParam, LOG_TAG);
 
-        if (!FileUtils.regularFileExists(TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, false))
-            return;
+        if (!FileUtils.regularFileExists(TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, false)) return;
 
         Error error;
         StringBuilder reportStringBuilder = new StringBuilder();
 
         // Read report string from crash log file
-        error = FileUtils.readTextFromFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportStringBuilder, false);
+        error =
+                FileUtils.readTextFromFile(
+                        "crash log",
+                        TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH,
+                        Charset.defaultCharset(),
+                        reportStringBuilder,
+                        false);
         if (error != null) {
             Logger.logErrorExtended(logTag, error.toString());
             return;
         }
 
         // Move crash log file to backup location if it exists
-        error = FileUtils.moveRegularFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, TermuxConstants.TERMUX_CRASH_LOG_BACKUP_FILE_PATH, true);
+        error =
+                FileUtils.moveRegularFile(
+                        "crash log",
+                        TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH,
+                        TermuxConstants.TERMUX_CRASH_LOG_BACKUP_FILE_PATH,
+                        true);
         if (error != null) {
             Logger.logErrorExtended(logTag, error.toString());
         }
 
         String reportString = reportStringBuilder.toString();
 
-        if (reportString.isEmpty())
-            return;
+        if (reportString.isEmpty()) return;
 
-        Logger.logDebug(logTag, "A crash log file found at \"" + TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH +  "\".");
+        Logger.logDebug(
+                logTag,
+                "A crash log file found at \""
+                        + TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH
+                        + "\".");
 
-        sendCrashReportNotification(context, logTag, null, null, reportString, false, false, null, false);
+        sendCrashReportNotification(
+                context, logTag, null, null, reportString, false, false, null, false);
     }
 
-
-
-
     /**
-     * Send a crash report notification for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Send a crash report notification for {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param currentPackageContext The {@link Context} of current package.
      * @param logTag The log tag to use for logging.
@@ -211,17 +249,28 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
      * @param message The message for the crash report.
      * @param throwable The {@link Throwable} for the crash report.
      */
-    public static void sendCrashReportNotification(final Context currentPackageContext, String logTag,
-                                                   CharSequence title, String message, Throwable throwable) {
-        sendCrashReportNotification(currentPackageContext, logTag,
-            title, message,
-            MarkdownUtils.getMarkdownCodeForString(Logger.getMessageAndStackTraceString(message, throwable), true),
-            false, false, true);
+    public static void sendCrashReportNotification(
+            final Context currentPackageContext,
+            String logTag,
+            CharSequence title,
+            String message,
+            Throwable throwable) {
+        sendCrashReportNotification(
+                currentPackageContext,
+                logTag,
+                title,
+                message,
+                MarkdownUtils.getMarkdownCodeForString(
+                        Logger.getMessageAndStackTraceString(message, throwable), true),
+                false,
+                false,
+                true);
     }
 
     /**
-     * Send a crash report notification for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Send a crash report notification for {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param currentPackageContext The {@link Context} of current package.
      * @param logTag The log tag to use for logging.
@@ -229,89 +278,126 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
      * @param notificationTextString The text of the notification.
      * @param message The message for the crash report.
      */
-    public static void sendCrashReportNotification(final Context currentPackageContext, String logTag,
-                                                   CharSequence title, String notificationTextString,
-                                                   String message) {
-        sendCrashReportNotification(currentPackageContext, logTag,
-            title, notificationTextString, message,
-            false, false, true);
+    public static void sendCrashReportNotification(
+            final Context currentPackageContext,
+            String logTag,
+            CharSequence title,
+            String notificationTextString,
+            String message) {
+        sendCrashReportNotification(
+                currentPackageContext,
+                logTag,
+                title,
+                notificationTextString,
+                message,
+                false,
+                false,
+                true);
     }
 
     /**
-     * Send a crash report notification for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Send a crash report notification for {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param currentPackageContext The {@link Context} of current package.
      * @param logTag The log tag to use for logging.
      * @param title The title for the crash report and notification.
      * @param notificationTextString The text of the notification.
      * @param message The message for the crash report.
-     * @param forceNotification If set to {@code true}, then a notification will be shown
-     *                          regardless of if pending intent is {@code null} or
-     *                          {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED}
-     *                          is {@code false}.
-     * @param showToast If set to {@code true}, then a toast will be shown for {@code notificationTextString}.
-     * @param addDeviceInfo If set to {@code true}, then device info should be appended to the message.
+     * @param forceNotification If set to {@code true}, then a notification will be shown regardless
+     *     of if pending intent is {@code null} or {@link
+     *     TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED} is {@code
+     *     false}.
+     * @param showToast If set to {@code true}, then a toast will be shown for {@code
+     *     notificationTextString}.
+     * @param addDeviceInfo If set to {@code true}, then device info should be appended to the
+     *     message.
      */
-    public static void sendCrashReportNotification(final Context currentPackageContext, String logTag,
-                                                   CharSequence title, String notificationTextString,
-                                                   String message, boolean forceNotification,
-                                                   boolean showToast,
-                                                   boolean addDeviceInfo) {
-        sendCrashReportNotification(currentPackageContext, logTag,
-            title, notificationTextString, "## " + title + "\n\n" + message + "\n\n",
-            forceNotification, showToast, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGE, addDeviceInfo);
+    public static void sendCrashReportNotification(
+            final Context currentPackageContext,
+            String logTag,
+            CharSequence title,
+            String notificationTextString,
+            String message,
+            boolean forceNotification,
+            boolean showToast,
+            boolean addDeviceInfo) {
+        sendCrashReportNotification(
+                currentPackageContext,
+                logTag,
+                title,
+                notificationTextString,
+                "## " + title + "\n\n" + message + "\n\n",
+                forceNotification,
+                showToast,
+                TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGE,
+                addDeviceInfo);
     }
 
     /**
-     * Send a crash report notification for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Send a crash report notification for {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param currentPackageContext The {@link Context} of current package.
      * @param logTag The log tag to use for logging.
      * @param title The title for the crash report and notification.
      * @param notificationTextString The text of the notification.
      * @param message The message for the crash report.
-     * @param forceNotification If set to {@code true}, then a notification will be shown
-     *                          regardless of if pending intent is {@code null} or
-     *                          {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED}
-     *                          is {@code false}.
-     * @param showToast If set to {@code true}, then a toast will be shown for {@code notificationTextString}.
+     * @param forceNotification If set to {@code true}, then a notification will be shown regardless
+     *     of if pending intent is {@code null} or {@link
+     *     TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED} is {@code
+     *     false}.
+     * @param showToast If set to {@code true}, then a toast will be shown for {@code
+     *     notificationTextString}.
      * @param appInfoMode The {@link TermuxUtils.AppInfoMode} to use to add app info to the message.
-     *                    Set to {@code null} if app info should not be appended to the message.
-     * @param addDeviceInfo If set to {@code true}, then device info should be appended to the message.
+     *     Set to {@code null} if app info should not be appended to the message.
+     * @param addDeviceInfo If set to {@code true}, then device info should be appended to the
+     *     message.
      */
-    public static void sendCrashReportNotification(final Context currentPackageContext, String logTag,
-                                                   CharSequence title,
-                                                   String notificationTextString,
-                                                   String message, boolean forceNotification,
-                                                   boolean showToast,
-                                                   TermuxUtils.AppInfoMode appInfoMode,
-                                                   boolean addDeviceInfo) {
-        // Note: Do not change currentPackageContext or termuxPackageContext passed to functions or things will break
+    public static void sendCrashReportNotification(
+            final Context currentPackageContext,
+            String logTag,
+            CharSequence title,
+            String notificationTextString,
+            String message,
+            boolean forceNotification,
+            boolean showToast,
+            TermuxUtils.AppInfoMode appInfoMode,
+            boolean addDeviceInfo) {
+        // Note: Do not change currentPackageContext or termuxPackageContext passed to functions or
+        // things will break
 
         if (currentPackageContext == null) return;
         String currentPackageName = currentPackageContext.getPackageName();
 
-        final Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
+        final Context termuxPackageContext =
+                TermuxUtils.getTermuxPackageContext(currentPackageContext);
         if (termuxPackageContext == null) {
-            Logger.logWarn(LOG_TAG, "Ignoring call to sendCrashReportNotification() since failed to get \"" + TermuxConstants.TERMUX_PACKAGE_NAME + "\" package context from \"" + currentPackageName + "\" context");
+            Logger.logWarn(
+                    LOG_TAG,
+                    "Ignoring call to sendCrashReportNotification() since failed to get \""
+                            + TermuxConstants.TERMUX_PACKAGE_NAME
+                            + "\" package context from \""
+                            + currentPackageName
+                            + "\" context");
             return;
         }
 
-        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(termuxPackageContext);
+        TermuxAppSharedPreferences preferences =
+                TermuxAppSharedPreferences.build(termuxPackageContext);
         if (preferences == null) return;
 
         // If user has disabled notifications for crashes
-        if (!preferences.areCrashReportNotificationsEnabled(true) && !forceNotification)
-            return;
+        if (!preferences.areCrashReportNotificationsEnabled(true) && !forceNotification) return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
-        if (showToast)
-            Logger.showToast(currentPackageContext, notificationTextString, true);
+        if (showToast) Logger.showToast(currentPackageContext, notificationTextString, true);
 
-        // Send a notification to show the crash log which when clicked will open the {@link ReportActivity}
+        // Send a notification to show the crash log which when clicked will open the {@link
+        // ReportActivity}
         // to show the details of the crash
         if (title == null || title.toString().isEmpty())
             title = TermuxConstants.TERMUX_APP_NAME + " Crash Report";
@@ -321,91 +407,140 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
         StringBuilder reportString = new StringBuilder(message);
 
         if (appInfoMode != null)
-            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(currentPackageContext, appInfoMode, currentPackageName));
+            reportString
+                    .append("\n\n")
+                    .append(
+                            TermuxUtils.getAppInfoMarkdownString(
+                                    currentPackageContext, appInfoMode, currentPackageName));
 
         if (addDeviceInfo)
-            reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(currentPackageContext, true));
+            reportString
+                    .append("\n\n")
+                    .append(AndroidUtils.getDeviceInfoMarkdownString(currentPackageContext, true));
 
         String userActionName = UserAction.CRASH_REPORT.getName();
 
         ReportInfo reportInfo = new ReportInfo(userActionName, logTag, title.toString());
         reportInfo.setReportString(reportString.toString());
-        reportInfo.setReportStringSuffix("\n\n" + TermuxUtils.getReportIssueMarkdownString(currentPackageContext));
+        reportInfo.setReportStringSuffix(
+                "\n\n" + TermuxUtils.getReportIssueMarkdownString(currentPackageContext));
         reportInfo.setAddReportInfoHeaderToMarkdown(true);
-        reportInfo.setReportSaveFileLabelAndPath(userActionName,
-            Environment.getExternalStorageDirectory() + "/" +
-                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+        reportInfo.setReportSaveFileLabelAndPath(
+                userActionName,
+                Environment.getExternalStorageDirectory()
+                        + "/"
+                        + FileUtils.sanitizeFileName(
+                                TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log",
+                                true,
+                                true));
 
-        ReportActivity.NewInstanceResult result = ReportActivity.newInstance(termuxPackageContext, reportInfo);
+        ReportActivity.NewInstanceResult result =
+                ReportActivity.newInstance(termuxPackageContext, reportInfo);
         if (result.contentIntent == null) return;
 
-        // Must ensure result code for PendingIntents and id for notification are unique otherwise will override previous
-        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(termuxPackageContext);
+        // Must ensure result code for PendingIntents and id for notification are unique otherwise
+        // will override previous
+        int nextNotificationId =
+                TermuxNotificationUtils.getNextNotificationId(termuxPackageContext);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(termuxPackageContext, nextNotificationId, result.contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentIntent =
+                PendingIntent.getActivity(
+                        termuxPackageContext,
+                        nextNotificationId,
+                        result.contentIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
 
         PendingIntent deleteIntent = null;
         if (result.deleteIntent != null)
-            deleteIntent = PendingIntent.getBroadcast(termuxPackageContext, nextNotificationId, result.deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            deleteIntent =
+                    PendingIntent.getBroadcast(
+                            termuxPackageContext,
+                            nextNotificationId,
+                            result.deleteIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Setup the notification channel if not already set up
         setupCrashReportsNotificationChannel(termuxPackageContext);
 
         // Use markdown in notification
-        CharSequence notificationTextCharSequence = MarkdownUtils.getSpannedMarkdownText(termuxPackageContext, notificationTextString);
-        //CharSequence notificationTextCharSequence = notificationTextString;
+        CharSequence notificationTextCharSequence =
+                MarkdownUtils.getSpannedMarkdownText(termuxPackageContext, notificationTextString);
+        // CharSequence notificationTextCharSequence = notificationTextString;
 
         // Build the notification
-        Notification.Builder builder = getCrashReportsNotificationBuilder(currentPackageContext, termuxPackageContext,
-            title, notificationTextCharSequence, notificationTextCharSequence, contentIntent, deleteIntent,
-            NotificationUtils.NOTIFICATION_MODE_VIBRATE);
+        Notification.Builder builder =
+                getCrashReportsNotificationBuilder(
+                        currentPackageContext,
+                        termuxPackageContext,
+                        title,
+                        notificationTextCharSequence,
+                        notificationTextCharSequence,
+                        contentIntent,
+                        deleteIntent,
+                        NotificationUtils.NOTIFICATION_MODE_VIBRATE);
         if (builder == null) return;
 
         // Send the notification
-        NotificationManager notificationManager = NotificationUtils.getNotificationManager(termuxPackageContext);
+        NotificationManager notificationManager =
+                NotificationUtils.getNotificationManager(termuxPackageContext);
         if (notificationManager != null)
             notificationManager.notify(nextNotificationId, builder.build());
     }
 
     /**
-     * Get {@link Notification.Builder} for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Get {@link Notification.Builder} for {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param currentPackageContext The {@link Context} of current package.
      * @param termuxPackageContext The {@link Context} of termux package.
      * @param title The title for the notification.
      * @param notificationText The second line text of the notification.
      * @param notificationBigText The full text of the notification that may optionally be styled.
-     * @param contentIntent The {@link PendingIntent} which should be sent when notification is clicked.
-     * @param deleteIntent The {@link PendingIntent} which should be sent when notification is deleted.
-     * @param notificationMode The notification mode. It must be one of {@code NotificationUtils.NOTIFICATION_MODE_*}.
+     * @param contentIntent The {@link PendingIntent} which should be sent when notification is
+     *     clicked.
+     * @param deleteIntent The {@link PendingIntent} which should be sent when notification is
+     *     deleted.
+     * @param notificationMode The notification mode. It must be one of {@code
+     *     NotificationUtils.NOTIFICATION_MODE_*}.
      * @return Returns the {@link Notification.Builder}.
      */
     @Nullable
-    public static Notification.Builder getCrashReportsNotificationBuilder(final Context currentPackageContext,
-                                                                          final Context termuxPackageContext,
-                                                                          final CharSequence title,
-                                                                          final CharSequence notificationText,
-                                                                          final CharSequence notificationBigText,
-                                                                          final PendingIntent contentIntent,
-                                                                          final PendingIntent deleteIntent,
-                                                                          final int notificationMode) {
+    public static Notification.Builder getCrashReportsNotificationBuilder(
+            final Context currentPackageContext,
+            final Context termuxPackageContext,
+            final CharSequence title,
+            final CharSequence notificationText,
+            final CharSequence notificationBigText,
+            final PendingIntent contentIntent,
+            final PendingIntent deleteIntent,
+            final int notificationMode) {
         return TermuxNotificationUtils.getTermuxOrPluginAppNotificationBuilder(
-            currentPackageContext, termuxPackageContext,
-            TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
-            title, notificationText, notificationBigText, contentIntent, deleteIntent, notificationMode);
+                currentPackageContext,
+                termuxPackageContext,
+                TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID,
+                Notification.PRIORITY_HIGH,
+                title,
+                notificationText,
+                notificationBigText,
+                contentIntent,
+                deleteIntent,
+                notificationMode);
     }
 
     /**
-     * Setup the notification channel for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and
-     * {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Setup the notification channel for {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and {@link
+     * TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      */
     public static void setupCrashReportsNotificationChannel(final Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-        NotificationUtils.setupNotificationChannel(context, TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID,
-            TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+        NotificationUtils.setupNotificationChannel(
+                context,
+                TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID,
+                TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH);
     }
-
 }

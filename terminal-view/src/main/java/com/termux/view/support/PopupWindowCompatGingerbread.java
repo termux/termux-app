@@ -15,7 +15,6 @@
  */
 package com.termux.view.support;
 
-import android.util.Log;
 import android.widget.PopupWindow;
 
 import java.lang.reflect.Method;
@@ -34,8 +33,8 @@ public class PopupWindowCompatGingerbread {
     public static void setWindowLayoutType(PopupWindow popupWindow, int layoutType) {
         if (!sSetWindowLayoutTypeMethodAttempted) {
             try {
-                sSetWindowLayoutTypeMethod = PopupWindow.class.getDeclaredMethod(
-                    "setWindowLayoutType", int.class);
+                sSetWindowLayoutTypeMethod =
+                        PopupWindow.class.getDeclaredMethod("setWindowLayoutType", int.class);
                 sSetWindowLayoutTypeMethod.setAccessible(true);
             } catch (Exception e) {
                 // Reflection method fetch failed. Oh well.
@@ -54,8 +53,8 @@ public class PopupWindowCompatGingerbread {
     public static int getWindowLayoutType(PopupWindow popupWindow) {
         if (!sGetWindowLayoutTypeMethodAttempted) {
             try {
-                sGetWindowLayoutTypeMethod = PopupWindow.class.getDeclaredMethod(
-                    "getWindowLayoutType");
+                sGetWindowLayoutTypeMethod =
+                        PopupWindow.class.getDeclaredMethod("getWindowLayoutType");
                 sGetWindowLayoutTypeMethod.setAccessible(true);
             } catch (Exception e) {
                 // Reflection method fetch failed. Oh well.
@@ -71,5 +70,4 @@ public class PopupWindowCompatGingerbread {
         }
         return 0;
     }
-
 }

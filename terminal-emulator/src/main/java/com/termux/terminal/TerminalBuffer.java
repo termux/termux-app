@@ -3,10 +3,11 @@ package com.termux.terminal;
 import java.util.Arrays;
 
 /**
- * A circular buffer of {@link TerminalRow}:s which keeps notes about what is visible on a logical screen and the scroll
- * history.
- * <p>
- * See {@link #externalToInternalRow(int)} for how to map from logical screen rows to array indices.
+ * A circular buffer of {@link TerminalRow}:s which keeps notes about what is visible on a logical
+ * screen and the scroll history.
+ *
+ * <p>See {@link #externalToInternalRow(int)} for how to map from logical screen rows to array
+ * indices.
  */
 public final class TerminalBuffer {
 
@@ -23,10 +24,10 @@ public final class TerminalBuffer {
     /**
      * Create a transcript screen.
      *
-     * @param columns    the width of the screen in characters.
-     * @param totalRows  the height of the entire text area, in rows of text.
-     * @param screenRows the height of just the screen, not including the transcript that holds lines that have scrolled off
-     *                   the top of the screen.
+     * @param columns the width of the screen in characters.
+     * @param totalRows the height of the entire text area, in rows of text.
+     * @param screenRows the height of just the screen, not including the transcript that holds
+     *     lines that have scrolled off the top of the screen.
      */
     public TerminalBuffer(int columns, int totalRows, int screenRows) {
         mColumns = columns;
@@ -46,18 +47,26 @@ public final class TerminalBuffer {
     }
 
     public String getTranscriptTextWithFullLinesJoined() {
-        return getSelectedText(0, -getActiveTranscriptRows(), mColumns, mScreenRows, true, true).trim();
+        return getSelectedText(0, -getActiveTranscriptRows(), mColumns, mScreenRows, true, true)
+                .trim();
     }
 
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2) {
         return getSelectedText(selX1, selY1, selX2, selY2, true);
     }
 
-    public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines) {
+    public String getSelectedText(
+            int selX1, int selY1, int selX2, int selY2, boolean joinBackLines) {
         return getSelectedText(selX1, selY1, selX2, selY2, joinBackLines, false);
     }
 
-    public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines, boolean joinFullLines) {
+    public String getSelectedText(
+            int selX1,
+            int selY1,
+            int selX2,
+            int selY2,
+            boolean joinBackLines,
+            boolean joinFullLines) {
         final StringBuilder builder = new StringBuilder();
         final int columns = mColumns;
 
@@ -75,7 +84,8 @@ public final class TerminalBuffer {
             }
             TerminalRow lineObject = mLines[externalToInternalRow(row)];
             int x1Index = lineObject.findStartOfColumn(x1);
-            int x2Index = (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
+            int x2Index =
+                    (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
             if (x2Index == x1Index) {
                 // Selected the start of a wide character.
                 x2Index = lineObject.findStartOfColumn(x2 + 1);
@@ -95,12 +105,13 @@ public final class TerminalBuffer {
             }
 
             int len = lastPrintingCharIndex - x1Index + 1;
-            if (lastPrintingCharIndex != -1 && len > 0)
-                builder.append(line, x1Index, len);
+            if (lastPrintingCharIndex != -1 && len > 0) builder.append(line, x1Index, len);
 
             boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
-            if ((!joinBackLines || !rowLineWrap) && (!joinFullLines || !lineFillsWidth)
-                && row < selY2 && row < mScreenRows - 1) builder.append('\n');
+            if ((!joinBackLines || !rowLineWrap)
+                    && (!joinFullLines || !lineFillsWidth)
+                    && row < selY2
+                    && row < mScreenRows - 1) builder.append('\n');
         }
         return builder.toString();
     }
@@ -114,7 +125,8 @@ public final class TerminalBuffer {
         while (y1 > 0 && !getSelectedText(0, y1 - 1, mColumns, y, true, true).contains("\n")) {
             y1--;
         }
-        while (y2 < mScreenRows && !getSelectedText(0, y, mColumns, y2 + 1, true, true).contains("\n")) {
+        while (y2 < mScreenRows
+                && !getSelectedText(0, y, mColumns, y2 + 1, true, true).contains("\n")) {
             y2++;
         }
 
@@ -124,9 +136,9 @@ public final class TerminalBuffer {
         int textOffset = (y - y1) * mColumns + x;
 
         if (textOffset >= text.length()) {
-          // The click was to the right of the last word on the line, so
-          // there's no word to return
-          return "";
+            // The click was to the right of the last word on the line, so
+            // there's no word to return
+            return "";
         }
 
         // Set x1 and x2 to the indices of the last space before x and the
@@ -138,8 +150,8 @@ public final class TerminalBuffer {
         }
 
         if (x1 == x2) {
-          // The click was on a space, so there's no word to return
-          return "";
+            // The click was on a space, so there's no word to return
+            return "";
         }
         return text.substring(x1 + 1, x2);
     }
@@ -153,7 +165,8 @@ public final class TerminalBuffer {
     }
 
     /**
-     * Convert a row value from the public external coordinate system to our internal private coordinate system.
+     * Convert a row value from the public external coordinate system to our internal private
+     * coordinate system.
      *
      * <pre>
      * - External coordinate system: -mActiveTranscriptRows to mScreenRows-1, with the screen being 0..mScreenRows-1.
@@ -175,7 +188,13 @@ public final class TerminalBuffer {
      */
     public int externalToInternalRow(int externalRow) {
         if (externalRow < -mActiveTranscriptRows || externalRow > mScreenRows)
-            throw new IllegalArgumentException("extRow=" + externalRow + ", mScreenRows=" + mScreenRows + ", mActiveTranscriptRows=" + mActiveTranscriptRows);
+            throw new IllegalArgumentException(
+                    "extRow="
+                            + externalRow
+                            + ", mScreenRows="
+                            + mScreenRows
+                            + ", mActiveTranscriptRows="
+                            + mActiveTranscriptRows);
         final int internalRow = mScreenFirstRow + externalRow;
         return (internalRow < 0) ? (mTotalRows + internalRow) : (internalRow % mTotalRows);
     }
@@ -193,15 +212,23 @@ public final class TerminalBuffer {
     }
 
     /**
-     * Resize the screen which this transcript backs. Currently, this only works if the number of columns does not
-     * change or the rows expand (that is, it only works when shrinking the number of rows).
+     * Resize the screen which this transcript backs. Currently, this only works if the number of
+     * columns does not change or the rows expand (that is, it only works when shrinking the number
+     * of rows).
      *
      * @param newColumns The number of columns the screen should have.
-     * @param newRows    The number of rows the screen should have.
-     * @param cursor     An int[2] containing the (column, row) cursor location.
+     * @param newRows The number of rows the screen should have.
+     * @param cursor An int[2] containing the (column, row) cursor location.
      */
-    public void resize(int newColumns, int newRows, int newTotalRows, int[] cursor, long currentStyle, boolean altScreen) {
-        // newRows > mTotalRows should not normally happen since mTotalRows is TRANSCRIPT_ROWS (10000):
+    public void resize(
+            int newColumns,
+            int newRows,
+            int newTotalRows,
+            int[] cursor,
+            long currentStyle,
+            boolean altScreen) {
+        // newRows > mTotalRows should not normally happen since mTotalRows is TRANSCRIPT_ROWS
+        // (10000):
         if (newColumns == mColumns && newRows <= mTotalRows) {
             // Fast resize where just the rows changed.
             int shiftDownOfTopRow = mScreenRows - newRows;
@@ -215,19 +242,27 @@ public final class TerminalBuffer {
                     }
                 }
             } else if (shiftDownOfTopRow < 0) {
-                // Negative shift down = expanding. Only move screen up if there is transcript to show:
+                // Negative shift down = expanding. Only move screen up if there is transcript to
+                // show:
                 int actualShift = Math.max(shiftDownOfTopRow, -mActiveTranscriptRows);
                 if (shiftDownOfTopRow != actualShift) {
-                    // The new lines revealed by the resizing are not all from the transcript. Blank the below ones.
+                    // The new lines revealed by the resizing are not all from the transcript. Blank
+                    // the below ones.
                     for (int i = 0; i < actualShift - shiftDownOfTopRow; i++)
-                        allocateFullLineIfNecessary((mScreenFirstRow + mScreenRows + i) % mTotalRows).clear(currentStyle);
+                        allocateFullLineIfNecessary(
+                                        (mScreenFirstRow + mScreenRows + i) % mTotalRows)
+                                .clear(currentStyle);
                     shiftDownOfTopRow = actualShift;
                 }
             }
             mScreenFirstRow += shiftDownOfTopRow;
-            mScreenFirstRow = (mScreenFirstRow < 0) ? (mScreenFirstRow + mTotalRows) : (mScreenFirstRow % mTotalRows);
+            mScreenFirstRow =
+                    (mScreenFirstRow < 0)
+                            ? (mScreenFirstRow + mTotalRows)
+                            : (mScreenFirstRow % mTotalRows);
             mTotalRows = newTotalRows;
-            mActiveTranscriptRows = altScreen ? 0 : Math.max(0, mActiveTranscriptRows + shiftDownOfTopRow);
+            mActiveTranscriptRows =
+                    altScreen ? 0 : Math.max(0, mActiveTranscriptRows + shiftDownOfTopRow);
             cursor[1] -= shiftDownOfTopRow;
             mScreenRows = newRows;
         } else {
@@ -256,22 +291,30 @@ public final class TerminalBuffer {
             int currentOutputExternalColumn = 0;
 
             // Loop over every character in the initial state.
-            // Blank lines should be skipped only if at end of transcript (just as is done in the "fast" resize), so we
+            // Blank lines should be skipped only if at end of transcript (just as is done in the
+            // "fast" resize), so we
             // keep track how many blank lines we have skipped if we later on find a non-blank line.
             int skippedBlankLines = 0;
-            for (int externalOldRow = -oldActiveTranscriptRows; externalOldRow < oldScreenRows; externalOldRow++) {
+            for (int externalOldRow = -oldActiveTranscriptRows;
+                    externalOldRow < oldScreenRows;
+                    externalOldRow++) {
                 // Do what externalToInternalRow() does but for the old state:
                 int internalOldRow = oldScreenFirstRow + externalOldRow;
-                internalOldRow = (internalOldRow < 0) ? (oldTotalRows + internalOldRow) : (internalOldRow % oldTotalRows);
+                internalOldRow =
+                        (internalOldRow < 0)
+                                ? (oldTotalRows + internalOldRow)
+                                : (internalOldRow % oldTotalRows);
 
                 TerminalRow oldLine = oldLines[internalOldRow];
                 boolean cursorAtThisRow = externalOldRow == oldCursorRow;
                 // The cursor may only be on a non-null line, which we should not skip:
-                if (oldLine == null || (!(!newCursorPlaced && cursorAtThisRow)) && oldLine.isBlank()) {
+                if (oldLine == null
+                        || (!(!newCursorPlaced && cursorAtThisRow)) && oldLine.isBlank()) {
                     skippedBlankLines++;
                     continue;
                 } else if (skippedBlankLines > 0) {
-                    // After skipping some blank lines we encounter a non-blank line. Insert the skipped blank lines.
+                    // After skipping some blank lines we encounter a non-blank line. Insert the
+                    // skipped blank lines.
                     for (int i = 0; i < skippedBlankLines; i++) {
                         if (currentOutputExternalRow == mScreenRows - 1) {
                             scrollDownOneLine(0, mScreenRows, currentStyle);
@@ -292,7 +335,7 @@ public final class TerminalBuffer {
                 } else {
                     for (int i = 0; i < oldLine.getSpaceUsed(); i++)
                         // NEWLY INTRODUCED BUG! Should not index oldLine.mStyle with char indices
-                        if (oldLine.mText[i] != ' '/* || oldLine.mStyle[i] != currentStyle */)
+                        if (oldLine.mText[i] != ' ' /* || oldLine.mStyle[i] != currentStyle */)
                             lastNonSpaceIndex = i + 1;
                 }
 
@@ -301,7 +344,10 @@ public final class TerminalBuffer {
                 for (int i = 0; i < lastNonSpaceIndex; i++) {
                     // Note that looping over java character, not cells.
                     char c = oldLine.mText[i];
-                    int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
+                    int codePoint =
+                            (Character.isHighSurrogate(c))
+                                    ? Character.toCodePoint(c, oldLine.mText[++i])
+                                    : c;
                     int displayWidth = WcWidth.width(codePoint);
                     // Use the last style if this is a zero-width character:
                     if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
@@ -318,7 +364,8 @@ public final class TerminalBuffer {
                         currentOutputExternalColumn = 0;
                     }
 
-                    int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternalColumn > 0) ? 1 : 0);
+                    int offsetDueToCombiningChar =
+                            ((displayWidth <= 0 && currentOutputExternalColumn > 0) ? 1 : 0);
                     int outputColumn = currentOutputExternalColumn - offsetDueToCombiningChar;
                     setChar(outputColumn, currentOutputExternalRow, codePoint, styleAtCol);
 
@@ -333,7 +380,8 @@ public final class TerminalBuffer {
                         if (justToCursor && newCursorPlaced) break;
                     }
                 }
-                // Old row has been copied. Check if we need to insert newline if old line was not wrapping:
+                // Old row has been copied. Check if we need to insert newline if old line was not
+                // wrapping:
                 if (externalOldRow != (oldScreenRows - 1) && !oldLine.mLineWrap) {
                     if (currentOutputExternalRow == mScreenRows - 1) {
                         if (newCursorPlaced) newCursorRow--;
@@ -354,11 +402,11 @@ public final class TerminalBuffer {
     }
 
     /**
-     * Block copy lines and associated metadata from one location to another in the circular buffer, taking wraparound
-     * into account.
+     * Block copy lines and associated metadata from one location to another in the circular buffer,
+     * taking wraparound into account.
      *
      * @param srcInternal The first line to be copied.
-     * @param len         The number of lines to be copied.
+     * @param len The number of lines to be copied.
      */
     private void blockCopyLinesDown(int srcInternal, int len) {
         if (len == 0) return;
@@ -375,19 +423,28 @@ public final class TerminalBuffer {
     }
 
     /**
-     * Scroll the screen down one line. To scroll the whole screen of a 24 line screen, the arguments would be (0, 24).
+     * Scroll the screen down one line. To scroll the whole screen of a 24 line screen, the
+     * arguments would be (0, 24).
      *
-     * @param topMargin    First line that is scrolled.
+     * @param topMargin First line that is scrolled.
      * @param bottomMargin One line after the last line that is scrolled.
-     * @param style        the style for the newly exposed line.
+     * @param style the style for the newly exposed line.
      */
     public void scrollDownOneLine(int topMargin, int bottomMargin, long style) {
         if (topMargin > bottomMargin - 1 || topMargin < 0 || bottomMargin > mScreenRows)
-            throw new IllegalArgumentException("topMargin=" + topMargin + ", bottomMargin=" + bottomMargin + ", mScreenRows=" + mScreenRows);
+            throw new IllegalArgumentException(
+                    "topMargin="
+                            + topMargin
+                            + ", bottomMargin="
+                            + bottomMargin
+                            + ", mScreenRows="
+                            + mScreenRows);
 
-        // Copy the fixed topMargin lines one line down so that they remain on screen in same position:
+        // Copy the fixed topMargin lines one line down so that they remain on screen in same
+        // position:
         blockCopyLinesDown(mScreenFirstRow, topMargin);
-        // Copy the fixed mScreenRows-bottomMargin lines one line down so that they remain on screen in same
+        // Copy the fixed mScreenRows-bottomMargin lines one line down so that they remain on screen
+        // in same
         // position:
         blockCopyLinesDown(externalToInternalRow(bottomMargin), mScreenRows - bottomMargin);
 
@@ -406,42 +463,61 @@ public final class TerminalBuffer {
     }
 
     /**
-     * Block copy characters from one position in the screen to another. The two positions can overlap. All characters
-     * of the source and destination must be within the bounds of the screen, or else an InvalidParameterException will
-     * be thrown.
+     * Block copy characters from one position in the screen to another. The two positions can
+     * overlap. All characters of the source and destination must be within the bounds of the
+     * screen, or else an InvalidParameterException will be thrown.
      *
      * @param sx source X coordinate
      * @param sy source Y coordinate
-     * @param w  width
-     * @param h  height
+     * @param w width
+     * @param h height
      * @param dx destination X coordinate
      * @param dy destination Y coordinate
      */
     public void blockCopy(int sx, int sy, int w, int h, int dx, int dy) {
         if (w == 0) return;
-        if (sx < 0 || sx + w > mColumns || sy < 0 || sy + h > mScreenRows || dx < 0 || dx + w > mColumns || dy < 0 || dy + h > mScreenRows)
-            throw new IllegalArgumentException();
+        if (sx < 0
+                || sx + w > mColumns
+                || sy < 0
+                || sy + h > mScreenRows
+                || dx < 0
+                || dx + w > mColumns
+                || dy < 0
+                || dy + h > mScreenRows) throw new IllegalArgumentException();
         boolean copyingUp = sy > dy;
         for (int y = 0; y < h; y++) {
             int y2 = copyingUp ? y : (h - (y + 1));
             TerminalRow sourceRow = allocateFullLineIfNecessary(externalToInternalRow(sy + y2));
-            allocateFullLineIfNecessary(externalToInternalRow(dy + y2)).copyInterval(sourceRow, sx, sx + w, dx);
+            allocateFullLineIfNecessary(externalToInternalRow(dy + y2))
+                    .copyInterval(sourceRow, sx, sx + w, dx);
         }
     }
 
     /**
      * Block set characters. All characters must be within the bounds of the screen, or else and
-     * InvalidParemeterException will be thrown. Typically this is called with a "val" argument of 32 to clear a block
-     * of characters.
+     * InvalidParemeterException will be thrown. Typically this is called with a "val" argument of
+     * 32 to clear a block of characters.
      */
     public void blockSet(int sx, int sy, int w, int h, int val, long style) {
         if (sx < 0 || sx + w > mColumns || sy < 0 || sy + h > mScreenRows) {
             throw new IllegalArgumentException(
-                "Illegal arguments! blockSet(" + sx + ", " + sy + ", " + w + ", " + h + ", " + val + ", " + mColumns + ", " + mScreenRows + ")");
+                    "Illegal arguments! blockSet("
+                            + sx
+                            + ", "
+                            + sy
+                            + ", "
+                            + w
+                            + ", "
+                            + h
+                            + ", "
+                            + val
+                            + ", "
+                            + mColumns
+                            + ", "
+                            + mScreenRows
+                            + ")");
         }
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-                setChar(sx + x, sy + y, val, style);
+        for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) setChar(sx + x, sy + y, val, style);
     }
 
     public TerminalRow allocateFullLineIfNecessary(int row) {
@@ -449,8 +525,16 @@ public final class TerminalBuffer {
     }
 
     public void setChar(int column, int row, int codePoint, long style) {
-        if (row  < 0 || row >= mScreenRows || column < 0 || column >= mColumns)
-            throw new IllegalArgumentException("TerminalBuffer.setChar(): row=" + row + ", column=" + column + ", mScreenRows=" + mScreenRows + ", mColumns=" + mColumns);
+        if (row < 0 || row >= mScreenRows || column < 0 || column >= mColumns)
+            throw new IllegalArgumentException(
+                    "TerminalBuffer.setChar(): row="
+                            + row
+                            + ", column="
+                            + column
+                            + ", mScreenRows="
+                            + mScreenRows
+                            + ", mColumns="
+                            + mColumns);
         row = externalToInternalRow(row);
         allocateFullLineIfNecessary(row).setChar(column, codePoint, style);
     }
@@ -459,9 +543,20 @@ public final class TerminalBuffer {
         return allocateFullLineIfNecessary(externalToInternalRow(externalRow)).getStyle(column);
     }
 
-    /** Support for http://vt100.net/docs/vt510-rm/DECCARA and http://vt100.net/docs/vt510-rm/DECCARA */
-    public void setOrClearEffect(int bits, boolean setOrClear, boolean reverse, boolean rectangular, int leftMargin, int rightMargin, int top, int left,
-                                 int bottom, int right) {
+    /**
+     * Support for http://vt100.net/docs/vt510-rm/DECCARA and http://vt100.net/docs/vt510-rm/DECCARA
+     */
+    public void setOrClearEffect(
+            int bits,
+            boolean setOrClear,
+            boolean reverse,
+            boolean rectangular,
+            int leftMargin,
+            int rightMargin,
+            int top,
+            int left,
+            int bottom,
+            int right) {
         for (int y = top; y < bottom; y++) {
             TerminalRow line = mLines[externalToInternalRow(y)];
             int startOfLine = (rectangular || y == top) ? left : leftMargin;
@@ -486,12 +581,12 @@ public final class TerminalBuffer {
 
     public void clearTranscript() {
         if (mScreenFirstRow < mActiveTranscriptRows) {
-            Arrays.fill(mLines, mTotalRows + mScreenFirstRow - mActiveTranscriptRows, mTotalRows, null);
+            Arrays.fill(
+                    mLines, mTotalRows + mScreenFirstRow - mActiveTranscriptRows, mTotalRows, null);
             Arrays.fill(mLines, 0, mScreenFirstRow, null);
         } else {
             Arrays.fill(mLines, mScreenFirstRow - mActiveTranscriptRows, mScreenFirstRow, null);
         }
         mActiveTranscriptRows = 0;
     }
-
 }

@@ -13,19 +13,19 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
 
-import com.termux.shared.termux.plugins.TermuxPluginUtils;
+import androidx.annotation.NonNull;
+
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.data.IntentUtils;
-import com.termux.shared.net.uri.UriUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.net.uri.UriScheme;
+import com.termux.shared.net.uri.UriUtils;
 import com.termux.shared.termux.TermuxConstants;
+import com.termux.shared.termux.plugins.TermuxPluginUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
-import androidx.annotation.NonNull;
 
 public class TermuxOpenReceiver extends BroadcastReceiver {
 
@@ -40,11 +40,20 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         Logger.logVerbose(LOG_TAG, "Intent Received:\n" + IntentUtils.getIntentString(intent));
-        Logger.logVerbose(LOG_TAG, "uri: \"" + data + "\", path: \"" + data.getPath() + "\", fragment: \"" + data.getFragment() + "\"");
+        Logger.logVerbose(
+                LOG_TAG,
+                "uri: \""
+                        + data
+                        + "\", path: \""
+                        + data.getPath()
+                        + "\", fragment: \""
+                        + data.getFragment()
+                        + "\"");
 
         final String contentTypeExtra = intent.getStringExtra("content-type");
         final boolean useChooser = intent.getBooleanExtra("chooser", false);
-        final String intentAction = intent.getAction() == null ? Intent.ACTION_VIEW : intent.getAction();
+        final String intentAction =
+                intent.getAction() == null ? Intent.ACTION_VIEW : intent.getAction();
         switch (intentAction) {
             case Intent.ACTION_SEND:
             case Intent.ACTION_VIEW:
@@ -82,7 +91,8 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
 
         final File fileToShare = new File(filePath);
         if (!(fileToShare.isFile() && fileToShare.canRead())) {
-            Logger.logError(LOG_TAG, "Not a readable file: '" + fileToShare.getAbsolutePath() + "'");
+            Logger.logError(
+                    LOG_TAG, "Not a readable file: '" + fileToShare.getAbsolutePath() + "'");
             return;
         }
 
@@ -103,8 +113,12 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             contentTypeToUse = contentTypeExtra;
         }
 
-        // Do not create Uri with Uri.parse() and use Uri.Builder().path(), check UriUtils.getUriFilePath().
-        Uri uriToShare = UriUtils.getContentUri(TermuxConstants.TERMUX_FILE_SHARE_URI_AUTHORITY, fileToShare.getAbsolutePath());
+        // Do not create Uri with Uri.parse() and use Uri.Builder().path(), check
+        // UriUtils.getUriFilePath().
+        Uri uriToShare =
+                UriUtils.getContentUri(
+                        TermuxConstants.TERMUX_FILE_SHARE_URI_AUTHORITY,
+                        fileToShare.getAbsolutePath());
 
         if (Intent.ACTION_SEND.equals(intentAction)) {
             sendIntent.putExtra(Intent.EXTRA_STREAM, uriToShare);
@@ -114,7 +128,8 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         if (useChooser) {
-            sendIntent = Intent.createChooser(sendIntent, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            sendIntent =
+                    Intent.createChooser(sendIntent, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
 
         try {
@@ -134,15 +149,21 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         @Override
-        public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        public Cursor query(
+                @NonNull Uri uri,
+                String[] projection,
+                String selection,
+                String[] selectionArgs,
+                String sortOrder) {
             File file = new File(uri.getPath());
 
             if (projection == null) {
-                projection = new String[]{
-                    MediaStore.MediaColumns.DISPLAY_NAME,
-                    MediaStore.MediaColumns.SIZE,
-                    MediaStore.MediaColumns._ID
-                };
+                projection =
+                        new String[] {
+                            MediaStore.MediaColumns.DISPLAY_NAME,
+                            MediaStore.MediaColumns.SIZE,
+                            MediaStore.MediaColumns._ID
+                        };
             }
 
             Object[] row = new Object[projection.length];
@@ -186,34 +207,50 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         }
 
         @Override
-        public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        public int update(
+                @NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
             return 0;
         }
 
         @Override
-        public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
+        public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode)
+                throws FileNotFoundException {
             File file = new File(uri.getPath());
             try {
                 String path = file.getCanonicalPath();
                 String callingPackageName = getCallingPackage();
-                Logger.logDebug(LOG_TAG, "Open file request received from " + callingPackageName + " for \"" + path + "\" with mode \"" + mode + "\"");
+                Logger.logDebug(
+                        LOG_TAG,
+                        "Open file request received from "
+                                + callingPackageName
+                                + " for \""
+                                + path
+                                + "\" with mode \""
+                                + mode
+                                + "\"");
                 String storagePath = Environment.getExternalStorageDirectory().getCanonicalPath();
                 // See https://support.google.com/faqs/answer/7496913:
-                if (!(path.startsWith(TermuxConstants.TERMUX_FILES_DIR_PATH) || path.startsWith(storagePath))) {
+                if (!(path.startsWith(TermuxConstants.TERMUX_FILES_DIR_PATH)
+                        || path.startsWith(storagePath))) {
                     throw new IllegalArgumentException("Invalid path: " + path);
                 }
 
-                // If TermuxConstants.PROP_ALLOW_EXTERNAL_APPS property to not set to "true", then throw exception
-                String errmsg = TermuxPluginUtils.checkIfAllowExternalAppsPolicyIsViolated(getContext(), LOG_TAG);
+                // If TermuxConstants.PROP_ALLOW_EXTERNAL_APPS property to not set to "true", then
+                // throw exception
+                String errmsg =
+                        TermuxPluginUtils.checkIfAllowExternalAppsPolicyIsViolated(
+                                getContext(), LOG_TAG);
                 if (errmsg != null) {
                     throw new IllegalArgumentException(errmsg);
                 }
 
-                // **DO NOT** allow these files to be modified by ContentProvider exposed to external
+                // **DO NOT** allow these files to be modified by ContentProvider exposed to
+                // external
                 // apps, since they may silently modify the values for security properties like
-                // TermuxConstants.PROP_ALLOW_EXTERNAL_APPS set by users without their explicit consent.
-                if (TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST.contains(path) ||
-                    TermuxConstants.TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST.contains(path)) {
+                // TermuxConstants.PROP_ALLOW_EXTERNAL_APPS set by users without their explicit
+                // consent.
+                if (TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST.contains(path)
+                        || TermuxConstants.TERMUX_FLOAT_PROPERTIES_FILE_PATHS_LIST.contains(path)) {
                     mode = "r";
                 }
 
@@ -224,5 +261,4 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             return ParcelFileDescriptor.open(file, ParcelFileDescriptor.parseMode(mode));
         }
     }
-
 }

@@ -9,8 +9,8 @@ public final class TerminalColors {
     public static final TerminalColorScheme COLOR_SCHEME = new TerminalColorScheme();
 
     /**
-     * The current terminal colors, which are normally set from the color theme, but may be set dynamically with the OSC
-     * 4 control sequence.
+     * The current terminal colors, which are normally set from the color theme, but may be set
+     * dynamically with the OSC 4 control sequence.
      */
     public final int[] mCurrentColors = new int[TextStyle.NUM_INDEXED_COLORS];
 
@@ -26,13 +26,14 @@ public final class TerminalColors {
 
     /** Reset all indexed colors with the default color from the color theme. */
     public void reset() {
-        System.arraycopy(COLOR_SCHEME.mDefaultColors, 0, mCurrentColors, 0, TextStyle.NUM_INDEXED_COLORS);
+        System.arraycopy(
+                COLOR_SCHEME.mDefaultColors, 0, mCurrentColors, 0, TextStyle.NUM_INDEXED_COLORS);
     }
 
     /**
      * Parse color according to http://manpages.ubuntu.com/manpages/intrepid/man3/XQueryColor.3.html
-     * <p/>
-     * Highest bit is set if successful, so return value is 0xFF${R}${G}${B}. Return 0 if failed.
+     *
+     * <p>Highest bit is set if successful, so return value is 0xFF${R}${G}${B}. Return 0 if failed.
      */
     static int parse(String c) {
         try {
@@ -42,7 +43,8 @@ public final class TerminalColors {
                 skipInitial = 1;
                 skipBetween = 0;
             } else if (c.startsWith("rgb:")) {
-                // rgb:<red>/<green>/<blue> where <red>, <green>, <blue> := h | hh | hhh | hhhh. Scaled.
+                // rgb:<red>/<green>/<blue> where <red>, <green>, <blue> := h | hh | hhh | hhhh.
+                // Scaled.
                 skipInitial = 4;
                 skipBetween = 1;
             } else {
@@ -78,7 +80,7 @@ public final class TerminalColors {
     /**
      * Get the perceived brightness of the color based on its RGB components.
      *
-     * https://www.nbdtech.com/Blog/archive/2008/04/27/Calculating-the-Perceived-Brightness-of-a-Color.aspx
+     * <p>https://www.nbdtech.com/Blog/archive/2008/04/27/Calculating-the-Perceived-Brightness-of-a-Color.aspx
      * http://alienryderflex.com/hsp.html
      *
      * @param color The color code int.
@@ -86,11 +88,10 @@ public final class TerminalColors {
      */
     public static int getPerceivedBrightnessOfColor(int color) {
         return (int)
-            Math.floor(Math.sqrt(
-                Math.pow(Color.red(color), 2) * 0.241 +
-                    Math.pow(Color.green(color), 2) * 0.691 +
-                    Math.pow(Color.blue(color), 2) * 0.068
-            ));
+                Math.floor(
+                        Math.sqrt(
+                                Math.pow(Color.red(color), 2) * 0.241
+                                        + Math.pow(Color.green(color), 2) * 0.691
+                                        + Math.pow(Color.blue(color), 2) * 0.068));
     }
-
 }

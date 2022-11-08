@@ -9,5 +9,4 @@ public class KeyboardShortcut {
         this.codePoint = codePoint;
         this.shortcutAction = shortcutAction;
     }
-
 }

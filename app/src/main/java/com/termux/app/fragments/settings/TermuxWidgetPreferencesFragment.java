@@ -20,11 +20,11 @@ public class TermuxWidgetPreferencesFragment extends PreferenceFragmentCompat {
         if (context == null) return;
 
         PreferenceManager preferenceManager = getPreferenceManager();
-        preferenceManager.setPreferenceDataStore(TermuxWidgetPreferencesDataStore.getInstance(context));
+        preferenceManager.setPreferenceDataStore(
+                TermuxWidgetPreferencesDataStore.getInstance(context));
 
         setPreferencesFromResource(R.xml.termux_widget_preferences, rootKey);
     }
-
 }
 
 class TermuxWidgetPreferencesDataStore extends PreferenceDataStore {
@@ -45,5 +45,4 @@ class TermuxWidgetPreferencesDataStore extends PreferenceDataStore {
         }
         return mInstance;
     }
-
 }

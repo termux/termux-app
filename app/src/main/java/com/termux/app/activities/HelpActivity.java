@@ -25,7 +25,9 @@ public final class HelpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         final RelativeLayout progressLayout = new RelativeLayout(this);
-        RelativeLayout.LayoutParams lParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams lParams =
+                new RelativeLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         ProgressBar progressBar = new ProgressBar(this);
         progressBar.setIndeterminate(true);
@@ -39,30 +41,34 @@ public final class HelpActivity extends AppCompatActivity {
         setContentView(progressLayout);
         mWebView.clearCache(true);
 
-        mWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (url.equals(TermuxConstants.TERMUX_WIKI_URL) || url.startsWith(TermuxConstants.TERMUX_WIKI_URL + "/")) {
-                    // Inline help.
-                    setContentView(progressLayout);
-                    return false;
-                }
+        mWebView.setWebViewClient(
+                new WebViewClient() {
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                        if (url.equals(TermuxConstants.TERMUX_WIKI_URL)
+                                || url.startsWith(TermuxConstants.TERMUX_WIKI_URL + "/")) {
+                            // Inline help.
+                            setContentView(progressLayout);
+                            return false;
+                        }
 
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                } catch (ActivityNotFoundException e) {
-                    // Android TV does not have a system browser.
-                    setContentView(progressLayout);
-                    return false;
-                }
-                return true;
-            }
+                        try {
+                            startActivity(
+                                    new Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                        } catch (ActivityNotFoundException e) {
+                            // Android TV does not have a system browser.
+                            setContentView(progressLayout);
+                            return false;
+                        }
+                        return true;
+                    }
 
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                setContentView(mWebView);
-            }
-        });
+                    @Override
+                    public void onPageFinished(WebView view, String url) {
+                        setContentView(mWebView);
+                    }
+                });
         mWebView.loadUrl(TermuxConstants.TERMUX_WIKI_URL);
     }
 
@@ -74,5 +80,4 @@ public final class HelpActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
 }

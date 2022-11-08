@@ -11,8 +11,10 @@ import com.termux.shared.theme.NightMode;
 
 public class TermuxThemeUtils {
 
-    /** Get the {@link TermuxPropertyConstants#KEY_NIGHT_MODE} value from the properties file on disk
-     * and set it to app wide night mode value. */
+    /**
+     * Get the {@link TermuxPropertyConstants#KEY_NIGHT_MODE} value from the properties file on disk
+     * and set it to app wide night mode value.
+     */
     public static void setAppNightMode(@NonNull Context context) {
         NightMode.setAppNightMode(TermuxSharedProperties.getNightMode(context));
     }
@@ -21,5 +23,4 @@ public class TermuxThemeUtils {
     public static void setAppNightMode(@Nullable String name) {
         NightMode.setAppNightMode(name);
     }
-
 }

@@ -20,11 +20,11 @@ public class TermuxFloatPreferencesFragment extends PreferenceFragmentCompat {
         if (context == null) return;
 
         PreferenceManager preferenceManager = getPreferenceManager();
-        preferenceManager.setPreferenceDataStore(TermuxFloatPreferencesDataStore.getInstance(context));
+        preferenceManager.setPreferenceDataStore(
+                TermuxFloatPreferencesDataStore.getInstance(context));
 
         setPreferencesFromResource(R.xml.termux_float_preferences, rootKey);
     }
-
 }
 
 class TermuxFloatPreferencesDataStore extends PreferenceDataStore {
@@ -45,5 +45,4 @@ class TermuxFloatPreferencesDataStore extends PreferenceDataStore {
         }
         return mInstance;
     }
-
 }

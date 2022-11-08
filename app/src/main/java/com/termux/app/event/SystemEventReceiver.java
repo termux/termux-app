@@ -13,8 +13,8 @@ import com.termux.shared.data.IntentUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
-import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 import com.termux.shared.termux.shell.TermuxShellManager;
+import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 
 public class SystemEventReceiver extends BroadcastReceiver {
 
@@ -51,31 +51,35 @@ public class SystemEventReceiver extends BroadcastReceiver {
         }
     }
 
-    public synchronized void onActionBootCompleted(@NonNull Context context, @NonNull Intent intent) {
+    public synchronized void onActionBootCompleted(
+            @NonNull Context context, @NonNull Intent intent) {
         TermuxShellManager.onActionBootCompleted(context, intent);
     }
 
-    public synchronized void onActionPackageUpdated(@NonNull Context context, @NonNull Intent intent) {
+    public synchronized void onActionPackageUpdated(
+            @NonNull Context context, @NonNull Intent intent) {
         Uri data = intent.getData();
         if (data != null && TermuxUtils.isUriDataForTermuxPluginPackage(data)) {
-            Logger.logDebug(LOG_TAG, intent.getAction().replaceAll("^android.intent.action.", "") +
-                " event received for \"" + data.toString().replaceAll("^package:", "") + "\"");
+            Logger.logDebug(
+                    LOG_TAG,
+                    intent.getAction().replaceAll("^android.intent.action.", "")
+                            + " event received for \""
+                            + data.toString().replaceAll("^package:", "")
+                            + "\"");
             if (TermuxFileUtils.isTermuxFilesDirectoryAccessible(context, false, false) == null)
                 TermuxShellEnvironment.writeEnvironmentToFile(context);
         }
     }
 
-
-
     /**
-     * Register {@link SystemEventReceiver} to listen to {@link Intent#ACTION_PACKAGE_ADDED},
-     * {@link Intent#ACTION_PACKAGE_REMOVED} and {@link Intent#ACTION_PACKAGE_REPLACED} broadcasts.
-     * They must be registered dynamically and cannot be registered implicitly in
-     * the AndroidManifest.xml due to Android 8+ restrictions.
+     * Register {@link SystemEventReceiver} to listen to {@link Intent#ACTION_PACKAGE_ADDED}, {@link
+     * Intent#ACTION_PACKAGE_REMOVED} and {@link Intent#ACTION_PACKAGE_REPLACED} broadcasts. They
+     * must be registered dynamically and cannot be registered implicitly in the AndroidManifest.xml
+     * due to Android 8+ restrictions.
      *
-     *  https://developer.android.com/guide/components/broadcast-exceptions
+     * <p>https://developer.android.com/guide/components/broadcast-exceptions
      */
-    public synchronized static void registerPackageUpdateEvents(@NonNull Context context) {
+    public static synchronized void registerPackageUpdateEvents(@NonNull Context context) {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
         intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
@@ -84,8 +88,7 @@ public class SystemEventReceiver extends BroadcastReceiver {
         context.registerReceiver(getInstance(), intentFilter);
     }
 
-    public synchronized static void unregisterPackageUpdateEvents(@NonNull Context context) {
+    public static synchronized void unregisterPackageUpdateEvents(@NonNull Context context) {
         context.unregisterReceiver(getInstance());
     }
-
 }
