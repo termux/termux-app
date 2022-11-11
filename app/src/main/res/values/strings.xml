@@ -233,5 +233,6 @@
 
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
+    <string name="notification_announcer_service">Notification Announcer Service</string>
 
 </resources>

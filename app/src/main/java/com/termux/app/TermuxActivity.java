@@ -33,6 +33,7 @@ import com.termux.app.api.file.FileReceiverActivity;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
+import com.termux.app.voice.NotificationAnnouncerService;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
@@ -278,6 +279,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
+
+        if (!hasNotificationPermission()) {
+            startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+        }
     }
 
     @Override
@@ -1021,4 +1026,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return intent;
     }
 
+    public boolean hasNotificationPermission() {
+        String theList = android.provider.Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
+        String[] theListList = theList.split(":");
+        String me = (new ComponentName(this, NotificationAnnouncerService.class)).flattenToString();
+        for ( String next : theListList ) {
+            if ( me.equals(next) ) return true;
+        }
+        return false;
+    }
 }
