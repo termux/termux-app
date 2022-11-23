@@ -116,9 +116,9 @@ Version: 3
 
 **Termux and its plugins are no longer updated on [Google Play Store](https://play.google.com/store/apps/details?id=com.termux) due to [android 10 issues](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10) and have been deprecated.** The last version released for Android `>= 7` was `v0.101`. **It is highly recommended to not install Termux apps from Play Store any more.**
 
-There are plans for **unpublishing** the Termux app and all its plugins on Play Store soon so that new users cannot install it and for **disabling** the Termux apps with updates so that existing users **cannot continue using outdated versions**. You are encouraged to move to `F-Droid` or `GitHub` builds as soon as possible.
+There are plans for **_unpublishing_** the Termux app and all its plugins on Play Store soon so that new users cannot install it and for **_disabling_** the Termux apps with updates so that existing users **_cannot continue using outdated versions_**. You are encouraged to move to `F-Droid` or `GitHub` builds as soon as possible.
 
-You **will not need to buy plugins again** if you bought them on Play Store. All plugins are free on `F-Droid` and  `GitHub`.
+You **_will not need to buy plugins again_** if you bought them on Play Store. All plugins are free on `F-Droid` and  `GitHub`.
 
 You can backup all your data under `$HOME/` and `$PREFIX/` before changing installation source, and then restore it afterwards, by following instructions at [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
 
