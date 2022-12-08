@@ -194,6 +194,13 @@ public final class TermuxPreferenceConstants {
          */
         public static final String KEY_LOG_LEVEL = "log_level";
 
+
+        /**
+         * Defines the key for last used PendingIntent request code.
+         */
+        public static final String KEY_LAST_PENDING_INTENT_REQUEST_CODE = "last_pending_intent_request_code";
+        public static final int DEFAULT_VALUE_KEY_LAST_PENDING_INTENT_REQUEST_CODE = 0;
+
     }
 
 
