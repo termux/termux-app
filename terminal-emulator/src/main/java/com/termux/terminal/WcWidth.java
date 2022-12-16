@@ -13,7 +13,7 @@ package com.termux.terminal;
  */
 public final class WcWidth {
 
-    // From https://github.com/jquast/wcwidth/blob/master/wcwidth/table_wide.py
+    // From https://github.com/jquast/wcwidth/blob/master/wcwidth/table_zero.py
     // from https://github.com/jquast/wcwidth/pull/64
     // at commit 1b9b6585b0080ea5cb88dc9815796505724793fe (2022-12-16):
     private static final int[][] ZERO_WIDTH = {
