@@ -362,7 +362,7 @@ public final class WcWidth {
         {0xe0100, 0xe01ef},  // Variation Selector-17   ..Variation Selector-256
     };
 
-    // https://github.com/jquast/wcwidth/blob/master/wcwidth/table_zero.py
+    // https://github.com/jquast/wcwidth/blob/master/wcwidth/table_wide.py
     // from https://github.com/jquast/wcwidth/pull/64
     // at commit 1b9b6585b0080ea5cb88dc9815796505724793fe (2022-12-16):
     private static final int[][] WIDE_EASTASIAN = {
