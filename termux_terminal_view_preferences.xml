@@ -1,0 +1,15 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="view"
+        app:title="@string/termux_terminal_view_view_header">
+
+        <SwitchPreferenceCompat
+            app:key="terminal_margin_adjustment"
+            app:summaryOff="@string/termux_terminal_view_terminal_margin_adjustment_off"
+            app:summaryOn="@string/termux_terminal_view_terminal_margin_adjustment_on"
+            app:title="@string/termux_terminal_view_terminal_margin_adjustment_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
