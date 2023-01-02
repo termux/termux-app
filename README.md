@@ -1,3 +1,4 @@
+![feature-graphic](https://user-images.githubusercontent.com/89878745/210243325-8fa37f1d-4292-44a6-935a-e6d59f50c597.svg)
 # Termux application
 
 [![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
