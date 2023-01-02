@@ -4,9 +4,18 @@
      https://material.io/develop/android/theming/dark
     -->
 
+    <!-- TermuxApp Light DarkActionBar theme. -->
+    <style name="Theme.TermuxApp.Light.DarkActionBar" parent="Theme.BaseActivity.Light.DarkActionBar"/>
+    <!-- TermuxApp Light NoActionBar theme. -->
+    <style name="Theme.TermuxApp.Light.NoActionBar" parent="Theme.BaseActivity.Light.NoActionBar"/>
+
+    <!-- TermuxApp DayNight DarkActionBar theme. -->
+    <style name="Theme.TermuxApp.DayNight.DarkActionBar" parent="Theme.BaseActivity.DayNight.DarkActionBar"/>
+    <!-- TermuxApp DayNight NoActionBar theme. -->
+    <style name="Theme.TermuxApp.DayNight.NoActionBar" parent="Theme.BaseActivity.DayNight.NoActionBar"/>
+
+
     <!-- TermuxActivity DayNight NoActionBar theme. -->
-    <!-- See https://developer.android.com/training/material/theme.html for how to customize the Material theme. -->
-    <!-- NOTE: Cannot use "Light." since it hides the terminal scrollbar on the default black background. -->
     <style name="Theme.TermuxActivity.DayNight.NoActionBar" parent="Theme.TermuxApp.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/black</item>
@@ -26,9 +35,9 @@
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
 
         <!-- Left drawer. -->
-        <item name="buttonBarButtonStyle">@style/TermuxActivity.Drawer.ButtonBarStyle.Dark</item>
-        <item name="termuxActivityDrawerBackground">@color/black</item>
-        <item name="termuxActivityDrawerImageTint">@color/white</item>
+        <item name="buttonBarButtonStyle">@style/TermuxActivity.Drawer.ButtonBarStyle.Light</item>
+        <item name="termuxActivityDrawerBackground">@color/white</item>
+        <item name="termuxActivityDrawerImageTint">@color/black</item>
 
         <!-- Extra keys colors. -->
         <item name="extraKeysButtonTextColor">@color/white</item>
