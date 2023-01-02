@@ -1,4 +1,5 @@
-![feature-graphic](https://user-images.githubusercontent.com/89878745/210243325-8fa37f1d-4292-44a6-935a-e6d59f50c597.svg)
+![tv-banner](https://user-images.githubusercontent.com/89878745/210244295-9f06541c-3735-4e24-908a-1d183198ba91.svg)
+
 # Termux application
 
 [![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
@@ -252,6 +253,8 @@ Users must post complete report (optionally without sensitive info) when reporti
 - `Debug` - Start logging debug messages.
 - `Verbose` - Start logging verbose messages.
 ##
+![ic_launcher2_round](https://user-images.githubusercontent.com/89878745/210244375-9615d8ef-6dfa-4c9e-ae75-82a093c18c9f.png)
+
 
 
 
@@ -277,7 +280,7 @@ Changelogs for releases are generated based on [Keep a Changelog](https://github
 
 The `versionName` in `build.gradle` files of Termux and its plugin apps must follow the [semantic version `2.0.0` spec](https://semver.org/spec/v2.0.0.html) in the format `major.minor.patch(-prerelease)(+buildmetadata)`. When bumping `versionName` in `build.gradle` files and when creating a tag for new releases on GitHub, make sure to include the patch number as well, like `v0.1.0` instead of just `v0.1`. The `build.gradle` files and `attach_debug_apks_to_release` workflow validates the version as well and the build/attachment will fail if `versionName` does not follow the spec.
 ##
-
+![feature-graphic](https://user-images.githubusercontent.com/89878745/210243325-8fa37f1d-4292-44a6-935a-e6d59f50c597.svg)
 
 
 ## Forking
