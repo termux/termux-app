@@ -4,5 +4,3 @@ partly as library, as computer application, as Web application or as a
 loadable kernel module.
 
 ## [ffmpeg](ffmpeg)
-
-## [bs1770gain](bs1770gain)
