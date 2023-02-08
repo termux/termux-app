@@ -6,7 +6,7 @@ on:
       - published
 
 jobs:
-  attach-apks:
+  build:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -21,23 +21,15 @@ jobs:
         with:
           ref: ${{ env.GITHUB_REF }}
 
-      - name: Build and attach APKs to release
+      - name: Build
         shell: bash {0}
         env:
           PACKAGE_VARIANT: ${{ matrix.package_variant }}
         run: |
-          exit_on_error() {
-              echo "$1"
-              echo "Deleting '$RELEASE_VERSION_NAME' release and '$GITHUB_REF' tag"
-              hub release delete "$RELEASE_VERSION_NAME"
-              git push --delete origin "$GITHUB_REF"
-              exit 1
-          }
-
-          echo "Setting vars"
           RELEASE_VERSION_NAME="${GITHUB_REF/refs\/tags\//}"
           if ! printf "%s" "${RELEASE_VERSION_NAME/v/}" | grep -qP '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'; then
-           exit_on_error "The versionName '${RELEASE_VERSION_NAME/v/}' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html."
+            echo "The versionName '${RELEASE_VERSION_NAME/v/}' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html."
+            exit 1
           fi
 
           APK_DIR_PATH="./app/build/outputs/apk/debug"
@@ -47,38 +39,35 @@ jobs:
           echo "Building APKs for 'APK_VERSION_TAG' release"
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
           export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
-          if ! ./gradlew assembleDebug; then
-            exit_on_error "Build failed for '$APK_VERSION_TAG' release."
-          fi
+          ./gradlew assembleDebug
 
           echo "Validating APKs"
           for abi in universal arm64-v8a armeabi-v7a x86_64 x86; do
             if ! test -f "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_$abi.apk"; then
               files_found="$(ls "$APK_DIR_PATH")"
-              exit_on_error "Failed to find built APK at '$APK_DIR_PATH/${APK_BASENAME_PREFIX}_$abi.apk'. Files found: "$'\n'"$files_found"
+              echo "Failed to find built APK at '$APK_DIR_PATH/${APK_BASENAME_PREFIX}_$abi.apk'. Files found: "$'\n'"$files_found"
+              exit 1
             fi
           done
-
-          echo "Generating sha25sums file"
-          if ! (cd "$APK_DIR_PATH"; sha256sum \
-            "${APK_BASENAME_PREFIX}_universal.apk" \
-            "${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
-            "${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
-            "${APK_BASENAME_PREFIX}_x86_64.apk" \
-            "${APK_BASENAME_PREFIX}_x86.apk" \
-            > "${APK_BASENAME_PREFIX}_sha256sums"); then
-            exit_on_error "Generate sha25sums failed for '$APK_VERSION_TAG' release."
-          fi
-
-          echo "Attaching APKs to github release"
-          if ! hub release edit \
-          -m "" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_universal.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86_64.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_sha256sums" \
-          "$RELEASE_VERSION_NAME"; then
-            exit_on_error "Attach APKs to release failed for '$APK_VERSION_TAG' release."
-          fi
+      - name: Upload APKs to GitHub artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.package_variant }}
+          path: ./app/build/outputs/apk/debug/*.apk
+  upload:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+      - name: Upload APKs to release
+        uses: termux/upload-release-action@v4.1.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "**/*.apk"
+          file_glob: true
+          release_name: 
+          tag: ${{ github.event.release.tag_name }}
+          checksums: sha256,sha512,md5
