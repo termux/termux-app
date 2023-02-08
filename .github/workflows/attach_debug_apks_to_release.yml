@@ -39,7 +39,10 @@ jobs:
           echo "Building APKs for 'APK_VERSION_TAG' release"
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
           export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
-          ./gradlew assembleDebug
+          if ! ./gradlew assembleDebug; then
+            echo "Build failed for '$APK_VERSION_TAG' release."
+            exit 1
+          fi
 
           echo "Validating APKs"
           for abi in universal arm64-v8a armeabi-v7a x86_64 x86; do
