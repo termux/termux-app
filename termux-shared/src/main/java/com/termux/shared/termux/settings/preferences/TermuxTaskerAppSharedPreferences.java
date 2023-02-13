@@ -1,31 +1,28 @@
 package com.termux.shared.termux.settings.preferences;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.shared.android.PackageUtils;
+import com.termux.shared.settings.preferences.AppSharedPreferences;
 import com.termux.shared.settings.preferences.SharedPreferenceUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_TASKER_APP;
 import com.termux.shared.logger.Logger;
 
-public class TermuxTaskerAppSharedPreferences {
-
-    private final Context mContext;
-    private final SharedPreferences mSharedPreferences;
-    private final SharedPreferences mMultiProcessSharedPreferences;
-
+public class TermuxTaskerAppSharedPreferences extends AppSharedPreferences {
 
     private static final String LOG_TAG = "TermuxTaskerAppSharedPreferences";
 
     private  TermuxTaskerAppSharedPreferences(@NonNull Context context) {
-        mContext = context;
-        mSharedPreferences = getPrivateSharedPreferences(mContext);
-        mMultiProcessSharedPreferences = getPrivateAndMultiProcessSharedPreferences(mContext);
+        super(context,
+            SharedPreferenceUtils.getPrivateSharedPreferences(context,
+                TermuxConstants.TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION),
+            SharedPreferenceUtils.getPrivateAndMultiProcessSharedPreferences(context,
+                TermuxConstants.TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION));
     }
 
     /**
@@ -59,16 +56,6 @@ public class TermuxTaskerAppSharedPreferences {
             return null;
         else
             return new TermuxTaskerAppSharedPreferences(termuxTaskerPackageContext);
-    }
-
-    private static SharedPreferences getPrivateSharedPreferences(Context context) {
-        if (context == null) return null;
-        return SharedPreferenceUtils.getPrivateSharedPreferences(context, TermuxConstants.TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
-    }
-
-    private static SharedPreferences getPrivateAndMultiProcessSharedPreferences(Context context) {
-        if (context == null) return null;
-        return SharedPreferenceUtils.getPrivateAndMultiProcessSharedPreferences(context, TermuxConstants.TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
     }
 
 

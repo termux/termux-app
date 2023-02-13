@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
+import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.app.TermuxActivity;
@@ -183,20 +184,16 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     public void onCopyTextToClipboard(@NonNull TerminalSession session, String text) {
         if (!mActivity.isVisible()) return;
 
-        ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboard.setPrimaryClip(new ClipData(null, new String[]{"text/plain"}, new ClipData.Item(text)));
+        ShareUtils.copyTextToClipboard(mActivity, text);
     }
 
     @Override
     public void onPasteTextFromClipboard(@Nullable TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
-        ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clipData = clipboard.getPrimaryClip();
-        if (clipData != null) {
-            CharSequence paste = clipData.getItemAt(0).coerceToText(mActivity);
-            if (!TextUtils.isEmpty(paste)) mActivity.getTerminalView().mEmulator.paste(paste.toString());
-        }
+        String text = ShareUtils.getTextStringFromClipboardIfSet(mActivity, true);
+        if (text != null)
+            mActivity.getTerminalView().mEmulator.paste(text);
     }
 
     @Override
