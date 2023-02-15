@@ -66,7 +66,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v3
       - name: Upload APKs to release
-        uses: termux/upload-release-action@v4.1.0
+        uses: termux/upload-release-action@c6bc73fa777109ac75c51ec3b6ae7841f45cb67a
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: "**/*.apk"
@@ -74,6 +74,7 @@ jobs:
           release_name: 
           tag: ${{ github.event.release.tag_name }}
           checksums: sha256,sha512,md5
+          checksums_file_name: release.%algo%
   delete_release:
     if: failure()
     runs-on: ubuntu-latest
