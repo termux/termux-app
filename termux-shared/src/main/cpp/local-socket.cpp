@@ -1,10 +1,8 @@
 #include <cstdio>
 #include <ctime>
-#include <cerrno>
 #include <jni.h>
-#include <sstream>
+#include <stream>
 #include <string>
-#include <unistd.h>
 
 #include <android/log.h>
 
