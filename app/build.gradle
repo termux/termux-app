@@ -93,6 +93,9 @@ android {
 
         debug {
             signingConfig signingConfigs.debug
+            applicationIdSuffix ".debug"
+            manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux.debug"
+            manifestPlaceholders.TERMUX_APP_NAME = "Termux Debug"
         }
     }
 
