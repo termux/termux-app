@@ -7,6 +7,7 @@ on:
 
 jobs:
   trigger-termux-library-builds:
+    if: ${{ github.repository == 'termux/termux-app' }}
     runs-on: ubuntu-latest
     steps:
       - name: Set vars
