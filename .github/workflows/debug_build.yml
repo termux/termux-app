@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: 
       matrix:
         package_variant: [ apt-android-7, apt-android-5 ]
 
