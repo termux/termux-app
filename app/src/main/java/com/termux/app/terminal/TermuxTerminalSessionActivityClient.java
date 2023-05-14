@@ -37,7 +37,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-/** The {@link TerminalSessionClient} implementation that may require an {@link Activity} for its interface methods. */
+/**
+ * The {@link TerminalSessionClient} implementation that may require an {@link Activity} for its interface methods.
+ */
 public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionClientBase {
 
     private final TermuxActivity mActivity;
@@ -113,12 +115,12 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
 
-
     @Override
     public void onTextChanged(@NonNull TerminalSession changedSession) {
         if (!mActivity.isVisible()) return;
 
-        if (mActivity.getCurrentSession() == changedSession) mActivity.getTerminalView().onScreenUpdated();
+        if (mActivity.getCurrentSession() == changedSession)
+            mActivity.getTerminalView().onScreenUpdated();
     }
 
     @Override
@@ -238,7 +240,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     public void setTerminalShellPid(@NonNull TerminalSession terminalSession, int pid) {
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
-        
+
         TermuxSession termuxSession = service.getTermuxSessionForTerminalSession(terminalSession);
         if (termuxSession != null)
             termuxSession.getExecutionCommand().mPid = pid;
@@ -255,15 +257,15 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
 
-
     @Override
     public Integer getTerminalCursorStyle() {
         return mActivity.getProperties().getTerminalCursorStyle();
     }
 
 
-
-    /** Load mBellSoundPool */
+    /**
+     * Load mBellSoundPool
+     */
     private synchronized void loadBellSoundPool() {
         if (mBellSoundPool == null) {
             mBellSoundPool = new SoundPool.Builder().setMaxStreams(1).setAudioAttributes(
@@ -272,14 +274,16 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
             try {
                 mBellSoundId = mBellSoundPool.load(mActivity, R.raw.bell, 1);
-            } catch (Exception e){
+            } catch (Exception e) {
                 // Catch java.lang.RuntimeException: Unable to resume activity {com.termux/com.termux.app.TermuxActivity}: android.content.res.Resources$NotFoundException: File res/raw/bell.ogg from drawable resource ID
                 Logger.logStackTraceWithMessage(LOG_TAG, "Failed to load bell sound pool", e);
             }
         }
     }
 
-    /** Release mBellSoundPool resources */
+    /**
+     * Release mBellSoundPool resources
+     */
     private synchronized void releaseBellSoundPool() {
         if (mBellSoundPool != null) {
             mBellSoundPool.release();
@@ -288,8 +292,9 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
 
-
-    /** Try switching to session. */
+    /**
+     * Try switching to session.
+     */
     public void setCurrentSession(TerminalSession session) {
         if (session == null) return;
 
@@ -396,7 +401,9 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             mActivity.getPreferences().setCurrentSession(null);
     }
 
-    /** The current session as stored or the last one if that does not exist. */
+    /**
+     * The current session as stored or the last one if that does not exist.
+     */
     public TerminalSession getCurrentStoredSessionOrLast() {
         TerminalSession stored = getCurrentStoredSession();
 
@@ -510,7 +517,12 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             }
             updateBackgroundColor();
 
-            final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
+            final Typeface newTypeface;
+            if (fontFile.exists() && fontFile.length() > 0) {
+                newTypeface = Typeface.createFromFile(fontFile);
+            } else {
+                newTypeface = Typeface.createFromAsset(mActivity.getAssets(), "font.ttf");
+            }
             mActivity.getTerminalView().setTypeface(newTypeface);
         } catch (Exception e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error in checkForFontAndColors()", e);
