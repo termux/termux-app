@@ -11,6 +11,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -872,11 +873,34 @@ public final class TerminalView extends View {
         if (mEmulator != null)
             mEmulator.setCursorBlinkState(true);
 
+        if (handleKeyCodeAction(keyCode, keyMod))
+            return true;
+
         TerminalEmulator term = mTermSession.getEmulator();
         String code = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(), term.isKeypadApplicationMode());
         if (code == null) return false;
         mTermSession.write(code);
         return true;
+    }
+
+    public boolean handleKeyCodeAction(int keyCode, int keyMod) {
+        boolean shiftDown = (keyMod & KeyHandler.KEYMOD_SHIFT) != 0;
+
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_PAGE_UP:
+            case KeyEvent.KEYCODE_PAGE_DOWN:
+                // shift+page_up and shift+page_down should scroll scrollback history instead of
+                // scrolling command history or changing pages
+                if (shiftDown) {
+                    long time = SystemClock.uptimeMillis();
+                    MotionEvent motionEvent = MotionEvent.obtain(time, time, MotionEvent.ACTION_DOWN, 0, 0, 0);
+                    doScroll(motionEvent, keyCode == KeyEvent.KEYCODE_PAGE_UP ? -1 : 1);
+                    motionEvent.recycle();
+                    return true;
+                }
+        }
+
+       return false;
     }
 
     /**
