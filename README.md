@@ -116,7 +116,7 @@ Version: 3
 
 **Termux and its plugins are no longer updated on [Google Play Store](https://play.google.com/store/apps/details?id=com.termux) due to [android 10 issues](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10) and have been deprecated.** The last version released for Android `>= 7` was `v0.101`. **It is highly recommended to not install Termux apps from Play Store any more.**
 
-There are plans for **unpublishing** the Termux app and all its plugins on Play Store soon so that new users cannot install it and for **disabling** the Termux apps with updates so that existing users **cannot continue using outdated versions**. You are encouraged to move to `F-Droid` or `GitHub` builds as soon as possible.
+**Termux developers do not have access to Play Store Console account where Termux is published and therefore can't remove the app.** You are encouraged to move to `F-Droid` or `GitHub` builds as soon as possible and suggest doing so for other users via social media.
 
 You **will not need to buy plugins again** if you bought them on Play Store. All plugins are free on `F-Droid` and  `GitHub`.
 
