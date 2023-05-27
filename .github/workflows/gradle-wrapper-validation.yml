@@ -3,7 +3,7 @@ name: "Validate Gradle Wrapper"
 on:
   push:
     branches:
-      - master
+      - vmain
       - android-10
   pull_request:
     branches:
