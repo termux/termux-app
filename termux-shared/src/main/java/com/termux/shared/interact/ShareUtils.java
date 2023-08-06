@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Environment;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
@@ -81,25 +80,81 @@ public class ShareUtils {
         openSystemAppChooser(context, shareTextIntent, DataUtils.isNullOrEmpty(title) ? context.getString(R.string.title_share_with) : title);
     }
 
+
+
+    /** Wrapper for {@link #copyTextToClipboard(Context, String, String, String)} with `null` `clipDataLabel` and `toastString`. */
+    public static void copyTextToClipboard(Context context, final String text) {
+        copyTextToClipboard(context, null, text, null);
+    }
+
+    /** Wrapper for {@link #copyTextToClipboard(Context, String, String, String)} with `null` `clipDataLabel`. */
+    public static void copyTextToClipboard(Context context, final String text, final String toastString) {
+        copyTextToClipboard(context, null, text, toastString);
+    }
+
     /**
-     * Copy the text to clipboard.
+     * Copy the text to primary clip of the clipboard.
      *
      * @param context The context for operations.
+     * @param clipDataLabel The label to show to the user describing the copied text.
      * @param text The text to copy.
      * @param toastString If this is not {@code null} or empty, then a toast is shown if copying to
      *                    clipboard is successful.
      */
-    public static void copyTextToClipboard(final Context context, final String text, final String toastString) {
+    public static void copyTextToClipboard(Context context, @Nullable final String clipDataLabel,
+                                           final String text, final String toastString) {
         if (context == null || text == null) return;
 
-        final ClipboardManager clipboardManager = ContextCompat.getSystemService(context, ClipboardManager.class);
+        ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboardManager == null) return;
 
-        if (clipboardManager != null) {
-            clipboardManager.setPrimaryClip(ClipData.newPlainText(null, DataUtils.getTruncatedCommandOutput(text, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES, true, false, false)));
-            if (toastString != null && !toastString.isEmpty())
-                Logger.showToast(context, toastString, true);
-        }
+        clipboardManager.setPrimaryClip(ClipData.newPlainText(clipDataLabel,
+            DataUtils.getTruncatedCommandOutput(text, DataUtils.TRANSACTION_SIZE_LIMIT_IN_BYTES,
+                true, false, false)));
+
+        if (toastString != null && !toastString.isEmpty())
+            Logger.showToast(context, toastString, true);
     }
+
+
+
+    /**
+     * Wrapper for {@link #getTextFromClipboard(Context, boolean)} that returns primary text {@link String}
+     * if its set and not empty.
+     */
+    @Nullable
+    public static String getTextStringFromClipboardIfSet(Context context, boolean coerceToText) {
+        CharSequence textCharSequence = getTextFromClipboard(context, coerceToText);
+        if (textCharSequence == null) return null;
+        String textString = textCharSequence.toString();
+        return !textString.isEmpty() ? textString : null;
+    }
+
+    /**
+     * Get the text from primary clip of the clipboard.
+     *
+     * @param context The context for operations.
+     * @param coerceToText Whether to call {@link ClipData.Item#coerceToText(Context)} to coerce
+     *                     non-text data to text.
+     * @return Returns the {@link CharSequence} of primary text. This will be `null` if failed to get it.
+     */
+    @Nullable
+    public static CharSequence getTextFromClipboard(Context context, boolean coerceToText) {
+        if (context == null) return null;
+
+        ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboardManager == null) return null;
+
+        ClipData clipData = clipboardManager.getPrimaryClip();
+        if (clipData == null) return null;
+
+        ClipData.Item clipItem = clipData.getItemAt(0);
+        if (clipItem == null) return null;
+
+        return coerceToText ? clipItem.coerceToText(context) : clipItem.getText();
+    }
+
+
 
     /**
      * Open a url.

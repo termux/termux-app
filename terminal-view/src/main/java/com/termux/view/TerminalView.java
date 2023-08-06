@@ -2,6 +2,7 @@ package com.termux.view;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -19,6 +21,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -30,6 +33,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.termux.terminal.KeyHandler;
@@ -456,6 +460,14 @@ public final class TerminalView extends View {
         if (mAccessibilityEnabled) setContentDescription(getText());
     }
 
+    /** This must be called by the hosting activity in {@link Activity#onContextMenuClosed(Menu)}
+     * when context menu for the {@link TerminalView} is started by
+     * {@link TextSelectionCursorController#ACTION_MORE} is closed. */
+    public void onContextMenuClosed(Menu menu) {
+        // Unset the stored text since it shouldn't be used anymore and should be cleared from memory
+        unsetStoredSelectedText();
+    }
+
     /**
      * Sets the text size, which in turn sets the number of rows and columns.
      *
@@ -566,11 +578,14 @@ public final class TerminalView extends View {
                 if (action == MotionEvent.ACTION_DOWN) showContextMenu();
                 return true;
             } else if (event.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
-                ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clipData = clipboard.getPrimaryClip();
+                ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clipData = clipboardManager.getPrimaryClip();
                 if (clipData != null) {
-                    CharSequence paste = clipData.getItemAt(0).coerceToText(getContext());
-                    if (!TextUtils.isEmpty(paste)) mEmulator.paste(paste.toString());
+                    ClipData.Item clipItem = clipData.getItemAt(0);
+                    if (clipItem != null) {
+                        CharSequence text = clipItem.coerceToText(getContext());
+                        if (!TextUtils.isEmpty(text)) mEmulator.paste(text.toString());
+                    }
                 }
             } else if (mEmulator.isMouseTrackingActive()) { // BUTTON_PRIMARY.
                 switch (event.getAction()) {
@@ -858,11 +873,34 @@ public final class TerminalView extends View {
         if (mEmulator != null)
             mEmulator.setCursorBlinkState(true);
 
+        if (handleKeyCodeAction(keyCode, keyMod))
+            return true;
+
         TerminalEmulator term = mTermSession.getEmulator();
         String code = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(), term.isKeypadApplicationMode());
         if (code == null) return false;
         mTermSession.write(code);
         return true;
+    }
+
+    public boolean handleKeyCodeAction(int keyCode, int keyMod) {
+        boolean shiftDown = (keyMod & KeyHandler.KEYMOD_SHIFT) != 0;
+
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_PAGE_UP:
+            case KeyEvent.KEYCODE_PAGE_DOWN:
+                // shift+page_up and shift+page_down should scroll scrollback history instead of
+                // scrolling command history or changing pages
+                if (shiftDown) {
+                    long time = SystemClock.uptimeMillis();
+                    MotionEvent motionEvent = MotionEvent.obtain(time, time, MotionEvent.ACTION_DOWN, 0, 0, 0);
+                    doScroll(motionEvent, keyCode == KeyEvent.KEYCODE_PAGE_UP ? -1 : 1);
+                    motionEvent.recycle();
+                    return true;
+                }
+        }
+
+       return false;
     }
 
     /**
@@ -1201,6 +1239,25 @@ public final class TerminalView extends View {
         } else {
             return false;
         }
+    }
+
+    /** Get the currently selected text if selecting. */
+    public String getSelectedText() {
+        if (isSelectingText() && mTextSelectionCursorController != null)
+            return mTextSelectionCursorController.getSelectedText();
+        else
+            return null;
+    }
+
+    /** Get the selected text stored before "MORE" button was pressed on the context menu. */
+    @Nullable
+    public String getStoredSelectedText() {
+        return mTextSelectionCursorController != null ? mTextSelectionCursorController.getStoredSelectedText() : null;
+    }
+
+    /** Unset the selected text stored before "MORE" button was pressed on the context menu. */
+    public void unsetStoredSelectedText() {
+        if (mTextSelectionCursorController != null) mTextSelectionCursorController.unsetStoredSelectedText();
     }
 
     private ActionMode getTextSelectionActionMode() {

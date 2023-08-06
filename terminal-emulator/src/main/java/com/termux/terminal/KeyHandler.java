@@ -227,9 +227,9 @@ public final class KeyHandler {
                 return transformForModifiers("\033[3", keyMode, '~');
 
             case KEYCODE_PAGE_UP:
-                return "\033[5~";
+                return transformForModifiers("\033[5", keyMode, '~');
             case KEYCODE_PAGE_DOWN:
-                return "\033[6~";
+                return transformForModifiers("\033[6", keyMode, '~');
             case KEYCODE_DEL:
                 String prefix = ((keyMode & KEYMOD_ALT) == 0) ? "" : "\033";
                 // Just do what xterm and gnome-terminal does:

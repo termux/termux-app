@@ -1,31 +1,28 @@
 package com.termux.shared.termux.settings.preferences;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.shared.logger.Logger;
 import com.termux.shared.android.PackageUtils;
+import com.termux.shared.settings.preferences.AppSharedPreferences;
 import com.termux.shared.settings.preferences.SharedPreferenceUtils;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_API_APP;
 import com.termux.shared.termux.TermuxConstants;
 
-public class TermuxAPIAppSharedPreferences {
-
-    private final Context mContext;
-    private final SharedPreferences mSharedPreferences;
-    private final SharedPreferences mMultiProcessSharedPreferences;
-
+public class TermuxAPIAppSharedPreferences extends AppSharedPreferences {
 
     private static final String LOG_TAG = "TermuxAPIAppSharedPreferences";
 
     private TermuxAPIAppSharedPreferences(@NonNull Context context) {
-        mContext = context;
-        mSharedPreferences = getPrivateSharedPreferences(mContext);
-        mMultiProcessSharedPreferences = getPrivateAndMultiProcessSharedPreferences(mContext);
+        super(context,
+            SharedPreferenceUtils.getPrivateSharedPreferences(context,
+                TermuxConstants.TERMUX_API_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION),
+            SharedPreferenceUtils.getPrivateAndMultiProcessSharedPreferences(context,
+                TermuxConstants.TERMUX_API_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION));
     }
 
     /**
@@ -61,16 +58,6 @@ public class TermuxAPIAppSharedPreferences {
             return new TermuxAPIAppSharedPreferences(termuxAPIPackageContext);
     }
 
-    private static SharedPreferences getPrivateSharedPreferences(Context context) {
-        if (context == null) return null;
-        return SharedPreferenceUtils.getPrivateSharedPreferences(context, TermuxConstants.TERMUX_API_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
-    }
-
-    private static SharedPreferences getPrivateAndMultiProcessSharedPreferences(Context context) {
-        if (context == null) return null;
-        return SharedPreferenceUtils.getPrivateAndMultiProcessSharedPreferences(context, TermuxConstants.TERMUX_API_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION);
-    }
-
 
 
     public int getLogLevel(boolean readFromFile) {
@@ -83,6 +70,15 @@ public class TermuxAPIAppSharedPreferences {
     public void setLogLevel(Context context, int logLevel, boolean commitToFile) {
         logLevel = Logger.setLogLevel(context, logLevel);
         SharedPreferenceUtils.setInt(mSharedPreferences, TERMUX_API_APP.KEY_LOG_LEVEL, logLevel, commitToFile);
+    }
+
+
+    public int getLastPendingIntentRequestCode() {
+        return SharedPreferenceUtils.getInt(mSharedPreferences, TERMUX_API_APP.KEY_LAST_PENDING_INTENT_REQUEST_CODE, TERMUX_API_APP.DEFAULT_VALUE_KEY_LAST_PENDING_INTENT_REQUEST_CODE);
+    }
+
+    public void setLastPendingIntentRequestCode(int lastPendingIntentRequestCode) {
+        SharedPreferenceUtils.setInt(mSharedPreferences, TERMUX_API_APP.KEY_LAST_PENDING_INTENT_REQUEST_CODE, lastPendingIntentRequestCode, true);
     }
 
 }
