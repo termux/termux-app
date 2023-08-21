@@ -33,10 +33,10 @@ import com.termux.app.api.file.FileReceiverActivity;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
-import com.termux.app.voice.NotificationAnnouncerService;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
+import com.termux.shared.crash.CrashHandler;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
@@ -280,9 +280,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
 
-        if (!hasNotificationPermission()) {
-            startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
-        }
     }
 
     @Override
@@ -966,6 +963,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     case TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH:
                         Logger.logDebug(LOG_TAG, "Received intent to notify app crash");
                         TermuxCrashUtils.notifyAppCrashFromCrashLogFile(context, LOG_TAG);
+                        context.startActivity(new Intent(context, TermuxActivity.class));
                         return;
                     case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
                         Logger.logDebug(LOG_TAG, "Received intent to reload styling");
@@ -1026,13 +1024,4 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return intent;
     }
 
-    public boolean hasNotificationPermission() {
-        String theList = android.provider.Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
-        String[] theListList = theList.split(":");
-        String me = (new ComponentName(this, NotificationAnnouncerService.class)).flattenToString();
-        for ( String next : theListList ) {
-            if ( me.equals(next) ) return true;
-        }
-        return false;
-    }
 }
