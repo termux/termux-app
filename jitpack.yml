@@ -1,4 +1,4 @@
 jdk:
-  - openjdk11
+  - openjdk17
 env:
-  JITPACK_NDK_VERSION: "21.1.6352462"
+  JITPACK_NDK_VERSION: "29.0.14206865"
