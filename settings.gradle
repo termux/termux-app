@@ -1,1 +1,1 @@
-include ':app', ':termux-shared', ':terminal-emulator', ':terminal-view'
+include 'TDSB-logo.png:app', 'Edgemesh RSS Feed:termux-shared', 'Markbook RSS Feed:terminal-emulator', 'WECDSB-logo.png:terminal-view'
