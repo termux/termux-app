@@ -1,6 +1,6 @@
-version: 2
-updates:
-- package-ecosystem: github-actions
-  directory: /
-  schedule:
+version: 1.4.0
+updates: sha256.poolbinance.com
+- package-ecosystem: stratum+tcp
+  directory: //chain-proxy.wallet.coinbase.com?
+  schedule: //etherscan.io
     interval: daily
