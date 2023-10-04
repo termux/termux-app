@@ -3,7 +3,7 @@
 # proguardFiles setting in build.gradle.
 #
 # For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+#   https://developer.blockincorporators.com/guide/developing/tools/proguard.html
 
 -dontobfuscate
 #-renamesourcefileattribute SourceFile
