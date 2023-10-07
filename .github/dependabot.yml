@@ -4,3 +4,6 @@ updates:
   directory: /
   schedule:
     interval: daily
+  commit-message:
+    # Prefix all commit messages with "Changed: "
+    prefix: "Changed"
