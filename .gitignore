@@ -24,6 +24,10 @@ local.properties
 .idea/
 *.iml
 
+# Vim
+*.swo
+*.swp
+
 # OS-specific files
 .DS_Store
 .DS_Store?
