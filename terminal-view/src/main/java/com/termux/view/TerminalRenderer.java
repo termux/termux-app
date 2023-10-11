@@ -55,7 +55,8 @@ public final class TerminalRenderer {
 
     /** Render the terminal to a canvas with at a specified row scroll, and an optional rectangular selection. */
     public final void render(TerminalEmulator mEmulator, Canvas canvas, int topRow,
-                             int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
+                             int selectionY1, int selectionY2, int selectionX1, int selectionX2,
+                             CharSequence imeBuffer) {
         final boolean reverseVideo = mEmulator.isReverseVideo();
         final int endRow = topRow + mEmulator.mRows;
         final int columns = mEmulator.mColumns;
@@ -124,7 +125,8 @@ public final class TerminalRenderer {
                         }
                         drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun,
                             lastRunStartIndex, charsSinceLastRun, measuredWidthForRun,
-                            cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection);
+                            cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection,
+                            imeBuffer, columns);
                     }
                     measuredWidthForRun = 0.f;
                     lastRunStyle = style;
@@ -152,13 +154,15 @@ public final class TerminalRenderer {
                 invertCursorTextColor = true;
             }
             drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun, lastRunStartIndex, charsSinceLastRun,
-                measuredWidthForRun, cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection);
+                measuredWidthForRun, cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection,
+                imeBuffer, columns);
         }
     }
 
     private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y, int startColumn, int runWidthColumns,
                              int startCharIndex, int runWidthChars, float mes, int cursor, int cursorStyle,
-                             long textStyle, boolean reverseVideo) {
+                             long textStyle, boolean reverseVideo,
+                             CharSequence imeBuffer, int columns) {
         int foreColor = TextStyle.decodeForeColor(textStyle);
         final int effect = TextStyle.decodeEffect(textStyle);
         int backColor = TextStyle.decodeBackColor(textStyle);
@@ -211,6 +215,29 @@ public final class TerminalRenderer {
             if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.;
             else if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) right -= ((right - left) * 3) / 4.;
             canvas.drawRect(left, y - cursorHeight, right, y, mTextPaint);
+
+            // draw ime buffer
+            final int bufLength = imeBuffer.length();
+            if (bufLength > 0) {
+                final int maxWidth = (int) (columns * mFontWidth - left);
+                if (maxWidth > 0) {
+                    final float[] widths = bufLength > asciiMeasures.length ? new float[bufLength] : asciiMeasures;
+
+                    final int count = mTextPaint.getTextWidths(imeBuffer, 0, bufLength, widths);
+                    int offset = count - 1;
+                    int width = 0;
+                    for (; offset >= 0 && width < maxWidth; offset--) {
+                        width += widths[offset];
+                    }
+                    offset++;
+
+                    canvas.drawRect(left, y - cursorHeight, left + width,
+                        y, mTextPaint);
+
+                    mTextPaint.setColor(foreColor);
+                    canvas.drawText(imeBuffer, offset, bufLength, left, y - mFontLineSpacingAndAscent, mTextPaint);
+                }
+            }
         }
 
         if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
