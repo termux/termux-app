@@ -99,7 +99,6 @@ public final class TerminalView extends View {
     private static final String LOG_TAG = "TerminalView";
 
     private final SpannableStringBuilder imeBuffer = new SpannableStringBuilder("");
-    boolean composing=true;
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
         super(context, attributes);
         mGestureRecognizer = new GestureAndScaleRecognizer(context, new GestureAndScaleRecognizer.Listener() {
@@ -282,7 +281,7 @@ public final class TerminalView extends View {
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        if(composing){
+        if(!mClient.isInputComposingDisabled()){
             outAttrs.imeOptions =
                 EditorInfo.IME_FLAG_NO_EXTRACT_UI |
                     EditorInfo.IME_FLAG_NO_FULLSCREEN |
