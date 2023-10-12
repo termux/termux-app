@@ -1,6 +1,7 @@
 package com.termux.view;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
@@ -125,8 +126,7 @@ public final class TerminalRenderer {
                         }
                         drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun,
                             lastRunStartIndex, charsSinceLastRun, measuredWidthForRun,
-                            cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection,
-                            imeBuffer, columns);
+                            cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection);
                     }
                     measuredWidthForRun = 0.f;
                     lastRunStyle = style;
@@ -154,15 +154,19 @@ public final class TerminalRenderer {
                 invertCursorTextColor = true;
             }
             drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun, lastRunStartIndex, charsSinceLastRun,
-                measuredWidthForRun, cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection,
-                imeBuffer, columns);
+                measuredWidthForRun, cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection);
+
+            if (row == cursorRow) {
+                //ime fore color
+                int imeFore = Color.DKGRAY;
+                drawImeBuffer(canvas, heightOffset, cursorCol, mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR], imeFore, imeBuffer, columns);
+            }
         }
     }
 
     private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y, int startColumn, int runWidthColumns,
                              int startCharIndex, int runWidthChars, float mes, int cursor, int cursorStyle,
-                             long textStyle, boolean reverseVideo,
-                             CharSequence imeBuffer, int columns) {
+                             long textStyle, boolean reverseVideo) {
         int foreColor = TextStyle.decodeForeColor(textStyle);
         final int effect = TextStyle.decodeEffect(textStyle);
         int backColor = TextStyle.decodeBackColor(textStyle);
@@ -215,29 +219,6 @@ public final class TerminalRenderer {
             if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.;
             else if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) right -= ((right - left) * 3) / 4.;
             canvas.drawRect(left, y - cursorHeight, right, y, mTextPaint);
-
-            // draw ime buffer
-            final int bufLength = imeBuffer.length();
-            if (bufLength > 0) {
-                final int maxWidth = (int) (columns * mFontWidth - left);
-                if (maxWidth > 0) {
-                    final float[] widths = bufLength > asciiMeasures.length ? new float[bufLength] : asciiMeasures;
-
-                    final int count = mTextPaint.getTextWidths(imeBuffer, 0, bufLength, widths);
-                    int offset = count - 1;
-                    int width = 0;
-                    for (; offset >= 0 && width < maxWidth; offset--) {
-                        width += widths[offset];
-                    }
-                    offset++;
-
-                    canvas.drawRect(left, y - cursorHeight, left + width,
-                        y, mTextPaint);
-
-                    mTextPaint.setColor(foreColor);
-                    canvas.drawText(imeBuffer, offset, bufLength, left, y - mFontLineSpacingAndAscent, mTextPaint);
-                }
-            }
         }
 
         if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
@@ -264,6 +245,35 @@ public final class TerminalRenderer {
         }
 
         if (savedMatrix) canvas.restore();
+    }
+
+    private void drawImeBuffer(Canvas canvas, float y, int cursorX, int cursorColor, int imeFore, CharSequence imeBuffer, int columns) {
+        // draw ime buffer
+        final int bufLen = imeBuffer.length();
+        if (bufLen > 0) {
+            float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
+
+            final float left = cursorX * mFontWidth;
+            final int maxWidth = (int) (columns * mFontWidth - left);
+            if (maxWidth > 0) {
+                final float[] widths = bufLen > asciiMeasures.length ? new float[bufLen] : asciiMeasures;
+
+                final int count = mTextPaint.getTextWidths(imeBuffer, 0, bufLen, widths);
+                int offset = count - 1;
+                int width = 0;
+                for (; offset >= 0 && width < maxWidth; offset--) {
+                    width += widths[offset];
+                }
+                offset++;
+
+                mTextPaint.setColor(cursorColor);
+                canvas.drawRect(left, y - cursorHeight, left + width,
+                    y, mTextPaint);
+
+                mTextPaint.setColor(imeFore);
+                canvas.drawText(imeBuffer, offset, bufLen, left, y - mFontLineSpacingAndAscent, mTextPaint);
+            }
+        }
     }
 
     public float getFontWidth() {
