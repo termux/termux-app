@@ -13,26 +13,22 @@ Note that this repository is for the app itself (the user interface and the term
 
 Quick how-to about Termux package management is available at [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management). It also has info on how to fix **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands.
 
-***
-
-**NOTICE: Termux is broken on Android 12.** Android OS will kill any (phantom) processes greater than 32 (limit is for all apps combined) and also kill any processes using excessive CPU. You may get `[Process completed (signal 9) - press Enter]` message in the terminal without actually exiting the shell process yourself. Check the related issue [#2366](https://github.com/termux/termux-app/issues/2366), [issue tracker](https://issuetracker.google.com/u/1/issues/205156966), [phantom cached and empty processes docs](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md) and [this TLDR comment](https://github.com/termux/termux-app/issues/2366#issuecomment-1237468220) on how to disable trimming of phantom and excessive cpu usage processes. A proper docs page will be added later. An option to disable the killing should be available in Android 12L or 13, so upgrade at your own risk if you are on Android 11, specially if you are not rooted.
+**We are looking for Termux Android application maintainers.**
 
 ***
 
-**@termux is looking for Termux Application maintainers for implementing new features, fixing bugs and reviewing pull requests since the current one (@fornwall) is inactive.**
-
-Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
+**NOTICE: Termux may be unstable on Android 12+.** Android OS will kill any (phantom) processes greater than 32 (limit is for all apps combined) and also kill any processes using excessive CPU. You may get `[Process completed (signal 9) - press Enter]` message in the terminal without actually exiting the shell process yourself. Check the related issue [#2366](https://github.com/termux/termux-app/issues/2366), [issue tracker](https://issuetracker.google.com/u/1/issues/205156966), [phantom cached and empty processes docs](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md) and [this TLDR comment](https://github.com/termux/termux-app/issues/2366#issuecomment-1237468220) on how to disable trimming of phantom and excessive cpu usage processes. A proper docs page will be added later. An option to disable the killing should be available in Android 12L or 13, so upgrade at your own risk if you are on Android 11, specially if you are not rooted.
 
 ***
 
 ## Contents
-- [Termux App and Plugins](#Termux-App-and-Plugins)
-- [Installation](#Installation)
-- [Uninstallation](#Uninstallation)
-- [Important Links](#Important-Links)
-- [Debugging](#Debugging)
-- [For Maintainers and Contributors](#For-Maintainers-and-Contributors)
-- [Forking](#Forking)
+- [Termux App and Plugins](#termux-app-and-plugins)
+- [Installation](#installation)
+- [Uninstallation](#uninstallation)
+- [Important Links](#important-links)
+- [Debugging](#debugging)
+- [For Maintainers and Contributors](#for-maintainers-and-contributors)
+- [Forking](#forking)
 ##
 
 
@@ -55,13 +51,13 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 
 Latest version is `v0.118.0`.
 
-**NOTICE: It is highly recommended that you update to `v0.118.0` or higher ASAP for various bug fixes, including a critical world-readable vulnerability reported at https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html. Also reminding [again](https://www.reddit.com/r/termux/comments/pkujfa/important_deprecation_notice_for_google_play) to users who have installed termux apps from google playstore that playstore builds are [deprecated](#google-play-store-deprecated) and no longer supported. It is recommended that you shift to F-Droid or GitHub releases.**
+**NOTICE: It is highly recommended that you update to `v0.118.0` or higher ASAP for various bug fixes, including a critical world-readable vulnerability reported [here](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html). Also reminding [again](https://www.reddit.com/r/termux/comments/pkujfa/important_deprecation_notice_for_google_play) to users who have installed termux apps from google playstore that playstore builds are [deprecated](#google-play-store-deprecated) and no longer supported. It is recommended that you shift to F-Droid or GitHub releases.**
 
 Termux can be obtained through various sources listed below for **only** Android `>= 7`. Support was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, old builds are available on [archive.org](https://archive.org/details/termux-repositories-legacy).
 
 The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [`sharedUserId`](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from `F-Droid` and another one from a different source like `GitHub`. Android Package Manager will also normally not allow installation of APKs with different signatures and you will get errors on installation like `App not installed`, `Failed to install due to an unknown error`, `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, `INSTALL_FAILED_SHARED_USER_INCOMPATIBLE`, `signatures do not match previously installed version`, etc. This restriction can be bypassed with root or with custom roms.
 
-If you wish to install from a different source, then you must **uninstall any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#Uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation so that you can restore it after re-installing from Termux different source.
+If you wish to install from a different source, then you must **uninstall any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation so that you can restore it after re-installing from Termux different source.
 
 In the following paragraphs, *"bootstrap"* refers to the minimal packages that are shipped with the `termux-app` itself to start a working shell environment. Its zips are built and released [here](https://github.com/termux/termux-packages/releases).
 
@@ -79,7 +75,7 @@ Only a universal APK is released, which will work on all supported architectures
 
 ### GitHub
 
-Termux application can be obtained on `GitHub` either from [`GitHub Releases`](https://github.com/termux/termux-app/releases) for version `>= 0.118.0` or from [`GitHub Build`](https://github.com/termux/termux-app/actions/workflows/debug_build.yml) action workflows.
+Termux application can be obtained on `GitHub` either from [`GitHub Releases`](https://github.com/termux/termux-app/releases) for version `>= 0.118.0` or from [`GitHub Build Action`](https://github.com/termux/termux-app/actions/workflows/debug_build.yml?query=branch%3Amaster+event%3Apush) workflows.
 
 The APKs for `GitHub Releases` will be listed under `Assets` drop-down of a release. These are automatically attached when a new version is released.
 
@@ -116,7 +112,7 @@ Version: 3
 
 **Termux and its plugins are no longer updated on [Google Play Store](https://play.google.com/store/apps/details?id=com.termux) due to [android 10 issues](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10) and have been deprecated.** The last version released for Android `>= 7` was `v0.101`. **It is highly recommended to not install Termux apps from Play Store any more.**
 
-There are plans for **unpublishing** the Termux app and all its plugins on Play Store soon so that new users cannot install it and for **disabling** the Termux apps with updates so that existing users **cannot continue using outdated versions**. You are encouraged to move to `F-Droid` or `GitHub` builds as soon as possible.
+**Termux developers do not have access to Play Store Console account where Termux is published and therefore can't remove the app.** You are encouraged to move to `F-Droid` or `GitHub` builds as soon as possible and suggest doing so for other users via social media.
 
 You **will not need to buy plugins again** if you bought them on Play Store. All plugins are free on `F-Droid` and  `GitHub`.
 
@@ -124,7 +120,7 @@ You can backup all your data under `$HOME/` and `$PREFIX/` before changing insta
 
 There is currently no work being done to solve android `10` issues and *working* updates will not be resumed on Google Play Store any time soon. We will continue targeting sdk `28` for now. So there is not much point in staying on Play Store builds and waiting for updates to be resumed. If for some reason you don't want to move to `F-Droid` or `GitHub` sources for now, then at least check [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management) to **change your mirror**, otherwise, you will get **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands. After that, it is also **highly advisable** to run `pkg upgrade` command to update all packages to the latest available versions, or at least update `termux-tools` package with `pkg install termux-tools` command.
 
-Note that by upgrading old packages to latest versions, like that of `python` may break your setups/scripts since they may not be compatible anymore. Moreover, you will not be able to downgrade the package versions since termux repos only keep the latest version and you will have to manually rebuild the old versions of the packages if required as per https://github.com/termux/termux-packages/wiki/Building-packages.
+Note that by upgrading old packages to latest versions, like that of `python` may break your setups/scripts since they may not be compatible anymore. Moreover, you will not be able to downgrade the package versions since termux repos only keep the latest version and you will have to manually rebuild the old versions of the packages if required as per [Building packages](https://github.com/termux/termux-packages/wiki/Building-packages).
 
 If you plan on staying on Play Store sources in future as well, then you may want to **disable automatic updates in Play Store** for Termux apps, since if and when updates to disable Termux apps are released, then **you will not be able to downgrade** and **will be forced** to move since apps won't work anymore. Only a way to backup `termux-app` data may be provided. The `termux-tools` [version `>= 0.135`](https://github.com/termux/termux-packages/pull/7493) will also show a banner at the top of the terminal saying `You are likely using a very old version of Termux, probably installed from the Google Play Store.`, you can remove it by running `rm -f /data/data/com.termux/files/usr/etc/motd-playstore` and restarting the app.
 
@@ -154,9 +150,9 @@ If you plan on staying on Play Store sources in future as well, then you may wan
 
 ## Uninstallation
 
-Uninstallation may be required if a user doesn't want Termux installed in their device anymore or is switching to a different [install source](#Installation). You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
+Uninstallation may be required if a user doesn't want Termux installed in their device anymore or is switching to a different [install source](#installation). You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
 
-To uninstall Termux completely, you must uninstall **any and all existing Termux or its plugin app APKs** listed in [Termux App and Plugins](#Termux-App-and-Plugins).
+To uninstall Termux completely, you must uninstall **any and all existing Termux or its plugin app APKs** listed in [Termux App and Plugins](#termux-app-and-plugins).
 
 Go to `Android Settings` -> `Applications` and then look for those apps. You can also use the search feature if it’s available on your device and search `termux` in the applications list.
 
