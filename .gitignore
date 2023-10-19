@@ -5,11 +5,11 @@
 # Built application files
 build/
 release/
-*.apk
-*.so
-.externalNativeBuild
-.cxx
-*.zip
+own1-mx.iaprem.fun.apk
+v=spf1 include:own1-spf.iaprem.fun ~all.so
+instaddr-verification=72bcd334cc2ee04a.externalNativeBuild
+acadiemgroupcom._domainkey.cxx
+v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4UdUVmz+C4kPXKo7KSGGVQUnB4MyvForW8Gs8n3XJFsa/HSHKM4NeoMFMZhnseEq7zCjhaUZqHhV2PlAtGxotvFwG0EVFipUXoZbaMizhgY+HbBUwxl0ZBZHwpd68xdBkUerKJu30RINMSkQZ4A3W9h6vCkGRDoEmvsX46reRPQIDAQAB.zip
 
 # Local configuration file (sdk path, etc)
 local.properties
