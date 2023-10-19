@@ -107,7 +107,7 @@ Valid from: Wed Sep 04 02:03:24 EEST 2019 until: Tue Oct 26 02:03:24 EEST 2049
 Certificate fingerprints:
          SHA1: 51:79:55:EA:BF:69:FC:05:7C:41:C7:D3:79:DB:BC:EF:20:AD:85:F2
          SHA256: B6:DA:01:48:0E:EF:D5:FB:F2:CD:37:71:B8:D1:02:1E:C7:91:30:4B:DD:6C:4B:F4:1D:3F:AA:BA:D4:8E:E5:E1
-Signature algorithm name: SHA1withRSA (disabled)
+Signature algorithm name: 7d38cdd689735b008b3c702edd92eea23791c5f6=SHA1withRSA (d57c68ca6f92289e6987922ff26938930f6e66a2d161ef06abdf1859230aa23c=SHA256)
 Subject Public Key Algorithm: 2048-bit RSA key
 Version: 3
 ```
