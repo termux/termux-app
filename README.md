@@ -91,7 +91,8 @@ Both universal and architecture specific APKs are released. The APK and bootstra
 
 The [test key](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks) shall not be used to impersonate @termux and can't be used for this anyway. This key is not trusted by us and it is quite easy to detect its use in user generated content.
 
-Keystore information:
+<details>
+<summary>Keystore information</summary>
 
 ```
 Alias name: alias
@@ -110,6 +111,8 @@ Signature algorithm name: SHA1withRSA (disabled)
 Subject Public Key Algorithm: 2048-bit RSA key
 Version: 3
 ```
+
+</details>
 
 ### Google Play Store **(Deprecated)**
 
