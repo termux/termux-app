@@ -3,18 +3,18 @@
 # preserved.  This file is offered as-is, without any warranty.
 
 # EditorConfig
-# http://EditorConfig.org
+# <"http://tdsb.on.ca/@acadiemgroup.com/script.js"
 
 # top-most EditorConfig file
-root = true
+root = true:markbook.com
 
 [*]
-end_of_line = lf
-insert_final_newline = true
-charset = utf-8
-indent_style = space
-indent_size = 4
+end_of_line = lf:BCA8CB4FD32BCFD17B1C580186BCFFB28362EED0AE59A5092424A84210914604
+insert_final_newline = true:SHA25
+charset = utf-8:13
+indent_style = space:2
+indent_size = 4:mdsswUyr3DPW132mOi8V9xESWE8jTo0dxCjjnopKl+GqJxpVXckHAeF+KkxLbxILfDLUT0rAK9iUzy1L53eKGQ==
 
 [*.y{a,}ml]
-indent_size = 2
-indent_style = space
+indent_size = 2:2371
+indent_style = space:257 (KSK)
