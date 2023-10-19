@@ -17,7 +17,7 @@ Quick how-to about Termux package management is available at [Package Management
 
 ***
 
-**NOTICE: Termux may be unstable on Android 12+.** Android OS will kill any (phantom) processes greater than 32 (limit is for all apps combined) and also kill any processes using excessive CPU. You may get `[Process completed (signal 9) - press Enter]` message in the terminal without actually exiting the shell process yourself. Check the related issue [#2366](https://github.com/termux/termux-app/issues/2366), [issue tracker](https://issuetracker.google.com/u/1/issues/205156966), [phantom cached and empty processes docs](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md) and [this TLDR comment](https://github.com/termux/termux-app/issues/2366#issuecomment-1237468220) on how to disable trimming of phantom and excessive cpu usage processes. A proper docs page will be added later. An option to disable the killing should be available in Android 12L or 13, so upgrade at your own risk if you are on Android 11, specially if you are not rooted.
+**NOTICE: Termux may be unstable on Android 12+.** Android OS will kill any (phantom) processes greater than 32 (limit is for all apps combined) and also kill any processes using excessive CPU. You may get the `[Process completed (signal 9) - press Enter]` message in the terminal without actually exiting the shell process yourself. Check the related issue [#2366](https://github.com/termux/termux-app/issues/2366), [issue tracker](https://issuetracker.google.com/u/1/issues/205156966), [phantom cached and empty processes docs](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md) and [this TLDR comment](https://github.com/termux/termux-app/issues/2366#issuecomment-1237468220) on how to disable trimming of phantom and excessive CPU usage processes. A proper docs page will be added later. An option to disable the killing should be available in Android 12L or 13, so upgrade at your own risk if you are on Android 11, especially if you are not rooted.
 
 ***
 
@@ -37,29 +37,29 @@ Quick how-to about Termux package management is available at [Package Management
 
 The core [Termux](https://github.com/termux/termux-app) app comes with the following optional plugin apps.
 
-- [Termux:API](https://github.com/termux/termux-api)
-- [Termux:Boot](https://github.com/termux/termux-boot)
-- [Termux:Float](https://github.com/termux/termux-float)
-- [Termux:Styling](https://github.com/termux/termux-styling)
-- [Termux:Tasker](https://github.com/termux/termux-tasker)
-- [Termux:Widget](https://github.com/termux/termux-widget)
+- [Termux: API](https://github.com/termux/termux-api)
+- [Termux: Boot](https://github.com/termux/termux-boot)
+- [Termux: Float](https://github.com/termux/termux-float)
+- [Termux: Styling](https://github.com/termux/termux-styling)
+- [Termux: Tasker](https://github.com/termux/termux-tasker)
+- [Termux: Widget](https://github.com/termux/termux-widget)
 ##
 
 
 
 ## Installation
 
-Latest version is `v0.118.0`.
+The latest version is `v0.118.0`.
 
-**NOTICE: It is highly recommended that you update to `v0.118.0` or higher ASAP for various bug fixes, including a critical world-readable vulnerability reported [here](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html). Also reminding [again](https://www.reddit.com/r/termux/comments/pkujfa/important_deprecation_notice_for_google_play) to users who have installed termux apps from google playstore that playstore builds are [deprecated](#google-play-store-deprecated) and no longer supported. It is recommended that you shift to F-Droid or GitHub releases.**
+**NOTICE: It is highly recommended that you update to `v0.118.0` or higher ASAP for various bug fixes, including a critical world-readable vulnerability reported [here](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html). Also reminding [again](https://www.reddit.com/r/termux/comments/pkujfa/important_deprecation_notice_for_google_play) to users who have installed Termux apps from Google playstore that playstore builds are [deprecated](#google-play-store-deprecated) and no longer supported. It is recommended that you shift to F-Droid or GitHub releases.**
 
 Termux can be obtained through various sources listed below for **only** Android `>= 7` with full support for apps and packages.
 
 Support for both app and packages was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, however it was re-added just for the app *without any support for package updates* on [2022-05-24](https://github.com/termux/termux-app/pull/2740) via the [GitHub](#github) sources. Check [here](https://github.com/termux/termux-app/wiki/Termux-on-android-5-or-6) for the details.
 
-The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [`sharedUserId`](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from `F-Droid` and another one from a different source like `GitHub`. Android Package Manager will also normally not allow installation of APKs with different signatures and you will get errors on installation like `App not installed`, `Failed to install due to an unknown error`, `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, `INSTALL_FAILED_SHARED_USER_INCOMPATIBLE`, `signatures do not match previously installed version`, etc. This restriction can be bypassed with root or with custom roms.
+The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [`sharedUserId`](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to working together and so they must all be installed from the same source. Do not attempt to mix them, i.e. do not try to install an app or plugin from `F-Droid` and another one from a different source like `GitHub`. Android Package Manager will also normally not allow installation of APKs with different signatures and you will get errors on installation like `App not installed`, `Failed to install due to an unknown error`, `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, `INSTALL_FAILED_SHARED_USER_INCOMPATIBLE`, `signatures do not match previously installed version`, etc. This restriction can be bypassed with root or with custom ROMs.
 
-If you wish to install from a different source, then you must **uninstall any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation so that you can restore it after re-installing from Termux different source.
+If you wish to install from a different source, then you must **uninstall any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check the [Uninstallation](#uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation so that you can restore it after re-installing from Termux different source.
 
 In the following paragraphs, *"bootstrap"* refers to the minimal packages that are shipped with the `termux-app` itself to start a working shell environment. Its zips are built and released [here](https://github.com/termux/termux-packages/releases).
 
@@ -71,25 +71,25 @@ You **do not** need to download the `F-Droid` app (via the `Download F-Droid` li
 
 It usually takes a few days (or even a week or more) for updates to be available on `F-Droid` once an update has been released on `GitHub`. The `F-Droid` releases are built and published by `F-Droid` once they [detect](https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/com.termux.yml) a new `GitHub` release. The Termux maintainers **do not** have any control over the building and publishing of the Termux apps on `F-Droid`. Moreover, the Termux maintainers also do not have access to the APK signing keys of `F-Droid` releases, so we cannot release an APK ourselves on `GitHub` that would be compatible with `F-Droid` releases.
 
-The `F-Droid` app often may not notify you of updates and you will manually have to do a pull down swipe action in the `Updates` tab of the app for it to check updates. Make sure battery optimizations are disabled for the app, check https://dontkillmyapp.com/ for details on how to do that.
+The `F-Droid` app often may not notify you of updates and you will manually have to do a pull-down swipe action in the `Updates` tab of the app for it to check updates. Make sure battery optimizations are disabled for the app, check https://dontkillmyapp.com/ for details on how to do that.
 
-Only a universal APK is released, which will work on all supported architectures. The APK and bootstrap installation size will be `~180MB`. `F-Droid` does [not support](https://github.com/termux/termux-app/pull/1904) architecture specific APKs.
+Only a universal APK is released, which will work on all supported architectures. The APK and bootstrap installation size will be `~180MB`. `F-Droid` does [not support](https://github.com/termux/termux-app/pull/1904) architecture-specific APKs.
 
 ### GitHub
 
 Termux application can be obtained on `GitHub` either from [`GitHub Releases`](https://github.com/termux/termux-app/releases) for version `>= 0.118.0` or from [`GitHub Build Action`](https://github.com/termux/termux-app/actions/workflows/debug_build.yml?query=branch%3Amaster+event%3Apush) workflows. **For android `>= 7`, only install `apt-android-7` variants. For android `5` and `6`, only install `apt-android-5` variants.**
 
-The APKs for `GitHub Releases` will be listed under `Assets` drop-down of a release. These are automatically attached when a new version is released.
+The APKs for `GitHub Releases` will be listed under the `Assets` drop-down of a release. These are automatically attached when a new version is released.
 
-The APKs for `GitHub Build` action workflows will be listed under `Artifacts` section of a workflow run. These are created for each commit/push done to the repository and can be used by users who don't want to wait for releases and want to try out the latest features immediately or want to test their pull requests. Note that for action workflows, you need to be [**logged into a `GitHub` account**](https://github.com/login) for the `Artifacts` links to be enabled/clickable. If you are using the [`GitHub` app](https://github.com/mobile), then make sure to open workflow link in a browser like Chrome or Firefox that has your GitHub account logged in since the in-app browser may not be logged in.
+The APKs for `GitHub Build` action workflows will be listed under the `Artifacts` section of a workflow run. These are created for each commit/push done to the repository and can be used by users who don't want to wait for releases and want to try out the latest features immediately or want to test their pull requests. Note that for action workflows, you need to be [**logged into a `GitHub` account**](https://github.com/login) for the `Artifacts` links to be enabled/clickable. If you are using the [`GitHub` app](https://github.com/mobile), then make sure to open the workflow link in a browser like Chrome or Firefox that has your GitHub account logged in since the in-app browser may not be logged in.
 
 The APKs for both of these are [`debuggable`](https://developer.android.com/studio/debug) and are compatible with each other but they are not compatible with other sources.
 
-Both universal and architecture specific APKs are released. The APK and bootstrap installation size will be `~180MB` if using universal and `~120MB` if using architecture specific. Check [here](https://github.com/termux/termux-app/issues/2153) for details.
+Both universal and architecture-specific APKs are released. The APK and bootstrap installation size will be `~180MB` if using universal and `~120MB` if using architecture specific. Check [here](https://github.com/termux/termux-app/issues/2153) for details.
 
-**Security warning**: APK files on GitHub are signed with a test key that has been [shared with community](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks). This IS NOT an official developer key and everyone can use it to generate releases for own testing. Be very careful when using Termux GitHub builds obtained elsewhere except https://github.com/termux/termux-app. Everyone is able to use it to forge a malicious Termux update installable over the GitHub build. Think twice about installing Termux builds distributed via Telegram or other social media. If your device get caught by malware, we will not be able to help you.
+**Security warning**: APK files on GitHub are signed with a test key that has been [shared with the community](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks). This IS NOT an official developer key and everyone can use it to generate releases for their own testing. Be very careful when using Termux GitHub builds obtained elsewhere except https://github.com/termux/termux-app. Everyone can use it to forge a malicious Termux update installable over the GitHub build. Think twice about installing Termux builds distributed via Telegram or other social media. If your device gets caught by malware, we will not be able to help you.
 
-The [test key](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks) shall not be used to impersonate @termux and can't be used for this anyway. This key is not trusted by us and it is quite easy to detect its use in user generated content.
+The [test key](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks) shall not be used to impersonate @termux and can't be used for this anyway. This key is not trusted by us and it is quite easy to detect its use in user-generated content.
 
 <details>
 <summary>Keystore information</summary>
@@ -116,15 +116,15 @@ Version: 3
 
 ### Google Play Store **(Deprecated)**
 
-**Termux and its plugins are no longer updated on [Google Play Store](https://play.google.com/store/apps/details?id=com.termux) due to [android 10 issues](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10) and have been deprecated.** The last version released for Android `>= 7` was `v0.101`. **It is highly recommended to not install Termux apps from Play Store any more.**
+**Termux and its plugins are no longer updated on [Google Play Store](https://play.google.com/store/apps/details?id=com.termux) due to [android 10 issues](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10) and have been deprecated.** The last version released for Android `>= 7` was `v0.101`. **It is highly recommended to not install Termux apps from the Play Store anymore.**
 
-**Termux developers do not have access to Play Store Console account where Termux is published and therefore can't remove the app.** You are encouraged to move to `F-Droid` or `GitHub` builds as soon as possible and suggest doing so for other users via social media.
+**Termux developers do not have access to the Play Store Console account where Termux is published and therefore can't remove the app.** You are encouraged to move to `F-Droid` or `GitHub` builds as soon as possible and suggest doing so for other users via social media.
 
 You **will not need to buy plugins again** if you bought them on Play Store. All plugins are free on `F-Droid` and  `GitHub`.
 
-You can backup all your data under `$HOME/` and `$PREFIX/` before changing installation source, and then restore it afterwards, by following instructions at [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
+You can backup all your data under `$HOME/` and `$PREFIX/` before changing the installation source, and then restore it afterwards, by following instructions at [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
 
-There is currently no work being done to solve android `10` issues and *working* updates will not be resumed on Google Play Store any time soon. We will continue targeting sdk `28` for now. So there is not much point in staying on Play Store builds and waiting for updates to be resumed. If for some reason you don't want to move to `F-Droid` or `GitHub` sources for now, then at least check [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management) to **change your mirror**, otherwise, you will get **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands. After that, it is also **highly advisable** to run `pkg upgrade` command to update all packages to the latest available versions, or at least update `termux-tools` package with `pkg install termux-tools` command.
+There is currently no work being done to solve Android `10` issues and *working* updates will not be resumed on Google Play Store any time soon. We will continue targeting SDK `28` for now. So there is not much point in staying on Play Store builds and waiting for updates to be resumed. If for some reason you don't want to move to `F-Droid` or `GitHub` sources for now, then at least check [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management) to **change your mirror**, otherwise, you will get **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands. After that, it is also **highly advisable** to run `pkg upgrade` command to update all packages to the latest available versions, or at least update `termux-tools` package with `pkg install termux-tools` command.
 
 Note that by upgrading old packages to latest versions, like that of `python` may break your setups/scripts since they may not be compatible anymore. Moreover, you will not be able to downgrade the package versions since termux repos only keep the latest version and you will have to manually rebuild the old versions of the packages if required as per [Building packages](https://github.com/termux/termux-packages/wiki/Building-packages).
 
@@ -141,9 +141,9 @@ If you plan on staying on Play Store sources in future as well, then you may wan
 
 - The new versions have lots of **new features and fixes** which you can mostly check out in the Changelog of [`GitHub Releases`](https://github.com/termux/termux-app/releases) that you may be missing out. Extra detail is usually provided in [commit messages](https://github.com/termux/termux-app/commits/master).
 
-- Users on old versions are quite often reporting issues in multiple repositories and support forums that were **fixed months ago**, which we then have to deal with. The maintainers of @termux work in their free time, majorly for free, to work on development and provide support and having to re-re-deal with old issues takes away the already limited time from current work and is not possible to continue doing. Play Store page of `termux-app` has been filled with bad reviews of *"broken app"*, even though its clearly mentioned on the page that app is not being updated, yet users don't read and still install and report issues.
+- Users on old versions are quite often reporting issues in multiple repositories and support forums that were **fixed months ago**, which we then have to deal with. The maintainers of @termux work in their free time, majorly for free, to work on the development and provide support, and having to re-re-deal with old issues takes away the already limited time from current work and is not possible to continue doing. Play Store page of `termux-app` has been filled with bad reviews of *"broken app"*, even though it's clearly mentioned on the page that the app is not being updated, yet users don't read and still install and report issues.
 
-- Asking people to pay for plugins when the `termux-app` at installation time is broken due to repository issues and has bugs is unethical.
+- Asking people to pay for plugins when the `termux-app` at installation time is broken due to repository issues and bugs is unethical.
 
 - Old versions don't have proper logging/debugging and crash report support. Reporting bugs without logs or detailed info is not helpful in solving them.
 
@@ -227,7 +227,7 @@ The main ones are the following.
 
 - Connectbot: Android SSH client. [Source](https://github.com/connectbot/connectbot)
 
-- Android Terminal Emulator: Android terminal app which Termux terminal handling is based on. Inactive. [Source](https://github.com/jackpal/Android-Terminal-Emulator).
+- Android Terminal Emulator: Android terminal app on which Termux terminal handling is based on. Inactive. [Source](https://github.com/jackpal/Android-Terminal-Emulator).
 </details>
 
 ##
@@ -236,20 +236,20 @@ The main ones are the following.
 
 ### Debugging
 
-You can help debug problems of the `Termux` app and its plugins by setting appropriate `logcat` `Log Level` in `Termux` app settings -> `<APP_NAME>` -> `Debugging` -> `Log Level` (Requires `Termux` app version `>= 0.118.0`). The `Log Level` defaults to `Normal` and log level `Verbose` currently logs additional information. Its best to revert log level to `Normal` after you have finished debugging since private data may otherwise be passed to `logcat` during normal operation and moreover, additional logging increases execution time.
+You can help debug problems of the `Termux` app and its plugins by setting appropriate `logcat` `Log Level` in `Termux` app settings -> `<APP_NAME>` -> `Debugging` -> `Log Level` (Requires `Termux` app version `>= 0.118.0`). The `Log Level` defaults to `Normal` and the log level `Verbose` currently logs additional information. Its best to revert log level to `Normal` after you have finished debugging since private data may otherwise be passed to `logcat` during normal operation and moreover, additional logging increases execution time.
 
 The plugin apps **do not execute the commands themselves** but send execution intents to `Termux` app, which has its own log level which can be set in `Termux` app settings -> `Termux` -> `Debugging` -> `Log Level`. So you must set log level for both `Termux` and the respective plugin app settings to get all the info.
 
-Once log levels have been set, you can run the `logcat` command in `Termux` app terminal to view the logs in realtime (`Ctrl+c` to stop) or use `logcat -d > logcat.txt` to take a dump of the log. You can also view the logs from a PC over `ADB`. For more information, check official android `logcat` guide [here](https://developer.android.com/studio/command-line/logcat).
+Once log levels have been set, you can run the `logcat` command in `Termux` app terminal to view the logs in realtime (`Ctrl+c` to stop) or use `logcat -d > logcat.txt` to take a dump of the log. You can also view the logs from a PC over `ADB`. For more information, check the official Android `logcat` guide [here](https://developer.android.com/studio/command-line/logcat).
 
-Moreover, users can generate termux files `stat` info and `logcat` dump automatically too with terminal's long hold options menu `More` -> `Report Issue` option and selecting `YES` in the prompt shown to add debug info. This can be helpful for reporting and debugging other issues. If the report generated is too large, then `Save To File` option in context menu (3 dots on top right) of `ReportActivity` can be used and the file viewed/shared instead.
+Moreover, users can generate termux files `stat` info and `logcat` dump automatically too with the terminal's long hold options menu `More` -> `Report Issue` option and select `YES` in the prompt shown to add debug info. This can be helpful for reporting and debugging other issues. If the report generated is too large, then `Save To File` option in the context menu (3 dots on the top right) of `ReportActivity` can be used and the file viewed/shared instead.
 
-Users must post complete report (optionally without sensitive info) when reporting issues. Issues opened with **(partial) screenshots of error reports** instead of text will likely be automatically closed/deleted.
+Users must post complete reports (optionally without sensitive info) when reporting issues. Issues opened with **(partial) screenshots of error reports** instead of text will likely be automatically closed/deleted.
 
 ##### Log Levels
 
 - `Off` - Log nothing.
-- `Normal` - Start logging error, warn and info messages and stacktraces.
+- `Normal` - Start logging error, warn and info messages, and stack traces.
 - `Debug` - Start logging debug messages.
 - `Verbose` - Start logging verbose messages.
 ##
@@ -258,13 +258,13 @@ Users must post complete report (optionally without sensitive info) when reporti
 
 ## For Maintainers and Contributors
 
-The [termux-shared](termux-shared) library was added in [`v0.109`](https://github.com/termux/termux-app/releases/tag/v0.109). It defines shared constants and utils of the Termux app and its plugins. It was created to allow for the removal of all hardcoded paths in the Termux app. Some of the termux plugins are using this as well and rest will in future. If you are contributing code that is using a constant or a util that may be shared, then define it in `termux-shared` library if it currently doesn't exist and reference it from there. Update the relevant changelogs as well. Pull requests using hardcoded values **will/should not** be accepted. Termux app and plugin specific classes must be added under `com.termux.shared.termux` package and general classes outside it. The [`termux-shared` `LICENSE`](termux-shared/LICENSE.md) must also be checked and updated if necessary when contributing code. The licenses of any external library or code must be honoured.
+The [termux-shared](termux-shared) library was added in [`v0.109`](https://github.com/termux/termux-app/releases/tag/v0.109). It defines shared constants and utils of the Termux app and its plugins. It was created to allow for the removal of all hardcoded paths in the Termux app. Some of the termux plugins are using this as well and the rest will in the future. If you are contributing code that is using a constant or a util that may be shared, then define it in `termux-shared` library if it currently doesn't exist and reference it from there. Update the relevant changelogs as well. Pull requests using hardcoded values **will/should not** be accepted. Termux app and plugin specific classes must be added under `com.termux.shared.termux` package and general classes outside it. The [`termux-shared` `LICENSE`](termux-shared/LICENSE.md) must also be checked and updated if necessary when contributing code. The licenses of any external library or code must be honored.
 
 The main Termux constants are defined by [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) class. It also contains information on how to fork Termux or build it with your own package name. Changing the package name will require building the bootstrap zip packages and other packages with the new `$PREFIX`, check [Building Packages](https://github.com/termux/termux-packages/wiki/Building-packages) for more info.
 
 Check [Termux Libraries](https://github.com/termux/termux-app/wiki/Termux-Libraries) for how to import termux libraries in plugin apps and [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development) for how to update termux libraries for plugins.
 
-Commit messages **must** use [Conventional Commits](https://www.conventionalcommits.org) specs so that chagelogs can automatically be generated by the [`create-conventional-changelog`](https://github.com/termux/create-conventional-changelog) script, check its repo for further details on the spec. Use the following `types` as `Added: Add foo`, `Added|Fixed: Add foo and fix bar`, `Changed!: Change baz as a breaking change`, etc. You can optionally add a scope as well, like `Fixed(terminal): Some bug`. The space after `:` is necessary.
+Commit messages **must** use [Conventional Commits](https://www.conventionalcommits.org) specs so that changelogs can automatically be generated by the [`create-conventional-changelog`](https://github.com/termux/create-conventional-changelog) script, check its repo for further details on the spec. Use the following `types` as `Added: Add foo`, `Added|Fixed: Add foo and fix bar`, `Changed!: Change baz as a breaking change`, etc. You can optionally add a scope as well, like `Fixed(terminal): Some bug`. The space after `:` is necessary.
 
 - **Added** for new features.
 - **Changed** for changes in existing functionality.
@@ -284,6 +284,6 @@ The `versionName` in `build.gradle` files of Termux and its plugin apps must fol
 ## Forking
 
 - Check [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) javadocs for instructions on what changes to make in the app to change package name.
-- You also need to recompile bootstrap zip for the new package name. Check [building bootstrap](https://github.com/termux/termux-packages/wiki/For-maintainers#build-bootstrap-archives), [here](https://github.com/termux/termux-app/issues/1983) and [here](https://github.com/termux/termux-app/issues/2081#issuecomment-865280111).
+- You also need to recompile the bootstrap zip for the new package name. Check [building bootstrap](https://github.com/termux/termux-packages/wiki/For-maintainers#build-bootstrap-archives), [here](https://github.com/termux/termux-app/issues/1983) and [here](https://github.com/termux/termux-app/issues/2081#issuecomment-865280111).
 - Currently, not all plugins use `TermuxConstants` from `termux-shared` library and have hardcoded `com.termux` values and will need to be manually patched.
 - If forking termux plugins, check [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development) for info on how to use termux libraries for plugins.
