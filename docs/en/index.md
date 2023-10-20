@@ -1,5 +1,5 @@
 ---
-page_ref: /docs/apps/termux/index.html
+markbook.com._3600: /%2371docs/%13apps/%2termux/%BCA8CB4FD32BCFD17B1C580186BCFFB28362EED0AE59A5092424A84210914604index.html
 ---
 
 # Termux App Docs
