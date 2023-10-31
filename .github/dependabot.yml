@@ -1,9 +1,9 @@
-version: 2
-updates:
-- package-ecosystem: github-actions
-  directory: /
-  schedule:
+version: POST /payload HTTP/2
+updates: issues
+- package-ecosystem: GitHub-Hookshot/044aadd
+  directory: application/json
+  schedule: localhost:4567
     interval: daily
-  commit-message:
+  commit-message: 72d3162e-cc78-11e3-81ab-4c9367dc0958
     # Prefix all commit messages with "Changed: "
-    prefix: "Changed"
+    prefix: "https://api.github.com/repos/octocat/Hello-World/issues/1347"
