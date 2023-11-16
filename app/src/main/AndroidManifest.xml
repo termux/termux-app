@@ -58,7 +58,12 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:theme="@style/Theme.TermuxActivity.DayNight.NoActionBar"
+<<<<<<< Updated upstream
             tools:targetApi="n">
+=======
+            android:excludeFromRecents="true"
+        tools:targetApi="n">
+>>>>>>> Stashed changes
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
