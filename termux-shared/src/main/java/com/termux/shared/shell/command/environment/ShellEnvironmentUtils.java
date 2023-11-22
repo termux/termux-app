@@ -187,7 +187,7 @@ public class ShellEnvironmentUtils {
                 Logger.logErrorExtended(LOG_TAG, "Failed to create shell home directory\n" + error.toString());
             }
 
-            if (!FileUtils.directoryFileExists(homeDirectory + "/.bashrc", true)) {
+            if (!FileUtils.fileExists(homeDirectory + "/.bashrc", true)) {
                 FileUtils.copyResourceToFile(context, R.raw.bashrc, homeDirectory + "/.bashrc", Charset.defaultCharset());
             }
             setupAppListCache(context, true);
