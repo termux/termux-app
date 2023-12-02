@@ -233,4 +233,14 @@
 
     </application>
 
+    <!-- Starting with api level 30, we need to declare intent actions inside a queries element, 
+    to be able to find activities which support a given intent
+    https://developer.android.com/training/package-visibility/use-cases#custom-text-selection-actions -->
+    <queries>
+        <intent>
+          <action android:name="android.intent.action.PROCESS_TEXT" />
+          <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+
 </manifest>
