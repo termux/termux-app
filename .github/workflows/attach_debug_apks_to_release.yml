@@ -50,7 +50,7 @@ jobs:
             fi
           done
       - name: Upload APKs to GitHub artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.package_variant }}
           path: ./app/build/outputs/apk/debug/*.apk
