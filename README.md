@@ -13,26 +13,22 @@ Note that this repository is for the app itself (the user interface and the term
 
 Quick how-to about Termux package management is available at [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management). It also has info on how to fix **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands.
 
+**We are looking for Termux Android application maintainers.**
+
 ***
 
 **NOTICE: Termux may be unstable on Android 12+.** Android OS will kill any (phantom) processes greater than 32 (limit is for all apps combined) and also kill any processes using excessive CPU. You may get `[Process completed (signal 9) - press Enter]` message in the terminal without actually exiting the shell process yourself. Check the related issue [#2366](https://github.com/termux/termux-app/issues/2366), [issue tracker](https://issuetracker.google.com/u/1/issues/205156966), [phantom cached and empty processes docs](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md) and [this TLDR comment](https://github.com/termux/termux-app/issues/2366#issuecomment-1237468220) on how to disable trimming of phantom and excessive cpu usage processes. A proper docs page will be added later. An option to disable the killing should be available in Android 12L or 13, so upgrade at your own risk if you are on Android 11, specially if you are not rooted.
 
 ***
 
-**@termux is looking for Termux Application maintainers for implementing new features, fixing bugs and reviewing pull requests since the current one (@fornwall) is inactive.**
-
-Issue https://github.com/termux/termux-app/issues/1072 needs extra attention.
-
-***
-
 ## Contents
-- [Termux App and Plugins](#Termux-App-and-Plugins)
-- [Installation](#Installation)
-- [Uninstallation](#Uninstallation)
-- [Important Links](#Important-Links)
-- [Debugging](#Debugging)
-- [For Maintainers and Contributors](#For-Maintainers-and-Contributors)
-- [Forking](#Forking)
+- [Termux App and Plugins](#termux-app-and-plugins)
+- [Installation](#installation)
+- [Uninstallation](#uninstallation)
+- [Important Links](#important-links)
+- [Debugging](#debugging)
+- [For Maintainers and Contributors](#for-maintainers-and-contributors)
+- [Forking](#forking)
 ##
 
 
@@ -57,11 +53,13 @@ Latest version is `v0.118.0`.
 
 **NOTICE: It is highly recommended that you update to `v0.118.0` or higher ASAP for various bug fixes, including a critical world-readable vulnerability reported [here](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html). Also reminding [again](https://www.reddit.com/r/termux/comments/pkujfa/important_deprecation_notice_for_google_play) to users who have installed termux apps from google playstore that playstore builds are [deprecated](#google-play-store-deprecated) and no longer supported. It is recommended that you shift to F-Droid or GitHub releases.**
 
-Termux can be obtained through various sources listed below for **only** Android `>= 7`. Support was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, old builds are available on [archive.org](https://archive.org/details/termux-repositories-legacy).
+Termux can be obtained through various sources listed below for **only** Android `>= 7` with full support for apps and packages.
+
+Support for both app and packages was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, however it was re-added just for the app *without any support for package updates* on [2022-05-24](https://github.com/termux/termux-app/pull/2740) via the [GitHub](#github) sources. Check [here](https://github.com/termux/termux-app/wiki/Termux-on-android-5-or-6) for the details.
 
 The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [`sharedUserId`](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from `F-Droid` and another one from a different source like `GitHub`. Android Package Manager will also normally not allow installation of APKs with different signatures and you will get errors on installation like `App not installed`, `Failed to install due to an unknown error`, `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, `INSTALL_FAILED_SHARED_USER_INCOMPATIBLE`, `signatures do not match previously installed version`, etc. This restriction can be bypassed with root or with custom roms.
 
-If you wish to install from a different source, then you must **uninstall any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#Uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation so that you can restore it after re-installing from Termux different source.
+If you wish to install from a different source, then you must **uninstall any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation so that you can restore it after re-installing from Termux different source.
 
 In the following paragraphs, *"bootstrap"* refers to the minimal packages that are shipped with the `termux-app` itself to start a working shell environment. Its zips are built and released [here](https://github.com/termux/termux-packages/releases).
 
@@ -79,7 +77,7 @@ Only a universal APK is released, which will work on all supported architectures
 
 ### GitHub
 
-Termux application can be obtained on `GitHub` either from [`GitHub Releases`](https://github.com/termux/termux-app/releases) for version `>= 0.118.0` or from [`GitHub Build`](https://github.com/termux/termux-app/actions/workflows/debug_build.yml) action workflows.
+Termux application can be obtained on `GitHub` either from [`GitHub Releases`](https://github.com/termux/termux-app/releases) for version `>= 0.118.0` or from [`GitHub Build Action`](https://github.com/termux/termux-app/actions/workflows/debug_build.yml?query=branch%3Amaster+event%3Apush) workflows. **For android `>= 7`, only install `apt-android-7` variants. For android `5` and `6`, only install `apt-android-5` variants.**
 
 The APKs for `GitHub Releases` will be listed under `Assets` drop-down of a release. These are automatically attached when a new version is released.
 
@@ -93,7 +91,9 @@ Both universal and architecture specific APKs are released. The APK and bootstra
 
 The [test key](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks) shall not be used to impersonate @termux and can't be used for this anyway. This key is not trusted by us and it is quite easy to detect its use in user generated content.
 
-Keystore information:
+<details>
+<summary>Keystore information</summary>
+
 ```
 Alias name: alias
 Creation date: Oct 4, 2019
@@ -111,6 +111,8 @@ Signature algorithm name: SHA1withRSA (disabled)
 Subject Public Key Algorithm: 2048-bit RSA key
 Version: 3
 ```
+
+</details>
 
 ### Google Play Store **(Deprecated)**
 
@@ -154,9 +156,9 @@ If you plan on staying on Play Store sources in future as well, then you may wan
 
 ## Uninstallation
 
-Uninstallation may be required if a user doesn't want Termux installed in their device anymore or is switching to a different [install source](#Installation). You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
+Uninstallation may be required if a user doesn't want Termux installed in their device anymore or is switching to a different [install source](#installation). You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
 
-To uninstall Termux completely, you must uninstall **any and all existing Termux or its plugin app APKs** listed in [Termux App and Plugins](#Termux-App-and-Plugins).
+To uninstall Termux completely, you must uninstall **any and all existing Termux or its plugin app APKs** listed in [Termux App and Plugins](#termux-app-and-plugins).
 
 Go to `Android Settings` -> `Applications` and then look for those apps. You can also use the search feature if it’s available on your device and search `termux` in the applications list.
 
@@ -175,7 +177,7 @@ The main ones are the following.
 - [Termux Reddit community](https://reddit.com/r/termux)
 - [Termux User Matrix Channel](https://matrix.to/#/#termux_termux:gitter.im) ([Gitter](https://gitter.im/termux/termux))
 - [Termux Dev Matrix Channel](https://matrix.to/#/#termux_dev:gitter.im) ([Gitter](https://gitter.im/termux/dev))
-- [Termux Twitter](https://twitter.com/termuxdevs)
+- [Termux X (Twitter)](https://twitter.com/termuxdevs)
 - [Termux Support Email](mailto:support@termux.dev)
 
 ### Wikis
@@ -262,7 +264,21 @@ The main Termux constants are defined by [`TermuxConstants`](https://github.com/
 
 Check [Termux Libraries](https://github.com/termux/termux-app/wiki/Termux-Libraries) for how to import termux libraries in plugin apps and [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development) for how to update termux libraries for plugins.
 
-Commit messages **must** use [Conventional Commits](https://www.conventionalcommits.org) specs so that chagelogs can automatically be generated by the [`create-conventional-changelog`](https://github.com/termux/create-conventional-changelog) script, check its repo for further details on the spec. Use the following `types` as `Added: Add foo`, `Added|Fixed: Add foo and fix bar`, `Changed!: Change baz as a breaking change`, etc. You can optionally add a scope as well, like `Fixed(terminal): Some bug`. The space after `:` is necessary.
+The `versionName` in `build.gradle` files of Termux and its plugin apps must follow the [semantic version `2.0.0` spec](https://semver.org/spec/v2.0.0.html) in the format `major.minor.patch(-prerelease)(+buildmetadata)`. When bumping `versionName` in `build.gradle` files and when creating a tag for new releases on GitHub, make sure to include the patch number as well, like `v0.1.0` instead of just `v0.1`. The `build.gradle` files and `attach_debug_apks_to_release` workflow validates the version as well and the build/attachment will fail if `versionName` does not follow the spec.
+
+### Commit Messages Guidelines
+
+Commit messages **must** use the [Conventional Commits](https://www.conventionalcommits.org) spec so that chagelogs as per the [Keep a Changelog](https://github.com/olivierlacan/keep-a-changelog) spec can automatically be generated by the [`create-conventional-changelog`](https://github.com/termux/create-conventional-changelog) script, check its repo for further details on the spec. **The first letter for `type` and `description` must be capital and description should be in the present tense.** The space after the colon `:` is necessary. For a breaking change, add an exclamation mark `!` before the colon `:`, so that it is highlighted in the chagelog automatically.
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Only the `types` listed below must be used exactly as they are used in the changelog headings.** For example, `Added: Add foo`, `Added|Fixed: Add foo and fix bar`, `Changed!: Change baz as a breaking change`, etc. You can optionally add a scope as well, like `Fixed(terminal): Fix some bug`. **Do not use anything else as type, like `add` instead of `Added`, etc.**
 
 - **Added** for new features.
 - **Changed** for changes in existing functionality.
@@ -270,11 +286,6 @@ Commit messages **must** use [Conventional Commits](https://www.conventionalcomm
 - **Removed** for now removed features.
 - **Fixed** for any bug fixes.
 - **Security** in case of vulnerabilities.
-- **Docs** for updating documentation.
-
-Changelogs for releases are generated based on [Keep a Changelog](https://github.com/olivierlacan/keep-a-changelog) specs.
-
-The `versionName` in `build.gradle` files of Termux and its plugin apps must follow the [semantic version `2.0.0` spec](https://semver.org/spec/v2.0.0.html) in the format `major.minor.patch(-prerelease)(+buildmetadata)`. When bumping `versionName` in `build.gradle` files and when creating a tag for new releases on GitHub, make sure to include the patch number as well, like `v0.1.0` instead of just `v0.1`. The `build.gradle` files and `attach_debug_apks_to_release` workflow validates the version as well and the build/attachment will fail if `versionName` does not follow the spec.
 ##
 
 
