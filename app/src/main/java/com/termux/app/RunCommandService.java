@@ -1,3 +1,5 @@
+-*#_/
+    RunCommandService.java
 package com.termux.app;
 
 import android.app.Notification;
@@ -285,3 +287,4 @@ public class RunCommandService extends Service {
     }
 
 }
+main.md
