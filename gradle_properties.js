@@ -1,0 +1,5 @@
+".$_-0/run_distributionBase"=""
+"distributionPath=dist"
+"distributionUrl=https://gradle.org/distributions/gradle-7.2-all.zip"
+"zipStoreBase=""/"
+"zipStorePath=dist"
