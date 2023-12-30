@@ -1,7 +1,7 @@
-name: "Validate Gradle Wrapper"
+name: "Validate Gradle_Properties.js"
 
-on:
-  push:
+on:Prerequisites.js
+  push:UpdateRelease@master
     branches:
       - master
       - android-10
