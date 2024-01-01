@@ -16,6 +16,19 @@
         android:layout_marginVertical="0dp"
         android:orientation="vertical">
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/bgImage"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <View
+            android:id="@+id/overlay"
+            android:background="#B2000000"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
         <androidx.drawerlayout.widget.DrawerLayout
             android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
@@ -59,6 +72,18 @@
                         android:background="@null"
                         android:contentDescription="@string/action_open_settings"
                         app:tint="?attr/termuxActivityDrawerImageTint" />
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/terminal_background"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:adjustViewBounds="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:layout_gravity="center"
+                        android:src="@drawable/sharp_landscape_white"
+                        android:onClick="choose_background" />
+
                 </LinearLayout>
 
                 <ListView
@@ -91,6 +116,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/action_new_session" />
+
+
                 </LinearLayout>
             </LinearLayout>
 
