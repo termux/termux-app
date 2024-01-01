@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.termux.shared.logger.Logger;
 
-import org.lsposed.hiddenapibypass.HiddenApiBypass;
+import org.chickenhook.restrictionbypass.Unseal;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -22,14 +22,14 @@ public class ReflectionUtils {
 
     /**
      * Bypass android hidden API reflection restrictions.
-     * https://github.com/LSPosed/AndroidHiddenApiBypass
+     * https://github.com/ChickenHook/RestrictionBypass
      * https://developer.android.com/guide/app-compatibility/restrictions-non-sdk-interfaces
      */
     public static void bypassHiddenAPIReflectionRestrictions() {
         if (!HIDDEN_API_REFLECTION_RESTRICTIONS_BYPASSED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             Logger.logDebug(LOG_TAG, "Bypassing android hidden api reflection restrictions");
             try {
-                HiddenApiBypass.addHiddenApiExemptions("");
+                Unseal.unseal();
             } catch (Throwable t) {
                 Logger.logStackTraceWithMessage(LOG_TAG, "Failed to bypass hidden API reflection restrictions", t);
             }
