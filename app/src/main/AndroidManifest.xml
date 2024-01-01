@@ -36,6 +36,7 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:name=".app.TermuxApplication"
@@ -196,11 +197,13 @@
 
         <service
             android:name=".app.TermuxService"
+            android:foregroundServiceType="specialUse"
             android:exported="false" />
 
         <service
             android:name=".app.RunCommandService"
             android:exported="true"
+            android:foregroundServiceType="specialUse"
             android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND">
             <intent-filter>
                 <action android:name="${TERMUX_PACKAGE_NAME}.RUN_COMMAND" />
