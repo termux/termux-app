@@ -14,6 +14,8 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ActionMode;
@@ -39,6 +41,7 @@ import androidx.annotation.RequiresApi;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
+import com.termux.view.inputmethod.TerminalInputConnection;
 import com.termux.view.textselection.TextSelectionCursorController;
 
 /** View displaying and interacting with a {@link TerminalSession}. */
@@ -95,6 +98,7 @@ public final class TerminalView extends View {
 
     private static final String LOG_TAG = "TerminalView";
 
+    private final SpannableStringBuilder imeBuffer = new SpannableStringBuilder("");
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
         super(context, attributes);
         mGestureRecognizer = new GestureAndScaleRecognizer(context, new GestureAndScaleRecognizer.Listener() {
@@ -221,6 +225,11 @@ public final class TerminalView extends View {
         mScroller = new Scroller(context);
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mAccessibilityEnabled = am.isEnabled();
+
+
+        imeBuffer.setSpan(new ChangeWatcher(this),
+            0, imeBuffer.length(),
+            Spanned.SPAN_INCLUSIVE_INCLUSIVE | (100 << Spanned.SPAN_PRIORITY_SHIFT));
     }
 
 
@@ -265,8 +274,25 @@ public final class TerminalView extends View {
         return true;
     }
 
+
+    public Editable getImeBuffer() {
+        return imeBuffer;
+    }
+
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        if(!mClient.isInputComposingDisabled()){
+            outAttrs.imeOptions =
+                EditorInfo.IME_FLAG_NO_EXTRACT_UI |
+                    EditorInfo.IME_FLAG_NO_FULLSCREEN |
+                    EditorInfo.IME_FLAG_NO_ENTER_ACTION;
+            outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+            outAttrs.hintText = "";
+            outAttrs.initialSelStart = -1;
+            outAttrs.initialSelEnd = -1;
+            outAttrs.initialCapsMode = 0;
+            return new TerminalInputConnection(this);
+        }
         // Ensure that inputType is only set if TerminalView is selected view with the keyboard and
         // an alternate view is not selected, like an EditText. This is necessary if an activity is
         // initially started with the alternate view or if activity is returned to from another app
@@ -975,7 +1001,7 @@ public final class TerminalView extends View {
                 mTextSelectionCursorController.getSelectors(sel);
             }
 
-            mRenderer.render(mEmulator, canvas, mTopRow, sel[0], sel[1], sel[2], sel[3]);
+            mRenderer.render(mEmulator, canvas, mTopRow, sel[0], sel[1], sel[2], sel[3], imeBuffer);
 
             // render the text selection handles
             renderTextSelection();
