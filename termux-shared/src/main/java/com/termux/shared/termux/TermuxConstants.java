@@ -277,6 +277,12 @@ import java.util.List;
  *
  * - 0.52.0 (2022-06-18)
  *      - Added `TERMUX_PREFIX_DIR_IGNORED_SUB_FILES_PATHS_TO_CONSIDER_AS_EMPTY`.
+ *
+ * - 0.53.0 (2022-11-04)
+ *      - Added `TERMUX_BACKGROUND_DIR_PATH`, `TERMUX_BACKGROUND_DIR`,
+ *          `TERMUX_BACKGROUND_IMAGE_PATH`, `TERMUX_BACKGROUND_IMAGE_FILE`,
+ *          `TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH`, `TERMUX_BACKGROUND_IMAGE_PORTRAIT_FILE`,
+ *          `TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH`, and `TERMUX_BACKGROUND_IMAGE_LANDSCAPE_FILE`.
  */
 
 /**
@@ -675,6 +681,31 @@ public final class TermuxConstants {
     public static final String TERMUX_STORAGE_HOME_DIR_PATH = TERMUX_HOME_DIR_PATH + "/storage"; // Default: "/data/data/com.termux/files/home/storage"
     /** Termux app storage home directory */
     public static final File TERMUX_STORAGE_HOME_DIR = new File(TERMUX_STORAGE_HOME_DIR_PATH);
+
+
+
+    /** Termux app background directory path */
+    public static final String TERMUX_BACKGROUND_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/background"; // Default: "/data/data/com.termux/files/.termux/background"
+    /** Termux app background directory */
+    public static final File TERMUX_BACKGROUND_DIR = new File(TERMUX_BACKGROUND_DIR_PATH);
+
+    /** Termux app backgorund original image file path */
+    public static final String TERMUX_BACKGROUND_IMAGE_PATH = TERMUX_BACKGROUND_DIR_PATH + "/background.jpeg"; // Default: "/data/data/com.termux/files/home/.termux/background.jpeg"
+
+    /** Termux app backgorund original image file */
+    public static final File TERMUX_BACKGROUND_IMAGE_FILE = new File(TERMUX_BACKGROUND_IMAGE_PATH);
+
+    /** Termux app portrait backgorund image file path */
+    public static final String TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH = TERMUX_BACKGROUND_DIR_PATH + "/background_portrait.jpeg"; // Default: "/data/data/com.termux/files/home/.termux/background/background_portrait.jpeg"
+
+    /** Termux app portrait backgorund image file */
+    public static final File TERMUX_BACKGROUND_IMAGE_PORTRAIT_FILE = new File(TERMUX_BACKGROUND_IMAGE_PORTRAIT_PATH);
+
+    /** Termux app landscape backgorund image file path */
+    public static final String TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH = TERMUX_BACKGROUND_DIR_PATH + "/background_landscape.jpeg"; // Default: "/data/data/com.termux/files/home/.termux/background/background_landscape.jpeg"
+
+    /** Termux app landscape backgorund image file */
+    public static final File TERMUX_BACKGROUND_IMAGE_LANDSCAPE_FILE = new File(TERMUX_BACKGROUND_IMAGE_LANDSCAPE_PATH);
 
 
 

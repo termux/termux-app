@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -124,6 +125,51 @@ public class ActivityUtils {
                     return error;
                 }
             }
+        } catch (Exception e) {
+            error = ActivityErrno.ERRNO_START_ACTIVITY_FOR_RESULT_FAILED_WITH_EXCEPTION.getError(e, activityName, e.getMessage());
+            if (logErrorMessage)
+                error.logErrorAndShowToast(showErrorMessage ? context : null, LOG_TAG);
+            return error;
+        }
+
+        return null;
+    }
+
+
+
+    /**
+     * Wrapper for {@link #startActivityForResult(Context, ActivityResultLauncher, Object, boolean, boolean)}.
+     */
+    public static <T> Error startActivityForResult(Context context, @NonNull ActivityResultLauncher<T> activityResultLauncher,
+                                                   T input) {
+        return startActivityForResult(context, activityResultLauncher, input, true, true);
+    }
+
+    /**
+     * Generic method to start an {@link Activity} for result.
+     * @param context The context for operations. It must be an instance of {@link Activity} or
+     *                {@link AppCompatActivity}. It is ignored if {@code activityResultLauncher}
+     *                is not {@code null}.
+     * @param activityResultLauncher A launcher for start the process of executing an {@link ActivityResultContract}.
+     * @param input The data required to {@link ActivityResultLauncher#launch(Object) launch} Activity.
+     * @param logErrorMessage If an error message should be logged if failed to start activity.
+     * @param showErrorMessage If an error message toast should be shown if failed to start activity
+     *                         in addition to logging a message. The {@code context} must not be
+     *                         {@code null}.
+     * @param <T> Type of the input required to {@link ActivityResultLauncher#launch(Object) launch}.
+     * @return Returns the {@code error} if starting activity was not successful, otherwise {@code null}.
+     */
+    public static <T> Error startActivityForResult(Context context, @NonNull ActivityResultLauncher<T> activityResultLauncher,
+                                                   T input, boolean logErrorMessage, boolean showErrorMessage) {
+        Error error;
+        String activityName = "Unknown";
+
+        if (input instanceof Intent && ((Intent) input).getComponent() != null) {
+            activityName = ((Intent) input).getComponent().getClassName();
+        }
+
+        try {
+            activityResultLauncher.launch(input);
         } catch (Exception e) {
             error = ActivityErrno.ERRNO_START_ACTIVITY_FOR_RESULT_FAILED_WITH_EXCEPTION.getError(e, activityName, e.getMessage());
             if (logErrorMessage)

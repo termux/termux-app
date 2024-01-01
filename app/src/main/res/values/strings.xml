@@ -82,6 +82,10 @@
     <string name="title_confirm_kill_process">Really kill this session?</string>
 
     <string name="action_style_terminal">Style</string>
+    <string name="action_font_and_color">Font and Color</string>
+    <string name="action_set_background_image">Set background image</string>
+    <string name="action_remove_background_image">Remove background image</string>
+
     <string name="action_toggle_keep_screen_on">Keep screen on</string>
     <string name="action_open_help">Help</string>
     <string name="action_open_settings">Settings</string>
@@ -125,6 +129,13 @@
     <string name="title_file_received">Save file in ~/downloads/</string>
     <string name="action_file_received_edit">Edit</string>
     <string name="action_file_received_open_directory">Open directory</string>
+
+
+
+    <!-- Termux Background Manager -->
+    <string name="title_restore_background_image">Background image detected. Do you want to restore it?</string>
+    <string name="error_background_image_loading_failed">Couldn\'t load background image. Setting background color.</string>
+    <string name="error_background_image_loading_from_gallery_failed">Failed to load image. Try another image.</string>
 
 
 
@@ -201,6 +212,21 @@
                 <string name="termux_terminal_view_terminal_margin_adjustment_on">Terminal margin adjustment will be enabled.
                     It should be enabled to try to fix the issue where soft keyboard covers part of extra keys/terminal view.
                     If it causes screen flickering on your devices, then disable it. (Default)</string>
+
+
+        <!-- Termux Style Preferences -->
+        <string name="termux_style_preferences_title">Termux Style</string>
+        <string name="termux_style_preferences_summary">Preferences for termux style</string>
+
+            <!-- Background Category -->
+            <string name="termux_background_header">Background</string>
+
+                <!-- Background Image -->
+                <string name="termux_background_image_enabled_title">Background Image Enabled</string>
+                <string name="termux_background_image_enabled_off">Background image will be disabled.
+                    To enable it appropriate portrait and landscape file should be present.
+                    If you want to set new background, set it from context menu by long click on terminal. (Default)</string>
+                <string name="termux_background_image_enabled_on">Background image will be enabled.</string>
 
 
 

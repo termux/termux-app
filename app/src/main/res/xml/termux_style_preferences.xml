@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="background"
+        app:title="@string/termux_background_header">
+
+        <SwitchPreferenceCompat
+            app:key="background_image_enabled"
+            app:summaryOff="@string/termux_background_image_enabled_off"
+            app:summaryOn="@string/termux_background_image_enabled_on"
+            app:title="@string/termux_background_image_enabled_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
