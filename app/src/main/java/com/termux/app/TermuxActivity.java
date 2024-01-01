@@ -18,6 +18,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -39,6 +40,7 @@ import com.termux.shared.activity.media.AppCompatActivityUtils;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
+import com.termux.shared.interact.ProcessTextUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.termux.app.activities.HelpActivity;
@@ -68,6 +70,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A terminal emulator activity.
@@ -189,6 +192,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final int CONTEXT_MENU_HELP_ID = 7;
     private static final int CONTEXT_MENU_SETTINGS_ID = 8;
     private static final int CONTEXT_MENU_REPORT_ID = 9;
+    private static final int CONTEXT_MENU_SUBMENU_PROCESS_TEXT_ID = 11;
+    private static final int CONTEXT_MENU_LAUNCH_EXTERNAL_APP_PROCESS_TEXT_ID = 12;
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
@@ -642,8 +647,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         menu.add(Menu.NONE, CONTEXT_MENU_SELECT_URL_ID, Menu.NONE, R.string.action_select_url);
         menu.add(Menu.NONE, CONTEXT_MENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.action_share_transcript);
-        if (!DataUtils.isNullOrEmpty(mTerminalView.getStoredSelectedText()))
+        String selectedText = mTerminalView.getStoredSelectedText();
+        if (!DataUtils.isNullOrEmpty(selectedText)) {
             menu.add(Menu.NONE, CONTEXT_MENU_SHARE_SELECTED_TEXT, Menu.NONE, R.string.action_share_selected_text);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                List<ProcessTextUtils.ProcessTextActivityData> processTextActivities = ProcessTextUtils.getProcessTextActivities(this, selectedText);
+                if (!processTextActivities.isEmpty()) {
+                    SubMenu processTextSubmenu = menu.addSubMenu(Menu.NONE, CONTEXT_MENU_SUBMENU_PROCESS_TEXT_ID, Menu.NONE, R.string.action_process_text);
+                    for (ProcessTextUtils.ProcessTextActivityData processTextActivityData : processTextActivities) {
+                        processTextSubmenu.add(Menu.NONE, CONTEXT_MENU_LAUNCH_EXTERNAL_APP_PROCESS_TEXT_ID, Menu.NONE, processTextActivityData.label)
+                            .setIntent(processTextActivityData.intent);
+                    }
+                }
+            }
+        }
         if (addAutoFillMenu)
             menu.add(Menu.NONE, CONTEXT_MENU_AUTOFILL_ID, Menu.NONE, R.string.action_autofill_password);
         menu.add(Menu.NONE, CONTEXT_MENU_RESET_TERMINAL_ID, Menu.NONE, R.string.action_reset_terminal);
@@ -699,6 +716,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 return true;
             case CONTEXT_MENU_REPORT_ID:
                 mTermuxTerminalViewClient.reportIssueFromTranscript();
+                return true;
+            case CONTEXT_MENU_LAUNCH_EXTERNAL_APP_PROCESS_TEXT_ID:
+                ActivityUtils.startActivity(this, item.getIntent());
                 return true;
             default:
                 return super.onContextItemSelected(item);
