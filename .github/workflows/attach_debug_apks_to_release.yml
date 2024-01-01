@@ -39,7 +39,10 @@ jobs:
           echo "Building APKs for 'APK_VERSION_TAG' release"
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
           export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
-          ./gradlew assembleDebug
+          if ! ./gradlew assembleDebug; then
+            echo "Build failed for '$APK_VERSION_TAG' release."
+            exit 1
+          fi
 
           echo "Validating APKs"
           for abi in universal arm64-v8a armeabi-v7a x86_64 x86; do
@@ -63,7 +66,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
       - name: Upload APKs to release
-        uses: termux/upload-release-action@v4.1.0
+        uses: termux/upload-release-action@c6bc73fa777109ac75c51ec3b6ae7841f45cb67a
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: "**/*.apk"
@@ -71,3 +74,14 @@ jobs:
           release_name: 
           tag: ${{ github.event.release.tag_name }}
           checksums: sha256,sha512,md5
+          checksums_file_name: release.%algo%
+  delete_release:
+    if: failure()
+    runs-on: ubuntu-latest
+    needs: [build, upload]
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Delete release (if other job(s) failed)
+        run: |
+          gh release delete ${{ github.events.release.tag_name }}
