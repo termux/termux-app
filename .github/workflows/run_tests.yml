@@ -16,6 +16,11 @@ jobs:
     steps:
     - name: Clone repository
       uses: actions/checkout@v4
+    - name: Setup java 17 as required by gradle
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
     - name: Execute tests
       run: |
         ./gradlew test
