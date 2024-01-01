@@ -148,6 +148,11 @@ public final class TermuxPropertyConstants {
 
 
 
+    /** Defines the key for whether to use bright colors for bold text */
+    public static final String KEY_DRAW_BOLD_TEXT_WITH_BRIGHT_COLORS =  "draw-bold-text-with-bright-colors"; // Default: "draw-bold-text-with-bright-colors"
+
+
+
     /** Defines the key for whether to use ctrl space workaround to fix the issue where ctrl+space does not work on some ROMs */
     public static final String KEY_USE_CTRL_SPACE_WORKAROUND =  "ctrl-space-workaround"; // Default: "ctrl-space-workaround"
 
@@ -400,6 +405,7 @@ public final class TermuxPropertyConstants {
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_RUN_TERMUX_AM_SOCKET_SERVER,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
+        KEY_DRAW_BOLD_TEXT_WITH_BRIGHT_COLORS,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
@@ -449,6 +455,7 @@ public final class TermuxPropertyConstants {
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
+        KEY_DRAW_BOLD_TEXT_WITH_BRIGHT_COLORS,
         TermuxConstants.PROP_ALLOW_EXTERNAL_APPS
     ));
 

@@ -59,6 +59,9 @@ public final class TerminalSession extends TerminalOutput {
     /** The exit status of the shell process. Only valid if ${@link #mShellPid} is -1. */
     int mShellExitStatus;
 
+    /** Whether to show bold text with bright colors. */
+    private boolean mBoldWithBright;
+
     /**
      * The file descriptor referencing the master half of a pseudo-terminal pair, resulting from calling
      * {@link JNI#createSubprocess(String, String, String[], String[], int[], int, int)}.
@@ -75,7 +78,6 @@ public final class TerminalSession extends TerminalOutput {
     private final String[] mArgs;
     private final String[] mEnv;
     private final Integer mTranscriptRows;
-
 
     private static final String LOG_TAG = "TerminalSession";
 
@@ -99,6 +101,12 @@ public final class TerminalSession extends TerminalOutput {
             mEmulator.updateTerminalSessionClient(client);
     }
 
+    /** Update the setting to render bold text with bright colors. This takes effect on
+     * the next call to updateSize(). */
+    public void setBoldWithBright(boolean boldWithBright) {
+        this.mBoldWithBright = boldWithBright;
+    }
+
     /** Inform the attached pty of the new size and reflow or initialize the emulator. */
     public void updateSize(int columns, int rows) {
         if (mEmulator == null) {
@@ -120,8 +128,8 @@ public final class TerminalSession extends TerminalOutput {
      * @param columns The number of columns in the terminal window.
      * @param rows    The number of rows in the terminal window.
      */
-    public void initializeEmulator(int columns, int rows) {
-        mEmulator = new TerminalEmulator(this, columns, rows, mTranscriptRows, mClient);
+    private void initializeEmulator(int columns, int rows) {
+        mEmulator = new TerminalEmulator(this, mBoldWithBright, columns, rows, mTranscriptRows, mClient);
 
         int[] processId = new int[1];
         mTerminalFileDescriptor = JNI.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns);

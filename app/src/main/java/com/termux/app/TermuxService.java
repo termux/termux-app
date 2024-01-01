@@ -605,6 +605,10 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             return null;
         }
 
+        newTermuxSession.getTerminalSession().setBoldWithBright(
+            mProperties.shouldDrawBoldTextWithBrightColors()
+        );
+
         mShellManager.mTermuxSessions.add(newTermuxSession);
 
         // Remove the execution command from the pending plugin execution commands list since it has
