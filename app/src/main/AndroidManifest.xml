@@ -78,6 +78,9 @@
             <meta-data
                 android:name="com.samsung.android.dex.transient_bar_delay"
                 android:value="2000" />
+
+            <meta-data android:name="WindowManagerPreference:SuppressWindowControlNavigationButton"
+                android:value="true" />
             
         </activity>
 
@@ -97,6 +100,9 @@
             <meta-data
                 android:name="com.samsung.android.dex.transient_bar_delay"
                 android:value="2000" />
+
+            <meta-data android:name="WindowManagerPreference:SuppressWindowControlNavigationButton"
+                android:value="true" />
             
         </activity-alias>
 
