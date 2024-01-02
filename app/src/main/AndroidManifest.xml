@@ -93,6 +93,11 @@
                 <category android:name="android.intent.category.IOT_LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+            <meta-data
+                android:name="com.samsung.android.dex.transient_bar_delay"
+                android:value="2000" />
+            
         </activity-alias>
 
         <activity
