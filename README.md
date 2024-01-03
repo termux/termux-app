@@ -1,11 +1,35 @@
-# Termux application
-
-[![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
-[![Testing status](https://github.com/termux/termux-app/workflows/Unit%20tests/badge.svg)](https://github.com/termux/termux-app/actions)
-[![Join the chat at https://gitter.im/termux/termux](https://badges.gitter.im/termux/termux.svg)](https://gitter.im/termux/termux)
-[![Join the Termux discord server](https://img.shields.io/discord/641256914684084234.svg?label=&logo=discord&logoColor=ffffff&color=5865F2)](https://discord.gg/HXpF69X)
-[![Termux library releases at Jitpack](https://jitpack.io/v/termux/termux-app.svg)](https://jitpack.io/#termux/termux-app)
-
+<p align="center">
+  <img src="/art/logo_light.png#gh-light-mode-only">
+  <img src="/art/logo_dark.png#gh-dark-mode-only">
+</p>
+<div align="center">
+  <a href="https://github.com/termux/termux-app/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/termux/termux-app/debug_build.yml?branch=master&label=Build&logo=gradle"/>
+  </a>
+  <a href="https://github.com/termux/termux-app/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/termux/termux-app/run_tests.yml?branch=master&label=Test&logo=gradle"/>
+  </a>
+</div>
+<br />
+<div align="center">
+  <a href="https://github.com/termux/termux-app">
+    <img src="https://badgen.net/github/tag/termux/termux-app?icon=terminal&color=orange&label=Latest"/>
+  </a>
+  <a href="/LICENSE.md">
+    <img src="https://img.shields.io/badge/License-GPLv3_only-informational.svg?logo=gnu"/>
+  </a>
+  <a href="https://gitter.im/termux/termux">
+    <img src="https://img.shields.io/badge/%20-Gitter-ec1c66?logo=gitter"/>
+  </a>
+  <a href="https://discord.gg/HXpF69X">
+    <img src="https://img.shields.io/discord/641256914684084234.svg?label=&logo=discord&logoColor=ffffff&color=5865F2"/>
+  </a>
+</div>
+<br />
+<p align="center">
+  <img src="/art/screenshot.png?raw=true" height=50%>
+</p>
+<br />
 
 [Termux](https://termux.com) is an Android terminal application and Linux environment.
 
@@ -296,3 +320,16 @@ Commit messages **must** use the [Conventional Commits](https://www.conventional
 - You also need to recompile bootstrap zip for the new package name. Check [building bootstrap](https://github.com/termux/termux-packages/wiki/For-maintainers#build-bootstrap-archives), [here](https://github.com/termux/termux-app/issues/1983) and [here](https://github.com/termux/termux-app/issues/2081#issuecomment-865280111).
 - Currently, not all plugins use `TermuxConstants` from `termux-shared` library and have hardcoded `com.termux` values and will need to be manually patched.
 - If forking termux plugins, check [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development) for info on how to use termux libraries for plugins.
+
+***
+
+<p align="center">
+<img src="/art/ic_launcher.svg" width=50% height=50%>
+</p>
+
+<div align="center">
+    <img src="https://img.shields.io/github/downloads/termux/termux-app/total?color=brightgreen&label=Downloads"
+      alt="Downloads" />
+    <img src="https://img.shields.io/github/forks/termux/termux-app?style=social"
+      alt="Fork" />
+</div>
