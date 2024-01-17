@@ -22,8 +22,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
+// import android.view.WindowInsets;
+// import android.view.WindowInsetsController;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -1037,14 +1037,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     @SuppressWarnings("deprecation")
     private void enableImmersiveMode() {
-        if (Build.VERSION.SDK_INT >= 30) {
-            getWindow().setDecorFitsSystemWindows(false);
-            WindowInsetsController insetsController = getWindow().getInsetsController();
-            if (insetsController != null) {
-                insetsController.hide(WindowInsets.Type.navigationBars() | WindowInsets.Type.statusBars());
-                insetsController.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            }
-        } else {
+        // if (Build.VERSION.SDK_INT >= 30) {
+        //     getWindow().setDecorFitsSystemWindows(false);
+        //     WindowInsetsController insetsController = getWindow().getInsetsController();
+        //     if (insetsController != null) {
+        //         insetsController.hide(WindowInsets.Type.navigationBars() | WindowInsets.Type.statusBars());
+        //         insetsController.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        //     }
+        // } else {
             View decorView = getWindow().getDecorView();
             int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -1061,23 +1061,23 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     }
                 }
             });
-        }
+        // }
     }
 
     @SuppressWarnings("deprecation")
     private void disableImmersiveMode() {
-        if (Build.VERSION.SDK_INT >= 30) {
-            getWindow().setDecorFitsSystemWindows(true);
-            WindowInsetsController insetsController = getWindow().getInsetsController();
-            if (insetsController != null) {
-                insetsController.show(WindowInsets.Type.navigationBars() | WindowInsets.Type.statusBars());
-                insetsController.setSystemBarsBehavior(
-                    Build.VERSION.SDK_INT >= 31
-                        ? WindowInsetsController.BEHAVIOR_DEFAULT
-                        : WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
-                );
-            }
-        } else {
+        // if (Build.VERSION.SDK_INT >= 30) {
+        //     getWindow().setDecorFitsSystemWindows(true);
+        //     WindowInsetsController insetsController = getWindow().getInsetsController();
+        //     if (insetsController != null) {
+        //         insetsController.show(WindowInsets.Type.navigationBars() | WindowInsets.Type.statusBars());
+        //         insetsController.setSystemBarsBehavior(
+        //             Build.VERSION.SDK_INT >= 31
+        //                 ? WindowInsetsController.BEHAVIOR_DEFAULT
+        //                 : WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
+        //         );
+        //     }
+        // } else {
             View decorView = getWindow().getDecorView();
             int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -1091,6 +1091,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     }
                 }
             });
-        }
+        // }
     }
 }
