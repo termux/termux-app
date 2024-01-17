@@ -1027,7 +1027,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            if (mProperties.isUsingFullScreen) {
+            if (mProperties.isUsingFullScreen()) {
                 enableImmersiveMode();
             } else {
                 disableImmersiveMode();
