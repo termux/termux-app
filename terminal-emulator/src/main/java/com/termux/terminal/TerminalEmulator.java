@@ -849,14 +849,17 @@ public final class TerminalEmulator {
                                     case 1: // Blinking block.
                                     case 2: // Steady block.
                                         mCursorStyle = TERMINAL_CURSOR_STYLE_BLOCK;
+                                        setCursorBlinkingEnabled(arg != 2);
                                         break;
                                     case 3: // Blinking underline.
                                     case 4: // Steady underline.
                                         mCursorStyle = TERMINAL_CURSOR_STYLE_UNDERLINE;
+                                        setCursorBlinkingEnabled(arg != 4);
                                         break;
                                     case 5: // Blinking bar (xterm addition).
                                     case 6: // Steady bar (xterm addition).
                                         mCursorStyle = TERMINAL_CURSOR_STYLE_BAR;
+                                        setCursorBlinkingEnabled(arg != 6);
                                         break;
                                 }
                                 break;
