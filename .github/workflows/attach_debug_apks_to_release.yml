@@ -50,7 +50,7 @@ jobs:
             fi
           done
       - name: Upload APKs to GitHub artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.package_variant }}
           path: ./app/build/outputs/apk/debug/*.apk
@@ -61,7 +61,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Upload APKs to release
         uses: termux/upload-release-action@v4.1.0
         with:
