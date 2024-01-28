@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
@@ -153,6 +154,10 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
                 case TERMUX_SERVICE.ACTION_SERVICE_EXECUTE:
                     Logger.logDebug(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
                     actionServiceExecute(intent);
+                    break;
+                case TERMUX_SERVICE.ACTION_SERVICE_STOP:
+                    Logger.logDebug(LOG_TAG, "ACTION_SERVICE_STOP intent received");
+                    actionServiceStop(intent);
                     break;
                 default:
                     Logger.logError(LOG_TAG, "Invalid action: \"" + action + "\"");
@@ -352,6 +357,23 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             updateNotification();
 
         Logger.logDebug(LOG_TAG, "WakeLocks released successfully");
+    }
+
+    private void actionServiceStop(Intent intent) {
+        if (intent == null) {
+            Logger.logError(LOG_TAG, "Ignoring null intent to actionServiceStop");
+            return;
+        }
+
+        int gracePeriod = IntentUtils.getIntegerExtraIfSet(intent, TERMUX_SERVICE.EXTRA_TERMINATE_GRACE_PERIOD, 5000);
+
+        Uri executableUri = intent.getData();
+        String executable = UriUtils.getUriFilePathWithFragment(executableUri);
+        String shellName = ShellUtils.getExecutableBasename(executable);
+        AppShell appShell = getTermuxTaskForShellName(shellName);
+        if (appShell != null) {
+            appShell.terminateIfExecuting(getApplicationContext(), gracePeriod, true);
+        }
     }
 
     /** Process {@link TERMUX_SERVICE#ACTION_SERVICE_EXECUTE} intent to execute a shell command in
