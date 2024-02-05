@@ -8,7 +8,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
@@ -365,11 +364,13 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             return;
         }
 
-        int gracePeriod = IntentUtils.getIntegerExtraIfSet(intent, TERMUX_SERVICE.EXTRA_TERMINATE_GRACE_PERIOD, 5000);
+        String shellName = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_SHELL_NAME, null);
+        if (shellName == null) {
+            Logger.logError(LOG_TAG, "Ignoring intent since it did not contain explicit shell name");
+            return;
+        }
 
-        Uri executableUri = intent.getData();
-        String executable = UriUtils.getUriFilePathWithFragment(executableUri);
-        String shellName = ShellUtils.getExecutableBasename(executable);
+        int gracePeriod = IntentUtils.getIntegerExtraIfSet(intent, TERMUX_SERVICE.EXTRA_TERMINATE_GRACE_PERIOD, 5000);
         AppShell appShell = getTermuxTaskForShellName(shellName);
         if (appShell != null) {
             appShell.terminateIfExecuting(getApplicationContext(), gracePeriod, true);
