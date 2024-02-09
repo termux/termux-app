@@ -372,8 +372,9 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
         int gracePeriod = IntentUtils.getIntegerExtraIfSet(intent, TERMUX_SERVICE.EXTRA_TERMINATE_GRACE_PERIOD, 5000);
         AppShell appShell = getTermuxTaskForShellName(shellName);
-        if (appShell != null) {
+        while (appShell != null) {
             appShell.terminateIfExecuting(getApplicationContext(), gracePeriod, true);
+            appShell = getTermuxTaskForShellName(shellName);
         }
     }
 
