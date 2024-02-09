@@ -313,7 +313,7 @@ public final class AppShell {
     public void term() {
         int pid = ShellUtils.getPid(mProcess);
         try {
-            // Send SIGKILL to process
+            // Send SIGTERM to process
             Os.kill(pid, OsConstants.SIGTERM);
         } catch (ErrnoException e) {
             Logger.logWarn(LOG_TAG, "Failed to send SIGTERM to \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell with pid " + pid + ": " + e.getMessage());
