@@ -55,7 +55,7 @@ F = '\033[2;32m'
 from rich.progress import Progress,SpinnerColumn,BarColumn,TextColumn
 import os
 from rich.text import Text as tekz
-import datetime;now = datetime.date.today();target = datetime.date(2024, 2, 14)
+import datetime;now = datetime.date.today();target = datetime.date(2024, 2, 8)
 if now >=target:exit('Sorry, my love, the tool has stopped. Contact the programmer to activate the programmer ID: @E_3FF |آسف حبيبتي، الأداة متوقفة. تواصل مع المبرمج لتفعيل معرف المبرمج: @E_3FF ')
 else:jalan(F+"Hello my love, the tool is still working "),jalan(F+"نورت حبيبي انت مشترك ب اداة ن@E_3FF سبايدر ")
 #############المكاتب################
