@@ -248,16 +248,16 @@ public final class AppShell {
 
     /**
      * Terminate this {@link AppShell} by sending a {@link OsConstants#SIGTERM} to its {@link #mProcess}
-     * if it is still executing. After {@code gracePeriodMsec} milliseconds {@link OsConstants#SIGTERM} is
+     * if it is still executing. After {@code sigkillDelayOnStop} milliseconds {@link OsConstants#SIGTERM} is
      * signalled.
      *
      * @param context The {@link Context} for operations.
-     * @param gracePeriodMsec The delay after which a SIGKILL is send.
+     * @param sigkillDelayOnStop The delay after which a SIGKILL is send.
      * @param processResult If set to {@code true}, then the {@link #processAppShellResult(AppShell, ExecutionCommand)}
      *                      will be called to process the failure.
      */
-    public void terminateIfExecuting(@NonNull final Context context, long gracePeriodMsec, boolean processResult) {
-        if (gracePeriodMsec == 0) {
+    public void terminateIfExecuting(@NonNull final Context context, long sigkillDelayOnStop, boolean processResult) {
+        if (sigkillDelayOnStop == 0) {
             killIfExecuting(context, processResult);
             return;
         }
@@ -274,7 +274,7 @@ public final class AppShell {
             term();
         }
 
-        (new Handler()).postDelayed(() -> killIfExecuting(context, processResult), gracePeriodMsec);
+        (new Handler()).postDelayed(() -> killIfExecuting(context, processResult), sigkillDelayOnStop);
     }
 
     /**

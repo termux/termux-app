@@ -1049,9 +1049,9 @@ public final class TermuxConstants {
              * be created in {@link #EXTRA_RESULT_DIRECTORY} if {@link #EXTRA_RESULT_SINGLE_FILE} is
              * {@code false} for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_RESULT_FILES_SUFFIX = TERMUX_PACKAGE_NAME + ".execute.result_files_suffix"; // Default: "com.termux.execute.result_files_suffix"
-            /** Intent {@code long} extra for graceperiod between SIGTERM and SIGKILL
+            /** Intent {@code long} extra for the delay between SIGTERM and SIGKILL
              * for the TERMUX_SERVICE.ACTION_SERVICE_STOP intent */
-            public static final String EXTRA_TERMINATE_GRACE_PERIOD = TERMUX_PACKAGE_NAME + ".execute.stop_delay"; // Default: "com.termux.execute.stop_delay"
+            public static final String EXTRA_SIGKILL_DELAY_ON_STOP = TERMUX_PACKAGE_NAME + ".execute.sigkill_delay_on_stop"; // Default: "com.termux.execute.sigkill_delay_on_stop"
 
 
 

@@ -370,10 +370,10 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             return;
         }
 
-        int gracePeriod = IntentUtils.getIntegerExtraIfSet(intent, TERMUX_SERVICE.EXTRA_TERMINATE_GRACE_PERIOD, 5000);
+        int sigkillDelayOnStop = IntentUtils.getIntegerExtraIfSet(intent, TERMUX_SERVICE.EXTRA_SIGKILL_DELAY_ON_STOP, 5000);
         AppShell appShell = getTermuxTaskForShellName(shellName);
         while (appShell != null) {
-            appShell.terminateIfExecuting(getApplicationContext(), gracePeriod, true);
+            appShell.terminateIfExecuting(getApplicationContext(), sigkillDelayOnStop, true);
             appShell = getTermuxTaskForShellName(shellName);
         }
     }
