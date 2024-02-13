@@ -55,7 +55,7 @@ F = '\033[2;32m'
 from rich.progress import Progress,SpinnerColumn,BarColumn,TextColumn
 import os
 from rich.text import Text as tekz
-import datetime;now = datetime.date.today();target = datetime.date(2024, 2, 14)
+import datetime;now = datetime.date.today();target = datetime.date(2024, 2, 15)
 if now >=target:exit('Sorry, my love, the tool has stopped. Contact the programmer to activate the programmer ID: @E_3FF |آسف حبيبتي، الأداة متوقفة. تواصل مع المبرمج لتفعيل معرف المبرمج: @E_3FF ')
 else:jalan(F+"Hello my love, the tool is still working "),jalan(F+"نورت حبيبي انت مشترك ب اداة ن@E_3FF سبايدر ")
 #############المكاتب################
@@ -952,7 +952,6 @@ def menu():
                                 ppp=input(' Choose: ')
                                 if ppp in ['1','01']:
                                         plist.append('first last')
-                                        plist.append('first123')
                                         plist.append('first12345')
                                         plist.append('first last123')
                                         plist.append('first1234qwer')
@@ -990,7 +989,6 @@ def menu():
                                         plist.append('11223344@@@')
                                         plist.append('12345a12345')
                                         plist.append('1234512345@@')
-                                        plist.append('11112222')
                                         plist.append('qwert12345')
                                         plist.append('1122334455@@')
                                         plist.append('112233445566@@')
