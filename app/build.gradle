@@ -110,9 +110,6 @@ android {
         }
     }
 
-    lintOptions {
-        disable 'ProtectedPermissions'
-    }
 
     testOptions {
         unitTests {
@@ -124,6 +121,10 @@ android {
         jniLibs {
             useLegacyPackaging true
         }
+    }
+    namespace 'com.termux'
+    lint {
+        disable 'ProtectedPermissions'
     }
 
     applicationVariants.all { variant ->
@@ -142,8 +143,8 @@ android {
 
 dependencies {
     testImplementation "junit:junit:4.13.2"
-    testImplementation "org.robolectric:robolectric:4.10"
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
 
 task versionName {

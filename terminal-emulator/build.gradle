@@ -41,6 +41,7 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+    namespace 'com.termux.terminal'
 }
 
 tasks.withType(Test) {
@@ -50,7 +51,7 @@ tasks.withType(Test) {
 }
 
 dependencies {
-    implementation "androidx.annotation:annotation:1.3.0"
+    implementation 'androidx.annotation:annotation:1.7.0'
     testImplementation "junit:junit:4.13.2"
 }
 
