@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -198,6 +199,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Logger.logDebug(LOG_TAG, "onCreate");
+
+        // For details see:
+        // https://stackoverflow.com/a/19856267/1455694
+        // https://stackoverflow.com/a/63250729/1455694
+        // https://www.reddit.com/r/tasker/comments/d7whyj/android_10_and_auto_starting_apps/
+        // https://stackoverflow.com/q/64642362/1455694
+        Context context = getApplicationContext();
+        // Q is Android 10
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (!Settings.canDrawOverlays(context)) {
+                startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
+            }
+        }
+
         mIsOnResumeAfterOnCreate = true;
 
         if (savedInstanceState != null)
@@ -257,9 +272,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
 
         try {
+            Intent serviceIntent;
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
-            Intent serviceIntent = new Intent(this, TermuxService.class);
-            startService(serviceIntent);
+            // O is Oreo, Android 8
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                serviceIntent = new Intent(context, TermuxService.class);
+                context.startForegroundService(serviceIntent);
+            }
+            else {
+                serviceIntent = new Intent(this, TermuxService.class);
+                startService(serviceIntent);
+            }
 
             // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
             // callback if it succeeds.

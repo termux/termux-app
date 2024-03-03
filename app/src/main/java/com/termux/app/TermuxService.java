@@ -159,10 +159,9 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
                     break;
             }
         }
-
-        // If this service really do get killed, there is no point restarting it automatically - let the user do on next
-        // start of {@link Term):
-        return Service.START_NOT_STICKY;
+        // If Service.START_NOT_STICKY is used this service will be killed when device not connected to charger
+        // (probably only for Xiaomi Redmi 7A with Android 10)
+        return Service.START_STICKY;
     }
 
     @Override
