@@ -1,7 +1,10 @@
 plugins {
     id "com.android.application"
 }
-
+configurations {
+    all*.exclude group: 'com.google.guava', module: 'listenablefuture'
+}
+android.buildFeatures.buildConfig true
 ext {
     // The packageVariant defines the bootstrap variant that will be included in the app APK.
     // This must be supported by com.termux.shared.termux.TermuxBootstrap.PackageVariant or app will
@@ -13,8 +16,10 @@ ext {
 }
 
 android {
-    compileSdkVersion project.properties.compileSdkVersion.toInteger()
-    ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
+    namespace "com.termux"
+    compileSdk project.properties.compileSdkVersion.toInteger()
+//    compileSdk 34
+    ndkVersion '25.1.8937393'
     def appVersionName = System.getenv("TERMUX_APP_VERSION_NAME") ?: ""
     def apkVersionTag = System.getenv("TERMUX_APK_VERSION_TAG") ?: ""
     def splitAPKsForDebugBuilds = System.getenv("TERMUX_SPLIT_APKS_FOR_DEBUG_BUILDS") ?: "1"
@@ -35,6 +40,10 @@ android {
 
         implementation project(":terminal-view")
         implementation project(":termux-shared")
+//        implementation project(":termux-display")
+        implementation (project(':termux-display')){
+            exclude group: 'androidx.preference'
+        }
     }
 
     defaultConfig {
