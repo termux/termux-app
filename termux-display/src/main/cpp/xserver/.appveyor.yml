@@ -1,0 +1,83 @@
+branches:
+  except:
+    - /travis.*/
+version: '{build}'
+skip_tags: true
+clone_depth: 8
+environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  CYGWIN_MIRROR: http://cygwin.mirror.constant.com
+  CACHE: C:\cache
+  matrix:
+  - BUILD: i686-pc-cygwin
+    CYGWIN_ROOT: C:\cygwin
+    SETUP: setup-x86.exe
+  - BUILD: x86_64-pc-cygwin
+    CYGWIN_ROOT: C:\cygwin64
+    SETUP: setup-x86_64.exe
+install:
+- echo Updating Cygwin and installing build prerequisites
+- "%CYGWIN_ROOT%\\%SETUP% -qnNdO -R %CYGWIN_ROOT% -s %CYGWIN_MIRROR% -l %CACHE% -g -P \
+binutils,\
+bison,\
+ccache,\
+flex,\
+gcc-core,\
+meson,\
+ninja,\
+pkg-config,\
+python3,\
+windowsdriproto,\
+xorgproto,\
+libepoxy-devel,\
+libfontenc-devel,\
+libfreetype-devel,\
+libGL-devel,\
+libnettle-devel,\
+libpixman1-devel,\
+libtirpc-devel,\
+libXRes-devel,\
+libXaw-devel,\
+libXdmcp-devel,\
+libXext-devel,\
+libXfont2-devel,\
+libXi-devel,\
+libXinerama-devel,\
+libXmu-devel,\
+libXpm-devel,\
+libXrender-devel,\
+libXtst-devel,\
+libxcb-composite-devel,\
+libxcb-ewmh-devel,\
+libxcb-icccm-devel,\
+libxcb-image-devel,\
+libxcb-keysyms-devel,\
+libxcb-randr-devel,\
+libxcb-render-devel,\
+libxcb-render-util-devel,\
+libxcb-shape-devel,\
+libxcb-util-devel,\
+libxcb-xkb-devel,\
+libxkbfile-devel,\
+font-util,\
+khronos-opengl-registry,\
+python3-lxml,\
+xkbcomp-devel,\
+xkeyboard-config,\
+xtrans"
+- echo Install done
+- "%CYGWIN_ROOT%\\%SETUP% -qnNdO -R %CYGWIN_ROOT% -s %CYGWIN_MIRROR% -l %CACHE% -g"
+cache:
+- C:\cache
+- '%CYGWIN_ROOT%\home\%USERNAME%\.ccache'
+build_script:
+- SET PATH=%CYGWIN_ROOT%/bin
+- '%CYGWIN_ROOT%/bin/bash -lc "cd $APPVEYOR_BUILD_FOLDER; meson setup --prefix=/usr -Dxv=false -Dxf86bigfont=true -Dxephyr=true -Dxnest=true -Dxvfb=true -Dxwin=true -Dxorg=true -Dhal=false -Dudev=false -Dpciaccess=false -Dint10=false build"'
+- '%CYGWIN_ROOT%/bin/bash -lc "cd $APPVEYOR_BUILD_FOLDER; meson configure build"'
+- '%CYGWIN_ROOT%/bin/bash -lc "cd $APPVEYOR_BUILD_FOLDER; ninja -C build"'
+- '%CYGWIN_ROOT%/bin/bash -lc "cd $APPVEYOR_BUILD_FOLDER; ccache -s"'
+test_script:
+- '%CYGWIN_ROOT%/bin/bash -lc "cd $APPVEYOR_BUILD_FOLDER; ninja -C build test"'
+after_test:
+- '%CYGWIN_ROOT%/bin/bash -lc "cd $APPVEYOR_BUILD_FOLDER; ninja -C build install"'
+deploy: off

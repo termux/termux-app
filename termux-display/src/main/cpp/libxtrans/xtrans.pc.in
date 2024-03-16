@@ -1,0 +1,9 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: XTrans
+Description: Abstract network code for X
+Version: @PACKAGE_VERSION@
+Cflags: -I${includedir} -D_DEFAULT_SOURCE -D_BSD_SOURCE @fchown_define@ @sticky_bit_define@

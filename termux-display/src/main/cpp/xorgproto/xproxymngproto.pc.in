@@ -1,0 +1,7 @@
+prefix=@prefix@
+includedir=@includedir@
+ 
+Name: XProxyManagementProtocol
+Description: X Proxy Management Protocol headers
+Version: 1.0.3
+Cflags: -I${includedir}

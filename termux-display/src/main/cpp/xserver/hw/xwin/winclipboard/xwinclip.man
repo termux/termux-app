@@ -1,0 +1,62 @@
+.TH xwinclip 1 @xorgversion@
+.SH NAME
+xwinclip - An X11 and Windows clipboard integration tool
+
+.SH SYNOPSIS
+.B xwinclip [OPTION]...
+
+.SH DESCRIPTION
+\fIxwinclip\fP is a tool for copying and pasting text between the Windows and X11 clipboard systems.
+
+\fIxwinclip\fP watches for updates to either clipboard and copies data between them when either one is updated.
+
+\fIxwinclip\fP monitors the X PRIMARY and CLIBPOARD selections for changes in ownership, and makes
+the contents of the most recent one to change available to paste from the Windows clipboard.
+
+It also monitors the contents of the Windows clipboard for changes, taking ownership of the PRIMARY and
+CLIPBOARD selections, and making the contents of the Windows clipboard available in them.
+
+.B Note well:
+The \fIXWin(1)\fP X server has internal clipboard integration that is enabled by default.
+Do \fINOT\fP run \fIxwinclip\fP unless \fIXWin(1)\fP has been started with the -noclipboard option.
+
+.SH OPTIONS
+\fIxwinclip\fP accepts the following optional command line switches:
+
+.TP 8
+.B \-display [display]
+Specifies the X server display to connect to.
+.TP 8
+.B \-noprimary
+Do not monitor the PRIMARY selection.
+
+.SH "SEE ALSO"
+XWin(1)
+
+.SH BUGS
+Only text clipboard contents are supported.
+
+The INCR (Incremental transfer) clipboard protocol for clipboard contents larger than the maximum size of an X
+request (approximately 256K) is only supported for X -> Windows clipboard transfers.
+
+Some X clients, notably ones written in Tcl/Tk, do not re-assert ownership of the PRIMARY selection or update
+its timestamp when its contents change, which currently prevents \fIxwinclip\fP from correctly noticing that
+the PRIMARY selection's contents have changed.
+
+Windows clipboard rendering is synchronous in the WM_RENDER*FORMAT message (that is, we must have placed the
+contents onto the clipboard by the time we return from processing this message), but we must wait for the X
+client which owns the selection to convert the selection to our requested format.  This is currently achieved
+using a fixed timeout.  After requesting conversion of the selection, if no events are received from the X
+client which owns the selection for one second, the conversion is assumed to have failed.
+
+The XWin(1) server should indicate somehow (by placing an atom on the root window?) that it is running with its
+internal clipboard integration enabled, and xwinclip should notice this and exit with an appropriate error.
+
+Probably many other bugs.
+
+.SH "CONFORMING TO"
+ICCCM (Inter-Client Communication Conventions Manual) 2.0
+
+.SH AUTHORS
+Contributors to xwinclip include Benjamin Riefenstahl, Roland Cassard, Brian Genisio, Colin Harrison,
+Harold L Hunt II, Matsuzaki Kensuke, Jon Turney, Chris Twiner and Jeremy Wilkins.

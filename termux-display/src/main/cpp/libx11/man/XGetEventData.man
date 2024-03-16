@@ -1,0 +1,131 @@
+.\" Copyright \(co 2009 Red Hat, Inc.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XGetEventData __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XGetEventData, XFreeEventData, XGenericEventCookie \- retrieve and free additional event data through cookies.
+.SH SYNTAX
+.HP
+Bool XGetEventData\^(\^Display *\fIdisplay\fP\^, XGenericEventCookie *\fIcookie\fP\^);
+.HP
+void XFreeEventData\^(\^Display *\fIdisplay\fP\^, XGenericEventCookie *\fIcookie\fP\^);
+.HP
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIcookie\fP 1i
+Specifies the cookie to free or retrieve the data for.
+
+.SH STRUCTURES
+.EX
+typedef struct {
+        int type;
+        unsigned long serial;
+        Bool send_event;
+        Display *display;
+        int extension;
+        int evtype;
+        unsigned int cookie;
+        void *data;
+} XGenericEventCookie;
+.EE
+
+.SH DESCRIPTION
+Some extension
+.B XGenericEvents
+require additional memory to store information.
+For these events, the library returns a
+.B XGenericEventCookie
+with a token ('cookie') unique to this event.
+The
+.BR XGenericEventCookie 's
+data pointer is undefined until
+.B XGetEventData
+is called.
+
+The
+.B XGetEventData
+function retrieves this extra data for the given cookie.
+No round-trip to
+the server is required.
+If the cookie is invalid or the
+event is not an event handled by cookie handlers,
+.B False
+is returned.
+If
+.B XGetEventData
+returns
+.BR True ,
+the cookie's data pointer points to the memory containing the event
+information.
+A client must call
+.B XFreeEventData
+to free this memory.
+.B XGetEventData
+returns
+.B False
+for multiple calls for the same event cookie.
+
+The
+.B XFreeEventData
+function frees the data associated with a cookie.
+A client must call
+.B XFreeEventData
+for each cookie claimed with
+.BR XGetEventData .
+
+.SH EXAMPLE CODE
+.EX
+XEvent event;
+XGenericEventCookie *cookie = &ev;
+
+XNextEvent(display, &event);
+if (XGetEventData(display, cookie)) {
+    handle_cookie_event(cookie->data);
+} else
+    handle_event(&event);
+}
+XFreeEventData(display, cookie);
+.EE
+
+.SH NOTES
+A cookie is defined as unclaimed if it has been returned to the client
+through
+.B XNextEvent
+but its data has not been retrieved via
+.BR XGetEventData .
+Subsequent calls to
+.B XNextEvent
+may free memory associated with unclaimed cookies.
+Multi-threaded X clients must ensure that
+.B XGetEventData
+is called before the next call to
+.BR XNextEvent .
+
+.SH "SEE ALSO"
+XNextEvent(__libmansuffix__),
+.br
+\fI\*(xL\fP
+

@@ -1,0 +1,367 @@
+'\" t
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\" Copyright \(co 2000  The XFree86 Project, Inc.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+'\" t
+.TH XmbTextListToTextProperty __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XmbTextListToTextProperty, XwcTextListToTextProperty, Xutf8TextListToTextProperty, XmbTextPropertyToTextList, XwcTextPropertyToTextList, Xutf8TextPropertyToTextList, XwcFreeStringList, XDefaultString \- convert text lists and text property structures
+.SH SYNTAX
+.HP
+int XmbTextListToTextProperty\^(\^Display *\fIdisplay\fP\^, char
+**\fIlist\fP\^, int \fIcount\fP\^, XICCEncodingStyle \fIstyle\fP\^,
+XTextProperty *\fItext_prop_return\fP\^);
+.HP
+int XwcTextListToTextProperty\^(\^Display *\fIdisplay\fP\^, wchar_t
+**\fIlist\fP\^, int \fIcount\fP\^, XICCEncodingStyle \fIstyle\fP\^,
+XTextProperty *\fItext_prop_return\fP\^);
+.HP
+int Xutf8TextListToTextProperty\^(\^Display *\fIdisplay\fP\^, char
+**\fIlist\fP\^, int \fIcount\fP\^, XICCEncodingStyle \fIstyle\fP\^,
+XTextProperty *\fItext_prop_return\fP\^);
+.HP
+int XmbTextPropertyToTextList\^(\^Display *\fIdisplay\fP\^,
+_Xconst XTextProperty
+*\fItext_prop\fP\^, char ***\fIlist_return\fP\^, int *\fIcount_return\fP\^);
+.HP
+int XwcTextPropertyToTextList\^(\^Display *\fIdisplay\fP\^,
+_Xconst XTextProperty
+*\fItext_prop\fP\^, wchar_t ***\fIlist_return\fP\^, int
+*\fIcount_return\fP\^);
+.HP
+int Xutf8TextPropertyToTextList\^(\^Display *\fIdisplay\fP\^,
+_Xconst XTextProperty
+*\fItext_prop\fP\^, char ***\fIlist_return\fP\^, int *\fIcount_return\fP\^);
+.HP
+void XwcFreeStringList\^(\^wchar_t **\fIlist\fP\^);
+.HP
+char *XDefaultString\^(void)
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIlist\fP 1i
+Specifies a list of null-terminated character strings.
+.IP \fIcount\fP 1i
+Specifies the number of strings specified.
+.IP \fIstyle\fP 1i
+Specifies the manner in which the property is encoded.
+.IP \fItext_prop_return\fP 1i
+Returns the
+.B XTextProperty
+structure.
+.IP \fItext_prop\fP 1i
+Specifies the
+.B XTextProperty
+structure to be used.
+.IP \fIlist_return\fP 1i
+Returns a list of null-terminated character strings.
+.IP \fIcount_return\fP 1i
+Returns the number of strings.
+.IP \fIlist\fP 1i
+Specifies the list of strings to be freed.
+.SH DESCRIPTION
+The
+.BR XmbTextListToTextProperty ,
+.B XwcTextListToTextProperty
+and
+.B Xutf8TextListToTextProperty
+functions set the specified
+.B XTextProperty
+value to a set of null-separated elements representing the concatenation
+of the specified list of null-terminated text strings.
+The input text
+strings must be given in the current locale encoding (for
+.B XmbTextListToTextProperty
+and
+.BR XwcTextListToTextProperty ),
+or in UTF-8 encoding (for
+.BR Xutf8TextListToTextProperty ).
+.LP
+The functions set the encoding field of text_prop_return to an
+.B Atom
+for the specified display
+naming the encoding determined by the specified style
+and convert the specified text list to this encoding for storage in
+the text_prop_return value field.
+If the style
+.B XStringStyle
+or
+.B XCompoundTextStyle
+is specified,
+this encoding is \*(lqSTRING\*(rq or \*(lqCOMPOUND_TEXT\*(rq, respectively.
+If the style
+.B XUTF8StringStyle
+is specified,
+this encoding is \*(lqUTF8_STRING\*(rq.
+(This is an extension introduced by The XFree86 Project, Inc., in their 4.0.2
+release.
+Its presence is indicated by the macro
+.BR X_HAVE_UTF8_STRING .)
+If the style
+.B XTextStyle
+is specified,
+this encoding is the encoding of the current locale.
+If the style
+.B XStdICCTextStyle
+is specified,
+this encoding is \*(lqSTRING\*(rq if the text is fully convertible to STRING,
+else \*(lqCOMPOUND_TEXT\*(rq.
+A final terminating null byte is stored at the end of the value field
+of text_prop_return but is not included in the nitems member.
+.LP
+If insufficient memory is available for the new value string,
+the functions return
+.BR XNoMemory .
+If the current locale is not supported,
+the functions return
+.BR XLocaleNotSupported .
+In both of these error cases,
+the functions do not set text_prop_return.
+.LP
+To determine if the functions are guaranteed not to return
+.BR XLocaleNotSupported ,
+use
+.BR XSupportsLocale .
+.LP
+If the supplied text is not fully convertible to the specified encoding,
+the functions return the number of unconvertible characters.
+Each unconvertible character is converted to an implementation-defined and
+encoding-specific default string.
+Otherwise, the functions return
+.BR Success .
+Note that full convertibility to all styles except
+.B XStringStyle
+is guaranteed.
+.LP
+To free the storage for the value field, use
+.BR XFree .
+.LP
+The
+.BR XmbTextPropertyToTextList ,
+.B XwcTextPropertyToTextList
+and
+.B Xutf8TextPropertyToTextList
+functions return a list of text strings representing the
+null-separated elements of the specified
+.B XTextProperty
+structure.
+The returned strings are encoded using the current locale encoding
+(for
+.B XmbTextPropertyToTextList
+and
+.BR XwcTextPropertyToTextList )
+or in UTF-8 (for
+.BR Xutf8TextPropertyToTextList ).
+The data in text_prop must be format 8.
+.LP
+Multiple elements of the property (for example, the strings in a disjoint
+text selection) are separated by a null byte.
+The contents of the property are not required to be null-terminated;
+any terminating null should not be included in text_prop.nitems.
+.LP
+If insufficient memory is available for the list and its elements,
+.BR XmbTextPropertyToTextList ,
+.B XwcTextPropertyToTextList
+and
+.B Xutf8TextPropertyToTextList
+return
+.BR XNoMemory .
+If the current locale is not supported,
+the functions return
+.BR XLocaleNotSupported .
+Otherwise, if the encoding field of text_prop is not convertible
+to the encoding of the current locale,
+the functions return
+.BR XConverterNotFound .
+For supported locales,
+existence of a converter from COMPOUND_TEXT, STRING, UTF8_STRING
+or the encoding of the current locale is guaranteed if
+.B XSupportsLocale
+returns
+.B True
+for the current locale (but the actual text
+may contain unconvertible characters).
+Conversion of other encodings is implementation-dependent.
+In all of these error cases,
+the functions do not set any return values.
+.LP
+Otherwise,
+.BR XmbTextPropertyToTextList ,
+.B XwcTextPropertyToTextList
+and
+.B Xutf8TextPropertyToTextList
+return the list of null-terminated text strings to list_return
+and the number of text strings to count_return.
+.LP
+If the value field of text_prop is not fully convertible to the
+encoding of the current locale,
+the functions return the number of unconvertible characters.
+Each unconvertible character is converted to a string in the
+current locale that is specific to the current locale.
+To obtain the value of this string,
+use
+.BR XDefaultString .
+Otherwise,
+.BR XmbTextPropertyToTextList ,
+.B XwcTextPropertyToTextList
+and
+.B Xutf8TextPropertyToTextList
+return
+.BR Success .
+.LP
+To free the storage for the list and its contents returned by
+.B XmbTextPropertyToTextList
+or
+.BR Xutf8TextPropertyToTextList ,
+use
+.BR XFreeStringList .
+To free the storage for the list and its contents returned by
+.BR XwcTextPropertyToTextList ,
+use
+.BR XwcFreeStringList .
+.LP
+The
+.B XwcFreeStringList
+function frees memory allocated by
+.BR XwcTextPropertyToTextList .
+.LP
+The
+.B XDefaultString
+function returns the default string used by Xlib for text conversion
+(for example, in
+.BR XmbTextPropertyToTextList ).
+The default string is the string in the current locale that is output
+when an unconvertible character is found during text conversion.
+If the string returned by
+.B XDefaultString
+is the empty string ("\^"),
+no character is output in the converted text.
+.B XDefaultString
+does not return NULL.
+.LP
+The string returned by
+.B XDefaultString
+is independent of the default string for text drawing;
+see
+.B XCreateFontSet
+to obtain the default string for an
+.BR XFontSet .
+.LP
+The behavior when an invalid codepoint is supplied to any Xlib function is
+undefined.
+.LP
+The returned string is null-terminated.
+It is owned by Xlib and should not be modified or freed by the client.
+It may be freed after the current locale is changed.
+Until freed, it will not be modified by Xlib.
+.LP
+The functions
+.B Xutf8TextListToTextProperty
+and
+.B Xutf8TextPropertyToTextList
+are extensions introduced by The XFree86 Project, Inc., in their 4.0.2
+release.
+Their presence is
+indicated by the macro
+.BR X_HAVE_UTF8_STRING .
+.SH STRUCTURES
+The
+.B XTextProperty
+structure contains:
+.LP
+.EX
+typedef struct {
+        unsigned char *value;   /\&* property data */
+        Atom encoding;  /\&* type of property */
+        int format;     /\&* 8, 16, or 32 */
+        unsigned long nitems;   /\&* number of items in value */
+} XTextProperty;
+.EE
+.LP
+The
+.B XICCEncodingStyle
+structure contains:
+.LP
+.TS
+lw(.5i) lw(2i) lw(2.5i).
+T{
+\&#define
+T}	T{
+.B XNoMemory
+T}	T{
+\-1
+T}
+T{
+\&#define
+T}	T{
+.B XLocaleNotSupported
+T}	T{
+\-2
+T}
+T{
+\&#define
+T}	T{
+.B XConverterNotFound
+T}	T{
+\-3
+T}
+.TE
+.EX
+typedef enum {
+        XStringStyle,           /\&* STRING */
+        XCompoundTextStyle,     /\&* COMPOUND_TEXT */
+        XTextStyle,             /\&* text in owner's encoding (current locale) */
+        XStdICCTextStyle,       /\&* STRING, else COMPOUND_TEXT */
+        XUTF8StringStyle        /\&* UTF8_STRING */
+} XICCEncodingStyle;
+.EE
+.SH "SEE ALSO"
+XSetTextProperty(__libmansuffix__),
+XStringListToTextProperty(__libmansuffix__)
+.br
+\fI\*(xL\fP

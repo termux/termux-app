@@ -1,0 +1,50 @@
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
+    <!ENTITY TERMUX_APP_NAME "Termux">
+    <!ENTITY TERMUX_X11_APP_NAME "Termux:X11">
+    ]>
+<resources>
+    <string name="app_name">&TERMUX_X11_APP_NAME;</string>
+    <string name="plugin_info">&TERMUX_X11_APP_NAME; is a plugin app for the &TERMUX_APP_NAME; app.
+        \n\nCheck &TERMUX_APP_NAME; app github %1$s and &TERMUX_X11_APP_NAME; app github %2$s for more info.</string>
+
+    <!-- TermuxX11Activity -->
+    <string name="msg_storage_permission_not_granted_warning">The storage permission must be granted
+        to &TERMUX_X11_APP_NAME; app to...</string>
+    <string name="action_grant_storage_permission">Grant Storage Permission</string>
+
+    <string name="msg_battery_optimization_not_disabled_warning">Android battery optimizations
+        should be disabled for the &TERMUX_X11_APP_NAME; app so that…
+        Check https://developer.android.com/about/versions/oreo/background for more info and
+        https://developer.android.com/guide/components/foreground-services#background-start-restrictions
+        for more info.
+
+        \n\nAlso check https://dontkillmyapp.com for info on vendor specific app killers.
+        Depending on vendor you may need to do things like enable AutoStart, disable DuraSpeed,
+        enable `Display pop-up windows while running in the background` for the app.</string>
+    <string name="action_disable_battery_optimizations">Disable Battery Optimizations</string>
+
+    <string name="msg_display_over_other_apps_permission_not_granted_warning">The display over other
+        apps permission should be granted to &TERMUX_X11_APP_NAME; app for starting foreground
+        activities from background. Check https://developer.android.com/guide/components/activities/background-starts
+        for more info.
+    </string>
+    <string name="action_grant_display_over_other_apps_permission">Grant Draw Over Apps Permission</string>
+
+    <string name="action_already_granted">Already Granted</string>
+    <string name="action_already_disabled">Already Disabled</string>
+    <string name="not_connected">Not connected</string>
+    <string name="help_button_text">   Help   </string>
+    <string name="preferences_button_text">   Preferences   </string>
+    <string name="extra_keys_config_desc">Here you can set value of extra-keys variable like in Termux app (read <a href="http://wiki.termux.com/wiki/Touch_Keyboard#Extra_Keys_Row">this</a>) and more (e.g. META).
+    Put empty string for the default value.</string>
+
+    <!-- Log Level -->
+    <string name="log_level_title">Log Level</string>
+    <string name="log_level_off">Off</string>
+    <string name="log_level_normal">Normal</string>
+    <string name="log_level_debug">Debug</string>
+    <string name="log_level_verbose">Verbose</string>
+    <string name="log_level_unknown">*Unknown*</string>
+    <string name="log_level_value">Logcat log level set to \"%1$s\"</string>
+</resources>

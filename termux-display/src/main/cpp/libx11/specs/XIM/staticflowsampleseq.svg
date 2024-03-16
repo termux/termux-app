@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="502.63379"
+   height="290.44269"
+   id="svg4341"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="staticflowsampleseq.svg">
+  <defs
+     id="defs4343">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective4349" />
+    <inkscape:perspective
+       id="perspective4272"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path3695"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4278"
+       style="overflow:visible">
+      <path
+         id="path4280"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4282"
+       style="overflow:visible">
+      <path
+         id="path4284"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4286"
+       style="overflow:visible">
+      <path
+         id="path4288"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4290"
+       style="overflow:visible">
+      <path
+         id="path4292"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4294"
+       style="overflow:visible">
+      <path
+         id="path4296"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <inkscape:perspective
+       id="perspective2877"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend-3"
+       style="overflow:visible">
+      <path
+         id="path3695-7"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <inkscape:perspective
+       id="perspective2905"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend-31"
+       style="overflow:visible">
+      <path
+         id="path3695-4"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="310.98032"
+     inkscape:cy="88.727691"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="677"
+     inkscape:window-height="660"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata4346">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-64.019684,-330.64719)">
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="162.84195"
+       y="339.76437"
+       id="text2816"><tspan
+         sodipodi:role="line"
+         id="tspan2818"
+         x="162.84195"
+         y="339.76437">IM Library</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="405.12766"
+       y="340.33578"
+       id="text2820"><tspan
+         sodipodi:role="line"
+         id="tspan2822"
+         x="405.12766"
+         y="340.33578">IM Server</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="62.841949"
+       y="390.33578"
+       id="text2824"><tspan
+         sodipodi:role="line"
+         id="tspan2826"
+         x="62.841949"
+         y="390.33578">Keys in the on-key-list</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="235.6991"
+       y="428.33578"
+       id="text2844"><tspan
+         sodipodi:role="line"
+         id="tspan2846"
+         x="235.6991"
+         y="428.33578">XIM_EXT_SET_EVENT_MASK</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="249.68689"
+       y="440.62149"
+       id="text2848"><tspan
+         sodipodi:role="line"
+         id="tspan2850"
+         x="249.68689"
+         y="440.62149"
+         style="font-size:10px">intercept-event-mask is set</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="235.6991"
+       y="556.90723"
+       id="text2852"><tspan
+         sodipodi:role="line"
+         id="tspan2854"
+         x="235.6991"
+         y="556.90723">XIM_EXT_SET_EVENT_MASK</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="257.54333"
+       y="570.05017"
+       id="text2856"><tspan
+         sodipodi:role="line"
+         id="tspan2858"
+         x="257.54333"
+         y="570.05017"
+         style="font-size:10px">select-event-mask is set</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.05025411px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 224.27052,345.53018 c 0,264.72805 0,274.18271 0,274.18271"
+       id="path2882" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.05972767px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 409.98481,347.82588 c 0,274.33848 0,272.73413 0,272.73413"
+       id="path2884" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:none;marker-end:url(#Arrow1Lend)"
+       d="m 135.6991,394.05008 79.99999,0"
+       id="path2886"
+       inkscape:connector-type="polyline" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 235.69909,399.76437 162.85715,1.42857"
+       id="path2888"
+       inkscape:connector-type="polyline" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 395.69909,411.19294 -160,1.42857"
+       id="path2890"
+       inkscape:connector-type="polyline" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="245.44826"
+       y="392.26437"
+       id="text2854"><tspan
+         sodipodi:role="line"
+         id="tspan2856"
+         x="245.44826"
+         y="392.26437">XIM_FORWARD_EVENT</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 391.16254,531.97868 -150,-1.42858"
+       id="path3892"
+       inkscape:connector-type="polyline" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 495.16254,523.40725 -68.57143,-1.42857"
+       id="path3894"
+       inkscape:connector-type="polyline" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="80.571426"
+       y="444.21933"
+       id="text4489"><tspan
+         sodipodi:role="line"
+         id="tspan4491"
+         x="80.571426"
+         y="444.21933">the specified events</tspan><tspan
+         sodipodi:role="line"
+         x="80.571426"
+         y="459.21933"
+         id="tspan4493">are being filtered</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="76.571426"
+       y="517.36218"
+       id="text4495"><tspan
+         sodipodi:role="line"
+         id="tspan4497"
+         x="76.571426"
+         y="517.36218">Keys in the off-key-list</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="71.428574"
+       y="596.79077"
+       id="text4499"><tspan
+         sodipodi:role="line"
+         id="tspan4501"
+         x="71.428574"
+         y="596.79077">the specified events</tspan><tspan
+         sodipodi:role="line"
+         x="71.428574"
+         y="611.79077"
+         id="tspan4503">are being processed</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="434.57144"
+       y="394.64789"
+       id="text4505"><tspan
+         sodipodi:role="line"
+         id="tspan4507"
+         x="434.57144"
+         y="394.64789">Keys in the on-key-list</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="435.42691"
+       y="444.21933"
+       id="text4513"><tspan
+         sodipodi:role="line"
+         id="tspan4515"
+         x="435.42691"
+         y="444.21933">the specified events</tspan><tspan
+         sodipodi:role="line"
+         x="435.42691"
+         y="459.21933"
+         id="tspan4517">are being processed</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="434.57144"
+       y="517.36218"
+       id="text4519"><tspan
+         sodipodi:role="line"
+         id="tspan4521"
+         x="434.57144"
+         y="517.36218">Keys in the off-key-list</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="435.42691"
+       y="596.79077"
+       id="text4523"><tspan
+         sodipodi:role="line"
+         id="tspan4525"
+         x="435.42691"
+         y="596.79077">the specified events</tspan><tspan
+         sodipodi:role="line"
+         x="435.42691"
+         y="611.79077"
+         id="tspan4527">are being discarded</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 488.85714,401.78486 -68.57143,-1.42857"
+       id="path3894-2"
+       inkscape:connector-type="polyline" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:none;marker-end:url(#Arrow1Lend)"
+       d="m 131.14286,526.6479 79.99999,0"
+       id="path2886-9"
+       inkscape:connector-type="polyline" />
+  </g>
+</svg>

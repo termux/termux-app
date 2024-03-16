@@ -1,0 +1,191 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XDrawText __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XDrawText, XDrawText16, XTextItem, XTextItem16 \- draw polytext text and text drawing structures
+.SH SYNTAX
+.HP
+int XDrawText\^(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^, GC \fIgc\fP\^,
+int \fIx\fP\^, int \fIy\fP\^, XTextItem *\fIitems\fP\^, int \fInitems\fP\^);
+.HP
+int XDrawText16\^(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^, GC
+\fIgc\fP\^, int \fIx\fP\^, int \fIy\fP\^, XTextItem16 *\fIitems\fP\^, int
+\fInitems\fP\^);
+.SH ARGUMENTS
+.IP \fId\fP 1i
+Specifies the drawable.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIgc\fP 1i
+Specifies the GC.
+.IP \fIitems\fP 1i
+Specifies an array of text items.
+.IP \fInitems\fP 1i
+Specifies the number of text items in the array.
+.IP \fIx\fP 1i
+.br
+.ns
+.IP \fIy\fP 1i
+Specify the x and y coordinates, which are relative to the origin
+of the specified drawable
+and define the origin of the first character.
+.SH DESCRIPTION
+The
+.B XDrawText16
+function is similar to
+.B XDrawText
+except that it uses 2-byte or 16-bit characters.
+Both functions allow complex spacing and font shifts between counted strings.
+.LP
+Each text item is processed in turn.
+A font member other than
+.B None
+in an item causes the font to be stored in the GC
+and used for subsequent text.
+A text element delta specifies an additional change
+in the position along the x axis before the string is drawn.
+The delta is always added to the character origin
+and is not dependent on any characteristics of the font.
+Each character image, as defined by the font in the GC, is treated as an
+additional mask for a fill operation on the drawable.
+The drawable is modified only where the font character has a bit set to 1.
+If a text item generates a
+.B BadFont
+error, the previous text items may have been drawn.
+.LP
+For fonts defined with linear indexing rather than 2-byte matrix indexing,
+each
+.B XChar2b
+structure is interpreted as a 16-bit number with byte1 as the
+most significant byte.
+.LP
+Both functions use these GC components:
+function, plane-mask, fill-style, font, subwindow-mode,
+clip-x-origin, clip-y-origin, and clip-mask.
+They also use these GC mode-dependent components:
+foreground, background, tile, stipple, tile-stipple-x-origin,
+and tile-stipple-y-origin.
+.LP
+.B XDrawText
+and
+.B XDrawText16
+can generate
+.BR BadDrawable ,
+.BR BadFont ,
+.BR BadGC ,
+and
+.B BadMatch
+errors.
+.SH STRUCTURES
+The
+.B XTextItem
+and
+.B XTextItem16
+structures contain:
+.LP
+.EX
+typedef struct {
+        char *chars;    /\&* pointer to string */
+        int nchars;     /\&* number of characters */
+        int delta;      /\&* delta between strings */
+        Font font;      /\&* Font to print it in, None don't change */
+} XTextItem;
+.EE
+.LP
+.EX
+typedef struct {
+        XChar2b *chars; /\&* pointer to two-byte characters */
+        int nchars;     /\&* number of characters */
+        int delta;      /\&* delta between strings */
+        Font font;      /\&* font to print it in, None don't change */
+} XTextItem16;
+.EE
+.LP
+If the font member is not
+.BR None ,
+the font is changed before printing and also is stored in the GC.
+If an error was generated during text drawing,
+the previous items may have been drawn.
+The baseline of the characters are drawn starting at the x and y
+coordinates that you pass in the text drawing functions.
+.LP
+For example, consider the background rectangle drawn by
+.BR XDrawImageString .
+If you want the upper-left corner of the background rectangle
+to be at pixel coordinate (x,y), pass the (x,y + ascent)
+as the baseline origin coordinates to the text functions.
+The ascent is the font ascent, as given in the
+.B XFontStruct
+structure.
+If you want the lower-left corner of the background rectangle
+to be at pixel coordinate (x,y), pass the (x,y \- descent + 1)
+as the baseline origin coordinates to the text functions.
+The descent is the font descent, as given in the
+.B XFontStruct
+structure.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadDrawable
+A value for a Drawable argument does not name a defined Window or Pixmap.
+.TP 1i
+.B BadFont
+A value for a Font or GContext argument does not name a defined Font.
+.TP 1i
+.B BadGC
+A value for a GContext argument does not name a defined GContext.
+.TP 1i
+.B BadMatch
+An
+.B InputOnly
+window is used as a Drawable.
+.SH "SEE ALSO"
+XDrawImageString(__libmansuffix__),
+XDrawString(__libmansuffix__),
+XLoadFont(__libmansuffix__)
+.br
+\fI\*(xL\fP

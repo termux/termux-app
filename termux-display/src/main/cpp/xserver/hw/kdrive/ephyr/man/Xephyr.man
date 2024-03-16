@@ -1,0 +1,96 @@
+.\"
+.\" Copyright (c) Matthieu Herrb <matthieu@herrb.eu>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.TH Xephyr @appmansuffix@ @vendorversion@
+.SH NAME
+Xephyr - X server outputting to a window on a pre-existing X display
+.SH SYNOPSIS
+.B Xephyr
+.RI [\fB:\fP display ]
+.RI [ option
+.IR ... ]
+.SH DESCRIPTION
+.B Xephyr
+is a kdrive server that outputs to a window on a pre-existing "host"
+X display.
+Think
+.I Xnest
+but with support for modern extensions like composite, damage and randr.
+.PP
+Unlike
+.I Xnest
+which is an X proxy, i.e.  limited to the capabilities of the host X server,
+.B Xephyr
+is a real X server which
+uses the host X server window as "framebuffer" via fast SHM XImages.
+.PP
+It also has support for "visually" debugging what the server is
+painting.
+.SH OPTIONS
+The server accepts all the standard options of Xserver(@appmansuffix@)
+and the following additional options:
+.TP 8
+.BI -screen " width" x height
+sets the screen size.
+.TP 8
+.BI -parent " id"
+uses existing window
+.I id .
+If a
+.BI -screen
+argument follows a
+.BI -parent
+argument, this screen is embedded into the given window.
+.TP 8
+.B -host-cursor
+set 'cursor acceleration':
+The host's cursor is reused. This is only really there to aid
+debugging by avoiding server paints for the cursor. Performance
+improvement is negligible.
+.TP 8
+.B -resizeable
+Allow the Xephyr window to be resized, even if not embedded into a parent
+window. By default, the Xephyr window has a fixed size.
+.TP 8
+.B -no-host-grab
+Disable grabbing the keyboard and mouse.
+.SH "SIGNALS"
+Send a SIGUSR1 to the server (e.g. pkill -USR1 Xephyr) to
+toggle the debugging mode.
+In this mode red rectangles are painted to
+screen areas getting painted before painting the actual content.
+The
+delay between this can be altered by setting a XEPHYR_PAUSE env var to
+a value in micro seconds.
+.SH CAVEATS
+.PP
+.IP \(bu 2
+Rotated displays are currently updated via full blits. This
+is slower than a normal orientated display. Debug mode will
+therefore not be of much use rotated.
+.IP \(bu 2
+The '-host-cursor' cursor is static in its appearance.
+.IP \(bu 2
+The build gets a warning about 'nanosleep'. I think the various '-D'
+build flags are causing this. I haven't figured as yet how to work
+round it. It doesn't appear to break anything however.
+.IP \(bu 2
+Keyboard handling is basic but works.
+.IP \(bu 2
+Mouse button 5 probably won't work.
+.SH "SEE ALSO"
+X(@miscmansuffix@), Xserver(@appmansuffix@)
+.SH AUTHOR
+Matthew Allum <mallum@o-hand.com> 2004

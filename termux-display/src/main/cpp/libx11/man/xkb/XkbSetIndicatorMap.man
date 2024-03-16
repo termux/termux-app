@@ -1,0 +1,188 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbSetIndicatorMap __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbSetIndicatorMap \- Downloads the changes to the server based on modifications 
+to a local copy of the keyboard description which will update the maps for one 
+or more indicators
+.SH SYNOPSIS
+.HP
+.B Bool XkbSetIndicatorMap
+.BI "(\^Display *" "dpy" "\^,"
+.BI "unsigned int " "which" "\^,"
+.BI "XkbDescPtr " "desc" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to the X server
+.TP
+.I which
+mask of indicators to change
+.TP
+.I desc
+keyboard description from which the maps are taken
+.SH DESCRIPTION
+.LP
+This section discusses the effects of explicitly changing indicators depending 
+upon different settings in the indicator map. See Tables 1 and Table 2 for 
+information on the effects of the indicator map fields when explicit changes are 
+made.
+
+.TS
+c s s
+c s s
+l l l
+l l lw(3i).
+Table 1 XkbIndicatorMapRec which_groups and groups, 
+Indicator Drives Keyboard
+_
+which_groups	New State	Effect on Keyboard Group State
+_
+XkbIM_UseNone	On or Off	No effect
+XkbIM_UseBase	On or Off	No effect
+XkbIM_UseLatched	On	T{
+The groups field is treated as a group mask. The keyboard group latch is changed 
+to the lowest numbered 
+group specified in groups; if groups is empty, the  keyboard group latch is 
+changed to zero.
+T}
+XkbIM_UseLatched	Off	T{
+The groups field is treated as a group mask. If the indicator is explicitly 
+extinguished, keyboard group 
+latch is changed to the lowest numbered group not specified in groups; if groups 
+is zero, the keyboard 
+group latch is set to the index of the highest legal keyboard group.
+T}
+XkbIM_UseLocked or
+.br
+XkbIM_UseEffective	On	T{
+If the groups mask is empty, group is not changed; otherwise, the locked 
+keyboard group is changed to the 
+lowest numbered group specified in groups.
+T}
+XkbIM_UseLocked or
+.br
+XkbIM_UseEffective	Off	T{
+Locked keyboard group is changed to the lowest numbered group that is not 
+specified in the groups mask, or 
+to Group1 if the groups mask contains all keyboard groups.
+T}
+
+.TE
+
+.TS
+c s s
+c s s
+l l l
+l l lw(3i).
+Table 2 XkbIndicatorMapRec which_mods and mods,
+Indicator Drives Keyboard
+_
+which_mods	New State	Effect on Keyboard Modifiers
+_
+XkbIM_UseNone or
+.br
+XkbIM_UseBase	On or Off	No Effect
+XkbIM_UseLatched	On	T{
+Any modifiers specified in the mask field of mods are added to the latched 
+modifiers.
+T}
+XkbIM_UseLatched	Off	T{
+Any modifiers specified in the mask field of mods are removed from the latched 
+modifiers.
+T}
+XkbIM_UseLocked,
+.br
+XkbIM_UseCompat, or
+.br
+XkbIM_UseEffective	On	T{
+Any modifiers specified in the mask field of mods are added to the locked 
+modifiers.
+T}
+XkbIM_UseLocked	Off	T{
+Any modifiers specified in the mask field of mods are removed from the locked 
+modifiers.
+T}
+XkbIM_UseCompat or
+.br
+XkbIM_UseEffective	Off	T{
+Any modifiers specified in the mask field of mods are removed from both the 
+locked and latched modifiers.
+T}
+.TE
+
+If XkbIM_LEDDrivesKB is set and XkbIM_NoExplicit is not, and if you call a 
+function that updates the server's image of the indicator map (such as
+.I XkbSetIndicatorMap 
+or 
+.IR XkbSetNamedIndicator ),
+Xkb changes the keyboard state and controls to reflect the other fields of the
+indicator map. If you attempt to explicitly change the value of an indicator for 
+which XkbIM_LEDDrivesKB is absent or for which XkbIM_NoExplicit is present, 
+keyboard state or controls are unaffected.
+ 
+If neither XkbIM_NoAutomatic nor XkbIM_NoExplicit is set in an indicator map, 
+Xkb honors any request to change the state of the indicator, but the new state 
+might be immediately superseded by automatic changes to the indicator state if 
+the keyboard state or controls change.
+
+The effects of changing an indicator that drives the keyboard are cumulative; it 
+is possible for a single change to affect keyboard group, modifiers, and 
+controls simultaneously.
+
+If you change an indicator for which both the XkbIM_LEDDrivesKB and 
+XkbIM_NoAutomatic flags are specified, Xkb applies the keyboard changes 
+specified in the other indicator map fields and changes the indicator to reflect 
+the state that was explicitly requested. The indicator remains in the new state 
+until it is explicitly changed again.
+
+If the XkbIM_NoAutomatic flag is not set and XkbIM_LEDDrivesKB is set, Xkb 
+applies the changes specified in the other indicator map fields and sets the 
+state of the indicator to the values specified by the indicator map. Note that 
+it is possible in this case for the indicator to end up in a different state 
+than the one that was explicitly requested. For example, Xkb does not extinguish 
+an indicator with 
+.I which_mods 
+of XkbIM_UseBase and 
+.I mods 
+of Shift if, at the time Xkb processes the request to extinguish the indicator, 
+one of the Shift keys is physically depressed.
+
+If you explicitly light an indicator for which XkbIM_LEDDrivesKB is set, Xkb 
+enables all of the boolean controls specified in the 
+.I ctrls 
+field of its indicator map. Explicitly extinguishing such an indicator causes 
+Xkb to disable all of the boolean controls specified in 
+.I ctrls. 
+
+For each bit set in the 
+.I which 
+parameter, 
+.I XkbSetIndicatorMap 
+sends the corresponding indicator map from the 
+.I desc 
+parameter to the server.
+.SH "SEE ALSO"
+.BR XkbSetNamedIndicator (__libmansuffix__)

@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# Convert a bdf file into C-code suitable for inclusion in
+# builtin fonts
+#
+FONT=$1
+NAME=$2
+echo 'static const char file_'$NAME'[] = {'
+bdftopcf -p1 -u1 $1 |
+      compress -b 12 |
+      od -b -v -w8 |
+      sed 's/^[0-9]*\( *\)/\1\1\1\1/' |
+      sed 's/\([0-9][0-9]*\)/'"'"'\\\1'"'"',/g'
+echo '};'

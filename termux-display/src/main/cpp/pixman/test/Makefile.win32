@@ -1,0 +1,61 @@
+default: all
+
+top_srcdir = ..
+include $(top_srcdir)/test/Makefile.sources
+include $(top_srcdir)/Makefile.win32.common
+
+TEST_LDADD = \
+	$(top_builddir)/pixman/$(CFG_VAR)/$(LIBRARY).lib \
+	$(CFG_VAR)/libutils.lib \
+	$(NULL)
+
+libutils_OBJECTS = $(patsubst %.c, $(CFG_VAR)/%.obj, $(libutils_sources))
+
+SOURCES = $(patsubst %,   %.c,              $(TESTPROGRAMS) $(OTHERPROGRAMS))
+OBJECTS = $(patsubst %.c, $(CFG_VAR)/%.obj, $(SOURCES))
+TESTS   = $(patsubst %,   $(CFG_VAR)/%.exe, $(TESTPROGRAMS))
+OTHERS  = $(patsubst %,   $(CFG_VAR)/%.exe, $(OTHERPROGRAMS))
+
+all: inform $(TESTS) $(OTHERS)
+
+check: inform $(TESTS)
+	@total=0 ; \
+	pass=0 ; \
+	skip=0 ; \
+	fail=0 ; \
+	for test in $(TESTS) ; \
+	do \
+		total=`expr $$total + 1` ; \
+		./$$test ; \
+		r=$$? ; \
+		if test $$r -eq 0 ; \
+		then echo "PASS: $$test" ; \
+		    pass=`expr $$pass + 1` ; \
+		elif test $$r -eq 77 ; \
+		then echo "SKIP: $$test" ; \
+		    skip=`expr $$skip + 1` ; \
+		else echo "FAIL: $$test" ; \
+		    fail=`expr $$fail + 1` ; \
+		fi ; \
+	done ; \
+	dashes="============================================================================" ; \
+	echo "$$dashes" ; \
+	echo "Testsuite summary for pixman:" ; \
+	echo "$$dashes" ; \
+	echo "# TOTAL: $$total" ; \
+	echo "# PASS:  $$pass" ; \
+	echo "# SKIP:  $$skip" ; \
+	echo "# FAIL:  $$fail" ; \
+	echo "$$dashes" ; \
+	test $$fail -eq 0
+
+$(CFG_VAR)/libutils.lib: $(libutils_OBJECTS)
+	@$(AR) $(PIXMAN_ARFLAGS) -OUT:$@ $^
+
+$(CFG_VAR)/%.exe: $(CFG_VAR)/%.obj $(TEST_LDADD)
+	@$(LD) $(PIXMAN_LDFLAGS) -OUT:$@ $^
+
+$(top_builddir)/pixman/$(CFG_VAR)/$(LIBRARY).lib:
+	@$(MAKE) -C $(top_builddir)/pixman -f Makefile.win32
+
+.PHONY: all check

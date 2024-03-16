@@ -1,0 +1,22 @@
+root = true
+
+[*]
+charset = utf-8
+
+[*.{c,h}]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[.travis.yml]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[meson.build]
+indent_style = space
+indent_size = 8

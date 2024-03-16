@@ -1,0 +1,59 @@
+Here are the steps to follow to create a new pixman release:
+
+1) Ensure that there are no uncommitted changes or unpushed commits,
+   and that you are up to date with the latest commits in the central
+   repository. Here are a couple of useful commands:
+
+	git diff			(no output)
+	
+	git status			(should report "nothing to commit")
+
+	git log master...origin		(no output; note: *3* dots)
+
+2) Increment pixman_(major|minor|micro) in configure.ac and meson.build
+   according to the directions in those files.
+
+3) Make sure that new version works, including
+
+	- make distcheck passes
+
+	- the X server still works with the new pixman version
+	  installed
+
+	- the cairo test suite hasn't gained any new failures compared
+	  to last pixman version.
+
+4) Use "git commit" to record the changes made in step 2 and 3.
+
+5) Generate and publish the tar files by running 
+
+	make PREV=<last version> GPGKEY=<your gpg key id> release-publish
+
+   If your freedesktop user name is different from your local one,
+   then also set the variable USER to your freedesktop user name.
+
+6) Run 
+
+	make release-publish-message
+
+   to generate a draft release announcement. Edit it as appropriate and
+   send it to 
+
+	cairo-announce@cairographics.org
+
+	pixman@lists.freedesktop.org
+
+	xorg-announce@lists.freedesktop.org
+
+7) Increment pixman_micro to the next larger (odd) number in
+   configure.ac. Commit this change, and push all commits created
+   during this process using
+
+	git push
+	git push --tags
+
+   You must use "--tags" here; otherwise the new tag will not
+   be pushed out.
+
+8) Change the topic of the #cairo IRC channel on freenode to advertise
+   the new version.

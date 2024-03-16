@@ -1,0 +1,178 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XGraphicsExposeEvent __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XGraphicsExposeEvent, XNoExposeEvent \- GraphicsExpose and NoExpose event structures
+.SH STRUCTURES
+The structures for
+.B GraphicsExpose
+and
+.B NoExpose
+events contain:
+.LP
+.EX
+typedef struct {
+        int type;       /\&* GraphicsExpose */
+        unsigned long serial;   /\&* # of last request processed by server */
+        Bool send_event;        /\&* true if this came from a SendEvent request */
+        Display *display;       /\&* Display the event was read from */
+        Drawable drawable;
+        int x, y;
+        int width, height;
+        int count;      /\&* if nonzero, at least this many more */
+        int major_code; /\&* core is CopyArea or CopyPlane */
+        int minor_code; /\&* not defined in the core */
+} XGraphicsExposeEvent;
+.EE
+.LP
+.EX
+typedef struct {
+        int type;       /\&* NoExpose */
+        unsigned long serial;   /\&* # of last request processed by server */
+        Bool send_event;        /\&* true if this came from a SendEvent request */
+        Display *display;       /\&* Display the event was read from */
+        Drawable drawable;
+        int major_code; /\&* core is CopyArea or CopyPlane */
+        int minor_code; /\&* not defined in the core */
+} XNoExposeEvent;
+.EE
+.LP
+When you receive these events,
+their structure members are set as follows.
+.LP
+The type member is set to the event type constant name that uniquely identifies
+it.
+For example, when the X server reports a
+.B GraphicsExpose
+event to a client application, it sends an
+.B XGraphicsExposeEvent
+structure with the type member set to
+.BR GraphicsExpose .
+The display member is set to a pointer to the display the event was read on.
+The send_event member is set to
+.B True
+if the event came from a
+.B SendEvent
+protocol request.
+The serial member is set from the serial number reported in the protocol
+but expanded from the 16-bit least-significant bits to a full 32-bit value.
+The window member is set to the window that is most useful to toolkit
+dispatchers.
+.LP
+Both structures have these common members: drawable, major_code, and minor_code.
+The drawable member is set to the drawable of the destination region on
+which the graphics request was to be performed.
+The major_code member is set to the graphics request initiated by the client
+and can be either
+.B X_CopyArea
+or
+.BR X_CopyPlane .
+If it is
+.BR X_CopyArea ,
+a call to
+.B XCopyArea
+initiated the request.
+If it is
+.BR X_CopyPlane ,
+a call to
+.B XCopyPlane
+initiated the request.
+These constants are defined in
+.BR X11/Xproto.h .
+The minor_code member,
+like the major_code member,
+indicates which graphics request was initiated by
+the client.
+However, the minor_code member is not defined by the core
+X protocol and will be zero in these cases,
+although it may be used by an extension.
+.LP
+The
+.B XGraphicsExposeEvent
+structure has these additional members: x, y, width, height, and count.
+The x and y members are set to the coordinates relative to the drawable's origin
+and indicate the upper-left corner of the rectangle.
+The width and height members are set to the size (extent) of the rectangle.
+The count member is set to the number of
+.B GraphicsExpose
+events to follow.
+If count is zero, no more
+.B GraphicsExpose
+events follow for this window.
+However, if count is nonzero, at least that number of
+.B GraphicsExpose
+events (and possibly more) are to follow for this window.
+.SH "SEE ALSO"
+XAnyEvent(__libmansuffix__),
+XButtonEvent(__libmansuffix__),
+XCreateWindowEvent(__libmansuffix__),
+XCirculateEvent(__libmansuffix__),
+XCirculateRequestEvent(__libmansuffix__),
+XColormapEvent(__libmansuffix__),
+XConfigureEvent(__libmansuffix__),
+XConfigureRequestEvent(__libmansuffix__),
+XCopyArea(__libmansuffix__),
+XCrossingEvent(__libmansuffix__),
+XDestroyWindowEvent(__libmansuffix__),
+XErrorEvent(__libmansuffix__),
+XExposeEvent(__libmansuffix__),
+XFocusChangeEvent(__libmansuffix__),
+XGravityEvent(__libmansuffix__),
+XKeymapEvent(__libmansuffix__),
+XMapEvent(__libmansuffix__),
+XMapRequestEvent(__libmansuffix__),
+XPropertyEvent(__libmansuffix__),
+XReparentEvent(__libmansuffix__),
+XResizeRequestEvent(__libmansuffix__),
+XSelectionClearEvent(__libmansuffix__),
+XSelectionEvent(__libmansuffix__),
+XSelectionRequestEvent(__libmansuffix__),
+XUnmapEvent(__libmansuffix__),
+XVisibilityEvent(__libmansuffix__)
+.br
+\fI\*(xL\fP

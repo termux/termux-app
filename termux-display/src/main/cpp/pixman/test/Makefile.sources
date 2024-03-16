@@ -1,0 +1,56 @@
+# Tests (sorted by expected completion time)
+TESTPROGRAMS =			      \
+	oob-test		      \
+	infinite-loop		      \
+	trap-crasher		      \
+	fence-image-self-test	      \
+	region-translate-test	      \
+	fetch-test		      \
+	a1-trap-test		      \
+	prng-test		      \
+	radial-invalid		      \
+	pdf-op-test		      \
+	region-test		      \
+	combiner-test		      \
+	scaling-crash-test	      \
+	alpha-loop		      \
+	scaling-helpers-test	      \
+	thread-test		      \
+	rotate-test		      \
+	alphamap		      \
+	gradient-crash-test	      \
+	pixel-test		      \
+	matrix-test		      \
+	filter-reduction-test         \
+	composite-traps-test	      \
+	region-contains-test	      \
+	glyph-test		      \
+	solid-test		      \
+	stress-test		      \
+	cover-test		      \
+	blitters-test		      \
+	affine-test		      \
+	scaling-test		      \
+	composite		      \
+	tolerance-test		      \
+	$(NULL)
+
+# Other programs
+OTHERPROGRAMS =                 \
+	lowlevel-blt-bench	\
+	radial-perf-test	\
+        check-formats           \
+	scaling-bench		\
+	affine-bench            \
+	$(NULL)
+
+# Utility functions
+libutils_sources =		\
+	utils.c			\
+	utils-prng.c		\
+	$(NULL)
+
+libutils_headers =		\
+	utils.h			\
+	utils-prng.h		\
+	$(NULL)

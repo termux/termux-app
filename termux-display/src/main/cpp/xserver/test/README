@@ -1,0 +1,25 @@
+                        X server test suite
+
+This suite contains a set of tests to verify the behaviour of functions used
+internally to the server.
+
+= How it works =
+Through some automake abuse, we link the test programs with the same static
+libraries as the Xorg binary. The test suites can then call various functions
+and verify their behaviour - without the need to start the server or connect
+clients.
+
+This testing only works for functions that do not rely on a particular state
+of the X server. Unless the test suite replicates the expected state, which
+may be difficult.
+
+= How to run the tests =
+Run "make check" in the test directory. This will compile the tests and execute
+them in the order specified in the TESTS variable in test/Makefile.am.
+
+Each set of tests related to a subsystem are available as a binary that can be
+executed directly. For example, run "xkb" to perform some xkb-related tests.
+
+== Adding a new test ==
+When adding a new test, ensure that you add a short description of what the
+test does and what the expected outcome is.

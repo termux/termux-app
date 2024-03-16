@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for i in `cat protos | grep -v x11proto`; do
+    git merge --allow-unrelated-histories $i/master --commit --no-edit -m"Merge $i"
+    ./move-protos $i
+done

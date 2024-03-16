@@ -1,0 +1,20 @@
+[binaries]
+c = 'i686-w64-mingw32-gcc'
+cpp = 'i686-w64-mingw32-g++'
+ar = 'i686-w64-mingw32-ar'
+strip = 'i686-w64-mingw32-strip'
+pkgconfig = '/usr/local/bin/i686-w64-mingw32-pkg-config'
+windres = 'i686-w64-mingw32-windres'
+exe_wrapper = 'wine'
+
+[properties]
+# Directory that contains 'bin', 'lib', etc for the toolchain
+root = '/usr/i686-w64-mingw32'
+# Directory that contains 'bin', 'lib', etc which have been cross-compiled
+sys_root = '/usr/i686-w64-mingw32'
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86'
+cpu = 'i686'
+endian = 'little'

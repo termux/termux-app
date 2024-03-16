@@ -1,0 +1,1893 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<appendix id="compatibility_functions">
+<title>Compatibility Functions</title>
+<para>
+The X Version 11 and X Version 10 functions discussed in this appendix 
+are obsolete, have been superseded by newer X Version 11 functions,
+and are maintained for compatibility reasons only.
+</para>
+<sect1 id="X_Version_11_Compatibility_Functions">
+<title>X Version 11 Compatibility Functions</title>
+<para>
+You can use the X Version 11 compatibility functions to:
+<itemizedlist>
+  <listitem>
+    <para>
+Set standard properties 
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Set and get window sizing hints 
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Set and get an
+<structname>XStandardColormap</structname>
+structure 
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Parse window geometry
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Get X environment defaults
+    </para>
+  </listitem>
+</itemizedlist>
+</para>
+<sect2 id="Setting_Standard_Properties">
+<title>Setting Standard Properties</title>
+<para>
+To specify a minimum set of properties describing the simplest application,
+use
+<xref linkend='XSetStandardProperties' xrefstyle='select: title'/>.
+This function has been superseded by
+<xref linkend='XSetWMProperties' xrefstyle='select: title'/>
+and sets all or portions of the 
+<property>WM_NAME</property>, <property>WM_ICON_NAME</property>, <property>WM_HINTS</property>, <property>WM_COMMAND</property>, 
+and <property>WM_NORMAL_HINTS</property> properties.
+</para>
+<indexterm significance="preferred"><primary>XSetStandardProperties</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetStandardProperties'>
+<funcprototype>
+  <funcdef><function>XSetStandardProperties</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>char *<parameter>window_name</parameter></paramdef>
+  <paramdef>char *<parameter>icon_name</parameter></paramdef>
+  <paramdef>Pixmap <parameter>icon_pixmap</parameter></paramdef>
+  <paramdef>char **<parameter>argv</parameter></paramdef>
+  <paramdef>int <parameter>argc</parameter></paramdef>
+  <paramdef>XSizeHints *<parameter>hints</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>window_name</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window name,
+which should be a null-terminated string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>icon_name</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the icon name,
+which should be a null-terminated string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>icon_pixmap</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the bitmap that is to be used for the icon or
+<symbol>None</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>argv</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the application's argument list.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>argc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of arguments.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>hints</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a pointer to the size hints for the window in its normal state.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetStandardProperties' xrefstyle='select: title'/>
+function provides a means by which simple applications set the
+most essential properties with a single call.
+<xref linkend='XSetStandardProperties' xrefstyle='select: title'/>
+should be used to give a window manager some information about 
+your program's preferences. 
+It should not be used by applications that need
+to communicate more information than is possible with
+<xref linkend='XSetStandardProperties' xrefstyle='select: title'/>.
+(Typically, argv is the argv array of your main program.)
+If the strings are not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetStandardProperties' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Setting_and_Getting_Window_Sizing_Hints">
+<title>Setting and Getting Window Sizing Hints</title>
+<para>
+Xlib provides functions that you can use to set or get window sizing hints.
+The functions discussed in this section use the flags and the
+<structname>XSizeHints</structname>
+structure, as defined in the
+<filename class="headerfile">&lt;X11/Xutil.h&gt;</filename>
+<indexterm type="file"><primary><filename class="headerfile">X11/Xutil.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+header file and use the <property>WM_NORMAL_HINTS</property> property.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set the size hints for a given window in its normal state, use
+<xref linkend='XSetNormalHints' xrefstyle='select: title'/>.
+This function has been superseded by
+<xref linkend='XSetWMNormalHints' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetNormalHints</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetNormalHints'>
+<funcprototype>
+  <funcdef><function>XSetNormalHints</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XSizeHints *<parameter>hints</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>hints</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a pointer to the size hints for the window in its normal state.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetNormalHints' xrefstyle='select: title'/>
+function sets the size hints structure for the specified window.
+Applications use
+<xref linkend='XSetNormalHints' xrefstyle='select: title'/>
+to inform the window manager of the size
+or position desirable for that window.
+In addition, 
+an application that wants to move or resize itself should call
+<xref linkend='XSetNormalHints' xrefstyle='select: title'/>
+and specify its new desired location and size
+as well as making direct Xlib calls to move or resize.  
+This is because window managers may ignore redirected
+configure requests, but they pay attention to property changes.
+</para>
+<para>
+<!-- .LP -->
+To set size hints, 
+an application not only must assign values to the appropriate members
+in the hints structure but also must set the flags member of the structure 
+to indicate which information is present and where it came from.  
+A call to
+<xref linkend='XSetNormalHints' xrefstyle='select: title'/>
+is meaningless, unless the flags member is set to indicate which members of
+the structure have been assigned values.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetNormalHints' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return the size hints for a window in its normal state, use
+<xref linkend='XGetNormalHints' xrefstyle='select: title'/>.
+This function has been superseded by
+<xref linkend='XGetWMNormalHints' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetNormalHints</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetNormalHints'>
+<funcprototype>
+  <funcdef>Status <function>XGetNormalHints</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XSizeHints *<parameter>hints_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>hints_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the size hints for the window in its normal state.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetNormalHints' xrefstyle='select: title'/>
+function returns the size hints for a window in its normal state.
+It returns a nonzero status if it succeeds or zero if
+the application specified no normal size hints for this window.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetNormalHints' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+The next two functions set and read the <property>WM_ZOOM_HINTS</property> property.
+</para>
+<para>
+<!-- .LP -->
+To set the zoom hints for a window, use
+<xref linkend='XSetZoomHints' xrefstyle='select: title'/>.
+This function is no longer supported by the
+<citetitle>Inter-Client Communication Conventions Manual</citetitle>.
+</para>
+<indexterm significance="preferred"><primary>XSetZoomHints</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetZoomHints'>
+<funcprototype>
+  <funcdef><function>XSetZoomHints</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XSizeHints *<parameter>zhints</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>zhints</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a pointer to the zoom hints.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Many window managers think of windows in one of three states:
+iconic, normal, or zoomed.
+The
+<xref linkend='XSetZoomHints' xrefstyle='select: title'/>
+function provides the window manager with information for the window in the
+zoomed state.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetZoomHints' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To read the zoom hints for a window, use
+<xref linkend='XGetZoomHints' xrefstyle='select: title'/>.
+This function is no longer supported by the
+<citetitle>Inter-Client Communication Conventions Manual</citetitle>.
+</para>
+<indexterm significance="preferred"><primary>XGetZoomHints</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetZoomHints'>
+<funcprototype>
+  <funcdef>Status <function>XGetZoomHints</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XSizeHints *<parameter>zhints_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>zhints_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the zoom hints.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetZoomHints' xrefstyle='select: title'/>
+function returns the size hints for a window in its zoomed state.
+It returns a nonzero status if it succeeds or zero if
+the application specified no zoom size hints for this window.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetZoomHints' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set the value of any property of type <property>WM_SIZE_HINTS</property>, use
+<xref linkend='XSetSizeHints' xrefstyle='select: title'/>.
+This function has been superseded by
+<xref linkend='XSetWMSizeHints' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetSizeHints</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetSizeHints'>
+<funcprototype>
+  <funcdef><function>XSetSizeHints</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XSizeHints *<parameter>hints</parameter></paramdef>
+  <paramdef>Atom <parameter>property</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>hints</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a pointer to the size hints.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>property</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property name.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetSizeHints' xrefstyle='select: title'/>
+function sets the
+<structname>XSizeHints</structname>
+structure for the named property and the specified window.
+This is used by
+<xref linkend='XSetNormalHints' xrefstyle='select: title'/>
+and
+<xref linkend='XSetZoomHints' xrefstyle='select: title'/>
+and can be used to set the value of any property of type <property>WM_SIZE_HINTS</property>.
+Thus, it may be useful if other properties of that type get defined.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetSizeHints' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadAtom</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To read the value of any property of type <property>WM_SIZE_HINTS</property>, use
+<xref linkend='XGetSizeHints' xrefstyle='select: title'/>.
+This function has been superseded by
+<xref linkend='XGetWMSizeHints' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetSizeHints</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetSizeHints'>
+<funcprototype>
+  <funcdef>Status <function>XGetSizeHints</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XSizeHints *<parameter>hints_return</parameter></paramdef>
+  <paramdef>Atom <parameter>property</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>hints_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the size hints.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>property</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property name.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetSizeHints' xrefstyle='select: title'/>
+function returns the
+<structname>XSizeHints</structname>
+structure for the named property and the specified window.
+This is used by
+<xref linkend='XGetNormalHints' xrefstyle='select: title'/>
+and
+<xref linkend='XGetZoomHints' xrefstyle='select: title'/>.
+It also can be used to retrieve the value of any property of type
+<property>WM_SIZE_HINTS</property>.
+Thus, it may be useful if other properties of that type get defined.
+<xref linkend='XGetSizeHints' xrefstyle='select: title'/>
+returns a nonzero status if a size hint was defined
+or zero otherwise.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetSizeHints' xrefstyle='select: title'/>
+can generate
+<errorname>BadAtom</errorname>
+and 
+<errorname>BadWindow</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Getting_and_Setting_an_XStandardColormap_Structure">
+<title>Getting and Setting an XStandardColormap Structure</title>
+<para>
+To get the 
+<structname>XStandardColormap</structname>
+structure associated with one of the described atoms, use
+<xref linkend='XGetStandardColormap' xrefstyle='select: title'/>.
+This function has been superseded by
+<xref linkend='XGetRGBColormaps' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetStandardColormap</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetStandardColormap'>
+<funcprototype>
+  <funcdef>Status <function>XGetStandardColormap</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XStandardColormap *<parameter>colormap_return</parameter></paramdef>
+  <paramdef>Atom <parameter>property</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>colormap_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the colormap associated with the specified atom.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>property</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property name.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetStandardColormap' xrefstyle='select: title'/>
+function returns the colormap definition associated with the atom supplied
+as the property argument.
+<xref linkend='XGetStandardColormap' xrefstyle='select: title'/>
+returns a nonzero status if successful and zero otherwise.
+For example,
+to fetch the standard
+<symbol>GrayScale</symbol>
+colormap for a display,
+you use
+<xref linkend='XGetStandardColormap' xrefstyle='select: title'/>
+with the following syntax:
+<programlisting>
+XGetStandardColormap(dpy, DefaultRootWindow(dpy), &amp;cmap, XA_RGB_GRAY_MAP);
+</programlisting>
+See <link linkend="Standard_Colormaps">section 14.3</link> for the
+semantics of standard colormaps.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetStandardColormap' xrefstyle='select: title'/>
+can generate
+<errorname>BadAtom</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set a standard colormap, use
+<xref linkend='XSetStandardColormap' xrefstyle='select: title'/>.
+This function has been superseded by
+<xref linkend='XSetRGBColormaps' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetStandardColormap</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetStandardColormap'>
+<funcprototype>
+  <funcdef><function>XSetStandardColormap</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XStandardColormap *<parameter>colormap</parameter></paramdef>
+  <paramdef>Atom <parameter>property</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>colormap</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the colormap.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>property</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property name.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetStandardColormap' xrefstyle='select: title'/>
+function usually is only used by window or session managers.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetStandardColormap' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadAtom</errorname>,
+<errorname>BadDrawable</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Parsing_Window_Geometry">
+<title>Parsing Window Geometry</title>
+<para>
+To parse window geometry given a user-specified position 
+and a default position, use
+<xref linkend='XGeometry' xrefstyle='select: title'/>.
+This function has been superseded by
+<xref linkend='XWMGeometry' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Window</primary><secondary>determining location</secondary></indexterm>
+<indexterm significance="preferred"><primary>XGeometry</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGeometry'>
+<funcprototype>
+  <funcdef>int <function>XGeometry</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>screen</parameter></paramdef>
+  <paramdef>char *<parameter>position</parameter></paramdef>
+  <paramdef>char *<parameter>default_position</parameter></paramdef>
+  <paramdef>unsigned int <parameter>bwidth</parameter></paramdef>
+  <paramdef>unsigned int <parameter>fwidth</parameter></paramdef>
+  <paramdef>unsigned int <parameter>fheight</parameter></paramdef>
+  <paramdef>int <parameter>xadder</parameter></paramdef>
+  <paramdef>int <parameter>yadder</parameter></paramdef>
+  <paramdef>int *<parameter>x_return</parameter></paramdef>
+  <paramdef>int *<parameter>y_return</parameter></paramdef>
+  <paramdef>int *<parameter>width_return</parameter></paramdef>
+  <paramdef>int *<parameter>height_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>screen</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>position</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>default_position</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the geometry specifications.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bwidth</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the border width.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>fheight</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>fwidth</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the font height and width in pixels (increment size).
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>xadder</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>yadder</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify additional interior padding needed in the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the x and y offsets.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the width and height determined.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+You pass in the border width (bwidth),
+size of the increments fwidth and fheight
+(typically font width and height),
+and any additional interior space (xadder and yadder)
+to make it easy to compute the resulting size.
+The
+<xref linkend='XGeometry' xrefstyle='select: title'/>
+function returns the position the window should be placed given a position and
+a default position.
+<xref linkend='XGeometry' xrefstyle='select: title'/>
+determines the placement of
+a window using a geometry specification as specified by
+<xref linkend='XParseGeometry' xrefstyle='select: title'/>
+and the additional information about the window.
+Given a fully qualified default geometry specification and
+an incomplete geometry specification, 
+<xref linkend='XParseGeometry' xrefstyle='select: title'/>
+returns a bitmask value as defined above in the 
+<xref linkend='XParseGeometry' xrefstyle='select: title'/>
+call,
+by using the position argument.
+</para>
+<para>
+<!-- .LP -->
+The returned width and height will be the width and height specified
+by default_position as overridden by any user-specified position.
+They are not affected by fwidth, fheight, xadder, or yadder.
+The x and y coordinates are computed by using the border width,
+the screen width and height, padding as specified by xadder and yadder,
+and the fheight and fwidth times the width and height from the
+geometry specifications.
+</para>
+</sect2>
+<sect2 id="Getting_the_X_Environment_Defaults">
+<title>Getting the X Environment Defaults</title>
+<para>
+The
+<xref linkend='XGetDefault' xrefstyle='select: title'/>
+function provides a primitive interface to the resource manager facilities 
+discussed in <link linkend='Resource_Manager_Functions'>chapter 15</link>.
+It is only useful in very simple applications.
+</para>
+<!-- .LP -->
+<!-- .sp -->
+<indexterm significance="preferred"><primary>XGetDefault</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetDefault'>
+<funcprototype>
+  <funcdef>char *<function>XGetDefault</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>program</parameter></paramdef>
+  <paramdef>char *<parameter>option</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>program</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the program name for the Xlib defaults (usually argv[0] 
+of the main program).
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>option</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the option name.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetDefault' xrefstyle='select: title'/>
+function returns the value of the resource <emphasis remap='I'>prog</emphasis>.<emphasis remap='I'>option</emphasis>,
+where <emphasis remap='I'>prog</emphasis> is the program argument with the directory prefix removed
+and <emphasis remap='I'>option</emphasis> must be a single component.
+Note that multilevel resources cannot be used with
+<xref linkend='XGetDefault' xrefstyle='select: title'/>.
+The class "Program.Name" is always used for the resource lookup.
+If the specified option name does not exist for this program,
+<xref linkend='XGetDefault' xrefstyle='select: title'/>
+returns NULL.
+The strings returned by
+<xref linkend='XGetDefault' xrefstyle='select: title'/>
+are owned by Xlib and should not be modified or freed by the client.
+</para>
+<para>
+<!-- .LP -->
+If a database has been set with 
+<xref linkend='XrmSetDatabase' xrefstyle='select: title'/>,
+that database is used for the lookup.
+Otherwise, a database is created
+and is set in the display (as if by calling 
+<xref linkend='XrmSetDatabase' xrefstyle='select: title'/>).
+The database is created in the current locale.
+To create a database,
+<xref linkend='XGetDefault' xrefstyle='select: title'/>
+uses resources from the RESOURCE_MANAGER property on the root
+window of screen zero.
+If no such property exists,
+a resource file in the user's home directory is used.
+On a <acronym>POSIX</acronym>-conformant system,
+this file is
+<function>"$HOME/.Xdefaults"</function>.
+<indexterm><primary>Files</primary><secondary><filename>$HOME/.Xdefaults</filename></secondary></indexterm>
+After loading these defaults,
+<xref linkend='XGetDefault' xrefstyle='select: title'/>
+merges additional defaults specified by the XENVIRONMENT
+environment variable.
+If XENVIRONMENT is defined,
+it contains a full path name for the additional resource file.
+If XENVIRONMENT is not defined,
+<xref linkend='XGetDefault' xrefstyle='select: title'/>
+looks for
+"<filename>$HOME/.Xdefaults-<replaceable>name</replaceable></filename>" ,
+where <replaceable>name</replaceable> specifies the name of the machine on which the application
+is running.
+</para>
+</sect2>
+</sect1>
+<sect1 id="X_Version_10_Compatibility_Functions">
+<title>X Version 10 Compatibility Functions</title>
+<para>
+You can use the X Version 10 compatibility functions to:
+<itemizedlist>
+  <listitem>
+    <para>
+Draw and fill polygons and curves
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Associate user data with a value
+    </para>
+  </listitem>
+</itemizedlist>
+</para>
+<sect2 id="Drawing_and_Filling_Polygons_and_Curves">
+<title>Drawing and Filling Polygons and Curves</title>
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to draw or fill
+arbitrary polygons or curves.  
+These functions are provided mainly for compatibility with X Version 10 
+and have no server support.  
+That is, they call other Xlib functions, not the server directly.  
+Thus, if you just have straight lines to draw, using 
+<xref linkend='XDrawLines' xrefstyle='select: title'/>
+<indexterm><primary>XDrawLines</primary></indexterm>
+or
+<xref linkend='XDrawSegments' xrefstyle='select: title'/>
+<indexterm><primary>XDrawSegments</primary></indexterm>
+is much faster.
+</para>
+<para>
+<!-- .LP -->
+The functions discussed here provide all the functionality of the 
+X Version 10 functions 
+<xref linkend='XDraw' xrefstyle='select: title'/>,
+<indexterm ><primary>X10 compatibility</primary><secondary>XDraw</secondary></indexterm>
+<xref linkend='XDrawFilled' xrefstyle='select: title'/>,
+<indexterm><primary>X10 compatibility</primary><secondary>XDrawFilled</secondary></indexterm>
+<function>XDrawPatterned</function>,
+<indexterm ><primary>X10 compatibility</primary><secondary>XDrawPatterned</secondary></indexterm>
+<function>XDrawDashed</function>,
+<indexterm><primary>X10 compatibility</primary><secondary>XDrawDashed</secondary></indexterm>
+and
+<function>XDrawTiled</function>.
+<indexterm><primary>X10 compatibility</primary><secondary>XDrawTiled</secondary></indexterm>
+They are as compatible as possible given X Version 11's new line-drawing 
+functions.  
+One thing to note, however, is that
+<function>VertexDrawLastPoint</function>
+is no longer supported. 
+Also, the error status returned is the opposite of what it was under 
+X Version 10 (this is the X Version 11 standard error status).  
+<function>XAppendVertex</function>
+and 
+<function>XClearVertexFlag</function>
+from X Version 10 also are not supported.
+</para>
+<para>
+<!-- .LP -->
+Just how the graphics context you use is set up actually
+determines whether you get dashes or not, and so on.  
+Lines are properly joined if they connect and include
+the closing of a closed figure  (see 
+<xref linkend='XDrawLines' xrefstyle='select: title'/>).
+The functions discussed here fail (return zero) only if they run out of memory
+or are passed a 
+<structname>Vertex</structname>
+list that has a 
+<structname>Vertex</structname>
+with 
+<symbol>VertexStartClosed</symbol>
+set that is not followed by a 
+<structname>Vertex</structname>
+with 
+<symbol>VertexEndClosed</symbol>
+set.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To achieve the effects of the X Version 10
+<xref linkend='XDraw' xrefstyle='select: title'/>,
+<indexterm ><primary>X10 compatibility</primary><secondary>XDraw</secondary></indexterm>
+<function>XDrawDashed</function>,
+<indexterm><primary>X10 compatibility</primary><secondary>XDrawDashed</secondary></indexterm>
+and 
+<function>XDrawPatterned</function>,
+<indexterm ><primary>X10 compatibility</primary><secondary>XDrawPatterned</secondary></indexterm>
+use
+<xref linkend='XDraw' xrefstyle='select: title'/>.
+</para>
+
+<para>
+#include &lt;X11/X10.h&gt;
+</para>
+
+<funcsynopsis id='XDraw'>
+<funcprototype>
+  <funcdef>Status <function>XDraw</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>Vertex *<parameter>vlist</parameter></paramdef>
+  <paramdef>int <parameter>vcount</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>vlist</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a pointer to the list of vertices that indicate what to draw.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>vcount</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies how many vertices are in vlist.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDraw' xrefstyle='select: title'/>
+function draws an arbitrary polygon or curve.  
+The figure drawn is defined by the specified list of vertices (vlist).
+The points are connected by lines as specified in the flags in the
+vertex structure.
+</para>
+<para>
+<!-- .LP -->
+Each Vertex, as defined in
+<filename class="headerfile">&lt;X11/X10.h&gt;</filename>,
+<indexterm type="file"><primary><filename class="headerfile">X11/X10.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/X10.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/X10.h&gt;</filename></secondary></indexterm>
+is a structure with the following members:
+<indexterm significance="preferred"><primary>Vertex</primary></indexterm>
+<synopsis>
+typedef struct _Vertex {
+	short x,y;
+	unsigned short flags;
+} Vertex;
+</synopsis>
+The x and y members are the coordinates of the vertex 
+that are relative to either the upper left inside corner of the drawable 
+(if 
+<symbol>VertexRelative</symbol>
+is zero) or the previous vertex (if 
+<symbol>VertexRelative</symbol>
+is one).
+</para>
+<para>
+<!-- .LP -->
+The flags, as defined in 
+<filename class="headerfile">&lt;X11/X10.h&gt;</filename>,
+<indexterm type="file"><primary><filename class="headerfile">X11/X10.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/X10.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/X10.h&gt;</filename></secondary></indexterm>
+are as follows:
+<indexterm significance="preferred"><primary>VertexRelative</primary></indexterm>
+<indexterm significance="preferred"><primary>VertexDontDraw</primary></indexterm>
+<indexterm significance="preferred"><primary>VertexCurved</primary></indexterm>
+<indexterm significance="preferred"><primary>VertexStartClosed</primary></indexterm>
+<indexterm significance="preferred"><primary>VertexEndClosed</primary></indexterm>
+<!-- .sM -->
+
+<synopsis>
+VertexRelative     0x0001     /* else absolute */
+VertexDontDraw     0x0002     /* else draw */
+VertexCurved       0x0004     /* else straight */
+VertexStartClosed  0x0008     /* else not */
+VertexEndClosed    0x0010     /* else not */
+</synopsis>
+
+<itemizedlist>
+  <listitem>
+    <para>
+If 
+<symbol>VertexRelative</symbol>
+is not set,  
+the coordinates are absolute (that is, relative to the drawable's origin).  
+The first vertex must be an absolute vertex.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If
+<symbol>VertexDontDraw</symbol>
+is one, 
+no line or curve is drawn from the previous vertex to this one.  
+This is analogous to picking up the pen and moving to another place 
+before drawing another line.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If 
+<symbol>VertexCurved</symbol>
+is one, 
+a spline algorithm is used to draw a smooth curve from the previous vertex
+through this one to the next vertex.  
+Otherwise, a straight line is drawn from the previous vertex to this one.  
+It makes sense to set 
+<symbol>VertexCurved</symbol>
+to one only if a previous and next vertex are both defined
+(either explicitly in the array or through the definition of a closed 
+curve).
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+It is permissible for 
+<symbol>VertexDontDraw</symbol>
+bits and 
+<symbol>VertexCurved</symbol>
+bits both to be one. 
+This is useful if you want to define the previous point for the smooth curve
+but do not want an actual curve drawing to start until this point.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If 
+<symbol>VertexStartClosed</symbol>
+is one, 
+then this point marks the beginning of a closed curve.  
+This vertex must be followed later in the array by another vertex 
+whose effective coordinates are identical
+and that has a
+<symbol>VertexEndClosed</symbol>
+bit of one.
+The points in between form a cycle to determine predecessor 
+and successor vertices for the spline algorithm.
+    </para>
+  </listitem>
+</itemizedlist>
+</para>
+<para>
+<!-- .LP -->
+This function uses these GC components:
+function, plane-mask, line-width, line-style, cap-style, join-style,
+fill-style, subwindow-mode, clip-x-origin, clip-y-origin, and
+clip-mask.
+It also uses these GC mode-dependent components: 
+foreground, background, tile, stipple,
+tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, and dash-list.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To achieve the effects of the X Version 10
+<function>XDrawTiled</function>
+<indexterm><primary>X10 compatibility</primary><secondary>XDrawTiled</secondary></indexterm>
+and 
+<xref linkend='XDrawFilled' xrefstyle='select: title'/>,
+<indexterm><primary>X10 compatibility</primary><secondary>XDrawFilled</secondary></indexterm>
+use
+<xref linkend='XDrawFilled' xrefstyle='select: title'/>.
+</para>
+
+<para>#include &lt;X11/X10.h&gt;</para>
+
+<funcsynopsis id='XDrawFilled'>
+<funcprototype>
+  <funcdef>Status <function>XDrawFilled</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>Vertex *<parameter>vlist</parameter></paramdef>
+  <paramdef>int <parameter>vcount</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>vlist</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a pointer to the list of vertices that indicate what to draw.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>vcount</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies how many vertices are in vlist.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDrawFilled' xrefstyle='select: title'/>
+function draws arbitrary polygons or curves and then fills them.
+</para>
+<para>
+<!-- .LP -->
+This function uses these GC components:
+function, plane-mask, line-width, line-style, cap-style, join-style,
+fill-style, subwindow-mode, clip-x-origin, clip-y-origin, and
+clip-mask.
+It also uses these GC mode-dependent components: 
+foreground, background, tile, stipple,
+tile-stipple-x-origin, tile-stipple-y-origin, 
+dash-offset, dash-list, fill-style, and fill-rule.
+</para>
+</sect2>
+<sect2 id="Associating_User_Data_with_a_Value">
+<title>Associating User Data with a Value</title>
+<para>
+<!-- .LP -->
+These functions have been superseded by the context management functions
+(see <link linkend="Using_the_Context_Manager">section 16.10</link>).
+It is often necessary to associate arbitrary information with resource IDs.
+Xlib provides the 
+<function>XAssocTable</function>
+functions that you can use to make such an association.
+<indexterm><primary>Hash Lookup</primary></indexterm>
+<indexterm><primary>Window</primary><secondary>IDs</secondary></indexterm>
+<indexterm><primary>Resource IDs</primary></indexterm>
+Application programs often need to be able to easily refer to
+their own data structures when an event arrives.
+The 
+<function>XAssocTable</function>
+system provides users of the X library with a method
+for associating their own data structures with X resources
+(<type>Pixmap</type>s,
+<type>Font</type>s,
+<type>Window</type>s,
+and so on).
+</para>
+<para>
+<!-- .LP -->
+An 
+<function>XAssocTable</function>
+can be used to type X resources.  
+For example, the user
+may want to have three or four types of windows,
+each with different properties. 
+This can be accomplished by associating each X window ID
+with a pointer to a window property data structure  defined  by  the
+user.
+A generic type has been defined in the X library for resource IDs.
+It is called an XID.
+</para>
+<para>
+<!-- .LP -->
+There are a few  guidelines  that  should be observed when using an
+<function>XAssocTable</function> :
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+All  XIDs  are  relative  to  the  specified display.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Because  of  the  hashing  scheme  used  by  the  association mechanism,
+the following rules for determining the size of a
+<function>XAssocTable</function>
+should be followed.  
+Associations will be  made  and  looked  up  more
+efficiently  if  the  table  size  (number  of  buckets in the hashing
+system) is a power of two and if there are not more than 8 XIDs  per
+bucket.
+    </para>
+  </listitem>
+</itemizedlist>
+
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return a pointer to a new
+<function>XAssocTable</function>,
+use 
+<xref linkend='XCreateAssocTable' xrefstyle='select: title'/>.
+<indexterm significance="preferred"><primary>XCreateAssocTable</primary></indexterm>
+<!-- .sM -->
+</para>
+<funcsynopsis id='XCreateAssocTable'>
+<funcprototype>
+  <funcdef>XAssocTable *<function>XCreateAssocTable</function></funcdef>
+  <paramdef>int <parameter>size</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>size</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of buckets in the hash system of
+<function>XAssocTable</function>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The size argument specifies the number of buckets in the 
+hash system of
+<function>XAssocTable</function>.
+For  reasons  of  efficiency  the number of buckets
+should be a power of two.
+Some size  suggestions  might  be:  use  32 buckets  per  100  objects,
+and a reasonable maximum number of objects per buckets is 8.
+If  an  error  allocating  memory  for  the
+<function>XAssocTable</function>
+occurs, 
+a NULL pointer is returned. 
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To create an entry in a given 
+<function>XAssocTable</function>,
+use 
+<xref linkend='XMakeAssoc' xrefstyle='select: title'/>.
+<indexterm significance="preferred"><primary>XMakeAssoc</primary></indexterm>
+<!-- .sM -->
+</para>
+<funcsynopsis id='XMakeAssoc'>
+<funcprototype>
+  <funcdef><function>XMakeAssoc</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XAssocTable *<parameter>table</parameter></paramdef>
+  <paramdef>XID <parameter>x_id</parameter></paramdef>
+  <paramdef>char *<parameter>data</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>table</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the assoc table. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_id</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the X resource ID.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the data to be associated with the X resource ID.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XMakeAssoc' xrefstyle='select: title'/>
+function inserts data into an 
+<function>XAssocTable</function>
+keyed on an XID.
+Data is inserted into the table only once.
+Redundant inserts are ignored.
+The queue in each association bucket is sorted from the lowest XID to 
+the highest XID.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain data from a given 
+<function>XAssocTable</function>,
+use 
+<xref linkend='XLookUpAssoc' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XLookUpAssoc</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XLookUpAssoc'>
+<funcprototype>
+  <funcdef>char *<function>XLookUpAssoc</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XAssocTable *<parameter>table</parameter></paramdef>
+  <paramdef>XID <parameter>x_id</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>table</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the assoc table. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_id</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the X resource ID.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XLookUpAssoc' xrefstyle='select: title'/>
+function retrieves the data stored in an 
+<function>XAssocTable</function>
+by its XID.  
+If  an appropriately  matching XID can be found in the table,
+<xref linkend='XLookUpAssoc' xrefstyle='select: title'/>
+returns the data associated with it.
+If the x_id cannot be found in the table,
+it returns NULL.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To delete an entry from a given 
+<function>XAssocTable</function>,
+use 
+<xref linkend='XDeleteAssoc' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDeleteAssoc</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDeleteAssoc'>
+<funcprototype>
+  <funcdef><function>XDeleteAssoc</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XAssocTable *<parameter>table</parameter></paramdef>
+  <paramdef>XID <parameter>x_id</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>table</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the assoc table. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_id</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the X resource ID.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDeleteAssoc' xrefstyle='select: title'/>
+function deletes an association in an 
+<function>XAssocTable</function>
+keyed on its XID.
+Redundant deletes (and deletes of nonexistent XIDs) are ignored.
+Deleting associations in no way impairs the performance of an
+<function>XAssocTable</function>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To free the memory associated with a given 
+<function>XAssocTable</function>,
+use 
+<xref linkend='XDestroyAssocTable' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDestroyAssocTable</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDestroyAssocTable'>
+<funcprototype>
+  <funcdef><function>XDestroyAssocTable</function></funcdef>
+  <paramdef>XAssocTable *<parameter>table</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>table</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the assoc table. 
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+</sect2>
+</sect1>
+</appendix>

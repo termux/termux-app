@@ -1,0 +1,140 @@
+Pixman
+======
+
+Pixman is a library that provides low-level pixel manipulation
+features such as image compositing and trapezoid rasterization.
+
+Questions should be directed to the pixman mailing list:
+
+    https://lists.freedesktop.org/mailman/listinfo/pixman
+
+You can also file bugs at
+
+    https://gitlab.freedesktop.org/pixman/pixman/-/issues/new
+
+or submit improvements in form of a Merge Request via
+
+    https://gitlab.freedesktop.org/pixman/pixman/-/merge_requests
+
+For real time discussions about pixman, feel free to join the IRC
+channels #cairo and #xorg-devel on the FreeNode IRC network.
+
+
+Contributing
+------------
+
+In order to contribute to pixman, you will need a working knowledge of
+the git version control system. For a quick getting started guide,
+there is the "Everyday Git With 20 Commands Or So guide"
+
+    https://www.kernel.org/pub/software/scm/git/docs/everyday.html
+
+from the Git homepage. For more in depth git documentation, see the
+resources on the Git community documentation page:
+
+    https://git-scm.com/documentation
+
+Pixman uses the infrastructure from the freedesktop.org umbrella
+project. For instructions about how to use the git service on
+freedesktop.org, see:
+
+    https://www.freedesktop.org/wiki/Infrastructure/git/Developers
+
+The Pixman master repository can be found at:
+
+    https://gitlab.freedesktop.org/pixman/pixman
+
+
+Sending patches
+---------------
+
+Patches should be submitted in form of Merge Requests via Gitlab.
+
+You will first need to create a fork of the main pixman repository at
+
+    https://gitlab.freedesktop.org/pixman/pixman
+
+via the Fork button on the top right. Once that is done you can add your
+personal repository as a remote to your local pixman development git checkout:
+
+    git remote add my-gitlab git@gitlab.freedesktop.org:YOURUSERNAME/pixman.git
+
+    git fetch my-gitlab
+
+Make sure to have added ssh keys to your gitlab profile at
+
+    https://gitlab.freedesktop.org/profile/keys
+
+Once that is set up, the general workflow for sending patches is to create a
+new local branch with your improvements and once it's ready push it to your
+personal pixman fork:
+
+    git checkout -b fix-some-bug
+    ...
+    git push my-gitlab
+
+The output of the `git push` command will include a link that allows you to
+create a Merge Request against the official pixman repository.
+
+Whenever you make changes to your branch (add new commits or fix up commits)
+you push them back to your personal pixman fork:
+
+    git push -f my-gitlab
+
+If there is an open Merge Request Gitlab will automatically pick up the
+changes from your branch and pixman developers can review them anew.
+
+In order for your patches to be accepted, please consider the
+following guidelines:
+
+ - At each point in the series, pixman should compile and the test
+   suite should pass.
+
+   The exception here is if you are changing the test suite to
+   demonstrate a bug. In this case, make one commit that makes the
+   test suite fail due to the bug, and then another commit that fixes
+   the bug.
+
+   You can run the test suite with 
+
+        make check
+
+   if you built pixman with autotools or
+
+       meson test -C builddir
+
+   if you built pixman with meson.
+
+   It will take around two minutes to run on a modern PC.
+
+ - Follow the coding style described in the CODING_STYLE file
+
+ - For bug fixes, include an update to the test suite to make sure
+   the bug doesn't reappear.
+
+ - For new features, add tests of the feature to the test
+   suite. Also, add a program demonstrating the new feature to the
+   demos/ directory.
+
+ - Write descriptive commit messages. Useful information to include:
+        - Benchmark results, before and after
+	- Description of the bug that was fixed
+	- Detailed rationale for any new API
+	- Alternative approaches that were rejected (and why they
+          don't work)
+	- If review comments were incorporated, a brief version
+          history describing what those changes were.
+
+ - For big patch series, write an introductory post with an overall
+   description of the patch series, including benchmarks and
+   motivation. Each commit message should still be descriptive and
+   include enough information to understand why this particular commit
+   was necessary.
+
+Pixman has high standards for code quality and so almost everybody
+should expect to have the first versions of their patches rejected.
+
+If you think that the reviewers are wrong about something, or that the
+guidelines above are wrong, feel free to discuss the issue. The purpose
+of the guidelines and code review is to ensure high code quality; it is
+not an exercise in compliance.

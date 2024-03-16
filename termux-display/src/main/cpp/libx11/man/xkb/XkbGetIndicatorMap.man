@@ -1,0 +1,87 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbGetIndicatorMap __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbGetIndicatorMap \- Gets the map for one or more indicators, using a mask to 
+specify the indicators
+.SH SYNOPSIS
+.HP
+.B Status XkbGetIndicatorMap
+.BI "(\^Display *" "dpy" "\^,"
+.BI "unsigned int " "which" "\^,"
+.BI "XkbDescPtr " "desc" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to the X server
+.TP
+.I which
+mask of indicators for which maps should be returned
+.TP
+.I desc
+keyboard description to be updated
+.SH DESCRIPTION
+.LP
+Xkb allows applications to obtain information about indicators using two 
+different methods. The first method, which is similar to the core X 
+implementation, uses a mask to specify the indicators. The second method, which 
+is more suitable for applications concerned with interoperability, uses 
+indicator names. The correspondence between the indicator name and the bit 
+position in masks is as follows: one of the parameters returned from
+.I XkbGetNamedIndicators 
+is an index that is the bit position to use in any function call that requires a 
+mask of indicator bits, as well as the indicator's index into the 
+XkbIndicatorRec array of indicator maps.
+
+
+.I XkbGetIndicatorMap 
+obtains the maps from the server for only those indicators specified by the 
+.I which 
+mask and copies the values into the keyboard description specified by 
+.I desc. 
+If the 
+.I indicators 
+field of the 
+.I desc 
+parameter is NULL, 
+.I XkbGetIndicatorMap 
+allocates and initializes it.
+
+To free the indicator maps, use 
+.I XkbFreeIndicatorMaps.
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has 
+correct type and range, but is otherwise invalid
+.TP 15
+.B BadImplementation
+Invalid reply from server
+.SH "SEE ALSO"
+.BR XkbFreeIndicatorMaps (__libmansuffix__),
+.BR XkbGetNamedIndicators (__libmansuffix__)
+

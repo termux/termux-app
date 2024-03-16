@@ -1,0 +1,93 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbResizeDeviceButtonActions __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbResizeDeviceButtonActions \- Allocate additional space for button actions in an XkbDeviceInfoRec structure
+.SH SYNOPSIS
+.HP
+.B Status XkbResizeDeviceButtonActions
+.BI "(\^XkbDeviceInfoPtr " "device_info" "\^,"
+.BI "unsigned int " "new_total" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I device_info
+structure in which to allocate button actions
+.TP
+.I new_total
+new total number of button actions needed
+.SH DESCRIPTION
+.LP
+.I XkbResizeDeviceButtonActions 
+reallocates space, if necessary, to make sure there is room for a total of
+.I new_total 
+button actions in the 
+.I device_info 
+structure. Any new entries allocated are zeroed. If successful,
+.I XkbResizeDeviceButtonActions 
+returns Success. If 
+.I new_total 
+is zero, all button actions are deleted, 
+.I device_info->num_btns 
+is set to zero, and 
+.I device_info->btn_acts 
+is set to NULL. If 
+.I device_info 
+is invalid or 
+.I new_total 
+is greater than 255, BadValue is returned. If a memory allocation failure occurs, a BadAlloc is returned. 
+
+To free an XkbDeviceInfoRec structure, use 
+.I XkbFreeDeviceInfo.
+.SH STRUCTURES
+.LP
+Information about X Input Extension devices is transferred between a client program and the Xkb 
+extension in an XkbDeviceInfoRec structure:
+.nf
+
+    typedef struct {
+        char *               name;          /\&* name for device */
+        Atom                 type;          /\&* name for class of devices */
+        unsigned short       device_spec;   /\&* device of interest */
+        Bool                 has_own_state; /\&* True=>this device has its own state */
+        unsigned short       supported;     /\&* bits indicating supported capabilities */
+        unsigned short       unsupported;   /\&* bits indicating unsupported capabilities */
+        unsigned short       num_btns;      /\&* number of entries in btn_acts */
+        XkbAction *          btn_acts;      /\&* button actions */
+        unsigned short       sz_leds;       /\&* total number of entries in LEDs vector */
+        unsigned short       num_leds;      /\&* number of valid entries in LEDs vector */
+        unsigned short       dflt_kbd_fb;   /\&* input extension ID of default (core kbd) indicator */
+        unsigned short       dflt_led_fb;   /\&* input extension ID of default indicator feedback */
+        XkbDeviceLedInfoPtr  leds;          /\&* LED descriptions */
+    } XkbDeviceInfoRec, *XkbDeviceInfoPtr;
+.fi
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadValue
+An argument is out of range
+.SH "SEE ALSO"
+.BR XkbFreeDeviceInfo (__libmansuffix__)

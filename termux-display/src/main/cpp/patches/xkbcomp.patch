@@ -1,0 +1,1054 @@
+diff --git a/alias.c b/alias.c
+index c914cbc..713067f 100644
+--- a/alias.c
++++ b/alias.c
+@@ -155,6 +155,52 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
+     return True;
+ }
+ 
++Bool
++XkbComputeEffectiveMap(XkbDescPtr xkb,
++                       XkbKeyTypePtr type,
++                       unsigned char *map_rtrn)
++{
++    register int i;
++    unsigned tmp;
++    XkbKTMapEntryPtr entry = NULL;
++
++    if ((!xkb) || (!type) || (!xkb->server))
++        return False;
++
++    if (type->mods.vmods != 0) {
++        if (!XkbVirtualModsToReal(xkb, type->mods.vmods, &tmp))
++            return False;
++
++        type->mods.mask = tmp | type->mods.real_mods;
++        entry = type->map;
++        for (i = 0; i < type->map_count; i++, entry++) {
++            tmp = 0;
++            if (entry->mods.vmods != 0) {
++                if (!XkbVirtualModsToReal(xkb, entry->mods.vmods, &tmp))
++                    return False;
++                if (tmp == 0) {
++                    entry->active = False;
++                    continue;
++                }
++            }
++            entry->active = True;
++            entry->mods.mask = (entry->mods.real_mods | tmp) & type->mods.mask;
++        }
++    }
++    else {
++        type->mods.mask = type->mods.real_mods;
++    }
++    if (map_rtrn != NULL) {
++        bzero(map_rtrn, type->mods.mask + 1);
++        for (i = 0; i < type->map_count; i++) {
++            if (entry && entry->active) {
++                map_rtrn[type->map[i].mods.mask] = type->map[i].level;
++            }
++        }
++    }
++    return True;
++}
++
+ int
+ ApplyAliases(XkbDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
+ {
+diff --git a/compat.c b/compat.c
+index 26f4249..c1884b0 100644
+--- a/compat.c
++++ b/compat.c
+@@ -571,7 +571,7 @@ SetInterpField(SymInterpInfo *si, XkbDescPtr xkb, const char *field,
+     return ok;
+ }
+ 
+-LookupEntry groupNames[] = {
++LookupEntry xkbcomp_groupNames[] = {
+     {"group1", 0x01}
+     ,
+     {"group2", 0x02}
+diff --git a/compat.h b/compat.h
+index 799b215..900de43 100644
+--- a/compat.h
++++ b/compat.h
+@@ -2,6 +2,6 @@
+ #ifndef COMPAT_H
+ #define COMPAT_H 1
+ 
+-extern LookupEntry groupNames[];
++extern LookupEntry xkbcomp_groupNames[];
+ 
+ #endif /* COMPAT_H */
+diff --git a/indicators.c b/indicators.c
+index 470091e..215529d 100644
+--- a/indicators.c
++++ b/indicators.c
+@@ -223,7 +223,7 @@ SetIndicatorMapField(LEDInfo *led, XkbDescPtr xkb, const char *field,
+         if (arrayNdx != NULL)
+             return ReportIndicatorNotArray(xkb->dpy, led, field);
+         if (!ExprResolveMask
+-            (value, &rtrn, SimpleLookup, (XPointer) groupNames))
++            (value, &rtrn, SimpleLookup, (XPointer) xkbcomp_groupNames))
+             return ReportIndicatorBadType(xkb->dpy, led, field, "group mask");
+         led->groups = rtrn.uval;
+         led->defs.defined |= _LED_Groups;
+diff --git a/xkbcomp.c b/xkbcomp.c
+index 6aedb67..12b0f27 100644
+--- a/xkbcomp.c
++++ b/xkbcomp.c
+@@ -24,6 +24,9 @@
+ 
+  ********************************************************/
+ 
++#pragma clang diagnostic ignored "-Wunknown-pragmas"
++#pragma ide diagnostic ignored "bugprone-reserved-identifier"
++
+ #include "utils.h"
+ #include <stdio.h>
+ #include <ctype.h>
+@@ -43,6 +46,7 @@
+ #include "misc.h"
+ #include "tokens.h"
+ #include <X11/extensions/XKBgeom.h>
++#include <dlfcn.h>
+ 
+ 
+ #ifdef WIN32
+@@ -56,46 +60,17 @@
+ 
+ /***====================================================================***/
+ 
+-#define	WANT_DEFAULT	0
+-#define	WANT_XKM_FILE	1
+-#define	WANT_C_HDR	2
+-#define	WANT_XKB_FILE	3
+-#define	WANT_X_SERVER	4
+-#define	WANT_LISTING	5
+-
+-#define	INPUT_UNKNOWN	0
+-#define	INPUT_XKB	1
+-#define	INPUT_XKM	2
+-
+ #ifdef DEBUG
+ unsigned int debugFlags;
+ #endif
+ 
+-static const char *fileTypeExt[] = {
+-    "XXX",
+-    "xkm",
+-    "h",
+-    "xkb",
+-    "dir"
+-};
+-
+-static unsigned inputFormat, outputFormat;
+ static const char *rootDir;
+ static char *inputFile;
+ static const char *inputMap;
+ static char *outputFile;
+-static const char *inDpyName;
+-static const char *outDpyName;
+-static Display *inDpy;
+-static Display *outDpy;
+-static Bool showImplicit = False;
+-static Bool synch = False;
+-static Bool computeDflts = False;
+-static Bool xkblist = False;
+ unsigned warningLevel = 5;
+ unsigned verboseLevel = 0;
+ unsigned dirsToStrip = 0;
+-static unsigned optionalParts = 0;
+ static const char *preErrorMsg = NULL;
+ static const char *postErrorMsg = NULL;
+ static const char *errorPrefix = NULL;
+@@ -103,192 +78,24 @@ static unsigned int device_id = XkbUseCoreKbd;
+ 
+ /***====================================================================***/
+ 
+-#define	M(m)	fprintf(stderr,(m))
+-#define	M1(m,a)	fprintf(stderr,(m),(a))
+-
+-static void
+-Usage(int argc, char *argv[])
+-{
+-    if (!xkblist)
+-        M1("Usage: %s [options] input-file [ output-file ]\n", argv[0]);
+-    else
+-        M1("Usage: %s [options] file[(map)] ...\n", argv[0]);
+-    M("Legal options:\n");
+-    M("-?,-help             Print this message\n");
+-    M("-version             Print the version number\n");
+-    if (!xkblist)
+-    {
+-        M("-a                   Show all actions\n");
+-        M("-C                   Create a C header file\n");
+-    }
+-#ifdef DEBUG
+-    M("-d [flags]           Report debugging information\n");
+-#endif
+-    M("-em1 <msg>           Print <msg> before printing first error message\n");
+-    M("-emp <msg>           Print <msg> at the start of each message line\n");
+-    M("-eml <msg>           If there were any errors, print <msg> before exiting\n");
+-    if (!xkblist)
+-    {
+-        M("-dflts               Compute defaults for missing parts\n");
+-        M("-I[<dir>]            Specifies a top level directory for include\n");
+-        M("                     directives. Multiple directories are legal.\n");
+-        M("-l [flags]           List matching maps in the specified files\n");
+-        M("                     f: list fully specified names\n");
+-        M("                     h: also list hidden maps\n");
+-        M("                     l: long listing (show flags)\n");
+-        M("                     p: also list partial maps\n");
+-        M("                     R: recursively list subdirectories\n");
+-        M("                     default is all options off\n");
+-    }
+-    M("-i <deviceid>        Specifies device ID (not name) to compile for\n");
+-    M("-m[ap] <map>         Specifies map to compile\n");
+-    M("-o <file>            Specifies output file name\n");
+-    if (!xkblist)
+-    {
+-        M("-opt[ional] <parts>  Specifies optional components of keymap\n");
+-        M("                     Errors in optional parts are not fatal\n");
+-        M("                     <parts> can be any combination of:\n");
+-        M("                     c: compat map         g: geometry\n");
+-        M("                     k: keycodes           s: symbols\n");
+-        M("                     t: types\n");
+-    }
+-    if (xkblist)
+-    {
+-        M("-p <count>           Specifies the number of slashes to be stripped\n");
+-        M("                     from the front of the map name on output\n");
+-    }
+-    M("-R[<DIR>]            Specifies the root directory for\n");
+-    M("                     relative path names\n");
+-    M("-synch               Force synchronization\n");
+-    if (xkblist)
+-    {
+-        M("-v [<flags>]         Set level of detail for listing.\n");
+-        M("                     flags are as for the -l option\n");
+-    }
+-    M("-w [<lvl>]           Set warning level (0=none, 10=all)\n");
+-    if (!xkblist)
+-    {
+-        M("-xkb                 Create an XKB source (.xkb) file\n");
+-        M("-xkm                 Create a compiled key map (.xkm) file\n");
+-    }
+-    return;
+-}
+-
+-/***====================================================================***/
+-
+-static void
+-setVerboseFlags(const char *str)
+-{
+-    for (; *str; str++)
+-    {
+-        switch (*str)
+-        {
+-        case 'f':
+-            verboseLevel |= WantFullNames;
+-            break;
+-        case 'h':
+-            verboseLevel |= WantHiddenMaps;
+-            break;
+-        case 'l':
+-            verboseLevel |= WantLongListing;
+-            break;
+-        case 'p':
+-            verboseLevel |= WantPartialMaps;
+-            break;
+-        case 'R':
+-            verboseLevel |= ListRecursive;
+-            break;
+-        default:
+-            if (warningLevel > 4)
+-            {
+-                WARN("Unknown verbose option \"%c\"\n", (unsigned int) *str);
+-                ACTION("Ignored\n");
+-            }
+-            break;
+-        }
+-    }
+-    return;
+-}
+-
+ static Bool
+ parseArgs(int argc, char *argv[])
+ {
+-    int i, tmp;
+-
+-    i = strlen(argv[0]);
+-    tmp = strlen("xkblist");
+-    if ((i >= tmp) && (strcmp(&argv[0][i - tmp], "xkblist") == 0))
+-    {
+-        xkblist = True;
+-    }
+-    for (i = 1; i < argc; i++)
++    for (register int i = 1; i < argc; i++)
+     {
+-        int itmp;
+         if ((argv[i][0] != '-') || (strcmp(argv[i], "-") == 0))
+         {
+-            if (!xkblist)
++            if (inputFile == NULL)
++                inputFile = argv[i];
++            else if (outputFile == NULL)
++                outputFile = argv[i];
++            else if (warningLevel > 0)
+             {
+-                if (inputFile == NULL)
+-                    inputFile = argv[i];
+-                else if (outputFile == NULL)
+-                    outputFile = argv[i];
+-                else if (warningLevel > 0)
+-                {
+-                    WARN("Too many file names on command line\n");
+-                    ACTION
++                WARN("Too many file names on command line\n");
++                ACTION
+                         ("Compiling %s, writing to %s, ignoring %s\n",
+                          inputFile, outputFile, argv[i]);
+-                }
+             }
+-            else if (!AddMatchingFiles(argv[i]))
+-                return False;
+-        }
+-        else if ((strcmp(argv[i], "-?") == 0)
+-                 || (strcmp(argv[i], "-help") == 0))
+-        {
+-            Usage(argc, argv);
+-            exit(0);
+-        }
+-        else if (strcmp(argv[i], "-version") == 0)
+-        {
+-            printf("xkbcomp %s\n", PACKAGE_VERSION);
+-            exit(0);
+-        } else if ((strcmp(argv[i], "-a") == 0) && (!xkblist))
+-        {
+-            showImplicit = True;
+-        }
+-        else if ((strcmp(argv[i], "-C") == 0) && (!xkblist))
+-        {
+-            if ((outputFormat != WANT_DEFAULT)
+-                && (outputFormat != WANT_C_HDR))
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("Multiple output file formats specified\n");
+-                    ACTION("\"%s\" flag ignored\n", argv[i]);
+-                }
+-            }
+-            else
+-                outputFormat = WANT_C_HDR;
+-        }
+-#ifdef DEBUG
+-        else if (strcmp(argv[i], "-d") == 0)
+-        {
+-            if ((i >= (argc - 1)) || (!isdigit(argv[i + 1][0])))
+-            {
+-                debugFlags = 1;
+-            }
+-            else
+-            {
+-                if (sscanf(argv[++i], "%i", &itmp) == 1)
+-                    debugFlags = itmp;
+-            }
+-            INFO("Setting debug flags to %d\n", debugFlags);
+-        }
+-#endif
+-        else if ((strcmp(argv[i], "-dflts") == 0) && (!xkblist))
+-        {
+-            computeDflts = True;
+         }
+         else if (strcmp(argv[i], "-em1") == 0)
+         {
+@@ -356,172 +163,6 @@ parseArgs(int argc, char *argv[])
+             else
+                 postErrorMsg = argv[i];
+         }
+-        else if ((strncmp(argv[i], "-I", 2) == 0) && (!xkblist))
+-        {
+-            if (!XkbAddDirectoryToPath(&argv[i][2]))
+-            {
+-                ACTION("Exiting\n");
+-                exit(1);
+-            }
+-        }
+-        else if ((strncmp(argv[i], "-i", 2) == 0) && (!xkblist))
+-        {
+-            if (++i >= argc)
+-            {
+-                if (warningLevel > 0)
+-                    WARN("No device ID specified\n");
+-            }
+-            device_id = atoi(argv[i]);
+-        }
+-        else if ((strncmp(argv[i], "-l", 2) == 0) && (!xkblist))
+-        {
+-            if (outputFormat != WANT_DEFAULT)
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("Multiple output file formats specified\n");
+-                    ACTION("\"%s\" flag ignored\n", argv[i]);
+-                }
+-            }
+-            else
+-            {
+-                if (argv[i][2] != '\0')
+-                    setVerboseFlags(&argv[i][2]);
+-                xkblist = True;
+-                if ((inputFile) && (!AddMatchingFiles(inputFile)))
+-                    return False;
+-                else
+-                    inputFile = NULL;
+-                if ((outputFile) && (!AddMatchingFiles(outputFile)))
+-                    return False;
+-                else
+-                    outputFile = NULL;
+-            }
+-        }
+-        else if ((strcmp(argv[i], "-m") == 0)
+-                 || (strcmp(argv[i], "-map") == 0))
+-        {
+-            if (++i >= argc)
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("No map name specified\n");
+-                    ACTION("Trailing \"%s\" option ignored\n", argv[i - 1]);
+-                }
+-            }
+-            else if (xkblist)
+-            {
+-                if (!AddMapOnly(argv[i]))
+-                    return False;
+-            }
+-            else if (inputMap != NULL)
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("Multiple map names specified\n");
+-                    ACTION("Compiling %s, ignoring %s\n", inputMap, argv[i]);
+-                }
+-            }
+-            else
+-                inputMap = argv[i];
+-        }
+-        else if ((strcmp(argv[i], "-merge") == 0) && (!xkblist))
+-        {
+-            /* Ignored */
+-        }
+-        else if (strcmp(argv[i], "-o") == 0)
+-        {
+-            if (++i >= argc)
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("No output file specified\n");
+-                    ACTION("Trailing \"-o\" option ignored\n");
+-                }
+-            }
+-            else if (outputFile != NULL)
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("Multiple output files specified\n");
+-                    ACTION("Compiling %s, ignoring %s\n", outputFile,
+-                            argv[i]);
+-                }
+-            }
+-            else
+-                outputFile = argv[i];
+-        }
+-        else if (((strcmp(argv[i], "-opt") == 0)
+-                  || (strcmp(argv[i], "optional") == 0)) && (!xkblist))
+-        {
+-            if (++i >= argc)
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("No optional components specified\n");
+-                    ACTION("Trailing \"%s\" option ignored\n", argv[i - 1]);
+-                }
+-            }
+-            else
+-            {
+-                for (const char *tmp2 = argv[i]; (*tmp2 != '\0'); tmp2++)
+-                {
+-                    switch (*tmp2)
+-                    {
+-                    case 'c':
+-                    case 'C':
+-                        optionalParts |= XkmCompatMapMask;
+-                        break;
+-                    case 'g':
+-                    case 'G':
+-                        optionalParts |= XkmGeometryMask;
+-                        break;
+-                    case 'k':
+-                    case 'K':
+-                        optionalParts |= XkmKeyNamesMask;
+-                        break;
+-                    case 's':
+-                    case 'S':
+-                        optionalParts |= XkmSymbolsMask;
+-                        break;
+-                    case 't':
+-                    case 'T':
+-                        optionalParts |= XkmTypesMask;
+-                        break;
+-                    default:
+-                        if (warningLevel > 0)
+-                        {
+-                            WARN
+-                                ("Illegal component for %s option\n",
+-                                 argv[i - 1]);
+-                            ACTION
+-                                ("Ignoring unknown specifier \"%c\"\n",
+-                                 (unsigned int) *tmp2);
+-                        }
+-                        break;
+-                    }
+-                }
+-            }
+-        }
+-        else if (strncmp(argv[i], "-p", 2) == 0)
+-        {
+-            if (isdigit(argv[i][2]))
+-            {
+-                if (sscanf(&argv[i][2], "%i", &itmp) == 1)
+-                    dirsToStrip = itmp;
+-            }
+-            else if ((i < (argc - 1)) && (isdigit(argv[i + 1][0])))
+-            {
+-                if (sscanf(argv[++i], "%i", &itmp) == 1)
+-                    dirsToStrip = itmp;
+-            }
+-            else
+-            {
+-                dirsToStrip = 0;
+-            }
+-            if (warningLevel > 5)
+-                INFO("Setting path count to %d\n", dirsToStrip);
+-        }
+         else if (strncmp(argv[i], "-R", 2) == 0)
+         {
+             if (argv[i][2] == '\0')
+@@ -558,23 +199,6 @@ parseArgs(int argc, char *argv[])
+                 }
+             }
+         }
+-        else if ((strcmp(argv[i], "-synch") == 0)
+-                 || (strcmp(argv[i], "-s") == 0))
+-        {
+-            synch = True;
+-        }
+-        else if (strncmp(argv[i], "-v", 2) == 0)
+-        {
+-            const char *str;
+-            if (argv[i][2] != '\0')
+-                str = &argv[i][2];
+-            else if ((i < (argc - 1)) && (argv[i + 1][0] != '-'))
+-                str = argv[++i];
+-            else
+-                str = NULL;
+-            if (str)
+-                setVerboseFlags(str);
+-        }
+         else if (strncmp(argv[i], "-w", 2) == 0)
+         {
+             unsigned long utmp;
+@@ -605,57 +229,22 @@ parseArgs(int argc, char *argv[])
+                 else
+                 {
+                     ERROR("Unknown flag \"%s\" on command line\n", argv[i]);
+-                    Usage(argc, argv);
+                     return False;
+                 }
+             }
+         }
+-        else if ((strcmp(argv[i], "-xkb") == 0) && (!xkblist))
+-        {
+-            if ((outputFormat != WANT_DEFAULT)
+-                && (outputFormat != WANT_XKB_FILE))
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("Multiple output file formats specified\n");
+-                    ACTION("\"%s\" flag ignored\n", argv[i]);
+-                }
+-            }
+-            else
+-                outputFormat = WANT_XKB_FILE;
+-        }
+-        else if ((strcmp(argv[i], "-xkm") == 0) && (!xkblist))
+-        {
+-            if ((outputFormat != WANT_DEFAULT)
+-                && (outputFormat != WANT_XKM_FILE))
+-            {
+-                if (warningLevel > 0)
+-                {
+-                    WARN("Multiple output file formats specified\n");
+-                    ACTION("\"%s\" flag ignored\n", argv[i]);
+-                }
+-            }
+-            else
+-                outputFormat = WANT_XKM_FILE;
+-        }
++        else if (strcmp(argv[i], "-xkm") == 0) {}
+         else
+         {
+             ERROR("Unknown flag \"%s\" on command line\n", argv[i]);
+-            Usage(argc, argv);
+             return False;
+         }
+     }
+-    if (xkblist)
+-        inputFormat = INPUT_XKB;
+-    else if (inputFile == NULL)
++    if (inputFile == NULL)
+     {
+         ERROR("No input file specified\n");
+         return False;
+     }
+-    else if (strcmp(inputFile, "-") == 0)
+-    {
+-        inputFormat = INPUT_XKB;
+-    }
+ #ifndef WIN32
+     else if (strchr(inputFile, ':') == NULL)
+     {
+@@ -698,214 +287,26 @@ parseArgs(int argc, char *argv[])
+                 return False;
+             }
+         }
+-        if ((len > 4) && (strcmp(&inputFile[len - 4], ".xkm") == 0))
+-        {
+-            inputFormat = INPUT_XKM;
+-        }
+-        else
+-        {
+-            FILE *file;
+-            file = fopen(inputFile, "r");
+-            if (file)
+-            {
+-                if (XkmProbe(file))
+-                    inputFormat = INPUT_XKM;
+-                else
+-                    inputFormat = INPUT_XKB;
+-                fclose(file);
+-            }
+-            else
+-            {
+-                fprintf(stderr, "Cannot open \"%s\" for reading\n",
+-                        inputFile);
+-                return False;
+-            }
+-        }
+-    }
+-    else
+-    {
+-        inDpyName = inputFile;
+-        inputFile = NULL;
+-        inputFormat = INPUT_XKM;
+-    }
+-
+-    if (outputFormat == WANT_DEFAULT)
+-    {
+-        if (xkblist)
+-            outputFormat = WANT_LISTING;
+-        else if (inputFormat == INPUT_XKB)
+-            outputFormat = WANT_XKM_FILE;
+-        else
+-            outputFormat = WANT_XKB_FILE;
+-    }
+-    if ((outputFormat == WANT_LISTING) && (inputFormat != INPUT_XKB))
+-    {
+-        if (inputFile)
+-            ERROR("Cannot generate a listing from a .xkm file (yet)\n");
+-        else
+-            ERROR("Cannot generate a listing from an X connection (yet)\n");
+-        return False;
+-    }
+-    if (xkblist)
+-    {
+-        if (outputFile == NULL)
+-            outputFile = uStringDup("-");
+-        else if (strchr(outputFile, ':') != NULL)
++        if (!access(inputFile, R_OK))
+         {
+-            ERROR("Cannot write a listing to an X connection\n");
+             return False;
+         }
+     }
+-    else if ((!outputFile) && (inputFile) && (strcmp(inputFile, "-") == 0))
+-    {
+-#ifdef HAVE_ASPRINTF
+-        if (asprintf(&outputFile, "stdin.%s", fileTypeExt[outputFormat]) < 0)
+-#else
+-        size_t len = strlen("stdin") + strlen(fileTypeExt[outputFormat]) + 2;
+-        outputFile = calloc(len, sizeof(char));
+-        if (outputFile != NULL)
+-            snprintf(outputFile, len, "stdin.%s", fileTypeExt[outputFormat]);
+-        else
+-#endif
+-        {
+-            WSGO("Cannot allocate space for output file name\n");
+-            ACTION("Exiting\n");
+-            exit(1);
+-        }
+-    }
+-    else if ((outputFile == NULL) && (inputFile != NULL))
+-    {
+-        int len;
+-        const char *base, *ext;
+-
+-        if (inputMap == NULL)
+-        {
+-            base = strrchr(inputFile, '/');
+-            if (base == NULL)
+-                base = inputFile;
+-            else
+-                base++;
+-        }
+-        else
+-            base = inputMap;
+-
+-        len = strlen(base) + strlen(fileTypeExt[outputFormat]) + 2;
+-        outputFile = calloc(len, sizeof(char));
+-        if (outputFile == NULL)
+-        {
+-            WSGO("Cannot allocate space for output file name\n");
+-            ACTION("Exiting\n");
+-            exit(1);
+-        }
+-        ext = strrchr(base, '.');
+-        if (ext == NULL)
+-            snprintf(outputFile, len, "%s.%s", base, fileTypeExt[outputFormat]);
+-        else
+-        {
+-            strcpy(outputFile, base);
+-            strcpy(&outputFile[ext - base + 1], fileTypeExt[outputFormat]);
+-        }
+-    }
+-    else if (outputFile == NULL)
+-    {
+-        int len;
+-        char *ch, buf[128];
+-        const char *name = buf;
+-        if (inDpyName[0] == ':')
+-            snprintf(buf, sizeof(buf), "server%s", inDpyName);
+-        else
+-            name = inDpyName;
+-
+-        len = strlen(name) + strlen(fileTypeExt[outputFormat]) + 2;
+-        outputFile = calloc(len, sizeof(char));
+-        if (outputFile == NULL)
+-        {
+-            WSGO("Cannot allocate space for output file name\n");
+-            ACTION("Exiting\n");
+-            exit(1);
+-        }
+-        strcpy(outputFile, name);
+-        for (ch = outputFile; (*ch) != '\0'; ch++)
+-        {
+-            if (*ch == ':')
+-                *ch = '-';
+-            else if (*ch == '.')
+-                *ch = '_';
+-        }
+-        *ch++ = '.';
+-        strcpy(ch, fileTypeExt[outputFormat]);
+-    }
+-#ifdef WIN32
+-    else if (strlen(outputFile) > 2 &&
+-             isalpha(outputFile[0]) &&
+-             outputFile[1] == ':' && strchr(outputFile + 2, ':') == NULL)
+-    {
+-    }
+-#endif
+-    else if (strchr(outputFile, ':') != NULL)
+-    {
+-        outDpyName = outputFile;
+-        outputFile = NULL;
+-        outputFormat = WANT_X_SERVER;
+-    }
+     return True;
+ }
+ 
+-static Display *
+-GetDisplay(const char *program, const char *dpyName)
+-{
+-    int mjr, mnr, error;
+-    Display *dpy;
+-
+-    mjr = XkbMajorVersion;
+-    mnr = XkbMinorVersion;
+-    dpy = XkbOpenDisplay(dpyName, NULL, NULL, &mjr, &mnr, &error);
+-    if (dpy == NULL)
+-    {
+-        switch (error)
+-        {
+-        case XkbOD_BadLibraryVersion:
+-            INFO("%s was compiled with XKB version %d.%02d\n",
+-                  program, XkbMajorVersion, XkbMinorVersion);
+-            ERROR("X library supports incompatible version %d.%02d\n",
+-                   mjr, mnr);
+-            break;
+-        case XkbOD_ConnectionRefused:
+-            ERROR("Cannot open display \"%s\"\n", dpyName);
+-            break;
+-        case XkbOD_NonXkbServer:
+-            ERROR("XKB extension not present on %s\n", dpyName);
+-            break;
+-        case XkbOD_BadServerVersion:
+-            INFO("%s was compiled with XKB version %d.%02d\n",
+-                  program, XkbMajorVersion, XkbMinorVersion);
+-            ERROR("Server %s uses incompatible version %d.%02d\n",
+-                   dpyName, mjr, mnr);
+-            break;
+-        default:
+-            WSGO("Unknown error %d from XkbOpenDisplay\n", error);
+-        }
+-    }
+-    else if (synch)
+-        XSynchronize(dpy, True);
+-    return dpy;
+-}
+-
+ /***====================================================================***/
+ 
+ #ifdef DEBUG
+ extern int yydebug;
+ #endif
+ 
+-int
+-main(int argc, char *argv[])
+-{
++int xkbcomp_main(int argc, char *argv[]) {
+     FILE *file;         /* input file (or stdin) */
+     XkbFile *rtrn;
+     XkbFile *mapToUse;
+     int ok;
+     XkbFileInfo result;
+-    Status status;
+ 
+     scan_set_file(stdin);
+ #ifdef DEBUG
+@@ -916,10 +317,6 @@ main(int argc, char *argv[])
+     XkbInitIncludePath();
+     if (!parseArgs(argc, argv))
+         exit(1);
+-#ifdef DEBUG
+-    if (debugFlags & 0x2)
+-        yydebug = 1;
+-#endif
+     if (preErrorMsg)
+         uSetPreErrorMessage(preErrorMsg);
+     if (errorPrefix)
+@@ -929,14 +326,6 @@ main(int argc, char *argv[])
+     file = NULL;
+     XkbInitAtoms(NULL);
+     XkbAddDefaultDirectoriesToPath();
+-    if (xkblist)
+-    {
+-        Bool gotSome;
+-        gotSome = GenerateListing(outputFile);
+-        if ((warningLevel > 7) && (!gotSome))
+-            return -1;
+-        return 0;
+-    }
+     if (inputFile != NULL)
+     {
+         if (strcmp(inputFile, "-") == 0)
+@@ -949,45 +338,11 @@ main(int argc, char *argv[])
+             file = fopen(inputFile, "r");
+         }
+     }
+-    else if (inDpyName != NULL)
+-    {
+-        inDpy = GetDisplay(argv[0], inDpyName);
+-        if (!inDpy)
+-        {
+-            ACTION("Exiting\n");
+-            exit(1);
+-        }
+-    }
+-    if (outDpyName != NULL)
+-    {
+-        outDpy = GetDisplay(argv[0], outDpyName);
+-        if (!outDpy)
+-        {
+-            ACTION("Exiting\n");
+-            exit(1);
+-        }
+-    }
+-    if ((inDpy == NULL) && (outDpy == NULL))
+-    {
+-        int mjr, mnr;
+-        mjr = XkbMajorVersion;
+-        mnr = XkbMinorVersion;
+-        if (!XkbLibraryVersion(&mjr, &mnr))
+-        {
+-            INFO("%s was compiled with XKB version %d.%02d\n",
+-                  argv[0], XkbMajorVersion, XkbMinorVersion);
+-            ERROR("X library supports incompatible version %d.%02d\n",
+-                   mjr, mnr);
+-            ACTION("Exiting\n");
+-            exit(1);
+-        }
+-    }
+     if (file)
+     {
+         ok = True;
+         setScanState(inputFile, 1);
+-        if ((inputFormat == INPUT_XKB) /* parse .xkb file */
+-            && (XKBParseFile(file, &rtrn) && (rtrn != NULL)))
++        if (XKBParseFile(file, &rtrn) && (rtrn != NULL))
+         {
+             fclose(file);
+             mapToUse = rtrn;
+@@ -1069,61 +424,12 @@ main(int argc, char *argv[])
+             }
+             result.xkb->device_spec = device_id;
+         }
+-        else if (inputFormat == INPUT_XKM) /* parse xkm file */
+-        {
+-            unsigned tmp;
+-            bzero(&result, sizeof(result));
+-            if ((result.xkb = XkbAllocKeyboard()) == NULL)
+-            {
+-                WSGO("Cannot allocate keyboard description\n");
+-                /* NOTREACHED */
+-            }
+-            tmp = XkmReadFile(file, 0, XkmKeymapLegal, &result);
+-            if (tmp == XkmKeymapLegal)
+-            {
+-                ERROR("Cannot read XKM file \"%s\"\n", inputFile);
+-                ok = False;
+-            }
+-            result.xkb->device_spec = device_id;
+-        }
+         else
+         {
+             INFO("Errors encountered in %s; not compiled.\n", inputFile);
+             ok = False;
+         }
+     }
+-    else if (inDpy != NULL)
+-    {
+-        bzero(&result, sizeof(result));
+-        result.type = XkmKeymapFile;
+-        result.xkb = XkbGetMap(inDpy, XkbAllMapComponentsMask, device_id);
+-        if (result.xkb == NULL)
+-            WSGO("Cannot load keyboard description\n");
+-        if (XkbGetIndicatorMap(inDpy, ~0, result.xkb) != Success)
+-            WSGO("Could not load indicator map\n");
+-        if (XkbGetControls(inDpy, XkbAllControlsMask, result.xkb) != Success)
+-            WSGO("Could not load keyboard controls\n");
+-        if (XkbGetCompatMap(inDpy, XkbAllCompatMask, result.xkb) != Success)
+-            WSGO("Could not load compatibility map\n");
+-        if (XkbGetNames(inDpy, XkbAllNamesMask, result.xkb) != Success)
+-            WSGO("Could not load names\n");
+-        if ((status = XkbGetGeometry(inDpy, result.xkb)) != Success)
+-        {
+-            if (warningLevel > 3)
+-            {
+-                char buf[100];
+-                buf[0] = '\0';
+-                XGetErrorText(inDpy, status, buf, 100);
+-                WARN("Could not load keyboard geometry for %s\n", inDpyName);
+-                ACTION("%s\n", buf);
+-                ACTION("Resulting keymap file will not describe geometry\n");
+-            }
+-        }
+-        if (computeDflts)
+-            ok = (ComputeKbdDefaults(result.xkb) == Success);
+-        else
+-            ok = True;
+-    }
+     else
+     {
+         fprintf(stderr, "Cannot open \"%s\" to compile\n", inputFile);
+@@ -1132,13 +438,6 @@ main(int argc, char *argv[])
+     if (ok)
+     {
+         FILE *out = stdout;
+-        if ((inDpy != outDpy) &&
+-            (XkbChangeKbdDisplay(outDpy, &result) != Success))
+-        {
+-            WSGO("Error converting keyboard display from %s to %s\n",
+-                  inDpyName, outDpyName);
+-            exit(1);
+-        }
+         if (outputFile != NULL)
+         {
+             if (strcmp(outputFile, "-") == 0)
+@@ -1158,16 +457,8 @@ main(int argc, char *argv[])
+                 const char *openMode = "w";
+                 unlink(outputFile);
+ #ifdef O_BINARY
+-                switch (outputFormat)
+-                {
+-                case WANT_XKM_FILE:
+-                    binMode = O_BINARY;
+-                    openMode = "wb";
+-                    break;
+-                default:
+-                    binMode = 0;
+-                    break;
+-                }
++                binMode = O_BINARY;
++                openMode = "wb";
+ #endif
+                 outputFileFd =
+                     open(outputFile, O_WRONLY | O_CREAT | O_EXCL,
+@@ -1198,33 +489,7 @@ main(int argc, char *argv[])
+                 }
+             }
+         }
+-        switch (outputFormat)
+-        {
+-        case WANT_XKM_FILE:
+-            ok = XkbWriteXKMFile(out, &result);
+-            break;
+-        case WANT_XKB_FILE:
+-            ok = XkbWriteXKBFile(out, &result, showImplicit, NULL, NULL);
+-            break;
+-        case WANT_C_HDR:
+-            ok = XkbWriteCFile(out, outputFile, &result);
+-            break;
+-        case WANT_X_SERVER:
+-            if (!(ok = XkbWriteToServer(&result)))
+-            {
+-                ERROR("%s in %s\n", _XkbErrMessages[_XkbErrCode],
+-                       _XkbErrLocation ? _XkbErrLocation : "unknown");
+-                ACTION("Couldn't write keyboard description to %s\n",
+-                        outDpyName);
+-            }
+-            break;
+-        default:
+-            WSGO("Unknown output format %d\n", outputFormat);
+-            ACTION("No output file created\n");
+-            ok = False;
+-            break;
+-        }
+-        if (outputFormat != WANT_X_SERVER)
++        ok = XkbWriteXKMFile(out, &result);
+         {
+             if (fclose(out))
+             {
+@@ -1244,11 +509,6 @@ main(int argc, char *argv[])
+             }
+         }
+     }
+-    if (inDpy)
+-        XCloseDisplay(inDpy);
+-    inDpy = NULL;
+-    if (outDpy)
+-        XCloseDisplay(outDpy);
+     uFinishUp();
+     return (ok == 0);
+ }

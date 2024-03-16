@@ -1,0 +1,183 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XLookupKeysym __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XLookupKeysym, XRefreshKeyboardMapping, XLookupString, XRebindKeysym \- handle keyboard input events in Latin-1
+.SH SYNTAX
+.HP
+KeySym XLookupKeysym(\^XKeyEvent *\fIkey_event\fP\^, int \fIindex\fP\^);
+.HP
+int XRefreshKeyboardMapping(\^XMappingEvent *\fIevent_map\fP\^);
+.HP
+int XLookupString(\^XKeyEvent *\fIevent_struct\fP\^, char
+*\fIbuffer_return\fP\^, int \fIbytes_buffer\fP\^, KeySym
+*\fIkeysym_return\fP\^, XComposeStatus *\fIstatus_in_out\fP\^);
+.HP
+int XRebindKeysym(\^Display *\fIdisplay\fP\^, KeySym \fIkeysym\fP\^, KeySym
+\fIlist\fP\^[\^]\^, int \fImod_count\fP\^, _Xconst unsigned char *\fIstring\fP\^, int
+\fInum_bytes\fP\^);
+.SH ARGUMENTS
+.IP \fIbuffer_return\fP 1i
+Returns the translated characters.
+.IP \fIbytes_buffer\fP 1i
+Specifies the length of the buffer.
+No more than bytes_buffer of translation are returned.
+.IP \fInum_bytes\fP 1i
+Specifies the number of bytes in the string argument.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIevent_map\fP 1i
+Specifies the mapping event that is to be used.
+.IP \fIevent_struct\fP 1i
+Specifies the key event structure to be used.
+You can pass
+.B XKeyPressedEvent
+or
+.BR XKeyReleasedEvent .
+.IP \fIindex\fP 1i
+Specifies the index into the KeySyms list for the event's KeyCode.
+.IP \fIkey_event\fP 1i
+Specifies the
+.B KeyPress
+or
+.B KeyRelease
+event.
+.IP \fIkeysym\fP 1i
+Specifies the KeySym that is to be returned.
+.IP \fIkeysym_return\fP 1i
+Returns the KeySym computed from the event if this argument is not NULL.
+.IP \fIlist\fP 1i
+Specifies the KeySyms to be used as modifiers.
+.IP \fImod_count\fP 1i
+Specifies the number of modifiers in the modifier list.
+.IP \fIstatus_in_out\fP 1i
+Specifies or returns the
+.B XComposeStatus
+structure or NULL.
+.IP \fIstring\fP 1i
+Specifies the string that is copied and will be returned by
+.BR XLookupString .
+.SH DESCRIPTION
+The
+.B XLookupKeysym
+function uses a given keyboard event and the index you specified to return
+the KeySym from the list that corresponds to the KeyCode member in the
+.B XKeyPressedEvent
+or
+.B XKeyReleasedEvent
+structure.
+If no KeySym is defined for the KeyCode of the event,
+.B XLookupKeysym
+returns
+.BR NoSymbol .
+.LP
+The
+.B XRefreshKeyboardMapping
+function refreshes the stored modifier and keymap information.
+You usually call this function when a
+.B MappingNotify
+event with a request member of
+.B MappingKeyboard
+or
+.B MappingModifier
+occurs.
+The result is to update Xlib's knowledge of the keyboard.
+.LP
+The
+.B XLookupString
+function translates a key event to a KeySym and a string.
+The KeySym is obtained by using the standard interpretation of the
+.BR Shift ,
+.BR Lock ,
+group, and numlock modifiers as defined in the X Protocol specification.
+If the KeySym has been rebound (see
+.BR XRebindKeysym ),
+the bound string will be stored in the buffer.
+Otherwise, the KeySym is mapped, if possible, to an ISO Latin-1 character
+or (if the Control modifier is on) to an ASCII control character,
+and that character is stored in the buffer.
+.B XLookupString
+returns the number of characters that are stored in the buffer.
+.LP
+If present (non-NULL),
+the
+.B XComposeStatus
+structure records the state,
+which is private to Xlib,
+that needs preservation across calls to
+.B XLookupString
+to implement compose processing.
+The creation of
+.B XComposeStatus
+structures is implementation-dependent;
+a portable program must pass NULL for this argument.
+.LP
+The
+.B XRebindKeysym
+function can be used to rebind the meaning of a KeySym for the client.
+It does not redefine any key in the X server but merely
+provides an easy way for long strings to be attached to keys.
+.B XLookupString
+returns this string when the appropriate set of
+modifier keys are pressed and when the KeySym would have been used for
+the translation.
+No text conversions are performed;
+the client is responsible for supplying appropriately encoded strings.
+Note that you can rebind a KeySym that may not exist.
+.SH "SEE ALSO"
+XButtonEvent(__libmansuffix__),
+XMapEvent(__libmansuffix__),
+XStringToKeysym(__libmansuffix__),
+XkbLookupKeySym(__libmansuffix__),
+XkbRefreshKeyboardMapping(__libmansuffix__),
+XmbLookupString(__libmansuffix__),
+XwcLookupString(__libmansuffix__),
+Xutf8LookupString(__libmansuffix__),
+Compose(__filemansuffix__)
+.br
+\fI\*(xL\fP

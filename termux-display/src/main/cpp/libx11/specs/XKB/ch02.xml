@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Initialization_and_General_Programming_Information'>
+<title>Initialization and General Programming Information</title>
+<sect1 id='Extension_Header_Files'>
+<title>Extension Header Files</title>
+<para>
+The following include files are part of the Xkb standard:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+<filename class="headerfile">&lt;X11/XKBlib.h&gt;</filename>
+    </para>
+    <para><filename class="headerfile">XKBlib.h</filename>
+is the main header file for Xkb; it declares constants, types, and
+functions.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<filename class="headerfile">&lt;X11/extensions/XKBstr.h&gt;</filename>
+    </para>
+    <para>
+<filename class="headerfile">XKBstr.h</filename> declares types and
+constants for Xkb. It is included automatically from
+<filename class="headerfile">&lt;X11/XKBlib.h&gt;</filename>;
+you should never need to reference it directly in your application code.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<filename class="headerfile">&lt;X11/extensions/XKB.h&gt;</filename>
+    </para>
+    <para>
+<filename class="headerfile">XKB.h</filename>
+defines constants for Xkb. It is included automatically from
+<filename class="headerfile">&lt;X11/XKBstr.h&gt;</filename>;
+you should never need to reference it directly in your application code.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<filename class="headerfile">&lt;X11/extensions/XKBgeom.h&gt;</filename>
+   </para>
+   <para><filename class="headerfile">XKBgeom.h</filename>
+declares types, symbolic constants, and functions for manipulating
+keyboard geometry descriptions.
+    </para>
+  </listitem>
+</itemizedlist>
+</sect1>
+<sect1 id='Extension_Name'>
+<title>Extension Name</title>
+<indexterm significance="preferred" zone="Extension_Name"><primary><symbol>XkbName</symbol></primary></indexterm>
+<para>
+The name of the Xkb extension is given in
+<filename class="headerfile">&lt;X11/extensions/Xkb.h&gt;</filename>:
+
+<programlisting>
+#define XkbName "XKEYBOARD"
+</programlisting>
+</para>
+
+<para>
+Most extensions to the X protocol are initialized by calling
+<function>XInitExtension</function>
+and passing the extension name. However, as explained in <link linkend="Initializing_the_Keyboard_Extension">section 2.4</link>, Xkb
+requires a more complex initialization sequence, and a client program should
+not call
+<function>XInitExtension</function>
+directly.
+</para>
+</sect1>
+<sect1 id='Determining_Library_Compatibility'>
+<title>Determining Library Compatibility</title>
+<para>
+If an application is dynamically linked, both the X server and the client-side
+X library must contain the Xkb extension in order for the client to use the Xkb
+extension capabilities. Therefore a dynamically linked application must check
+both the library and the server for compatibility before using Xkb function
+calls. A properly written program must check for compatibility between the
+version of the Xkb library that is dynamically loaded and the one used when the
+application was built. It must then check the server version for compatibility
+with the version of Xkb in the library.
+</para>
+<para>
+If your application is statically linked, you must still check for server
+compatibility and may check library compatibility. (It is possible to compile
+against one set of header files and link against a different, incompatible,
+version of the library, although this should not normally occur.)
+</para>
+<para>
+To determine the compatibility of a library at runtime, call
+<function>XkbLibraryVersion</function>.
+</para>
+<indexterm significance="preferred" zone="XkbLibraryVersion"><primary><function>XkbLibraryVersion</function></primary></indexterm>
+<funcsynopsis id="XkbLibraryVersion">
+  <funcprototype>
+    <funcdef>Bool <function>XkbLibraryVersion</function></funcdef>
+<!-- (
+<parameter>lib_major_in_out</parameter>,
+<parameter>lib_minor_in_out</parameter>
+) -->
+
+    <paramdef>int *<parameter>lib_major_in_out</parameter></paramdef>
+    <paramdef>int *<parameter>lib_minor_in_out</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>lib_major_in_out</parameter>
+    </term>
+    <listitem>
+      <para>
+        specifies and returns the major Xkb library version.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>lib_minor_in_out</parameter>
+    </term>
+    <listitem>
+      <para>
+        specifies and returns the minor Xkb library version.
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+Pass the symbolic value
+<symbol>XkbMajorVersion</symbol>
+in
+<parameter>lib_major_in_out</parameter>
+and
+<symbol>XkbMinorVersion</symbol>
+in
+<parameter>lib_minor_in_out</parameter>.
+These arguments represent the version of the library used at compile time.
+The
+<function>XkbLibraryVersion</function>
+function backfills the major and minor version numbers of the library used at
+run time in
+<parameter>lib_major_in_out</parameter>
+and
+<parameter>lib_minor_in_out</parameter>.
+If the versions of the compile time and run time libraries are compatible,
+<function>XkbLibraryVersion</function>
+returns
+<symbol>True</symbol>,
+otherwise, it returns
+<symbol>False</symbol>.
+</para>
+
+<para>
+In addition, in order to use the Xkb extension, you must ensure that the
+extension is present in the server and that the server supports the version of
+the extension expected by the client. Use
+<function>XkbQueryExtension</function>
+to do this, as described in the next section.
+</para>
+
+</sect1>
+<sect1 id='Initializing_the_Keyboard_Extension'>
+<title>Initializing the Keyboard Extension</title>
+<para>
+Call
+<function>XkbQueryExtension</function>
+to check for the presence and compatibility of the extension in the server and
+to initialize the extension. Because of potential version mismatches, you
+cannot use the generic extension mechanism functions
+(<function>XQueryExtension</function>
+and
+<function>XInitExtension</function>)
+for checking for the presence of, and initializing the Xkb extension.
+</para>
+
+<para>
+You must call
+<function>XkbQueryExtension</function>
+or
+<function>XkbOpenDisplay</function>
+before using any other Xkb library interfaces, unless such usage is explicitly
+allowed in the interface description in this document. The exceptions are:
+<function>XkbIgnoreExtension</function>,
+<function>XkbLibraryVersion</function>,
+and a handful of audible-bell functions. You should not use any other Xkb
+functions if the extension is not present or is uninitialized. In general,
+calls to Xkb library functions made prior to initializing the Xkb extension
+cause
+<errorname>BadAccess</errorname>
+protocol errors.
+<indexterm zone="Initializing_the_Keyboard_Extension"><primary>errors</primary>
+<secondary><errorname>BadAccess</errorname></secondary></indexterm>
+<indexterm zone="Initializing_the_Keyboard_Extension">
+<primary><errorname>BadAccess</errorname></primary></indexterm>
+</para>
+
+<para>
+<function>XkbQueryExtension</function>
+both determines whether a compatible Xkb extension is present in the X server
+and initializes the extension when it is present.
+</para>
+
+<indexterm significance="preferred" zone="XkbQueryExtension"><primary><function>XkbQueryExtension</function></primary></indexterm>
+<funcsynopsis id="XkbQueryExtension">
+  <funcprototype>
+    <funcdef>Bool <function>XkbQueryExtension</function></funcdef>
+<!-- (
+<parameter>dpy, opcode_rtrn, event_rtrn, error_rtrn, major_in_out, minor_in_out</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>int *<parameter>opcode_rtrn</parameter></paramdef>
+    <paramdef>int *<parameter>event_rtrn</parameter></paramdef>
+    <paramdef>int *<parameter>error_rtrn</parameter></paramdef>
+    <paramdef>int *<parameter>major_in_out</parameter></paramdef>
+    <paramdef>int *<parameter>minor_in_out</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>opcode_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the major extension opcode
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>event_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the extension base event code
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>error_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the extension base error code
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>major_in_out</parameter>
+    </term>
+    <listitem>
+      <para>
+        compile time lib major version in, server major version out
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>minor_in_out</parameter>
+    </term>
+    <listitem>
+      <para>
+        compile time lib min version in, server minor version out
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+The
+<function>XkbQueryExtension</function>
+function determines whether a compatible version of the X Keyboard Extension
+is present in the server. If a compatible extension is present,
+<function>XkbQueryExtension</function>
+returns
+<symbol>True</symbol>;
+otherwise, it returns
+<symbol>False</symbol>.
+</para>
+
+<para>
+If a compatible version of Xkb is present,
+<function>XkbQueryExtension</function>
+initializes the extension. It backfills the major opcode for the keyboard
+extension in
+<parameter>opcode_rtrn</parameter>,
+the base event code in
+<parameter>event_rtrn</parameter>,
+the base error code in
+<parameter>error_rtrn</parameter>,
+and the major and minor version numbers of the extension in
+<parameter>major_in_out</parameter>
+and
+<parameter>minor_in_out</parameter>.
+The major opcode is reported in the
+<structfield>req_major</structfield>
+fields of some Xkb events. For a discussion of the base event code, see
+<link linkend="Xkb_Event_Types">section 4.1</link>.
+</para>
+
+<para>
+As a convenience, you can use the function
+<function>XkbOpenDisplay</function>
+to perform these three tasks at once: open a connection to an X server, check
+for a compatible version of the Xkb extension in both the library and the
+server, and initialize the extension for use.
+</para>
+
+<indexterm significance="preferred" zone="XkbOpenDisplay"><primary><function>XkbOpenDisplay</function></primary></indexterm>
+<funcsynopsis id="XkbOpenDisplay">
+  <funcprototype>
+    <funcdef>Display *<function>XkbOpenDisplay</function></funcdef>
+<!-- (
+<parameter>display_name, event_rtrn, error_rtrn, major_in_out, minor_in_out,
+reason_rtrn)</parameter> -->
+
+    <paramdef>char *<parameter>display_name</parameter></paramdef>
+    <paramdef>int *<parameter>event_rtrn</parameter></paramdef>
+    <paramdef>int *<parameter>error_rtrn</parameter></paramdef>
+    <paramdef>int *<parameter>major_in_out</parameter></paramdef>
+    <paramdef>int *<parameter>minor_in_out</parameter></paramdef>
+    <paramdef>int *<parameter>reason_rtrn</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>display_name</parameter>
+    </term>
+    <listitem>
+      <para>
+        hardware display name, which determines the display and
+        communications domain to be used
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>event_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the extension base event code
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>error_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the extension base error code
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>major_in_out</parameter>
+    </term>
+    <listitem>
+      <para>
+        compile time lib major version in, server major version out
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>minor_in_out</parameter>
+    </term>
+    <listitem>
+      <para>
+        compile time lib minor version in, server minor version out
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>reason_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with a status code
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbOpenDisplay</function>
+is a convenience function that opens an X display connection and initializes
+the X keyboard extension. In all cases, upon return
+<parameter>reason_rtrn</parameter>
+contains a status value indicating success or the type of failure. If
+<parameter>major_in_out</parameter>
+and
+<parameter>minor_in_out</parameter>
+are not
+<symbol>NULL</symbol>,
+<function>XkbOpenDisplay</function>
+first calls
+<function>XkbLibraryVersion</function>
+to determine whether the client library is compatible, passing it the values
+pointed to by
+<parameter>major_in_out</parameter>
+and
+<parameter>minor_in_out</parameter>.
+If the library is incompatible,
+<function>XkbOpenDisplay</function>
+backfills
+<parameter>major_in_out</parameter>
+and
+<parameter>minor_in_out</parameter>
+with the major and minor extension versions of the library being used and
+returns
+<symbol>NULL</symbol>.
+If the library is compatible,
+<function>XkbOpenDisplay</function>
+next calls
+<function>XOpenDisplay</function>
+with the
+<parameter>display_name</parameter>.
+If this fails, the function returns
+<symbol>NULL</symbol>.
+If successful,
+<function>XkbOpenDisplay</function>
+calls
+<function>XkbQueryExtension</function>
+and
+backfills the major and minor Xkb server extension version numbers in
+<parameter>major_in_out</parameter>
+and
+<parameter>minor_in_out</parameter>.
+If the server extension version is not compatible with the library extension
+version or if the server extension is not present,
+<function>XkbOpenDisplay</function>
+closes the display and returns
+<symbol>NULL</symbol>.
+When successful, the function returns the display connection.
+</para>
+
+<para>
+The possible values for
+<parameter>reason_rtrn</parameter> are:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+<errorname>XkbOD_BadLibraryVersion</errorname>
+indicates
+<function>XkbLibraryVersion</function>
+returned
+<symbol>False</symbol>.
+  </para>
+</listitem>
+<listitem>
+  <para>
+<errorname>XkbOD_ConnectionRefused</errorname>
+indicates the display could not be opened.
+  </para>
+</listitem>
+<listitem>
+  <para>
+<errorname>XkbOD_BadServerVersion</errorname>
+indicates the library and the server have incompatible extension versions.
+  </para>
+</listitem>
+<listitem>
+  <para>
+<errorname>XkbOD_NonXkbServer</errorname>
+indicates the extension is not present in the X server.
+  </para>
+</listitem>
+<listitem>
+  <para>
+<errorname>XkbOD_Success</errorname>
+indicates that the function succeeded.
+  </para>
+</listitem>
+</itemizedlist>
+</sect1>
+
+<sect1 id='Disabling_the_Keyboard_Extension'>
+<title>Disabling the Keyboard Extension</title>
+<para>
+If a server supports the Xkb extension, the X library normally implements
+preXkb keyboard functions using the Xkb keyboard description and state. The
+server Xkb keyboard state may differ from the preXkb keyboard state. This
+difference does not affect most clients, but there are exceptions. To allow
+these clients to work properly, you may instruct the extension not to use Xkb
+functionality.
+</para>
+
+<para>
+Call
+<function>XkbIgnoreExtension</function>
+to prevent core X library keyboard functions from using the X Keyboard
+Extension. You must call
+<function>XkbIgnoreExtension</function>
+before you open a server connection; Xkb does not provide a way to enable or
+disable use of the extension once a connection is established.
+</para>
+
+<indexterm significance="preferred" zone="XkbIgnoreExtension"><primary><function>XkbIgnoreExtension</function></primary></indexterm>
+<funcsynopsis id="XkbIgnoreExtension">
+  <funcprototype>
+    <funcdef>Bool <function>XkbIgnoreExtension</function></funcdef>
+<!-- (
+<parameter>ignore</parameter>
+) -->
+
+    <paramdef>Bool <parameter>ignore</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>ignore</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> means ignore the extension
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbIgnoreExtension</function>
+tells the X library whether to use the X Keyboard Extension on any
+subsequently opened X display connections. If ignore is
+<symbol>True</symbol>,
+the library does not initialize the Xkb extension when it opens a new
+display. This forces the X server to use compatibility mode and communicate
+with the client using only core protocol requests and events. If ignore is
+<symbol>False</symbol>,
+the library treats subsequent calls to
+<function>XOpenDisplay</function>
+normally and uses Xkb extension requests, events, and state. Do not explicitly
+use Xkb on a connection for which it is disabled.
+<function>XkbIgnoreExtension</function>
+returns
+<symbol>False</symbol>
+if it was unable to apply the ignore request.
+</para>
+
+</sect1>
+<sect1 id='Protocol_Errors'>
+<title>Protocol Errors</title>
+<indexterm significance="preferred" zone="Protocol_Errors">
+<primary>errors</primary></indexterm>
+
+<para>
+Many of the Xkb extension library functions described in this document can
+cause the X server to report an error, referred to in this document as a
+<errorname>Bad<replaceable>Xxx</replaceable></errorname>
+protocol error, where
+<replaceable>Xxx</replaceable>
+is some name. These errors are fielded in the normal manner, by the default
+Xlib error handler or one replacing it. Note that X protocol errors are not
+necessarily reported immediately because of the buffering of X protocol
+requests in Xlib and the server.
+</para>
+
+<para>
+<link linkend="table2.1">Table 2.1</link>
+lists the protocol errors that can be generated, and their causes.
+</para>
+
+<table id='table2.1' frame='topbot'>
+<title>Xkb Protocol Errors</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='2' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='1.0*'/>
+<colspec colname='c2' colwidth='3.0*'/>
+<thead>
+  <row rowsep='1'>
+    <entry>Error</entry>
+    <entry>Cause</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><errorname>BadAccess</errorname></entry>
+    <entry>
+<para>
+The Xkb extension has not been properly initialized
+</para>
+    </entry>
+  </row>
+  <row>
+    <entry><errorname>BadKeyboard</errorname></entry>
+    <entry>
+<para>
+The device specified was not a valid core or input extension device
+</para>
+    </entry>
+  </row>
+  <row>
+    <entry><errorname>BadImplementation</errorname></entry>
+    <entry>
+<para>
+Invalid reply from server
+</para>
+    </entry>
+  </row>
+  <row>
+    <entry><errorname>BadAlloc</errorname></entry>
+    <entry>
+<para>
+Unable to allocate storage
+</para>
+    </entry>
+  </row>
+  <row>
+    <entry><errorname>BadMatch</errorname></entry>
+    <entry>
+<para>
+A compatible version of Xkb was not available in the server or an argument has
+correct type and range, but is otherwise invalid
+</para>
+    </entry>
+  </row>
+  <row>
+    <entry><errorname>BadValue</errorname></entry>
+    <entry>
+<para>
+An argument is out of range
+</para>
+    </entry>
+  </row>
+  <row>
+    <entry><errorname>BadAtom</errorname></entry>
+    <entry>
+<para>
+A name is neither a valid Atom or
+<symbol>None</symbol>
+</para>
+    </entry>
+  </row>
+  <row>
+    <entry><errorname>BadDevice</errorname></entry>
+    <entry>
+<para>
+Device, Feedback Class, or Feedback ID invalid
+</para>
+    </entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+<para id='BadKeyboard'>
+<indexterm zone="BadKeyboard"><primary>errors</primary>
+<secondary><errorname>BadKeyboard</errorname></secondary></indexterm>
+<indexterm zone="BadKeyboard">
+<primary><errorname>BadKeyboard</errorname></primary></indexterm>
+The Xkb extension adds a single protocol error,
+<errorname>BadKeyboard</errorname>,
+to the core protocol error set. This error code will be reported as the
+<parameter>error_rtrn</parameter>
+when
+<function>XkbQueryExtension</function>
+is called. When a
+<errorname>BadKeyboard</errorname>
+error is reported in an
+<structname>XErrorEvent</structname>,
+additional information is reported in the
+<structfield>resourceid</structfield>
+field. The most significant byte of the
+<structfield>resource_id</structfield>
+is a further refinement of the error cause, as defined in
+<link linkend="table2.2">Table 2.2</link>. The least
+significant byte will contain the device, class, or feedback ID as indicated in
+the table.
+</para>
+
+<table id='table2.2' frame='topbot'>
+<title><errorname>BadKeyboard</errorname> Protocol Error resource_id Values</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='4' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='2.0*'/>
+<colspec colname='c2' colwidth='1.0*'/>
+<colspec colname='c3' colwidth='3.0*'/>
+<colspec colname='c4' colwidth='2.0*'/>
+<thead>
+  <row rowsep='1'>
+    <entry>high-order byte</entry>
+    <entry>value</entry>
+    <entry>meaning</entry>
+    <entry>low-order byte</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><errorname>XkbErr_BadDevice</errorname></entry>
+    <entry>0xff</entry>
+    <entry>
+<para>
+device not found
+</para>
+    </entry>
+    <entry>device ID</entry>
+  </row>
+  <row>
+    <entry><errorname>XkbErr_BadClass</errorname></entry>
+    <entry>0xfe</entry>
+    <entry>
+<para>
+device found, but it is of the wrong class
+</para>
+    </entry>
+    <entry>class ID</entry>
+  </row>
+  <row>
+    <entry><errorname>XkbErr_BadId</errorname></entry>
+    <entry>0xfd</entry>
+    <entry>
+<para>
+device found, class ok, but device does not contain a feedback with the
+indicated ID
+</para>
+    </entry>
+    <entry>feedback ID</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+</sect1>
+
+<sect1 id='Display_and_Device_Specifications_in_Function_Calls'>
+<title>Display and Device Specifications in Function Calls</title>
+<para>
+Where a connection to the server is passed as an argument (Display*) and an
+<type>XkbDescPtr</type>
+is also passed as an argument, the Display* argument must match the
+<structfield>dpy</structfield>
+field of the
+<structname>XkbDescRec</structname>
+pointed to by the
+<type>XkbDescPtr</type>
+argument, or else the
+<structfield>dpy</structfield>
+field of the
+<structname>XkbDescRec</structname>
+must be
+<symbol>NULL</symbol>.
+If they don’t match or the
+<structfield>dpy</structfield>
+field is not
+<symbol>NULL</symbol>,
+a
+<errorname>BadMatch</errorname>
+error is returned (either in the return value or a backfilled
+<type>Status</type>
+variable). Upon successful return, the
+<structfield>dpy</structfield>
+field of the
+<structname>XkbDescRec</structname>
+always contains the Display* value passed in.
+</para>
+
+<para>
+The Xkb extension can communicate with the X input extension if it is present.
+Consequently, there can potentially be more than one input device connected to
+the server. Most Xkb library calls that require communicating with the server
+involve both a server connection (Display *
+<structfield>dpy</structfield>)
+and a device identifier (unsigned int
+<structfield>device_spec</structfield>).
+In some cases, the device identifier is implicit and is taken as the
+<structfield>device_spec</structfield>
+field of an
+<structname>XkbDescRec</structname>
+structure passed as an argument.
+</para>
+
+<para id='XkbUseCoreKbd'>
+<indexterm significance="preferred" zone="XkbUseCoreKbd"><primary><symbol>XkbUseCoreKbd</symbol></primary></indexterm>
+The device identifier can specify any X input extension device with a
+<symbol>KeyClass</symbol>
+component, or it can specify the constant,
+<symbol>XkbUseCoreKbd</symbol>.
+The use of
+<symbol>XkbUseCoreKbd</symbol>
+allows applications to indicate the core keyboard without having to determine
+its device identifier.
+</para>
+
+<para>
+Where an Xkb device identifier is passed as an argument and an
+<type>XkbDescPtr</type>
+is also passed as an argument, if either the argument or the
+<structname>XkbDescRec</structname>
+<structfield>device_spec</structfield>
+field is
+<symbol>XkbUseCoreKbd</symbol>,
+and if the function returns successfully, the
+<type>XkbDescPtr</type>
+<structfield>device_spec</structfield>
+field will have been converted from
+<symbol>XkbUseCoreKbd</symbol>
+to a real Xkb device ID. If the function does not complete successfully, the
+<structfield>device_spec</structfield>
+field remains unchanged. Subsequently, the device id argument must match the
+<structfield>device_spec</structfield>
+field of the
+<type>XkbDescPtr</type>
+argument. If they don’t match, a
+<errorname>BadMatch</errorname>
+error is returned (either in the return value or a backfilled
+<type>Status</type>
+variable).
+</para>
+
+<para>
+When the Xkb extension in the server hands an application a device identifier
+to use for the keyboard, that ID is the input extension identifier for the
+device if the server supports the X Input Extension. If the server does not
+support the input extension, the meaning of the identifier is undefined — the
+only guarantee is that when you use
+<symbol>XkbUseCoreKbd</symbol>,
+<symbol>XkbUseCoreKbd</symbol>
+will work and the identifier returned by the server will refer to the core
+keyboard device.
+</para>
+</sect1>
+</chapter>

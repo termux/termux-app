@@ -1,0 +1,112 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbCopyKeyTypes __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbCopyKeyTypes \- Copy more than one XkbKeyTypeRec structure
+.SH SYNOPSIS
+.HP
+.B Status XkbCopyKeyTypes
+.BI "(\^XkbKeyTypePtr " "from" "\^,"
+.BI "XkbKeyTypePtr " "into" "\^,"
+.BI "int " "num_types" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I from
+pointer to array of XkbKeyTypeRecs to copy
+.TP
+.I into
+pointer to array of XkbKeyTypeRecs to change
+.TP
+.I num_types
+number of types to copy
+.SH DESCRIPTION
+.LP
+.I XkbCopyKeyTypes 
+copies 
+.I num_types 
+XkbKeyTypeRec structures from the array specified by 
+.I from 
+into the array specified by 
+.I into. 
+It is intended for copying between, rather than within, keyboard descriptions, 
+so it 
+doesn't check for overlaps. The same rules that apply to the 
+.I from 
+and 
+.I into 
+parameters in 
+.I XkbCopyKeyType 
+apply to each entry of the 
+.I from 
+and 
+.I into 
+arrays of 
+.I XkbCopyKeyTypes. 
+If any allocation errors occur while copying 
+.I from 
+to 
+.I into, XkbCopyKeyTypes 
+returns BadAlloc. Otherwise, 
+.I XkbCopyKeyTypes 
+copies 
+.I from 
+to 
+.I into 
+and returns Success.
+.SH "RETURN VALUES"
+.TP 15
+Success
+The XkbCopyKeyTypes function returns Success when there are no allocation 
+errors.
+.SH STRUCTURES
+.LP
+Key types are used to determine the shift level of a key given the current state 
+of the 
+keyboard. The set of all possible key types for the Xkb keyboard description are 
+held in 
+the
+.I types 
+field of the client map, whose total size is stored in 
+.I size_types, 
+and whose total number of valid entries is stored in 
+.I num_types. 
+Key types are defined using the following structure:
+.nf
+
+typedef struct {                   /\&* Key Type */
+    XkbModsRec        mods;        /\&* modifiers used to compute shift level */
+    unsigned char     num_levels;  /\&* total # shift levels, do not modify directly */
+    unsigned char     map_count;   /\&* # entries in map, preserve (if non-NULL) */
+    XkbKTMapEntryPtr  map;         /\&* vector of modifiers for each shift level */
+    XkbModsPtr        preserve;    /\&* mods to preserve for corresponding map entry */
+    Atom              name;        /\&* name of key type */
+    Atom *            level_names; /\&* array of names of each shift level */
+} XkbKeyTypeRec, *XkbKeyTypePtr;
+.fi
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.SH "SEE ALSO"
+.BR XkbCopyKeyType (__libmansuffix__)

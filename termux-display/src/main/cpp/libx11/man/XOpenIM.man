@@ -1,0 +1,210 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XOpenIM __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XOpenIM, XCloseIM, XSetIMValues, XGetIMValues, XDisplayOfIM, XLocaleOfIM, XRegisterIMInstantiateCallback, XUnregisterIMInstantiateCallback \- open, close, and obtain input method information
+.SH SYNTAX
+.HP
+XIM XOpenIM\^(\^Display *\fIdisplay\fP\^, XrmDatabase \fIdb\fP\^, char
+*\fIres_name\fP\^, char *\fIres_class\fP\^);
+.HP
+Status XCloseIM\^(\^XIM \fIim\fP\^);
+.HP
+char *XSetIMValues\^(\^XIM \fIim\fP\^, ...);
+.HP
+char *XGetIMValues\^(\^XIM \fIim\fP\^, ...);
+.HP
+Display *XDisplayOfIM\^(\^XIM \fIim\fP\^);
+.HP
+char *XLocaleOfIM\^(\^XIM \fIim\fP\^);
+.HP
+Bool XRegisterIMInstantiateCallback\^(\^Display *\fIdisplay\fP\^, XrmDatabase
+\fIdb\fP\^, char *\fIres_name\fP\^, char *\fIres_class\fP\^, XIDProc
+\fIcallback\fP\^, XPointer \fIclient_data\fP\^);
+.HP
+Bool XUnregisterIMInstantiateCallback\^(\^Display *\fIdisplay\fP\^,
+XrmDatabase \fIdb\fP\^, char *\fIres_name\fP\^, char *\fIres_class\fP\^,
+XIDProc \fIcallback\fP\^, XPointer \fIclient_data\fP\^);
+.LP
+.SH ARGUMENTS
+.IP \fIcallback\fP 1i
+Specifies a pointer to the input method instantiate callback.
+.IP \fIclient_data\fP 1i
+Specifies the additional client data.
+.IP \fIdb\fP 1i
+Specifies a pointer to the resource database.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIim\fP 1i
+Specifies the input method.
+.IP \fIres_class\fP 1i
+Specifies the full class name of the application.
+.IP \fIres_name\fP 1i
+Specifies the full resource name of the application.
+.IP ... 1i
+Specifies the variable length argument list to set or get XIM values.
+.SH DESCRIPTION
+The
+.B XOpenIM
+function opens an input method,
+matching the current locale and modifiers specification.
+Current locale and modifiers are bound to the input method at opening time.
+The locale associated with an input method cannot be changed dynamically.
+This implies that the strings returned by
+.B XmbLookupString
+or
+.BR XwcLookupString ,
+for any input context affiliated with a given input method
+will be encoded in the locale current at the time the input method is opened.
+.LP
+The specific input method to which this call will be routed
+is identified on the basis of the current locale.
+.B XOpenIM
+will identify a default input method corresponding to the
+current locale.
+That default can be modified using
+.B XSetLocaleModifiers
+for the input method modifier.
+.LP
+The db argument is the resource database to be used by the input method
+for looking up resources that are private to the input method.
+It is not intended that this database be used to look
+up values that can be set as IC values in an input context.
+If db is NULL,
+no database is passed to the input method.
+.LP
+The res_name and res_class arguments specify the resource name
+and class of the application.
+They are intended to be used as prefixes by the input method
+when looking up resources that are common to all input contexts
+that may be created for this input method.
+The characters used for resource names and classes must be in the
+X Portable Character Set.
+The resources looked up are not fully specified
+if res_name or res_class is NULL.
+.LP
+The res_name and res_class arguments are not assumed to exist beyond
+the call to
+.BR XOpenIM .
+The specified resource database is assumed to exist for the lifetime
+of the input method.
+.LP
+.B XOpenIM
+returns NULL if no input method could be opened.
+.LP
+The
+.B XCloseIM
+function closes the specified input method and frees the memory pointed
+to by the im argument.
+.LP
+The
+.B XSetIMValues
+function presents a variable argument list programming interface
+for setting attributes of the specified input method.
+It returns NULL if it succeeds;
+otherwise,
+it returns the name of the first argument that could not be set.
+Xlib does not attempt to set arguments from the supplied list that
+follow the failed argument;
+all arguments in the list preceding the failed argument have been set
+correctly.
+.LP
+The
+.B XGetIMValues
+function presents a variable argument list programming interface
+for querying properties or features of the specified input method.
+This function returns NULL if it succeeds;
+otherwise,
+it returns the name of the first argument that could not be obtained.
+.LP
+Each XIM value argument (following a name) must point to
+a location where the XIM value is to be stored.
+That is, if the XIM value is of type T,
+the argument must be of type T*.
+If T itself is a pointer type,
+then
+.B XGetIMValues
+allocates memory to store the actual data,
+and the client is responsible for freeing this data by calling
+.B XFree
+with the returned pointer.
+.LP
+The
+.B XDisplayOfIM
+function returns the display associated with the specified input method.
+.LP
+The
+.B XLocaleOfIM
+function returns the locale associated with the specified input method.
+.LP
+The
+.B XRegisterIMInstantiateCallback
+function registers a callback to be invoked whenever a new input method
+becomes available for the specified display that matches the current
+locale and modifiers.
+.LP
+The function returns
+.B True
+if it succeeds; otherwise, it returns
+.BR False .
+.LP
+The
+.B XUnregisterIMInstantiateCallback
+function removes an input method instantiation callback previously
+registered.
+The function returns
+.B True
+if it succeeds; otherwise, it returns
+.BR False .
+.SH "SEE ALSO"
+XCreateIC(__libmansuffix__),
+XSetICFocus(__libmansuffix__),
+XSetICValues(__libmansuffix__),
+XmbResetIC(__libmansuffix__)
+.br
+\fI\*(xL\fP

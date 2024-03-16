@@ -1,0 +1,181 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XMapWindow __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XMapWindow, XMapRaised, XMapSubwindows \- map windows
+.SH SYNTAX
+.HP
+int XMapWindow\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^);
+.HP
+int XMapRaised\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^);
+.HP
+int XMapSubwindows\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIw\fP 1i
+Specifies the window.
+.SH DESCRIPTION
+The
+.B XMapWindow
+function
+maps the window and all of its
+subwindows that have had map requests.
+Mapping a window that has an unmapped ancestor does not display the
+window but marks it as eligible for display when the ancestor becomes
+mapped.
+Such a window is called unviewable.
+When all its ancestors are mapped,
+the window becomes viewable
+and will be visible on the screen if it is not obscured by another window.
+This function has no effect if the window is already mapped.
+.LP
+If the override-redirect of the window is
+.B False
+and if some other client has selected
+.B SubstructureRedirectMask
+on the parent window, then the X server generates a
+.B MapRequest
+event, and the
+.B XMapWindow
+function does not map the window.
+Otherwise, the window is mapped, and the X server generates a
+.B MapNotify
+event.
+.LP
+If the window becomes viewable and no earlier contents for it are remembered,
+the X server tiles the window with its background.
+If the window's background is undefined,
+the existing screen contents are not
+altered, and the X server generates zero or more
+.B Expose
+events.
+If backing-store was maintained while the window was unmapped, no
+.B Expose
+events
+are generated.
+If backing-store will now be maintained,
+a full-window exposure is always generated.
+Otherwise, only visible regions may be reported.
+Similar tiling and exposure take place for any newly viewable inferiors.
+.LP
+If the window is an
+.B InputOutput
+window,
+.B XMapWindow
+generates
+.B Expose
+events on each
+.B InputOutput
+window that it causes to be displayed.
+If the client maps and paints the window
+and if the client begins processing events,
+the window is painted twice.
+To avoid this,
+first ask for
+.B Expose
+events and then map the window,
+so the client processes input events as usual.
+The event list will include
+.B Expose
+for each
+window that has appeared on the screen.
+The client's normal response to
+an
+.B Expose
+event should be to repaint the window.
+This method usually leads to simpler programs and to proper interaction
+with window managers.
+.LP
+.B XMapWindow
+can generate a
+.B BadWindow
+error.
+.LP
+The
+.B XMapRaised
+function
+essentially is similar to
+.B XMapWindow
+in that it maps the window and all of its
+subwindows that have had map requests.
+However, it also raises the specified window to the top of the stack.
+.LP
+.B XMapRaised
+can generate a
+.B BadWindow
+error.
+.LP
+The
+.B XMapSubwindows
+function maps all subwindows for a specified window in top-to-bottom stacking
+order.
+The X server generates
+.B Expose
+events on each newly displayed window.
+This may be much more efficient than mapping many windows
+one at a time because the server needs to perform much of the work
+only once, for all of the windows, rather than for each window.
+.LP
+.B XMapSubwindows
+can generate a
+.B BadWindow
+error.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XChangeWindowAttributes(__libmansuffix__),
+XConfigureWindow(__libmansuffix__),
+XCreateWindow(__libmansuffix__),
+XDestroyWindow(__libmansuffix__),
+XRaiseWindow(__libmansuffix__),
+XUnmapWindow(__libmansuffix__)
+.br
+\fI\*(xL\fP

@@ -1,0 +1,43 @@
+#!/bin/sh
+hfile=../../../include/Xatom.h
+cfile=initatoms.c
+rm -f $hfile $cfile
+umask 222
+awk '
+BEGIN {
+	hfile = "'$hfile'";
+	cfile = "'$cfile'";
+	hformat = "#define XA_%s ((Atom) %d)\n";
+	printf("#ifndef XATOM_H\n") > hfile;
+	printf("#define XATOM_H 1\n\n") > hfile;
+	printf("/* THIS IS A GENERATED FILE\n") > hfile;
+	printf(" *\n") > hfile;
+	printf(" * Do not change!  Changing this file implies a protocol change!\n") > hfile;
+	printf(" */\n\n") > hfile;
+
+	printf("/* THIS IS A GENERATED FILE\n") > cfile;
+	printf(" *\n") > cfile;
+	printf(" * Do not change!  Changing this file implies a protocol change!\n") > cfile;
+	printf(" */\n\n") > cfile;
+	printf("#include \"X.h\"\n") > cfile;
+	printf("#include \"Xatom.h\"\n") > cfile;
+	printf("#include \"misc.h\"\n") > cfile;
+	printf("#include \"dix.h\"\n") > cfile;
+	printf("void MakePredeclaredAtoms()\n") > cfile;
+	printf("{\n") > cfile;
+
+	}
+
+NF == 2 && $2 == "@" {
+	printf(hformat, $1, ++atomno) > hfile ;
+	printf("    if (MakeAtom(\"%s\", %d, 1) != XA_%s) AtomError();\n", $1, length($1), $1) > cfile ;
+	}
+
+END {
+	printf("\n") > hfile;
+	printf(hformat, "LAST_PREDEFINED", atomno) > hfile ;
+	printf("#endif /* XATOM_H */\n") > hfile;
+	printf("}\n") > cfile ;
+	}
+' BuiltInAtoms
+exit 0

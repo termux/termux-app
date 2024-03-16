@@ -1,0 +1,109 @@
+/*
+ *Copyright (C) 2002-2004 Harold L Hunt II All Rights Reserved.
+ *Copyright (C) 2008 Yaakov Selkowitz All Rights Reserved
+ *
+ *Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ *"Software"), to deal in the Software without restriction, including
+ *without limitation the rights to use, copy, modify, merge, publish,
+ *distribute, sublicense, and/or sell copies of the Software, and to
+ *permit persons to whom the Software is furnished to do so, subject to
+ *the following conditions:
+ *
+ *The above copyright notice and this permission notice shall be
+ *included in all copies or substantial portions of the Software.
+ *
+ *THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ *MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *NONINFRINGEMENT. IN NO EVENT SHALL HAROLD L HUNT II BE LIABLE FOR
+ *ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ *CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ *WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ *Except as contained in this notice, the names of the authors
+ *shall not be used in advertising or otherwise to promote the sale, use
+ *or other dealings in this Software without prior written authorization
+ *from the authors.
+ *
+ * Authors:	Harold L Hunt II, Yaakov Selkowitz
+ */
+
+#include <windows.h>
+#include "winresource.h"
+#include "xwin-config.h"
+#include "version-config.h"
+
+/*
+ * Dialogs
+ */
+
+/* About */
+ABOUT_BOX DIALOGEX 32, 32, 260, 105
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE | WS_TABSTOP  | DS_CENTERMOUSE
+CAPTION "About " XVENDORNAMESHORT
+FONT 8, "MS Shell Dlg 2"
+BEGIN
+  CONTROL				IDI_XWIN, IDC_STATIC, "Static", SS_ICON, 8, 8, 32, 32
+  LTEXT			XVENDORNAMESHORT " X Server ", IDC_STATIC, 36, 8, 220, 8
+  LTEXT			VENDOR_MAN_VERSION, IDC_STATIC, 36, 18, 220, 8
+  LTEXT			BUILDERSTRING, IDC_STATIC, 36, 28, 220, 8
+  LTEXT			"This software is licensed under the terms of the MIT/X11 License.", IDC_STATIC, 36, 48, 220, 20
+  CONTROL               __VENDORDWEBSUPPORT__, ID_ABOUT_WEBSITE, "Button",
+                        BS_OWNERDRAW | WS_TABSTOP, 36, 68, 220, 8
+  DEFPUSHBUTTON		"&OK", IDOK, 105, 85, 50, 15
+END
+
+
+/* Depth change */
+
+DEPTH_CHANGE_BOX DIALOGEX 32, 32, 180, 100
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE | DS_CENTERMOUSE
+FONT 8, "MS Shell Dlg 2"
+CAPTION XVENDORNAMESHORT
+BEGIN
+  DEFPUSHBUTTON		"Dismiss", IDOK, 66, 80, 50, 14
+  CTEXT			XVENDORNAMESHORT, IDC_STATIC, 40, 12, 100, 8
+  CTEXT			"Disruptive screen configuration change.", IDC_STATIC, 7, 40, 166, 8
+  CTEXT			"Restore previous resolution to use " XVENDORNAMESHORT ".", IDC_STATIC, 7, 52, 166, 8
+END
+
+
+/* Exit */
+
+EXIT_DIALOG DIALOGEX 32, 32, 180, 78
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE | WS_TABSTOP | DS_CENTERMOUSE
+FONT 8, "MS Shell Dlg 2"
+CAPTION "Exit " XVENDORNAMESHORT "?"
+BEGIN
+  PUSHBUTTON "E&xit", IDOK, 55, 56, 30, 14
+  DEFPUSHBUTTON "&Cancel", IDCANCEL, 95, 56, 30, 14
+  CTEXT "E&xiting will close all screens running on this display.", IDC_STATIC, 7, 12, 166, 8
+  CTEXT "No information about connected clients available.", IDC_CLIENTS_CONNECTED, 7, 24, 166, 8
+  CTEXT "Proceed with shutdown of this display/server?", IDC_STATIC, 7, 36, 166, 8
+END
+
+
+/*
+ * Menus
+ */
+
+IDM_TRAYICON_MENU MENU
+BEGIN
+	POPUP "TRAYICON_MENU"
+	BEGIN
+		MENUITEM "&Hide Root Window", ID_APP_HIDE_ROOT
+		MENUITEM "Clipboard may use &PRIMARY selection", ID_APP_MONITOR_PRIMARY
+		MENUITEM "&About...", ID_APP_ABOUT
+		MENUITEM SEPARATOR
+		MENUITEM "E&xit...", ID_APP_EXIT
+	END
+END
+
+
+/*
+ * Icons
+ */
+
+IDI_XWIN		ICON	"X.ico"
+CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"XWin.exe.manifest"

@@ -1,0 +1,230 @@
+# CI setup for FreeType.
+
+stages:
+ - build
+
+# FIXME: Use --werror once warnings are fixed.
+variables:
+  MESON_ARGS: --fatal-meson-warnings --default-library=both
+  MESON_ARGS_WINDOWS: ${MESON_ARGS} --force-fallback-for=zlib
+
+.build windows common:
+  # TODO: should probably get its own image at some point instead of reusing the GStreamer one
+  # See https://gitlab.freedesktop.org/gstreamer/gstreamer/container_registry/18035 for latest
+  image: "registry.freedesktop.org/gstreamer/gstreamer/amd64/windows:2022-07-29.3-main"
+  stage: 'build'
+  tags:
+    - 'docker'
+    - 'windows'
+    - '2022'
+    - 'gstreamer-windows'
+
+.build linux common:
+  # See
+  # https://gitlab.freedesktop.org/freetype/docker-images/container_registry/20896
+  image: 'registry.freedesktop.org/freetype/docker-images/debian:latest'
+  stage: 'build'
+
+.build macos common:
+  stage: 'build'
+  tags:
+    - 'gst-macos-11.1'
+
+.build windows meson:
+  extends: '.build windows common'
+  variables:
+    # Make sure any failure in PowerShell scripts is fatal.
+    ErrorActionPreference: 'Stop'
+    WarningPreference: 'Stop'
+    # Uncomment the following key if you need to pass custom args, as well
+    # with the `$env:MESON_ARGS` line in the `script:` blocks.
+    # MESON_ARGS: >-
+    #   -Dfoo=enabled
+    #   -Dbar=disabled
+  before_script:
+    # Update RootCAs in order to access to some sites.
+    - certutil -generateSSTFromWU "C:\roots.sst"
+    - Import-Certificate -CertStoreLocation "Cert:\LocalMachine\Root" "C:\roots.sst"
+    # Make sure meson is up to date so we don't need to rebuild the image
+    # with each release.
+    - pip3 install -U 'meson==0.59.*'
+    - pip3 install --upgrade certifi
+    - pip3 install -U ninja
+
+    # Generate a UWP cross-file in case it's used
+    - $PSDefaultParameterValues['Out-File:Encoding'] = 'ASCII'
+    - echo "[binaries]" > uwp-crossfile.meson
+    - echo "c = 'cl'" >> uwp-crossfile.meson
+    - echo "strip = ['true']" >> uwp-crossfile.meson
+    - echo "[built-in options]" >> uwp-crossfile.meson
+    - echo "c_args = ['-DWINAPI_FAMILY=WINAPI_FAMILY_APP', '-DUNICODE', '-D_WIN32_WINNT=0x0A00', '-we4013']" >> uwp-crossfile.meson
+    - echo "c_winlibs = ['windowsapp.lib']" >> uwp-crossfile.meson
+  script:
+    # For some reason, options are separated by newlines instead of spaces,
+    # so we have to replace them first.
+    #
+    # - $env:MESON_ARGS = $env:MESON_ARGS.replace("`n"," ")
+    #
+    # Gitlab executes PowerShell in docker, but `VsDevCmd.bat` is a batch
+    # script.  Environment variables substitutions is done by PowerShell
+    # before calling `cmd.exe`, that's why we use `$env:FOO` instead of
+    # `%FOO%`.
+    - cmd.exe /C "C:\BuildTools\Common7\Tools\VsDevCmd.bat -host_arch=amd64 -arch=$env:ARCH $env:VS_UWP &&
+        meson setup build $env:MESON_ARGS_WINDOWS $env:MESON_ARGS_UWP &&
+        meson compile --verbose -C build
+        $env:MESON_WINDOWS_TESTS"
+
+
+# Format of job names:
+# <OS> <Build-Tool> <Build-Params> <Architecture> 
+
+
+# Windows jobs.
+
+windows meson vs2019 amd64:
+  extends: '.build windows meson'
+  variables:
+    ARCH: 'amd64'
+    MESON_WINDOWS_TESTS: '&& meson test -C build && meson test -C build --benchmark'
+
+windows meson vs2019 x86:
+  extends: '.build windows meson'
+  variables:
+    ARCH: 'x86'
+    MESON_WINDOWS_TESTS: '&& meson test -C build && meson test -C build --benchmark'
+
+windows meson vs2019 amd64 uwp:
+  extends: '.build windows meson'
+  variables:
+    ARCH: 'amd64'
+    VS_UWP: '-app_platform=UWP'
+    MESON_ARGS_UWP: '--cross-file uwp-crossfile.meson -Dc_winlibs="windowsapp.lib"'
+
+# Linux Jobs.
+#
+# Jobs with "libs" in the name force-enable libraries.
+# They are disabled for the remaining jobs.
+
+linux autotools:
+  extends: '.build linux common'
+  script: |
+    ./autogen.sh
+    ./configure --with-brotli=no \
+                --with-bzip2=no \
+                --with-harfbuzz=no \
+                --with-png=no \
+                --with-zlib=no \
+                CC=gcc
+
+    make -j$(nproc) && make install
+
+linux autotools libs:
+  extends: '.build linux common'
+  script: |
+    ./autogen.sh
+    ./configure --with-brotli=yes \
+                --with-bzip2=yes \
+                --with-harfbuzz=yes \
+                --with-png=yes \
+                --with-zlib=yes \
+                CC=gcc
+
+    make -j$(nproc) && make install
+
+linux autotools libs clang:
+  extends: '.build linux common'
+  script: |
+    ./autogen.sh
+    ./configure --with-brotli=yes \
+                --with-bzip2=yes \
+                --with-harfbuzz=yes \
+                --with-png=yes \
+                --with-zlib=yes \
+                CC=clang
+
+    make -j$(nproc) && make install
+
+linux meson:
+  extends: '.build linux common'
+  script: |
+    meson setup build ${MESON_ARGS} \
+                      -Dbrotli=disabled \
+                      -Dbzip2=disabled \
+                      -Dharfbuzz=disabled \
+                      -Dpng=disabled \
+                      -Dzlib=disabled
+
+    meson compile --verbose -C build
+    meson install -C build
+
+linux meson libs:
+  extends: '.build linux common'
+  script: |
+    meson setup build ${MESON_ARGS} \
+                      -Dbrotli=enabled \
+                      -Dbzip2=enabled \
+                      -Dharfbuzz=disabled \
+                      -Dpng=disabled \
+                      -Dzlib=disabled
+
+    meson compile --verbose -C build
+    meson install -C build
+
+linux cmake:
+  extends: '.build linux common'
+  script: |
+    cmake -B build -D FT_DISABLE_BROTLI=TRUE \
+                   -D FT_DISABLE_BZIP2=TRUE \
+                   -D FT_DISABLE_HARFBUZZ=TRUE \
+                   -D FT_DISABLE_PNG=TRUE \
+                   -D FT_DISABLE_ZLIB=TRUE
+
+    cmake --build build --target install
+
+linux cmake libs:
+  extends: '.build linux common'
+  script: |
+    cmake -B build -D FT_REQUIRE_BROTLI=TRUE \
+                   -D FT_REQUIRE_BZIP2=TRUE \
+                   -D FT_REQUIRE_HARFBUZZ=TRUE \
+                   -D FT_REQUIRE_PNG=TRUE \
+                   -D FT_REQUIRE_ZLIB=TRUE
+
+    cmake --build build --target install
+
+
+# MacOS jobs.
+
+macos autotools:
+  extends: '.build macos common'
+  before_script:
+    - '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"'
+  script:
+    - brew install autoconf automake libtool
+    - ./autogen.sh
+    - ./configure
+    - 'make -j$(sysctl -n hw.logicalcpu)'
+    - make install
+
+macos autotools clang:
+  extends: '.build macos common'
+  before_script:
+    - '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"'
+  script:
+    - brew install autoconf automake libtool
+    - ./autogen.sh
+    - './configure CC=clang'
+    - 'make -j$(sysctl -n hw.logicalcpu)'
+    - make install
+
+macos meson:
+  extends: '.build macos common'
+  script:
+    - pip3 install --upgrade pip
+    - pip3 install -U meson
+    - pip3 install --upgrade certifi
+    - pip3 install -U ninja
+
+    - meson setup build ${MESON_ARGS}
+    - meson compile --verbose -C build
+    - sudo meson install -C build

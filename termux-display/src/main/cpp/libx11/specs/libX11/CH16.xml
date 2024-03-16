@@ -1,0 +1,4182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Application_Utility_Functions'>
+<title>Application Utility Functions</title>
+<!-- .sp 2 -->
+<!-- .nr H1 16 -->
+<!-- .nr H2 0 -->
+<!-- .nr H3 0 -->
+<!-- .nr H4 0 -->
+<!-- .nr H5 0 -->
+<!-- .na -->
+<para>
+<!-- .LP -->
+<!-- .XS -->
+<!-- Chapter 16: Application Utility Functions  -->
+<!-- .XE -->
+Once you have initialized the X system,
+you can use the Xlib utility functions to:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+Use keyboard utility functions
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Use Latin-1 keyboard event functions
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Allocate permanent storage
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Parse the window geometry
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Manipulate regions
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Use cut buffers
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Determine the appropriate visual type
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Manipulate images
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Manipulate bitmaps
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Use the context manager
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+As a group,
+the functions discussed in this chapter provide the functionality that 
+is frequently needed and that spans toolkits.
+Many of these functions do not generate actual protocol requests to the server.
+</para>
+<sect1 id="Using_Keyboard_Utility_Functions">
+<title>Using Keyboard Utility Functions</title>
+<!-- .XS -->
+<!-- (SN Using Keyboard Utility Functions  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+This section discusses mapping between KeyCodes and KeySyms,
+classifying KeySyms, and mapping between KeySyms and string names.
+The first three functions in this section operate on a cached copy of the
+server keyboard mapping.
+The first four KeySyms for each KeyCode
+are modified according to the rules given in section 12.7.
+To obtain the untransformed KeySyms defined for a key,
+use the functions described in section 12.7.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain a KeySym for the KeyCode of an event, use
+<xref linkend='XLookupKeysym' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XLookupKeysym</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XLookupKeysym'>
+<funcprototype>
+  <funcdef>KeySym <function>XLookupKeysym</function></funcdef>
+  <paramdef>XKeyEvent *<parameter>key_event</parameter></paramdef>
+  <paramdef>int <parameter>index</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>key_event</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the 
+<symbol>KeyPress</symbol>
+or
+<symbol>KeyRelease</symbol>
+event.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>index</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the index into the KeySyms list for the event's KeyCode.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XLookupKeysym' xrefstyle='select: title'/>
+function uses a given keyboard event and the index you specified to return
+the KeySym from the list that corresponds to the KeyCode member in the
+<type>XKeyPressedEvent</type>
+or
+<type>XKeyReleasedEvent</type>
+structure.
+If no KeySym is defined for the KeyCode of the event,
+<xref linkend='XLookupKeysym' xrefstyle='select: title'/>
+returns
+<symbol>NoSymbol</symbol>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain a KeySym for a specific KeyCode, use
+<xref linkend='XKeycodeToKeysym' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XKeycodeToKeysym</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XKeycodeToKeysym'>
+<funcprototype>
+  <funcdef>KeySym <function>XKeycodeToKeysym</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>KeyCode <parameter>keycode</parameter></paramdef>
+  <paramdef>int <parameter>index</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keycode</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeyCode.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>index</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the element of KeyCode vector.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XKeycodeToKeysym' xrefstyle='select: title'/>
+function uses internal Xlib tables
+and returns the KeySym defined for the specified KeyCode and
+the element of the KeyCode vector.
+If no symbol is defined,
+<xref linkend='XKeycodeToKeysym' xrefstyle='select: title'/>
+returns
+<symbol>NoSymbol</symbol>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain a KeyCode for a key having a specific KeySym, use
+<xref linkend='XKeysymToKeycode' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XKeysymToKeycode</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XKeysymToKeycode'>
+<funcprototype>
+  <funcdef>KeyCode <function>XKeysymToKeycode</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>KeySym <parameter>keysym</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be searched for.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If the specified KeySym is not defined for any KeyCode,
+<xref linkend='XKeysymToKeycode' xrefstyle='select: title'/>
+returns zero.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+The mapping between KeyCodes and KeySyms is cached internal to Xlib.
+When this information is changed at the server, an Xlib function must
+be called to refresh the cache.
+To refresh the stored modifier and keymap information, use
+<xref linkend='XRefreshKeyboardMapping' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRefreshKeyboardMapping</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRefreshKeyboardMapping'>
+<funcprototype>
+  <funcdef><function>XRefreshKeyboardMapping</function></funcdef>
+  <paramdef>XMappingEvent *<parameter>event_map</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>event_map</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the mapping event that is to be used.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XRefreshKeyboardMapping' xrefstyle='select: title'/>
+function refreshes the stored modifier and keymap information.
+You usually call this function when a
+<symbol>MappingNotify</symbol>
+event with a request member of
+<symbol>MappingKeyboard</symbol>
+or
+<symbol>MappingModifier</symbol>
+occurs.
+The result is to update Xlib's knowledge of the keyboard.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain the uppercase and lowercase forms of a KeySym, use
+<xref linkend='XConvertCase' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XConvertCase</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XConvertCase'>
+<funcprototype>
+  <funcdef>void <function>XConvertCase</function></funcdef>
+  <paramdef>KeySym <parameter>keysym</parameter></paramdef>
+  <paramdef>KeySym *<parameter>lower_return</parameter></paramdef>
+  <paramdef>KeySym *<parameter>upper_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be converted.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>lower_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the lowercase form of keysym, or keysym.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>upper_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the uppercase form of keysym, or keysym.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XConvertCase' xrefstyle='select: title'/>
+function returns the uppercase and lowercase forms of the specified Keysym,
+if the KeySym is subject to case conversion;
+otherwise, the specified KeySym is returned to both lower_return and
+upper_return.
+Support for conversion of other than Latin and Cyrillic KeySyms is
+implementation-dependent.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+KeySyms have string names as well as numeric codes.
+To convert the name of the KeySym to the KeySym code, use
+<xref linkend='XStringToKeysym' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XStringToKeysym</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XStringToKeysym'>
+<funcprototype>
+  <funcdef>KeySym <function>XStringToKeysym</function></funcdef>
+  <paramdef>char *<parameter>string</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the name of the KeySym that is to be converted.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Standard KeySym names are obtained from
+<filename class="headerfile">&lt;X11/keysymdef.h&gt;</filename>
+<indexterm type="file"><primary><filename class="headerfile">X11/keysymdef.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/keysymdef.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/keysymdef.h&gt;</filename></secondary></indexterm>
+by removing the XK_ prefix from each name.
+KeySyms that are not part of the Xlib standard also may be obtained
+with this function.
+The set of KeySyms that are available in this manner 
+and the mechanisms by which Xlib obtains them is implementation-dependent.
+</para>
+<para>
+<!-- .LP -->
+If the KeySym name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+If the specified string does not match a valid KeySym,
+<xref linkend='XStringToKeysym' xrefstyle='select: title'/>
+returns
+<symbol>NoSymbol</symbol>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To convert a KeySym code to the name of the KeySym, use
+<xref linkend='XKeysymToString' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XKeysymToString</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XKeysymToString'>
+<funcprototype>
+  <funcdef>char *<function>XKeysymToString</function></funcdef>
+  <paramdef>KeySym <parameter>keysym</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be converted.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The returned string is in a static area and must not be modified.
+The returned string is in the Host Portable Character Encoding.
+If the specified KeySym is not defined,
+<xref linkend='XKeysymToString' xrefstyle='select: title'/>
+returns a NULL.
+</para>
+<sect2 id="KeySym_Classification_Macros">
+<title>KeySym Classification Macros</title>
+<!-- .XS -->
+<!-- (SN KeySym Classification Macros -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+You may want to test if a KeySym is, for example, 
+on the keypad or on one of the function keys.
+You can use KeySym macros to perform the following tests.
+</para>
+<para>IsCursorKey(<emphasis remap='I'>keysym</emphasis>)</para>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be tested.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>IsCursorKey</primary></indexterm>
+Returns
+<symbol>True</symbol>
+if the specified KeySym is a cursor key.
+</para>
+<!-- .LP -->
+<!-- .sp -->
+<!-- .sM -->
+<para>IsFunctionKey(<emphasis remap='I'>keysym</emphasis>)</para>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be tested.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>IsFunctionKey</primary></indexterm>
+Returns 
+<symbol>True</symbol>
+if the specified KeySym is a function key.
+</para>
+<!-- .LP -->
+<!-- .sp -->
+<!-- .sM -->
+<para>IsKeypadKey(<emphasis remap='I'>keysym</emphasis>)</para>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be tested.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>IsKeypadKey</primary></indexterm>
+Returns
+<symbol>True</symbol>
+if the specified KeySym is a standard keypad key.
+</para>
+<!-- .LP -->
+<!-- .sp -->
+<!-- .sM -->
+<para>IsPrivateKeypadKey(<emphasis remap='I'>keysym</emphasis>)</para>
+
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be tested.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>IsPrivateKeypadKey</primary></indexterm>
+Returns
+<symbol>True</symbol>
+if the specified KeySym is a vendor-private keypad key.
+</para>
+
+<!-- .LP -->
+<!-- .sp -->
+<!-- .sM -->
+<para>IsMiscFunctionKey(<emphasis remap='I'>keysym</emphasis>)</para>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be tested.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>IsMiscFunctionKey</primary></indexterm>
+Returns 
+<symbol>True</symbol>
+if the specified KeySym is a miscellaneous function key.
+</para>
+<!-- .LP -->
+<!-- .sp -->
+<!-- .sM -->
+<para>IsModifierKey(<emphasis remap='I'>keysym</emphasis>)</para>
+
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be tested.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>IsModifierKey</primary></indexterm>
+Returns 
+<symbol>True</symbol>
+if the specified KeySym is a modifier key.
+</para>
+
+<para>IsPFKey(<emphasis remap='I'>keysym</emphasis>)</para>
+
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be tested.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>IsPFKey</primary></indexterm>
+Returns 
+<symbol>True</symbol>
+if the specified KeySym is a PF key.
+</para>
+</sect2>
+</sect1>
+<sect1 id='Using_Latin_1_Keyboard_Event_Functions'>
+<title>Using Latin-1 Keyboard Event Functions</title>
+<!-- .XS -->
+<!-- (SN Using Latin-1 Keyboard Event Functions  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<link linkend='Locales_and_Internationalized_Text_Functions'>Chapter 13</link>
+describes internationalized text input facilities,
+but sometimes it is expedient to write an application that
+only deals with Latin-1 characters and ASCII controls,
+so Xlib provides a simple function for that purpose.
+<xref linkend='XLookupString' xrefstyle='select: title'/>
+handles the standard modifier semantics described in section 12.7.
+This function does not use any of the input method facilities
+described in chapter 13 and does not depend on the current locale.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To map a key event to an ISO Latin-1 string, use
+<xref linkend='XLookupString' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XLookupString</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XLookupString'>
+<funcprototype>
+  <funcdef>int <function>XLookupString</function></funcdef>
+  <paramdef>XKeyEvent *<parameter>event_struct</parameter></paramdef>
+  <paramdef>char *<parameter>buffer_return</parameter></paramdef>
+  <paramdef>int <parameter>bytes_buffer</parameter></paramdef>
+  <paramdef>KeySym *<parameter>keysym_return</parameter></paramdef>
+  <paramdef>XComposeStatus *<parameter>status_in_out</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>event_struct</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the key event structure to be used.
+You can pass
+<type>XKeyPressedEvent</type>
+or
+<type>XKeyReleasedEvent</type>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>buffer_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the translated characters.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bytes_buffer</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the length of the buffer.
+No more than bytes_buffer of translation are returned.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the KeySym computed from the event if this argument is not NULL.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>status_in_out</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies or returns the 
+<structname>XComposeStatus</structname>
+structure or NULL.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XLookupString' xrefstyle='select: title'/>
+function translates a key event to a KeySym and a string.
+The KeySym is obtained by using the standard interpretation of the
+<symbol>Shift</symbol>,
+<symbol>Lock</symbol>,
+group, and numlock modifiers as defined in the X Protocol specification.
+If the KeySym has been rebound (see
+<xref linkend='XRebindKeysym' xrefstyle='select: title'/>),
+the bound string will be stored in the buffer.
+Otherwise, the KeySym is mapped, if possible, to an ISO Latin-1 character
+or (if the Control modifier is on) to an ASCII control character,
+and that character is stored in the buffer.
+<xref linkend='XLookupString' xrefstyle='select: title'/>
+returns the number of characters that are stored in the buffer.
+</para>
+<para>
+<!-- .LP -->
+If present (non-NULL),
+the
+<structname>XComposeStatus</structname>
+structure records the state,
+which is private to Xlib,
+that needs preservation across calls to
+<xref linkend='XLookupString' xrefstyle='select: title'/>
+to implement compose processing.
+The creation of
+<structname>XComposeStatus</structname>
+structures is implementation-dependent;
+a portable program must pass NULL for this argument.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XLookupString' xrefstyle='select: title'/>
+depends on the cached keyboard information mentioned in the
+previous section, so it is necessary to use
+<xref linkend='XRefreshKeyboardMapping' xrefstyle='select: title'/>
+to keep this information up-to-date.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To rebind the meaning of a KeySym for
+<xref linkend='XLookupString' xrefstyle='select: title'/>,
+use
+<xref linkend='XRebindKeysym' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRebindKeysym</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRebindKeysym'>
+<funcprototype>
+  <funcdef><function>XRebindKeysym</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>KeySym <parameter>keysym</parameter></paramdef>
+  <paramdef>KeySym <parameter>list[&hairsp;]</parameter></paramdef>
+  <paramdef>int <parameter>mod_count</parameter></paramdef>
+  <paramdef>unsignedchar *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>num_bytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>keysym</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySym that is to be rebound.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>list</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the KeySyms to be used as modifiers.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>mod_count</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of modifiers in the modifier list.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the string that is copied and will be returned by 
+<xref linkend='XLookupString' xrefstyle='select: title'/>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>num_bytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes in the string argument.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XRebindKeysym' xrefstyle='select: title'/>
+function can be used to rebind the meaning of a KeySym for the client.
+It does not redefine any key in the X server but merely
+provides an easy way for long strings to be attached to keys.
+<xref linkend='XLookupString' xrefstyle='select: title'/>
+returns this string when the appropriate set of
+modifier keys are pressed and when the KeySym would have been used for
+the translation.
+No text conversions are performed;
+the client is responsible for supplying appropriately encoded strings.
+Note that you can rebind a KeySym that may not exist.
+</para>
+</sect1>
+<sect1 id="Allocating_Permanent_Storage">
+<title>Allocating Permanent Storage</title>
+<!-- .XS -->
+<!-- (SN Allocating Permanent Storage -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To allocate some memory you will never give back, use
+<xref linkend='Xpermalloc' xrefstyle='select: title'/>.
+<indexterm significance="preferred"><primary>Xpermalloc</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='Xpermalloc'>
+<funcprototype>
+  <funcdef>char *<function>Xpermalloc</function></funcdef>
+  <paramdef>unsigned int <parameter>size</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='Xpermalloc' xrefstyle='select: title'/>
+function allocates storage that can never be freed for the life of the
+program.  The memory is allocated with alignment for the C type double.
+This function may provide some performance and space savings over
+the standard operating system memory allocator.
+</para>
+</sect1>
+<sect1 id="Parsing_the_Window_Geometry">
+<title>Parsing the Window Geometry</title>
+<!-- .XS -->
+<!-- (SN Parsing the Window Geometry  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To parse standard window geometry strings, use
+<xref linkend='XParseGeometry' xrefstyle='select: title'/>.
+<indexterm><primary>Window</primary><secondary>determining location</secondary></indexterm>
+<indexterm significance="preferred"><primary>XParseGeometry</primary></indexterm>
+</para>
+<!-- .LP -->
+<!-- .sM -->
+<funcsynopsis id='XParseGeometry'>
+<funcprototype>
+  <funcdef>int <function>XParseGeometry</function></funcdef>
+  <paramdef>char *<parameter>parsestring</parameter></paramdef>
+  <paramdef>int *<parameter>x_return</parameter></paramdef>
+  <paramdef>int *<parameter>y_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>width_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>height_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>parsestring</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the string you want to parse.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the x and y offsets.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the width and height determined.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+By convention,
+X applications use a standard string to indicate window size and placement.
+<xref linkend='XParseGeometry' xrefstyle='select: title'/>
+makes it easier to conform to this standard because it allows you
+to parse the standard window geometry.
+Specifically, this function lets you parse strings of the form:
+</para>
+<para>
+<!-- .LP -->
+<!-- .\" Start marker code here -->
+<literallayout class="monospaced">
+[=][&lt;<emphasis remap='I'>width</emphasis>&gt;{xX}&lt;<emphasis remap='I'>height</emphasis>&gt;][{+-}&lt;<emphasis remap='I'>xoffset</emphasis>&gt;{+-}&lt;<emphasis remap='I'>yoffset</emphasis>&gt;] 
+</literallayout>
+<!-- .\" End marker code here -->
+</para>
+<para>
+<!-- .LP -->
+The fields map into the arguments associated with this function.
+(Items enclosed in &lt;&hairsp;&gt; are integers, items in [&hairsp;] are optional, and
+items enclosed in {&hairsp;} indicate ``choose one of.''
+Note that the brackets should not appear in the actual string.)
+If the string is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+</para>
+<para>
+<!-- .LP -->
+The
+<xref linkend='XParseGeometry' xrefstyle='select: title'/>
+function returns a bitmask that indicates which of the four values (width,
+height, xoffset, and yoffset) were actually found in the string 
+and whether the x and y values are negative. 
+By convention, &minus;0 is not equal to +0, because the user needs to
+be able to say ``position the window relative to the right or bottom edge.''
+For each value found, the corresponding argument is updated.
+For each value not found, the argument is left unchanged.
+The bits are represented by
+<symbol>XValue</symbol>,
+<symbol>YValue</symbol>,
+<symbol>WidthValue</symbol>,
+<symbol>HeightValue</symbol>,
+<symbol>XNegative</symbol>,
+or
+<symbol>YNegative</symbol>
+and are defined in 
+<filename class="headerfile">&lt;X11/Xutil.h&gt;</filename>.
+<indexterm type="file"><primary><filename class="headerfile">X11/Xutil.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+They will be set whenever one of the values is defined 
+or one of the signs is set.
+</para>
+<para>
+<!-- .LP -->
+If the function returns either the 
+<symbol>XValue</symbol>
+or 
+<symbol>YValue</symbol>
+flag,
+you should place the window at the requested position.
+<!-- .sp -->
+</para>
+<para>
+<!-- .LP -->
+To construct a window's geometry information, use
+<xref linkend='XWMGeometry' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XWMGeometry</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XWMGeometry'>
+<funcprototype>
+  <funcdef>int <function>XWMGeometry</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>screen</parameter></paramdef>
+  <paramdef>char *<parameter>user_geom</parameter></paramdef>
+  <paramdef>char *<parameter>def_geom</parameter></paramdef>
+  <paramdef>unsigned int <parameter>bwidth</parameter></paramdef>
+  <paramdef>XSizeHints *<parameter>hints</parameter></paramdef>
+  <paramdef>int *<parameter>x_return</parameter></paramdef>
+  <paramdef>int *<parameter>y_return</parameter></paramdef>
+  <paramdef>int *<parameter>width_return</parameter></paramdef>
+  <paramdef>int *<parameter>height_return</parameter></paramdef>
+  <paramdef>int *<parameter>gravity_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>screen</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>user_geom</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the user-specified geometry or NULL.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>def_geom</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the application's default geometry or NULL.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bwidth</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the border width.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>hints</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the size hints for the window in its normal state.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the x and y offsets.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the width and height determined.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gravity_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the window gravity.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The 
+<xref linkend='XWMGeometry' xrefstyle='select: title'/>
+function combines any geometry information (given in the format used by 
+<xref linkend='XParseGeometry' xrefstyle='select: title'/>)
+specified by the user and by the calling program with size hints 
+(usually the ones to be stored in <property>WM_NORMAL_HINTS</property>) and returns the position, 
+size, and gravity
+(<symbol>NorthWestGravity</symbol>,
+<symbol>NorthEastGravity</symbol>,
+<symbol>SouthEastGravity</symbol>,
+or
+<symbol>SouthWestGravity</symbol>)
+that describe the window.
+If the base size is not set in the 
+<structname>XSizeHints</structname>
+structure, 
+the minimum size is used if set.
+Otherwise, a base size of zero is assumed.
+If no minimum size is set in the hints structure, 
+the base size is used.
+A mask (in the form returned by 
+<xref linkend='XParseGeometry' xrefstyle='select: title'/>)
+that describes which values came from the user specification 
+and whether or not the position coordinates are relative
+to the right and bottom edges is returned.
+Note that these coordinates will have already been accounted for 
+in the x_return and y_return values.
+</para>
+<para>
+<!-- .LP -->
+Note that invalid geometry specifications can cause a width or height 
+of zero to be returned.
+The caller may pass the address of the hints win_gravity field 
+as gravity_return to update the hints directly.
+</para>
+</sect1>
+
+<sect1 id="Manipulating_Regions">
+<title>Manipulating Regions</title>
+<!-- .XS -->
+<!-- (SN Manipulating Regions  -->
+<!-- .XE -->
+<para>
+Regions are arbitrary sets of pixel locations.
+Xlib provides functions for manipulating regions.
+The opaque type 
+<structname>Region</structname>
+is defined in 
+<filename class="headerfile">&lt;X11/Xutil.h&gt;</filename>.
+<indexterm type="file"><primary><filename class="headerfile">X11/Xutil.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+Xlib provides functions that you can use to manipulate regions.
+This section discusses how to:
+</para>
+
+<itemizedlist>
+  <listitem>
+    <para>
+Create, copy, or destroy regions
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Move or shrink regions
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Compute with regions
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Determine if regions are empty or equal
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Locate a point or rectangle in a region
+    </para>
+  </listitem>
+</itemizedlist>
+
+<sect2 id="Creating_Copying_or_Destroying_Regions">
+<title>Creating, Copying, or Destroying Regions</title>
+<!-- .XS -->
+<!-- (SN Creating, Copying, or Destroying Regions  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To create a new empty region, use
+<function>XCreateRegion</function>.
+</para>
+
+<funcsynopsis id='XCreateRegion'>
+<funcprototype>
+  <funcdef>Region <function>XCreateRegion</function></funcdef>
+  <void />
+</funcprototype>
+</funcsynopsis>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To generate a region from a polygon, use
+<xref linkend='XPolygonRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XPolygonRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XPolygonRegion'>
+<funcprototype>
+  <funcdef>Region <function>XPolygonRegion</function></funcdef>
+  <paramdef>XPoint <parameter>points[]</parameter></paramdef>
+  <paramdef>int <parameter>n</parameter></paramdef>
+  <paramdef>int <parameter>fill_rule</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>points</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of points.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>n</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of points in the polygon. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>fill_rule</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the fill-rule you want to set for the specified GC.
+You can pass 
+<symbol>EvenOddRule</symbol>
+or
+<symbol>WindingRule</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM  -->
+The
+<xref linkend='XPolygonRegion' xrefstyle='select: title'/>
+function returns a region for the polygon defined by the points array.
+For an explanation of fill_rule,
+see
+<xref linkend='XCreateGC' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set the clip-mask of a GC to a region, use
+<xref linkend='XSetRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetRegion'>
+<funcprototype>
+  <funcdef><function>XSetRegion</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>Region <parameter>r</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the region.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetRegion' xrefstyle='select: title'/>
+function sets the clip-mask in the GC to the specified region.
+The region is specified relative to the drawable's origin.
+The resulting GC clip origin is implementation-dependent.
+Once it is set in the GC,
+the region can be destroyed.
+</para>
+<para>
+<!-- .LP  -->
+<!-- .sp -->
+To deallocate the storage associated with a specified region, use
+<xref linkend='XDestroyRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDestroyRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDestroyRegion'>
+<funcprototype>
+  <funcdef><function>XDestroyRegion</function></funcdef>
+  <paramdef>Region <parameter>r</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the region.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+</para>
+</sect2>
+<sect2 id="Moving_or_Shrinking_Regions">
+<title>Moving or Shrinking Regions</title>
+<!-- .XS -->
+<!-- (SN Moving or Shrinking Regions  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To move a region by a specified amount, use 
+<xref linkend='XOffsetRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XOffsetRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XOffsetRegion'>
+<funcprototype>
+  <funcdef><function>XOffsetRegion</function></funcdef>
+  <paramdef>Region <parameter>r</parameter></paramdef>
+  <paramdef>int <parameter>dx</parameter></paramdef>
+  <paramdef>int <parameter>dy</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the region.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dx</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dy</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates,
+which define the amount you want to move the specified region.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM  -->
+<!-- .sp -->
+To reduce a region by a specified amount, use
+<xref linkend='XShrinkRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XShrinkRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XShrinkRegion'>
+<funcprototype>
+  <funcdef><function>XShrinkRegion</function></funcdef>
+  <paramdef>Region <parameter>r</parameter></paramdef>
+  <paramdef>int <parameter>dx</parameter></paramdef>
+  <paramdef>int <parameter>dy</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the region.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dx</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dy</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates,
+which define the amount you want to shrink the specified region.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Positive values shrink the size of the region, 
+and negative values expand the region.
+</para>
+</sect2>
+<sect2 id="Computing_with_Regions">
+<title>Computing with Regions</title>
+<!-- .XS -->
+<!-- (SN Computing with Regions  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To generate the smallest rectangle enclosing a region, use
+<xref linkend='XClipBox' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XClipBox</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XClipBox'>
+<funcprototype>
+  <funcdef><function>XClipBox</function></funcdef>
+  <paramdef>Region <parameter>r</parameter></paramdef>
+  <paramdef>XRectangle *<parameter>rect_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the region.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rect_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the smallest enclosing rectangle.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XClipBox' xrefstyle='select: title'/>
+function returns the smallest rectangle enclosing the specified region.
+<!-- .sp -->
+</para>
+<para>
+<!-- .LP -->
+To compute the intersection of two regions, use
+<xref linkend='XIntersectRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XIntersectRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XIntersectRegion'>
+<funcprototype>
+  <funcdef><function>XIntersectRegion</function></funcdef>
+  <paramdef>Region <parameter>sra</parameter></paramdef>
+  <paramdef>Region <parameter>srb</parameter></paramdef>
+  <paramdef>Region <parameter>dr_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>sra</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>srb</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the two regions with which you want to perform the computation.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dr_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the result of the computation.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To compute the union of two regions, use
+<xref linkend='XUnionRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XUnionRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XUnionRegion'>
+<funcprototype>
+  <funcdef><function>XUnionRegion</function></funcdef>
+  <paramdef>Region <parameter>sra</parameter></paramdef>
+  <paramdef>Region <parameter>srb</parameter></paramdef>
+  <paramdef>Region <parameter>dr_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>sra</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>srb</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the two regions with which you want to perform the computation.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dr_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the result of the computation.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To create a union of a source region and a rectangle, use
+<xref linkend='XUnionRectWithRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XUnionRectWithRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XUnionRectWithRegion'>
+<funcprototype>
+  <funcdef><function>XUnionRectWithRegion</function></funcdef>
+  <paramdef>XRectangle *<parameter>rectangle</parameter></paramdef>
+  <paramdef>Region <parameter>src_region</parameter></paramdef>
+  <paramdef>Region <parameter>dest_region_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rectangle</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_region</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the source region to be used.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_region_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the destination region.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XUnionRectWithRegion' xrefstyle='select: title'/>
+function updates the destination region from a union of the specified rectangle
+and the specified source region.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To subtract two regions, use
+<xref linkend='XSubtractRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSubtractRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSubtractRegion'>
+<funcprototype>
+  <funcdef><function>XSubtractRegion</function></funcdef>
+  <paramdef>Region <parameter>sra</parameter></paramdef>
+  <paramdef>Region <parameter>srb</parameter></paramdef>
+  <paramdef>Region <parameter>dr_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>sra</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>srb</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the two regions with which you want to perform the computation.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dr_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the result of the computation.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSubtractRegion' xrefstyle='select: title'/>
+function subtracts srb from sra and stores the results in dr_return.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To calculate the difference between the union and intersection 
+of two regions, use
+<xref linkend='XXorRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XXorRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XXorRegion'>
+<funcprototype>
+  <funcdef><function>XXorRegion</function></funcdef>
+  <paramdef>Region <parameter>sra</parameter></paramdef>
+  <paramdef>Region <parameter>srb</parameter></paramdef>
+  <paramdef>Region <parameter>dr_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>sra</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>srb</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the two regions with which you want to perform the computation.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dr_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the result of the computation.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+</para>
+</sect2>
+<sect2 id="Determining_if_Regions_Are_Empty_or_Equal">
+<title>Determining if Regions Are Empty or Equal</title>
+<!-- .XS -->
+<!-- (SN Determining if Regions Are Empty or Equal  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To determine if the specified region is empty, use
+<xref linkend='XEmptyRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XEmptyRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XEmptyRegion'>
+<funcprototype>
+  <funcdef>Bool <function>XEmptyRegion</function></funcdef>
+  <paramdef>Region <parameter>r</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the region.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM  -->
+The
+<xref linkend='XEmptyRegion' xrefstyle='select: title'/>
+function returns
+<symbol>True</symbol>
+if the region is empty.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To determine if two regions have the same offset, size, and shape, use
+<xref linkend='XEqualRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XEqualRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XEqualRegion'>
+<funcprototype>
+  <funcdef>Bool <function>XEqualRegion</function></funcdef>
+  <paramdef>Region <parameter>r1</parameter></paramdef>
+  <paramdef>Region <parameter>r2</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r1</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r2</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the two regions.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XEqualRegion' xrefstyle='select: title'/>
+function returns
+<symbol>True</symbol>
+if the two regions have the same offset, size, and shape.
+</para>
+</sect2>
+<sect2 id="Locating_a_Point_or_a_Rectangle_in_a_Region">
+<title>Locating a Point or a Rectangle in a Region</title>
+<!-- .XS -->
+<!-- (SN Locating a Point or a Rectangle in a Region  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To determine if a specified point resides in a specified region, use
+<xref linkend='XPointInRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XPointInRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XPointInRegion'>
+<funcprototype>
+  <funcdef>Bool <function>XPointInRegion</function></funcdef>
+  <paramdef>Region <parameter>r</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the region.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which define the point.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XPointInRegion' xrefstyle='select: title'/>
+function returns 
+<symbol>True</symbol>
+if the point (x, y) is contained in the region r.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To determine if a specified rectangle is inside a region, use
+<xref linkend='XRectInRegion' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRectInRegion</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRectInRegion'>
+<funcprototype>
+  <funcdef>int <function>XRectInRegion</function></funcdef>
+  <paramdef>Region <parameter>r</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>r</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the region.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which define the coordinates of the
+upper-left corner of the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which define the rectangle.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM  -->
+The
+<xref linkend='XRectInRegion' xrefstyle='select: title'/>
+function returns
+<symbol>RectangleIn</symbol>
+if the rectangle is entirely in the specified region,
+<symbol>RectangleOut</symbol>
+if the rectangle is entirely out of the specified region,
+and
+<symbol>RectanglePart</symbol>
+if the rectangle is partially in the specified region.
+</para>
+</sect2>
+</sect1>
+<sect1 id="Using_Cut_Buffers">
+<title>Using Cut Buffers</title>
+<!-- .XS -->
+<!-- (SN Using Cut Buffers  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Cut Buffers</primary></indexterm>
+Xlib provides functions to manipulate cut buffers,
+a very simple form of cut-and-paste inter-client communication.
+Selections are a much more powerful and useful mechanism for
+interchanging data between client
+(see <link linkend="Selections">section 4.5</link>)
+and generally should be used instead of cut buffers.
+</para>
+<para>
+<!-- .LP -->
+Cut buffers are implemented as properties on the first root window
+of the display.
+The buffers can only contain text, in the STRING encoding.
+The text encoding is not changed by Xlib when fetching or storing.
+Eight buffers are provided
+and can be accessed as a ring or as explicit buffers (numbered 0 through 7).
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To store data in cut buffer 0, use 
+<xref linkend='XStoreBytes' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XStoreBytes</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XStoreBytes'>
+<funcprototype>
+  <funcdef><function>XStoreBytes</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>bytes</parameter></paramdef>
+  <paramdef>int <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN  -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the bytes, which are not necessarily ASCII or null-terminated.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes to be stored.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The data can have embedded null characters
+and need not be null-terminated.
+The cut buffer's contents can be retrieved later by
+any client calling
+<xref linkend='XFetchBytes' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XStoreBytes' xrefstyle='select: title'/>
+can generate a
+<errorname>BadAlloc</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To store data in a specified cut buffer, use
+<xref linkend='XStoreBuffer' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XStoreBuffer</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XStoreBuffer'>
+<funcprototype>
+  <funcdef><function>XStoreBuffer</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>bytes</parameter></paramdef>
+  <paramdef>int <parameter>nbytes</parameter></paramdef>
+  <paramdef>int <parameter>buffer</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the bytes, which are not necessarily ASCII or null-terminated.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes to be stored.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>buffer</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the buffer in which you want to store the bytes.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If an invalid buffer is specified, the call has no effect.
+The data can have embedded null characters
+and need not be null-terminated.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XStoreBuffer' xrefstyle='select: title'/>
+can generate a
+<errorname>BadAlloc</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return data from cut buffer 0, use 
+<xref linkend='XFetchBytes' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFetchBytes</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFetchBytes'>
+<funcprototype>
+  <funcdef>char *<function>XFetchBytes</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int *<parameter>nbytes_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of bytes in the buffer.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XFetchBytes' xrefstyle='select: title'/>
+function
+returns the number of bytes in the nbytes_return argument,
+if the buffer contains data.
+Otherwise, the function
+returns NULL and sets nbytes to 0.
+The appropriate amount of storage is allocated and the pointer returned.
+The client must free this storage when finished with it by calling
+<xref linkend='XFree' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return data from a specified cut buffer, use 
+<xref linkend='XFetchBuffer' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFetchBuffer</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFetchBuffer'>
+<funcprototype>
+  <funcdef>char *<function>XFetchBuffer</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int *<parameter>nbytes_return</parameter></paramdef>
+  <paramdef>int <parameter>buffer</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of bytes in the buffer.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>buffer</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the buffer from which you want the stored data returned.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XFetchBuffer' xrefstyle='select: title'/>
+function returns zero to the nbytes_return argument 
+if there is no data in the buffer or if an invalid
+buffer is specified.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To rotate the cut buffers, use 
+<xref linkend='XRotateBuffers' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRotateBuffers</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRotateBuffers'>
+<funcprototype>
+  <funcdef><function>XRotateBuffers</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>rotate</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rotate</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies how much to rotate the cut buffers.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM  -->
+The
+<xref linkend='XRotateBuffers' xrefstyle='select: title'/>
+function rotates the cut
+buffers, such that buffer 0 becomes buffer n, 
+buffer 1 becomes n + 1 mod 8, and so on.
+This cut buffer numbering is global to the display.
+Note that
+<xref linkend='XRotateBuffers' xrefstyle='select: title'/>
+generates
+<errorname>BadMatch</errorname>
+errors if any of the eight buffers have not been created.
+</para>
+</sect1>
+<sect1 id="Determining_the_Appropriate_Visual_Type">
+<title>Determining the Appropriate Visual Type</title>
+<!-- .XS -->
+<!-- (SN Determining the Appropriate Visual Type -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+A single display can support multiple screens.
+Each screen can have several different visual types supported 
+at different depths.
+You can use the functions described in this section to determine
+which visual to use for your application.
+</para>
+<para>
+<!-- .LP -->
+The functions in this section use the visual information masks and the
+<structname>XVisualInfo</structname>
+structure,
+which is defined in
+<filename class="headerfile">&lt;X11/Xutil.h&gt;</filename>
+<indexterm type="file"><primary><filename class="headerfile">X11/Xutil.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+and contains:
+<!-- .sM -->
+</para>
+<!-- .LP -->
+<literallayout class="monospaced">
+
+/* Visual information mask bits */
+
+
+#define   VisualNoMask                 0x0
+#define   VisualIDMask                 0x1
+#define   VisualScreenMask             0x2
+#define   VisualDepthMask              0x4
+#define   VisualClassMask              0x8
+#define   VisualRedMaskMask            0x10
+#define   VisualGreenMaskMask          0x20
+#define   VisualBlueMaskMask           0x40
+#define   VisualColormapSizeMask       0x80
+#define   VisualBitsPerRGBMask         0x100
+#define   VisualAllMask                0x1FF
+
+</literallayout>
+
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+/* Values */
+
+typedef struct {
+     Visual *visual;
+     VisualID visualid;
+     int screen;
+     unsigned int depth;
+     int class;
+     unsigned long red_mask;
+     unsigned long green_mask;
+     unsigned long blue_mask;
+     int colormap_size;
+     int bits_per_rgb;
+} XVisualInfo;
+</literallayout>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+To obtain a list of visual information structures that match a specified
+template, use
+<xref linkend='XGetVisualInfo' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetVisualInfo</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetVisualInfo'>
+<funcprototype>
+  <funcdef>XVisualInfo *<function>XGetVisualInfo</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>long <parameter>vinfo_mask</parameter></paramdef>
+  <paramdef>XVisualInfo *<parameter>vinfo_template</parameter></paramdef>
+  <paramdef>int *<parameter>nitems_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>vinfo_mask</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the visual mask value.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>vinfo_template</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the visual attributes that are to be used in matching the visual
+structures.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nitems_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of matching visual structures.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetVisualInfo' xrefstyle='select: title'/>
+function returns a list of visual structures that have attributes 
+equal to the attributes specified by vinfo_template.
+If no visual structures match the template using the specified vinfo_mask,
+<xref linkend='XGetVisualInfo' xrefstyle='select: title'/>
+returns a NULL.
+To free the data returned by this function, use
+<xref linkend='XFree' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain the visual information that matches the specified depth and
+class of the screen, use
+<xref linkend='XMatchVisualInfo' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XMatchVisualInfo</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XMatchVisualInfo'>
+<funcprototype>
+  <funcdef>Status <function>XMatchVisualInfo</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>screen</parameter></paramdef>
+  <paramdef>int <parameter>depth</parameter></paramdef>
+  <paramdef>int <parameter>class</parameter></paramdef>
+  <paramdef>XVisualInfo *<parameter>vinfo_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>screen</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>depth</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the depth of the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>class</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the class of the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>vinfo_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the matched visual information.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XMatchVisualInfo' xrefstyle='select: title'/>
+function returns the visual information for a visual that matches the specified
+depth and class for a screen.
+Because multiple visuals that match the specified depth and class can exist,
+the exact visual chosen is undefined.
+If a visual is found,
+<xref linkend='XMatchVisualInfo' xrefstyle='select: title'/>
+returns nonzero and the information on the visual to vinfo_return.
+Otherwise, when a visual is not found,
+<xref linkend='XMatchVisualInfo' xrefstyle='select: title'/>
+returns zero.
+</para>
+</sect1>
+<sect1 id="Manipulating_Images">
+<title>Manipulating Images</title>
+<!-- .XS -->
+<!-- (SN Manipulating Images  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides several functions that perform basic operations on images.
+All operations on images are defined using an 
+<structname>XImage</structname>
+structure, 
+as defined in
+<filename class="headerfile">&lt;X11/Xlib.h&gt;</filename>.
+<indexterm type="file"><primary><filename class="headerfile">X11/Xlib.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xlib.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xlib.h&gt;</filename></secondary></indexterm>
+Because the number of different types of image formats can be very large,
+this hides details of image storage properly from applications.
+</para>
+<para>
+<!-- .LP -->
+This section describes the functions for generic operations on images.
+Manufacturers can provide very fast implementations of these for the
+formats frequently encountered on their hardware.
+These functions are neither sufficient nor desirable to use for general image
+processing.
+Rather, they are here to provide minimal functions on screen format
+images.
+The basic operations for getting and putting images are
+<xref linkend='XGetImage' xrefstyle='select: title'/>
+and 
+<xref linkend='XPutImage' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+Note that no functions have been defined, as yet, to read and write images 
+to and from disk files.
+</para>
+<para>
+<!-- .LP -->
+The
+<structname>XImage</structname>
+structure describes an image as it exists in the client's memory.  
+The user can request that some of the members such as height, width, 
+and xoffset be changed when the image is sent to the server.
+Note that bytes_per_line in concert with offset can be used to
+extract a subset of the image.
+Other members (for example, byte order, bitmap_unit, and so forth)
+are characteristics of both the image and the server.  
+If these members
+differ between the image and the server, 
+<xref linkend='XPutImage' xrefstyle='select: title'/>
+makes the appropriate conversions.
+The first byte of the first line of
+plane n must be located at the address (data + (n * height * bytes_per_line)).
+For a description of the 
+<structname>XImage</structname>
+structure,
+see <link linkend="Transferring_Images_between_Client_and_Server">section 8.7</link>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To allocate an 
+<structname>XImage</structname>
+structure and initialize it with image format values from a display, use
+<xref linkend='XCreateImage' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XCreateImage</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCreateImage'>
+<funcprototype>
+  <funcdef>XImage *<function>XCreateImage</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Visual *<parameter>visual</parameter></paramdef>
+  <paramdef>unsigned int <parameter>depth</parameter></paramdef>
+  <paramdef>int <parameter>format</parameter></paramdef>
+  <paramdef>int <parameter>offset</parameter></paramdef>
+  <paramdef>char *<parameter>data</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>int <parameter>bitmap_pad</parameter></paramdef>
+  <paramdef>int <parameter>bytes_per_line</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>visual</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the
+<structname>Visual</structname>
+structure.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>depth</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the depth of the image.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>format</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the format for the image.
+You can pass
+<symbol>XYBitmap</symbol>,
+<symbol>XYPixmap</symbol>,
+or 
+<symbol>ZPixmap</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>offset</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of pixels to ignore at the beginning of the scanline.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the image data.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the width of the image, in pixels.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the height of the image, in pixels.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bitmap_pad</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the quantum of a scanline (8, 16, or 32).
+In other words, the start of one scanline is separated in client memory from 
+the start of the next scanline by an integer multiple of this many bits.  
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bytes_per_line</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes in the client image between
+the start of one scanline and the start of the next.  
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCreateImage' xrefstyle='select: title'/>
+function allocates the memory needed for an
+<structname>XImage</structname>
+structure for the
+specified display but does not allocate space for the image itself.
+Rather, it initializes the structure byte-order, bit-order, and bitmap-unit
+values from the display and returns a pointer to the 
+<structname>XImage</structname>
+structure.
+The red, green, and blue mask values are defined for Z format images only
+and are derived from the 
+<structname>Visual</structname>
+structure passed in.
+Other values also are passed in.
+The offset permits the rapid displaying of the image without requiring each 
+scanline to be shifted into position.
+If you pass a zero value in bytes_per_line,
+Xlib assumes that the scanlines are contiguous
+in memory and calculates the value of bytes_per_line itself.
+</para>
+<para>
+<!-- .LP -->
+Note that when the image is created using
+<xref linkend='XCreateImage' xrefstyle='select: title'/>,
+<xref linkend='XGetImage' xrefstyle='select: title'/>,
+or
+<xref linkend='XSubImage' xrefstyle='select: title'/>,
+the destroy procedure that the 
+<xref linkend='XDestroyImage' xrefstyle='select: title'/>
+function calls frees both the image structure 
+and the data pointed to by the image structure.
+</para>
+<para>
+<!-- .LP -->
+The basic functions used to get a pixel, set a pixel, create a subimage,
+and add a constant value to an image are defined in the image object.
+The functions in this section are really macro invocations of the functions
+in the image object and are defined in
+<filename class="headerfile">&lt;X11/Xutil.h&gt;</filename>.
+<indexterm type="file"><primary><filename class="headerfile">X11/Xutil.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain a pixel value in an image, use
+<xref linkend='XGetPixel' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetPixel</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetPixel'>
+<funcprototype>
+  <funcdef>unsigned long <function>XGetPixel</function></funcdef>
+  <paramdef>XImage *<parameter>ximage</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ximage</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the image.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetPixel' xrefstyle='select: title'/>
+function returns the specified pixel from the named image.
+The pixel value is returned in normalized format (that is,
+the least significant byte of the long is the least significant byte
+of the pixel).
+The image must contain the x and y coordinates.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set a pixel value in an image, use
+<xref linkend='XPutPixel' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XPutPixel</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XPutPixel'>
+<funcprototype>
+  <funcdef><function>XPutPixel</function></funcdef>
+  <paramdef>XImage *<parameter>ximage</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned long <parameter>pixel</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ximage</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the image.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>pixel</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the new pixel value.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XPutPixel' xrefstyle='select: title'/>
+function overwrites the pixel in the named image with the specified pixel value.
+The input pixel value must be in normalized format
+(that is, the least significant byte of the long is the least significant
+byte of the pixel).
+The image must contain the x and y coordinates.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To create a subimage, use
+<xref linkend='XSubImage' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSubImage</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSubImage'>
+<funcprototype>
+  <funcdef>XImage *<function>XSubImage</function></funcdef>
+  <paramdef>XImage *<parameter>ximage</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>subimage_width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>subimage_height</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ximage</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the image.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>subimage_width</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the width of the new subimage, in pixels.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>subimage_height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the height of the new subimage, in pixels.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSubImage' xrefstyle='select: title'/>
+function creates a new image that is a subsection of an existing one.
+It allocates the memory necessary for the new
+<structname>XImage</structname>
+structure
+and returns a pointer to the new image.
+The data is copied from the source image,
+and the image must contain the rectangle defined by x, y, subimage_width,
+and subimage_height.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To increment each pixel in an image by a constant value, use
+<xref linkend='XAddPixel' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XAddPixel</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XAddPixel'>
+<funcprototype>
+  <funcdef><function>XAddPixel</function></funcdef>
+  <paramdef>XImage *<parameter>ximage</parameter></paramdef>
+  <paramdef>long <parameter>value</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ximage</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the image.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>value</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the constant value that is to be added.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XAddPixel' xrefstyle='select: title'/>
+function adds a constant value to every pixel in an image.
+It is useful when you have a base pixel value from allocating
+color resources and need to manipulate the image to that form.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To deallocate the memory allocated in a previous call to
+<xref linkend='XCreateImage' xrefstyle='select: title'/>,
+use
+<xref linkend='XDestroyImage' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDestroyImage</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDestroyImage'>
+<funcprototype>
+  <funcdef><function>XDestroyImage</function></funcdef>
+  <paramdef>XImage *<parameter>ximage</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ximage</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the image.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDestroyImage' xrefstyle='select: title'/>
+function deallocates the memory associated with the
+<structname>XImage</structname>
+structure.
+</para>
+<para>
+<!-- .LP -->
+Note that when the image is created using
+<xref linkend='XCreateImage' xrefstyle='select: title'/>,
+<xref linkend='XGetImage' xrefstyle='select: title'/>,
+or 
+<xref linkend='XSubImage' xrefstyle='select: title'/>,
+the destroy procedure that this macro calls
+frees both the image structure and the data pointed to by the image structure. 
+</para>
+</sect1>
+<sect1 id="Manipulating_Bitmaps">
+<title>Manipulating Bitmaps</title>
+<!-- .XS -->
+<!-- (SN Manipulating Bitmaps  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to read a bitmap from a file,
+save a bitmap to a file, or create a bitmap. 
+This section describes those functions that transfer bitmaps to and
+from the client's file system, thus allowing their reuse in a later
+connection (for example, from an entirely different client or to a
+different display or server).
+</para>
+<para>
+<!-- .LP -->
+The X version 11 bitmap file format is:
+</para>
+<para>
+<!-- .LP -->
+<!-- .sM -->
+<literallayout class="monospaced">
+#define <emphasis remap='I'>name</emphasis>_width <emphasis remap='I'>width</emphasis>
+#define <emphasis remap='I'>name</emphasis>_height <emphasis remap='I'>height</emphasis>
+#define <emphasis remap='I'>name</emphasis>_x_hot <emphasis remap='I'>x</emphasis>
+#define <emphasis remap='I'>name</emphasis>_y_hot <emphasis remap='I'>y</emphasis>
+static unsigned char <emphasis remap='I'>name</emphasis>_bits[] = { 0x<emphasis remap='I'>NN</emphasis>,... }
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The lines for the variables ending with _x_hot and _y_hot suffixes are optional
+because they are present only if a hotspot has been defined for this bitmap.
+The lines for the other variables are required.
+The word ``unsigned'' is optional;
+that is, the type of the _bits array can be ``char'' or ``unsigned char''.
+The _bits array must be large enough to contain the size bitmap.
+The bitmap unit is 8.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To read a bitmap from a file and store it in a pixmap, use
+<xref linkend='XReadBitmapFile' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XReadBitmapFile</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XReadBitmapFile'>
+<funcprototype>
+  <funcdef>int <function>XReadBitmapFile</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>char *<parameter>filename</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>width_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>height_return</parameter></paramdef>
+  <paramdef>Pixmap *<parameter>bitmap_return</parameter></paramdef>
+  <paramdef>int *<parameter>x_hot_return</parameter></paramdef>
+  <paramdef>int *<parameter>y_hot_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable that indicates the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>filename</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the file name to use.
+The format of the file name is operating-system dependent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the width and height values of the read in bitmap file.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bitmap_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the bitmap that is created.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_hot_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y_hot_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the hotspot coordinates.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XReadBitmapFile' xrefstyle='select: title'/>
+function reads in a file containing a bitmap.
+The file is parsed in the encoding of the current locale.
+The ability to read other than the standard format 
+is implementation-dependent.
+If the file cannot be opened, 
+<xref linkend='XReadBitmapFile' xrefstyle='select: title'/>
+returns 
+<returnvalue>BitmapOpenFailed</returnvalue>.
+If the file can be opened but does not contain valid bitmap data, 
+it returns 
+<returnvalue>BitmapFileInvalid</returnvalue>.
+If insufficient working storage is allocated,
+it returns
+<returnvalue>BitmapNoMemory</returnvalue>.
+If the file is readable and valid,
+it returns 
+<returnvalue>BitmapSuccess</returnvalue>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XReadBitmapFile' xrefstyle='select: title'/>
+returns the bitmap's height and width, as read
+from the file, to width_return and height_return.
+It then creates a pixmap of the appropriate size, 
+reads the bitmap data from the file into the pixmap,
+and assigns the pixmap to the caller's variable bitmap.  
+The caller must free the bitmap using 
+<xref linkend='XFreePixmap' xrefstyle='select: title'/>
+when finished.
+If <emphasis remap='I'>name</emphasis>_x_hot and <emphasis remap='I'>name</emphasis>_y_hot exist,
+<xref linkend='XReadBitmapFile' xrefstyle='select: title'/>
+returns them to x_hot_return and y_hot_return;
+otherwise, it returns &minus;1,&minus;1.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XReadBitmapFile' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadDrawable</errorname>,
+and
+<errorname>BadGC</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To read a bitmap from a file and return it as data, use
+<xref linkend='XReadBitmapFileData' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XReadBitmapFileData</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XReadBitmapFileData'>
+<funcprototype>
+  <funcdef>int <function>XReadBitmapFileData</function></funcdef>
+  <paramdef>char *<parameter>filename</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>width_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>height_return</parameter></paramdef>
+  <paramdef>unsignedchar *<parameter>data_return</parameter></paramdef>
+  <paramdef>int *<parameter>x_hot_return</parameter></paramdef>
+  <paramdef>int *<parameter>y_hot_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>filename</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the file name to use.
+The format of the file name is operating-system dependent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the width and height values of the read in bitmap file.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the bitmap data.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_hot_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y_hot_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the hotspot coordinates.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XReadBitmapFileData' xrefstyle='select: title'/>
+function reads in a file containing a bitmap, in the same manner as
+<xref linkend='XReadBitmapFile' xrefstyle='select: title'/>,
+but returns the data directly rather than creating a pixmap in the server.
+The bitmap data is returned in data_return; the client must free this
+storage when finished with it by calling
+<xref linkend='XFree' xrefstyle='select: title'/>.
+The status and other return values are the same as for
+<xref linkend='XReadBitmapFile' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To write out a bitmap from a pixmap to a file, use
+<xref linkend='XWriteBitmapFile' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XWriteBitmapFile</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XWriteBitmapFile'>
+<funcprototype>
+  <funcdef>int <function>XWriteBitmapFile</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>filename</parameter></paramdef>
+  <paramdef>Pixmap <parameter>bitmap</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>int <parameter>x_hot</parameter></paramdef>
+  <paramdef>int <parameter>y_hot</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>filename</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the file name to use.
+The format of the file name is operating-system dependent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bitmap</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the bitmap.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_hot</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y_hot</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify where to place the hotspot coordinates (or &minus;1,&minus;1 if none are present)
+in the file.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XWriteBitmapFile' xrefstyle='select: title'/>
+function writes a bitmap out to a file in the X Version 11 format.
+The name used in the output file is derived from the file name
+by deleting the directory prefix.
+The file is written in the encoding of the current locale.
+If the file cannot be opened for writing, 
+it returns 
+<returnvalue>BitmapOpenFailed</returnvalue>.
+If insufficient memory is allocated,
+<xref linkend='XWriteBitmapFile' xrefstyle='select: title'/>
+returns
+<returnvalue>BitmapNoMemory</returnvalue>;
+otherwise, on no error,
+it returns
+<returnvalue>BitmapSuccess</returnvalue>.
+If x_hot and y_hot are not &minus;1, &minus;1,
+<xref linkend='XWriteBitmapFile' xrefstyle='select: title'/>
+writes them out as the hotspot coordinates for the bitmap.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XWriteBitmapFile' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To create a pixmap and then store bitmap-format data into it, use
+<xref linkend='XCreatePixmapFromBitmapData' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XCreatePixmapFromBitmapData</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCreatePixmapFromBitmapData'>
+<funcprototype>
+  <funcdef>Pixmap <function>XCreatePixmapFromBitmapData</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>char *<parameter>data</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>unsigned long <parameter>fg</parameter></paramdef>
+  <paramdef>unsigned long <parameter>bg</parameter></paramdef>
+  <paramdef>unsigned int <parameter>depth</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable that indicates the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the data in bitmap format.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>fg</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bg</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the foreground and background pixel values to use.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>depth</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the depth of the pixmap.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCreatePixmapFromBitmapData' xrefstyle='select: title'/>
+function creates a pixmap of the given depth and then does a bitmap-format
+<xref linkend='XPutImage' xrefstyle='select: title'/>
+of the data into it.
+The depth must be supported by the screen of the specified drawable,
+or a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCreatePixmapFromBitmapData' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To include a bitmap written out by 
+<xref linkend='XWriteBitmapFile' xrefstyle='select: title'/>
+<indexterm><primary>XWriteBitmapFile</primary></indexterm>
+in a program directly, as opposed to reading it in every time at run time, use
+<xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XCreateBitmapFromData</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCreateBitmapFromData'>
+<funcprototype>
+  <funcdef>Pixmap <function>XCreateBitmapFromData</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>char *<parameter>data</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable that indicates the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the location of the bitmap data.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/>
+function allows you to include in your C program (using
+<code>#include</code>)
+a bitmap file that was written out by
+<xref linkend='XWriteBitmapFile' xrefstyle='select: title'/>
+(X version 11 format only) without reading in the bitmap file.
+The following example creates a gray bitmap:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+#include "gray.bitmap"
+<!-- .sp 6p -->
+Pixmap bitmap;
+bitmap = XCreateBitmapFromData(display, window, gray_bits, gray_width, gray_height);
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+If insufficient working storage was allocated,
+<xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/>
+returns
+<symbol>None</symbol>.
+It is your responsibility to free the
+bitmap using
+<xref linkend='XFreePixmap' xrefstyle='select: title'/>
+when finished.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>
+and
+<errorname>BadGC</errorname>
+errors.
+</para>
+</sect1>
+<sect1 id="Using_the_Context_Manager">
+<title>Using the Context Manager</title>
+<!-- .XS -->
+<!-- (SN Using the Context Manager  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The context manager provides a way of associating data with an X resource ID
+(mostly typically a window) in your program.  
+Note that this is local to your program;
+the data is not stored in the server on a property list.
+Any amount of data in any number of pieces can be associated with a
+resource ID,
+and each piece of data has a type associated with it.  
+The context manager requires knowledge of the resource ID
+and type to store or retrieve data.
+</para>
+<para>
+<!-- .LP -->
+Essentially, the context manager can be viewed as a two-dimensional, 
+sparse array:  one dimension is subscripted by the X resource ID
+and the other by a context type field.
+Each entry in the array contains a pointer to the data.
+Xlib provides context management functions with which you can
+save data values, get data values, delete entries, and create a unique
+context type.
+The symbols used are in
+<filename class="headerfile">&lt;X11/Xutil.h&gt;</filename>.
+<indexterm type="file"><primary><filename class="headerfile">X11/Xutil.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xutil.h&gt;</filename></secondary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To save a data value that corresponds to a resource ID and context type, use
+<xref linkend='XSaveContext' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSaveContext</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSaveContext'>
+<funcprototype>
+  <funcdef>int <function>XSaveContext</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XID <parameter>rid</parameter></paramdef>
+  <paramdef>XContext <parameter>context</parameter></paramdef>
+  <paramdef>XPointer <parameter>data</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rid</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the resource ID with which the data is associated.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>context</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the context type to which the data belongs.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the data to be associated with the window and type.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If an entry with the specified resource ID and type already exists,
+<xref linkend='XSaveContext' xrefstyle='select: title'/>
+overrides it with the specified context.
+The
+<xref linkend='XSaveContext' xrefstyle='select: title'/>
+function returns a nonzero error code if an error has occurred
+and zero otherwise.
+Possible errors are
+<symbol>XCNOMEM</symbol>
+(out of memory).
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To get the data associated with a resource ID and type, use
+<xref linkend='XFindContext' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFindContext</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFindContext'>
+<funcprototype>
+  <funcdef>int <function>XFindContext</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XID <parameter>rid</parameter></paramdef>
+  <paramdef>XContext <parameter>context</parameter></paramdef>
+  <paramdef>XPointer *<parameter>data_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rid</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the resource ID with which the data is associated.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>context</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the context type to which the data belongs.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the data.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Because it is a return value,
+the data is a pointer.
+The
+<xref linkend='XFindContext' xrefstyle='select: title'/>
+function returns a nonzero error code if an error has occurred
+and zero otherwise.
+Possible errors are
+<symbol>XCNOENT</symbol>
+(context-not-found).
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To delete an entry for a given resource ID and type, use
+<xref linkend='XDeleteContext' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDeleteContext</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDeleteContext'>
+<funcprototype>
+  <funcdef>int <function>XDeleteContext</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XID <parameter>rid</parameter></paramdef>
+  <paramdef>XContext <parameter>context</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rid</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the resource ID with which the data is associated.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>context</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the context type to which the data belongs.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDeleteContext' xrefstyle='select: title'/>
+function deletes the entry for the given resource ID 
+and type from the data structure.
+This function returns the same error codes that
+<xref linkend='XFindContext' xrefstyle='select: title'/>
+returns if called with the same arguments.
+<xref linkend='XDeleteContext' xrefstyle='select: title'/>
+does not free the data whose address was saved.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To create a unique context type that may be used in subsequent calls to
+<xref linkend='XSaveContext' xrefstyle='select: title'/>
+and
+<xref linkend='XFindContext' xrefstyle='select: title'/>,
+use
+<function>XUniqueContext</function>.
+</para>
+
+<funcsynopsis id='XUniqueContext'>
+<funcprototype>
+  <funcdef>XContext <function>XUniqueContext</function></funcdef>
+  <void />
+</funcprototype>
+</funcsynopsis>
+
+</sect1>
+</chapter>

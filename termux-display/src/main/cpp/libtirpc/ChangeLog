@@ -1,0 +1,206 @@
+2008-11-19  Steve Dickson <steved@redhat.com>
+ 
+    * Version 0.1.10 released.
+
+commit 32ec5931e3debf208972d5146578f08dc113a9b6
+Merge: 338af7f... 92cf0dd...
+Author: Steve Dickson <steved@redhat.com>
+Date:   Mon Nov 17 12:26:22 2008 -0500
+
+    Merge branch 'master' of git://git.infradead.org/~steved/libtirpc
+
+commit 92cf0dde310ca341a2f29ff66b19eeb9994a649a
+Author: Ian Kent <ikent@redhat.com>
+Date:   Tue Oct 28 11:19:07 2008 -0400
+
+    Fixed a warings the IPV6 client routines
+    
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit 338af7f9f00e096b65a6d823f885c4eeaf1d1f8c
+Author: Steve Dickson <steved@redhat.com>
+Date:   Mon Oct 27 12:46:54 2008 -0400
+
+    __rpc_taddr2uaddr_af() assumes the netbuf to always have a
+    non-zero data. This is a bad assumption and can lead to a
+    seg-fault. This patch adds a check for zero length and returns
+    NULL when found.
+    
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit d9a5ae7079d001a9e3b9b384f9153f591a7158bd
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 30 15:10:43 2008 -0400
+
+    Fix __rpc_getconfip
+    
+    __rpc_getconfip is supposed to return the first netconf
+    entry supporting tcp or udp, respectively. The code will
+    currently return the *last* entry, plus it will leak
+    memory when there is more than one such entry.
+    
+    This patch fixes this issue.
+    
+    Signed-off-by: Olaf Kirch <okir@suse.de>
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit 6c487efe74adb5c29f7bee5bd51b3ebef4968f7d
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 30 15:09:06 2008 -0400
+
+    Fix getpeereid
+    
+    getpeereid fails because it uses an incorrect getsockopt call to obtain
+    the peer credentials on a AF_LOCAL socket.  This in turn will cause all
+    RPC services to be registered with rpcbind to show up as having been
+    registered by "unknown".
+    
+    This has a serious impact on security - a service owned by "unknown"
+    can essentially be unregistered (and thus replaced) by anyone.
+    
+    Signed-off-by: Olaf Kirch <okir@suse.de>
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit 851b0f5c6dca22d634603f03f0a5e3e35c6db867
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 30 15:08:07 2008 -0400
+
+    svc_getcaller_netbuf macro seems broken
+    
+    I haven't found any documentation, but the comment in the header
+    file seems to suggest that svc_getcaller_netbuf should return the
+    xp_rtaddr netbuf. Returning the address of the socket descripor
+    seems to be wrong at any rate.
+    
+    Signed-off-by: Olaf Kirch <okir@suse.de>
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit d94b92d5125242ce595c1baf42a1e6d1004b7756
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 30 15:06:54 2008 -0400
+
+    Introduce __rpc_set_netbuf helper
+    
+    The RPC code contains a number of places where a netbuf
+    is initialized with some data. All the mem_alloc/memcpy
+    stuff is open-coded. Introduce a helper function and
+    convert the code.
+    
+    Signed-off-by: Olaf Kirch <okir@suse.de>
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit da5f9861ea3bae59c8eead26d38334721caa9f0a
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 30 15:05:20 2008 -0400
+
+    Kill map_ipv4_to_ipv6
+    
+    After the change to svc_vc.c performed in the previous patch,
+    this function is no longer needed.
+    
+    Signed-off-by: Olaf Kirch <okir@suse.de>
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit 59c374c4b507aeca957ed0096d98006edf601375
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 30 15:04:17 2008 -0400
+
+    Fix xp_raddr handling in svc_fd_create etc
+    
+    Currently svc_fd_create tries to do some clever tricks
+    with IPv4/v6 address mapping.
+    
+    This is broken for several reasons.
+     1.	We don't want IPv4 based transport to look like IPv6
+     	transports. Old applications compiled against tirpc
+    	will expect AF_INET addresses, and are not equipped
+    	to deal with AF_INET6.
+     2.	There's a buffer overflow.
+    		memcpy(&sin6, &ss, sizeof(ss));
+    	copies a full struct sockaddr to a sockaddr_in6 on
+    	the stack. Unlikely to be exploitable, but I wonder
+    	if this ever worked....
+    
+    Signed-off-by: Olaf Kirch <okir@suse.de>
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit 628788c1cc84c86ee4cb36ee5d4fe8954e90fca5
+Author: Steve Dickson <steved@redhat.com>
+Date:   Tue Sep 16 11:32:31 2008 -0400
+
+    - Fixed version-info in src/Makefile.am to reflect the correct version
+    - Fixed some of warnings in: src/auth_time.c, src/clnt_dg.c and
+        src/clnt_raw.c
+    - Added some #ifdef NOTUSED around some code in src/rpbc_clnt.c
+      that was not being used...
+    
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit 9e7ba0c7a02031294fefadfbca42b3dd5f2d841f
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 16 08:46:29 2008 -0400
+
+    Fix for taddr2addr conversion bug of local addresses
+    
+    When converting af_local socket addresses in taddr2uaddr, an incorrect
+    sizeof() would result in a truncated path string. As a result,
+    rpcbind will report the local /var/lib/rpcbind address to clients
+    as "/v" on a 32bit machine.
+    
+    Signed-off-by: okir@suse.de
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit ea9f048761d0b9a2ab6310bffa07351f0b04d8c5
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 2 12:11:15 2008 -0400
+
+    Always make IPv6 sockets V6ONLY
+    
+    Assume you have a netconfig file looking like this:
+    
+    udp        tpi_clts      v     inet     udp     -       -
+    udp6       tpi_clts      v     inet6    udp     -       -
+    ...
+    
+    a call to svc_tli_create(... &someaddr, "udp") will fail to create an
+    IPv6 server socket. The problem is that on Linux, passive IPv6 sockets
+    will also accept packets/connections from IPv4, and will simply map
+    the sender's address to an IPv6 mapped IPv4 address. So if you want to
+    bind both a UDPv4 and UDPv6 socket to the same port, this will fail with
+    EADDRINUSE.
+    
+    The way to avoid this behavior is to change the socket to V6ONLY,
+    which tells the kernel to avoid the autmatic mapping.
+    
+    The change proposed in the patch below does this. I *think* this is
+    a good place to do this, as it will also fix applications that do not
+    use svc_tli_create() - such as rpcbind, which creates the sockets on
+    its own using __rpc_nconf2fd.
+    
+    I think this also improves portability, as BSD code assumes BSD
+    behavior, where this mapping does not occur either.
+    
+    Signed-off-by: Olaf Kirch <okir@suse.de>
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+commit 95c8f7227e6b15f2e430d7b87dadc95b2acd4a61
+Author: Olaf Kirch <okir@suse.de>
+Date:   Tue Sep 2 12:09:39 2008 -0400
+
+    Fix incorrect sizeof() in __rpc_getbroadifs
+    
+    __rpc_getbroadifs returns bad broadcast addresses on 32bit
+    machines because when copying the broadcast addresses, ite
+    applies the sizeof() operator to a pointer to a sockaddr,
+    rather than the sockaddr itself.
+    
+    Signed-off-by: Olaf Kirch <okir@suse.de>
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+2004-10-13  Antoine Fraticelli  <antoine.fraticellie@bull.net>
+ 
+        * Version 0.1 released.
+
+2005-01-07  Gilles Quillard  <Gilles.Quillard@bull.net>
+
+	* Version 0.1.5  Fix problems links to the use of Kerberos.

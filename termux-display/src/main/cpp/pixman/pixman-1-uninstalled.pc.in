@@ -1,0 +1,5 @@
+Name: Pixman
+Description: The pixman library (version 1)
+Version: @PACKAGE_VERSION@
+Cflags: -I${pc_top_builddir}/${pcfiledir}/pixman
+Libs: ${pc_top_builddir}/${pcfiledir}/pixman/libpixman-1.la

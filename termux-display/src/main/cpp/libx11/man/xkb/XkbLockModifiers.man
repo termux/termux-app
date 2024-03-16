@@ -1,0 +1,102 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbLockModifiers __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbLockModifiers \-  Locks and unlocks any of the eight real keyboard modifiers
+.SH SYNOPSIS
+.HP
+.B Bool XkbLockModifiers
+.BI "(\^Display *" "display" "\^,"
+.BI "unsigned int " "device_spec" "\^,"
+.BI "unsigned int " "affect" "\^,"
+.BI "unsigned int " "values" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I display
+connection to the X server 
+.TP
+.I device_spec
+device ID, or XkbUseCoreKbd
+.TP
+.I affect
+mask of real modifiers whose lock state is to change
+.TP
+.I values
+1 => lock, 0 => unlock; only for modifiers selected by affect
+.SH DESCRIPTION
+.LP
+.I XkbLockModifiers 
+sends a request to the server to lock the real modifiers 
+selected by both 
+.I affect 
+and 
+.I values
+and to unlock the real modifiers selected by 
+.I affect, 
+but not selected by 
+.I values. XkbLockModifiers 
+does not wait for a reply from the server. It returns True if the request was 
+sent, and False otherwise.
+
+The functions in this section that change the use of modifiers use a mask in the 
+parameter affect. It is a bitwise inclusive OR of the legal modifier masks: 
+
+.TS
+c 
+l 
+l.
+Table 1 Real Modifier Masks
+_
+Mask
+_
+ShiftMask
+LockMask
+ControlMask
+Mod1Mask
+Mod2Mask
+Mod3Mask
+Mod4Mask
+Mod5Mask
+.TE
+.SH "RETURN VALUES"
+.TP 15
+True
+The 
+.I XkbLockModifiers 
+function returns True if a request is sent to the server to lock the real 
+modifiers 
+selected by both 
+.I affect 
+and 
+.I values
+and to unlock the real modifiers selected by 
+.I affect, 
+but not selected by 
+.I values.
+.TP 15
+False
+The 
+.I XkbLockModifiers 
+function returns False if the request was not sent.

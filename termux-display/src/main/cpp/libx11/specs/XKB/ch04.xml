@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Xkb_Events'>
+<title>Xkb Events</title>
+<indexterm zone="Xkb_Events"><primary>events</primary></indexterm>
+
+<para>
+The primary way the X server communicates with clients is by sending X events
+to them. Some events are sent to all clients, while others are sent only to
+clients that have requested them. Some of the events that can be requested are
+associated with a particular window and are only sent to those clients who have
+both requested the event and specified the window in which the event occurred.
+</para>
+
+
+<para>
+The Xkb extension uses events to communicate the keyboard status to interested
+clients. These events are not associated with a particular window. Instead, all
+Xkb keyboard status events are reported to all interested clients, regardless
+of which window currently has the keyboard focus and regardless of the grab
+state of the keyboard.<footnote><para>The one exception to this rule is the
+XkbExtensionDeviceNotify event report that is sent when a client attempts to
+use an unsupported feature of an X Input Extension device (see <link linkend="Setting_Xkb_Features_for_Non_KeyClass_Input_Extension_Devices">section 21.4</link>).
+</para></footnote>
+</para>
+
+
+<para>
+The X server reports the events defined by the Xkb extension to your client
+application only if you have requested them. You may request Xkb events by
+calling either
+<function>XkbSelectEvents</function>
+or
+<function>XkbSelectEventDetails</function>.
+<function>XkbSelectEvents</function>
+requests Xkb events by their event type and causes them to be reported to your
+client application under all circumstances. You can specify a finer granularity
+for event reporting by using
+<function>XkbSelectEventDetails</function>;
+in this case events are reported only when the specific detail conditions you
+specify have been met.
+</para>
+
+<sect1 id='Xkb_Event_Types'>
+<title>Xkb Event Types</title>
+
+<para>
+The Xkb Extension adds new event types to the X protocol definition. An Xkb
+event type is defined by two fields in the X event data structure. One is the
+<structfield>type</structfield>
+field, containing the
+<emphasis>base event code</emphasis>.
+This base event code is a value the X server assigns to each X extension at
+runtime and that identifies the extension that generated the event; thus, the
+event code in the
+<structfield>type</structfield>
+field identifies the event as an Xkb extension event, rather than an event
+from another extension or a core X protocol event. You can obtain the base
+event code via a call to
+<function>XkbQueryExtension</function>
+or
+<function>XkbOpenDisplay</function>.
+The second field is the Xkb event type, which contains a value uniquely
+identifying each different Xkb event type. Possible values are defined by
+constants declared in the header file
+<filename class="headerfile">&lt;X11/extensions/Xkb.h&gt;</filename>.
+</para>
+
+
+<para>
+<link linkend="table4.1">Table 4.1</link>
+lists the categories of events defined by Xkb and their associated
+event types, as defined in
+<filename class="headerfile">Xkb.h</filename>.
+Each event is described in more detail in the section referenced for that
+event.
+</para>
+
+<table id='table4.1' frame='topbot'>
+<title>Xkb Event Types</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='3' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='3.0*'/>
+<colspec colname='c2' colwidth='4.0*'/>
+<colspec colname='c3' colwidth='1.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>Event Type</entry>
+  <entry>Conditions Generating Event</entry>
+  <entry>Section</entry>
+</row>
+</thead>
+<tbody>
+<row>
+  <entry><symbol>XkbNewKeyboardNotify</symbol></entry>
+  <entry>Keyboard geometry; keycode range change</entry>
+  <entry><link linkend="Replacing_a_Keyboard_On_the_Fly">19</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbMapNotify</symbol></entry>
+  <entry>Keyboard mapping change</entry>
+  <entry><link linkend="Tracking_Changes_to_Map_Components">14.4</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbStateNotify</symbol></entry>
+  <entry>Keyboard state change</entry>
+  <entry><link linkend="Tracking_Keyboard_State">5.4</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbControlsNotify</symbol></entry>
+  <entry>Keyboard controls state change</entry>
+  <entry><link linkend="Tracking_Changes_to_Keyboard_Controls">10.11</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbIndicatorStateNotify</symbol></entry>
+  <entry>Keyboard indicators state change</entry>
+  <entry><link linkend="Tracking_Changes_to_Indicator_State_or_Map">8.5</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbIndicatorMapNotify</symbol></entry>
+  <entry>Keyboard indicators map change</entry>
+  <entry><link linkend="Tracking_Changes_to_Indicator_State_or_Map">8.5</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbNamesNotify</symbol></entry>
+  <entry>Keyboard name change</entry>
+  <entry><link linkend="Tracking_Name_Changes">18.5</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbCompatMapNotify</symbol></entry>
+  <entry>Keyboard compatibility map change</entry>
+  <entry><link linkend="Tracking_Changes_to_the_Compatibility_Map">17.5</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbBellNotify</symbol></entry>
+  <entry>Keyboard bell generated</entry>
+  <entry><link linkend="Detecting_Bells">9.4</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbActionMessage</symbol></entry>
+  <entry>Keyboard action message</entry>
+  <entry><link linkend="Actions_for_Generating_Messages">16.1.11</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbAccessXNotify</symbol></entry>
+  <entry>AccessX state change</entry>
+  <entry><link linkend="AccessXNotify_Events">10.6.4</link></entry>
+</row>
+<row>
+  <entry><symbol>XkbExtensionDeviceNotify</symbol></entry>
+  <entry>Extension device change</entry>
+  <entry><link linkend="Tracking_Changes_to_Extension_Devices">21.6</link></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+</sect1>
+<sect1 id='Xkb_Event_Data_Structures'>
+<title>Xkb Event Data Structures</title>
+
+<para id='XkbAnyEvent'>
+<indexterm significance="preferred" zone="Xkb_Event_Data_Structures">
+<primary>events</primary><secondary><structname>XkbAnyEvent</structname></secondary></indexterm>
+<indexterm significance="preferred" zone="Xkb_Event_Data_Structures">
+<primary><structname>XkbAnyEvent</structname></primary></indexterm>
+Xkb reports each event it generates in a unique structure holding the data
+values needed to describe the conditions the event is reporting. However, all
+Xkb events have certain things in common. These common features are contained
+in the same fields at the beginning of all Xkb event structures and are
+described in the
+<structname>XkbAnyEvent</structname>
+structure:
+
+<programlisting>
+typedef struct {
+    int             type;        /* Xkb extension base event code */
+    unsigned long   serial;      /* X server serial number for event */
+    Bool            send_event;  /* <symbol>True</symbol> &rArr; synthetically generated */
+    Display *       display;     /* server connection where event generated */
+    Time            time;        /* server time when event generated */
+    int             xkb_type;    /* Xkb minor event code */
+    unsigned int    device;      /* Xkb device ID, will not be <symbol>XkbUseCoreKbd</symbol> */
+} <structname>XkbAnyEvent</structname>;
+</programlisting></para>
+
+<para>
+For any Xkb event, the
+<structfield>type</structfield>
+field is set to the base event code for the Xkb extension, assigned by the
+server to all Xkb extension events. The
+<structfield>serial</structfield>,
+<structfield>send_event</structfield>,
+and
+<structfield>display</structfield>
+fields are as described for all X11 events. The
+<structfield>time</structfield>
+field is set to the time when the event was generated and is expressed in
+milliseconds. The
+<structfield>xkb_type</structfield>
+field contains the minor extension event code, which is the extension event
+type, and is one of the values listed in
+<link linkend="table4.1">Table 4.1</link>. The
+<structfield>device</structfield>
+field contains the keyboard device identifier associated with the event. This
+is never
+<symbol>XkbUseCoreKbd</symbol>,
+even if the request that generated the event specified a device of
+<symbol>XkbUseCoreKbd</symbol>.
+If the request that generated the event specified
+<symbol>XkbUseCoreKbd</symbol>,
+<structfield>device</structfield>
+contains a value assigned by the server to specify the core keyboard. If the
+request that generated the event specified an X input extension device,
+<structfield>device</structfield>
+contains that same identifier.
+</para>
+
+
+<para>
+Other data fields specific to individual Xkb events are described in subsequent
+chapters where the events are described.
+</para>
+
+
+</sect1>
+<sect1 id='Selecting_Xkb_Events'>
+<title>Selecting Xkb Events</title>
+<indexterm significance="preferred" zone="Selecting_Xkb_Events">
+<primary>events</primary><secondary>mask</secondary></indexterm>
+<indexterm significance="preferred" zone="Selecting_Xkb_Events">
+<primary>mask</primary><secondary>event</secondary></indexterm>
+
+<para>
+Xkb events are selected using an event mask, much the same as normal core X
+events are selected. However, unlike selecting core X events, where you must
+specify the selection status (on or off) for all possible event types whenever
+you wish to change the selection criteria for any one event, Xkb allows you to
+restrict the specification to only the event types you wish to change. This
+means that you do not need to remember the event selection values for all
+possible types each time you want to change one of them.
+</para>
+
+
+<para>
+Many Xkb event types are generated under several different circumstances. When
+selecting to receive an Xkb event, you may specify either that you want it
+delivered under all circumstances, or that you want it delivered only for a
+subset of the possible circumstances.
+</para>
+
+<para>
+You can also deselect an event type that was previously selected for, using the
+same granularity.
+</para>
+
+<para>
+Xkb provides two functions to select and deselect delivery of Xkb events.
+<function>XkbSelectEvents</function>
+allows you to select or deselect delivery of more than one Xkb event type at
+once. Events selected using
+<function>XkbSelectEvents</function>
+are delivered to your program under all circumstances that generate the
+events. To restrict delivery of an event to a subset of the conditions under
+which it occurs, use
+<function>XkbSelectEventDetails</function>.
+<function>XkbSelectEventDetails</function>
+only allows you to change the selection conditions for a single event at a
+time, but it provides a means of fine-tuning the conditions under which the
+event is delivered.
+</para>
+
+
+<para>
+To select and / or deselect for delivery of one or more Xkb events and have
+them delivered under all conditions, use
+<function>XkbSelectEvents</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbSelectEvents"><primary><function>XkbSelectEvents</function></primary></indexterm>
+<funcsynopsis id="XkbSelectEvents">
+  <funcprototype>
+    <funcdef>Bool <function>XkbSelectEvents</function></funcdef>
+<!-- (
+<parameter>display, device_spec, bits_to_change, values_for_bits</parameter>
+) -->
+
+    <paramdef>Display *<parameter>display</parameter></paramdef>
+    <paramdef>unsigned int <parameter>device_spec</parameter></paramdef>
+    <paramdef>unsigned long int <parameter>bits_to_change</parameter></paramdef>
+    <paramdef>unsigned long int <parameter>values_for_bits</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>display</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>device_spec</parameter>
+    </term>
+    <listitem>
+      <para>
+        device ID, or <symbol>XkbUseCoreKbd</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>bits_to_change</parameter>
+    </term>
+    <listitem>
+      <para>
+        determines events to be selected / deselected
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>values_for_bits</parameter>
+    </term>
+    <listitem>
+      <para>
+        1&rArr;select, 0&rarr;deselect; for events in <parameter>bits_to_change</parameter>
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+This request changes the Xkb event selection mask for the keyboard specified by
+<parameter>device_spec</parameter>.
+</para>
+
+
+<para>
+Each Xkb event that can be selected is represented by a bit in the
+<parameter>bits_to_change</parameter>
+and
+<parameter>values_for_bits</parameter>
+masks. Only the event selection bits specified by the
+<parameter>bits_to_change</parameter>
+parameter are affected; any unspecified bits are left unchanged. To turn on
+event selection for an event, set the bit for the event in the
+<parameter>bits_to_change</parameter>
+parameter and set the corresponding bit in the
+<parameter>values_for_bits</parameter>
+parameter. To turn off event selection for an event, set the bit for the event
+in the
+<parameter>bits_to_change</parameter>
+parameter and do not set the corresponding bit in the
+<parameter>values_for_bits</parameter>
+parameter. The valid values for both of these parameters are an inclusive
+bitwise OR of the masks shown in <link linkend="table4.2">Table 4.2</link>.
+There is no interface to return
+your client’s current event selection mask. Clients cannot set other
+clients’ event selection masks.
+</para>
+
+
+<para>
+If a bit is not set in the
+<parameter>bits_to_change</parameter>
+parameter, but the corresponding bit is set in the
+<parameter>values_for_bits</parameter>
+parameter, a
+<errorname>BadMatch</errorname>
+protocol error results. If an undefined bit is set in either the
+<parameter>bits_to_change</parameter>
+or the
+<parameter>values_for_bits</parameter>
+parameter, a
+<errorname>BadValue</errorname>
+protocol error results.
+</para>
+
+
+<para>
+All event selection bits are initially zero for clients using the Xkb
+extension. Once you set some bits, they remain set for your client until you
+clear them via another call to
+<function>XkbSelectEvents</function>.
+</para>
+
+
+<para>
+<function>XkbSelectEvents</function>
+returns
+<symbol>False</symbol>
+if the Xkb extension has not been initialized and
+<symbol>True</symbol>
+otherwise.
+</para>
+
+
+<para>
+To select or deselect for a specific Xkb event and optionally place conditions
+on when events of that type are reported to your client, use
+<function>XkbSelectEventDetails</function>.
+This allows you to exercise a finer granularity of control over delivery of
+Xkb events with
+<function>XkbSelectEvents</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbSelectEventDetails"><primary><function>XkbSelectEventDetails</function></primary></indexterm>
+<funcsynopsis id="XkbSelectEventDetails">
+  <funcprototype>
+    <funcdef>Bool <function>XkbSelectEventDetails</function></funcdef>
+<!-- (
+<parameter>display, device_spec, event_type, bits_to_change</parameter>,
+<parameter>values_for_bits</parameter>
+) -->
+
+    <paramdef>Display *<parameter>display</parameter></paramdef>
+    <paramdef>unsigned int <parameter>device_spec</parameter></paramdef>
+    <paramdef>unsigned int <parameter>event_type</parameter></paramdef>
+    <paramdef>unsigned long int <parameter>bits_to_change</parameter></paramdef>
+    <paramdef>unsigned long int <parameter>values_for_bits</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>display</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>device_spec</parameter>
+    </term>
+    <listitem>
+      <para>
+        device ID, or <symbol>XkbUseCoreKbd</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>event_type</parameter>
+    </term>
+    <listitem>
+      <para>
+        Xkb event type of interest
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>bits_to_change</parameter>
+    </term>
+    <listitem>
+      <para>
+        event selection details
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>values_for_bits</parameter>
+    </term>
+    <listitem>
+      <para>
+        values for bits selected by <parameter>bits_to_change</parameter>
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+While
+<function>XkbSelectEvents</function>
+allows multiple events to be selected,
+<function>XkbSelectEventDetails</function>
+changes the selection criteria for a single type of Xkb event. The
+interpretation of the
+<parameter>bits_to_change</parameter>
+and
+<parameter>values_for_bits</parameter>
+masks depends on the event type in question.
+</para>
+
+
+<para>
+<function>XkbSelectEventDetails</function>
+changes the Xkb event selection mask for the keyboard specified by
+<parameter>device_spec</parameter>
+and the Xkb event specified by
+<parameter>event_type</parameter>.
+To turn on event selection for an event detail, set the bit for the detail in
+the
+<parameter>bits_to_change</parameter>
+parameter and set the corresponding bit in the
+<parameter>values_for_bits</parameter>
+parameter. To turn off event detail selection for a detail, set the bit for
+the detail in the
+<parameter>bits_to_change</parameter>
+parameter and do not set the corresponding bit in the
+<parameter>values_for_bits</parameter>
+parameter.
+</para>
+
+
+<para>
+If an invalid event type is specified, a
+<errorname>BadValue</errorname>
+protocol error results. If a bit is not set in the
+<parameter>bits_to_change</parameter>
+parameter, but the corresponding bit is set in the
+<parameter>values_for_bits</parameter>
+parameter, a
+<errorname>BadMatch</errorname>
+protocol error results. If an undefined bit is set in either the
+<parameter>bits_to_change</parameter>
+or the
+<parameter>values_for_bits</parameter>
+parameter, a
+<errorname>BadValue</errorname>
+protocol error results.
+</para>
+
+
+<para>
+For each type of Xkb event, the legal event details that you can specify in the
+<function>XkbSelectEventDetails</function>
+request are listed in the chapters that describe each event in detail.
+</para>
+
+
+<sect2 id='Event_Masks'>
+<title>Event Masks</title>
+
+<para>
+The X server reports the events defined by Xkb to your client application only
+if you have requested them via a call to
+<function>XkbSelectEvents</function>
+or
+<function>XkbSelectEventDetails</function>.
+Specify the event types in which you are interested in a mask, as described
+in <link linkend="Selecting_Xkb_Events">section 4.3</link>.
+</para>
+
+
+<para>
+<link linkend="table4.2">Table 4.2</link>
+lists the event mask constants that can be specified with the
+<function>XkbSelectEvents</function>
+request and the circumstances in which the mask should be specified.
+</para>
+
+<table id='table4.2' frame='topbot'>
+<title>XkbSelectEvents Mask Constants</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='3' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='2.0*'/>
+<colspec colname='c2' colwidth='1.0*'/>
+<colspec colname='c3' colwidth='2.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>Event Mask</entry>
+  <entry>Value</entry>
+  <entry>Notification Wanted</entry>
+</row>
+</thead>
+<tbody>
+  <row>
+    <entry>
+<symbol>XkbNewKeyboardNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;0)</entry>
+    <entry>Keyboard geometry change</entry>
+  </row>
+  <row>
+    <entry>
+      <symbol>XkbMapNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;1)</entry>
+    <entry>Keyboard mapping change</entry>
+  </row>
+  <row>
+    <entry>
+<para><symbol>XkbStateNotifyMask</symbol></para>
+    </entry>
+    <entry>(1L&lt;&lt;2)</entry>
+    <entry><para>Keyboard state change</para></entry>
+  </row>
+  <row>
+    <entry>
+<para><symbol>XkbControlsNotifyMask</symbol></para>
+    </entry>
+    <entry>(1L&lt;&lt;3)</entry>
+    <entry>Keyboard control change</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbIndicatorStateNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;4)</entry>
+    <entry>Keyboard indicator state change</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbIndicatorMapNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;5)</entry>
+    <entry>Keyboard indicator map change</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbNamesNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;6)</entry>
+    <entry>Keyboard name change</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbCompatMapNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;7)</entry>
+    <entry>Keyboard compat map change</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbBellNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;8)</entry>
+    <entry>Bell</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbActionMessageMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;9)</entry>
+    <entry>Action message</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbAccessXNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;10)</entry>
+    <entry>AccessX features</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbExtensionDeviceNotifyMask</symbol>
+    </entry>
+    <entry>(1L&lt;&lt;11)</entry>
+    <entry>Extension device</entry>
+  </row>
+  <row>
+    <entry>
+<symbol>XkbAllEventsMask</symbol>
+    </entry>
+    <entry>(0xFFF)</entry>
+    <entry>All Xkb events</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+</sect2>
+</sect1>
+<sect1 id='Unified_Xkb_Event_Type'>
+<title>Unified Xkb Event Type</title>
+<indexterm significance="preferred" zone="Unified_Xkb_Event_Type">
+<primary>events</primary><secondary><structname>XkbEvent</structname></secondary></indexterm>
+<indexterm significance="preferred" zone="Unified_Xkb_Event_Type">
+<primary><structname>XkbEvent</structname></primary></indexterm>
+
+<para>
+The
+<structname>XkbEvent</structname>
+structure is a union of the individual structures declared for each Xkb event
+type and for the core protocol
+<structname>XEvent</structname>
+type. Given an
+<structname>XkbEvent</structname>
+structure, you may use the
+<structfield>type</structfield>
+field to determine if the event is an Xkb event
+(<structfield>type</structfield>
+equals the Xkb base event code; see <link linkend="Initializing_the_Keyboard_Extension">section 2.4</link>). If the event is an Xkb
+event, you may then use the
+<structfield>any.xkb_type</structfield>
+field to determine the type of Xkb event and thereafter access the
+event-dependent components using the union member corresponding to the
+particular Xkb event type.
+</para>
+
+<para><programlisting>
+typedef union _XkbEvent {
+      int                            type;
+      XkbAnyEvent                    any;
+      XkbStateNotifyEvent            state;
+      XkbMapNotifyEvent              map;
+      XkbControlsNotifyEvent         ctrls;
+      XkbIndicatorNotifyEvent        indicators;
+      XkbBellNotifyEvent             bell;
+      XkbAccessXNotifyEvent          accessx;
+      XkbNamesNotifyEvent            names;
+      XkbCompatMapNotifyEvent        compat;
+      XkbActionMessageEvent          message;
+      XkbExtensionDeviceNotifyEvent  device;
+      XkbNewKeyboardNotifyEvent      new_kbd;
+      XEvent                         core;
+} <structname>XkbEvent</structname>;
+</programlisting></para>
+
+<para>
+This unified Xkb event type includes a normal
+<structname>XEvent</structname>
+as used by the core protocol, so it is straightforward for applications that
+use Xkb events to call the X library event functions without having to cast
+every reference. For example, to get the next event, you can simply declare a
+variable of type
+<structname>XkbEvent</structname>
+and call:
+
+<programlisting>XNextEvent(dpy,&amp;xkbev.core);</programlisting>
+</para>
+</sect1>
+</chapter>

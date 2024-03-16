@@ -1,0 +1,73 @@
+LIBRARY = pixman-1
+
+ifeq ($(shell echo ""),)
+# POSIX style shell
+mkdir_p = mkdir -p $1
+rm = $(RM) $1
+echo = echo "$1"
+else
+# DOS/Windows style shell
+mkdir_p = if not exist $(subst /,\,$1) md $(subst /,\,$1)
+echo = echo $1
+rm = del $(subst /,\,$1)
+endif
+
+CC = cl
+LD = link
+AR = lib
+PERL = perl
+
+ifneq ($(shell echo ""),)
+RM = del
+endif
+
+ifeq ($(top_builddir),)
+top_builddir = $(top_srcdir)
+endif
+
+CFG_VAR = $(CFG)
+ifeq ($(CFG_VAR),)
+CFG_VAR = release
+endif
+
+ifeq ($(CFG_VAR),debug)
+CFG_CFLAGS  = -MDd -Od -Zi
+CFG_LDFLAGS = -DEBUG
+else
+CFG_CFLAGS  = -MD -O2
+CFG_LDFLAGS =
+endif
+
+# Package definitions, to be used instead of those provided in config.h
+PKG_CFLAGS  = -DPACKAGE=$(LIBRARY) -DPACKAGE_VERSION="" -DPACKAGE_BUGREPORT=""
+
+BASE_CFLAGS = -nologo -I. -I$(top_srcdir) -I$(top_srcdir)/pixman
+
+PIXMAN_CFLAGS  = $(BASE_CFLAGS) $(PKG_CFLAGS) $(CFG_CFLAGS) $(CFLAGS)
+PIXMAN_LDFLAGS = -nologo $(CFG_LDFLAGS) $(LDFLAGS)
+PIXMAN_ARFLAGS = -nologo $(LDFLAGS)
+
+
+inform:
+ifneq ($(CFG),release)
+ifneq ($(CFG),debug)
+ifneq ($(CFG),)
+	@echo "Invalid specified configuration option: "$(CFG)"."
+	@echo
+	@echo "Possible choices for configuration are 'release' and 'debug'"
+	@exit 1
+endif
+	@echo "Using default RELEASE configuration... (use CFG=release or CFG=debug)"
+endif
+endif
+
+$(CFG_VAR):
+	@$(call mkdir_p,$@)
+
+$(CFG_VAR)/%.obj: %.c $(libpixman_headers) | $(CFG_VAR)
+	$(CC) -c $(PIXMAN_CFLAGS) -Fo"$@" $<
+
+clean: inform $(CFG_VAR)
+	-$(call rm,$(CFG_VAR)/*.exe $(CFG_VAR)/*.ilk $(CFG_VAR)/*.lib $(CFG_VAR)/*.obj $(CFG_VAR)/*.pdb)
+
+.PHONY: inform clean

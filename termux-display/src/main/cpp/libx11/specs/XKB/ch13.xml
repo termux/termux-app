@@ -1,0 +1,4291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Keyboard_Geometry'>
+<title>Keyboard Geometry</title>
+
+<para>
+The Xkb description of a keyboard includes an optional keyboard geometry that
+describes the physical appearance of the keyboard. Keyboard geometry describes
+the shape, location, and color of all keyboard keys or other visible keyboard
+components such as indicators. The information contained in a keyboard geometry
+is sufficient to allow a client program to draw an accurate two-dimensional
+image of the keyboard.
+</para>
+
+
+<para>
+You can retrieve a keyboard geometry from an X server that supports Xkb, or you
+can allocate it from scratch and initialize it in a client program. The
+keyboard geometry need not have any correspondence with the physical keyboard
+that is connected to the X server.
+</para>
+
+
+<para>
+Geometry measurements are specified in mm/10 units. The origin (0,0) is in the
+top left corner of the keyboard image. A component’s own origin is also its
+upper left corner. In some cases a component needs to be drawn rotated. For
+example, a special keyboard may have a section of keys arranged in rows in a
+rectangular area, but the entire rectangle may not be in alignment with the
+rest of the keyboard, and instead, it is rotated from horizontal by 30°.
+Rotation for a geometry object is specified in 1/10° increments about its
+origin. An example of a keyboard with rotated sections is shown in <link linkend="figure13.1">Figure 13.1</link>.
+</para>
+
+<figure id='figure13.1'>
+  <title>Rotated Keyboard Sections</title>
+  <mediaobject>
+   <imageobject> <imagedata format="SVG" fileref="XKBlib-7.svg"/>
+   </imageobject>
+  </mediaobject>
+</figure>
+
+
+<!-- <H5 CLASS="Figure">
+Rotated Keyboard Sections</H5>
+-->
+
+<para>
+Some geometry components include a
+<structfield>priority</structfield>,
+which indicates the order in which overlapping objects should be drawn.
+Objects should be drawn in order from highest priority (0) to lowest (255).
+</para>
+
+
+<para id='XkbGeometryRec'>
+<indexterm significance="preferred" zone="XkbGeometryRec">
+<primary><structname>XkbGeometryRec</structname></primary></indexterm>
+The keyboard geometry’s top-level description is stored in a
+<structname>XkbGeometryRec</structname>
+structure. This structure contains three types of information:
+</para>
+
+<orderedlist>
+  <listitem>
+    <para>
+Lists of items, not used to draw the basic keyboard, but indexed by the
+geometry descriptions that comprise the entire keyboard geometry (colors,
+geometry properties, key aliases, shapes)
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A number of singleton items that describe the keyboard as a whole (keyboard
+name, width and height, a color for the keyboard as a whole, and a color for
+keyboard key labels)
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A list of the keyboard’s sections and nonkey doodads
+    </para>
+  </listitem>
+</orderedlist>
+
+<para>
+The top-level geometry is described in more detail in the following.
+</para>
+
+
+<para>
+The lists of items used by components of the keyboard geometry description is
+as follows:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+The top-level keyboard geometry description includes a list of up to
+<symbol>XkbGeomMaxColors</symbol>
+(32)
+<firstterm>color names</firstterm>.
+A color name is a string whose interpretation is not specified by Xkb. The
+<structname>XkbColorRec</structname>
+structure provides a field for this name as well as a pixel field. The pixel
+field is a convenient place for an application to store a pixel value or color
+definition, if it needs to. All other geometry data structures refer to colors
+using their indices in this global list.
+  </para>
+</listitem>
+<listitem>
+  <para>
+The top-level keyboard geometry description includes a list of
+<firstterm>geometry properties</firstterm>.
+A geometry property associates an arbitrary string with an equally arbitrary
+name. Geometry properties can be used to provide hints to programs that display
+images of keyboards, but they are not interpreted by Xkb. No other geometry
+structures refer to geometry properties. As an example of a possible use of
+<structfield>properties</structfield>,
+consider the pause/break key on most PC keyboards: the <quote>break</quote>
+symbol is
+usually on the front of the key and is often a different color. A program might
+set a property to:
+  </para>
+  <para>
+LBL_PAUS = "{Pause/top/black,Break/front/red}"
+  </para>
+  <para>
+and use the property information to draw the key with a front label as well as
+a top label.
+  </para>
+</listitem>
+<listitem>
+  <para>
+The top-level keyboard geometry description includes a list of
+<firstterm>key aliases</firstterm>
+(see <xref linkend="Symbolic_Names" />). Key aliases allow the keyboard layout designer to assign
+multiple key names to a single key.
+  </para>
+<note><para>Key aliases defined in the geometry component of a keyboard mapping
+override those defined in the keycodes component of the server database, which
+are stored in the
+<structname>XkbNamesRec</structname>
+
+(<structfield>xkb-&gt;names</structfield>).
+Therefore, consider the key aliases defined by the geometry before
+considering key aliases supplied by the keycodes.</para></note>
+</listitem>
+<listitem>
+  <para>
+The top-level keyboard geometry description includes a list of
+<structfield>shapes</structfield>;
+other keyboard components refer to shapes by their index in this list. A
+shape consists of an arbitrary name of type Atom and one or more closed-polygon
+<structfield>outlines</structfield>.
+All points in an outline are specified relative to the origin of its
+enclosing shape, that is, whichever shape that contains this outline in its
+list of outlines. One outline is the primary outline. The primary outline is by
+default the first outline, or it can be optionally specified by the
+<structfield>primary</structfield>
+field in the
+<structname>XkbShapeRec</structname>
+structure. A keyboard display application can generate a simpler but still
+accurate keyboard image by displaying only the primary outlines for each shape.
+Nonrectangular keys must include a rectangular
+<firstterm>approximation</firstterm>
+as one of the outlines associated with the shape. The approximation is not
+normally displayed but can be used by very simple keyboard display applications
+to generate a recognizable but degraded image of the keyboard.
+  </para>
+</listitem>
+</itemizedlist>
+
+<para>
+The
+<structname>XkbGeometryRec</structname>
+top-level geometry description contains the following information that
+pertains to the keyboard as a whole:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+A
+<firstterm>keyboard symbolic name</firstterm>
+of type Atom to help users identify the keyboard.
+  </para>
+</listitem>
+<listitem>
+  <para>
+The
+<structfield>width</structfield>
+and
+<structfield>height</structfield>
+of the keyboard, in mm/10. For nonrectangular keyboards, the width and height
+describe the smallest bounding box that encloses the outline of the keyboard.
+  </para>
+</listitem>
+<listitem>
+  <para>
+The
+<firstterm>base color</firstterm>
+of the keyboard is the predominant color on the keyboard and is used as the
+default color for any components whose color is not explicitly specified.
+  </para>
+</listitem>
+<listitem>
+  <para>
+The
+<firstterm>label color</firstterm>
+is the color used to draw the labels on most of the keyboard keys.
+  </para>
+</listitem>
+<listitem>
+  <para>
+The
+<firstterm>label font</firstterm>
+is a string that describes the font used to draw labels on most keys; label
+fonts are arbitrary strings, because Xkb does not specify the format or name
+space for font names.
+  </para>
+</listitem>
+</itemizedlist>
+
+<para>
+The keyboard is subdivided into named
+<structfield>sections</structfield>
+of related keys and doodads. The sections and doodads on the keyboard are
+listed in the
+<structname>XkbGeometryRec</structname>
+top-level keyboard geometry description. A section is composed of keys that
+are physically together and logically related. <link linkend="figure13.2">Figure 13.2</link> shows a keyboard
+that is divided into four sections. A
+<structfield>doodad</structfield>
+describes some visible aspect of the keyboard that is not a key and is not a
+section.
+</para>
+
+<figure id='figure13.2'>
+  <title>Keyboard with Four Sections</title>
+  <mediaobject>
+   <imageobject> <imagedata format="SVG" fileref="XKBlib-8.svg"/>
+   </imageobject>
+  </mediaobject>
+</figure>
+
+<!--
+<H5 CLASS="Figure">
+Keyboard with Four Sections</H5>
+-->
+
+<sect1 id='Shapes_and_Outlines'>
+<title>Shapes and Outlines</title>
+
+<para>
+A
+<structfield>shape</structfield>,
+used to draw keyboard components and stored in a
+<structname>XkbShapeRec</structname>
+structure, has:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+An arbitrary name of type Atom.
+  </para>
+</listitem>
+<listitem>
+  <para>
+Bounds (two x and y coordinates) that describe the corners of a rectangle
+containing the shape’s top surface outline.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A list of one or more outlines (described below).
+  </para>
+</listitem>
+<listitem>
+  <para>
+Optional pointers to a primary and an approximation outline (described below).
+If either of these pointers is
+<symbol>NULL</symbol>,
+the default primary/approximation outline is the first one in the list of
+outlines for the shape.
+  </para>
+</listitem>
+</itemizedlist>
+
+<para>
+An
+<firstterm>outline</firstterm>,
+stored in a
+<structname>XkbOutlineRec</structname>
+structure, is a list of one or more points that describes a single
+closed-polygon, as follows:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+A list with a single point describes a rectangle with one corner at the origin
+of the shape (0,0) and the opposite corner at the specified point.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A list of two points describes a rectangle with one corner at the position
+specified by the first point and the opposite corner at the position specified
+by the second point.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A list of three or more points describes an arbitrary polygon. If necessary,
+the polygon is automatically closed by connecting the last point in the list
+with the first.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A nonzero value for the
+<structfield>corner_radius</structfield>
+field specifies that the corners of the polygon should be drawn as circles
+with the specified radius.
+  </para>
+</listitem>
+</itemizedlist>
+
+<para>
+All points in an outline are specified relative to the origin of the enclosing
+shape. Points in an outline may have negative values for the X and Y coordinate.
+</para>
+
+
+<para>
+One outline is the primary outline; a keyboard display application can generate
+a simple but still accurate keyboard image by displaying only the primary
+outlines for each shape. The default primary outline is the first in a
+shape’s list of outlines. If the
+<structfield>primary</structfield>
+field of the
+<structname>XkbShapeRec</structname>
+structure is not
+<symbol>NULL</symbol>,
+it points to the primary outline. A rectangular
+<firstterm>approximation</firstterm>
+must be included for nonrectangular keys as one of the outlines associated
+with the shape; the approximation is not normally displayed but can be used by
+very simple keyboard display applications to generate a recognizable but
+degraded image of the keyboard.
+</para>
+
+</sect1>
+<sect1 id='Sections'>
+<title>Sections</title>
+
+<para>
+As previously noted, a keyboard is subdivided into
+<structfield>sections</structfield>
+of related keys. Each section has its own coordinate system — if a section
+is rotated, the coordinates of any components within the section are
+interpreted relative to the edges that were on the top and left before
+rotation. The components that make up a section, stored in a
+<structname>XkbSectionRec</structname>,
+include:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+An arbitrary name of type Atom.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A priority, to indicate drawing order. 0 is the highest priority, 255 the
+lowest.
+  </para>
+</listitem>
+<listitem>
+  <para>
+Origin of the section, relative to the origin of the keyboard.
+  </para>
+</listitem>
+<listitem>
+  <para>
+The width and height and the angle of rotation.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A list of
+<structfield>rows</structfield>.
+A row is a list of horizontally or vertically adjacent keys. Horizontal rows
+parallel the (prerotation) top of the section, and vertical rows parallel the
+(prerotation) left of the section. All keys in a horizontal row share a common
+top coordinate; all keys in a vertical row share a left coordinate. <link linkend="figure13.3">Figure 13.3</link>
+shows the alpha section from the keyboard shown in <link linkend="figure13.2">Figure 13.2</link>, divided into
+rows. Rows and keys are defined below.
+  </para>
+</listitem>
+</itemizedlist>
+
+<figure id='figure13.3'>
+  <title>Rows in a Section</title>
+  <mediaobject>
+    <imageobject> <imagedata format="SVG" fileref="XKBlib-9.svg"/>
+    </imageobject>
+  </mediaobject>
+</figure>
+
+
+
+<!--
+<H5 CLASS="Figure">
+Rows in a Section</H5>
+-->
+<itemizedlist>
+<listitem>
+  <para>
+An optional list of
+<structfield>doodads</structfield>;
+any type of doodad can be enclosed within a section. Position and angle of
+rotation are relative to the origin and angle of rotation of the sections that
+contain them. Priority for doodads in a section is relative to the other
+components of the section, not to the keyboard as a whole.
+  </para>
+</listitem>
+<listitem>
+  <para>
+An optional
+<firstterm>overlay</firstterm>
+with a name of type Atom and a list of overlay rows (described below).
+  </para>
+</listitem>
+<listitem>
+  <para>
+Bounds (two x and y coordinates) that describe the corners of a rectangle
+containing the entire section.
+  </para>
+</listitem>
+</itemizedlist>
+</sect1>
+<sect1 id='Rows_and_Keys'>
+<title>Rows and Keys</title>
+
+<para>
+A row description
+(<structname>XkbRowRec</structname>)
+consists of the coordinates of its origin relative to its enclosing section,
+a flag indicating whether the row is horizontal or vertical, and a list of keys
+in the row.
+</para>
+
+
+<para>
+A key description
+(<structname>XkbKeyRec</structname>)
+consists of a key name, a shape, a key color, and a gap. The key name should
+correspond to one of the keys named in the keyboard names description, the
+shape specifies the appearance of the key, and the key color specifies the
+color of the key (not the label on the key; the label color is stored in the
+<structname>XkbGeometryRec</structname>).
+Keys are normally drawn immediately adjacent to one another from left to
+right (or top to bottom) within a row. The gap field specifies the distance
+between a key and its predecessor.
+</para>
+
+
+</sect1>
+<sect1 id='Doodads'>
+<title>Doodads</title>
+
+<para>
+Doodads can be global to the keyboard or part of a section. Doodads have
+symbolic names of arbitrary length. The only doodad name whose interpretation
+is specified by Xkb is <quote>Edges</quote>, which, if present, describes the
+outline of the entire keyboard.
+</para>
+
+
+<para>
+Each doodad’s origin is stored in fields named
+<structfield>left</structfield>
+and
+<structfield>top</structfield>,
+which are the coordinates of the doodad’s origin relative to its enclosing
+object, whether it be a section or the top-level keyboard. The priority for
+doodads that are listed in the top-level geometry is relative to the other
+doodads listed in the top-level geometry and the sections listed in the
+top-level geometry. The priority for doodads listed in a section are relative
+to the other components of the section. Each doodad is stored in a structure
+with a
+<structfield>type</structfield>
+field, which specifies the type of doodad.
+</para>
+
+<para>
+Xkb supports five types of doodads:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+An
+<firstterm>indicator doodad</firstterm>
+describes one of the physical keyboard indicators. Indicator doodads specify
+the shape of the indicator, the indicator color when it is lit
+(<emphasis>on_color</emphasis>)
+and the indicator color when it is dark
+(<emphasis>off_color</emphasis>).
+
+  </para>
+</listitem>
+<listitem>
+  <para>
+An
+<firstterm>outline doodad</firstterm>
+describes some aspect of the keyboard to be drawn as one or more hollow,
+closed polygons. Outline doodads specify the shape, color, and angle of
+rotation about the doodad origin at which they should be drawn.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A
+<firstterm>solid doodad</firstterm>
+describes some aspect of the keyboard to be drawn as one or more filled
+polygons. Solid doodads specify the shape, color, and angle of rotation about
+the doodad origin at which they should be drawn.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A
+<firstterm>text doodad</firstterm>
+describes a text label somewhere on the keyboard. Text doodads specify the
+label string, the font and color to use when drawing the label, and the angle
+of rotation of the doodad about its origin.
+  </para>
+</listitem>
+<listitem>
+  <para>
+A
+<firstterm>logo doodad</firstterm>
+is a catch-all, which describes some other visible element of the keyboard. A
+logo doodad is essentially an outline doodad with an additional symbolic name
+that describes the element to be drawn. If a keyboard display program
+recognizes the symbolic name, it can draw something appropriate within the
+bounding region of the shape specified in the doodad. If the symbolic name does
+not describe a recognizable image, it should draw an outline using the
+specified shape, outline, and angle of rotation. The Xkb extension does not
+specify the interpretation of logo names.
+  </para>
+</listitem>
+</itemizedlist>
+
+<para>
+The structures these doodads are stored in and the values of the
+<structfield>type</structfield>
+fields are shown in <link linkend="table13.1">Table 13.1</link>.
+</para>
+
+<table id='table13.1' frame='topbot'>
+<title>Doodad Types</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='3' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='1.0*'/>
+<colspec colname='c2' colwidth='1.0*'/>
+<colspec colname='c3' colwidth='1.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>Doodad</entry>
+  <entry>Structure</entry>
+  <entry>Type</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry>
+<emphasis>indicator doodad</emphasis>
+</entry>
+    <entry>
+<structname>XkbIndicatorDoodadRec</structname>
+</entry>
+    <entry>
+<symbol>XkbIndicatorDoodad</symbol>
+</entry>
+  </row>
+  <row>
+    <entry>
+<emphasis>outline doodad</emphasis>
+</entry>
+    <entry>
+<structname>XkbShapeDoodadRec</structname>
+</entry>
+    <entry>
+<symbol>XkbOutlineDoodad</symbol>
+</entry>
+  </row>
+  <row>
+    <entry>
+<emphasis>solid doodad</emphasis>
+</entry>
+    <entry>
+<structname>XkbShapeDoodadRec</structname>
+</entry>
+    <entry>
+<symbol>XkbSolidDoodad</symbol>
+</entry>
+  </row>
+  <row>
+    <entry>
+<emphasis>text doodad</emphasis>
+</entry>
+    <entry>
+<structname>XkbTextDoodadRec</structname>
+</entry>
+    <entry>
+<symbol>XkbTextDoodad</symbol>
+</entry>
+  </row>
+  <row>
+    <entry>
+<emphasis>logo doodad</emphasis>
+</entry>
+    <entry>
+<structname>XkbLogoDoodadRec</structname>
+</entry>
+    <entry>
+<symbol>XkbLogoDoodad</symbol>
+</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+</sect1>
+<sect1 id='Overlay_Rows_and_Overlay_Keys'>
+<title>Overlay Rows and Overlay Keys</title>
+
+<para>
+An
+<firstterm>overlay row</firstterm>
+
+(<structname>XkbOverlayRowRec</structname>)
+contains a pointer to the row it overlays and a list of
+<firstterm>overlay keys</firstterm>.
+</para>
+
+
+<para>
+Each overlay key definition
+(<structname>XkbOverlayKeyRec</structname>)
+indicates a key that can yield multiple keycodes and consists of a field
+named
+<structfield>under</structfield>,
+which specifies the primary name of the key and a field named
+<structfield>over</structfield>,
+which specifies the name for the key when the overlay keycode is selected.
+The key specified in
+<structfield>under</structfield>
+must be a member of the section that contains the overlay key definition,
+while the key specified in over must not be.
+</para>
+
+
+</sect1>
+<sect1 id='Drawing_a_Keyboard_Representation'>
+<title>Drawing a Keyboard Representation</title>
+
+<para>
+To draw a representation of the keyboard, draw in the following order:
+
+<programlisting>
+     Draw the top-level keyboard as a rectangle, using its width and height.
+     For each component (section or doodad) of the top-level geometry, in priority order:
+        If component is a section
+           For each row, in the order it appears in the section
+              Draw keys in the order they appear in the row
+           Draw doodads within the section in priority order.
+        Else draw doodad
+</programlisting></para>
+
+</sect1>
+<sect1 id='Geometry_Data_Structures'>
+<title>Geometry Data Structures</title>
+
+<para>
+In the following figures, a solid arrow denotes a pointer to an array of
+structures or a singleton structure. A dotted arrow denotes an index or a
+pointer into the array.
+</para>
+
+<!--
+<MAP NAME="XKBlib-10">
+</MAP>
+-->
+<figure id='figure13.4'>
+  <title>Xkb Geometry Data Structures</title>
+  <mediaobject>
+   <imageobject> <imagedata format="SVG" fileref="XKBlib-10.svg"/>
+   </imageobject>
+  </mediaobject>
+</figure>
+
+<!--
+<H5 CLASS="Figure">
+Xkb Geometry Data Structures</H5>
+<P CLASS="SmallBody">
+&nbsp;</P>
+<MAP NAME="XKBlib-11">
+</MAP>
+-->
+<figure id='figure13.5'>
+  <title>Xkb Geometry Data Structures (Doodads)</title>
+  <mediaobject>
+   <imageobject> <imagedata format="SVG" fileref="XKBlib-11.svg"/>
+   </imageobject>
+  </mediaobject>
+</figure>
+
+<!--
+<H5 CLASS="Figure">
+Xkb Geometry Data Structures (Doodads)</H5>
+-->
+
+<!--
+<MAP NAME="XKBlib-12">
+</MAP>
+-->
+<figure id='figure13.6'>
+  <title>Xkb Geometry Data Structures (Overlays)</title>
+  <mediaobject>
+   <imageobject> <imagedata format="SVG" fileref="XKBlib-12.svg"/>
+   </imageobject>
+  </mediaobject>
+</figure>
+
+<!--
+<H5 CLASS="Figure">
+Xkb Geometry Data Structures (Overlays)</H5>
+-->
+<para><programlisting>
+typedef struct _XkbGeometry {    /* top-level keyboard geometry structure */
+    Atom              name;            /* keyboard name */
+    unsigned short    width_mm;        /* keyboard width in <superscript>mm</superscript>/<subscript>10</subscript> */
+    unsigned short    height_mm;       /* keyboard height in <superscript>mm</superscript>/<subscript>10</subscript> */
+    char *            label_font;      /* font for key labels */
+    XkbColorPtr       label_color;     /* color for key labels
+                                          - pointer into colors array */
+    XkbColorPtr       base_color;      /* color for basic keyboard
+                                          - pointer into colors array */
+    unsigned short    sz_properties;   /* size of properties array */
+    unsigned short    sz_colors;       /* size of colors array */
+    unsigned short    sz_shapes;       /* size of shapes array */
+    unsigned short    sz_sections;     /* size of sections array */
+    unsigned short    sz_doodads;      /* size of doodads array */
+    unsigned short    sz_key_aliases;  /* size of key aliases array */
+    unsigned short    num_properties;  /* number of properties in the
+                                           properties array */
+    unsigned short    num_colors;      /* number of colors in the
+                                           colors array */
+    unsigned short    num_shapes;      /* number of shapes in the
+                                           shapes array */
+    unsigned short    num_sections;    /* number of sections in the
+                                           sections array */
+    unsigned short    num_doodads;     /* number of doodads in the
+                                           doodads array */
+    unsigned short    num_key_aliases; /* number of key aliases in the
+                                           key_aliases array */
+    XkbPropertyPtr    properties;      /* properties array */
+    XkbColorPtr       colors;          /* colors array */
+    XkbShapePtr       shapes;          /* shapes array */
+    XkbSectionPtr     sections;        /* sections array */
+    XkbDoodadPtr      doodads;         /* doodads array */
+    XkbKeyAliasPtr    key_aliases;     /* key aliases array */
+} <structname>XkbGeometryRec</structname>, *XkbGeometryPtr;
+</programlisting></para>
+
+<para>
+The
+<structfield>doodads</structfield>
+array is only for doodads not contained in any of the
+<structfield>sections</structfield>
+that has its own
+<structfield>doodads</structfield>.
+The key aliases contained in the
+<structfield>key_aliases</structfield>
+array take precedence over any defined in the keycodes component of the
+keyboard description.
+</para>
+
+<para><programlisting>
+typedef struct _XkbProperty {
+    char *      name;                   /* property name */
+    char *      value;                  /* property value */
+} <structname>XkbPropertyRec</structname>, *XkbPropertyPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbColor {
+    unsigned int      pixel;            /* color */
+    char *            spec;             /* color name */
+} <structname>XkbColorRec</structname>, *XkbColorPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbKeyAliasRec {
+    char      real[XkbKeyNameLength];   /* real name of the key */
+    char      alias[XkbKeyNameLength];  /* alias for the key */
+} <structname>XkbKeyAliasRec</structname>, *XkbKeyAliasPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbPoint {              /* x, y coordinates */
+    short      x;
+    short      y;
+} <structname>XkbPointRec</structname>, *XkbPointPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbOutline {
+    unsigned short      num_points;     /* number of points in the outline */
+    unsigned short      sz_points;      /* size of the points array */
+    unsigned short      corner_radius;  /* draw corners as circles
+                                           with this radius */
+    XkbPointPtr         points;         /* array of points defining
+                                           the outline */
+} <structname>XkbOutlineRec</structname>, *XkbOutlinePtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbBounds {
+    short      x1, y1;       /* upper left corner of the bounds, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short      x2, y2;       /* lower right corner of the bounds, in <superscript>mm</superscript>/<subscript>10</subscript> */
+} <structname>XkbBoundsRec</structname>, *XkbBoundsPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbShape {
+    Atom              name;             /* shape’s name */
+    unsigned short    num_outlines;     /* number of outlines for the shape */
+    unsigned short    sz_outlines;      /* size of the outlines array */
+    XkbOutlinePtr     outlines;         /* array of outlines for the shape */
+    XkbOutlinePtr     approx;           /* pointer into the array to the
+                                           approximating outline */
+    XkbOutlinePtr     primary;          /* pointer into the array to the
+                                           primary outline */
+    XkbBoundsRec      bounds;           /* bounding box for the shape;
+                                           encompasses all outlines */
+} <structname>XkbShapeRec</structname>, *XkbShapePtr;
+</programlisting></para>
+
+<para>
+If
+<structfield>approx</structfield>
+and/or
+<structfield>primary</structfield>
+is
+<symbol>NULL</symbol>,
+the default value is used. The default primary outline is the first element
+in the outlines array, as is the default approximating outline.
+</para>
+
+<para><programlisting>
+typedef struct _XkbKey {           /* key in a row */
+    XkbKeyNameRec    name;         /* key name */
+    short            gap;          /* gap in <superscript>mm</superscript>/<subscript>10</subscript> from previous key in row */
+    unsigned char    shape_ndx;    /* index of shape for key */
+    unsigned char    color_ndx;    /* index of color for key body */
+} <structname>XkbKeyRec</structname>, *XkbKeyPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbRow {           /* row in a section */
+    short               top;       /* top coordinate of row origin,
+                                      relative to section’s origin */
+    short               left;      /* left coordinate of row origin,
+                                      relative to section’s origin */
+    unsigned short      num_keys;  /* number of keys in the keys array */
+    unsigned short      sz_keys;   /* size of the keys array */
+    int                 vertical;  /* <symbol>True</symbol> &rArr;vertical row,
+                                      <symbol>False</symbol> &rArr;horizontal row */
+    XkbKeyPtr           keys;      /* array of keys in the row */
+    XkbBoundsRec        bounds;    /* bounding box for the row */
+} <structname>XkbRowRec</structname>, *XkbRowPtr;
+</programlisting></para>
+
+<para>
+<structfield>top</structfield>
+and
+<structfield>left</structfield>
+are in
+<superscript>mm</superscript>/<subscript>10</subscript>.
+</para>
+
+<para><programlisting>
+typedef struct _XkbOverlayRec {
+    Atom              name;           /* overlay name */
+    XkbSectionPtr     section_under;  /* the section under this overlay */
+    unsigned short    num_rows;       /* number of rows in the rows array */
+    unsigned short    sz_rows;        /* size of the rows array */
+    XkbOverlayRowPtr  rows;           /* array of rows in the overlay */
+    XkbBoundsPtr      bounds;         /* bounding box for the overlay */
+} <structname>XkbOverlayRec</structname>, *XkbOverlayPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbOverlayRow {
+    unsigned short      row_under;    /* index into the row under this
+                                         overlay row */
+    unsigned short      num_keys;     /* number of keys in the keys array */
+    unsigned short      sz_keys;      /* size of the keys array */
+    XkbOverlayKeyPtr    keys;         /* array of keys in the overlay row */
+} <structname>XkbOverlayRowRec</structname>, *XkbOverlayRowPtr;
+</programlisting></para>
+
+<para>
+<structfield>row_under</structfield>
+is an index into the array of
+<structfield>rows</structfield>
+in the section under this overlay. The section under this overlay row is the
+one pointed to by
+<structfield>section_under</structfield>
+in this overlay row’s
+<structname>XkbOverlayRec</structname>.
+</para>
+
+<para><programlisting>
+typedef struct _XkbOverlayKey {
+    XkbKeyNameRec      over;      /* name of this overlay key */
+    XkbKeyNameRec      under;     /* name of the key under this overlay key */
+} <structname>XkbOverlayKeyRec</structname>, *XkbOverlayKeyPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbSection {
+    Atom            name;          /* section name */
+    unsigned char   priority;      /* drawing priority, 0&rArr;highest, 255&rArr;lowest */
+    short           top;           /* top coordinate of section origin */
+    short           left;          /* left coordinate of row origin */
+    unsigned short  width;         /* section width, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    unsigned short  height;        /* section height, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short           angle;         /* angle of section rotation,
+                                      counterclockwise */
+    unsigned short  num_rows;      /* number of rows in the rows array */
+    unsigned short  num_doodads;   /* number of doodads in the doodads array */
+    unsigned short  num_overlays;  /* number of overlays in the overlays array */
+    unsigned short  sz_rows;       /* size of the rows array */
+    unsigned short  sz_doodads;    /* size of the doodads array */
+    unsigned short  sz_overlays;   /* size of the overlays array */
+    XkbRowPtr       rows;          /* section rows array */
+    XkbDoodadPtr    doodads;       /* section doodads array */
+    XkbBoundsRec    bounds;        /* bounding box for the section,
+                                      before rotation */
+    XkbOverlayPtr   overlays;      /* section overlays array */
+} <structname>XkbSectionRec</structname>, *XkbSectionPtr;
+</programlisting></para>
+
+<para>
+<structfield>top</structfield>
+and
+<structfield>left</structfield>
+are the origin of the section, relative to the origin of the keyboard, in
+<superscript>mm</superscript>/<subscript>10</subscript>.
+<structfield>angle</structfield>
+is in
+<superscript>1</superscript>/<subscript>10</subscript>
+degrees.
+</para>
+
+<sect2 id='DoodadRec_Structures'>
+<title>DoodadRec Structures</title>
+
+<para>
+The doodad arrays in the
+<structname>XkbGeometryRec</structname>
+and the
+<structname>XkbSectionRec</structname>
+may contain any of the doodad structures and types shown in
+<link linkend="table13.1">Table 13.1</link>.
+</para>
+
+
+<para>
+The doodad structures form a union:
+</para>
+
+<para><programlisting>
+typedef union _XkbDoodad {
+      XkbAnyDoodadRec        any;
+      XkbShapeDoodadRec      shape;
+      XkbTextDoodadRec       text;
+      XkbIndicatorDoodadRec  indicator;
+      XkbLogoDoodadRec       logo;
+} <structname>XkbDoodadRec</structname>, *XkbDoodadPtr;
+</programlisting></para>
+
+<para>
+The
+<structfield>top</structfield>
+and
+<structfield>left</structfield>
+coordinates of each doodad are the coordinates of the origin of the doodad
+relative to the keyboard’s origin if the doodad is in the
+<structname>XkbGeometryRec</structname>
+doodad array, and with respect to the section’s origin if the doodad is in a
+<structname>XkbSectionRec</structname>
+doodad array. The
+<structfield>color_ndx</structfield>
+or
+<structfield>on_color_ndx</structfield>
+and
+<structfield>off_color_ndx</structfield>
+fields are color indices into the
+<structname>XkbGeometryRec</structname>’s
+color array and are the colors to draw the doodads with. Similarly, the
+<structfield>shape_ndx</structfield>
+fields are indices into the
+<structname>XkbGeometryRec</structname>’s
+shape array.
+</para>
+
+<para><programlisting>
+typedef struct _XkbShapeDoodad {
+    Atom             name;         /* doodad name */
+    unsigned char    type;         /* <symbol>XkbOutlineDoodad</symbol>
+                                      or <symbol>XkbSolidDoodad</symbol> */
+    unsigned char    priority;     /* drawing priority,
+                                       0&rArr;highest, 255&rArr;lowest */
+    short            top;          /* top coordinate, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            left;         /* left coordinate, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            angle;        /* angle of rotation, clockwise,
+                                      in <superscript>1</superscript>/<subscript>10</subscript> degrees */
+    unsigned short   color_ndx;    /* doodad color */
+    unsigned short   shape_ndx;    /* doodad shape */
+} <structname>XkbShapeDoodadRec</structname>, *XkbShapeDoodadPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbTextDoodad {
+    Atom             name;         /* doodad name */
+    unsigned char    type;         /* <symbol>XkbTextDoodad</symbol> */
+    unsigned char    priority;     /* drawing priority,
+                                     0&rArr;highest, 255&rArr;lowest */
+    short            top;          /* top coordinate, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            left;         /* left coordinate, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            angle;        /* angle of rotation, clockwise,
+                                      in <superscript>1</superscript>/<subscript>10</subscript> degrees */
+    short            width;        /* width in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            height;       /* height in <superscript>mm</superscript>/<subscript>10</subscript> */
+    unsigned short   color_ndx;    /* doodad color */
+    char *           text;         /* doodad text */
+    char *           font;         /* arbitrary font name for doodad text */
+} <structname>XkbTextDoodadRec</structname>, *XkbTextDoodadPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbIndicatorDoodad {
+    Atom             name;         /* doodad name */
+    unsigned char    type;         /* <symbol>XkbIndicatorDoodad</symbol> */
+    unsigned char    priority;     /* drawing priority, 0&rArr;highest, 255&rArr;lowest */
+    short            top;          /* top coordinate, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            left;         /* left coordinate, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            angle;        /* angle of rotation, clockwise,
+                                      in <superscript>1</superscript>/<subscript>10</subscript> degrees */
+    unsigned short   shape_ndx;    /* doodad shape */
+    unsigned short   on_color_ndx; /* color for doodad if indicator is on */
+    unsigned short   off_color_ndx;/* color for doodad if indicator is off */
+} <structname>XkbIndicatorDoodadRec</structname>, *XkbIndicatorDoodadPtr;
+</programlisting></para>
+
+<para><programlisting>
+typedef struct _XkbLogoDoodad {
+    Atom             name;         /* doodad name */
+    unsigned char    type;         /* <symbol>XkbLogoDoodad</symbol> */
+    unsigned char    priority;     /* drawing priority, 0&rArr;highest, 255&rArr;lowest */
+    short            top;          /* top coordinate, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            left;         /* left coordinate, in <superscript>mm</superscript>/<subscript>10</subscript> */
+    short            angle;        /* angle of rotation, clockwise,
+                                      in <superscript>1</superscript>/<subscript>10</subscript> degrees */
+    unsigned short   color_ndx;    /* doodad color */
+    unsigned short   shape_ndx;    /* doodad shape */
+    char *           logo_name;    /* text for logo */
+} <structname>XkbLogoDoodadRec</structname>, *XkbLogoDoodadPtr
+</programlisting></para>
+
+</sect2>
+</sect1>
+<sect1 id='Getting_Keyboard_Geometry_From_the_Server'>
+<title>Getting Keyboard Geometry From the Server</title>
+
+<para>
+You can load a keyboard geometry as part of the keyboard description returned
+by
+<function>XkbGetKeyboard</function>.
+However, if a keyboard description has been previously loaded, you can
+instead obtain the geometry by calling the
+<function>XkbGetGeometry</function>.
+In this case, the geometry returned is the one associated with the keyboard
+whose device ID is contained in the keyboard description.
+</para>
+
+<para>
+To load a keyboard geometry if you already have the keyboard description, use
+<function>XkbGetGeometry</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbGetGeometry"><primary><function>XkbGetGeometry</function></primary></indexterm>
+<funcsynopsis id="XkbGetGeometry">
+  <funcprototype>
+    <funcdef>Status <function>XkbGetGeometry</function></funcdef>
+<!-- (
+<parameter>dpy</parameter>,
+<parameter>xkb</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>XkbDescPtr <parameter>xkb</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>xkb</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description that contains the ID for the keyboard and into
+        which the geometry should be loaded
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbGetGeometry</function>
+can return
+<errorname>BadValue</errorname>,
+<errorname>BadImplementation</errorname>,
+<errorname>BadName</errorname>,
+<errorname>BadAlloc</errorname>,
+or
+<errorname>BadLength</errorname>
+errors or
+<symbol>Success</symbol>
+if it succeeds.
+</para>
+
+<para>
+It is also possible to load a keyboard geometry by name. The X server maintains
+a database of keyboard components (see <xref linkend="Server_Database_of_Keyboard_Components" />). To load a keyboard geometry
+description from this database by name, use
+<function>XkbGetNamedGeometry</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbGetNamedGeometry"><primary><function>XkbGetNamedGeometry</function></primary></indexterm>
+<funcsynopsis id="XkbGetNamedGeometry">
+  <funcprototype>
+    <funcdef>Status <function>XkbGetNamedGeometry</function></funcdef>
+<!-- (
+<parameter>dpy</parameter>,
+<parameter>xkb</parameter>,
+<parameter>name</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>XkbDescPtr <parameter>xkb</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>xkb</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description into which the geometry should be loaded
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the geometry to be loaded
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbGetNamedGeometry</function>
+can return
+<errorname>BadName</errorname>
+if the
+<parameter>name</parameter>
+cannot be found.
+</para>
+
+</sect1>
+<sect1 id='Using_Keyboard_Geometry'>
+<title>Using Keyboard Geometry</title>
+
+<para>
+Xkb provides a number of convenience functions to help use a keyboard geometry.
+These include functions to return the bounding box of a shape’s top surface
+and to update the bounding box of a shape row or section.
+</para>
+
+<para>
+A shape is made up of a number of outlines. Each outline is a polygon made up
+of a number of points. The bounding box of a shape is a rectangle that contains
+all the outlines of that shape.
+</para>
+
+<figure id='figure13.7'>
+  <title>Key Surface, Shape Outlines, and Bounding Box</title>
+  <mediaobject>
+   <imageobject> <imagedata format="SVG" fileref="XKBlib-13.svg"/>
+   </imageobject>
+   </mediaobject>
+</figure>
+
+
+<!--
+<H5 CLASS="Figure">
+Key Surface, Shape Outlines, and Bounding Box</H5>
+-->
+
+<para>
+To determine the bounding box of the top surface of a shape, use
+<function>XkbComputeShapeTop</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbComputeShapeTop"><primary><function>XkbComputeShapeTop</function></primary></indexterm>
+<funcsynopsis id="XkbComputeShapeTop">
+  <funcprototype>
+    <funcdef>Bool <function>XkbComputeShapeTop</function></funcdef>
+<!-- (
+<parameter>shape</parameter>,
+<parameter>bounds_rtrn</parameter>
+) -->
+
+    <paramdef>XkbShapePtr <parameter>shape</parameter></paramdef>
+    <paramdef>XkbBoundsPtr <parameter>bounds_rtrn</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>shape</parameter>
+    </term>
+    <listitem>
+      <para>
+        shape to be examined
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>bounds_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the bounding box for the shape
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbComputeShapeTop</function>
+returns a
+<structname>BoundsRec</structname>
+that contains two x and y coordinates. These coordinates describe the corners
+of a rectangle that contains the outline that describes the top surface of the
+shape. The top surface is defined to be the approximating outline if the
+<structfield>approx</structfield>
+field of
+<parameter>shape</parameter>
+is not
+<symbol>NULL</symbol>.
+If
+<structfield>approx</structfield>
+is
+<symbol>NULL</symbol>,
+the top surface is defined as the last outline in the
+<parameter>shape</parameter>’s
+array of outlines.
+<function>XkbComputeShapeTop</function>
+returns
+<symbol>False</symbol>
+if
+<parameter>shape</parameter>
+is
+<symbol>NULL</symbol>
+or if there are no outlines for the shape; otherwise, it returns
+<symbol>True</symbol>.
+</para>
+
+
+<para>
+A
+<structname>ShapeRec</structname>
+contains a
+<structname>BoundsRec</structname>
+that describes the bounds of the shape. If you add or delete an outline to or
+from a shape, the bounding box must be updated. To update the bounding box of a
+shape, use <function>XkbComputeShapeBounds</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbComputeShapeBounds"><primary><function>XkbComputeShapeBounds</function></primary></indexterm>
+<funcsynopsis id="XkbComputeShapeBounds">
+  <funcprototype>
+    <funcdef>Bool <function>XkbComputeShapeBounds</function></funcdef>
+<!-- (
+<parameter>shape</parameter>
+) -->
+
+    <paramdef>XkbShapePtr <parameter>shape</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>shape</parameter>
+    </term>
+    <listitem>
+      <para>
+        shape to be examined
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbComputeShapeBounds</function>
+updates the
+<structname>BoundsRec</structname>
+contained in the
+<parameter>shape</parameter>
+by examining all the outlines of the shape and setting the
+<structname>BoundsRec</structname>
+to the minimum x and minimum y, and maximum x and maximum y values found in
+those outlines.
+<function>XkbComputeShapeBounds</function>
+returns
+<symbol>False</symbol>
+if
+<parameter>shape</parameter>
+is
+<symbol>NULL</symbol>
+or if there are no outlines for the shape; otherwise, it returns
+<symbol>True</symbol>.
+</para>
+
+<para>
+If you add or delete a key to or from a row, or if you update the shape of one
+of the keys in that row, you may need to update the bounding box of that row.
+To update the bounding box of a row, use <function>XkbComputeRowBounds</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbComputeRowBounds"><primary><function>XkbComputeRowBounds</function></primary></indexterm>
+<funcsynopsis id="XkbComputeRowBounds">
+  <funcprototype>
+    <funcdef>Bool <function>XkbComputeRowBounds</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>section</parameter>,
+<parameter>row</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>XkbRowPtr <parameter>row</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry that contains the <parameter>section</parameter>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section that contains the row
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>row</parameter>
+    </term>
+    <listitem>
+      <para>
+        row to be examined and updated
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbComputeRowBounds</function>
+checks the bounds of all keys in the
+<parameter>row</parameter>
+and updates the bounding box of the row if necessary.
+<function>XkbComputeRowBounds</function>
+returns
+<symbol>False</symbol>
+if any of the arguments is
+<symbol>NULL</symbol>;
+otherwise, it returns
+<symbol>True</symbol>.
+</para>
+
+<para>
+If you add or delete a row to or from a section, or if you change the geometry
+of any of the rows in that section, you may need to update the bounding box for
+that section. To update the bounding box of a section, use
+<function>XkbComputeSectionBounds</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbComputeSectionBounds"><primary><function>XkbComputeSectionBounds</function></primary></indexterm>
+<funcsynopsis id="XkbComputeSectionBounds">
+  <funcprototype>
+    <funcdef>Bool <function>XkbComputeSectionBounds</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>section</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry that contains the <parameter>section</parameter>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section to be examined and updated
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbComputeSectionBounds</function>
+examines all the rows of the
+<parameter>section</parameter>
+and updates the bounding box of that section so that it contains all rows.
+<function>XkbComputeSectionBounds</function>
+returns
+<symbol>False</symbol>
+if any of the arguments is
+<symbol>NULL</symbol>;
+otherwise, it returns
+<symbol>True</symbol>.
+</para>
+
+<para>
+Keys that can generate multiple keycodes may be associated with multiple names.
+Such keys have a primary name and an alternate name. To find the alternate name
+by using the primary name for a key that is part of an overlay, use
+<function>XkbFindOverlayForKey</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbFindOverlayForKey"><primary><function>XkbFindOverlayForKey</function></primary></indexterm>
+<funcsynopsis id="XkbFindOverlayForKey">
+  <funcprototype>
+    <funcdef>char *<function>XkbFindOverlayForKey</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>section</parameter>,
+<parameter>under</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>char *<parameter>under</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry that contains the <parameter>section</parameter>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section to be searched for matching keys
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>under</parameter>
+    </term>
+    <listitem>
+      <para>
+        .primary name of the key to be considered
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbFindOverlayForKey</function>
+uses the primary name of the key,
+<parameter>under</parameter>,
+to look up the alternate name, which it returns.
+</para>
+
+
+</sect1>
+<sect1 id='Adding_Elements_to_a_Keyboard_Geometry'>
+<title>Adding Elements to a Keyboard Geometry</title>
+
+<para>
+Xkb provides functions to add a single new element to the top-level keyboard
+geometry. In each case the
+<structfield>num_<replaceable>*</replaceable></structfield>
+fields of the corresponding structure is incremented by 1. These functions do
+not change
+<structfield>sz_<replaceable>*</replaceable></structfield>
+unless there is no more room in the array. Some of these functions fill in the
+values of the element’s structure from the arguments. For other functions,
+you must explicitly write code to fill the structure’s elements.
+</para>
+
+
+<para>
+The top-level geometry description includes a list of
+<firstterm>geometry properties</firstterm>.
+A geometry property associates an arbitrary string with an equally arbitrary
+name. Programs that display images of keyboards can use geometry properties as
+hints, but they are not interpreted by Xkb. No other geometry structures refer
+to geometry properties.
+</para>
+
+
+<para>
+To add one property to an existing keyboard geometry description, use
+<function>XkbAddGeomProperty</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbAddGeomProperty"><primary><function>XkbAddGeomProperty</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomProperty">
+  <funcprototype>
+    <funcdef>XkbPropertyPtr <function>XkbAddGeomProperty</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>name</parameter>,
+<parameter>value</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>char *<parameter>name</parameter></paramdef>
+    <paramdef>char *<parameter>value</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the new property
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>value</parameter>
+    </term>
+    <listitem>
+      <para>
+        value for the new property
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAddGeomProperty</function>
+adds one property with the specified
+<parameter>name</parameter>
+and
+<parameter>value</parameter>
+to the keyboard geometry specified by geom.
+<function>XkbAddGeomProperty</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space for
+the property. To allocate space for an arbitrary number of properties, use the
+XkbAllocGeomProps function.
+</para>
+
+
+<para>
+To add one key alias to an existing keyboard geometry description, use
+<function>XkbAddGeomKeyAlias</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomKeyAlias"><primary><function>XkbAddGeomKeyAlias</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomKeyAlias">
+  <funcprototype>
+    <funcdef>XkbKeyAliasPtr <function>XkbAddGeomKeyAlias</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>alias, real</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>char *<parameter>alias</parameter></paramdef>
+    <paramdef>char *<parameter>real</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>alias</parameter>
+    </term>
+    <listitem>
+      <para>
+        alias to be added
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>real</parameter>
+    </term>
+    <listitem>
+      <para>
+        real name to be bound to the new alias
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAddGeomKeyAlias</function>
+adds one key alias with the value alias to the geometry geom, and associates
+it with the key whose real name is real.
+<function>XkbAddGeomKeyAlias</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space for
+the alias. To allocate space for an arbitrary number of aliases, use the
+XkbAllocGeomKeyAliases function.
+</para>
+
+
+<para>
+To add one color name to an existing keyboard geometry description, use
+<function>XkbAddGeomColor</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomColor"><primary><function>XkbAddGeomColor</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomColor">
+  <funcprototype>
+    <funcdef>XkbColorPtr <function>XkbAddGeomColor</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>spec</parameter>,
+<parameter>pixel</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>char *<parameter>spec</parameter></paramdef>
+    <paramdef>unsigned int <parameter>pixel</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>spec</parameter>
+    </term>
+    <listitem>
+      <para>
+        color to be added
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>pixel</parameter>
+    </term>
+    <listitem>
+      <para>
+        color to be added
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAddGeomColor</function>
+adds the specified color
+<structfield>name</structfield>
+and
+<parameter>pixel</parameter>
+to the specified geometry
+<parameter>geom</parameter>.
+The top-level geometry description includes a list of up to
+<emphasis>MaxColors</emphasis>
+(32)
+<emphasis>color names</emphasis>.
+A color
+<structfield>name</structfield>
+is a string whose interpretation is not specified by Xkb and neither is the
+<parameter>pixel</parameter>
+value’s interpretation. All other geometry data structures refer to colors
+using their indices in this global list or pointers to colors in this list.
+<function>XkbAddGeomColor</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space for
+the color. To allocate space for an arbitrary number of colors to a geometry,
+use the
+<function>XkbAllocGeomColors</function>
+function.
+</para>
+
+<para>
+To add one outline to an existing shape, use
+<function>XkbAddGeomOutline</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbAddGeomOutline"><primary><function>XkbAddGeomOutline</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomOutline">
+  <funcprototype>
+    <funcdef>XkbOutlinePtr <function>XkbAddGeomOutline</function></funcdef>
+<!-- (
+<parameter>shape</parameter>,
+<parameter>sz_points</parameter>
+) -->
+
+    <paramdef>XkbShapePtr <parameter>shape</parameter></paramdef>
+    <paramdef>int <parameter>sz_points</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>shape</parameter>
+    </term>
+    <listitem>
+      <para>
+        shape to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sz_points</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of points to be reserved
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+An outline consists of an arbitrary number of points.
+<function>XkbAddGeomOutline</function>
+adds an outline to the specified
+<parameter>shape</parameter>
+by reserving
+<parameter>sz_points</parameter>
+points for it. The new outline is allocated and zeroed.
+<function>XkbAddGeomOutline</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space. To
+allocate space for an arbitrary number of outlines to a shape, use
+XkbAllocGeomOutlines.
+</para>
+
+
+<para>
+To add a shape to a keyboard geometry, use
+<function>XkbAddGeomShape</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomShape"><primary><function>XkbAddGeomShape</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomShape">
+  <funcprototype>
+    <funcdef>XkbShapePtr <function>XkbAddGeomShape</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>name</parameter>,
+<parameter>sz_outlines</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+    <paramdef>int <parameter>sz_outlines</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the new shape
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sz_outlines</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of outlines to be reserved
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+A geometry contains an arbitrary number of shapes, each of which is made up of
+an arbitrary number of outlines.
+<function>XkbAddGeomShape</function>
+adds a shape to a geometry
+<parameter>geom</parameter>
+by allocating space for
+<parameter>sz_outlines</parameter>
+outlines for it and giving it the name specified by name. If a shape with name
+<parameter>name</parameter>
+already exists in the geometry, a pointer to the existing shape is returned.
+<function>XkbAddGeomShape</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space. To
+allocate space for an arbitrary number of geometry shapes, use
+<function>XkbAllocGeomShapes</function>.
+</para>
+
+
+<para>
+To add one key at the end of an existing row of keys, use
+<function>XkbAddGeomKey</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomKey"><primary><function>XkbAddGeomKey</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomKey">
+  <funcprototype>
+    <funcdef>XkbKeyPtr <function>XkbAddGeomKey</function></funcdef>
+<!-- (
+<parameter>row</parameter>
+) -->
+
+    <paramdef>XkbRowPtr <parameter>row</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>row</parameter>
+    </term>
+    <listitem>
+      <para>
+        row to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+Keys are grouped into rows.
+<function>XkbAddGeomKey</function>
+adds one key to the end of the specified
+<parameter>row</parameter>.
+The key is allocated and zeroed.
+<function>XkbAddGeomKey</function>
+returns
+<symbol>NULL</symbol>
+if
+<parameter>row</parameter>
+is empty or if it was not able to allocate space for the key. To allocate
+space for an arbitrary number of keys to a row, use XkbAllocGeomKeys.
+</para>
+
+
+<para>
+To add one section to an existing keyboard geometry, use
+<function>XkbAddGeomSection</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomSection"><primary><function>XkbAddGeomSection</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomSection">
+  <funcprototype>
+    <funcdef>XkbSectionPtr <function>XkbAddGeomSection</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>name</parameter>,
+<parameter>sz_rows</parameter>,
+<parameter>sz_doodads</parameter>,
+<parameter>sz_overlays</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+    <paramdef>int <parameter>sz_rows</parameter></paramdef>
+    <paramdef>int <parameter>sz_doodads</parameter></paramdef>
+    <paramdef>int <parameter>sz_overlays</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the new section
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sz_rows</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of rows to reserve in the section
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sz_doodads</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of doodads to reserve in the section
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sz_overlays</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of overlays to reserve in the section
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+A keyboard geometry contains an arbitrary number of sections.
+<function>XkbAddGeomSection</function>
+adds one section to an existing keyboard geometry
+<parameter>geom</parameter>.
+The new section contains space for the number of rows, doodads, and overlays
+specified by
+<parameter>sz_rows</parameter>,
+<parameter>sz_doodads</parameter>,
+and
+<parameter>sz_overlays</parameter>.
+The new section is allocated and zeroed and given the name specified by
+<parameter>name</parameter>.
+If a section with name
+<parameter>name</parameter>
+already exists in the geometry, a pointer to the existing section is
+returned.
+<function>XkbAddGeomSection</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space for
+the section. To allocate space for an arbitrary number of sections to a
+geometry, use XkbAllocGeomSections.
+</para>
+
+
+<para>
+To add a row to a section, use
+<function>XkbAddGeomRow</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomRow"><primary><function>XkbAddGeomRow</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomRow">
+  <funcprototype>
+    <funcdef>XkbRowPtr <function>XkbAddGeomRow</function></funcdef>
+<!-- (
+<parameter>section</parameter>,
+<parameter>sz_keys</parameter>
+) -->
+
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>int <parameter>sz_keys</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sz_keys</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of keys to be reserved
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+One of the components of a keyboard geometry section is one or more rows of
+keys.
+<function>XkbAddGeomRow</function>
+adds one row to the specified
+<parameter>section</parameter>.
+The newly created row contains space for the number of keys specified in
+<parameter>sz_keys</parameter>.
+They are allocated and zeroed, but otherwise uninitialized.
+<function>XkbAddGeomRow</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space for
+the row. To allocate space for an arbitrary number of rows to a section, use
+the XkbAllocGeomRows function.
+</para>
+
+
+<para>
+To add one doodad to a section of a keyboard geometry or to the top-level
+geometry, use
+<function>XkbAddGeomDoodad</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomDoodad"><primary><function>XkbAddGeomDoodad</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomDoodad">
+  <funcprototype>
+    <funcdef>XkbDoodadPtr <function>XkbAddGeomDoodad</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>section</parameter>,
+<parameter>name</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry to which the doodad is added
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section, if any, to which the doodad is added
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the new doodad
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+A
+<structfield>doodad</structfield>
+describes some visible aspect of the keyboard that is not a key and is not a
+section.
+<function>XkbAddGeomDoodad</function>
+adds a doodad with name specified by name to the geometry
+<parameter>geom</parameter>
+if section is
+<symbol>NULL</symbol>
+or to the section of the geometry specified by section if
+<parameter>section</parameter>
+is not
+<symbol>NULL</symbol>.
+<function>XkbAddGeomDoodad</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space for
+the doodad. If there is already a doodad with the name
+<parameter>name</parameter>
+in the doodad array for the geometry (if
+<parameter>section</parameter>
+is
+<symbol>NULL</symbol>)
+or the section (if
+<parameter>section</parameter>
+is non-
+<symbol>NULL</symbol>),
+a pointer to that doodad is returned. To allocate space for an arbitrary
+number of doodads to a section, use the XkbAllocGeomSectionDoodads function. To
+allocate space for an arbitrary number of doodads to a keyboard geometry, use
+the XkbAllocGeomDoodads function.
+</para>
+
+
+<para>
+To add one overlay to a section, use
+<function>XkbAddGeomOverlay</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomOverlay"><primary><function>XkbAddGeomOverlay</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomOverlay">
+  <funcprototype>
+    <funcdef>XkbOverlayPtr <function>XkbAddGeomOverlay</function></funcdef>
+<!-- (
+<parameter>section</parameter>,
+<parameter>name</parameter>,
+<parameter>sz_rows</parameter>
+) -->
+
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+    <paramdef>int <parameter>sz_rows</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section to which an overlay will be added
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the overlay
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sz_rows</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of rows to reserve in the overlay
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAddGeomOverlay</function>
+adds an overlay with the specified name to the specified
+<parameter>section</parameter>.
+The new overlay is created with space allocated for sz_rows rows. If an
+overlay with name
+<parameter>name</parameter>
+already exists in the section, a pointer to the existing overlay is
+returned.
+<function>XkbAddGeomOverlay</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space for
+the overlay. To allocate space for an arbitrary number of overlays to a
+section, use the XkbAllocGeomOverlay function.
+</para>
+
+
+<para>
+To add a row to an existing overlay, use
+<function>XkbAddGeomOverlayRow</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomOverlayRow"><primary><function>XkbAddGeomOverlayRow</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomOverlayRow">
+  <funcprototype>
+    <funcdef>XkbOverlayRowPtr <function>XkbAddGeomOverlayRow</function></funcdef>
+<!-- (
+<parameter>overlay</parameter>,
+<parameter>row_under, sz_keys</parameter>
+) -->
+
+    <paramdef>XkbOverlayPtr <parameter>overlay</parameter></paramdef>
+    <paramdef>XkbRowPtr <parameter>row_under</parameter></paramdef>
+    <paramdef>int <parameter>sz_keys</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>overlay</parameter>
+    </term>
+    <listitem>
+      <para>
+        overlay to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>row_under</parameter>
+    </term>
+    <listitem>
+      <para>
+        row to be overlaid in the section <parameter>overlay</parameter>
+         overlays
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sz_keys</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of keys to reserve in the row
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAddGeomOverlayRow</function>
+adds one row to the
+<parameter>overlay</parameter>.
+The new row contains space for
+<parameter>sz_keys</parameter>
+keys. If
+<parameter>row_under</parameter>
+specifies a row that doesn’t exist on the underlying section,
+<function>XkbAddGeomOverlayRow</function>
+returns
+<symbol>NULL</symbol>
+and doesn’t change the overlay.
+<function>XkbAddGeomOverlayRow</function>
+returns
+<symbol>NULL</symbol>
+if any of the parameters is empty or if it was not able to allocate space for
+the overlay.
+</para>
+
+
+<para>
+To add a key to an existing overlay row, use
+<function>XkbAddGeomOverlayKey</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAddGeomOverlayKey"><primary><function>XkbAddGeomOverlayKey</function></primary></indexterm>
+<funcsynopsis id="XkbAddGeomOverlayKey">
+  <funcprototype>
+    <funcdef>XkbOverlayKeyPtr <function>XkbAddGeomOverlayKey</function></funcdef>
+<!-- (
+<parameter>overlay</parameter>,
+<parameter>row, under</parameter>
+) -->
+
+    <paramdef>XkbOverlayPtr <parameter>overlay</parameter></paramdef>
+    <paramdef>XkbRowPtr <parameter>row</parameter></paramdef>
+    <paramdef>char *<parameter>under</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>overlay</parameter>
+    </term>
+    <listitem>
+      <para>
+        overlay to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>row</parameter>
+    </term>
+    <listitem>
+      <para>
+        row in overlay to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>under</parameter>
+    </term>
+    <listitem>
+      <para>
+        primary name of the key to be considered
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAddGeomOverlayKey</function>
+adds one key to the
+<parameter>row</parameter>
+in the
+<parameter>overlay</parameter>.
+If there is no key named
+<parameter>under</parameter>
+in the row of the underlying section,
+<function>XkbAddGeomOverlayKey</function>
+returns
+<symbol>NULL</symbol>.
+</para>
+
+
+</sect1>
+<sect1 id='Allocating_and_Freeing_Geometry_Components'>
+<title>Allocating and Freeing Geometry Components</title>
+
+<para>
+Xkb provides a number of functions to allocate and free subcomponents of a
+keyboard geometry. Use these functions to create or modify keyboard geometries.
+Note that these functions merely allocate space for the new element(s), and it
+is up to you to fill in the values explicitly in your code. These allocation
+functions increase
+<structfield>sz_<replaceable>*</replaceable></structfield>
+but never touch
+<structfield>num_<replaceable>*</replaceable></structfield>
+(unless there is an allocation failure, in which case they reset both
+<structfield>sz_<replaceable>*</replaceable></structfield>
+and
+<structfield>num_<replaceable>*</replaceable></structfield>
+to zero). These functions return
+<symbol>Success</symbol>
+if they succeed,
+<errorname>BadAlloc</errorname>
+if they are not able to allocate space, or
+<errorname>BadValue</errorname>
+if a parameter is not as expected.
+</para>
+
+
+<para>
+To allocate space for an arbitrary number of outlines to a shape, use
+XkbAllocGeomOutlines.
+</para>
+
+<indexterm significance="preferred" zone="XkbAllocGeomOutlines"><primary><function>XkbAllocGeomOutlines</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomOutlines">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomOutlines</function></funcdef>
+<!-- (
+<parameter>shape</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbShapePtr <parameter>shape</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>shape</parameter>
+    </term>
+    <listitem>
+      <para>
+        shape for which outlines should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new outlines required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomOutlines</function>
+allocates space for
+<parameter>num_needed</parameter>
+outlines in the specified
+<parameter>shape</parameter>.
+The outlines are not initialized.
+</para>
+
+
+<para>
+To free geometry outlines, use
+<function>XkbFreeGeomOutlines</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomOutlines"><primary><function>XkbFreeGeomOutlines</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomOutlines">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomOutlines</function></funcdef>
+<!-- (
+<parameter>shape</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbShapePtr <parameter>shape</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>shape</parameter>
+    </term>
+    <listitem>
+      <para>
+        shape in which outlines should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first outline to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of outlines to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all outlines are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all outlines are freed regardless of the value of first or count. Otherwise,
+count outlines are freed beginning with the one specified by first.
+</para>
+
+
+<para>
+To allocate space for an arbitrary number of keys to a row, use
+XkbAllocGeomKeys.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomKeys"><primary><function>XkbAllocGeomKeys</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomKeys">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomKeys</function></funcdef>
+<!-- (
+<parameter>row</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbRowPtr <parameter>row</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>row</parameter>
+    </term>
+    <listitem>
+      <para>
+        row to which keys should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new keys required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomKeys</function>
+allocates num_needed keys and adds them to the row. No initialization of the
+keys is done.
+</para>
+
+
+<para>
+To free geometry keys, use
+<function>XkbFreeGeomKeys</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomKeys"><primary><function>XkbFreeGeomKeys</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomKeys">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomKeys</function></funcdef>
+<!-- (
+<parameter>row</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbRowPtr <parameter>row</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>row</parameter>
+    </term>
+    <listitem>
+      <para>
+        row in which keys should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first key to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of keys to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all keys are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all keys are freed regardless of the value of first or count. Otherwise,
+count keys are freed beginning with the one specified by first.
+</para>
+
+
+<para>
+To allocate geometry properties, use
+<function>XkbAllocGeomProps</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomProps"><primary><function>XkbAllocGeomProps</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomProps">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomProps</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry for which properties should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new properties required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomProps</function>
+allocates space for num_needed properties and adds them to the specified
+geometry
+<parameter>geom</parameter>.
+No initialization of the properties is done. A geometry property associates
+an arbitrary string with an equally arbitrary name. Geometry properties can be
+used to provide hints to programs that display images of keyboards, but they
+are not interpreted by Xkb. No other geometry structures refer to geometry
+properties.
+</para>
+
+
+<para>
+To free geometry properties, use
+<function>XkbFreeGeomProperties</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomProperties"><primary><function>XkbFreeGeomProperties</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomProperties">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomProperties</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry in which properties should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first property to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of properties to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all properties are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all properties are freed regardless of the value of first or count.
+Otherwise, count properties are freed beginning with the one specified by first.
+</para>
+
+
+<para>
+To allocate geometry key aliases, use
+<function>XkbAllocGeomKeyAliases</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomKeyAliases"><primary><function>XkbAllocGeomKeyAliases</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomKeyAliases">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomKeyAliases</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry for which key aliases should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new key aliases required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomKeyAliases</function>
+allocates space for num_needed key aliases and adds them to the specified
+geometry
+<parameter>geom</parameter>.
+A key alias is a pair of strings that associates an alternate name for a key
+with the real name for that key.
+</para>
+
+
+<para>
+To free geometry key aliases, use
+<function>XkbFreeGeomKeyAliases</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomKeyAliases"><primary><function>XkbFreeGeomKeyAliases</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomKeyAliases">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomKeyAliases</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry in which key aliases should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first key alias to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of key aliases to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all key aliases are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all aliases in the top level of the specified geometry
+<parameter>geom</parameter>
+are freed regardless of the value of first or count. Otherwise, count aliases
+in
+<parameter>geom</parameter>
+are freed beginning with the one specified by first.
+</para>
+
+
+<para>
+To allocate geometry colors, use
+<function>XkbAllocGeomColors</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomColors"><primary><function>XkbAllocGeomColors</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomColors">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomColors</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry for which colors should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new colors required.
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomColors</function>
+allocates space for num_needed colors and adds them to the specified geometry
+<parameter>geom</parameter>.
+A color name is a string whose interpretation is not specified by Xkb. All
+other geometry data structures refer to colors using their indices in this
+global list or pointers to colors in this list.
+</para>
+
+
+<para>
+To free geometry colors, use
+<function>XkbFreeGeomColors</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomColors"><primary><function>XkbFreeGeomColors</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomColors">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomColors</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry in which colors should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first color to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of colors to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all colors are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all colors are freed regardless of the value of first or count. Otherwise,
+count colors are freed beginning with the one specified by first.
+</para>
+
+
+<para>
+To allocate points in an outline, use
+<function>XkbAllocGeomPoints</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomPoints"><primary><function>XkbAllocGeomPoints</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomPoints">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomPoints</function></funcdef>
+<!-- (
+<parameter>outline</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbOutlinePtr <parameter>outline</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>outline</parameter>
+    </term>
+    <listitem>
+      <para>
+        outline for which points should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new points required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomPoints</function>
+allocates space for
+<parameter>num_needed</parameter>
+points in the specified
+<parameter>outline</parameter>.
+The points are not initialized.
+</para>
+
+
+<para>
+To free points in a outline, use
+<function>XkbFreeGeomPoints</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomPoints"><primary><function>XkbFreeGeomPoints</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomPoints">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomPoints</function></funcdef>
+<!-- (
+<parameter>outline</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbOutlinePtr <parameter>outline</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>outline</parameter>
+    </term>
+    <listitem>
+      <para>
+        outline in which points should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first point to be freed.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of points to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all points are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all points are freed regardless of the value of first and count. Otherwise,
+the number of points specified by count are freed, beginning with the point
+specified by first in the specified outline.
+</para>
+
+
+<para>
+To allocate space for an arbitrary number of geometry shapes, use
+<function>XkbAllocGeomShapes</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomShapes"><primary><function>XkbAllocGeomShapes</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomShapes">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomShapes</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry for which shapes should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new shapes required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomShapes</function>
+allocates space for
+<parameter>num_needed</parameter>
+shapes in the specified geometry
+<parameter>geom</parameter>.
+The shapes are not initialized.
+</para>
+
+
+<para>
+To free geometry shapes, use
+<function>XkbFreeGeomShapes</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomShapes"><primary><function>XkbFreeGeomShapes</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomShapes">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomShapes</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry in which shapes should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first shape to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of shapes to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all shapes are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all shapes in the geometry are freed regardless of the values of first and
+count. Otherwise, count shapes are freed, beginning with the shape specified by
+first.
+</para>
+
+
+<para>
+To allocate geometry sections, use
+<function>XkbAllocGeomSections</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomSections"><primary><function>XkbAllocGeomSections</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomSections">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomSections</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry for which sections should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new sections required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomSections</function>
+allocates num_needed sections and adds them to the geometry geom. No
+initialization of the sections is done.
+</para>
+
+
+<para>
+To free geometry sections, use
+<function>XkbFreeGeomSections</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomSections"><primary><function>XkbFreeGeomSections</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomSections">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomSections</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry in which sections should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first section to be freed.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of sections to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all sections are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all sections are freed regardless of the value of first and count. Otherwise,
+the number of sections specified by count are freed, beginning with the section
+specified by first in the specified geometry.
+</para>
+
+
+<para>
+To allocate rows in a section, use
+<function>XkbAllocGeomRows</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomRows"><primary><function>XkbAllocGeomRows</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomRows">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomRows</function></funcdef>
+<!-- (
+<parameter>section</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section for which rows should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new rows required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomRows</function>
+allocates num_needed rows and adds them to the section. No initialization of
+the rows is done.
+</para>
+
+
+<para>
+To free rows in a section, use
+<function>XkbFreeGeomRows</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomRows"><primary><function>XkbFreeGeomRows</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomRows">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomRows</function></funcdef>
+<!-- (
+<parameter>section</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section in which rows should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first row to be freed.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of rows to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all rows are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all rows are freed regardless of the value of first and count. Otherwise, the
+number of rows specified by count are freed, beginning with the row specified
+by first in the specified section.
+</para>
+
+
+<para>
+To allocate overlays in a section, use
+<function>XkbAllocGeomOverlays</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomOverlays"><primary><function>XkbAllocGeomOverlays</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomOverlays">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomOverlays</function></funcdef>
+<!-- (
+<parameter>section</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section for which overlays should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new overlays required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomOverlays</function>
+allocates num_needed overlays and adds them to the section. No initialization
+of the overlays is done.
+</para>
+
+
+<para>
+To free rows in an section, use
+<function>XkbFreeGeomOverlays</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomOverlays"><primary><function>XkbFreeGeomOverlays</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomOverlays">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomOverlays</function></funcdef>
+<!-- (
+<parameter>section</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section in which overlays should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first overlay to be freed.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of overlays to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all overlays are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all overlays are freed regardless of the value of first and count. Otherwise,
+the number of overlays specified by count are freed, beginning with the overlay
+specified by first in the specified section.
+</para>
+
+
+<para>
+To allocate rows in a overlay, use
+<function>XkbAllocGeomOverlayRows</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomOverlayRows"><primary><function>XkbAllocGeomOverlayRows</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomOverlayRows">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomOverlayRows</function></funcdef>
+<!-- (
+<parameter>overlay</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbOverlayPtr <parameter>overlay</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>overlay</parameter>
+    </term>
+    <listitem>
+      <para>
+        overlay for which rows should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new rows required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomOverlayRows</function>
+allocates num_needed rows and adds them to the overlay. No initialization of
+the rows is done.
+</para>
+
+
+<para>
+To free rows in an overlay, use
+<function>XkbFreeGeomOverlayRows</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomOverlayRows"><primary><function>XkbFreeGeomOverlayRows</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomOverlayRows">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomOverlayRows</function></funcdef>
+<!-- (
+<parameter>overlay</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbSectionPtr <parameter>overlay</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>overlay</parameter>
+    </term>
+    <listitem>
+      <para>
+        section in which rows should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first row to be freed.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of rows to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all rows are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all rows are freed regardless of the value of first and count. Otherwise, the
+number of rows specified by count are freed, beginning with the row specified
+by first in the specified overlay.
+</para>
+
+
+<para>
+To allocate keys in an overlay row, use
+<function>XkbAllocGeomOverlayKeys</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomOverlayKeys"><primary><function>XkbAllocGeomOverlayKeys</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomOverlayKeys">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomOverlayKeys</function></funcdef>
+<!-- (
+<parameter>row</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbOverlayRowPtr <parameter>row</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>row</parameter>
+    </term>
+    <listitem>
+      <para>
+        row for which keys should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new rows required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomOverlayKeys</function>
+allocates num_needed keys and adds them to the row. No initialization of the
+keys is done.
+</para>
+
+
+<para>
+To free keys in an overlay row, use
+<function>XkbFreeGeomOverlayKeys</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomOverlayKeys"><primary><function>XkbFreeGeomOverlayKeys</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomOverlayKeys">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomOverlayKeys</function></funcdef>
+<!-- (
+<parameter>row</parameter>,
+<parameter>first</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbOverlayRowPtr <parameter>row</parameter></paramdef>
+    <paramdef>int <parameter>first</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>row</parameter>
+    </term>
+    <listitem>
+      <para>
+        row in which keys should be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>first</parameter>
+    </term>
+    <listitem>
+      <para>
+        first key to be freed.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of keys to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all keys are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+all keys are freed regardless of the value of first and count. Otherwise, the
+number of keys specified by count are freed, beginning with the key specified
+by first in the specified row.
+</para>
+
+
+<para>
+To allocate doodads that are global to a keyboard geometry, use
+<function>XkbAllocGeomDoodads</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomDoodads"><primary><function>XkbAllocGeomDoodads</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomDoodads">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomDoodads</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry for which doodads should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new doodads required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomDoodads</function>
+allocates num_needed doodads and adds them to the specified geometry
+<parameter>geom</parameter>.
+No initialization of the doodads is done.
+</para>
+
+
+<para>
+To allocate doodads that are specific to a section, use
+<function>XkbAllocGeomSectionDoodads</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeomSectionDoodads"><primary><function>XkbAllocGeomSectionDoodads</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeomSectionDoodads">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeomSectionDoodads</function></funcdef>
+<!-- (
+<parameter>section</parameter>,
+<parameter>num_needed</parameter>
+) -->
+
+    <paramdef>XkbSectionPtr <parameter>section</parameter></paramdef>
+    <paramdef>int <parameter>num_needed</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>section</parameter>
+    </term>
+    <listitem>
+      <para>
+        section for which doodads should be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>num_needed</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of new doodads required
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeomSectionDoodads</function>
+allocates num_needed doodads and adds them to the specified
+<parameter>section</parameter>.
+No initialization of the doodads is done.
+</para>
+
+
+<para>
+To free geometry doodads, use
+<function>XkbFreeGeomDoodads</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeomDoodads"><primary><function>XkbFreeGeomDoodads</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeomDoodads">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeomDoodads</function></funcdef>
+<!-- (
+<parameter>doodads</parameter>,
+<parameter>count</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbDoodadPtr <parameter>doodads</parameter></paramdef>
+    <paramdef>int <parameter>count</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>doodads</parameter>
+    </term>
+    <listitem>
+      <para>
+        doodads to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>count</parameter>
+    </term>
+    <listitem>
+      <para>
+        number of doodads to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; all doodads are freed
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If
+<parameter>free_all</parameter>
+is
+<symbol>True</symbol>,
+all doodads in the array are freed, regardless of the value of count.
+Otherwise, count doodads are freed.
+</para>
+
+
+<para>
+To allocate an entire geometry, use
+<function>XkbAllocGeometry</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbAllocGeometry"><primary><function>XkbAllocGeometry</function></primary></indexterm>
+<funcsynopsis id="XkbAllocGeometry">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocGeometry</function></funcdef>
+<!-- (
+<parameter>xkb</parameter>,
+<parameter>sizes</parameter>
+) -->
+
+    <paramdef>XkbDescPtr <parameter>xkb</parameter></paramdef>
+    <paramdef>XkbGeometrySizesPtr <parameter>sizes</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>xkb</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description for which geometry is to be allocated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>sizes</parameter>
+    </term>
+    <listitem>
+      <para>
+        initial sizes for all geometry components
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbAllocGeometry</function>
+allocates a keyboard geometry and adds it to the keyboard description
+specified by xkb. The keyboard description should be obtained via the
+XkbGetKeyboard or XkbAllockeyboard functions. The sizes parameter specifies the
+number of elements to be reserved for the subcomponents of the keyboard
+geometry and can be zero or more. These subcomponents include the properties,
+colors, shapes, sections, and doodads.
+</para>
+
+
+<para>
+To free an entire geometry, use
+<function>XkbFreeGeometry</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbFreeGeometry"><primary><function>XkbFreeGeometry</function></primary></indexterm>
+<funcsynopsis id="XkbFreeGeometry">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeGeometry</function></funcdef>
+<!-- (
+<parameter>geom</parameter>,
+<parameter>which</parameter>,
+<parameter>free_all</parameter>
+) -->
+
+    <paramdef>XkbGeometryPtr <parameter>geom</parameter></paramdef>
+    <paramdef>unsigned int <parameter>which</parameter></paramdef>
+    <paramdef>Bool <parameter>free_all</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>geom</parameter>
+    </term>
+    <listitem>
+      <para>
+        geometry to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>which</parameter>
+    </term>
+    <listitem>
+      <para>
+        mask of geometry components to be freed
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>free_all</parameter>
+    </term>
+    <listitem>
+      <para>
+        <symbol>True</symbol> &rArr; the entire geometry is freed.
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+The values of which and free_all determine how much of the specified geometry
+is freed. The valid values for which are:
+
+<programlisting>
+#define      XkbGeomPropertiesMask  (1&lt;&lt;0)
+#define      XkbGeomColorsMask      (1&lt;&lt;1)
+#define      XkbGeomShapesMask      (1&lt;&lt;2)
+#define      XkbGeomSectionsMask    (1&lt;&lt;3)
+#define      XkbGeomDoodadsMask     (1&lt;&lt;4)
+#define      XkbGeomAllMask         (0x1f)
+</programlisting></para>
+
+<para>
+If free_all is
+<symbol>True</symbol>,
+the entire geometry is freed regardless of the value of which. Otherwise, the
+portions of the geometry specified by which are freed.
+</para>
+
+</sect1>
+</chapter>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deviceinfo version="0.2">
+  <device>
+  
+    <!-- The way this works: 
+    
+    Match against some input device (see the HAL specification for more 
+    information), and then merge in keys, which you can use to specify 
+    the configuration similar to the way you would in xorg.conf. You will 
+    need to restart HAL after making changes. If you are having issues,
+    starting X with the -logverbose 7 flag may yield useful information.
+    
+    Keys Supported:
+    
+        Key "input.x11_driver" (string)
+            This specifies the driver to use. You MUST specify this option,
+            or a driver will not be loaded and the rest will be ignored by
+            Xorg
+            
+        Key "input.x11_options.<option name>" (string)
+            This allows you to specify arbitrary options to pass to the driver.
+            Anything you would normally specify in xorg.conf goes here. So, for
+            option "Mode" in xorg.conf, you would specify the key name of
+            "input.x11_options.Mode". 
+
+	    Do not specify "input.x11_options.Device" since "input.device"
+	    will be used automatically.
+
+            You MUST specify all options as strings, otherwise the server will
+            ignore them.
+
+        Legacy Keys
+	     "input.xkb.rules"
+             "input.xkb.model"
+             "input.xkb.layout"
+             "input.xkb.variant"
+             "input.xkb.options"
+             
+            These keys are deprecated. Use these instead:
+	     "input.x11_options.XkbRules"
+	     "input.x11_options.XkbModel"
+	     "input.x11_options.XkbLayout"
+	     "input.x11_options.XkbVariant"
+	     "input.x11_options.XkbOptions"
+
+	    See the evdev documentation for more information. 
+    
+    FIXME: Support tablets too. 
+    TODO: I think its fixed, can't test
+    
+    -->
+    
+    <match key="info.capabilities" contains="input.mouse">
+      <merge key="input.x11_driver" type="string">mouse</merge>
+      <match key="/org/freedesktop/Hal/devices/computer:system.kernel.name"
+             string="Linux">
+        <merge key="input.x11_driver" type="string">evdev</merge>
+      </match>
+      <match key="/org/freedesktop/Hal/devices/computer:system.kernel.name"
+             string="SunOS">
+       <match key="input.device" contains="usb">
+        <merge key="input.x11_options.StreamsModule" type="string">usbms</merge>
+        <merge key="input.x11_options.Protocol" type="string">VUID</merge>
+       </match>
+      </match>
+    </match>
+
+    <match key="info.capabilities" contains="input.keys">
+      <merge key="input.x11_options.XkbRules" type="string">base</merge>
+
+      <!-- If we're using Linux, we use evdev by default (falling back to
+           kbd otherwise). -->
+      <merge key="input.x11_driver" type="string">kbd</merge>
+      <merge key="input.x11_options.XkbModel" type="string">pc105</merge>
+      <match key="/org/freedesktop/Hal/devices/computer:system.kernel.name"
+             string="Linux">
+        <merge key="input.x11_driver" type="string">evdev</merge>
+        <merge key="input.x11_options.XkbModel" type="string">evdev</merge>
+      </match>
+      <match key="/org/freedesktop/Hal/devices/computer:system.kernel.name"
+             string="SunOS">
+       <match key="input.device" contains="usb">
+        <merge key="input.x11_options.StreamsModule" type="string">usbkbm</merge>
+        <merge key="input.x11_options.Protocol" type="string">VUID</merge>
+       </match>
+      </match>
+
+      <merge key="input.x11_options.XkbLayout" type="string">us</merge>
+
+      <merge key="input.x11_options.XkbVariant" type="string" />
+    </match>
+  </device>
+</deviceinfo>

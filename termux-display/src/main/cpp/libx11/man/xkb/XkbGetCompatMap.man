@@ -1,0 +1,116 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbGetCompatMap __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbGetCompatMap \- Fetch any combination of the current compatibility map 
+components from the server
+.SH SYNOPSIS
+.HP
+.B Status XkbGetCompatMap
+.BI "(\^Display *" "display" "\^,"
+.BI "unsigned int " "which" "\^,"
+.BI "XkbDescRec *" "xkb" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I display
+connection to server
+.TP
+.I which
+mask of compatibility map components to fetch
+.TP
+.I xkb
+keyboard description where results placed
+.SH DESCRIPTION
+.LP
+When another client modifies the compatibility map, you are notified if you have 
+selected for XkbCompatMapNotify events. 
+.I XkbGetCompatMap 
+is particularly useful when you receive an event of this type, as it allows you 
+to update your program's version of the compatibility map to match the modified 
+version now in the server. If your program is dealing with multiple servers and 
+needs to configure them all in a similar manner, the updated compatibility map 
+may be used to reconfigure other servers. 
+
+.I XkbGetCompatMap 
+fetches the components of the compatibility map specified in 
+.I which 
+from the server specified by 
+.I display 
+and places them in the 
+.I compat 
+structure of the keyboard description 
+.I xkb. 
+Valid values for 
+.I which 
+are an inclusive OR of the values shown in Table 1.
+
+.TS
+c s s
+l l l
+l l l.
+Table 1 Compatibility Map Component Masks
+_
+Mask	Value	Affecting
+_
+XkbSymInterpMask	(1<<0)	Symbol interpretations
+XkbGroupCompatMask	(1<<1)	Group maps
+XkbAllCompatMask	(0x3)	All compatibility map components
+.TE
+
+If no compatibility map structure is allocated in 
+.I xkb 
+upon entry, 
+.I XkbGetCompatMap 
+allocates one. If one already exists, its contents are overwritten with the 
+returned results.
+
+.I XkbGetCompatMap 
+fetches compatibility map information for the device specified by the
+.I device_spec 
+field of 
+.I xkb. 
+Unless you have specifically modified this field, it is the default keyboard 
+device. 
+.I XkbGetCompatMap 
+returns Success if successful, BadAlloc if it is unable to obtain necessary 
+storage for either the return values or work space, BadMatch if the 
+.I dpy 
+field of the 
+.I xkb 
+argument is non-NULL and does not match the 
+.I display 
+argument, and BadLength under certain conditions caused by server or Xkb 
+implementation errors.
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadLength
+The length of a request is shorter or longer than that required to minimally contain the arguments
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has 
+correct type and range, but is otherwise invalid

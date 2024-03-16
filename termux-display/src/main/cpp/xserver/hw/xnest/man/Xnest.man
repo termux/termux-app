@@ -1,0 +1,428 @@
+.\" $Xorg: Xnest.man,v 1.3 2000/08/17 19:53:28 cpqbld Exp $
+.\" Copyright (c) 1993, 1994  X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" $XFree86: xc/programs/Xserver/hw/xnest/Xnest.man,v 1.6 2001/01/27 18:21:00 dawes Exp $
+.\"
+.TH Xnest @appmansuffix@ @xorgversion@
+.SH NAME
+Xnest \- a nested X server
+.SH SYNOPSIS
+.B Xnest
+[
+.I options
+]
+.SH DESCRIPTION
+.B Xnest
+is both an X client and an X server.
+.B Xnest
+is a client of the real server which manages windows and graphics requests on
+its behalf.
+.B Xnest
+is a server to its own clients.
+.B Xnest
+manages windows and graphics requests on their behalf.
+To these clients,
+.B Xnest
+appears to be a conventional server.
+.SH OPTIONS
+.B Xnest
+supports all standard options of the sample server implementation.
+For more details, please see
+.BR Xserver (@appmansuffix@).
+The following additional arguments are supported as well.
+.TP
+.BI "\-display " string
+This option specifies the display name of the real server that
+.B Xnest
+should try to connect to.
+If it is not provided on the command line,
+.B Xnest
+will read the
+.I DISPLAY
+environment variable in order to find out this information.
+.TP
+.B \-sync
+This option tells
+.B Xnest
+to synchronize its window and graphics operations with the real server.
+This is a useful option for debugging, but it will slow down
+.BR Xnest 's
+performance considerably.
+It should not be used unless absolutely necessary.
+.TP
+.B \-full
+This option tells
+.B Xnest
+to utilize full regeneration of real server objects and reopen a new connection
+to the real server each time the nested server regenerates.
+The sample server implementation regenerates all objects in the server when the
+last client of this server terminates.
+When this happens,
+.B Xnest
+by default maintains the same top-level window and the same real server
+connection in each new generation.
+If the user selects full regeneration, even the top-level window and the
+connection to the real server will be regenerated for each server generation.
+.TP
+.BI "\-class " string
+This option specifies the default visual class of the nested server.
+It is similar to the
+.B \-cc
+option from the set of standard options except that it will accept a string
+rather than a number for the visual class specification.
+The
+.I string
+must be one of the following six values:
+.BR StaticGray ,
+.BR GrayScale ,
+.BR StaticColor ,
+.BR PseudoColor ,
+.BR TrueColor ,
+or
+.BR DirectColor .
+If both the
+.B \-class
+and
+.B \-cc
+options are specified, the last instance of either option takes precedence.
+The class of the default visual of the nested server need not be the same as the
+class of the default visual of the real server, but it must be supported by the
+real server.
+Use
+.BR xdpyinfo (@appmansuffix@)
+to obtain a list of supported visual classes on the real server before starting
+.BR Xnest .
+If the user chooses a static class, all the colors in the default color map will
+be preallocated.
+If the user chooses a dynamic class, colors in the default color map will be
+available to individual clients for allocation.
+.TP
+.BI "\-depth " int
+This option specifies the default visual depth of the nested server.
+The depth of the default visual of the nested server need not be the same as the
+depth of the default visual of the real server, but it must be supported by the
+real server.
+Use
+.BR xdpyinfo (@appmansuffix@)
+to obtain a list of supported visual depths on the real server before starting
+.BR Xnest .
+.TP
+.B \-sss
+This option tells
+.B Xnest
+to use the software screen saver.
+By default,
+.B Xnest
+will use the screen saver that corresponds to the hardware screen saver in the
+real server.
+Of course, even this screen saver is software-generated since
+.B Xnest
+does not control any actual hardware.
+However, it is treated as a hardware screen saver within the sample server code.
+.TP
+.B \-geometry \fIW\fBx\fIH\fB+\fIX\fB+\fIY\fP
+This option specifies the geometry parameters for the top-level
+.B Xnest
+window.
+See \(lqGEOMETRY SPECIFICATIONS\(rq in
+.BR X (@miscmansuffix@)
+for a discussion of this option's syntax.
+This window corresponds to the root window of the nested server.
+The width
+.I W
+and height
+.I H
+specified with this option will be the maximum width and height of each
+top-level
+.B Xnest
+window.
+.B Xnest
+will allow the user to make any top-level window smaller, but it will not
+actually change the size of the nested server root window.
+.B Xnest
+does not yet support the RANDR extension for resizing, rotation, and reflection
+of the root window.
+If this option is not specified,
+.B Xnest
+will choose
+.I W
+and
+.I H
+to be 3/4ths the dimensions of the root window of the real server.
+.TP
+.BI "\-bw " int
+This option specifies the border width of the top-level
+.B Xnest
+window.
+The integer parameter
+.I int
+must be positive.
+The default border width is 1.
+.TP
+.BI "\-name " string
+This option specifies the name of the top-level
+.B Xnest
+window as
+.IR string .
+The default value is the program name.
+.TP
+.BI "\-scrns " int
+This option specifies the number of screens to create in the nested server.
+For each screen,
+.B Xnest
+will create a separate top-level window.
+Each screen is referenced by the number after the dot in the client display name
+specification.
+For example,
+.B xterm \-display :1.1
+will open an
+.BR xterm (@appmansuffix@)
+client in the nested server with the display number
+.B :1
+on the second screen.
+The number of screens is limited by the hard-coded constant in the server sample
+code, which is usually 3.
+.TP
+.B \-install
+This option tells
+.B Xnest
+to do its own color map installation by bypassing the real window manager.
+For it to work properly, the user will probably have to temporarily quit the
+real window manager.
+By default,
+.B Xnest
+will keep the nested client window whose color map should be installed in the
+real server in the
+.I WM_COLORMAP_WINDOWS
+property of the top-level
+.B Xnest
+window.
+If this color map is of the same visual type as the root window of the nested
+server,
+.B Xnest
+will associate this color map with the top-level
+.B Xnest
+window as well.
+Since this does not have to be the case, window managers should look primarily
+at the
+.I WM_COLORMAP_WINDOWS
+property rather than the color map associated with the top-level
+.B Xnest
+window.
+.\" Is the following still true?  This sentence is several years old.
+Unfortunately, window managers are not very good at doing that yet so this
+option might come in handy.
+.TP
+.BI "\-parent " window_id
+This option tells
+.B Xnest
+to use
+.I window_id
+as the root window instead of creating a window.
+.\" XRX is dead, dead, dead.
+.\" This option is used by the xrx xnestplugin.
+.SH "EXTENDED DESCRIPTION"
+Starting up
+.B Xnest
+is just as simple as starting up
+.BR xclock (@appmansuffix@)
+from a terminal emulator.
+If a user wishes to run
+.B Xnest
+on the same
+workstation as the real server, it is important that the nested server is given
+its own listening socket address.
+Therefore, if there is a server already running on the user's workstation,
+.B Xnest
+will have to be started up with a new display number.
+Since there is usually no more than one server running on a workstation,
+specifying
+.RB \(oq "Xnest :1" \(cq
+on the command line will be sufficient for most users.
+For each server running on the workstation, the display number needs to be
+incremented by one.
+Thus, if you wish to start another
+.BR Xnest ,
+you will need to type
+.RB \(oq "Xnest :2" \(cq
+on the command line.
+.PP
+To run clients in the nested server, each client needs to be given the same
+display number as the nested server.
+For example,
+.RB \(oq "xterm \-display :1" \(cq
+will start up an
+.B xterm
+process in the first nested server
+and
+.RB \(oq "xterm \-display :2" \(cq
+will start an
+.B xterm
+in the second nested server from the example above.
+Additional clients can be started from these
+.BR xterm s
+in each nested server.
+.SS "Xnest as a client"
+.B Xnest
+behaves and looks to the real server and other real clients as another real
+client.
+It is a rather demanding client, however, since almost any window or graphics
+request from a nested client will result in a window or graphics request from
+.B Xnest
+to the real server.
+Therefore, it is desirable that
+.B Xnest
+and the real server are on a local network, or even better, on the same machine.
+.B Xnest
+assumes that the real server supports the SHAPE extension.
+There is no way to turn off this assumption dynamically.
+.B Xnest
+can be compiled without the SHAPE extension built in, in which case the real
+server need not support it.
+Dynamic SHAPE extension selection support may be considered in further
+development of
+.BR Xnest .
+.PP
+Since
+.B Xnest
+need not use the same default visual as the the real server, the top-level
+window of the
+.B Xnest
+client always has its own color map.
+This implies that other windows' colors will not be displayed properly while the
+keyboard or pointer focus is in the
+.B Xnest
+window, unless the real server has support for more than one installed color map
+at any time.
+The color map associated with the top window of the
+.B Xnest
+client need not be the appropriate color map that the nested server wants
+installed in the real server.
+In the case that a nested client attempts to install a color map of a different
+visual from the default visual of the nested server,
+.B Xnest
+will put the top window of this nested client and all other top windows of the
+nested clients that use the same color map into the
+.I WM_COLORMAP_WINDOWS
+property of the top-level
+.B Xnest
+window on the real server.
+Thus, it is important that the real window manager that manages the
+.B Xnest
+top-level window looks at the
+.I WM_COLORMAP_WINDOWS
+property rather than the color map associated with the top-level
+.B Xnest
+window.
+Since most window managers don't yet appear to implement this convention
+properly,
+.B Xnest
+can optionally do direct installation of color maps into the real server
+bypassing the real window manager.
+If the user chooses this option, it is usually necessary to temporarily disable
+the real window manager since it will interfere with the
+.B Xnest
+scheme of color map installation.
+.PP
+Keyboard and pointer control procedures of the nested server change the keyboard
+and pointer control parameters of the real server.
+Therefore, after
+.B Xnest
+is started up, it will change the keyboard and pointer controls of the real
+server to its own internal defaults.
+.SS "Xnest as a server"
+.B Xnest
+as a server looks exactly like a real server to its own clients.
+For the clients, there is no way of telling if they are running on a real or a
+nested server.
+.PP
+As already mentioned,
+.B Xnest
+is a very user-friendly server when it comes to customization.
+.B Xnest
+will pick up a number of command-line arguments that can configure its default
+visual class and depth, number of screens, etc.
+.PP
+The only apparent intricacy from the users' perspective about using
+.B Xnest
+as a server is the selection of fonts.
+.B Xnest
+manages fonts by loading them locally and then passing the font name to the real
+server and asking it to load that font remotely.
+This approach avoids the overload of sending the glyph bits across the network
+for every text operation, although it is really a bug.
+The consequence of this approach is that the user will have to worry about two
+different font paths \(em a local one for the nested server and a remote one for
+the real server \(em since
+.B Xnest
+does not propagate its font path to the real server.
+The reason for this is because real and nested servers need not run on the same
+file system which makes the two font paths mutually incompatible.
+Thus, if there is a font in the local font path of the nested server, there is
+no guarantee that this font exists in the remote font path of the real server.
+The
+.BR xlsfonts (@appmansuffix@)
+client, if run on the nested server, will list fonts in the local font path and,
+if run on the real server, will list fonts in the remote font path.
+Before a font can be successfully opened by the nested server, it has to exist
+in local and remote font paths.
+It is the users' responsibility to make sure that this is the case.
+.SH "FUTURE DIRECTIONS"
+Make dynamic the requirement for the SHAPE extension in the real server, rather
+than having to recompile
+.B Xnest
+to turn this requirement on and off.
+.PP
+Perhaps there should be a command-line option to tell
+.B Xnest
+to inherit the keyboard and pointer control parameters from the real server
+rather than imposing its own.
+.PP
+.B Xnest
+should read a customization input file to provide even greater freedom and
+simplicity in selecting the desired layout.
+.PP
+There is no support for backing store and save unders, but this should also be
+considered.
+.PP
+.\" Is the following still true now that client-side font rendering is
+.\" considered the way to go?
+The proper implementation of fonts should be moved into the
+.I os
+layer.
+.SH BUGS
+Doesn't run well on servers supporting different visual depths.
+.PP
+Still crashes randomly.
+.PP
+Probably has some memory leaks.
+.SH AUTHOR
+Davor Matic, MIT X Consortium
+.SH "SEE ALSO"
+.BR Xserver (@appmansuffix@),
+.BR xdpyinfo (@appmansuffix@),
+.BR X (@miscmansuffix@)

@@ -1,0 +1,344 @@
+
+                 INT10  X86 Real Mode executor
+                 =============================
+
+		         PRELIMINARY
+
+INT10 is  a XFree86  module for soft-booting  and executing  real mode
+int10 BIOS calls. The BIOS call code is largely untested, yet.
+
+1. Usage
+========
+
+To   use   the   int10   module   in  a   driver   the   header   file
+xfree86/os-support/int10/xf86int10.h must be included.
+
+ a. Initialization
+ -----------------
+
+The int10-executer gets initialized by calling:
+
+   xf86Int10InfoPtr xf86InitInt10(int entityIndex);
+
+The  function  will soft-boot  any  non-primary  device  and return  a
+pointer  to a  xf86Int10InfoRec on  success. If  anything fails  or if
+int10 execution  is disabled by an  option in the  device section NULL
+will  be returned.   The driver  should store  this pointer  for later
+calls to other int10 module functions.
+
+ b. Memory allocation
+ --------------------
+
+To allocate memory in the real mode execution environment
+    
+   void * xf86Int10AllocPages(xf86Int10InfoPtr pInt,int num, int *off);
+
+can  be called.  It  allocates num  consecutive  pagesize chunks.   It
+returns the address of the allocated area. off is set to its offset in
+the real mode memory space.
+
+  void xf86Int10FreePages(xf86Int10InfoPtr pInt, void *pbase, int num);
+
+Is used to free num pages beginning at pbase.
+
+ c. Doing int10 BIOS calls
+ -------------------------
+
+The BIOS call is executed by calling:
+   
+   void xf86ExecX86int10(xf86Int10InfoPtr pInt);
+
+The number  of the interrupt (normally  10) and the  initial values of
+the ax, bx, cx, dx, si, di  and es x86-CPU registers can be set in the
+xf86Int10InfoRec  passed to  the function.   On return  this structure
+contains the  exit values  of the registers  listed above and  the CPU
+flag register.
+
+ d. De-initializing
+ -----------------
+
+If no further int10 calls are required for a certain chipset
+the driver should call:
+
+  void xf86FreeInt10(xf86Int10InfoPtr pInt);
+
+to free the memory allocated for real mode int10 calls.
+
+
+2. Porting issues
+=================
+
+The int10 real mode executor is  designed to run on top of various x86
+CPU emulators as well as in vm86  mode of a real x86 CPU. If used with
+a CPU  emulator the emulator and  CPU specific interfaces  can be held
+separate thus  requiring minimal efforts  to port the int10  module to
+new  platforms.   Currently  an  interface  to the  x86emu  real  mode
+emulator is  provided.  Since  details of setting  up and  running the
+vm86  mode   is  platform   dependent  both  the   platform  dependent
+environment and the emulation layer  have to be ported. Several helper
+functions are provided for that.
+
+A CPU emulator should meet certain requirements to be usable
+for the INT10 executor:
+
+1. It must trap  calls to intXX instructions and  pass execution to an
+   external  function  which  is   allowed  to  modify  CPU  registers
+   including  the instruction  pointer  (IP) before  returning to  the
+   emulator for  continuing execution.  When the external  function is
+   called the  IP must point to  the instruction past  the intXX call.
+
+2. The  emulator should  use externally  provided functions  to handle
+   PIO.
+
+3.  The emulator  should be able to use  externally provided functions
+ to access memory  from the real mode memory  environment.  Note, that
+ the  vm86  mode  usually  requires  one hunk  of  consecutive  memory
+ starting at address  0 in the process virtual  memory space.  Thus if
+ this mode is to be used, the OS environment has to be able to provide
+ that, ie. it must be able to remap the processes virtual memory space
+ onto itself.  If the emulator is able to handle memory access through
+ externally  provided functions the  real mode  process memory  can be
+ located anywhere  in the processes  virtual memory. It does  not even
+ have to be consecutive.
+
+4. The executor should terminate on encountering a 'hlt' instruction.
+
+
+Functions to implement:
+
+To simplify development  the code has been split  into a general setup
+part and an emulator specific one. A generic setup code is provided in
+generic.c.  It  should be  usable  with  any  emulator satisfying  the
+conditions mentioned  above. Therefore the following  section on int10
+setup may be skipped when porting int10 to new emulator.
+
+If the  vm86() is to be used  no memory access functions  can be used.
+Therefore the layout of the real mode memory image has to meet certain
+requirements. Therefore  when porting to  other platforms a  new setup
+code may  have to  be designed, too.  The following section  will give
+guidelines how  this may be  done. A sample implementation  using SysV
+IPC to  map the  appropriate real  mode memory image  to address  0 in
+virtual  address  space  just  prior  to execution  may  be  found  in
+xfree86/os-support/linux/int10/linux.c.
+
+On  non-PC like  platforms emulation  of certain  PC features  such as
+initialization of  BIOS int vectors, sys_BIOS constants  or PCI config
+method 1 can be turned on by defining _PC.
+
+I. Setup Code
+-------------
+
+This sets  up the real mode  memory image, calls the  emulator to POST
+the chipset if required and  maintains memory allocations in real mode
+address space.
+
+1. xf86Int10InfoPtr xf86InitInt10(int entityIndex);
+
+This  function should  first find  the screen  assigned to  the entity
+carrying entitiyIndex and then call
+
+       Bool int10skip(ScrnInfoPtr pScrn)
+
+to find out if the user  has requested not to initialize int10.  If so
+xf86InitInt10()  should  return  NULL. Otherwise  an  xf86Int10InfoRec
+should be allocated.  This structure contains the following fields:
+
+    a. int entityIndex   - index of the entity whose BIOS is to be 
+                           executed.
+    b. int scrnIndex     - index of the screen assigned the entity.
+    c. pointer cpuRegs   - pointer to a emulator/vm86-mode private 
+                           structure.  May hold cpu register values 
+                           for the emulator.
+    d. CARD16 BIOSseg    - Video BIOS segment address.
+    e. pointer private   - pointer to a os specific data structure.
+    f. struct _int10Mem* - pointer to a structure to hold the memory
+                           access functions for use by an emulator.
+    g. int num           - number of the int to be called.
+    h. int ax..es,flags  - CPU register values to pass to int-call.
+
+The Init  function should initialize  a-f. To initialize  the emulator
+specific execute environment the function
+
+     Bool xf86Int10ExecSetup(xf86Int10InfoPtr pInt)
+
+should be called. If this function returns FALSE any already allocated
+memory should be freed and xf86Int10Init(0 should exit returning NULL.
+
+If the  platform has  a PC  like system BIOS  it may  be copied  to or
+mapped into memory  locations SYS_BIOS to SYS_SIZE-1 of  the real mode
+memory environment of this process. Otherwise the helper function: 
+
+int setup_system_bios(CARD32 base_addr); 
+
+may be  called to set  up a rudimentary  system BIOS sufficient  to be
+used to  boot video BIOSes.   base_addr specifies the  virtual address
+corresponding to SYS_BIOS in the  real mode environment.  If a PC-like
+int vector and BIOS data area is available it should be copied to 0 to
+LOW_PAGE_SIZE of the entities real mode environment.  In this case the
+video interrupt  related entries should  be reset for  all non-primary
+cards by calling:
+
+void reset_int_vect(xf86Int10InfoPtr pInt); To initialize the
+
+correct video BIOS  entry points the BIOS must  be warm-booted.  If no
+PC-like int vector is available one can be set up by calling 
+
+void setup_int_vect(xf86Int10InfoPtr pInt); 
+
+In this  case the  video BIOS  has to be  warm-booted always.   If the
+video BIOS  for this entity has  been installed during boot  it may be
+mapped (or  copied) directly to the  correct address in  the real mode
+memory environment.  Otherwise
+
+int mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address); 
+
+should  be called  to copy  the BIOS  image from  PCI  ROM.  'address'
+specifies the address this image should be copied to. Sufficient space
+to  hold an entire  BIOS image  should be  allocated prior  to calling
+mapPciRom(). This function  will return the size of  the BIOS image in
+bytes  if  it   was  able  to  successfully  copy   the  image  and  0
+otherwise. To create a well defined point to exit the softbooter
+
+void set_return_trap(xf86Int10Ptr pInt); 
+
+may be called.  It sets up a 'hlt' instruction  in the emulator memory
+just above the BIOS variable area. Before entering real mode execution
+this address will be pushed onto  the return stack.  If the BIOS needs
+to be  warm-booted this should be done  before leaving xf86InitInt10()
+by setting num in the xf86Int10InfoRec to 0xe6 and calling
+
+void xf86ExecX86int10(xf86Int10IfoPtr pInt); 
+
+The  implementation of this  function will  be discussed  below.  This
+function  should be  wrapped  by calls  to void  LockLegacyVGA(screen,
+legacyVGAPtr vga); and void UnlockLegacyVGA(screen, legacyVGAPtr vga);
+The struct  vga is  used to hold  the state  of the legacy  VGA access
+registers  if  a legacy  VGA  device  exists.  xf86InitInt10()  should
+return a pointer to the xf86Int10InfoRec allocated.
+
+2. Bool MapCurrentInt10(xf86Int10InfoPtr pInt);
+
+In case  a platform specific  mapping has to  be performed to  map the
+memory allocated for the real  mode memory environment into a specific
+location prior to executing the x86 real mode code a function
+
+        Bool MapCurrentInt10(xf86Int10InfoPtr pInt);
+
+has to  be provided. It will  be called by a  helper function whenever
+the active entity changes. If the  vm86 mode is used it is most likely
+that the 1MB real mode memory space located somewhere in the processes
+virtual memory  will have to be  remapped to address 0  of the virtual
+memory space.
+
+3.   void xf86FreeInt10(xf86Int10InfoPtr pInt);
+
+To free all memory allocated for video BIOS calls of a specific entity
+the function
+
+       void xf86FreeInt10(xf86Int10InfoPtr pInt);
+
+should  be  provided.  If  the  entity  to  be  freed  was  mapped  by
+MapCurrentInt10() this mapping needs to be undone also.
+
+4. 
+   void * xf86Int10AllocPages(xf86Int10InfoPtr pInt,int num, int *off)
+   void xf86Int10FreePages(xf86Int10InfoPtr pInt, void *pbase, int num)
+
+xf86Int10AllocPages()  should  allocate  'num'  consecutive  page-size
+chunks of memory. In real mode memory space this range needs to occupy
+consecutive addresses,  too. The function  must return the  address of
+this memory.  The offset in real  mode memory needs to  be returned in
+'off'. If  no block of 'num'  pages are available  the function should
+return NULL.
+
+xf86Int10FreePages() will  free the  'num' pages starting  at 'pbase'.
+'num'  is  equal  to  the  number  of  pages  allocated  by  a  single
+xf86Int10AllocatePages()  call. 'pbase'  is the  address of  the range
+previously returned by xf86Int10AllocatePages().
+
+II. Emulator specific functions
+-------------------------------
+
+1. Bool xf86Int10ExecSetup(xf86Int10InfoPtr pInt);
+
+This function will  be called from xf86InitInt10(). It  may be used to
+set  up   the  static  emulator   specific  part  of  the   real  mode
+environment. On success it should return TRUE.
+
+2. xf86ExecX86int10(xf86Int10InfoPtr pInt);
+
+This function  gets called  to execute  an int call.  It may  call the
+helper function:
+
+       void setup_int(xf86Int10InfoPrt pInt);
+
+to copy the register values  to the emulator specific locations and to
+set up the non-static real mode execution environment.  On return from
+setup_int()   'Int10Current'   holds   a   pointer  to   the   current
+xf86Int10InfoRec.
+
+It should start execution by calling 
+
+       Bool int_handler(xf86Int10InfoPtr pInt);
+
+and if this function returns TRUE it should call whatever necessary to
+continue execution until a  'hlt' instruction is encountered.  To copy
+the resulting register values back to the xf86Int10InfoRec structure
+
+     void finish_int(xf86Int10InfoPtr pInt);
+
+should be called. 
+
+Helper  functions are  provided to  aid the  implementation of  a vm86
+call:
+
+  Bool vm86_GP_fault(xf86Int10InfoPtr pInt);
+
+This  function  handles  instructions  which  cause  a  vm86  call  to
+trap.  PIO  access  is handled  by  the  in/out  calls as  defined  in
+compiler.h. Optionally the PIO  instructions can be logged by defining
+PRINT_PORT in xf86int10.h. This is meant for debugging purposes.
+
+Unknown  instructions  and   'hlt'  cause  vm86_GP_fault()  to  return
+FALSE. Otherwise TRUE is returned.
+
+Note: This  function is  currently based on  the Linux vm86  call.  It
+might have  to be modified  or even rewritten  for other OS.   So your
+mileage may vary.
+
+Functions to dump memory, code, xf86 CPU register values and stack are
+also provided.  Take a  look at  helper.c To view  a memory  range the
+function
+
+    void dprint(unsigned long start, unsigned long size)
+
+is provided. The use should be self explanatory.
+
+Register  and memory  access functions  are provided  in helper_mem.c.
+The PIO register access functions  can trap access to PCI config space
+access register (config method 1) if _PC is not defined.
+
+A header  file 'defines.h' is required to  define OS/emulator specific
+ways  to access  memory and  xf86 CPU  registers: Defines  need  to be
+provided     for    memory     byte/work/long     read/write    access
+(MEM_RB(name,addr),MEM_RW(name,addr),MEM_RL(name,addr),
+MEM_WB(name,addr,val),MEM_WL(name,addr,val),MEM_WL(name,addr,val))   of
+the real mode memory environment. 'name' will contain a pointer to the
+current   xf86Int10InfoRec.  Currently   defines  are   available  for
+vm86-mode under  Linux and x86emu.  They may be activated  by defining
+_X86EMU or _VM86_LINUX respectively.
+
+Note: Emulators usually are not able to pass this pointer when calling
+memory  access functions.  In this  case a  global variable  should be
+defined  which can  hold this  pointer. This  variable can  be  set in
+MapCurrentInt10().  It also  must be  set in  xf86InitInt10()  if this
+function  calls the  memory  access functions  either  directly or  by
+calling  xf86ExecX86int10(pInt).   Defines   to  access  the  emulator
+specific   xf86   CPU    register   locations   are   also   required:
+X86_EAX,...,X86_EFLAGS  for  access  of  the full  32  bit  registers,
+X86_AX...X86_FLAGS   for  access   of   the  16   bit  registers   and
+XF86_AL,XF86_BL,XF86_CL,XF86_DL  to  access  the  lower  byte  of  the
+AX,BX,CX and DX register.
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/int10/INT10.HOWTO,v 1.2 2000/02/08 13:13:22 eich Exp $

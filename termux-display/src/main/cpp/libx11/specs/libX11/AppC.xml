@@ -1,0 +1,3341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<appendix id="extensions">
+<title>Extensions</title>
+<para>
+<!-- .XE -->
+Because X can evolve by extensions to the core protocol, 
+it is important that extensions not be perceived as second-class citizens.
+At some point, 
+your favorite extensions may be adopted as additional parts of the 
+X Standard.
+</para>
+<para>
+<!-- .LP -->
+Therefore, there should be little to distinguish the use of an extension from 
+that of the core protocol.
+To avoid having to initialize extensions explicitly in application programs, 
+it is also important that extensions perform lazy evaluations,
+automatically initializing themselves when called for the first time.  
+</para>
+<para>
+<!-- .LP -->
+This appendix describes techniques for writing extensions to Xlib that will
+run at essentially the same performance as the core protocol requests.
+</para>
+<!-- .NT -->
+<note><para>
+It is expected that a given extension to X consists of multiple
+requests.
+Defining 10 new features as 10 separate extensions is a bad practice.
+Rather, they should be packaged into a single extension
+and should use minor opcodes to distinguish the requests.
+</para></note>
+<!-- .NE -->
+<para>
+<!-- .LP -->
+The symbols and macros used for writing stubs to Xlib are listed in
+<filename class="headerfile">&lt;X11/Xlibint.h&gt;</filename>.
+</para>
+<sect1 id="Basic_Protocol_Support_Routines">
+<title>Basic Protocol Support Routines</title>
+<para>
+The basic protocol requests for extensions are 
+<xref linkend='XQueryExtension' xrefstyle='select: title'/>
+and
+<xref linkend='XListExtensions' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XQueryExtension</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XQueryExtension'>
+<funcprototype>
+  <funcdef>Bool <function>XQueryExtension</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>name</parameter></paramdef>
+  <paramdef>int *<parameter>major_opcode_return</parameter></paramdef>
+  <paramdef>int *<parameter>first_event_return</parameter></paramdef>
+  <paramdef>int *<parameter>first_error_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>display</term>
+    <listitem>
+      <para>Specifies the connection to the X server.</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>name</term>
+    <listitem>
+      <para>Specifies the extension name.</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>major_opcode_return</term>
+    <listitem>
+      <para>Returns the major opcode.</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>first_event_return</term>
+    <listitem>
+      <para>Returns the first event code, if any.</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>first_error_return</term>
+    <listitem>
+      <para>Returns the first error code, if any.</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XQueryExtension' xrefstyle='select: title'/>
+function determines if the named extension is present.  
+If the extension is not present,
+<xref linkend='XQueryExtension' xrefstyle='select: title'/>
+returns
+<symbol>False</symbol>;
+otherwise, it returns
+<symbol>True</symbol>.
+If the extension is present,
+<xref linkend='XQueryExtension' xrefstyle='select: title'/>
+returns the major opcode for the extension to major_opcode_return;
+otherwise,
+it returns zero.
+Any minor opcode and the request formats are specific to the
+extension.  
+If the extension involves additional event types, 
+<xref linkend='XQueryExtension' xrefstyle='select: title'/>
+returns the base event type code to first_event_return;
+otherwise, 
+it returns zero.  
+The format of the events is specific to the extension.  
+If the extension involves additional error codes, 
+<xref linkend='XQueryExtension' xrefstyle='select: title'/>
+returns the base error code to first_error_return;
+otherwise, 
+it returns zero.  
+The format of additional data in the errors is specific to the extension.
+</para>
+<para>
+<!-- .LP -->
+If the extension name is not in the Host Portable Character Encoding
+the result is implementation-dependent.
+Uppercase and lowercase matter;
+the strings ``thing'', ``Thing'', and ``thinG'' 
+are all considered different names.
+</para>
+<indexterm significance="preferred"><primary>XListExtensions</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XListExtensions'>
+<funcprototype>
+  <funcdef>char **<function>XListExtensions</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int *<parameter>nextensions_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nextensions_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of extensions listed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XListExtensions' xrefstyle='select: title'/>
+function returns a list of all extensions supported by the server.
+If the data returned by the server is in the Latin Portable Character Encoding,
+then the returned strings are in the Host Portable Character Encoding.
+Otherwise, the result is implementation-dependent.
+</para>
+<indexterm significance="preferred"><primary>XFreeExtensionList</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFreeExtensionList'>
+<funcprototype>
+  <funcdef><function>XFreeExtensionList</function></funcdef>
+  <paramdef>char **<parameter>list</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>list</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the list of extension names.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XFreeExtensionList' xrefstyle='select: title'/>
+function frees the memory allocated by 
+<xref linkend='XListExtensions' xrefstyle='select: title'/>.
+</para>
+</sect1>
+<sect1 id="Hooking_into_Xlib">
+<title>Hooking into Xlib</title>
+<para>
+<!-- .LP -->
+These functions allow you to hook into the library.  
+They are not normally used by application programmers but are used 
+by people who need to extend the core X protocol and
+the X library interface.
+The functions, which generate protocol requests for X, are typically
+called stubs.
+</para>
+<para>
+<!-- .LP -->
+In extensions, stubs first should check to see if they have initialized 
+themselves on a connection.
+If they have not, they then should call 
+<xref linkend='XInitExtension' xrefstyle='select: title'/>
+to attempt to initialize themselves on the connection.
+</para>
+<para>
+<!-- .LP -->
+If the extension needs to be informed of GC/font allocation or
+deallocation or if the extension defines new event types, 
+the functions described here allow the extension to be 
+called when these events occur.
+</para>
+<para>
+<!-- .LP -->
+The
+<structname>XExtCodes</structname>
+structure returns the information from 
+<xref linkend='XInitExtension' xrefstyle='select: title'/>
+and is defined in
+<filename class="headerfile">&lt;X11/Xlib.h&gt;</filename>:
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XExtCodes</primary></indexterm>
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<synopsis>
+typedef struct _XExtCodes {	/* public to extension, cannot be changed */
+	int extension;		/* extension number */
+	int major_opcode;	/* major op-code assigned by server */
+	int first_event;	/* first event number for the extension */
+	int first_error;	/* first error number for the extension */
+} XExtCodes;
+</synopsis>
+</para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>XInitExtension</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XInitExtension'>
+<funcprototype>
+  <funcdef>XExtCodes *<function>XInitExtension</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>name</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>name</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension name.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XInitExtension' xrefstyle='select: title'/>
+function determines if the named extension exists. 
+Then, it allocates storage for maintaining the 
+information about the extension on the connection, 
+chains this onto the extension list for the connection,
+and returns the information the stub implementor will need to access
+the extension.
+If the extension does not exist,
+<xref linkend='XInitExtension' xrefstyle='select: title'/>
+returns NULL.
+</para>
+<para>
+<!-- .LP -->
+If the extension name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Uppercase and lowercase matter;
+the strings ``thing'', ``Thing'', and ``thinG'' 
+are all considered different names.
+</para>
+<para>
+<!-- .LP -->
+The extension number in the 
+<structname>XExtCodes</structname>
+structure is
+needed in the other calls that follow.  
+This extension number is unique only to a single connection.
+</para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XAddExtension</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XAddExtension'>
+<funcprototype>
+  <funcdef>XExtCodes *<function>XAddExtension</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+For local Xlib extensions, the
+<xref linkend='XAddExtension' xrefstyle='select: title'/>
+function allocates the
+<structname>XExtCodes</structname>
+structure, bumps the extension number count,
+and chains the extension onto the extension list.
+(This permits extensions to Xlib without requiring server extensions.)
+</para>
+<sect2 id="Hooks_into_the_Library">
+<title>Hooks into the Library</title>
+<para>
+<!-- .LP -->
+These functions allow you to define procedures that are to be
+called when various circumstances occur.
+The procedures include the creation of a new GC for a connection,
+the copying of a GC, the freeing of a GC, the creating and freeing of fonts,
+the conversion of events defined by extensions to and from wire
+format, and the handling of errors.
+</para>
+<para>
+<!-- .LP -->
+All of these functions return the previous procedure defined for this
+extension.
+</para>
+<indexterm significance="preferred"><primary>XESetCloseDisplay</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetCloseDisplay'>
+<funcprototype>
+  <funcdef>int <function>XESetCloseDisplay</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when the display is closed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetCloseDisplay' xrefstyle='select: title'/>
+function defines a procedure to be called whenever
+<function>XCloseDisplay</function>
+is called.  
+It returns any previously defined procedure, usually NULL.
+</para>
+<para>
+<!-- .LP -->
+When 
+<function>XCloseDisplay</function>
+is called, 
+your procedure is called 
+with these arguments:
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+</para>
+<indexterm significance="preferred"><primary>XESetCreateGC</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetCreateGC'>
+<funcprototype>
+  <funcdef>int *<function>XESetCreateGC</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when a GC is closed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetCreateGC' xrefstyle='select: title'/>
+function defines a procedure to be called whenever
+a new GC is created.  
+It returns any previously defined procedure, usually NULL.
+</para>
+<para>
+<!-- .LP -->
+When a GC is created, 
+your procedure is called with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+</para>
+<indexterm significance="preferred"><primary>XESetCopyGC</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetCopyGC'>
+<funcprototype>
+  <funcdef>int *<function>XESetCopyGC</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when GC components are copied.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetCopyGC' xrefstyle='select: title'/>
+function defines a procedure to be called whenever
+a GC is copied.  
+It returns any previously defined procedure, usually NULL.
+</para>
+<para>
+<!-- .LP -->
+When a GC is copied, 
+your procedure is called with these arguments:
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+</para>
+<funcsynopsis id='XESetFreeGC'>
+<funcprototype>
+  <funcdef>int *<function>XESetFreeGC</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when a GC is freed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+The
+<xref linkend='XESetFreeGC' xrefstyle='select: title'/>
+function defines a procedure to be called whenever
+a GC is freed.  
+It returns any previously defined procedure, usually NULL.
+</para>
+<para>
+<!-- .LP -->
+When a GC is freed, 
+your procedure is called with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+</para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>XESetCreateFont</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetCreateFont'>
+<funcprototype>
+  <funcdef>int *<function>XESetCreateFont</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when a font is created.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetCreateFont' xrefstyle='select: title'/>
+function defines a procedure to be called whenever
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>
+and
+<xref linkend='XQueryFont' xrefstyle='select: title'/>
+are called.  
+It returns any previously defined procedure, usually NULL.
+</para>
+<para>
+<!-- .LP -->
+When 
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>
+or
+<xref linkend='XQueryFont' xrefstyle='select: title'/>
+is called, 
+your procedure is called with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XFontStruct *<parameter>fs</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+</para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>XESetFreeFont</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetFreeFont'>
+<funcprototype>
+  <funcdef>int *<function>XESetFreeFont</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when a font is freed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetFreeFont' xrefstyle='select: title'/>
+function defines a procedure to be called whenever
+<xref linkend='XFreeFont' xrefstyle='select: title'/>
+is called.  
+It returns any previously defined procedure, usually NULL.
+</para>
+<para>
+<!-- .LP -->
+When 
+<xref linkend='XFreeFont' xrefstyle='select: title'/>
+is called, your procedure is called with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XFontStruct *<parameter>fs</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The 
+<xref linkend='XESetWireToEvent' xrefstyle='select: title'/>
+and
+<xref linkend='XESetEventToWire' xrefstyle='select: title'/>
+functions allow you to define new events to the library.
+An 
+<structname>XEvent</structname>
+structure always has a type code (type
+<type>int</type>)
+as the first component.
+This uniquely identifies what kind of event it is.
+The second component is always the serial number (type
+<type>unsigned</type>
+<type>long</type>)
+of the last request processed by the server.
+The third component is always a Boolean (type
+<type>Bool</type>)
+indicating whether the event came from a
+<systemitem>SendEvent</systemitem>
+protocol request.
+The fourth component is always a pointer to the display
+the event was read from.
+The fifth component is always a resource ID of one kind or another,
+usually a window, carefully selected to be useful to toolkit dispatchers.
+The fifth component should always exist, even if
+the event does not have a natural destination;
+if there is no value
+from the protocol to put in this component, initialize it to zero.
+<!-- .NT -->
+There is an implementation limit such that your host event
+structure size cannot be bigger than the size of the
+<structname>XEvent</structname>
+union of structures.
+There also is no way to guarantee that more than 24 elements or 96 characters
+in the structure will be fully portable between machines.
+</para>
+<!-- .NE -->
+<indexterm significance="preferred"><primary>XESetWireToEvent</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetWireToEvent'>
+<funcprototype>
+  <funcdef>int *<function>XESetWireToEvent</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>event_number</parameter></paramdef>
+  <paramdef>Status <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>event_number</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the event code.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when converting an event.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetWireToEvent' xrefstyle='select: title'/>
+function defines a procedure to be called when an event
+needs to be converted from wire format 
+(<structname>xEvent</structname>)
+to host format 
+(<structname>XEvent</structname>).
+The event number defines which protocol event number to install a
+conversion procedure for.
+<xref linkend='XESetWireToEvent' xrefstyle='select: title'/>
+returns any previously defined procedure.
+<!-- .NT -->
+You can replace a core event conversion function with one
+of your own, although this is not encouraged.
+It would, however, allow you to intercept a core event 
+and modify it before being placed in the queue or otherwise examined.
+<!-- .NE -->
+When Xlib needs to convert an event from wire format to host
+format, your procedure is called with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XEvent *<parameter>re</parameter></paramdef>
+  <paramdef>xEvent *<parameter>event</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .LP -->
+<!-- .eM -->
+Your procedure must return status to indicate if the conversion succeeded.
+The re argument is a pointer to where the host format event should be stored,
+and the event argument is the 32-byte wire event structure.
+In the 
+<structname>XEvent</structname>
+structure you are creating, 
+you must fill in the five required members of the event structure.
+You should fill in the type member with the type specified for the 
+<structname>xEvent</structname>
+structure.
+You should copy all other members from the 
+<structname>xEvent</structname>
+structure (wire format) to the
+<structname>XEvent</structname>
+structure (host format).
+Your conversion procedure should return 
+<symbol>True</symbol>
+if the event should be placed in the queue or
+<symbol>False</symbol>
+if it should not be placed in the queue.
+</para>
+<para>
+<!-- .LP -->
+To initialize the serial number component of the event, call
+<xref linkend='_XSetLastRequestRead' xrefstyle='select: title'/>
+with the event and use the return value.
+</para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>_XSetLastRequestRead</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='_XSetLastRequestRead'>
+<funcprototype>
+  <funcdef>unsigned long<function>_XSetLastRequestRead</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>xGenericReply *<parameter>rep</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rep</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the wire event structure.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='_XSetLastRequestRead' xrefstyle='select: title'/>
+function computes and returns a complete serial number from the partial
+serial number in the event.
+<!-- .sp -->
+</para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XESetEventToWire</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetEventToWire'>
+<funcprototype>
+  <funcdef>Status *<function>XESetEventToWire</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>event_number</parameter></paramdef>
+  <paramdef>int <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>event_number</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the event code.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when converting an event.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetEventToWire' xrefstyle='select: title'/>
+function defines a procedure to be called when an event
+needs to be converted from host format
+(<structname>XEvent</structname>)
+to wire format
+(<structname>xEvent</structname>)
+form.  
+The event number defines which protocol event number to install a
+conversion procedure for.
+<xref linkend='XESetEventToWire' xrefstyle='select: title'/>
+returns any previously defined procedure.
+It returns zero if the conversion fails or nonzero otherwise.
+<!-- .NT -->
+You can replace a core event conversion function with one
+of your own, although this is not encouraged.  
+It would, however, allow you to intercept a core event 
+and modify it before being sent to another client.
+<!-- .NE -->
+When Xlib needs to convert an event from host format to wire format, 
+your procedure is called with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XEvent *<parameter>re</parameter></paramdef>
+  <paramdef>xEvent *<parameter>event</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .LP -->
+<!-- .eM -->
+The re argument is a pointer to the host format event,
+and the event argument is a pointer to where the 32-byte wire event 
+structure should be stored.
+You should fill in the type with the type from the 
+<structname>XEvent</structname>
+structure.
+All other members then should be copied from the host format to the 
+<structname>xEvent</structname>
+structure.
+</para>
+<indexterm significance="preferred"><primary>XESetWireToError</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetWireToError'>
+<funcprototype>
+  <funcdef>Bool *<function>XESetWireToError</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>error_number</parameter></paramdef>
+  <paramdef>Bool <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>error_number</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the error code.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when an error is received.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetWireToError' xrefstyle='select: title'/>
+function defines a procedure to be called when an extension
+error needs to be converted from wire format to host format.
+The error number defines which protocol error code to install
+the conversion procedure for.
+<xref linkend='XESetWireToError' xrefstyle='select: title'/>
+returns any previously defined procedure.
+</para>
+<para>
+<!-- .LP -->
+Use this function for extension errors that contain additional error values
+beyond those in a core X error, when multiple wire errors must be combined
+into a single Xlib error, or when it is necessary to intercept an
+X error before it is otherwise examined.
+</para>
+<para>
+<!-- .LP -->
+When Xlib needs to convert an error from wire format to host format,
+the procedure is called with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XErrorEvent *<parameter>he</parameter></paramdef>
+  <paramdef>xError *<parameter>we</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .LP -->
+<!-- .eM -->
+The he argument is a pointer to where the host format error should be stored.
+The structure pointed at by he is guaranteed to be as large as an
+<structname>XEvent</structname>
+structure and so can be cast to a type larger than an
+<structname>XErrorEvent</structname>
+to store additional values.
+If the error is to be completely ignored by Xlib
+(for example, several protocol error structures will be combined into
+one Xlib error),
+then the function should return
+<symbol>False</symbol>;
+otherwise, it should return
+<symbol>True</symbol>.
+</para>
+<indexterm significance="preferred"><primary>XESetError</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetError'>
+<funcprototype>
+  <funcdef>int *<function>XESetError</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when an error is received.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Inside Xlib, there are times that you may want to suppress the
+calling of the external error handling when an error occurs.
+This allows status to be returned on a call at the cost of the call
+being synchronous (though most such functions are query operations, in any
+case, and are typically programmed to be synchronous).
+</para>
+<para>
+<!-- .LP -->
+When Xlib detects a protocol error in 
+<xref linkend='_XReply' xrefstyle='select: title'/>,
+it calls your procedure with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>xError *<parameter>err</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+  <paramdef>int *<parameter>ret_code</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .LP -->
+<!-- .eM -->
+The err argument is a pointer to the 32-byte wire format error.
+The codes argument is a pointer to the extension codes structure.
+The ret_code argument is the return code you may want 
+<xref linkend='_XReply' xrefstyle='select: title'/>
+returned to.
+</para>
+<para>
+<!-- .LP -->
+If your procedure returns a zero value, 
+the error is not suppressed, and 
+the client's error handler is called.
+(For further information,
+see <link linkend="Using_the_Default_Error_Handlers">section 11.8.2</link>.)
+If your procedure returns nonzero, 
+the error is suppressed, and 
+<xref linkend='_XReply' xrefstyle='select: title'/>
+returns the value of ret_code.
+</para>
+<indexterm significance="preferred"><primary>XESetErrorString</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetErrorString'>
+<funcprototype>
+  <funcdef>char *<function>XESetErrorString</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>char *<parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call to obtain an error string.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The 
+<xref linkend='XGetErrorText' xrefstyle='select: title'/>
+function returns a string to the user for an error.
+<xref linkend='XESetErrorString' xrefstyle='select: title'/>
+allows you to define a procedure to be called that
+should return a pointer to the error message.
+The following is an example.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>code</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+  <paramdef>char *<parameter>buffer</parameter></paramdef>
+  <paramdef>int <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .LP -->
+<!-- .eM -->
+Your procedure is called with the error code for every error detected.
+You should copy nbytes of a null-terminated string containing the
+error message into buffer.
+</para>
+<indexterm significance="preferred"><primary>XESetPrintErrorValues</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetPrintErrorValues'>
+<funcprototype>
+  <funcdef>void *<function>XESetPrintErrorValues</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>void <parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when an error is printed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XESetPrintErrorValues' xrefstyle='select: title'/>
+function defines a procedure to be called when an extension
+error is printed, to print the error values.
+Use this function for extension errors that contain additional error values
+beyond those in a core X error.
+It returns any previously defined procedure.
+</para>
+<para>
+<!-- .LP -->
+When Xlib needs to print an error,
+the procedure is called with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>void <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XErrorEvent *<parameter>ev</parameter></paramdef>
+  <paramdef>void *<parameter>fp</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .LP -->
+<!-- .eM -->
+The structure pointed at by ev is guaranteed to be as large as an
+<structname>XEvent</structname>
+structure and so can be cast to a type larger than an
+<structname>XErrorEvent</structname>
+to obtain additional values set by using
+<xref linkend='XESetWireToError' xrefstyle='select: title'/>.
+The underlying type of the fp argument is system dependent;
+on a <acronym>POSIX</acronym>-compliant system, fp should be cast to type FILE*.
+</para>
+<indexterm significance="preferred"><primary>XESetFlushGC</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XESetFlushGC'>
+<funcprototype>
+  <funcdef>int *<function>XESetFlushGC</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int *<parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when a GC is flushed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The procedure set by the
+<xref linkend='XESetFlushGC' xrefstyle='select: title'/>
+function has the same interface as the procedure set by the
+<xref linkend='XESetCopyGC' xrefstyle='select: title'/>
+function, but is called when a GC cache needs to be updated in the server.
+</para>
+<indexterm significance="preferred"><primary>XESetBeforeFlush</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int *<function>XESetCopyGC</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>extension</parameter></paramdef>
+  <paramdef>int *<parameter>(*proc)()</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extension</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>proc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the procedure to call when a buffer is flushed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<function>XESetBeforeFlush</function>
+function defines a procedure to be called when data is about to be
+sent to the server.  When data is about to be sent, your procedure is  
+called one or more times with these arguments:
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<!-- .R -->
+<funcsynopsis>
+<funcprototype>
+  <funcdef>void <function>(*<replaceable>proc</replaceable>)</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XExtCodes *<parameter>codes</parameter></paramdef>
+  <paramdef>char *<parameter>data</parameter></paramdef>
+  <paramdef>long <parameter>len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .LP -->
+<!-- .eM -->
+The data argument specifies a portion of the outgoing data buffer,
+and its length in bytes is specified by the len argument.
+Your procedure must not alter the contents of the data and must not
+do additional protocol requests to the same display.
+</para>
+</sect2>
+<sect2 id="Hooks_onto_Xlib_Data_Structures">
+<title>Hooks onto Xlib Data Structures</title>
+<para>
+<!-- .LP -->
+Various Xlib data structures have provisions for extension procedures
+to chain extension supplied data onto a list.
+These structures are
+<structname>GC</structname>,
+<structname>Visual</structname>,
+<type>Screen</type>,
+<structname>ScreenFormat</structname>,
+<type>Display</type>,
+and 
+<structname>XFontStruct</structname>.
+Because the list pointer is always the first member in the structure, 
+a single set of procedures can be used to manipulate the data
+on these lists.
+</para>
+<para>
+<!-- .LP -->
+The following structure is used in the functions in this section
+and is defined in 
+<filename class="headerfile">&lt;X11/Xlib.h&gt;</filename>
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XExtData</primary></indexterm>
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<synopsis>
+typedef struct _XExtData {
+	int number;	/* number returned by XInitExtension */
+	struct _XExtData *next;	/* next item on list of data for structure */
+	int (*free_private)();	/* if defined,  called to free private */
+	XPointer private_data;	/* data private to this extension. */
+} XExtData;
+</synopsis>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+When any of the data structures listed above are freed, 
+the list is walked, and the structure's free procedure (if any) is called. 
+If free is NULL, 
+then the library frees both the data pointed to by the private_data member
+and the structure itself. 
+</para>
+<para>
+<!-- .LP -->
+<!-- .sM -->
+<!-- .TA .5i -->
+<!-- .ta .5i -->
+<synopsis>
+union {	Display *display;
+	GC gc;
+	Visual *visual;
+	Screen *screen;
+	ScreenFormat *pixmap_format;
+	XFontStruct *font } XEDataObject;
+</synopsis>
+</para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>XEHeadOfExtensionList</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XEHeadOfExtensionList'>
+<funcprototype>
+  <funcdef>XExtData **<function>XEHeadOfExtensionList</function></funcdef>
+  <paramdef>XEDataObject <parameter>object</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>object</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the object.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XEHeadOfExtensionList' xrefstyle='select: title'/>
+function returns a pointer to the list of extension structures attached
+to the specified object.
+In concert with 
+<xref linkend='XAddToExtensionList' xrefstyle='select: title'/>,
+<xref linkend='XEHeadOfExtensionList' xrefstyle='select: title'/>
+allows an extension to attach arbitrary data to any of the structures
+of types contained in
+<structname>XEDataObject</structname>.
+</para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XAddToExtensionList</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XAddToExtensionList'>
+<funcprototype>
+  <funcdef><function>XAddToExtensionList</function></funcdef>
+  <paramdef>XExtData **<parameter>structure</parameter></paramdef>
+  <paramdef>XExtData *<parameter>ext_data</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>structure</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension list.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ext_data</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension data structure to add.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The structure argument is a pointer to one of the data structures
+enumerated above.
+You must initialize ext_data-&gt;number with the extension number
+before calling this function.
+</para>
+<indexterm significance="preferred"><primary>XFindOnExtensionList</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFindOnExtensionList'>
+<funcprototype>
+  <funcdef>XExtData *<function>XFindOnExtensionList</function></funcdef>
+  <paramdef>struct_XExtData **<parameter>structure</parameter></paramdef>
+  <paramdef>int <parameter>number</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>structure</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension list.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>number</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the extension number from
+<xref linkend='XInitExtension' xrefstyle='select: title'/>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XFindOnExtensionList' xrefstyle='select: title'/>
+function returns the first extension data structure
+for the extension numbered number.
+It is expected that an extension will add at most one extension
+data structure to any single data structure's extension data list.
+There is no way to find additional structures.
+</para>
+<para>
+<!-- .LP -->
+The 
+<xref linkend='XAllocID' xrefstyle='select: title'/>
+macro, which allocates and returns a resource ID, is defined in 
+<filename class="headerfile">&lt;X11/Xlib.h&gt;</filename>.
+</para>
+<indexterm significance="preferred"><primary>XAllocID</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XAllocID'>
+<funcprototype>
+  <funcdef><function>XAllocID</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+This macro is a call through the 
+<type>Display</type>
+structure to an internal resource ID allocator.
+It returns a resource ID that you can use when creating new resources.
+</para>
+<para>
+<!-- .LP -->
+The 
+<xref linkend='XAllocIDs' xrefstyle='select: title'/>
+macro allocates and returns an array of resource ID.
+</para>
+<indexterm significance="preferred"><primary>XAllocIDs</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XAllocIDs'>
+<funcprototype>
+  <funcdef><function>XAllocIDs</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XID *<parameter>ids_return</parameter></paramdef>
+  <paramdef>int <parameter>count</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ids_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the resource IDs.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rep</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of resource IDs requested.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+This macro is a call through the 
+<type>Display</type>
+structure to an internal resource ID allocator.
+It returns resource IDs to the array supplied by the caller.
+To correctly handle automatic reuse of resource IDs, you must call
+<xref linkend='XAllocIDs' xrefstyle='select: title'/>
+when requesting multiple resource IDs.  This call might generate
+protocol requests.
+</para>
+</sect2>
+</sect1>
+<sect1 id="GC_Caching">
+<title>GC Caching</title>
+<para>
+<!-- .LP -->
+GCs are cached by the library to allow merging of independent change
+requests to the same GC into single protocol requests.
+This is typically called a write-back cache.
+Any extension procedure whose behavior depends on the contents of a GC
+must flush the GC cache to make sure the server has up-to-date contents
+in its GC.
+</para>
+<para>
+<!-- .LP -->
+The 
+<xref linkend='FlushGC' xrefstyle='select: title'/>
+macro checks the dirty bits in the library's GC structure and calls
+<xref linkend='_XFlushGCCache' xrefstyle='select: title'/>
+if any elements have changed.
+The
+<xref linkend='FlushGC' xrefstyle='select: title'/>
+macro is defined as follows:
+</para>
+<indexterm significance="preferred"><primary>FlushGC</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='FlushGC'>
+<funcprototype>
+  <funcdef><function>FlushGC</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Note that if you extend the GC to add additional resource ID components,
+you should ensure that the library stub sends the change request immediately.
+This is because a client can free a resource immediately after
+using it, so if you only stored the value in the cache without
+forcing a protocol request, the resource might be destroyed before being
+set into the GC.
+You can use the
+<xref linkend='_XFlushGCCache' xrefstyle='select: title'/>
+procedure 
+to force the cache to be flushed.
+The
+<xref linkend='_XFlushGCCache' xrefstyle='select: title'/>
+procedure
+is defined as follows:
+</para>
+<indexterm significance="preferred"><primary>_XFlushGCCache</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='_XFlushGCCache'>
+<funcprototype>
+  <funcdef><function>_XFlushGCCache</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<!-- .LP -->
+<!-- .eM -->
+</sect1>
+<sect1 id="Graphics_Batching">
+<title>Graphics Batching</title>
+<para>
+<!-- .LP -->
+If you extend X to add more poly graphics primitives, you may be able to
+take advantage of facilities in the library to allow back-to-back 
+single calls to be transformed into poly requests.
+This may dramatically improve performance of programs that are not
+written using poly requests. 
+A pointer to an 
+<structname>xReq</structname>,
+called last_req in the display structure, is the last request being processed.  
+By checking that the last request
+type, drawable, gc, and other options are the same as the new one
+and that there is enough space left in the buffer, you may be able
+to just extend the previous graphics request by extending the length
+field of the request and appending the data to the buffer.  
+This can improve performance by five times or more in naive programs.  
+For example, here is the source for the 
+<xref linkend='XDrawPoint' xrefstyle='select: title'/>
+stub.
+(Writing extension stubs is discussed in the next section.)
+</para>
+<!-- .sM -->
+<!-- .nf -->
+<programlisting>
+#include &lt;X11/Xlibint.h&gt;
+
+/* precompute the maximum size of batching request allowed */
+
+static int size = sizeof(xPolyPointReq) + EPERBATCH * sizeof(xPoint);
+
+XDrawPoint(dpy, d, gc, x, y)
+    register Display *dpy;
+    Drawable d;
+    GC gc;
+    int x, y; /* INT16 */
+{
+    xPoint *point;
+    LockDisplay(dpy);
+    FlushGC(dpy, gc);
+    {
+    register xPolyPointReq *req = (xPolyPointReq *) dpy-&gt;last_req;
+    /* if same as previous request, with same drawable, batch requests */
+    if (
+          (req-&gt;reqType == X_PolyPoint)
+       &amp;&amp; (req-&gt;drawable == d)
+       &amp;&amp; (req-&gt;gc == gc-&gt;gid)
+       &amp;&amp; (req-&gt;coordMode == CoordModeOrigin)
+       &amp;&amp; ((dpy-&gt;bufptr + sizeof (xPoint)) &lt;= dpy-&gt;bufmax)
+       &amp;&amp; (((char *)dpy-&gt;bufptr - (char *)req) &lt; size) ) {
+         point = (xPoint *) dpy-&gt;bufptr;
+         req-&gt;length += sizeof (xPoint) &gt;&gt; 2;
+         dpy-&gt;bufptr += sizeof (xPoint);
+         }
+
+    else {
+        GetReqExtra(PolyPoint, 4, req); /* 1 point = 4 bytes */
+        req-&gt;drawable = d;
+        req-&gt;gc = gc-&gt;gid;
+        req-&gt;coordMode = CoordModeOrigin;
+        point = (xPoint *) (req + 1);
+        }
+    point-&gt;x = x;
+    point-&gt;y = y;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+</programlisting>
+<!-- .fi -->
+<para>
+<!-- .LP -->
+<!-- .eM -->
+To keep clients from generating very long requests that may monopolize the 
+server,
+there is a symbol defined in
+<filename class="headerfile">&lt;X11/Xlibint.h&gt;</filename>
+of EPERBATCH on the number of requests batched.
+Most of the performance benefit occurs in the first few merged requests.
+Note that 
+<xref linkend='FlushGC' xrefstyle='select: title'/>
+is called <emphasis remap='I'>before</emphasis> picking up the value of last_req,
+because it may modify this field.
+</para>
+</sect1>
+<sect1 id="Writing_Extension_Stubs">
+<title>Writing Extension Stubs</title>
+<para>
+<!-- .LP -->
+All X requests always contain the length of the request,
+expressed as a 16-bit quantity of 32 bit words.
+This means that a single request can be no more than 256K bytes in
+length.
+Some servers may not support single requests of such a length.
+The value of dpy-&gt;max_request_size contains the maximum length as
+defined by the server implementation.
+For further information,
+see <olink targetdoc='x11protocol' targetptr='Maximum-request-length'
+><citetitle>X Window System Protocol</citetitle></olink>.
+</para>
+<sect2 id="Requests_Replies_and_Xproto.h">
+<title>Requests, Replies, and Xproto.h</title>
+<para>
+<!-- .LP -->
+The 
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>
+file contains three sets of definitions that
+are of interest to the stub implementor:  
+request names, request structures, and reply structures.
+</para>
+<para>
+<!-- .LP -->
+You need to generate a file equivalent to 
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>
+for your extension and need to include it in your stub procedure.
+Each stub procedure also must include 
+<filename class="headerfile">&lt;X11/Xlibint.h&gt;</filename>.
+</para>
+<para>
+<!-- .LP -->
+The identifiers are deliberately chosen in such a way that, if the
+request is called X_DoSomething, then its request structure is
+xDoSomethingReq, and its reply is xDoSomethingReply.  
+The GetReq family of macros, defined in 
+<filename class="headerfile">&lt;X11/Xlibint.h&gt;</filename>,
+takes advantage of this naming scheme.
+</para>
+<para>
+<!-- .LP -->
+For each X request, 
+there is a definition in 
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>
+that looks similar to this:
+</para>
+<para>
+<!-- .LP -->
+<!-- .R -->
+<programlisting>
+#define X_DoSomething   42
+</programlisting>
+In your extension header file, 
+this will be a minor opcode, 
+instead of a major opcode.
+</para>
+</sect2>
+<sect2 id="Request_Format">
+<title>Request Format</title>
+<para>
+<!-- .LP -->
+Every request contains an 8-bit major opcode and a 16-bit length field
+expressed in units of 4 bytes.  
+Every request consists of 4 bytes of header
+(containing the major opcode, the length field, and a data byte) followed by
+zero or more additional bytes of data. 
+The length field defines the total length of the request, including the header.
+The length field in a request must equal the minimum length required to contain 
+the request. 
+If the specified length is smaller or larger than the required length, 
+the server should generate a 
+<errorname>BadLength</errorname>
+error.
+Unused bytes in a request are not required to be zero.  
+Extensions should be designed in such a way that long protocol requests
+can be split up into smaller requests,
+if it is possible to exceed the maximum request size of the server.
+The protocol guarantees the maximum request size to be no smaller than
+4096 units (16384 bytes).
+</para>
+<para>
+<!-- .LP -->
+Major opcodes 128 through 255 are reserved for extensions.
+Extensions are intended to contain multiple requests, 
+so extension requests typically have an additional minor opcode encoded 
+in the second data byte in the request header, 
+but the placement and interpretation of this minor opcode as well as all
+other fields in extension requests are not defined by the core protocol.
+Every request is implicitly assigned a sequence number (starting with one)
+used in replies, errors, and events.
+</para>
+<para>
+<!-- .LP -->
+Most protocol requests have a corresponding structure typedef in
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>,
+which looks like:
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>xDoSomethingReq</primary></indexterm>
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<synopsis>
+typedef struct _DoSomethingReq {
+	CARD8 reqType;		/* X_DoSomething */
+	CARD8 someDatum;	/* used differently in different requests */
+	CARD16 length;		/* total # of bytes in request, divided by 4 */
+	...
+	/* request-specific data */
+	...
+} xDoSomethingReq;
+</synopsis>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If a core protocol request has a single 32-bit argument, 
+you need not declare a request structure in your extension header file.
+Instead, such requests use the
+<structname>xResourceReq</structname>
+structure in
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>.
+This structure is used for any request whose single argument is a 
+<type>Window</type>,
+<type>Pixmap</type>,
+<type>Drawable</type>,
+<type>GContext</type>,
+<type>Font</type>,
+<type>Cursor</type>,
+<type>Colormap</type>,
+<type>Atom</type>,
+or
+<type>VisualID</type>.
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>xResourceReq</primary></indexterm>
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<synopsis>
+typedef struct _ResourceReq {
+	CARD8 reqType;	/* the request type, e.g. X_DoSomething */
+	BYTE pad;	/* not used */
+	CARD16 length;	/* 2 (= total # of bytes in request, divided by 4) */
+	CARD32 id;	/* the Window, Drawable, Font, GContext, etc. */
+} xResourceReq;
+</synopsis>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If convenient,
+you can do something similar in your extension header file. 
+</para>
+<para>
+<!-- .LP -->
+In both of these structures, 
+the reqType field identifies the type of the request (for example, 
+X_MapWindow or X_CreatePixmap).  
+The length field tells how long the request is
+in units of 4-byte longwords. 
+This length includes both the request structure itself and any
+variable-length data, such as strings or lists, that follow the
+request structure.  
+Request structures come in different sizes, 
+but all requests are padded to be multiples of four bytes long.
+</para>
+<para>
+<!-- .LP -->
+A few protocol requests take no arguments at all. 
+Instead, they use the
+<structname>xReq</structname>
+structure in
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>,
+which contains only a reqType and a length (and a pad byte).
+</para>
+<para>
+<!-- .LP  -->
+If the protocol request requires a reply, 
+then
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>
+also contains a reply structure typedef:
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>xDoSomethingReply</primary></indexterm>
+<!-- .sM -->
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+<synopsis>
+typedef struct _DoSomethingReply {
+	BYTE type;	/* always X_Reply */
+	BYTE someDatum;	/* used differently in different requests */
+	CARD16 sequenceNumber;	/* # of requests sent so far */
+	CARD32 length;	/* # of additional bytes, divided by 4 */
+	...
+	/* request-specific data */
+	...
+} xDoSomethingReply;
+</synopsis>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Most of these reply structures are 32 bytes long. 
+If there are not that many reply values, 
+then they contain a sufficient number of pad fields
+to bring them up to 32 bytes.  
+The length field is the total number of bytes in the request minus 32, 
+divided by 4.  
+This length will be nonzero only if:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+The reply structure is followed by variable-length data,
+such as a list or string.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The reply structure is longer than 32 bytes.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+Only 
+<systemitem>GetWindowAttributesl</systemitem>,
+<systemitem>QueryFont</systemitem>,
+<systemitem>QueryKeymap</systemitem>,
+and
+<systemitem>GetKeyboardControl</systemitem>
+have reply structures longer than 32 bytes in the core protocol.
+</para>
+<para>
+<!-- .LP -->
+A few protocol requests return replies that contain no data.  
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>
+does not define reply structures for these.
+Instead, they use the 
+<structname>xGenericReply</structname>
+structure, which contains only a type, length,
+and sequence number (and sufficient padding to make it 32 bytes long).
+</para>
+</sect2>
+<sect2 id="Starting_to_Write_a_Stub_Procedure">
+<title>Starting to Write a Stub Procedure</title>
+<para>
+<!-- .LP -->
+An Xlib stub procedure should start like this:
+</para>
+<para>
+<!-- .LP -->
+<!-- .R -->
+<programlisting>
+#include "&lt;X11/Xlibint.h&gt;
+
+XDoSomething (arguments, ... )
+/* argument declarations */
+{
+
+register XDoSomethingReq *req;
+...
+</programlisting>
+If the protocol request has a reply, 
+then the variable declarations should include the reply structure for the request.
+The following is an example:
+</para>
+<para>
+<!-- .LP -->
+<!-- .R -->
+<programlisting>
+xDoSomethingReply rep;
+</programlisting>
+</para>
+</sect2>
+<sect2 id="Locking_Data_Structures">
+<title>Locking Data Structures</title>
+<para>
+<!-- .LP -->
+To lock the display structure for systems that
+want to support multithreaded access to a single display connection,
+each stub will need to lock its critical section.
+Generally, this section is the point from just before the appropriate GetReq
+call until all arguments to the call have been stored into the buffer.
+The precise instructions needed for this locking depend upon the machine
+architecture. 
+Two calls, which are generally implemented as macros, have been provided.
+<indexterm significance="preferred"><primary>LockDisplay</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='LockDisplay'>
+<funcprototype>
+  <funcdef><function>LockDisplay</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+</para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>UnlockDisplay</primary></indexterm>
+<funcsynopsis id='UnlockDisplay'>
+<funcprototype>
+  <funcdef><function>UnlockDisplay</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<!-- .LP -->
+<!-- .eM -->
+</sect2>
+<sect2 id="Sending_the_Protocol_Request_and_Arguments">
+<title>Sending the Protocol Request and Arguments</title>
+<para>
+<!-- .LP -->
+After the variable declarations, 
+a stub procedure should call one of four macros defined in 
+<filename class="headerfile">&lt;X11/Xlibint.h&gt;</filename>:
+<function>GetReq</function>,
+<function>GetReqExtra</function>,
+<function>GetResReq</function>,
+or 
+<function>GetEmptyReq</function>.
+All of these macros take, as their first argument,
+the name of the protocol request as declared in 
+<filename class="headerfile">&lt;X11/Xproto.h&gt;</filename>
+except with X_ removed.   
+Each one declares a 
+<type>Display</type>
+structure pointer,
+called dpy, and a pointer to a request structure, called req,
+which is of the appropriate type.
+The macro then appends the request structure to the output buffer, 
+fills in its type and length field, and sets req to point to it.
+</para>
+<para>
+<!-- .LP -->
+If the protocol request has no arguments (for instance, X_GrabServer),
+then use 
+<function>GetEmptyReq</function>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .R  -->
+<programlisting>
+GetEmptyReq (DoSomething, req);
+</programlisting>
+If the protocol request has a single 32-bit argument (such as a
+<type>Pixmap</type>,
+<type>Window</type>,
+<type>Drawable</type>,
+<type>Atom</type>,
+and so on),
+then use 
+<function>GetResReq</function>.
+The second argument to the macro is the 32-bit object.  
+<symbol>X_MapWindow</symbol>
+is a good example.
+</para>
+<para>
+<!-- .LP -->
+<!-- .R -->
+<programlisting>
+GetResReq (DoSomething, rid, req);
+</programlisting>
+The rid argument is the 
+<type>Pixmap</type>,
+<type>Window</type>,
+or other resource ID.
+</para>
+<para>
+<!-- .LP -->
+If the protocol request takes any other argument list, 
+then call 
+<function>GetReq</function>.
+After the 
+<function>GetReq</function>,
+you need to set all the other fields in the request structure,
+usually from arguments to the stub procedure.
+</para>
+<para>
+<!-- .LP -->
+<!-- .R -->
+<programlisting>
+GetReq (DoSomething, req);
+/* fill in arguments here */
+req-&gt;arg1 = arg1;
+req-&gt;arg2 = arg2;
+...
+</programlisting>
+A few stub procedures (such as 
+<xref linkend='XCreateGC' xrefstyle='select: title'/>
+and 
+<xref linkend='XCreatePixmap' xrefstyle='select: title'/>)
+return a resource ID to the caller but pass a resource ID as an argument
+to the protocol request.   
+Such procedures use the macro 
+<xref linkend='XAllocID' xrefstyle='select: title'/>
+to allocate a resource ID from the range of IDs 
+that were assigned to this client when it opened the connection.
+</para>
+<para>
+<!-- .LP -->
+<!-- .R -->
+<programlisting>
+rid = req-&gt;rid = XAllocID();
+...
+return (rid);
+</programlisting>
+Finally, some stub procedures transmit a fixed amount of variable-length
+data after the request.  
+Typically, these procedures (such as
+<xref linkend='XMoveWindow' xrefstyle='select: title'/>
+and 
+<xref linkend='XSetBackground' xrefstyle='select: title'/>)
+are special cases of more general functions like 
+<xref linkend='XMoveResizeWindow' xrefstyle='select: title'/>
+and 
+<xref linkend='XChangeGC' xrefstyle='select: title'/>.
+These procedures use 
+<function>GetReqExtra</function>,
+which is the same as 
+<function>GetReq</function>
+except that it takes an additional argument (the number of
+extra bytes to allocate in the output buffer after the request structure).  
+This number should always be a multiple of four. Note that it is possible
+for req to be set to NULL as a defensive measure if the requested length
+exceeds the Xlib's buffer size (normally 16K).
+</para>
+</sect2>
+<sect2 id="Variable_Length_Arguments">
+<title>Variable Length Arguments</title>
+<para>
+<!-- .LP -->
+Some protocol requests take additional variable-length data that
+follow the 
+<type>xDoSomethingReq</type>
+structure.    
+The format of this data varies from request to request. 
+Some requests require a sequence of 8-bit bytes, 
+others a sequence of 16-bit or 32-bit entities, 
+and still others a sequence of structures.
+</para>
+<para>
+<!-- .LP -->
+It is necessary to add the length of any variable-length data to the
+length field of the request structure.  
+That length field is in units of 32-bit longwords.  
+If the data is a string or other sequence of 8-bit bytes, 
+then you must round the length up and shift it before adding:
+</para>
+<para>
+<!-- .LP -->
+<!-- .R -->
+<programlisting>
+req-&gt;length += (nbytes+3)&gt;&gt;2;
+</programlisting>
+To transmit variable-length data, use the 
+<xref linkend='Data' xrefstyle='select: title'/>
+macros.
+If the data fits into the output buffer, 
+then this macro copies it to the buffer.  
+If it does not fit, however,
+the 
+<xref linkend='Data' xrefstyle='select: title'/>
+macro calls 
+<function>_XSend</function>,
+which transmits first the contents of the buffer and then your data.
+The 
+<xref linkend='Data' xrefstyle='select: title'/>
+macros take three arguments:  
+the display, a pointer to the beginning of the data, 
+and the number of bytes to be sent.
+<!-- .sM -->
+<funcsynopsis id='Data'>
+<funcprototype role='macro'>
+  <funcdef><function>Data</function></funcdef>
+  <paramdef><parameter>display</parameter></paramdef>
+  <paramdef>(char *) <parameter>data</parameter></paramdef>
+  <paramdef><parameter>nbytes</parameter></paramdef>
+</funcprototype>
+<funcprototype role='macro'>
+  <funcdef><function>Data16</function></funcdef>
+  <paramdef><parameter>display</parameter></paramdef>
+  <paramdef>(short *) <parameter>data</parameter></paramdef>
+  <paramdef><parameter>nbytes</parameter></paramdef>
+</funcprototype>
+<funcprototype role='macro'>
+  <funcdef><function>Data32</function></funcdef>
+  <paramdef><parameter>display</parameter></paramdef>
+  <paramdef>(long *) <parameter>data</parameter></paramdef>
+  <paramdef><parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<function>Data</function>,
+<function>Data16</function>,
+and
+<function>Data32</function>
+are macros that may use their last argument
+more than once, so that argument should be a variable rather than
+an expression such as ``nitems*sizeof(item)''.  
+You should do that kind of computation in a separate statement before calling 
+them.
+Use the appropriate macro when sending byte, short, or long data.
+</para>
+<para>
+<!-- .LP -->
+If the protocol request requires a reply, 
+then call the procedure 
+<function>_XSend</function>
+instead of the 
+<xref linkend='Data' xrefstyle='select: title'/>
+macro.  
+<function>_XSend</function>
+takes the same arguments, but because it sends your data immediately instead of 
+copying it into the output buffer (which would later be flushed
+anyway by the following call on 
+<xref linkend='_XReply' xrefstyle='select: title'/>),
+it is faster.
+</para>
+</sect2>
+<sect2 id="Replies">
+<title>Replies</title>
+<para>
+<!-- .LP -->
+If the protocol request has a reply, 
+then call 
+<xref linkend='_XReply' xrefstyle='select: title'/>
+after you have finished dealing with 
+all the fixed-length and variable-length arguments.  
+<xref linkend='_XReply' xrefstyle='select: title'/>
+flushes the output buffer and waits for an 
+<structname>xReply</structname>
+packet to arrive.  
+If any events arrive in the meantime,
+<xref linkend='_XReply' xrefstyle='select: title'/>
+places them in the queue for later use.
+</para>
+<indexterm significance="preferred"><primary>_XReply</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='_XReply'>
+<funcprototype>
+  <funcdef>Status <function>_XReply</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>xReply *<parameter>rep</parameter></paramdef>
+  <paramdef>int <parameter>extra</parameter></paramdef>
+  <paramdef>Bool <parameter>discard</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rep</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the reply structure.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>extra</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of 32-bit words expected after the replay.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>discard</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies if any data beyond that specified in the extra argument
+should be discarded.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='_XReply' xrefstyle='select: title'/>
+function waits for a reply packet and copies its contents into the
+specified rep.  
+<xref linkend='_XReply' xrefstyle='select: title'/>
+handles error and event packets that occur before the reply is received.
+<xref linkend='_XReply' xrefstyle='select: title'/>
+takes four arguments:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+A 
+<type>Display</type>
+* structure
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A pointer to a reply structure (which must be cast to an 
+<structname>xReply</structname>
+*)
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The number of additional 32-bit words (beyond 
+<function>sizeof( xReply</function>)
+= 32 bytes)
+in the reply structure
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A Boolean that indicates whether
+<xref linkend='_XReply' xrefstyle='select: title'/>
+is to discard any additional bytes
+beyond those it was told to read
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+Because most reply structures are 32 bytes long, 
+the third argument is usually 0.  
+The only core protocol exceptions are the replies to 
+<systemitem>GetWindowAttributesl</systemitem>,
+<systemitem>QueryFont</systemitem>,
+<systemitem>QueryKeymap</systemitem>,
+and 
+<systemitem>GetKeyboardControl</systemitem>,
+which have longer replies.
+</para>
+<para>
+<!-- .LP -->
+The last argument should be 
+<symbol>False</symbol>
+if the reply structure is followed
+by additional variable-length data (such as a list or string).  
+It should be 
+<symbol>True</symbol>
+if there is not any variable-length data.
+<!-- .NT -->
+This last argument is provided for upward-compatibility reasons
+to allow a client to communicate properly with a hypothetical later
+version of the server that sends more data than the client expected.
+For example, some later version of 
+<systemitem>GetWindowAttributesl</systemitem>
+might use a
+larger, but compatible, 
+<structname>xGetWindowAttributesReply</structname>
+that contains additional attribute data at the end.
+<!-- .NE -->
+<xref linkend='_XReply' xrefstyle='select: title'/>
+returns 
+<symbol>True</symbol>
+if it received a reply successfully or 
+<symbol>False</symbol>
+if it received any sort of error. 
+</para>
+<para>
+<!-- .LP -->
+For a request with a reply that is not followed by variable-length
+data, you write something like:
+</para>
+<para>
+<!-- .LP -->
+<!-- .R -->
+<programlisting>
+_XReply(display, (xReply *)&amp;rep, 0, True);
+*ret1 = rep.ret1;
+*ret2 = rep.ret2;
+*ret3 = rep.ret3;
+...
+UnlockDisplay(dpy);
+SyncHandle();
+return (rep.ret4);
+}
+</programlisting>
+If there is variable-length data after the reply, 
+change the 
+<symbol>True</symbol>
+to 
+<symbol>False</symbol>,
+and use the appropriate
+<xref linkend='_XRead' xrefstyle='select: title'/>
+function to read the variable-length data.
+</para>
+<!-- .LP -->
+<!-- .sM -->
+<funcsynopsis id='_XRead'>
+<funcprototype>
+  <funcdef><function>_XRead</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>data_return</parameter></paramdef>
+  <paramdef>long <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the buffer.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes required.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='_XRead' xrefstyle='select: title'/>
+function reads the specified number of bytes into data_return.
+</para>
+<!-- .LP -->
+<!-- .sM -->
+<funcsynopsis id='_XRead16'>
+<funcprototype>
+  <funcdef><function>_XRead16</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>short *<parameter>data_return</parameter></paramdef>
+  <paramdef>long <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the buffer.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes required.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='_XRead16' xrefstyle='select: title'/>
+function reads the specified number of bytes,
+unpacking them as 16-bit quantities,
+into the specified array as shorts.
+</para>
+<!-- .LP -->
+<!-- .sM -->
+<funcsynopsis id='_XRead32'>
+<funcprototype>
+  <funcdef><function>_XRead32</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>long *<parameter>data_return</parameter></paramdef>
+  <paramdef>long <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the buffer.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes required.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='_XRead32' xrefstyle='select: title'/>
+function reads the specified number of bytes,
+unpacking them as 32-bit quantities,
+into the specified array as longs.
+</para>
+<!-- .LP -->
+<!-- .sM -->
+<funcsynopsis id='_XRead16Pad'>
+<funcprototype>
+  <funcdef><function>_XRead16Pad</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>short *<parameter>data_return</parameter></paramdef>
+  <paramdef>long <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the buffer.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes required.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='_XRead16Pad' xrefstyle='select: title'/>
+function reads the specified number of bytes,
+unpacking them as 16-bit quantities,
+into the specified array as shorts.
+If the number of bytes is not a multiple of four,
+<xref linkend='_XRead16Pad' xrefstyle='select: title'/>
+reads and discards up to two additional pad bytes.
+</para>
+<!-- .LP -->
+<!-- .sM -->
+<funcsynopsis id='_XReadPad'>
+<funcprototype>
+  <funcdef><function>_XReadPad</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>data_return</parameter></paramdef>
+  <paramdef>long <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the buffer.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes required.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='_XReadPad' xrefstyle='select: title'/>
+function reads the specified number of bytes into data_return.
+If the number of bytes is not a multiple of four,
+<xref linkend='_XReadPad' xrefstyle='select: title'/>
+reads and discards up to three additional pad bytes.
+</para>
+<para>
+<!-- .LP -->
+Each protocol request is a little different. 
+For further information,
+see the Xlib sources for examples.
+</para>
+</sect2>
+<sect2 id="Synchronous_Calling">
+<title>Synchronous Calling</title>
+<para>
+<!-- .LP -->
+Each procedure should have a call, just before returning to the user, 
+to a macro called
+<systemitem>SyncHandle</systemitem>.
+If synchronous mode is enabled (see 
+<function>XSynchronize</function>),
+the request is sent immediately.
+The library, however, waits until any error the procedure could generate
+at the server has been handled.
+</para>
+</sect2>
+<sect2 id="Allocating_and_Deallocating_Memory">
+<title>Allocating and Deallocating Memory</title>
+<para>
+<!-- .LP -->
+To support the possible reentry of these procedures, 
+you must observe several conventions when allocating and deallocating memory,
+most often done when returning data to the user from the window
+system of a size the caller could not know in advance
+(for example, a list of fonts or a list of extensions).
+The standard C library functions on many systems
+are not protected against signals or other multithreaded uses.
+The following analogies to standard I/O library functions
+have been defined:
+</para>
+<para>
+<!-- .LP -->
+These should be used in place of any calls you would make to the normal
+C library functions.
+</para>
+<para>
+<!-- .LP -->
+If you need a single scratch buffer inside a critical section 
+(for example, to pack and unpack data to and from the wire protocol),
+the general memory allocators may be too expensive to use
+(particularly in output functions, which are performance critical).  
+The following function returns a scratch buffer for use within a
+critical section:
+</para>
+<indexterm significance="preferred"><primary>_XAllocScratch</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='_XAllocScratch'>
+<funcprototype>
+  <funcdef>char *<function>_XAllocScratch</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>unsigned long <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes required.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+This storage must only be used inside of a critical section of your
+stub.  The returned pointer cannot be assumed valid after any call
+that might permit another thread to execute inside Xlib.  For example,
+the pointer cannot be assumed valid after any use of the
+<function>GetReq</function>
+or
+<xref linkend='Data' xrefstyle='select: title'/>
+families of macros,
+after any use of
+<xref linkend='_XReply' xrefstyle='select: title'/>,
+or after any use of the
+<function>_XSend</function>
+or
+<xref linkend='_XRead' xrefstyle='select: title'/>
+families of functions.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+The following function returns a scratch buffer for use across
+critical sections:
+</para>
+<indexterm significance="preferred"><primary>_XAllocTemp</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='_XAllocTemp'>
+<funcprototype>
+  <funcdef>char *<function>_XAllocTemp</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>unsigned long <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of bytes required.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+This storage can be used across calls that might permit another thread to
+execute inside Xlib.  The storage must be explicitly returned to Xlib.
+The following function returns the storage:
+</para>
+<indexterm significance="preferred"><primary>_XFreeTemp</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='_XFreeTemp'>
+<funcprototype>
+  <funcdef>void <function>_XFreeTemp</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>buf</parameter></paramdef>
+  <paramdef>unsigned long <parameter>nbytes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>buf</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the buffer to return.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nbytes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the size of the buffer.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+You must pass back the same pointer and size that were returned by
+<xref linkend='_XAllocTemp' xrefstyle='select: title'/>.
+</para>
+</sect2>
+<sect2 id="Portability_Considerations">
+<title>Portability Considerations</title>
+<para>
+<!-- .LP -->
+Many machine architectures
+do not correctly or efficiently access data at unaligned locations;
+their compilers pad out structures to preserve this characteristic.
+Many other machines capable of unaligned references pad inside of structures
+as well to preserve alignment, because accessing aligned data is
+usually much faster.
+Because the library and the server use structures to access data at
+arbitrary points in a byte stream,
+all data in request and reply packets <emphasis remap='I'>must</emphasis> be naturally aligned;
+that is, 16-bit data starts on 16-bit boundaries in the request
+and 32-bit data on 32-bit boundaries.
+All requests <emphasis remap='I'>must</emphasis> be a multiple of 32 bits in length to preserve
+the natural alignment in the data stream.
+You must pad structures out to 32-bit boundaries.
+Pad information does not have to be zeroed unless you want to
+preserve such fields for future use in your protocol requests,
+but it is recommended to zero it to avoid inadvertent data leakage
+and improve compressability.
+Floating point varies radically between machines and should be
+avoided completely if at all possible.
+</para>
+<para>
+<!-- .LP -->
+This code may run on machines with 16-bit ints.  
+So, if any integer argument, variable, or return value either can take 
+only nonnegative values or is declared as a
+<type>CARD16</type>
+in the protocol, be sure to declare it as
+<type>unsigned</type>
+<type>int</type>
+and not as
+<type>int</type>.
+(This, of course, does not apply to Booleans or enumerations.)
+</para>
+<para>
+<!-- .LP -->
+Similarly, 
+if any integer argument or return value is declared
+<type>CARD32</type>
+in the protocol, 
+declare it as an
+<type>unsigned</type>
+<type>long</type>
+and not as
+<type>int</type>
+or
+<type>long</type>.
+This also goes for any internal variables that may
+take on values larger than the maximum 16-bit
+<type>unsigned</type>
+<type>int</type>.
+</para>
+<para>
+<!-- .LP -->
+The library has always assumed that a
+<type>char</type>
+is 8 bits, a
+<type>short</type>
+is 16 bits, an
+<type>int</type>
+is 16 or 32 bits, and a
+<type>long</type>
+is 32 bits.
+Unfortunately, this assumption remains on machines where a <type>long</type>
+can hold 64-bits, and many functions and structures require unnecessarily
+large fields to avoid breaking compatibility with existing code.  Special
+care must be taken with arrays of values that are transmitted in the
+protocol as CARD32 or INT32 but have to be converted to arrays of 64-bit
+<type>long</type> when passed to or from client applications.
+</para>
+<para>
+The 
+<function>PackData</function>
+macro is a half-hearted attempt to deal with the possibility of 32 bit shorts. 
+However, much more work is needed to make this work properly.
+</para>
+</sect2>
+<sect2 id="Deriving_the_Correct_Extension_Opcode">
+<title>Deriving the Correct Extension Opcode</title>
+<para>
+<!-- .LP -->
+The remaining problem a writer of an extension stub procedure faces that
+the core protocol does not face is to map from the call to the proper
+major and minor opcodes.  
+While there are a number of strategies, 
+the simplest and fastest is outlined below.
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+Declare an array of pointers, _NFILE long (this is normally found
+in 
+<filename class="headerfile">&lt;stdio.h&gt;</filename>
+and is the number of file descriptors supported on the system)
+of type 
+<structname>XExtCodes</structname>.
+Make sure these are all initialized to NULL.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+When your stub is entered, your initialization test is just to use
+the display pointer passed in to access the file descriptor and an index
+into the array.  
+If the entry is NULL, then this is the first time you
+are entering the procedure for this display.  
+Call your initialization procedure and pass to it the display pointer.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Once in your initialization procedure, call 
+<xref linkend='XInitExtension' xrefstyle='select: title'/>;
+if it succeeds, store the pointer returned into this array.  
+Make sure to establish a close display handler to allow you to zero the entry.
+Do whatever other initialization your extension requires.
+(For example, install event handlers and so on.)
+Your initialization procedure would normally return a pointer to the
+<structname>XExtCodes</structname>
+structure for this extension, which is what would normally
+be found in your array of pointers.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+After returning from your initialization procedure, 
+the stub can now continue normally, because it has its major opcode safely 
+in its hand in the 
+<structname>XExtCodes</structname>
+structure.
+<!-- .bp -->
+    </para>
+  </listitem>
+</itemizedlist>
+</sect2>
+</sect1>
+</appendix>

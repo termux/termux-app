@@ -1,0 +1,12 @@
+# Static site folder
+reference/
+
+# HTML and Markdown files
+*.html
+*.md
+
+# MkDocs Config file
+mkdocs.yml
+
+# Python virtualenv
+env/

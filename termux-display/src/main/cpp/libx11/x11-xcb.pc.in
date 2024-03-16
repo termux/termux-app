@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: X11 XCB
+Description: X Library XCB interface
+Version: @PACKAGE_VERSION@
+Requires: x11 xcb
+Cflags: -I${includedir}
+Libs: -L${libdir} -lX11-xcb

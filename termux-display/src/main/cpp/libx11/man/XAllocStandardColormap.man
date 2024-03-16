@@ -1,0 +1,302 @@
+'\" t
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+'\" t
+.TH XAllocStandardColormap __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XAllocStandardColormap, XSetRGBColormaps, XGetRGBColormaps, XStandardColormap \- allocate, set, or read a standard colormap structure
+.SH SYNTAX
+.HP
+XStandardColormap *XAllocStandardColormap\^(void\^);
+.HP
+void XSetRGBColormaps\^(\^Display *\fIdisplay\fP, Window \fIw\fP,
+XStandardColormap *\fIstd_colormap\fP,
+int \fIcount\fP, Atom \fIproperty\fP\^);
+.HP
+Status XGetRGBColormaps\^(\^Display *\fIdisplay\fP, Window \fIw\fP,
+XStandardColormap **\fIstd_colormap_return\fP, int *\fIcount_return\fP,
+Atom \fIproperty\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIcount\fP 1i
+Specifies the number of colormaps.
+.IP \fIcount_return\fP 1i
+Returns the number of colormaps.
+.IP \fIproperty\fP 1i
+Specifies the property name.
+.IP \fIstd_colormap\fP 1i
+Specifies the
+.B XStandardColormap
+structure to be used.
+.IP \fIstd_colormap_return\fP 1i
+Returns the
+.B XStandardColormap
+structure.
+.SH DESCRIPTION
+The
+.B XAllocStandardColormap
+function allocates and returns a pointer to a
+.B XStandardColormap
+structure.
+Note that all fields in the
+.B XStandardColormap
+structure are initially set to zero.
+If insufficient memory is available,
+.B XAllocStandardColormap
+returns NULL.
+To free the memory allocated to this structure,
+use
+.BR XFree .
+.LP
+The
+.B XSetRGBColormaps
+function replaces the RGB colormap definition in the specified property
+on the named window.
+If the property does not already exist,
+.B XSetRGBColormaps
+sets the RGB colormap definition in the specified property
+on the named window.
+The property is stored with a type of RGB_COLOR_MAP and a format of 32.
+Note that it is the caller's responsibility to honor the ICCCM
+restriction that only RGB_DEFAULT_MAP contain more than one definition.
+.LP
+The
+.B XSetRGBColormaps
+function usually is only used by window or session managers.
+To create a standard colormap,
+follow this procedure:
+.IP 1. 5
+Open a new connection to the same server.
+.IP 2. 5
+Grab the server.
+.IP 3. 5
+See if the property is on the property list of the root window for the screen.
+.IP 4. 5
+If the desired property is not present:
+.RS
+.IP \(bu 5
+Create a colormap (unless you are using the default colormap of the screen).
+.IP \(bu 5
+Determine the color characteristics of the visual.
+.IP \(bu 5
+Allocate cells in the colormap (or create it with
+.BR AllocAll ).
+.IP \(bu 5
+Call
+.B XStoreColors
+to store appropriate color values in the colormap.
+.IP \(bu 5
+Fill in the descriptive members in the
+.B XStandardColormap
+structure.
+.IP \(bu 5
+Attach the property to the root window.
+.IP \(bu 5
+Use
+.B XSetCloseDownMode
+to make the resource permanent.
+.RE
+.IP 5. 5
+Ungrab the server.
+.LP
+.B XSetRGBColormaps
+can generate
+.BR BadAlloc ,
+.BR BadAtom ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XGetRGBColormaps
+function returns the RGB colormap definitions stored
+in the specified property on the named window.
+If the property exists, is of type RGB_COLOR_MAP, is of format 32,
+and is long enough to contain a colormap definition,
+.B XGetRGBColormaps
+allocates and fills in space for the returned colormaps
+and returns a nonzero status.
+If the visualid is not present,
+.B XGetRGBColormaps
+assumes the default visual for the screen on which the window is located;
+if the killid is not present,
+.B None
+is assumed, which indicates that the resources cannot be released.
+Otherwise,
+none of the fields are set, and
+.B XGetRGBColormaps
+returns a zero status.
+Note that it is the caller's responsibility to honor the ICCCM
+restriction that only RGB_DEFAULT_MAP contain more than one definition.
+.LP
+.B XGetRGBColormaps
+can generate
+.B BadAtom
+and
+.B BadWindow
+errors.
+.SH STRUCTURES
+The
+.B XStandardColormap
+structure contains:
+.LP
+/\&* Hints */
+.TS
+lw(.5i) lw(2i) lw(1i).
+T{
+\&#define
+T}	T{
+.B ReleaseByFreeingColormap
+T}	T{
+( (XID) 1L)
+T}
+.TE
+/\&* Values */
+.EX
+typedef struct {
+        Colormap colormap;
+        unsigned long red_max;
+        unsigned long red_mult;
+        unsigned long green_max;
+        unsigned long green_mult;
+        unsigned long blue_max;
+        unsigned long blue_mult;
+        unsigned long base_pixel;
+        VisualID visualid;
+        XID killid;
+} XStandardColormap;
+.EE
+.LP
+The colormap member is the colormap created by the
+.B XCreateColormap
+function.
+The red_max, green_max, and blue_max members give the maximum
+red, green, and blue values, respectively.
+Each color coefficient ranges from zero to its max, inclusive.
+For example,
+a common colormap allocation is 3/3/2 (3 planes for red, 3
+planes for green, and 2 planes for blue).
+This colormap would have red_max = 7, green_max = 7,
+and blue_max = 3.
+An alternate allocation that uses only 216 colors is red_max = 5,
+green_max = 5, and blue_max = 5.
+.LP
+The red_mult, green_mult, and blue_mult members give the
+scale factors used to compose a full pixel value.
+(See the discussion of the base_pixel members for further information.)
+For a 3/3/2 allocation, red_mult might be 32,
+green_mult might be 4, and blue_mult might be 1.
+For a 6-colors-each allocation, red_mult might be 36,
+green_mult might be 6, and blue_mult might be 1.
+.LP
+The base_pixel member gives the base pixel value used to
+compose a full pixel value.
+Usually, the base_pixel is obtained from a call to the
+.B XAllocColorPlanes
+function.
+Given integer red, green, and blue coefficients in their appropriate
+ranges, one then can compute a corresponding pixel value by
+using the following expression:
+.LP
+.EX
+(r * red_mult + g * green_mult + b * blue_mult + base_pixel) & 0xFFFFFFFF
+.EE
+.LP
+For
+.B GrayScale
+colormaps,
+only the colormap, red_max, red_mult,
+and base_pixel members are defined.
+The other members are ignored.
+To compute a
+.B GrayScale
+pixel value, use the following expression:
+.LP
+.EX
+(gray * red_mult + base_pixel) & 0xFFFFFFFF
+.EE
+.LP
+Negative multipliers can be represented by converting the 2's
+complement representation of the multiplier into an unsigned long and
+storing the result in the appropriate _mult field.
+The step of masking by 0xFFFFFFFF effectively converts the resulting
+positive multiplier into a negative one.
+The masking step will take place automatically on many machine architectures,
+depending on the size of the integer type used to do the computation,
+.LP
+The visualid member gives the ID number of the visual from which the
+colormap was created.
+The killid member gives a resource ID that indicates whether
+the cells held by this standard colormap are to be released
+by freeing the colormap ID or by calling the
+.B XKillClient
+function on the indicated resource.
+(Note that this method is necessary for allocating out of an existing colormap.)
+.LP
+The properties containing the
+.B XStandardColormap
+information have
+the type RGB_COLOR_MAP.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAlloc
+The server failed to allocate the requested resource or server memory.
+.TP 1i
+.B BadAtom
+A value for an Atom argument does not name a defined Atom.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XAllocColor(__libmansuffix__),
+XCreateColormap(__libmansuffix__),
+XFree(__libmansuffix__),
+XSetCloseDownMode(__libmansuffix__)
+.br
+\fI\*(xL\fP

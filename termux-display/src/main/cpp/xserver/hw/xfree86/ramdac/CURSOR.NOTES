@@ -1,0 +1,191 @@
+			CURSOR.NOTES
+
+  This file describes how to add hardware cursor support to a chipset
+driver.  Though the cursor support itself is in the ramdac module,
+cursor management is separate from the rest of the module.
+
+
+1) CURSOR INITIALIZATION AND SHUTDOWN
+
+   All relevant prototypes and defines are in xf86Cursor.h.
+
+  To initialize the cursor, the driver should allocate an
+xf86CursorInfoRec via xf86CreateCursorInfoRec(), fill it out as described
+later in this  document and pass it to xf86InitCursor().  xf86InitCursor()
+must be called _after_ the software cursor initialization (usually
+miDCInitialize).
+
+   When shutting down, the driver should free the xf86CursorInfoRec
+structure in its CloseScreen function via xf86DestroyCursorInfoRec().
+
+
+2) FILLING OUT THE xf86CursorInfoRec
+
+   The driver informs the ramdac module of its hardware cursor capabilities by
+filling out an xf86CursorInfoRec structure and passing it to xf86InitCursor().
+The xf86CursorInfoRec contains the following function pointers:
+
+
+/**** These functions are required ****/
+
+void ShowCursor(ScrnInfoPtr pScrn)
+
+    ShowCursor should display the current cursor.
+
+void HideCursor(ScrnInfoPtr pScrn)
+
+    HideCursor should hide the current cursor.
+
+void SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
+
+    Set the cursor position to (x,y).  X and/or y may be negative
+    indicating that the cursor image is partially offscreen on
+    the left and/or top edges of the screen.  It is up to the
+    driver to trap for this and deal with that situation.
+
+void SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
+
+    Set the cursor foreground and background colors.  In 8bpp, fg and
+    bg are indices into the current colormap unless the
+    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP flag is set.  In that case
+    and in all other bpps the fg and bg are in 8-8-8 RGB format.
+
+void LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits)
+
+    LoadCursorImage is how the hardware cursor bits computed by the
+    RealizeCursor function will be passed to the driver when the cursor
+    shape needs to be changed.
+
+
+/**** These functions are optional ****/
+
+
+unsigned char* RealizeCursor(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
+
+    If RealizeCursor is not provided by the driver, one will be provided
+    for you based on the Flags field described below.  The driver must
+    provide this function if the hardware cursor format is not one of
+    the common ones supported by this module.
+
+
+Bool UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
+
+    If the driver is unable to use a hardware cursor for reasons
+    other than the cursor being larger than the maximum specified
+    in the MaxWidth or MaxHeight field below, it can supply the
+    UseHWCursor function.  If UseHWCursor is provided by the driver,
+    it will be called whenever the cursor shape changes or the video
+    mode changes.  This is useful for when the hardware cursor cannot
+    be used in interlaced or doublescan modes.
+
+
+/**** The following fields are required ****/
+
+MaxWidth
+MaxHeight
+
+    These indicate the largest sized cursor that can be a hardware
+    cursor.  It will fall back to a software cursor when a cursor
+    exceeding this size needs to be used.
+
+
+Flags
+
+   /* Color related flags */
+
+   HARDWARE_CURSOR_TRUECOLOR_AT_8BPP
+
+   This indicates that the colors passed to the SetCursorColors
+   function should not be in 8-8-8 RGB format in 8bpp but rather,
+   they should be the pixel values from the current colormap.
+
+
+   /* Cursor data loading flags */
+
+   HARDWARE_CURSOR_SHOW_TRANSPARENT
+
+   The HideCursor entry will normally be called instead of displaying a
+   completely transparent cursor, or when a switch to a software cursor
+   needs to occur.  This flag prevents this behaviour, thus causing the
+   LoadCursorImage entry to be called with transparent cursor data.
+   NOTE:  If you use this flag and provide your own RealizeCursor() entry,
+          ensure this entry returns transparent cursor data when called
+          with a NULL pCurs parameter.
+
+   HARDWARE_CURSOR_UPDATE_UNHIDDEN
+
+   This flag prevents the HideCursor call that would normally occur just before
+   the LoadCursorImage entry is to be called to load a new hardware cursor
+   image.
+
+
+   /* Cursor data packing flags */
+
+   Hardware cursor data consists of two pieces, a source and a mask.
+   The mask is a bitmap indicating which parts of the cursor are
+   transparent and which parts are drawn.  The source is a bitmap
+   indicating which parts of the non-transparent portion of the the
+   cursor should be painted in the foreground color and which should
+   be painted in the background color.
+
+   HARDWARE_CURSOR_INVERT_MASK
+
+   By default, set bits indicate the opaque part of the mask bitmap
+   and clear bits indicate the transparent part.  If your hardware
+   wants this the opposite way, this flag will invert the mask.
+
+   HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK
+
+   By default, RealizeCursor will store the source first and then
+   the mask.  If the hardware needs this order reversed then this
+   flag should be set.
+
+   HARDWARE_CURSOR_AND_SOURCE_WITH_MASK
+
+   This flag will have the module logical AND the source with the mask to make
+   sure there are no source bits set if the corresponding mask bits
+   aren't set.  Some hardware will not care if source bits are set where
+   there are supposed to be transparent areas, but some hardware will
+   interpret this as a third cursor color or similar.  That type of
+   hardware will need this flag set.
+
+   HARDWARE_CURSOR_BIT_ORDER_MSBFIRST
+
+   By default, it is assumed that the least significant bit in each byte
+   corresponds to the leftmost pixel on the screen.  If your hardware
+   has this reversed you should set this flag.
+
+   HARDWARE_CURSOR_NIBBLE_SWAPPED
+
+   If your hardware requires byte swapping of the hardware cursor, enable
+   this option.
+
+
+   /* Source-Mask interleaving flags */
+
+   By default the source and mask data are inlined (source first unless
+   the HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK flag is set).  Some hardware
+   will require the source and mask to be interleaved, that is, X number
+   of source bits should packed and then X number of mask bits repeating
+   until the entire pattern is stored.  The following flags describe the
+   bit interleave.
+
+   HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED
+
+   This one is the default.
+
+   The following are for interleaved cursors.
+
+   HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1
+   HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_8
+   HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_16
+   HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_32
+   HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64
+
+   And once again, if your hardware requires something different than
+   these packing styles, your driver can supply its own RealizeCursor
+   function.
+
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/ramdac/CURSOR.NOTES,v 1.4tsi Exp $

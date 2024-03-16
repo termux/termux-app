@@ -1,0 +1,29 @@
+plugins {
+    id('com.android.library')
+}
+
+android {
+    namespace 'com.termux.display'
+    compileSdk 30
+    defaultConfig {
+        minSdkVersion 24
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion 28
+    }
+    buildFeatures {
+        buildConfig false
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'androidx.annotation:annotation:1.7.1'
+}

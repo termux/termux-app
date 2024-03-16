@@ -1,0 +1,165 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\" Copyright \(co 2000  The XFree86 Project, Inc.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XmbTextPerCharExtents __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XmbTextPerCharExtents, XwcTextPerCharExtents, Xutf8TextPerCharExtents \- obtain per-character information for a text string
+.SH SYNTAX
+.HP
+Status XmbTextPerCharExtents\^(\^XFontSet \fIfont_set\fP\^,
+_Xconst char
+*\fIstring\fP\^, int \fInum_bytes\fP\^, XRectangle *\fIink_array_return\fP\^,
+XRectangle *\fIlogical_array_return\fP\^, int \fIarray_size\fP\^, int
+*\fInum_chars_return\fP\^, XRectangle *\fIoverall_ink_return\fP\^, XRectangle
+*\fIoverall_logical_return\fP\^);
+.HP
+Status XwcTextPerCharExtents\^(\^XFontSet \fIfont_set\fP\^,
+_Xconst wchar_t
+*\fIstring\fP\^, int \fInum_wchars\fP\^, XRectangle
+*\fIink_array_return\fP\^, XRectangle *\fIlogical_array_return\fP, int
+\fIarray_size\fP\^, int *\fInum_chars_return\fP\^, XRectangle
+*\fIoverall_ink_return\fP\^, XRectangle *\fIoverall_logical_return\fP\^);
+.HP
+Status Xutf8TextPerCharExtents\^(\^XFontSet \fIfont_set\fP\^,
+_Xconst char
+*\fIstring\fP\^, int \fInum_bytes\fP\^, XRectangle *\fIink_array_return\fP\^,
+XRectangle *\fIlogical_array_return\fP\^, int \fIarray_size\fP\^, int
+*\fInum_chars_return\fP\^, XRectangle *\fIoverall_ink_return\fP\^, XRectangle
+*\fIoverall_logical_return\fP\^);
+.SH ARGUMENTS
+.IP \fIarray_size\fP 1i
+Specifies the size of ink_array_return and logical_array_return.
+The caller must pass in arrays of this size.
+.IP \fIfont_set\fP 1i
+Specifies the font set.
+.IP \fIink_array_return\fP 1i
+Returns the ink dimensions for each character.
+.IP \fIlogical_array_return\fP 1i
+Returns the logical dimensions for each character.
+.IP \fInum_bytes\fP 1i
+Specifies the number of bytes in the string argument.
+.IP \fInum_chars_return\fP 1i
+Returns the number of characters in the string argument.
+.IP \fInum_wchars\fP 1i
+Specifies the number of characters in the string argument.
+.IP \fIoverall_ink_return\fP 1i
+Returns the overall ink extents of the entire string.
+.IP \fIoverall_logical_return\fP 1i
+Returns the overall logical extents of the entire string.
+.IP \fIstring\fP 1i
+Specifies the character string.
+.SH DESCRIPTION
+The
+.BR XmbTextPerCharExtents ,
+.B XwcTextPerCharExtents
+and
+.B Xutf8TextPerCharExtents
+functions return the text dimensions of each character of the specified text,
+using the fonts loaded for the specified font set.
+Each successive element of ink_array_return and logical_array_return
+is set to the successive character's drawn metrics,
+relative to the drawing origin of the string and one
+rectangle
+for each character in the supplied text string.
+The number of elements of ink_array_return and logical_array_return
+that have been set is returned to num_chars_return.
+.LP
+Each element of ink_array_return is set to the bounding box
+of the corresponding character's drawn foreground color.
+Each element of logical_array_return is set to the bounding box
+that provides minimum spacing to other graphical features
+for the corresponding character.
+Other graphical features should not intersect any of the
+logical_array_return rectangles.
+.LP
+Note that an
+.B XRectangle
+represents the effective drawing dimensions of the character,
+regardless of the number of font glyphs that are used to draw
+the character or the direction in which the character is drawn.
+If multiple characters map to a single character glyph,
+the dimensions of all the
+.B XRectangles
+of those characters are the same.
+.LP
+When the
+.B XFontSet
+has missing charsets, metrics for each unavailable
+character are taken from the default string returned by
+.B XCreateFontSet
+so that the metrics represent the text as it will actually be drawn.
+The behavior for an invalid codepoint is undefined.
+.LP
+If the array_size is too small for the number of characters in the
+supplied text, the functions return zero
+and num_chars_return is set to the number of rectangles required.
+Otherwise, the functions return a nonzero value.
+.LP
+If the overall_ink_return or overall_logical_return argument is non-NULL,
+.BR XmbTextPerCharExtents ,
+.B XwcTextPerCharExtents
+and
+.B Xutf8TextPerCharExtents
+return the maximum extent of the string's metrics to overall_ink_return
+or overall_logical_return, as returned by
+.BR XmbTextExtents ,
+.B XwcTextExtents
+or
+.BR Xutf8TextExtents .
+.LP
+The function
+.B Xutf8TextPerCharExtents
+is an extension introduced by The XFree86 Project, Inc., in their 4.0.2
+release.
+Its presence is
+indicated by the macro
+.BR X_HAVE_UTF8_STRING .
+.SH "SEE ALSO"
+XmbTextEscapement(__libmansuffix__),
+XmbTextExtents(__libmansuffix__)
+\fI\*(xL\fP

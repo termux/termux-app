@@ -1,0 +1,134 @@
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XSupportsLocale __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XSupportsLocale, XSetLocaleModifiers \- determine locale support and configure locale modifiers
+.SH SYNTAX
+.HP
+Bool XSupportsLocale\^(void);
+.HP
+char *XSetLocaleModifiers\^(\^_Xconst char *\fImodifier_list\fP\^);
+.SH ARGUMENTS
+.IP \fImodifier_list\fP 1i
+Specifies the modifiers.
+.SH DESCRIPTION
+The
+.B XSupportsLocale
+function returns
+.B True
+if Xlib functions are capable of operating under the current locale.
+If it returns
+.BR False ,
+Xlib locale-dependent functions for which the
+.B XLocaleNotSupported
+return status is defined will return
+.BR XLocaleNotSupported .
+Other Xlib locale-dependent routines will operate in the \*(lqC\*(rq locale.
+.LP
+The
+.B XSetLocaleModifiers
+function sets the X modifiers for the current locale setting.
+The modifier_list argument is a null-terminated string of the form
+\*(lq{@\^\fIcategory\fP\^=\^\fIvalue\fP\^}\*(rq, that is,
+having zero or more concatenated \*(lq@\^\fIcategory\fP\^=\^\fIvalue\fP\^\*(rq
+entries, where \fIcategory\fP is a category name
+and \fIvalue\fP is the (possibly empty) setting for that category.
+The values are encoded in the current locale.
+Category names are restricted to the POSIX Portable Filename Character Set.
+.LP
+The local host X locale modifiers announcer (on POSIX-compliant systems,
+the XMODIFIERS environment variable) is appended to the modifier_list to
+provide default values on the local host.
+If a given category appears more than once in the list,
+the first setting in the list is used.
+If a given category is not included in the full modifier list,
+the category is set to an implementation-dependent default
+for the current locale.
+An empty value for a category explicitly specifies the
+implementation-dependent default.
+.LP
+If the function is successful, it returns a pointer to a string.
+The contents of the string are such that a subsequent call with that string
+(in the same locale) will restore the modifiers to the same settings.
+If modifier_list is a NULL pointer,
+.B XSetLocaleModifiers
+also returns a pointer to such a string,
+and the current locale modifiers are not changed.
+.LP
+If invalid values are given for one or more modifier categories supported by
+the locale, a NULL pointer is returned, and none of the
+current modifiers are changed.
+.LP
+At program startup,
+the modifiers that are in effect are unspecified until
+the first successful call to set them.
+Whenever the locale is changed, the
+modifiers that are in effect become unspecified until the next successful call
+to set them.
+Clients should always call
+.B XSetLocaleModifiers
+with a non-NULL modifier_list after setting the locale
+before they call any locale-dependent Xlib routine.
+.LP
+The only standard modifier category currently defined is \*(lqim\*(rq,
+which identifies the desired input method.
+The values for input method are not standardized.
+A single locale may use multiple input methods,
+switching input method under user control.
+The modifier may specify the initial input method in effect
+or an ordered list of input methods.
+Multiple input methods may be specified in a single im value string
+in an implementation-dependent manner.
+.LP
+The returned modifiers string is owned by Xlib and should not be modified or
+freed by the client.
+It may be freed by Xlib after the current locale or modifiers are changed.
+Until freed, it will not be modified by Xlib.
+.SH "SEE ALSO"
+\fI\*(xL\fP

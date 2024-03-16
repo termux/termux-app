@@ -1,0 +1,72 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbKeyGroupWidth __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbKeyGroupWidth \-  Computes the width of the type associated with the group
+.I grp 
+for the key corresponding to 
+.I keycode
+.SH SYNOPSIS
+.HP
+.B int XkbKeyGroupWidth
+.BI "(\^XkbDescPtr " "xkb" "\^,"
+.BI "KeyCode " "keycode" "\^,"
+.BI "int " "grp" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I xkb
+Xkb description of interest
+.TP
+.I keycode
+keycode of interest
+.TP
+.I grp
+group of interest
+.SH DESCRIPTION
+.LP
+The key width and number of groups associated with a key are used to form a 
+small two-dimensional array of KeySyms for a key. This array may be different 
+sizes for different keys. The array for a single key is stored as a linear list, 
+in row-major order. The arrays for all of the keys are stored in the 
+.I syms 
+field of the client map. There is one row for each group associated with a key 
+and one column for each level. The index corresponding to a given group and 
+shift level is computed as:
+.nf
+
+     idx = group_index * key_width + shift_level
+     
+.fi
+The 
+.I offset 
+field of the 
+.I key_sym_map 
+entry for a key is used to access the beginning of the array.
+
+.I XkbKeyGroupWidth 
+computes the width of the type associated with the group 
+.I grp 
+for the key corresponding to 
+.I keycode.

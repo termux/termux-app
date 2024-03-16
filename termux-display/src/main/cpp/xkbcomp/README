@@ -1,0 +1,20 @@
+X Keyboard Extension
+--------------------
+
+The X Keyboard Extension essentially replaces the core protocol definition of
+keyboard. The extension makes possible to clearly and explicitly specify most
+aspects of keyboard behaviour on per-key basis and to more closely track the
+logical and physical state of the keyboard. It also includes a number of
+keyboard controls designed to make keyboards more accessible to people with
+physical impairments.
+
+There are five types of components in the server database corresponding to five
+xkb symbolic names: symbols, geometry, keycodes, compat and types which
+determine the keyboard behaviour. These five components can combined together
+into a resulting keyboard mapping using the 'rules' component.
+
+More information, including the complete specification, can be found on
+http://www.x.org/wiki/XKB
+
+
+

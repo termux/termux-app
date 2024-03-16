@@ -1,0 +1,223 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XCreateFontCursor __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XCreateFontCursor, XCreatePixmapCursor, XCreateGlyphCursor \- create cursors
+.SH SYNTAX
+\&#include <X11/cursorfont.h>
+.HP
+Cursor XCreateFontCursor\^(\^Display *\fIdisplay\fP\^, unsigned int
+\fIshape\fP\^);
+.HP
+Cursor XCreatePixmapCursor\^(\^Display *\fIdisplay\fP\^, Pixmap
+\fIsource\fP\^, Pixmap \fImask\fP\^, XColor *\fIforeground_color\fP\^, XColor
+*\fIbackground_color\fP\^, unsigned int \fIx\fP\^, unsigned int \fIy\fP\^);
+.HP
+Cursor XCreateGlyphCursor\^(\^Display *\fIdisplay\fP\^, Font
+\fIsource_font\fP\^, Font \fImask_font\fP\^, unsigned int \fIsource_char\fP\^,
+unsigned int \fImask_char\fP\^, XColor _Xconst *\fIforeground_color\fP\^, XColor
+_Xconst *\fIbackground_color\fP\^);
+.SH ARGUMENTS
+.IP \fIbackground_color\fP 1i
+Specifies the RGB values for the background of the source.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIforeground_color\fP 1i
+Specifies the RGB values for the foreground of the source.
+.IP \fImask\fP 1i
+Specifies the cursor's source bits to be displayed or
+.BR None .
+.IP \fImask_char\fP 1i
+Specifies the glyph character for the mask.
+.IP \fImask_font\fP 1i
+Specifies the font for the mask glyph or
+.BR None .
+.IP \fIshape\fP 1i
+Specifies the shape of the cursor.
+.IP \fIsource\fP 1i
+Specifies the shape of the source cursor.
+.\" *** JIM: NEED TO CHECK THIS. ***
+.IP \fIsource_char\fP 1i
+Specifies the character glyph for the source.
+.IP \fIsource_font\fP 1i
+Specifies the font for the source glyph.
+.IP \fIx\fP 1i
+.br
+.ns
+.IP \fIy\fP 1i
+Specify the x and y coordinates, which indicate the
+hotspot relative to the source's origin.
+.SH DESCRIPTION
+X provides a set of standard cursor shapes in a special font named
+cursor.
+Applications are encouraged to use this interface for their cursors
+because the font can be customized for the individual display type.
+The shape argument specifies which glyph of the standard fonts
+to use.
+.LP
+The hotspot comes from the information stored in the cursor font.
+The initial colors of a cursor are a black foreground and a white
+background (see
+.BR XRecolorCursor ).
+.LP
+.B XCreateFontCursor
+can generate
+.B BadAlloc
+and
+.B BadValue
+errors.
+.LP
+The
+.B XCreatePixmapCursor
+function creates a cursor and returns the cursor ID associated with it.
+The foreground and background RGB values must be specified using
+foreground_color and background_color,
+even if the X server only has a
+.B StaticGray
+or
+.B GrayScale
+screen.
+The foreground color is used for the pixels set to 1 in the
+source, and the background color is used for the pixels set to 0.
+Both source and mask, if specified, must have depth one (or a
+.B BadMatch
+error results) but can have any root.
+The mask argument defines the shape of the cursor.
+The pixels set to 1 in the mask define which source pixels are displayed,
+and the pixels set to 0 define which pixels are ignored.
+If no mask is given,
+all pixels of the source are displayed.
+The mask, if present, must be the same size as the pixmap defined by the
+source argument, or a
+.B BadMatch
+error results.
+The hotspot must be a point within the source,
+or a
+.B BadMatch
+error results.
+.LP
+The components of the cursor can be transformed arbitrarily to meet
+display limitations.
+The pixmaps can be freed immediately if no further explicit references
+to them are to be made.
+Subsequent drawing in the source or mask pixmap has an undefined effect on the
+cursor.
+The X server might or might not make a copy of the pixmap.
+.LP
+.B XCreatePixmapCursor
+can generate
+.B BadAlloc
+and
+.B BadPixmap
+errors.
+.LP
+The
+.B XCreateGlyphCursor
+function is similar to
+.B XCreatePixmapCursor
+except that the source and mask bitmaps are obtained from the specified
+font glyphs.
+The source_char must be a defined glyph in source_font,
+or a
+.B BadValue
+error results.
+If mask_font is given,
+mask_char must be a defined glyph in mask_font,
+or a
+.B BadValue
+error results.
+The mask_font and character are optional.
+The origins of the source_char and mask_char (if defined) glyphs are
+positioned coincidently and define the hotspot.
+The source_char and mask_char need not have the same bounding box metrics,
+and there is no restriction on the placement of the hotspot relative to the bounding
+boxes.
+If no mask_char is given, all pixels of the source are displayed.
+You can free the fonts immediately by calling
+.B XFreeFont
+if no further explicit references to them are to be made.
+.LP
+For 2-byte matrix fonts,
+the 16-bit value should be formed with the byte1
+member in the most significant byte and the byte2 member in the
+least significant byte.
+.LP
+.B XCreateGlyphCursor
+can generate
+.BR BadAlloc ,
+.BR BadFont ,
+and
+.B BadValue
+errors.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAlloc
+The server failed to allocate the requested resource or server memory.
+.TP 1i
+.B BadFont
+A value for a Font or GContext argument does not name a defined Font.
+.TP 1i
+.B BadMatch
+Some argument or pair of arguments has the correct type and range but fails
+to match in some other way required by the request.
+.TP 1i
+.B BadPixmap
+A value for a Pixmap argument does not name a defined Pixmap.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.SH "SEE ALSO"
+XDefineCursor(__libmansuffix__),
+XLoadFont(__libmansuffix__),
+XRecolorCursor(__libmansuffix__)
+.br
+\fI\*(xL\fP

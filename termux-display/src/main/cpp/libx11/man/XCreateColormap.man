@@ -1,0 +1,269 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XCreateColormap __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XCreateColormap, XCopyColormapAndFree, XFreeColormap, XColor \- create, copy, or destroy colormaps and color structure
+.SH SYNTAX
+.HP
+Colormap XCreateColormap\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^,
+Visual *\fIvisual\fP\^, int \fIalloc\fP\^);
+.HP
+Colormap XCopyColormapAndFree\^(\^Display *\fIdisplay\fP\^, Colormap
+\fIcolormap\fP\^);
+.HP
+int XFreeColormap\^(\^Display *\fIdisplay\fP\^, Colormap \fIcolormap\fP\^);
+.SH ARGUMENTS
+.IP \fIalloc\fP 1i
+Specifies the colormap entries to be allocated.
+You can pass
+.B AllocNone
+or
+.BR AllocAll .
+.IP \fIcolormap\fP 1i
+Specifies the colormap that you want to create, copy, set, or destroy.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIvisual\fP 1i
+Specifies a visual type supported on the screen.
+If the visual type is not one supported by the screen,
+a
+.B BadMatch
+error results.
+.IP \fIw\fP 1i
+Specifies the window on whose screen you want to create a colormap.
+.SH DESCRIPTION
+The
+.B XCreateColormap
+function creates a colormap of the specified visual type for the screen
+on which the specified window resides and returns the colormap ID
+associated with it.
+Note that the specified window is only used to determine the screen.
+.LP
+The initial values of the colormap entries are undefined for the
+visual classes
+.BR GrayScale ,
+.BR PseudoColor ,
+and
+.BR DirectColor .
+For
+.BR StaticGray ,
+.BR StaticColor ,
+and
+.BR TrueColor ,
+the entries have defined values,
+but those values are specific to the visual and are not defined by X.
+For
+.BR StaticGray ,
+.BR StaticColor ,
+and
+.BR TrueColor ,
+alloc must be
+.BR AllocNone ,
+or a
+.B BadMatch
+error results.
+For the other visual classes,
+if alloc is
+.BR AllocNone ,
+the colormap initially has no allocated entries,
+and clients can allocate them.
+For information about the visual types,
+see section 3.1.
+.LP
+If alloc is
+.BR AllocAll ,
+the entire colormap is allocated writable.
+The initial values of all allocated entries are undefined.
+For
+.B GrayScale
+and
+.BR PseudoColor ,
+the effect is as if an
+.B XAllocColorCells
+call returned all pixel values from zero to N \- 1,
+where N is the colormap entries value in the specified visual.
+For
+.BR DirectColor ,
+the effect is as if an
+.B XAllocColorPlanes
+call returned a pixel value of zero and red_mask, green_mask,
+and blue_mask values containing the same bits as the corresponding
+masks in the specified visual.
+However, in all cases,
+none of these entries can be freed by using
+.BR XFreeColors .
+.LP
+.B XCreateColormap
+can generate
+.BR BadAlloc ,
+.BR BadMatch ,
+.BR BadValue ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XCopyColormapAndFree
+function creates a colormap of the same visual type and for the same screen
+as the specified colormap and returns the new colormap ID.
+It also moves all of the client's existing allocation from the specified
+colormap to the new colormap with their color values intact
+and their read-only or writable characteristics intact and frees those entries
+in the specified colormap.
+Color values in other entries in the new colormap are undefined.
+If the specified colormap was created by the client with alloc set to
+.BR AllocAll ,
+the new colormap is also created with
+.BR AllocAll ,
+all color values for all entries are copied from the specified colormap,
+and then all entries in the specified colormap are freed.
+If the specified colormap was not created by the client with
+.BR AllocAll ,
+the allocations to be moved are all those pixels and planes
+that have been allocated by the client using
+.BR XAllocColor ,
+.BR XAllocNamedColor ,
+.BR XAllocColorCells ,
+or
+.B XAllocColorPlanes
+and that have not been freed since they were allocated.
+.LP
+.B XCopyColormapAndFree
+can generate
+.B BadAlloc
+and
+.B BadColor
+errors.
+.LP
+The
+.B XFreeColormap
+function deletes the association between the colormap resource ID
+and the colormap and frees the colormap storage.
+However, this function has no effect on the default colormap for a screen.
+If the specified colormap is an installed map for a screen,
+it is uninstalled (see
+.BR XUninstallColormap ).
+If the specified colormap is defined as the colormap for a window (by
+.BR XCreateWindow ,
+.BR XSetWindowColormap ,
+or
+.BR XChangeWindowAttributes ),
+.B XFreeColormap
+changes the colormap associated with the window to
+.B None
+and generates a
+.B ColormapNotify
+event.
+X does not define the colors displayed for a window with a colormap of
+.BR None .
+.LP
+.B XFreeColormap
+can generate a
+.B BadColor
+error.
+.SH STRUCTURES
+The
+.B XColor
+structure contains:
+.LP
+.EX
+typedef struct {
+        unsigned long pixel;    /\&* pixel value */
+        unsigned short red, green, blue;        /\&* rgb values */
+        char flags;     /\&* DoRed, DoGreen, DoBlue */
+        char pad;
+} XColor;
+.EE
+.LP
+The red, green, and blue values are always in the range 0 to 65535
+inclusive, independent of the number of bits actually used in the
+display hardware.
+The server scales these values down to the range used by the hardware.
+Black is represented by (0,0,0),
+and white is represented by (65535,65535,65535).
+In some functions,
+the flags member controls which of the red, green, and blue members is used
+and can be the inclusive OR of zero or more of
+.BR DoRed ,
+.BR DoGreen ,
+and
+.BR DoBlue .
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAlloc
+The server failed to allocate the requested resource or server memory.
+.TP 1i
+.B BadColor
+A value for a Colormap argument does not name a defined Colormap.
+.TP 1i
+.B BadMatch
+An
+.B InputOnly
+window is used as a Drawable.
+.TP 1i
+.B BadMatch
+Some argument or pair of arguments has the correct type and range but fails
+to match in some other way required by the request.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XAllocColor(__libmansuffix__),
+XChangeWindowAttributes(__libmansuffix__),
+XCreateWindow(__libmansuffix__),
+XQueryColor(__libmansuffix__),
+XStoreColors(__libmansuffix__)
+.br
+\fI\*(xL\fP

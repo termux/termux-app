@@ -1,0 +1,170 @@
+diff --git a/src/gen_dispatch.py b/src/gen_dispatch.py
+index 3daad84..b27931d 100755
+--- a/src/gen_dispatch.py
++++ b/src/gen_dispatch.py
+@@ -222,7 +222,7 @@ class Generator(object):
+ 
+             for child in t:
+                 if child.tag == 'apientry':
+-                    self.typedefs += 'APIENTRY'
++                    self.typedefs += ''
+                 if child.text:
+                     self.typedefs += child.text
+                 if child.tail:
+@@ -462,13 +462,14 @@ class Generator(object):
+ 
+     def write_function_ptr_typedefs(self):
+         for func in self.sorted_functions:
+-            self.outln('typedef {0} (GLAPIENTRY *{1})({2});'.format(func.ret_type,
++            self.outln('typedef {0} (*{1})({2});'.format(func.ret_type,
+                                                                     func.ptr_type,
+                                                                     func.args_decl))
+ 
+     def write_header_header(self, out_file):
+         self.close()
+         self.out_file = open(out_file, 'w')
++        self.out_file.truncate(0)
+ 
+         self.outln('/* GL dispatch header.')
+         self.outln(' * This is code-generated from the GL API XML files from Khronos.')
+@@ -482,7 +483,7 @@ class Generator(object):
+         self.outln('#include <stddef.h>')
+         self.outln('')
+ 
+-    def write_header(self, out_file):
++    def write_header2(self, out_file):
+         self.write_header_header(out_file)
+ 
+         self.outln('#include "epoxy/common.h"')
+@@ -858,6 +859,82 @@ class Generator(object):
+         for func in self.sorted_functions:
+             self.write_function_pointer(func)
+ 
++    def write_header(self, out_file):
++        self.close()
++        self.out_file = open(out_file, 'w')
++        self.out_file.truncate(0)
++
++        self.outln('/* GL dispatch header.')
++        self.outln(' * This is code-generated from the GL API XML files from Khronos.')
++        self.write_copyright_comment_body()
++        self.outln(' */')
++        self.outln('')
++
++        self.outln('#pragma once')
++
++        self.outln('#include <inttypes.h>')
++        self.outln('#include <stddef.h>')
++        self.outln('')
++
++        # Add some ridiculous inttypes.h redefinitions that are
++        # from khrplatform.h and not included in the XML.  We
++        # don't directly include khrplatform.h because it's not
++        # present on many systems, and coming up with #ifdefs to
++        # decide when it's not present would be hard.
++        self.outln('#define __khrplatform_h_ 1')
++        self.outln('typedef int8_t khronos_int8_t;')
++        self.outln('typedef int16_t khronos_int16_t;')
++        self.outln('typedef int32_t khronos_int32_t;')
++        self.outln('typedef int64_t khronos_int64_t;')
++        self.outln('typedef uint8_t khronos_uint8_t;')
++        self.outln('typedef uint16_t khronos_uint16_t;')
++        self.outln('typedef uint32_t khronos_uint32_t;')
++        self.outln('typedef uint64_t khronos_uint64_t;')
++        self.outln('typedef float khronos_float_t;')
++        self.outln('#ifdef _WIN64')
++        self.outln('typedef signed   long long int khronos_intptr_t;')
++        self.outln('typedef unsigned long long int khronos_uintptr_t;')
++        self.outln('typedef signed   long long int khronos_ssize_t;')
++        self.outln('typedef unsigned long long int khronos_usize_t;')
++        self.outln('#else')
++        self.outln('typedef signed   long int      khronos_intptr_t;')
++        self.outln('typedef unsigned long int      khronos_uintptr_t;')
++        self.outln('typedef signed   long int      khronos_ssize_t;')
++        self.outln('typedef unsigned long int      khronos_usize_t;')
++        self.outln('#endif')
++        self.outln('typedef uint64_t khronos_utime_nanoseconds_t;')
++        self.outln('typedef int64_t khronos_stime_nanoseconds_t;')
++        self.outln('#define KHRONOS_MAX_ENUM 0x7FFFFFFF')
++        self.outln('typedef enum {')
++        self.outln('    KHRONOS_FALSE = 0,')
++        self.outln('    KHRONOS_TRUE  = 1,')
++        self.outln('    KHRONOS_BOOLEAN_ENUM_FORCE_SIZE = KHRONOS_MAX_ENUM')
++        self.outln('} khronos_boolean_enum_t;')
++
++        if self.target == "glx":
++            self.outln('#include <X11/Xlib.h>')
++            self.outln('#include <X11/Xutil.h>')
++
++        self.out(self.typedefs)
++        self.outln('')
++        self.write_enums()
++        self.outln('')
++        self.write_function_ptr_typedefs()
++
++        for func in self.sorted_functions:
++            ret = ""
++            if func.ret_type in ("void"):
++                ret = ""
++            elif func.ret_type in ("GLhandleARB", "GLsync", "const GLubyte *", "GLVULKANPROCNV", "void *"):
++                ret = "NULL"
++            elif func.ret_type in ("GLuint", "GLboolean", "GLenum", "GLint", "GLfloat", "GLushort", \
++                                   "GLintptr", "GLbitfield", "GLvdpauSurfaceNV", "GLsizei", "GLuint64"):
++                ret = "0"
++            else:
++                raise ValueError('Wrong return type "' + func.ret_type + '"')
++            self.outln('#define {0}(...) {1}'.format(func.name, ret))
++
++
+     def close(self):
+         if self.out_file:
+             self.out_file.close()
+@@ -869,10 +946,6 @@ argparser.add_argument('files', metavar='file.xml', nargs='+', help='GL API XML
+ argparser.add_argument('--outputdir', metavar='dir', required=False, help='Destination directory for files (default to current dir)')
+ argparser.add_argument('--includedir', metavar='dir', required=False, help='Destination directory for headers')
+ argparser.add_argument('--srcdir', metavar='dir', required=False, help='Destination directory for source')
+-argparser.add_argument('--source', dest='source', action='store_true', required=False, help='Generate the source file')
+-argparser.add_argument('--no-source', dest='source', action='store_false', required=False, help='Do not generate the source file')
+-argparser.add_argument('--header', dest='header', action='store_true', required=False, help='Generate the header file')
+-argparser.add_argument('--no-header', dest='header', action='store_false', required=False, help='Do not generate the header file')
+ args = argparser.parse_args()
+ 
+ if args.outputdir:
+@@ -890,13 +963,6 @@ if args.srcdir:
+ else:
+     srcdir = outputdir
+ 
+-build_source = args.source
+-build_header = args.header
+-
+-if not build_source and not build_header:
+-    build_source = True
+-    build_header = True
+-
+ for f in args.files:
+     name = os.path.basename(f).split('.xml')[0]
+     generator = Generator(name)
+@@ -911,22 +977,8 @@ for f in args.files:
+ 
+     generator.sort_functions()
+     generator.resolve_aliases()
+-    generator.fixup_bootstrap_function('glGetString',
+-                                       'epoxy_get_bootstrap_proc_address({0})')
+-    generator.fixup_bootstrap_function('glGetIntegerv',
+-                                       'epoxy_get_bootstrap_proc_address({0})')
+-
+-    # While this is technically exposed as a GLX extension, it's
+-    # required to be present as a public symbol by the Linux OpenGL
+-    # ABI.
+-    generator.fixup_bootstrap_function('glXGetProcAddress',
+-                                       'epoxy_glx_dlsym({0})')
+ 
+     generator.prepare_provider_enum()
+-
+-    if build_header:
+-        generator.write_header(os.path.join(includedir, name + '_generated.h'))
+-    if build_source:
+-        generator.write_source(os.path.join(srcdir, name + '_generated_dispatch.c'))
++    generator.write_header(os.path.join(includedir, name + '.h'))
+ 
+     generator.close()

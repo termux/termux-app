@@ -1,0 +1,119 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbAddGeomSection __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbAddGeomSection \- Add one section to an existing keyboard geometry
+.SH SYNOPSIS
+.HP
+.B XkbSectionPtr XkbAddGeomSection
+.BI "(\^XkbGeometryPtr " "geom" "\^,"
+.BI "Atom " "name" "\^,"
+.BI "int " "sz_rows" "\^,"
+.BI "int " "sz_doodads" "\^,"
+.BI "int " "sz_overlays" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I geom
+geometry to be updated
+.TP
+.I name
+name of the new section
+.TP
+.I sz_rows
+number of rows to reserve in the section
+.TP
+.I sz_doodads
+number of doodads to reserve in the section
+.TP
+.I sz_overlays
+number of overlays to reserve in the section
+.SH DESCRIPTION
+.LP
+Xkb provides functions to add a single new element to the top-level keyboard 
+geometry. In each case the 
+.I num_ * 
+fields of the corresponding structure is incremented by 1. These functions do 
+not change 
+.I sz_* 
+unless there is no more room in the array. Some of these functions fill in the 
+values of the element's structure from the arguments. For other functions, you 
+must explicitly write code to fill the structure's elements.
+
+The top-level geometry description includes a list of 
+.I geometry properties. 
+A geometry property associates an arbitrary string with an equally arbitrary 
+name. Programs that display images of keyboards can use geometry properties as 
+hints, but they are not interpreted by Xkb. No other geometry structures refer 
+to geometry properties.
+
+A keyboard geometry contains an arbitrary number of sections. 
+.I XkbAddGeomSection 
+adds one section to an existing keyboard geometry 
+.I geom. 
+The new section contains space for the number of rows, doodads, and overlays 
+specified by 
+.I sz_rows, sz_doodads, 
+and 
+.I sz_overlays. 
+The new section is allocated and zeroed and given the name specified by 
+.I name. 
+If a section with name 
+.I name 
+already exists in the geometry, a pointer to the existing section is returned.
+.I XkbAddGeomSection 
+returns NULL if any of the parameters is empty or if it was not able to allocate 
+space for the section. To allocate space for an arbitrary number of sections to 
+a geometry, use 
+.I XkbAllocGeomSections.
+.SH STRUCTURES
+.LP
+.nf
+
+typedef struct _XkbSection {
+    Atom                    name;        /\&* section name */
+    unsigned char           priority;    /\&* drawing priority, 0=>highest, 255=>lowest */
+    short                   top;         /\&* top coordinate of section origin */
+    short                   left;        /\&* left coordinate of row origin */
+    unsigned short          width;       /\&* section width, in mm/10 */
+    unsigned short          height;      /\&* section height, in mm/10 */
+    short                   angle;       /\&* angle of section rotation, counterclockwise */
+    unsigned short          num_rows;    /\&* number of rows in the rows array */
+    unsigned short          num_doodads; /\&* number of doodads in the doodads array */
+    unsigned short          num_overlays; /\&* number of overlays in the overlays array */
+    unsigned short          sz_rows;      /\&* size of the rows array */
+    unsigned short          sz_doodads;   /\&* size of the doodads array */
+    unsigned short          sz_overlays;  /\&* size of the overlays array */
+    XkbRowPtr               rows;         /\&* section rows array */
+    XkbDoodadPtr            doodads;      /\&* section doodads array */
+    XkbBoundsRec            bounds;       /\&* bounding box for the section, before rotation*/
+    XkbOverlayPtr           overlays;     /\&* section overlays array */
+} XkbSectionRec, *XkbSectionPtr;
+
+.fi
+.I top 
+and 
+.I left 
+are the origin of the section, relative to the origin of the keyboard, in mm/10. angle is in 1/10 degrees.
+.SH "SEE ALSO"
+.BR XkbAllocGeomSections (__libmansuffix__)

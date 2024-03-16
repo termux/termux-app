@@ -1,0 +1,7 @@
+prefix=@prefix@
+includedir=@includedir@
+ 
+Name: RecordProto
+Description: Record extension headers
+Version: 1.14.2
+Cflags: -I${includedir}

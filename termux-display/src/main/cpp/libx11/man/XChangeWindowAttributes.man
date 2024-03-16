@@ -1,0 +1,312 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XChangeWindowAttributes __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XChangeWindowAttributes, XSetWindowBackground, XSetWindowBackgroundPixmap, XSetWindowBorder, XSetWindowBorderPixmap, XSetWindowColormap \- change window attributes
+.SH SYNTAX
+.HP
+int XChangeWindowAttributes\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, unsigned long \fIvaluemask\fP\^, XSetWindowAttributes *\fIattributes\fP\^);
+.HP
+int XSetWindowBackground\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, unsigned long \fIbackground_pixel\fP\^);
+.HP
+int XSetWindowBackgroundPixmap\^(\^Display *\fIdisplay\fP\^, Window
+\fIw\fP\^, Pixmap \fIbackground_pixmap\fP\^);
+.HP
+int XSetWindowBorder\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, unsigned long \fIborder_pixel\fP\^);
+.HP
+int XSetWindowBorderPixmap\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, Pixmap \fIborder_pixmap\fP\^);
+.HP
+int XSetWindowColormap\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, Colormap \fIcolormap\fP\^);
+.SH ARGUMENTS
+.IP \fIattributes\fP 1i
+Specifies the structure from which the values (as specified by the value mask)
+are to be taken.
+The value mask should have the appropriate bits
+set to indicate which attributes have been set in the structure.
+.IP \fIbackground_pixel\fP 1i
+Specifies the pixel that is to be used for the background.
+.IP \fIbackground_pixmap\fP 1i
+Specifies the background pixmap,
+.BR ParentRelative ,
+or
+.BR None .
+.IP \fIborder_pixel\fP 1i
+Specifies the entry in the colormap.
+.IP \fIborder_pixmap\fP 1i
+Specifies the border pixmap or
+.BR CopyFromParent .
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIvaluemask\fP 1i
+Specifies which window attributes are defined in the attributes
+argument.
+This mask is the bitwise inclusive OR of the valid attribute mask bits.
+If valuemask is zero,
+the attributes are ignored and are not referenced.
+.IP \fIw\fP 1i
+Specifies the window.
+.IP \fIcolormap\fP 1i
+Specifies the colormap.
+.SH DESCRIPTION
+Depending on the valuemask,
+the
+.B XChangeWindowAttributes
+function uses the window attributes in the
+.B XSetWindowAttributes
+structure to change the specified window attributes.
+Changing the background does not cause the window contents to be
+changed.
+To repaint the window and its background, use
+.BR XClearWindow .
+Setting the border or changing the background such that the
+border tile origin changes causes the border to be repainted.
+Changing the background of a root window to
+.B None
+or
+.B ParentRelative
+restores the default background pixmap.
+Changing the border of a root window to
+.B CopyFromParent
+restores the default border pixmap.
+Changing the win-gravity does not affect the current position of the
+window.
+Changing the backing-store of an obscured window to
+.B WhenMapped
+or
+.BR Always ,
+or changing the backing-planes, backing-pixel, or
+save-under of a mapped window may have no immediate effect.
+Changing the colormap of a window (that is, defining a new map, not
+changing the contents of the existing map) generates a
+.B ColormapNotify
+event.
+Changing the colormap of a visible window may have no
+immediate effect on the screen because the map may not be installed
+(see
+.BR XInstallColormap ).
+Changing the cursor of a root window to
+.B None
+restores the default
+cursor.
+Whenever possible, you are encouraged to share colormaps.
+.LP
+Multiple clients can select input on the same window.
+Their event masks are maintained separately.
+When an event is generated,
+it is reported to all interested clients.
+However, only one client at a time can select for
+.BR SubstructureRedirectMask ,
+.BR ResizeRedirectMask ,
+and
+.BR ButtonPressMask .
+If a client attempts to select any of these event masks
+and some other client has already selected one,
+a
+.B BadAccess
+error results.
+There is only one do-not-propagate-mask for a window,
+not one per client.
+.LP
+.B XChangeWindowAttributes
+can generate
+.BR BadAccess ,
+.BR BadColor ,
+.BR BadCursor ,
+.BR BadMatch ,
+.BR BadPixmap ,
+.BR BadValue ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XSetWindowBackground
+function sets the background of the window to the specified pixel value.
+Changing the background does not cause the window contents to be changed.
+.B XSetWindowBackground
+uses a pixmap of undefined size filled with the pixel value you passed.
+If you try to change the background of an
+.B InputOnly
+window, a
+.B BadMatch
+error results.
+.LP
+.B XSetWindowBackground
+can generate
+.B BadMatch
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XSetWindowBackgroundPixmap
+function sets the background pixmap of the window to the specified pixmap.
+The background pixmap can immediately be freed if no further explicit
+references to it are to be made.
+If
+.B ParentRelative
+is specified,
+the background pixmap of the window's parent is used,
+or on the root window, the default background is restored.
+If you try to change the background of an
+.B InputOnly
+window, a
+.B BadMatch
+error results.
+If the background is set to
+.BR None ,
+the window has no defined background.
+.LP
+.B XSetWindowBackgroundPixmap
+can generate
+.BR BadMatch ,
+.BR BadPixmap ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XSetWindowBorder
+function sets the border of the window to the pixel value you specify.
+If you attempt to perform this on an
+.B InputOnly
+window, a
+.B BadMatch
+error results.
+.LP
+.B XSetWindowBorder
+can generate
+.B BadMatch
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XSetWindowBorderPixmap
+function sets the border pixmap of the window to the pixmap you specify.
+The border pixmap can be freed immediately if no further explicit
+references to it are to be made.
+If you specify
+.BR CopyFromParent ,
+a copy of the parent window's border pixmap is used.
+If you attempt to perform this on an
+.B InputOnly
+window, a
+.B BadMatch
+error results.
+.LP
+.B XSetWindowBorderPixmap
+can generate
+.BR BadMatch ,
+.BR BadPixmap ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XSetWindowColormap
+function sets the specified colormap of the specified window.
+The colormap must have the same visual type as the window,
+or a
+.B BadMatch
+error results.
+.LP
+.B XSetWindowColormap
+can generate
+.BR BadColor ,
+.BR BadMatch ,
+and
+.B BadWindow
+errors.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAccess
+A client attempted
+to free a color map entry that it did not already allocate.
+.TP 1i
+.B BadAccess
+A client attempted
+to store into a read-only color map entry.
+.TP 1i
+.B BadColor
+A value for a Colormap argument does not name a defined Colormap.
+.TP 1i
+.B BadCursor
+A value for a Cursor argument does not name a defined Cursor.
+.TP 1i
+.B BadMatch
+Some argument or pair of arguments has the correct type and range but fails
+to match in some other way required by the request.
+.TP 1i
+.B BadMatch
+An
+.B InputOnly
+window locks this attribute.
+.TP 1i
+.B BadPixmap
+A value for a Pixmap argument does not name a defined Pixmap.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XConfigureWindow(__libmansuffix__),
+XCreateWindow(__libmansuffix__),
+XDestroyWindow(__libmansuffix__),
+XInstallColormap(__libmansuffix__),
+XMapWindow(__libmansuffix__),
+XRaiseWindow(__libmansuffix__),
+XUnmapWindow(__libmansuffix__)
+.br
+\fI\*(xL\fP

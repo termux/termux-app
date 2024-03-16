@@ -1,0 +1,98 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbSetAutoRepeatRate __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbSetAutoRepeatRate \- Sets the attributes of the RepeatKeys control for a 
+keyboard device
+.SH SYNOPSIS
+.HP
+.B Bool XkbSetAutoRepeatRate
+.BI "(\^Display *" "display" "\^,"
+.BI "unsigned int " "device_spec" "\^,"
+.BI "unsigned int " "timeout" "\^,"
+.BI "unsigned int " "interval" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I display
+connection to X server
+.TP
+.I device_spec
+device to configure, or XkbUseCoreKbd
+.TP
+.I timeout
+initial delay, ms
+.TP
+.I interval
+delay between repeats, ms
+.SH DESCRIPTION
+.LP
+The core protocol allows only control over whether or not the entire keyboard or 
+individual keys should auto-repeat when held down. RepeatKeys is a boolean 
+control that extends this capability by adding control over the delay until a 
+key begins to repeat and the rate at which it repeats. RepeatKeys is coupled 
+with the core auto-repeat control: when RepeatKeys is enabled or disabled, the 
+core auto-repeat is enabled or disabled and vice versa.
+
+Auto-repeating keys are controlled by two attributes. The first, 
+.I timeout, 
+is the delay after the initial press of an auto-repeating key and the first 
+generated repeat event. The second, 
+.I interval, 
+is the delay between all subsequent generated repeat events. As with all boolean 
+controls, configuring the attributes that determine how the control operates 
+does not automatically enable the control as a whole.
+
+.I XkbSetAutoRepeatRate 
+sends a request to the X server to configure the AutoRepeat control attributes 
+to the values specified in 
+.I timeout 
+and 
+.I interval.
+ 
+.I XkbSetAutoRepeatRate 
+does not wait for a reply; it normally returns True. Specifying a zero value for 
+either 
+.I timeout 
+or 
+.I interval 
+causes the server to generate a BadValue protocol error. If a compatible version 
+of the Xkb extension is not available in the server, 
+.I XkbSetAutoRepeatRate 
+returns False.
+.SH "RETURN VALUES"
+.TP 15
+True
+The 
+.I XkbSetAutoRepeatRate 
+function returns True normally.
+.TP 15
+False
+The 
+.I XkbSetAutoRepeatRate 
+function returns False if a compatible version of the Xkb extension is not 
+available in the server.
+.SH DIAGNOSTICS
+.TP 15
+.B BadValue
+An argument is out of range

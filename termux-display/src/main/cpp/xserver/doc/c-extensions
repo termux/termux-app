@@ -1,0 +1,68 @@
+First of all: C89 or better.  If you don't have that, port gcc first.
+
+Use of C language extensions throughout the X server tree
+---------------------------------------------------------
+
+Optional extensions:
+The server will still build if your toolchain does not support these
+extensions, although the results may not be optimal.
+
+    * _X_SENTINEL(x): member x of the passed structure must be NULL, e.g.:
+                      void parseOptions(Option *options _X_SENTINEL(0));
+                      parseOptions("foo", "bar", NULL); /* this is OK */
+                      parseOptions("foo", "bar", "baz"); /* this is not */
+                      This definition comes from Xfuncproto.h in the core
+                      protocol headers.
+    * _X_ATTRIBUTE_PRINTF(x, y): This function has printf-like semantics;
+                                 check the format string when built with
+                                 -Wformat (gcc) or similar.
+    * _X_EXPORT: this function should appear in symbol tables.
+    * _X_HIDDEN: this function should not appear in the _dynamic_ symbol
+                 table.
+    * _X_INTERNAL: like _X_HIDDEN, but attempt to ensure that this function
+                   is never called from another module.
+    * _X_INLINE: inline this function if possible (generally obeyed unless
+                 disabling optimisations).
+    * _X_DEPRECATED: warn on use of this function.
+
+Mandatory extensions:
+The server will not build if your toolchain does not support these extensions.
+
+    * named initialisers: explicitly initialising structure members, e.g.:
+                          struct foo bar = { .baz = quux, .brian = "dog" };
+    * variadic macros: macros with a variable number of arguments, e.g.:
+                       #define DebugF(x, ...) /**/
+    * interleaved code and declarations: { foo = TRUE; int bar; do_stuff(); }
+
+
+Use of library facilities throughout the X server tree
+-------------------------------------------------------------
+
+Non-OS-dependent code can assume facilities at least as good as
+the non-OS-facility parts of POSIX-1.2001.  Ideally this would
+be C99, but even gcc+glibc doesn't implement that yet.
+
+Unix-like systems are assumed to be at least as good as UNIX03.
+
+Note that there are two Windows ports, Cygwin and MinGW:
+- Cygwin is more or less like Linux.
+- MinGW is more restrictive. Windows does not provide the required
+POSIX facilities, so some non-OS-dependent code is stubbed out or
+has an alternate implementation if WIN32 is defined.  Code that
+needs to be portable to Windows should be careful to, well, be portable.
+
+
+Required OS facilities
+-------------------------------------------------------------
+
+Linux systems must be at least 2.4 or later.  As a practical matter
+though, 2.4 kernels never receive any testing.  Use 2.6 already.
+
+TODO: Solaris.
+
+TODO: *BSD.
+
+Windows-dependent code assumes at least NT 6.0.
+
+OSX support is generally limited to the most recent version.  Currently
+that means 10.5.

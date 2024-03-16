@@ -1,0 +1,7 @@
+prefix=@prefix@
+includedir=@includedir@
+
+Name: EvIEExt
+Description: EvIE extension headers
+Version: 1.1.1
+Cflags: -I${includedir}

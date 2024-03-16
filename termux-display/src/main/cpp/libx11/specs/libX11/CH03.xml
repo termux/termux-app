@@ -1,0 +1,4179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Window_Functions'><title>Window Functions</title>
+<sect1 id="Visual_Types">
+<title>Visual Types</title>
+<!-- .XS -->
+<!-- (SN Visual Types -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>Visual Type</primary></indexterm>
+On some display hardware, 
+it may be possible to deal with color resources in more than one way.
+For example, you may be able to deal with a screen of either 12-bit depth
+with arbitrary mapping of pixel to color (pseudo-color) or 24-bit depth
+with 8 bits of the pixel dedicated to each of red, green, and blue.
+These different ways of dealing with the visual aspects of the screen
+are called visuals.
+For each screen of the display, there may be a list of valid visual types
+supported at different depths of the screen.
+Because default windows and visual types are defined for each screen,
+most simple applications need not deal with this complexity.
+Xlib provides macros and functions that return the default root window, 
+the default depth of the default root window, and the default visual type
+(see sections <link linkend='Display_Macros'>2.2.1</link>
+and <link linkend="Determining_the_Appropriate_Visual_Type">16.7</link>).
+</para>
+<para>
+<!-- .LP -->
+Xlib uses an opaque 
+<structname>Visual</structname>
+<indexterm significance="preferred"><primary>Visual</primary></indexterm>
+structure that contains information about the possible color mapping.
+The visual utility functions
+(see <link linkend="Determining_the_Appropriate_Visual_Type">section 16.7</link>)
+use an
+<structname>XVisualInfo</structname>
+structure to return this information to an application.
+The members of this structure pertinent to this discussion are class, red_mask,
+green_mask, blue_mask, bits_per_rgb, and colormap_size.
+The class member specifies one of the possible visual classes of the screen
+and can be 
+<indexterm><primary>Visual Classes</primary><secondary>StaticGray</secondary></indexterm>
+<indexterm><primary>Visual Classes</primary><secondary>StaticColor</secondary></indexterm>
+<indexterm><primary>Visual Classes</primary><secondary>TrueColor</secondary></indexterm>
+<indexterm><primary>Visual Classes</primary><secondary>StaticColor</secondary></indexterm>
+<indexterm><primary>Visual Classes</primary><secondary>GrayScale</secondary></indexterm>
+<indexterm><primary>Visual Classes</primary><secondary>PseudoColor</secondary></indexterm>
+<symbol>StaticGray</symbol>,
+<symbol>StaticColor</symbol>,
+<symbol>TrueColor</symbol>,
+<symbol>GrayScale</symbol>,
+<symbol>PseudoColor</symbol>,
+or
+<symbol>DirectColor</symbol>.
+</para>
+<para>
+<!-- .LP -->
+The following concepts may serve to make the explanation of
+visual types clearer. 
+The screen can be color or grayscale,
+can have a colormap that is writable or read-only,
+and can also have a colormap whose indices are decomposed into separate 
+<acronym>RGB</acronym> pieces, provided one is not on a grayscale screen.
+This leads to the following diagram:
+</para>
+
+<literallayout class="monospaced">
+                      Color        Gray-Scale
+                   R/O    R/W      R/O   R/W
+----------------------------------------------
+ Undecomposed    Static  Pseudo   Static  Gray
+   Colormap      Color   Color    Gray    Scale
+
+ Decomposed       True   Direct
+   Colormap       Color  Color
+----------------------------------------------
+</literallayout>
+
+<para>
+<!-- .LP -->
+Conceptually, 
+as each pixel is read out of video memory for display on the screen,
+it goes through a look-up stage by indexing into a colormap.
+Colormaps can be manipulated arbitrarily on some hardware, 
+in limited ways on other hardware, and not at all on other hardware.  
+The visual types affect the colormap and 
+the <acronym>RGB</acronym> values in the following ways:
+</para>
+<para>
+<!-- .LP -->
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+For 
+<symbol>PseudoColor</symbol>,
+a pixel value indexes a colormap to produce
+independent <acronym>RGB</acronym> values, and the <acronym>RGB</acronym> values can be changed dynamically.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<symbol>GrayScale</symbol>
+is treated the same way as 
+<symbol>PseudoColor</symbol>
+except that the primary that drives the screen is undefined. 
+Thus, the client should always store the
+same value for red, green, and blue in the colormaps.  
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+For 
+<symbol>DirectColor</symbol>,
+a pixel value is decomposed into separate <acronym>RGB</acronym> subfields, and each
+subfield separately indexes the colormap for the corresponding value.
+The <acronym>RGB</acronym> values can be changed dynamically.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<symbol>TrueColor</symbol>
+is treated the same way as 
+<symbol>DirectColor</symbol>
+except that the colormap has predefined, read-only <acronym>RGB</acronym> values.
+These <acronym>RGB</acronym> values are server dependent but provide linear or near-linear
+ramps in each primary.  
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<symbol>StaticColor</symbol>
+is treated the same way as 
+<symbol>PseudoColor</symbol>
+except that the colormap has predefined, 
+read-only, server-dependent <acronym>RGB</acronym> values.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<symbol>StaticGray</symbol>
+is treated the same way as 
+<symbol>StaticColor</symbol>
+except that the <acronym>RGB</acronym> values are equal for any single pixel
+value, thus resulting in shades of gray.  
+<symbol>StaticGray</symbol>
+with a two-entry
+colormap can be thought of as monochrome.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+The red_mask, green_mask, and blue_mask members are only defined for
+<symbol>DirectColor</symbol>
+and 
+<symbol>TrueColor</symbol>.
+Each has one contiguous set of bits with no
+intersections.
+The bits_per_rgb member specifies the log base 2 of the
+number of distinct color values (individually) of red, green, and blue.
+Actual <acronym>RGB</acronym> values are unsigned 16-bit numbers.
+The colormap_size member defines the number of available colormap entries
+in a newly created colormap.  
+For 
+<symbol>DirectColor</symbol>
+and 
+<symbol>TrueColor</symbol>,
+this is the size of an individual pixel subfield.
+<!-- .sp -->
+</para>
+<para>
+<!-- .LP -->
+To obtain the visual ID from a 
+<structname>Visual</structname>,
+use
+<xref linkend='XVisualIDFromVisual' xrefstyle='select: title'/>.
+<indexterm significance="preferred"><primary>XVisualIDFromVisual</primary></indexterm>
+</para>
+<!-- .sM -->
+<funcsynopsis id='XVisualIDFromVisual'>
+<funcprototype>
+  <funcdef>VisualID <function>XVisualIDFromVisual</function></funcdef>
+  <paramdef>Visual *<parameter>visual</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>visual</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the visual type.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XVisualIDFromVisual' xrefstyle='select: title'/>
+function returns the visual ID for the specified visual type.
+</para>
+</sect1>
+<sect1 id="Window_Attributes">
+<title>Window Attributes</title>
+<!-- .XS -->
+<!-- (SN Window Attributes -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Window</primary></indexterm>
+<indexterm><primary>Window</primary><secondary>attributes</secondary></indexterm>
+All 
+<symbol>InputOutput</symbol>
+windows have a border width of zero or more pixels, an optional background, 
+an event suppression mask (which suppresses propagation of events from 
+children), and a property list
+(see <link linkend="Properties_and_Atoms">section 4.3</link>).
+The window border and background can be a solid color or a pattern, called
+a tile.
+All windows except the root have a parent and are clipped by their parent.
+If a window is stacked on top of another window, it obscures that other
+window for the purpose of input.
+If a window has a background (almost all do), it obscures the other
+window for purposes of output.
+Attempts to output to the obscured area do nothing, 
+and no input events (for example, pointer motion) are generated for the 
+obscured area.
+</para>
+<para>
+<!-- .LP -->
+Windows also have associated property lists
+(see <link linkend="Properties_and_Atoms">section 4.3</link>).
+</para>
+<para>
+<!-- .LP -->
+Both
+<symbol>InputOutput</symbol>
+and
+<symbol>InputOnly</symbol>
+windows have the following common attributes,
+which are the only attributes of an
+<symbol>InputOnly</symbol>
+window:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+win-gravity
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+event-mask
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+do-not-propagate-mask
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+override-redirect
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+cursor
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+If you specify any other attributes for an
+<symbol>InputOnly</symbol>
+window,
+a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<symbol>InputOnly</symbol>
+windows are used for controlling input events in situations where
+<symbol>InputOutput</symbol>
+windows are unnecessary.
+<symbol>InputOnly</symbol>
+windows are invisible; can only be used to control such things as
+cursors, input event generation, and grabbing;
+and cannot be used in any graphics requests.
+Note that
+<symbol>InputOnly</symbol>
+windows cannot have
+<symbol>InputOutput</symbol>
+windows as inferiors.
+</para>
+<para>
+<!-- .LP -->
+Windows have borders of a programmable width and pattern
+as well as a background pattern or tile.
+<indexterm><primary>Tile</primary><secondary>pixmaps</secondary></indexterm>
+Pixel values can be used for solid colors.
+<indexterm><primary>Resource IDs</primary><secondary>freeing</secondary></indexterm>
+<indexterm><primary>Freeing</primary><secondary>resources</secondary></indexterm>
+The background and border pixmaps can be destroyed immediately after
+creating the window if no further explicit references to them
+are to be made.
+<indexterm ><primary>Tile</primary><secondary>mode</secondary></indexterm>
+The pattern can either be relative to the parent 
+or absolute.
+If
+<symbol>ParentRelative</symbol>,
+the parent's background is used.
+</para>
+<para>
+<!-- .LP -->
+When windows are first created, 
+they are not visible (not mapped) on the screen.
+Any output to a window that is not visible on the screen 
+and that does not have backing store will be discarded.
+<indexterm><primary>Window</primary><secondary>mapping</secondary></indexterm>
+An application may wish to create a window long before it is
+mapped to the screen.
+When a window is eventually mapped to the screen 
+(using
+<xref linkend='XMapWindow' xrefstyle='select: title'/>),
+<indexterm><primary>XMapWindow</primary></indexterm>
+the X server generates an 
+<symbol>Expose</symbol>
+event for the window if backing store has not been maintained.
+</para>
+<para>
+<!-- .LP -->
+A window manager can override your choice of size, 
+border width, and position for a top-level window.
+Your program must be prepared to use the actual size and position
+of the top window.
+It is not acceptable for a client application to resize itself
+unless in direct response to a human command to do so.
+Instead, either your program should use the space given to it,
+or if the space is too small for any useful work, your program
+might ask the user to resize the window.
+The border of your top-level window is considered fair game 
+for window managers.
+</para>
+<para>
+<!-- .LP -->
+To set an attribute of a window,
+set the appropriate member of the
+<structname>XSetWindowAttributes</structname>
+structure and OR in the corresponding value bitmask in your subsequent calls to
+<xref linkend='XCreateWindow' xrefstyle='select: title'/>
+and
+<xref linkend='XChangeWindowAttributes' xrefstyle='select: title'/>,
+or use one of the other convenience functions that set the appropriate 
+attribute.
+The symbols for the value mask bits and the
+<structname>XSetWindowAttributes</structname>
+structure are:
+<!-- .sM -->
+</para>
+<para>
+<!-- .LP -->
+/* Window attribute value mask bits */
+
+
+<literallayout class="monospaced">
+/* Window attribute value mask bits */
+#define    CWBackPixmap                    (1L&lt;&lt;0)
+#define    CWBackPixel                     (1L&lt;&lt;1)
+#define    CWBorderPixmap                  (1L&lt;&lt;2)
+#define    CWBorderPixel                   (1L&lt;&lt;3)
+#define    CWBitGravity                    (1L&lt;&lt;4)
+#define    CWWinGravity                    (1L&lt;&lt;5)
+#define    CWBackingStore                  (1L&lt;&lt;6)
+#define    CWBackingPlanes                 (1L&lt;&lt;7)
+#define    CWBackingPixel                  (1L&lt;&lt;8)
+#define    CWOverrideRedirect              (1L&lt;&lt;9)
+#define    CWSaveUnder                     (1L&lt;&lt;10)
+#define    CWEventMask                     (1L&lt;&lt;11)
+#define    CWDontPropagate                 (1L&lt;&lt;12)
+#define    CWColormap                      (1L&lt;&lt;13)
+#define    CWCursor                        (1L&lt;&lt;14)
+</literallayout>
+
+<indexterm significance="preferred"><primary>XSetWindowAttributes</primary></indexterm>
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+/* Values */
+
+typedef struct {
+     Pixmap background_pixmap;     /* background, None, or ParentRelative */
+     unsigned long background_pixel;     /* background pixel */
+     Pixmap border_pixmap;          /* border of the window or CopyFromParent */
+     unsigned long border_pixel;     /* border pixel value */
+     int bit_gravity;     /* one of bit gravity values */
+     int win_gravity;     /* one of the window gravity values */
+     int backing_store;     /* NotUseful, WhenMapped, Always */
+     unsigned long backing_planes;     /* planes to be preserved if possible */
+     unsigned long backing_pixel;     /* value to use in restoring planes */
+     Bool save_under;     /* should bits under be saved? (popups) */
+     long event_mask;     /* set of events that should be saved */
+     long do_not_propagate_mask;     /* set of events that should not propagate */
+     Bool override_redirect;     /* boolean value for override_redirect */
+     Colormap colormap;     /* color map to be associated with window */
+     Cursor cursor;          /* cursor to be displayed (or None) */
+} XSetWindowAttributes;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The following lists the defaults for each window attribute and indicates
+whether the attribute is applicable to
+<symbol>InputOutput</symbol>
+and
+<symbol>InputOnly</symbol>
+windows:
+</para>
+<informaltable frame='topbot'>
+  <?dbfo keep-together="auto" ?>
+  <tgroup cols='4' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth='1.0*'/>
+  <colspec colname='c2' colwidth='1.0*'/>
+  <colspec colname='c3' colwidth='1.0*'/>
+  <colspec colname='c4' colwidth='1.0*'/>
+  <thead>
+    <row rowsep='1'>
+      <entry>Attribute</entry>
+      <entry>Default</entry>
+      <entry>InputOutput</entry>
+      <entry>InputOnly</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>background-pixmap</entry>
+      <entry><symbol>None</symbol></entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>background-pixel</entry>
+      <entry>Undefined</entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>border-pixmap</entry>
+      <entry><symbol>CopyFromParent</symbol></entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>border-pixel</entry>
+      <entry>Undefined</entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>bit-gravity</entry>
+      <entry><symbol>ForgetGravity</symbol></entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>win-gravity</entry>
+      <entry><symbol>NorthWestGravity</symbol></entry>
+      <entry>Yes</entry>
+      <entry>Yes</entry>
+    </row>
+    <row>
+      <entry>backing-store</entry>
+      <entry><symbol>NotUseful</symbol></entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>backing-planes</entry>
+      <entry>All ones</entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>backing-pixel</entry>
+      <entry>zero</entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>save-under</entry>
+      <entry><symbol>False</symbol></entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>event-mask</entry>
+      <entry>empty set</entry>
+      <entry>Yes</entry>
+      <entry>Yes</entry>
+    </row>
+    <row>
+      <entry>do-not-propagate-mask</entry>
+      <entry>empty set</entry>
+      <entry>Yes</entry>
+      <entry>Yes</entry>
+    </row>
+    <row>
+      <entry>override-redirect</entry>
+      <entry><symbol>False</symbol></entry>
+      <entry>Yes</entry>
+      <entry>Yes</entry>
+    </row>
+    <row>
+      <entry>colormap</entry>
+      <entry><symbol>CopyFromParent</symbol></entry>
+      <entry>Yes</entry>
+      <entry>No</entry>
+    </row>
+    <row>
+      <entry>cursor</entry>
+      <entry><symbol>None</symbol></entry>
+      <entry>Yes</entry>
+      <entry>Yes</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+<sect2 id="Background_Attribute">
+<title>Background Attribute</title>
+<!-- .XS -->
+<!-- (SN Background Attribute -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Only
+<symbol>InputOutput</symbol>
+windows can have a background.
+You can set the background of an
+<symbol>InputOutput</symbol>
+window by using a pixel or a pixmap.
+</para>
+<para>
+<!-- .LP -->
+The background-pixmap attribute of a window specifies the pixmap to be used for 
+a window's background.
+This pixmap can be of any size, although some sizes may be faster than others.
+The background-pixel attribute of a window specifies a pixel value used to paint
+a window's background in a single color.
+</para>
+<para>
+<!-- .LP -->
+You can set the background-pixmap to a pixmap,  
+<symbol>None</symbol>
+(default), or 
+<symbol>ParentRelative</symbol>.
+You can set the background-pixel of a window to any pixel value (no default).
+If you specify a background-pixel, 
+it overrides either the default background-pixmap
+or any value you may have set in the background-pixmap.
+A pixmap of an undefined size that is filled with the background-pixel is used 
+for the background.
+Range checking is not performed on the background pixel;
+it simply is truncated to the appropriate number of bits.
+</para>
+<para>
+<!-- .LP -->
+If you set the background-pixmap,
+it overrides the default.
+The background-pixmap and the window must have the same depth,
+or a
+<errorname>BadMatch</errorname>
+error results.
+If you set background-pixmap to
+<symbol>None</symbol>,
+the window has no defined background.  
+If you set the background-pixmap to
+<symbol>ParentRelative</symbol>:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+The parent window's background-pixmap is used. 
+The child window, however, must have the same depth as 
+its parent,
+or a
+<errorname>BadMatch</errorname>
+error results.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If the parent window has a background-pixmap of
+<symbol>None</symbol>,
+the window also has a background-pixmap of
+<symbol>None</symbol>.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A copy of the parent window's background-pixmap is not made.
+The parent's background-pixmap is examined each time the child window's 
+background-pixmap is required.  
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The background tile origin always aligns with the parent window's
+background tile origin. 
+If the background-pixmap is not
+<symbol>ParentRelative</symbol>,
+the background tile origin is the child window's origin.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+Setting a new background, whether by setting background-pixmap or
+background-pixel, overrides any previous background.
+The background-pixmap can be freed immediately if no further explicit reference
+is made to it (the X server will keep a copy to use when needed).
+If you later draw into the pixmap used for the background,
+what happens is undefined because the
+X implementation is free to make a copy of the pixmap or
+to use the same pixmap.
+</para>
+<para>
+<!-- .LP -->
+When no valid contents are available for regions of a window
+and either the regions are visible or the server is maintaining backing store,
+the server automatically tiles the regions with the window's background
+unless the window has a background of
+<symbol>None</symbol>.
+If the background is
+<symbol>None</symbol>,
+the previous screen contents from other windows of the same depth as the window
+are simply left in place as long as the contents come from the parent of the
+window or an inferior of the parent.
+Otherwise, the initial contents of the exposed regions are undefined.
+<symbol>Expose</symbol>
+events are then generated for the regions, even if the background-pixmap
+is
+<symbol>None</symbol>
+(see <link linkend="Exposure_Events">section 10.9</link>).
+</para>
+</sect2>
+<sect2 id="Border_Attribute">
+<title>Border Attribute</title>
+<!-- .XS -->
+<!-- (SN Border Attribute -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Only
+<symbol>InputOutput</symbol>
+windows can have a border.
+You can set the border of an
+<symbol>InputOutput</symbol>
+window by using a pixel or a pixmap.
+</para>
+<para>
+<!-- .LP -->
+The border-pixmap attribute of a window specifies the pixmap to be used 
+for a window's border.
+The border-pixel attribute of a window specifies a pixmap of undefined size 
+filled with that pixel be used for a window's border. 
+Range checking is not performed on the background pixel;
+it simply is truncated to the appropriate number of bits.
+The border tile origin is always the same as the background tile origin.
+</para>
+<para>
+<!-- .LP -->
+You can also set the border-pixmap to a pixmap of any size (some may be faster
+than others) or to
+<symbol>CopyFromParent</symbol>
+(default).
+You can set the border-pixel to any pixel value (no default).
+</para>
+<para>
+<!-- .LP -->
+If you set a border-pixmap, 
+it overrides the default.
+The border-pixmap and the window must have the same depth,
+or a
+<errorname>BadMatch</errorname>
+error results.
+If you set the border-pixmap to 
+<symbol>CopyFromParent</symbol>,
+the parent window's border-pixmap is copied.
+Subsequent changes to the parent window's border attribute do not affect 
+the child window.
+However, the child window must have the same depth as the parent window,
+or a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+The border-pixmap can be freed immediately if no further explicit reference
+is made to it.
+If you later draw into the pixmap used for the border,
+what happens is undefined because the
+X implementation is free either to make a copy of the pixmap or
+to use the same pixmap.
+If you specify a border-pixel, 
+it overrides either the default border-pixmap
+or any value you may have set in the border-pixmap.
+All pixels in the window's border will be set to the border-pixel.
+Setting a new border, whether by setting border-pixel or by setting
+border-pixmap, overrides any previous border.
+</para>
+<para>
+<!-- .LP -->
+Output to a window is always clipped to the inside of the window. 
+Therefore, graphics operations never affect the window border.
+</para>
+</sect2>
+<sect2 id="Gravity_Attributes">
+<title>Gravity Attributes</title>
+<!-- .XS -->
+<!-- (SN Gravity Attributes -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The bit gravity of a window defines which region of the window should be 
+retained when an
+<symbol>InputOutput</symbol>
+window is resized. 
+The default value for the bit-gravity attribute is 
+<symbol>ForgetGravity</symbol>.
+The window gravity of a window allows you to define how the 
+<symbol>InputOutput</symbol>
+or
+<symbol>InputOnly</symbol>
+window should be repositioned if its parent is resized.  
+The default value for the win-gravity attribute is 
+<symbol>NorthWestGravity</symbol>.
+</para>
+<para>
+<!-- .LP -->
+If the inside width or height of a window is not changed 
+and if the window is moved or its border is changed, 
+then the contents of the window are not lost but move with the window.
+Changing the inside width or height of the window causes its contents to be
+moved or lost (depending on the bit-gravity of the window) and causes
+children to be reconfigured (depending on their win-gravity).
+For a
+change of width and height, the (x, y) pairs are defined:
+</para>
+<para>
+<!-- .LP -->
+<informaltable frame='topbot'>
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='2' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth='1.0*'/>
+  <colspec colname='c2' colwidth='2.0*'/>
+  <thead>
+    <row rowsep='1'>
+      <entry>Gravity Direction</entry>
+      <entry>Coordinates</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry><symbol>NorthWestGravity</symbol></entry>
+      <entry>(0, 0)</entry>
+    </row>
+    <row>
+      <entry><symbol>NorthGravity</symbol></entry>
+      <entry>(Width/2, 0)</entry>
+    </row>
+    <row>
+      <entry><symbol>NorthEastGravity</symbol></entry>
+      <entry>(Width, 0)</entry>
+    </row>
+    <row>
+      <entry><symbol>WestGravity</symbol></entry>
+      <entry>(0, Height/2)</entry>
+    </row>
+    <row>
+      <entry><symbol>CenterGravity</symbol></entry>
+      <entry>(Width/2, Height/2)</entry>
+    </row>
+    <row>
+      <entry><symbol>EastGravity</symbol></entry>
+      <entry>(Width, Height/2)</entry>
+    </row>
+    <row>
+      <entry><symbol>SouthWestGravity</symbol></entry>
+      <entry>(0, Height)</entry>
+    </row>
+    <row>
+      <entry><symbol>SouthGravity</symbol></entry>
+      <entry>(Width/2, Height)</entry>
+    </row>
+    <row>
+      <entry><symbol>SouthEastGravity</symbol></entry>
+      <entry>(Width, Height)</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+</para>
+<para>
+<!-- .LP -->
+When a window with one of these bit-gravity values is resized, 
+the corresponding pair
+defines the change in position of each pixel in the window.
+When a window with one of these win-gravities has its parent window resized,
+the corresponding pair defines the change in position of the window 
+within the parent.
+When a window is so repositioned, a
+<symbol>GravityNotify</symbol>
+event is generated
+(see <link linkend="GravityNotify_Events">section 10.10.5</link>).
+</para>
+<para>
+<!-- .LP -->
+A bit-gravity of
+<symbol>StaticGravity</symbol>
+indicates that the contents or origin should not move relative to the 
+origin of the root window.
+If the change in size of the window is coupled with a change in position (x, y),
+then for bit-gravity the change in position of each pixel is (&minus;x, &minus;y), and for
+win-gravity the change in position of a child when its parent is so resized is
+(&minus;x, &minus;y).
+Note that
+<symbol>StaticGravity</symbol>
+still only takes effect when the width or height of the window is changed, 
+not when the window is moved.
+</para>
+<para>
+<!-- .LP -->
+A bit-gravity of 
+<symbol>ForgetGravity</symbol>
+indicates that the window's contents are always discarded after a size change, 
+even if a backing store or save under has been requested.
+The window is tiled with its background
+and zero or more 
+<symbol>Expose</symbol>
+events are generated. 
+If no background is defined, the existing screen contents are not
+altered.
+Some X servers may also ignore the specified bit-gravity and 
+always generate 
+<symbol>Expose</symbol>
+events.
+</para>
+<para>
+<!-- .LP -->
+The contents and borders of inferiors are not affected by their parent's
+bit-gravity.
+A server is permitted to ignore the specified bit-gravity and use
+<symbol>Forget</symbol>
+instead.
+</para>
+<para>
+<!-- .LP -->
+A win-gravity of 
+<symbol>UnmapGravity</symbol>
+is like 
+<symbol>NorthWestGravity</symbol>
+(the window is not moved),
+except the child is also
+unmapped when the parent is resized,
+and an 
+<symbol>UnmapNotify</symbol>
+event is
+generated.
+</para>
+</sect2>
+<sect2 id="Backing_Store_Attribute">
+<title>Backing Store Attribute</title>
+<!-- .XS -->
+<!-- (SN Backing Store Attribute -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Some implementations of the X server may choose to maintain the contents of 
+<symbol>InputOutput</symbol>
+windows.
+If the X server maintains the contents of a window, 
+the off-screen saved pixels
+are known as backing store.
+The backing store advises the X server on what to do 
+with the contents of a window.
+The backing-store attribute can be set to
+<symbol>NotUseful</symbol>
+(default),
+<symbol>WhenMapped</symbol>,
+or
+<symbol>Always</symbol>.
+</para>
+<para>
+<!-- .LP -->
+A backing-store attribute of 
+<symbol>NotUseful</symbol>
+advises the X server that 
+maintaining contents is unnecessary, 
+although some X implementations may
+still choose to maintain contents and, therefore, not generate 
+<symbol>Expose</symbol>
+events.
+A backing-store attribute of 
+<symbol>WhenMapped</symbol>
+advises the X server that maintaining contents of 
+obscured regions when the window is mapped would be beneficial.
+In this case,
+the server may generate an 
+<symbol>Expose</symbol>
+event when the window is created.
+A backing-store attribute of 
+<symbol>Always</symbol>
+advises the X server that maintaining contents even when 
+the window is unmapped would be beneficial.  
+Even if the window is larger than its parent, 
+this is a request to the X server to maintain complete contents, 
+not just the region within the parent window boundaries.  
+While the X server maintains the window's contents, 
+<symbol>Expose</symbol>
+events normally are not generated, 
+but the X server may stop maintaining 
+contents at any time.  
+</para>
+<para>
+<!-- .LP -->
+When the contents of obscured regions of a window are being maintained,
+regions obscured by noninferior windows are included in the destination
+of graphics requests (and source, when the window is the source).
+However, regions obscured by inferior windows are not included.
+</para>
+</sect2>
+<sect2 id="Save_Under_Flag">
+<title>Save Under Flag</title>
+<!-- .XS -->
+<!-- (SN Save Under Flag -->
+<!-- .XE -->
+<indexterm><primary>Save Unders</primary></indexterm>
+<para>
+<!-- .LP -->
+Some server implementations may preserve contents of 
+<symbol>InputOutput</symbol>
+windows under other 
+<symbol>InputOutput</symbol>
+windows.
+This is not the same as preserving the contents of a window for you.
+You may get better visual
+appeal if transient windows (for example, pop-up menus) request that the system
+preserve the screen contents under them, 
+so the temporarily obscured applications do not have to repaint.
+</para>
+<para>
+<!-- .LP -->
+You can set the save-under flag to
+<symbol>True</symbol>
+or
+<symbol>False</symbol>
+(default).
+If save-under is 
+<symbol>True</symbol>,
+the X server is advised that, when this window is mapped, 
+saving the contents of windows it obscures would be beneficial.
+</para>
+</sect2>
+<sect2 id="Backing_Planes_and_Backing_Pixel_Attributes">
+<title>Backing Planes and Backing Pixel Attributes</title>
+<!-- .XS -->
+<!-- (SN Backing Planes and Backing Pixel Attributes -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+You can set backing planes to indicate (with bits set to 1) 
+which bit planes of an
+<symbol>InputOutput</symbol>
+window hold dynamic data that must be preserved in backing store 
+and during save unders.
+The default value for the backing-planes attribute is all bits set to 1.
+You can set backing pixel to specify what bits to use in planes not 
+covered by backing planes.
+The default value for the backing-pixel attribute is all bits set to 0.
+The X server is free to save only the specified bit planes in the backing store
+or the save under and is free to regenerate the remaining planes with 
+the specified pixel value.
+Any extraneous bits in these values (that is, those bits beyond 
+the specified depth of the window) may be simply ignored.
+If you request backing store or save unders,
+you should use these members to minimize the amount of off-screen memory 
+required to store your window.
+</para>
+</sect2>
+<sect2 id="Event_Mask_and_Do_Not_Propagate_Mask_Attributes">
+<title>Event Mask and Do Not Propagate Mask Attributes</title>
+<!-- .XS -->
+<!-- (SN Event Mask and Do Not Propagate Mask Attributes -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The event mask defines which events the client is interested in for this 
+<symbol>InputOutput</symbol>
+or
+<symbol>InputOnly</symbol>
+window (or, for some event types, inferiors of this window).
+The event mask is the bitwise inclusive OR of zero or more of the 
+valid event mask bits.
+You can specify that no maskable events are reported by setting 
+<symbol>NoEventMask</symbol>
+(default).
+</para>
+<para>
+<!-- .LP -->
+The do-not-propagate-mask attribute
+defines which events should not be propagated to 
+ancestor windows when no client has the event type selected in this 
+<symbol>InputOutput</symbol>
+or
+<symbol>InputOnly</symbol>
+window.
+The do-not-propagate-mask is the bitwise inclusive OR of zero or more
+of the following masks:
+<symbol>KeyPress</symbol>,
+<symbol>KeyRelease</symbol>,
+<symbol>ButtonPress</symbol>,
+<symbol>ButtonRelease</symbol>,
+<symbol>PointerMotion</symbol>,
+<symbol>Button1Motion</symbol>,
+<symbol>Button2Motion</symbol>,
+<symbol>Button3Motion</symbol>,
+<symbol>Button4Motion</symbol>,
+<symbol>Button5Motion</symbol>,
+and
+<symbol>ButtonMotion</symbol>.
+You can specify that all events are propagated by setting 
+<symbol>NoEventMask</symbol>
+(default).
+</para>
+</sect2>
+<sect2 id="Override_Redirect_Flag">
+<title>Override Redirect Flag</title>
+<!-- .XS -->
+<!-- (SN Override Redirect Flag -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To control window placement or to add decoration,
+a window manager often needs to intercept (redirect) any map or configure
+request.
+Pop-up windows, however, often need to be mapped without a window manager
+getting in the way.
+To control whether an
+<symbol>InputOutput</symbol>
+or
+<symbol>InputOnly</symbol>
+window is to ignore these structure control facilities,
+use the override-redirect flag.
+</para>
+<para>
+<!-- .LP -->
+The override-redirect flag specifies whether map and configure requests 
+on this window should override a 
+<symbol>SubstructureRedirectMask</symbol>
+on the parent.
+You can set the override-redirect flag to
+<symbol>True</symbol>
+or
+<symbol>False</symbol>
+(default).
+Window managers use this information to avoid tampering with pop-up windows
+(see also <link linkend='Inter_Client_Communication_Functions'>chapter 14</link>).
+</para>
+</sect2>
+<sect2 id="Colormap_Attribute">
+<title>Colormap Attribute</title>
+<!-- .XS -->
+<!-- (SN Colormap Attribute -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The colormap attribute specifies which colormap best reflects the true
+colors of the 
+<symbol>InputOutput</symbol>
+window.  
+The colormap must have the same visual type as the window,
+or a 
+<errorname>BadMatch</errorname>
+error results.  
+X servers capable of supporting multiple 
+hardware colormaps can use this information, 
+and window managers can use it for calls to
+<xref linkend='XInstallColormap' xrefstyle='select: title'/>.
+You can set the colormap attribute to a colormap or to
+<symbol>CopyFromParent</symbol>
+(default).
+</para>
+<para>
+<!-- .LP -->
+If you set the colormap to
+<symbol>CopyFromParent</symbol>,
+the parent window's colormap is copied and used by its child.
+However, the child window must have the same visual type as the parent, 
+or a 
+<errorname>BadMatch</errorname>
+error results. 
+The parent window must not have a colormap of 
+<symbol>None</symbol>,
+or a 
+<errorname>BadMatch</errorname>
+error results.
+The colormap is copied by sharing the colormap object between the child 
+and parent, not by making a complete copy of the colormap contents.
+Subsequent changes to the parent window's colormap attribute do
+not affect the child window.
+</para>
+</sect2>
+<sect2 id="Cursor_Attribute">
+<title>Cursor Attribute</title>
+<!-- .XS -->
+<!-- (SN Cursor Attribute -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The cursor attribute specifies which cursor is to be used when the pointer is
+in the 
+<symbol>InputOutput</symbol>
+or
+<symbol>InputOnly</symbol>
+window.
+You can set the cursor to a cursor or
+<symbol>None</symbol>
+(default).
+</para>
+<para>
+<!-- .LP -->
+If you set the cursor to
+<symbol>None</symbol>,
+the parent's cursor is used when the 
+pointer is in the 
+<symbol>InputOutput</symbol>
+or
+<symbol>InputOnly</symbol>
+window, and any change in the parent's cursor will cause an
+immediate change in the displayed cursor.
+By calling
+<xref linkend='XFreeCursor' xrefstyle='select: title'/>,
+the cursor can be freed immediately as long as no further explicit reference 
+to it is made.
+</para>
+</sect2>
+</sect1>
+<sect1 id="Creating_Windows">
+<title>Creating Windows</title>
+<!-- .XS -->
+<!-- (SN Creating Windows -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides basic ways for creating windows,
+and toolkits often supply higher-level functions specifically for
+creating and placing top-level windows,
+which are discussed in the appropriate toolkit documentation.
+If you do not use a toolkit, however,
+you must provide some standard information or hints for the window
+manager by using the Xlib inter-client communication functions
+(see <link linkend='Inter_Client_Communication_Functions'>chapter 14</link>).
+</para>
+<para>
+<!-- .LP -->
+If you use Xlib to create your own top-level windows
+(direct children of the root window),
+you must observe the following rules so that all applications interact
+reasonably across the different styles of window management:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+You must never fight with the window manager for the size or
+placement of your top-level window.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+You must be able to deal with whatever size window you get, 
+even if this means that your application just prints a message 
+like ``Please make me bigger'' in its window.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+You should only attempt to resize or move top-level windows in
+direct response to a user request.
+If a request to change the size of a top-level window fails,
+you must be prepared to live with what you get.
+You are free to resize or move the children of top-level
+windows as necessary.
+(Toolkits often have facilities for automatic relayout.)
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If you do not use a toolkit that automatically sets standard window properties,
+you should set these properties for top-level windows before mapping them.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+For further information,
+see <link linkend='Inter_Client_Communication_Functions'>chapter 14</link> and
+the <olink targetdoc='icccm' targetptr='icccm'><citetitle>Inter-Client Communication Conventions Manual</citetitle></olink>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCreateWindow' xrefstyle='select: title'/>
+is the more general function that allows you to set specific window attributes 
+when you create a window.
+<xref linkend='XCreateSimpleWindow' xrefstyle='select: title'/>
+creates a window that inherits its attributes from its parent window.
+</para>
+<para>
+<!-- .LP -->
+<indexterm><primary>Window</primary><secondary>InputOnly</secondary></indexterm>
+The X server acts as if 
+<symbol>InputOnly</symbol>
+windows do not exist for
+the purposes of graphics requests, exposure processing, and
+<symbol>VisibilityNotify</symbol>
+events.
+An 
+<symbol>InputOnly</symbol>
+window cannot be used as a
+drawable (that is, as a source or destination for graphics requests).
+<symbol>InputOnly</symbol>
+and 
+<symbol>InputOutput</symbol>
+windows act identically in other respects (properties,
+grabs, input control, and so on).
+Extension packages can define other classes of windows.
+</para>
+<para>
+<!-- .LP -->
+To create an unmapped window and set its window attributes, use
+<xref linkend='XCreateWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XCreateWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCreateWindow'>
+<funcprototype>
+  <funcdef>Window <function>XCreateWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>parent</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>unsigned int <parameter>border_width</parameter></paramdef>
+  <paramdef>int <parameter>depth</parameter></paramdef>
+  <paramdef>unsigned int <parameter>class</parameter></paramdef>
+  <paramdef>Visual *<parameter>visual</parameter></paramdef>
+  <paramdef>unsigned long <parameter>valuemask</parameter></paramdef>
+  <paramdef>XSetWindowAttributes *<parameter>attributes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>parent</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the parent window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are the top-left outside corner of
+the created window's borders and are relative to the inside of the parent
+window's borders.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the created window's inside
+dimensions and do not include the created window's borders.
+The dimensions must be nonzero,
+or a
+<errorname>BadValue</errorname>
+error results.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>border_width</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the width of the created window's border in pixels.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>depth</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window's depth.
+A depth of 
+<symbol>CopyFromParent</symbol>
+means the depth is taken from the parent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>class</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the created window's class.
+You can pass
+<symbol>InputOutput</symbol>,
+<symbol>InputOnly</symbol>,
+or 
+<symbol>CopyFromParent</symbol>.
+A class of 
+<symbol>CopyFromParent</symbol>
+means the class
+is taken from the parent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>visual</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the visual type.
+A visual of 
+<symbol>CopyFromParent</symbol>
+means the visual type is taken from the 
+parent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>valuemask</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies which window attributes are defined in the attributes
+argument.
+This mask is the bitwise inclusive OR of the valid attribute mask bits.
+If valuemask is zero,
+the attributes are ignored and are not referenced.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>attributes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the structure from which the values (as specified by the value mask)
+are to be taken.
+The value mask should have the appropriate bits
+set to indicate which attributes have been set in the structure.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCreateWindow' xrefstyle='select: title'/>
+function creates an unmapped subwindow for a specified parent window, 
+returns the window ID of the created window, 
+and causes the X server to generate a
+<symbol>CreateNotify</symbol>
+event.
+The created window is placed on top in the stacking order 
+with respect to siblings.
+</para>
+<para>
+<!-- .LP -->
+The coordinate system has the X axis horizontal and the Y axis vertical
+with the origin [0, 0] at the upper-left corner.
+Coordinates are integral,
+in terms of pixels,
+and coincide with pixel centers.
+Each window and pixmap has its own coordinate system.
+For a window, 
+the origin is inside the border at the inside, upper-left corner.
+</para>
+<para>
+<!-- .LP -->
+The border_width for an
+<symbol>InputOnly</symbol>
+window must be zero, or a
+<errorname>BadMatch</errorname>
+error results.
+For class
+<symbol>InputOutput</symbol>,
+the visual type and depth must be a combination supported for the screen,
+or a
+<errorname>BadMatch</errorname>
+error results.
+The depth need not be the same as the parent,
+but the parent must not be a window of class 
+<symbol>InputOnly</symbol>,
+or a
+<errorname>BadMatch</errorname>
+error results.
+For an
+<symbol>InputOnly</symbol>
+window,
+the depth must be zero, and the visual must be one supported by the screen.
+If either condition is not met,
+a
+<errorname>BadMatch</errorname>
+error results.
+The parent window, however, may have any depth and class.
+If you specify any invalid window attribute for a window, a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+The created window is not yet displayed (mapped) on the user's display.
+To display the window, call
+<xref linkend='XMapWindow' xrefstyle='select: title'/>.
+The new window initially uses the same cursor as
+its parent. 
+A new cursor can be defined for the new window by calling
+<xref linkend='XDefineCursor' xrefstyle='select: title'/>.
+<indexterm><primary>Cursor</primary><secondary>Initial State</secondary></indexterm>
+<indexterm><primary>XDefineCursor</primary></indexterm>
+The window will not be visible on the screen unless it and all of its
+ancestors are mapped and it is not obscured by any of its ancestors.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCreateWindow' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadColor</errorname>,
+<errorname>BadCursor</errorname>,
+<errorname>BadMatch</errorname>,
+<errorname>BadPixmap</errorname>,
+<errorname>BadValue</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To create an unmapped 
+<symbol>InputOutput</symbol>
+subwindow of a given parent window, use
+<xref linkend='XCreateSimpleWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XCreateSimpleWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCreateSimpleWindow'>
+<funcprototype>
+  <funcdef>Window <function>XCreateSimpleWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>parent</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>unsigned int <parameter>border_width</parameter></paramdef>
+  <paramdef>unsigned long <parameter>border</parameter></paramdef>
+  <paramdef>unsigned long <parameter>background</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>parent</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the parent window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are the top-left outside corner of
+the new window's borders and are relative to the inside of the parent
+window's borders.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the created window's inside
+dimensions and do not include the created window's borders.
+The dimensions must be nonzero,
+or a
+<errorname>BadValue</errorname>
+error results.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>border_width</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the width of the created window's border in pixels.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>border</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the border pixel value of the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>background</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the background pixel value of the window.
+
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCreateSimpleWindow' xrefstyle='select: title'/>
+function creates an unmapped
+<symbol>InputOutput</symbol>
+subwindow for a specified parent window, returns the
+window ID of the created window, and causes the X server to generate a
+<symbol>CreateNotify</symbol>
+event.
+The created window is placed on top in the stacking order with respect to 
+siblings.
+Any part of the window that extends outside its parent window is clipped.
+The border_width for an
+<symbol>InputOnly</symbol>
+window must be zero, or a
+<errorname>BadMatch</errorname>
+error results.
+<xref linkend='XCreateSimpleWindow' xrefstyle='select: title'/>
+inherits its depth, class, and visual from its parent.
+All other window attributes, except background and border, 
+have their default values.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCreateSimpleWindow' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadMatch</errorname>,
+<errorname>BadValue</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+</sect1>
+<sect1 id="Destroying_Windows">
+<title>Destroying Windows</title>
+<!-- .XS -->
+<!-- (SN Destroying Windows  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to destroy a window or destroy all
+subwindows of a window.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To destroy a window and all of its subwindows, use
+<xref linkend='XDestroyWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDestroyWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDestroyWindow'>
+<funcprototype>
+  <funcdef><function>XDestroyWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDestroyWindow' xrefstyle='select: title'/>
+function destroys the specified window as well as all of its subwindows and causes
+the X server to generate a
+<symbol>DestroyNotify</symbol>
+event for each window.
+The window should never be referenced again.
+If the window specified by the w argument is mapped,
+it is unmapped automatically.
+The ordering of the
+<symbol>DestroyNotify</symbol>
+events is such that for any given window being destroyed,
+<symbol>DestroyNotify</symbol>
+is generated on any inferiors of the window before being generated on
+the window itself.
+The ordering among siblings and across subhierarchies is not otherwise
+constrained.
+If the window you specified is a root window, no windows are destroyed.
+Destroying a mapped window will generate 
+<symbol>Expose</symbol>
+events on other windows that were obscured by the window being destroyed.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDestroyWindow' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To destroy all subwindows of a specified window, use 
+<xref linkend='XDestroySubwindows' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDestroySubwindows</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDestroySubwindows'>
+<funcprototype>
+  <funcdef><function>XDestroySubwindows</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDestroySubwindows' xrefstyle='select: title'/>
+function destroys all inferior windows of the specified window, 
+in bottom-to-top stacking order.
+It causes the X server to generate a
+<symbol>DestroyNotify</symbol>
+event for each window.
+If any mapped
+subwindows were actually destroyed,
+<xref linkend='XDestroySubwindows' xrefstyle='select: title'/>
+causes the X server to generate 
+<symbol>Expose</symbol>
+events on the specified window.
+This is much more efficient than deleting many windows
+one at a time because much of the work need be performed only once for all
+of the windows, rather than for each window.
+The subwindows should never be referenced again.  
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDestroySubwindows' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+</sect1>
+<sect1 id='Mapping_Windows'>
+<title>Mapping Windows</title>
+<!-- .XS -->
+<!-- (SN Mapping Windows  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+A window is considered mapped if an 
+<xref linkend='XMapWindow' xrefstyle='select: title'/>
+call has been made on it.
+It may not be visible on the screen for one of the following reasons:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+It is obscured by another opaque window.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+One of its ancestors is not mapped.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+It is entirely clipped by an ancestor.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+<symbol>Expose</symbol>
+events are generated for the window when part or all of
+it becomes visible on the screen. 
+A client receives the
+<symbol>Expose</symbol>
+events only if it has asked for them.
+Windows retain their position in the stacking order when they are unmapped.
+</para>
+<para>
+<!-- .LP -->
+A window manager may want to control the placement of subwindows.
+If 
+<symbol>SubstructureRedirectMask</symbol>
+has been selected by a window manager
+on a parent window (usually a root window),
+a map request initiated by other clients on a child window is not performed,
+and the window manager is sent a 
+<symbol>MapRequest</symbol>
+event.
+However, if the override-redirect flag on the child had been set to
+<symbol>True</symbol>
+(usually only on pop-up menus),
+the map request is performed.
+</para>
+<para>
+<!-- .LP -->
+A tiling window manager might decide to reposition and resize other clients' 
+windows and then decide to map the window to its final location.
+A window manager that wants to provide decoration might
+reparent the child into a frame first.
+For further information,
+see <link linkend="Override_Redirect_Flag">sections 3.2.8</link>
+and <link linkend='Window_State_Change_Events'>10.10</link>.
+Only a single client at a time can select for 
+<symbol>SubstructureRedirectMask</symbol>.
+</para>
+<para>
+<!-- .LP -->
+Similarly, a single client can select for 
+<symbol>ResizeRedirectMask</symbol>
+on a parent window.
+Then, any attempt to resize the window by another client is suppressed, and
+the client receives a 
+<symbol>ResizeRequest</symbol>
+event.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To map a given window, use 
+<xref linkend='XMapWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XMapWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XMapWindow'>
+<funcprototype>
+  <funcdef><function>XMapWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XMapWindow' xrefstyle='select: title'/>
+function
+maps the window and all of its
+subwindows that have had map requests.
+Mapping a window that has an unmapped ancestor does not display the
+window but marks it as eligible for display when the ancestor becomes
+mapped.
+Such a window is called unviewable.
+When all its ancestors are mapped,
+the window becomes viewable
+and will be visible on the screen if it is not obscured by another window.
+This function has no effect if the window is already mapped.
+</para>
+<para>
+<!-- .LP -->
+If the override-redirect of the window is
+<symbol>False</symbol>
+and if some other client has selected
+<symbol>SubstructureRedirectMask</symbol>
+on the parent window, then the X server generates a
+<symbol>MapRequest</symbol>
+event, and the
+<xref linkend='XMapWindow' xrefstyle='select: title'/>
+function does not map the window.
+Otherwise, the window is mapped, and the X server generates a
+<symbol>MapNotify</symbol>
+event.
+</para>
+<para>
+<!-- .LP -->
+If the window becomes viewable and no earlier contents for it are remembered,
+the X server tiles the window with its background.
+If the window's background is undefined,
+the existing screen contents are not
+altered, and the X server generates zero or more 
+<symbol>Expose</symbol>
+events.
+If backing-store was maintained while the window was unmapped, no 
+<symbol>Expose</symbol>
+events
+are generated.
+If backing-store will now be maintained, 
+a full-window exposure is always generated.
+Otherwise, only visible regions may be reported.
+Similar tiling and exposure take place for any newly viewable inferiors.
+</para>
+<para>
+<!-- .LP -->
+<indexterm><primary>XMapWindow</primary></indexterm>
+If the window is an
+<symbol>InputOutput</symbol>
+window,
+<xref linkend='XMapWindow' xrefstyle='select: title'/>
+generates 
+<symbol>Expose</symbol>
+events on each 
+<symbol>InputOutput</symbol>
+window that it causes to be displayed.
+If the client maps and paints the window 
+and if the client begins processing events, 
+the window is painted twice.
+To avoid this,
+first ask for 
+<symbol>Expose</symbol>
+events and then map the window,
+so the client processes input events as usual.
+The event list will include 
+<symbol>Expose</symbol>
+for each
+window that has appeared on the screen. 
+The client's normal response to
+an 
+<symbol>Expose</symbol>
+event should be to repaint the window.
+This method usually leads to simpler programs and to proper interaction
+with window managers.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XMapWindow' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To map and raise a window, use
+<xref linkend='XMapRaised' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XMapRaised</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XMapRaised'>
+<funcprototype>
+  <funcdef><function>XMapRaised</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XMapRaised' xrefstyle='select: title'/>
+function
+essentially is similar to
+<xref linkend='XMapWindow' xrefstyle='select: title'/>
+in that it maps the window and all of its
+subwindows that have had map requests.
+However, it also raises the specified window to the top of the stack.
+For additional information,
+see 
+<xref linkend='XMapWindow' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XMapRaised' xrefstyle='select: title'/>
+can generate multiple
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To map all subwindows for a specified window, use 
+<xref linkend='XMapSubwindows' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XMapSubwindows</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XMapSubwindows'>
+<funcprototype>
+  <funcdef><function>XMapSubwindows</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XMapSubwindows' xrefstyle='select: title'/>
+<indexterm><primary>XMapSubwindows</primary></indexterm>
+function maps all subwindows for a specified window in top-to-bottom stacking 
+order.
+The X server generates
+<symbol>Expose</symbol>
+events on each newly displayed window.
+This may be much more efficient than mapping many windows
+one at a time because the server needs to perform much of the work
+only once, for all of the windows, rather than for each window.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XMapSubwindows' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+</sect1>
+<sect1 id="Unmapping_Windows">
+<title>Unmapping Windows</title>
+<!-- .XS -->
+<!-- (SN Unmapping Windows  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to unmap a window or all subwindows.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To unmap a window, use 
+<xref linkend='XUnmapWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XUnmapWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XUnmapWindow'>
+<funcprototype>
+  <funcdef><function>XUnmapWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XUnmapWindow' xrefstyle='select: title'/>
+function unmaps the specified window and causes the X server to generate an
+<symbol>UnmapNotify</symbol>
+<indexterm><primary>UnmapNotify Event</primary></indexterm>
+<indexterm><primary>XUnmapWindow</primary></indexterm>
+event.
+If the specified window is already unmapped, 
+<xref linkend='XUnmapWindow' xrefstyle='select: title'/>
+has no effect.
+Normal exposure processing on formerly obscured windows is performed.
+Any child window will no longer be visible until another map call is
+made on the parent.
+In other words, the subwindows are still mapped but are not visible
+until the parent is mapped.
+Unmapping a window will generate 
+<symbol>Expose</symbol>
+events on windows that were formerly obscured by it.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XUnmapWindow' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To unmap all subwindows for a specified window, use 
+<xref linkend='XUnmapSubwindows' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XUnmapSubwindows</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XUnmapSubwindows'>
+<funcprototype>
+  <funcdef><function>XUnmapSubwindows</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XUnmapSubwindows' xrefstyle='select: title'/>
+function unmaps all subwindows for the specified window in bottom-to-top
+stacking order.
+It causes the X server to generate an
+<symbol>UnmapNotify</symbol>
+event on each subwindow and 
+<symbol>Expose</symbol>
+events on formerly obscured windows.
+<indexterm><primary>UnmapNotify Event</primary></indexterm>
+Using this function is much more efficient than unmapping multiple windows
+one at a time because the server needs to perform much of the work
+only once, for all of the windows, rather than for each window.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XUnmapSubwindows' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+</sect1>
+<sect1 id="Configuring_Windows">
+<title>Configuring Windows</title>
+<!-- .XS -->
+<!-- (SN Configuring Windows  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+</para>
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to
+move a window, resize a window, move and resize a window, or
+change a window's border width.
+To change one of these parameters,
+set the appropriate member of the
+<structname>XWindowChanges</structname>
+structure and OR in the corresponding value mask in subsequent calls to
+<xref linkend='XConfigureWindow' xrefstyle='select: title'/>.
+The symbols for the value mask bits and the
+<structname>XWindowChanges</structname>
+structure are:
+<!-- .sM -->
+</para>
+<para>
+<!-- .LP -->
+
+<literallayout class="monospaced">
+/* Configure window value mask bits */
+#define      CWX              (1&lt;&lt;0)
+#define      CWY              (1&lt;&lt;1)
+#define      CWWidth          (1&lt;&lt;2)
+#define      CWHeight         (1&lt;&lt;3)
+#define      CWBorderWidth    (1&lt;&lt;4)
+#define      CWSibling        (1&lt;&lt;5)
+#define      CWStackMode      (1&lt;&lt;6)
+</literallayout>
+
+<indexterm significance="preferred"><primary>XWindowChanges</primary></indexterm>
+<literallayout class="monospaced">
+/* Values */
+
+typedef struct {
+     int x, y;
+     int width, height;
+     int border_width;
+     Window sibling;
+     int stack_mode;
+} XWindowChanges;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The x and y members are used to set the window's x and y coordinates,
+which are relative to the parent's origin
+and indicate the position of the upper-left outer corner of the window.
+The width and height members are used to set the inside size of the window,
+not including the border, and must be nonzero, or a
+<errorname>BadValue</errorname>
+error results.
+Attempts to configure a root window have no effect.
+</para>
+<para>
+<!-- .LP -->
+The border_width member is used to set the width of the border in pixels.
+Note that setting just the border width leaves the outer-left corner of the window
+in a fixed position but moves the absolute position of the window's origin.
+If you attempt to set the border-width attribute of an
+<symbol>InputOnly</symbol>
+window nonzero, a
+<errorname>BadMatch</errorname>
+error results. 
+</para>
+<para>
+<!-- .LP -->
+The sibling member is used to set the sibling window for stacking operations.
+The stack_mode member is used to set how the window is to be restacked 
+and can be set to
+<symbol>Above</symbol>,
+<symbol>Below</symbol>,
+<symbol>TopIf</symbol>,
+<symbol>BottomIf</symbol>,
+or 
+<symbol>Opposite</symbol>.
+</para>
+<para>
+<!-- .LP -->
+If the override-redirect flag of the window is
+<symbol>False</symbol>
+and if some other client has selected
+<symbol>SubstructureRedirectMask</symbol>
+on the parent, the X server generates a
+<symbol>ConfigureRequest</symbol>
+event, and no further processing is performed.
+Otherwise, 
+if some other client has selected 
+<symbol>ResizeRedirectMask</symbol>
+on the window and the inside
+width or height of the window is being changed,
+a 
+<symbol>ResizeRequest</symbol>
+event is generated, and the current inside width and height are
+used instead.
+Note that the override-redirect flag of the window has no effect
+on
+<symbol>ResizeRedirectMask</symbol>
+and that
+<symbol>SubstructureRedirectMask</symbol>
+on the parent has precedence over
+<symbol>ResizeRedirectMask</symbol>
+on the window.
+</para>
+<para>
+<!-- .LP -->
+When the geometry of the window is changed as specified, 
+the window is restacked among siblings, and a
+<symbol>ConfigureNotify</symbol>
+event is generated if the state of the window actually changes.
+<symbol>GravityNotify</symbol>
+events are generated after 
+<symbol>ConfigureNotify</symbol>
+events.
+If the inside width or height of the window has actually changed, 
+children of the window are affected as specified.
+</para>
+<para>
+<!-- .LP -->
+If a window's size actually changes,
+the window's subwindows move according to their window gravity.
+Depending on the window's bit gravity,
+the contents of the window also may be moved
+(see <link linkend="Gravity_Attributes">section 3.2.3</link>).
+</para>
+<para>
+<!-- .LP -->
+If regions of the window were obscured but now are not,
+exposure processing is performed on these formerly obscured windows, 
+including the window itself and its inferiors. 
+As a result of increasing the width or height,
+exposure processing is also performed on any new regions of the window 
+and any regions where window contents are lost.
+</para>
+<para>
+<!-- .LP -->
+The restack check (specifically, the computation for 
+<symbol>BottomIf</symbol>,
+<symbol>TopIf</symbol>,
+and 
+<symbol>Opposite</symbol>)
+is performed with respect to the window's final size and position (as
+controlled by the other arguments of the request), not its initial position.
+If a sibling is specified without a stack_mode,
+a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+If a sibling and a stack_mode are specified, 
+the window is restacked as follows:
+</para>
+<informaltable  frame="none">
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='2' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth='1.0*'/>
+  <colspec colname='c2' colwidth='3.0*'/>
+  <tbody>
+    <row>
+      <entry><symbol>Above</symbol></entry>
+      <entry>The window is placed just above the sibling.</entry>
+    </row>
+    <row>
+      <entry><symbol>Below</symbol></entry>
+      <entry>The window is placed just below the sibling.</entry>
+    </row>
+    <row>
+      <entry><symbol>TopIf</symbol></entry>
+      <entry>If the sibling occludes the window, the window is placed at the top of the stack.</entry>
+    </row>
+    <row>
+      <entry><symbol>BottomIf</symbol></entry>
+      <entry>If the window occludes the sibling, the window is placed at the bottom of the stack.</entry>
+    </row>
+    <row>
+      <entry><symbol>Opposite</symbol></entry>
+      <entry>
+If the sibling occludes the window, the window is placed at the top of the stack.
+If the window occludes the sibling,
+the window is placed at the bottom of the stack.
+      </entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+<para>
+<!-- .LP -->
+If a stack_mode is specified but no sibling is specified,
+the window is restacked as follows:
+</para>
+
+<informaltable  frame="none">
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='2' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth='1.0*'/>
+  <colspec colname='c2' colwidth='3.0*'/>
+  <tbody>
+    <row>
+      <entry><symbol>Above</symbol></entry>
+      <entry>The window is placed at the top of the stack.</entry>
+    </row>
+    <row>
+      <entry><symbol>Below</symbol></entry>
+      <entry>The window is placed at the bottom of the stack.</entry>
+    </row>
+    <row>
+      <entry><symbol>TopIf</symbol></entry>
+      <entry>
+If any sibling occludes the window, the window is placed at
+the top of the stack.
+      </entry>
+    </row>
+    <row>
+      <entry><symbol>BottomIf</symbol></entry>
+      <entry>
+If the window occludes any sibling, the window is placed at
+the bottom of the stack.
+      </entry>
+    </row>
+    <row>
+      <entry><symbol>Opposite</symbol></entry>
+      <entry>
+If any sibling occludes the window, the window
+is placed at the top of the stack.
+If the window occludes any sibling,
+the window is placed at the bottom of the stack.
+      </entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+<para>
+<!-- .LP -->
+Attempts to configure a root window have no effect.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To configure a window's size, location, stacking, or border, use
+<xref linkend='XConfigureWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XConfigureWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XConfigureWindow'>
+<funcprototype>
+  <funcdef><function>XConfigureWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>unsigned int <parameter>value_mask</parameter></paramdef>
+  <paramdef>XWindowChanges *<parameter>values</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window to be reconfigured.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>value_mask</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies which values are to be set using information in
+the values structure.
+This mask is the bitwise inclusive OR of the valid configure window values bits.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>values</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the 
+<structname>XWindowChanges</structname>
+structure.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XConfigureWindow' xrefstyle='select: title'/>
+function uses the values specified in the
+<structname>XWindowChanges</structname>
+structure to reconfigure a window's size, position, border, and stacking order.
+Values not specified are taken from the existing geometry of the window.
+</para>
+<para>
+<!-- .LP -->
+If a sibling is specified without a stack_mode or if the window
+is not actually a sibling,
+a
+<errorname>BadMatch</errorname>
+error results. 
+Note that the computations for
+<symbol>BottomIf</symbol>,
+<symbol>TopIf</symbol>,
+and
+<symbol>Opposite</symbol>
+are performed with respect to the window's final geometry (as controlled by the
+other arguments passed to
+<xref linkend='XConfigureWindow' xrefstyle='select: title'/>),
+not its initial geometry.
+Any backing store contents of the window, its
+inferiors, and other newly visible windows are either discarded or
+changed to reflect the current screen contents 
+(depending on the implementation).
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XConfigureWindow' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>,
+<errorname>BadValue</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To move a window without changing its size, use 
+<xref linkend='XMoveWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XMoveWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XMoveWindow'>
+<funcprototype>
+  <funcdef><function>XMoveWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN      -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window to be moved.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which define the new location of the
+top-left pixel of the window's border or the window itself if it has no
+border.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XMoveWindow' xrefstyle='select: title'/>
+function moves the specified window to the specified x and y coordinates,
+but it does not change the window's size, raise the window, or
+change the mapping state of the window.
+Moving a mapped window may or may not lose the window's contents 
+depending on if the window is obscured by nonchildren 
+and if no backing store exists.
+If the contents of the window are lost, 
+the X server generates
+<symbol>Expose</symbol>
+events.
+Moving a mapped window generates
+<symbol>Expose</symbol>
+events on any formerly obscured windows. 
+</para>
+<para>
+<!-- .LP -->
+If the override-redirect flag of the window is 
+<symbol>False</symbol>
+and some
+other client has selected 
+<symbol>SubstructureRedirectMask</symbol>
+on the parent, the X server generates a
+<symbol>ConfigureRequest</symbol>
+event, and no further processing is
+performed.  
+Otherwise, the window is moved.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XMoveWindow' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To change a window's size without changing the upper-left coordinate, use 
+<xref linkend='XResizeWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XResizeWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XResizeWindow'>
+<funcprototype>
+  <funcdef><function>XResizeWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the interior dimensions of the
+window after the call completes.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XResizeWindow' xrefstyle='select: title'/>
+function changes the inside dimensions of the specified window, not including
+its borders.
+This function does not change the window's upper-left coordinate or
+the origin and does not restack the window.
+Changing the size of a mapped window may lose its contents and generate
+<symbol>Expose</symbol>
+events.
+If a mapped window is made smaller, 
+changing its size generates
+<symbol>Expose</symbol>
+events on windows that the mapped window formerly obscured.
+</para>
+<para>
+<!-- .LP -->
+If the override-redirect flag of the window is 
+<symbol>False</symbol>
+and some
+other client has selected 
+<symbol>SubstructureRedirectMask</symbol>
+on the parent, the X server generates a
+<symbol>ConfigureRequest</symbol>
+event, and no further processing is performed.  
+If either width or height is zero,
+a
+<errorname>BadValue</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XResizeWindow' xrefstyle='select: title'/>
+can generate
+<errorname>BadValue</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To change the size and location of a window, use 
+<xref linkend='XMoveResizeWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XMoveResizeWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XMoveResizeWindow'>
+<funcprototype>
+  <funcdef><function>XMoveResizeWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window to be reconfigured.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which define the new position of the
+window relative to its parent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which define the interior size of the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XMoveResizeWindow' xrefstyle='select: title'/>
+function changes the size and location of the specified window 
+without raising it.
+Moving and resizing a mapped window may generate an
+<symbol>Expose</symbol>
+event on the window.
+Depending on the new size and location parameters,
+moving and resizing a window may generate 
+<symbol>Expose</symbol>
+events on windows that the window formerly obscured. 
+</para>
+<para>
+<!-- .LP -->
+If the override-redirect flag of the window is 
+<symbol>False</symbol>
+and some
+other client has selected 
+<symbol>SubstructureRedirectMask</symbol>
+on the parent, the X server generates a
+<symbol>ConfigureRequest</symbol>
+event, and no further processing is performed.  
+Otherwise, the window size and location are changed.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XMoveResizeWindow' xrefstyle='select: title'/>
+can generate
+<errorname>BadValue</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To change the border width of a given window, use
+<xref linkend='XSetWindowBorderWidth' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetWindowBorderWidth</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetWindowBorderWidth'>
+<funcprototype>
+  <funcdef><function>XSetWindowBorderWidth</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the width of the window border.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetWindowBorderWidth' xrefstyle='select: title'/>
+function sets the specified window's border width to the specified width.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetWindowBorderWidth' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+</sect1>
+<sect1 id="Changing_Window_Stacking_Order">
+<title>Changing Window Stacking Order</title>
+<!-- .XS -->
+<!-- (SN Changing Window Stacking Order  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+</para>
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to raise, lower, circulate,
+or restack windows.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To raise a window so that no sibling window obscures it, use 
+<xref linkend='XRaiseWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRaiseWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRaiseWindow'>
+<funcprototype>
+  <funcdef><function>XRaiseWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XRaiseWindow' xrefstyle='select: title'/>
+function
+raises the specified window to the top of the stack so that no sibling window
+obscures it.
+If the windows are regarded as overlapping sheets of paper stacked 
+on a desk,
+then raising a window is analogous to moving the sheet to the top of
+the stack but leaving its x and y location on the desk constant.
+Raising a mapped window may generate 
+<symbol>Expose</symbol>
+events for the window and any mapped subwindows that were formerly obscured.  
+</para>
+<para>
+<!-- .LP -->
+If the override-redirect attribute of the window is 
+<symbol>False</symbol>
+and some
+other client has selected 
+<symbol>SubstructureRedirectMask</symbol>
+on the parent, the X server generates a
+<symbol>ConfigureRequest</symbol>
+event, and no processing is performed.
+Otherwise, the window is raised.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XRaiseWindow' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To lower a window so that it does not obscure any sibling windows, use 
+<xref linkend='XLowerWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XLowerWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XLowerWindow'>
+<funcprototype>
+  <funcdef><function>XLowerWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XLowerWindow' xrefstyle='select: title'/>
+function lowers the specified window to the bottom of the stack
+so that it does not obscure any sibling
+windows.
+If the windows are regarded as overlapping sheets of paper
+stacked on a desk, then lowering a window is analogous to moving the
+sheet to the bottom of the stack but leaving its x and y location on
+the desk constant.
+Lowering a mapped window will generate 
+<symbol>Expose</symbol>
+events on any windows it formerly obscured.
+</para>
+<para>
+<!-- .LP -->
+If the override-redirect attribute of the window is 
+<symbol>False</symbol>
+and some
+other client has selected 
+<symbol>SubstructureRedirectMask</symbol>
+on the parent, the X server generates a
+<symbol>ConfigureRequest</symbol>
+event, and no processing is performed.  
+Otherwise, the window is lowered to the bottom of the
+stack.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XLowerWindow' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To circulate a subwindow up or down, use
+<xref linkend='XCirculateSubwindows' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XCirculateSubwindows</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCirculateSubwindows'>
+<funcprototype>
+  <funcdef><function>XCirculateSubwindows</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>int <parameter>direction</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>direction</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the direction (up or down) that you want to circulate
+the window. 
+You can pass 
+<symbol>RaiseLowest</symbol>
+or
+<symbol>LowerHighest</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCirculateSubwindows' xrefstyle='select: title'/>
+function circulates children of the specified window in the specified 
+direction.
+If you specify
+<symbol>RaiseLowest</symbol>,
+<xref linkend='XCirculateSubwindows' xrefstyle='select: title'/>
+raises the lowest mapped child (if any) that is occluded 
+by another child to the top of the stack.
+If you specify
+<symbol>LowerHighest</symbol>,
+<xref linkend='XCirculateSubwindows' xrefstyle='select: title'/>
+lowers the highest mapped child (if any) that occludes another child
+to the bottom of the stack.
+Exposure processing is then performed on formerly obscured windows.
+If some other client has selected 
+<symbol>SubstructureRedirectMask</symbol>
+on the window, the X server generates a 
+<symbol>CirculateRequest</symbol>
+event, and no further processing is performed.
+If a child is actually restacked,
+the X server generates a
+<symbol>CirculateNotify</symbol>
+event. 
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCirculateSubwindows' xrefstyle='select: title'/>
+can generate
+<errorname>BadValue</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To raise the lowest mapped child of a window that is partially or completely
+occluded by another child, use
+<xref linkend='XCirculateSubwindowsUp' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XCirculateSubwindowsUp</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCirculateSubwindowsUp'>
+<funcprototype>
+  <funcdef><function>XCirculateSubwindowsUp</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCirculateSubwindowsUp' xrefstyle='select: title'/>
+function raises the lowest mapped child of the specified window that
+is partially
+or completely
+occluded by another child.
+Completely unobscured children are not affected.
+This is a convenience function equivalent to
+<xref linkend='XCirculateSubwindows' xrefstyle='select: title'/>
+with
+<symbol>RaiseLowest</symbol>
+specified.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCirculateSubwindowsUp' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To lower the highest mapped child of a window that partially or 
+completely occludes another child, use 
+<xref linkend='XCirculateSubwindowsDown' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XCirculateSubwindowsDown</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCirculateSubwindowsDown'>
+<funcprototype>
+  <funcdef><function>XCirculateSubwindowsDown</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCirculateSubwindowsDown' xrefstyle='select: title'/>
+function lowers the highest mapped child of the specified window that partially
+or completely occludes another child.
+Completely unobscured children are not affected.
+This is a convenience function equivalent to
+<xref linkend='XCirculateSubwindows' xrefstyle='select: title'/>
+with
+<symbol>LowerHighest</symbol>
+specified.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCirculateSubwindowsDown' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To restack a set of windows from top to bottom, use 
+<xref linkend='XRestackWindows' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRestackWindows</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRestackWindows'>
+<funcprototype>
+  <funcdef><function>XRestackWindows</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>windows[]</parameter></paramdef>
+  <paramdef>int <parameter>nwindows</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>windows</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array containing the windows to be restacked.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nwindows</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of windows to be restacked.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XRestackWindows' xrefstyle='select: title'/>
+function restacks the windows in the order specified,
+from top to bottom.
+The stacking order of the first window in the windows array is unaffected,
+but the other windows in the array are stacked underneath the first window,
+in the order of the array.
+The stacking order of the other windows is not affected.
+For each window in the window array that is not a child of the specified window,
+a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+If the override-redirect attribute of a window is 
+<symbol>False</symbol>
+and some
+other client has selected 
+<symbol>SubstructureRedirectMask</symbol>
+on the parent, the X server generates 
+<symbol>ConfigureRequest</symbol>
+events for each window whose override-redirect flag is not set, 
+and no further processing is performed.
+Otherwise, the windows will be restacked in top-to-bottom order.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XRestackWindows' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+</sect1>
+<sect1 id="Changing_Window_Attributes">
+<title>Changing Window Attributes</title>
+<!-- .XS -->
+<!-- (SN Changing Window Attributes  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+</para>
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to set window attributes.
+<xref linkend='XChangeWindowAttributes' xrefstyle='select: title'/>
+is the more general function that allows you to set one or more window
+attributes provided by the
+<structname>XSetWindowAttributes</structname>
+structure.
+The other functions described in this section allow you to set one specific
+window attribute, such as a window's background.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To change one or more attributes for a given window, use
+<xref linkend='XChangeWindowAttributes' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XChangeWindowAttributes</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XChangeWindowAttributes'>
+<funcprototype>
+  <funcdef><function>XChangeWindowAttributes</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>unsigned long <parameter>valuemask</parameter></paramdef>
+  <paramdef>XSetWindowAttributes *<parameter>attributes</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>valuemask</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies which window attributes are defined in the attributes
+argument.
+This mask is the bitwise inclusive OR of the valid attribute mask bits.
+If valuemask is zero,
+the attributes are ignored and are not referenced.
+The values and restrictions are
+the same as for
+<xref linkend='XCreateWindow' xrefstyle='select: title'/>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      
+    </term>
+    <listitem>
+      <para>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>attributes</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the structure from which the values (as specified by the value mask)
+are to be taken.
+The value mask should have the appropriate bits
+set to indicate which attributes have been set in the structure 
+(see <link linkend="Window_Attributes">section 3.2</link>).
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Depending on the valuemask,
+the
+<xref linkend='XChangeWindowAttributes' xrefstyle='select: title'/>
+function uses the window attributes in the
+<structname>XSetWindowAttributes</structname>
+structure to change the specified window attributes.
+Changing the background does not cause the window contents to be
+changed.
+To repaint the window and its background, use 
+<xref linkend='XClearWindow' xrefstyle='select: title'/>.
+Setting the border or changing the background such that the
+border tile origin changes causes the border to be repainted.
+Changing the background of a root window to 
+<symbol>None</symbol>
+or 
+<symbol>ParentRelative</symbol>
+restores the default background pixmap.
+Changing the border of a root window to
+<symbol>CopyFromParent</symbol>
+restores the default border pixmap.
+Changing the win-gravity does not affect the current position of the
+window.
+Changing the backing-store of an obscured window to 
+<symbol>WhenMapped</symbol>
+or
+<symbol>Always</symbol>,
+or changing the backing-planes, backing-pixel, or
+save-under of a mapped window may have no immediate effect.
+Changing the colormap of a window (that is, defining a new map, not
+changing the contents of the existing map) generates a 
+<symbol>ColormapNotify</symbol>
+event.
+Changing the colormap of a visible window may have no
+immediate effect on the screen because the map may not be installed
+(see
+<xref linkend='XInstallColormap' xrefstyle='select: title'/>).
+Changing the cursor of a root window to 
+<symbol>None</symbol>
+restores the default
+cursor.
+Whenever possible, you are encouraged to share colormaps.
+</para>
+<para>
+<!-- .LP -->
+Multiple clients can select input on the same window. 
+Their event masks are maintained separately.
+When an event is generated, 
+it is reported to all interested clients. 
+However, only one client at a time can select for 
+<symbol>SubstructureRedirectMask</symbol>,
+<symbol>ResizeRedirectMask</symbol>,
+and
+<symbol>ButtonPressMask</symbol>.
+If a client attempts to select any of these event masks 
+and some other client has already selected one, 
+a
+<errorname>BadAccess</errorname>
+error results.
+There is only one do-not-propagate-mask for a window, 
+not one per client.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XChangeWindowAttributes' xrefstyle='select: title'/>
+can generate
+<errorname>BadAccess</errorname>,
+<errorname>BadColor</errorname>,
+<errorname>BadCursor</errorname>,
+<errorname>BadMatch</errorname>,
+<errorname>BadPixmap</errorname>,
+<errorname>BadValue</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set the background of a window to a given pixel, use 
+<xref linkend='XSetWindowBackground' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetWindowBackground</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetWindowBackground'>
+<funcprototype>
+  <funcdef><function>XSetWindowBackground</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>unsigned long <parameter>background_pixel</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>background_pixel</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the pixel that is to be used for the background.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetWindowBackground' xrefstyle='select: title'/>
+function sets the background of the window to the specified pixel value.
+Changing the background does not cause the window contents to be changed.
+<xref linkend='XSetWindowBackground' xrefstyle='select: title'/>
+uses a pixmap of undefined size filled with the pixel value you passed.
+If you try to change the background of an 
+<symbol>InputOnly</symbol>
+window, a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetWindowBackground' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+</para>
+<para>
+<!-- .LP -->
+To set the background of a window to a given pixmap, use 
+<xref linkend='XSetWindowBackgroundPixmap' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Window</primary><secondary>background</secondary></indexterm>
+<indexterm significance="preferred"><primary>XSetWindowBackgroundPixmap</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetWindowBackgroundPixmap'>
+<funcprototype>
+  <funcdef><function>XSetWindowBackgroundPixmap</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Pixmap <parameter>background_pixmap</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>background_pixmap</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the background pixmap,
+<symbol>ParentRelative</symbol>,
+or
+<symbol>None</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm><primary>Resource IDs</primary><secondary>freeing</secondary></indexterm>
+<indexterm><primary>Freeing</primary><secondary>resources</secondary></indexterm>
+The
+<xref linkend='XSetWindowBackgroundPixmap' xrefstyle='select: title'/>
+function sets the background pixmap of the window to the specified pixmap.
+The background pixmap can immediately be freed if no further explicit
+references to it are to be made.
+If 
+<symbol>ParentRelative</symbol>
+is specified, 
+the background pixmap of the window's parent is used,
+or on the root window, the default background is restored.
+If you try to change the background of an 
+<symbol>InputOnly</symbol>
+window, a
+<errorname>BadMatch</errorname>
+error results.
+If the background is set to
+<symbol>None</symbol>,
+the window has no defined background.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetWindowBackgroundPixmap' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>,
+<errorname>BadPixmap</errorname>,
+and 
+<errorname>BadWindow</errorname>
+errors.
+<!-- .NT Note -->
+<xref linkend='XSetWindowBackground' xrefstyle='select: title'/>
+and
+<xref linkend='XSetWindowBackgroundPixmap' xrefstyle='select: title'/>
+do not change the current contents of the window.
+<!-- .NE -->
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To change and repaint a window's border to a given pixel, use 
+<xref linkend='XSetWindowBorder' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetWindowBorder</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetWindowBorder'>
+<funcprototype>
+  <funcdef><function>XSetWindowBorder</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>unsigned long <parameter>border_pixel</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>border_pixel</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the entry in the colormap. 
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetWindowBorder' xrefstyle='select: title'/>
+function sets the border of the window to the pixel value you specify.
+If you attempt to perform this on an
+<symbol>InputOnly</symbol>
+window, a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetWindowBorder' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To change and repaint the border tile of a given window, use 
+<xref linkend='XSetWindowBorderPixmap' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetWindowBorderPixmap</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetWindowBorderPixmap'>
+<funcprototype>
+  <funcdef><function>XSetWindowBorderPixmap</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Pixmap <parameter>border_pixmap</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>border_pixmap</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the border pixmap or
+<symbol>CopyFromParent</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetWindowBorderPixmap' xrefstyle='select: title'/>
+function sets the border pixmap of the window to the pixmap you specify.
+The border pixmap can be freed immediately if no further explicit
+references to it are to be made.
+If you specify
+<symbol>CopyFromParent</symbol>,
+a copy of the parent window's border pixmap is used.
+If you attempt to perform this on an
+<symbol>InputOnly</symbol>
+window, a
+<errorname>BadMatch</errorname>
+error results.
+<indexterm><primary>Resource IDs</primary><secondary>freeing</secondary></indexterm>
+<indexterm><primary>Freeing</primary><secondary>resources</secondary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetWindowBorderPixmap' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>,
+<errorname>BadPixmap</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set the colormap of a given window, use
+<xref linkend='XSetWindowColormap' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetWindowColormap</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetWindowColormap'>
+<funcprototype>
+  <funcdef><function>XSetWindowColormap</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Colormap <parameter>colormap</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>colormap</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the colormap.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetWindowColormap' xrefstyle='select: title'/>
+function sets the specified colormap of the specified window.
+The colormap must have the same visual type as the window,
+or a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetWindowColormap' xrefstyle='select: title'/>
+can generate
+<errorname>BadColor</errorname>,
+<errorname>BadMatch</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To define which cursor will be used in a window, use
+<xref linkend='XDefineCursor' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Window</primary><secondary>defining the cursor</secondary></indexterm>
+<indexterm significance="preferred"><primary>XDefineCursor</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDefineCursor'>
+<funcprototype>
+  <funcdef><function>XDefineCursor</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Cursor <parameter>cursor</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>cursor</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the cursor that is to be displayed or
+<symbol>None</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If a cursor is set, it will be used when the pointer is in the window.
+If the cursor is
+<symbol>None</symbol>,
+it is equivalent to
+<xref linkend='XUndefineCursor' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDefineCursor' xrefstyle='select: title'/>
+can generate
+<errorname>BadCursor</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To undefine the cursor in a given window, use
+<xref linkend='XUndefineCursor' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Window</primary><secondary>undefining the cursor</secondary></indexterm>
+<indexterm significance="preferred"><primary>XUndefineCursor</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XUndefineCursor'>
+<funcprototype>
+  <funcdef><function>XUndefineCursor</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XUndefineCursor' xrefstyle='select: title'/>
+function undoes the effect of a previous
+<xref linkend='XDefineCursor' xrefstyle='select: title'/>
+for this window.
+When the pointer is in the window,
+the parent's cursor will now be used.
+On the root window,
+the default cursor is restored.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XUndefineCursor' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+<!-- .bp -->
+
+</para>
+</sect1>
+</chapter>

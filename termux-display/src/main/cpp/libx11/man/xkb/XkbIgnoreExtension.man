@@ -1,0 +1,79 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbIgnoreExtension __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbIgnoreExtension \-  Prevents core X library keyboard functions from using the 
+X Keyboard Extension
+.SH SYNOPSIS
+.HP
+.B Bool XkbIgnoreExtension
+.BI "(\^Bool *" "ignore" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I ignore
+True means ignore the extension
+.SH DESCRIPTION
+.LP
+If a server supports the Xkb extension, the X library normally implements preXkb 
+keyboard functions using the Xkb keyboard description and state. The server Xkb 
+keyboard state may differ from the preXkb keyboard state. This difference does 
+not affect most clients, but there are exceptions. To allow these clients to 
+work properly, you may instruct the extension not to use Xkb functionality.
+
+Call 
+.I XkbIgnoreExtension 
+to prevent core X library keyboard functions from using 
+the X Keyboard Extension. You must call 
+.I XkbIgnoreExtension 
+before you open a 
+server connection; Xkb does not provide a way to enable or disable use of the 
+extension once a connection is established.
+
+.I XkbIgnoreExtension 
+tells the X library whether to use the X Keyboard Extension 
+on any subsequently opened X display connections. If ignore is True, the library 
+does not initialize the Xkb extension when it opens a new display. This forces 
+the X server to use compatibility mode and communicate with the client using 
+only core protocol requests and events. If ignore is False, the library treats 
+subsequent calls to 
+.I XOpenDisplay 
+normally and uses Xkb extension requests, 
+events, and state. Do not explicitly use Xkb on a connection for which it is 
+disabled. 
+.I XkbIgnoreExtension 
+returns False if it was unable to apply the ignore 
+request.
+.SH "RETURN VALUES"
+.TP 15
+True
+The 
+.I XkbIgnoreExtension 
+returns True if 
+.TP 15
+False
+The 
+.I XkbIgnoreExtension 
+function returns False if it was unable to apply the ignore request.
+.SH "SEE ALSO"
+.BR XOpenDisplay (__libmansuffix__)

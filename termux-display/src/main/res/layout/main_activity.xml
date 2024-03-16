@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <FrameLayout
+        android:id="@+id/frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:layoutDirection="ltr"
+        android:paddingLeft="0dp"
+        android:paddingTop="0dp"
+        android:paddingRight="0dp"
+        android:paddingBottom="0dp"
+        android:background="@android:color/black">
+
+        <com.termux.x11.LorieView
+            android:id="@+id/lorieView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:layout_gravity="center" />
+
+        <LinearLayout
+            android:id="@+id/stub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"
+            android:gravity="center_horizontal|center_vertical"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <ImageView
+                android:id="@+id/x11_image"
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_x11_icon"
+                android:contentDescription="X Logo"
+                tools:ignore="HardcodedText" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="20dp" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal|center_vertical"
+                android:text="@string/not_connected"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="40dp" />
+
+            <Button
+                android:id="@+id/preferences_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/preferences_button_text" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="10dp" />
+
+            <Button
+                android:id="@+id/help_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/help_button_text" />
+        </LinearLayout>
+
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/mouse_helper_visibility"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:translationX="0px"
+        android:translationY="0px">
+
+        <Button
+            android:id="@+id/button_visibility"
+            android:layout_width="64px"
+            android:layout_height="64px"
+            android:minWidth="44dip"
+            android:minHeight="22dip"
+            android:padding="0px"
+            android:paddingStart="0px"
+            android:paddingLeft="0px"
+            android:paddingTop="0px"
+            android:paddingEnd="0px"
+            android:paddingRight="0px"
+            android:paddingBottom="0px"
+            android:text="X"
+            android:textSize="8sp"
+            tools:ignore="HardcodedText,PxUsage,SmallSp" />
+
+        <LinearLayout
+            android:id="@+id/mouse_helper_secondary_layer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:visibility="visible">
+
+            <Button
+                android:id="@+id/button_left_click"
+                android:layout_width="64px"
+                android:layout_height="64px"
+                android:minWidth="44dip"
+                android:minHeight="22dip"
+                android:padding="0px"
+                android:paddingStart="0px"
+                android:paddingLeft="0px"
+                android:paddingTop="0px"
+                android:paddingEnd="0px"
+                android:paddingRight="0px"
+                android:paddingBottom="0px"
+                android:text="L"
+                android:textSize="8sp"
+                tools:ignore="HardcodedText,PxUsage,SmallSp" />
+
+            <Button
+                android:id="@+id/button_middle_click"
+                android:layout_width="64px"
+                android:layout_height="64px"
+                android:minWidth="44dip"
+                android:minHeight="22dip"
+                android:padding="0px"
+                android:paddingStart="0px"
+                android:paddingLeft="0px"
+                android:paddingTop="0px"
+                android:paddingEnd="0px"
+                android:paddingRight="0px"
+                android:paddingBottom="0px"
+                android:text="M"
+                android:textSize="8sp"
+                tools:ignore="HardcodedText,PxUsage,SmallSp" />
+
+            <Button
+                android:id="@+id/button_right_click"
+                android:layout_width="64px"
+                android:layout_height="64px"
+                android:minWidth="44dip"
+                android:minHeight="22dip"
+                android:padding="0px"
+                android:paddingStart="0px"
+                android:paddingLeft="0px"
+                android:paddingTop="0px"
+                android:paddingEnd="0px"
+                android:paddingRight="0px"
+                android:paddingBottom="0px"
+                android:text="R"
+                android:textSize="8sp"
+                tools:ignore="HardcodedText,PxUsage,SmallSp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mouse_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="40dp"
+        android:orientation="vertical"
+        android:alpha="0.7"
+        android:translationX="0px"
+        android:translationY="0px">
+
+        <LinearLayout
+            android:id="@+id/mouse_buttons_secondary_layer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:visibility="visible">
+
+            <Button
+                android:id="@+id/mouse_button_left_click"
+                android:layout_width="96dp"
+                android:layout_height="48dp"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:padding="0px"
+                android:paddingStart="0px"
+                android:paddingLeft="0px"
+                android:paddingTop="0px"
+                android:paddingEnd="0px"
+                android:paddingRight="0px"
+                android:paddingBottom="0px"
+                android:text="L"
+                android:textColor="@android:color/black"
+                android:background="@drawable/mouse_buttons"
+                android:textSize="8sp"
+                tools:ignore="HardcodedText,PxUsage,SmallSp" />
+
+            <Button
+                android:id="@+id/mouse_button_middle_click"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:padding="0px"
+                android:paddingStart="0px"
+                android:paddingLeft="0px"
+                android:paddingTop="0px"
+                android:paddingEnd="0px"
+                android:paddingRight="0px"
+                android:paddingBottom="0px"
+                android:text="M"
+                android:textColor="@android:color/black"
+                android:background="@drawable/mouse_buttons"
+                android:textSize="8sp"
+                tools:ignore="HardcodedText,PxUsage,SmallSp" />
+
+            <Button
+                android:id="@+id/mouse_button_right_click"
+                android:layout_width="96dp"
+                android:layout_height="48dp"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:padding="0px"
+                android:paddingStart="0px"
+                android:paddingLeft="0px"
+                android:paddingTop="0px"
+                android:paddingEnd="0px"
+                android:paddingRight="0px"
+                android:paddingBottom="0px"
+                android:text="R"
+                android:textColor="@android:color/black"
+                android:background="@drawable/mouse_buttons"
+                android:textSize="8sp"
+                tools:ignore="HardcodedText,PxUsage,SmallSp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/mouse_buttons_position"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:minWidth="40dp"
+            android:minHeight="40dp"
+            android:adjustViewBounds="true"
+            android:padding="2dp"
+            android:scaleType="fitCenter"
+            android:src="@android:drawable/ic_menu_mylocation"
+            android:contentDescription="MOVE"
+            android:layout_gravity="center"
+            android:background="@drawable/mouse_buttons"
+            tools:ignore="HardcodedText,PxUsage,SmallSp" />
+    </LinearLayout>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/terminal_toolbar_view_pager"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="37.5dp"
+        android:background="@android:color/black"
+        android:layout_gravity="bottom|center"/>
+
+    <View
+        android:id="@+id/activity_termux_bottom_space_view"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/transparent"
+        android:layout_gravity="bottom|center" />
+</FrameLayout>

@@ -1,0 +1,18 @@
+This directory contains utilities which can be used for adhoc testing of
+libXfont by developers, and which are hoped to be useful for building up
+automated testing in the future.
+
+They are not intended for distros to package and ship to end users - they
+are not documented, and are full of assert() and fatal err() calls where
+end user software would have error handling.
+
+No promises of interface stability are made for these - they may change at
+any time to allow better testing.
+
+Utilities include:
+
+lsfontdir:
+    Reads & prints the contents of fonts.dir files.
+    Takes a list of font path entries on the command line, uses defaults
+    if none specified.
+    For use with afl fuzzer, you must use afl -f fonts.dir lsfontdir @@

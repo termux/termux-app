@@ -1,0 +1,70 @@
+XCOMM  XLocale Database Sample for iso8859-9.
+XCOMM 
+
+XCOMM 
+XCOMM 	XLC_FONTSET category
+XCOMM 
+XLC_FONTSET
+XCOMM 	fs0 class 
+fs0	{
+	charset	{
+		name		ISO8859-1:GL
+	}
+	font	{
+		primary		ISO8859-9:GL
+		substitute	ISO8859-1:GL
+		vertical_rotate	all
+	}
+}
+XCOMM 	fs1 class 
+fs1	{
+	charset	{
+		name		ISO8859-9:GR
+	}
+	font	{
+		primary		ISO8859-9:GR
+	}
+}
+END XLC_FONTSET
+
+XCOMM 
+XCOMM 	XLC_XLOCALE category
+XCOMM 
+XLC_XLOCALE
+
+encoding_name		ISO8859-9
+mb_cur_max		1
+state_depend_encoding	False
+#if WCHAR32
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+#else
+wc_encoding_mask	\x00008080
+wc_shift_bits		8
+#endif
+
+use_stdc_env		True
+force_convert_to_mb	True
+
+XCOMM 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-9:GL; ISO8859-1:GL
+}
+
+
+XCOMM 	cs1 class
+cs1	{
+	side		GR:Default
+	length		1
+#if WCHAR32
+	wc_encoding	\x30000000
+#else
+	wc_encoding	\x00008080
+#endif
+	ct_encoding	ISO8859-9:GR
+}
+
+END XLC_XLOCALE

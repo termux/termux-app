@@ -1,0 +1,42 @@
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH EXA @drivermansuffix@ @vendorversion@
+.SH NAME
+exa \- new 2D acceleration architecture for X.Org
+.SH DESCRIPTION
+.B EXA
+provides a simple API for video drivers to implement for 2D acceleration.  It
+is a module loaded by drivers, and is not intended to be loaded on its own.
+See your driver's manual page for how to enable
+.BR EXA .
+.PP
+The
+.B EXA
+architecture is designed to make accelerating the Render extension simple and
+efficient, and results in various performance tradeoffs compared to XAA.  Some
+xorg.conf options are available for debugging performance issues or
+driver rendering problems.  They are not intended for general use.
+.TP
+.BI "Option \*qEXANoComposite\*q \*q" boolean \*q
+Disables acceleration of the Composite operation, which is at the heart of
+the Render extension.  Not related to the Composite extension.  Default: No.
+.TP
+.BI "Option \*qEXANoUploadToScreen\*q \*q" boolean \*q
+Disables acceleration of uploading pixmap data to the framebuffer. Default: No.
+.TP
+.BI "Option \*qEXANoDownloadFromScreen\*q \*q" boolean \*q
+Disables acceleration of downloading of pixmap data from the framebuffer.
+.B NOTE:
+Not usable with drivers which rely on DownloadFromScreen succeeding.
+Default: No.
+.TP
+.BI "Option \*qMigrationHeuristic\*q \*q" anystr \*q
+Chooses an alternate pixmap migration heuristic, for debugging purposes.  The
+default is intended to be the best performing one for general use, though others
+may help with specific use cases.  Available options include \*qalways\*q,
+\*qgreedy\*q, and \*qsmart\*q.  Default: always.
+.SH "SEE ALSO"
+.BR Xorg (@appmansuffix@),
+.BR xorg.conf(@filemansuffix@).
+.SH AUTHORS
+Authors include: Keith Packard, Eric Anholt, Zack Rusin, and Michel D\(:anzer

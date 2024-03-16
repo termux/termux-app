@@ -1,0 +1,208 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbGetVirtualMods __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbGetVirtualMods \- Obtain a subset of the virtual modifier bindings (the vmods 
+array) in a keyboard description
+.SH SYNOPSIS
+.HP
+.B Status XkbGetVirtualMods
+.BI "(\^Display *" "dpy" "\^,"
+.BI "unsigned int " "which" "\^,"
+.BI "XkbDescPtr " "xkb" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to server
+.TP
+.I which
+mask indicating virtual modifier bindings to get
+.TP
+.I xkb
+Xkb description where results will be placed
+.SH DESCRIPTION
+.LP
+.I XkbGetVirtualMods 
+sends a request to the server to obtain the 
+.I vmods 
+entries for the virtual modifiers specified in the mask, 
+.I which, 
+and waits for a reply. 
+
+Virtual modifiers are named by converting their string name to an X Atom and storing the Atom in the 
+.I names.vmods 
+array in an XkbDescRec structure. The position of a name Atom in the 
+.I names.vmods 
+array defines the bit position used to represent the virtual modifier and also the index used when 
+accessing virtual modifier information in arrays: the name in the i-th (0 relative) entry of 
+.I names.vmods 
+is the i-th virtual modifier, represented by the mask (1<<i). Throughout Xkb, various functions have 
+a parameter that is a mask representing virtual modifier choices. In each case, the i-th bit (0 
+relative) of the mask represents the i-th virtual modifier.
+
+To set the name of a virtual modifier, use 
+.I XkbSetNames, 
+using XkbVirtualModNamesMask in 
+.I which 
+and the name in the 
+.I xkb 
+argument; to retrieve indicator names, use 
+.I XkbGetNames.
+
+For each bit set in 
+.I which, XkbGetVirtualMods 
+updates the corresponding virtual modifier definition in the 
+.I server->vmods 
+array of 
+.I xkb. 
+The 
+.I xkb 
+parameter must be a pointer to a valid Xkb keyboard description. If successful,
+.I XkbGetVirtualMods 
+returns Success.
+
+.B Virtual Modifier Names and Masks
+
+Virtual modifiers are named by converting their string name to an X Atom and 
+storing the Atom in the 
+.I names.vmods 
+array in an XkbDescRec structure. The position of a name Atom in the 
+.I names.vmods 
+array defines the bit position used to represent the virtual modifier and also 
+the index used when accessing virtual modifier information in arrays: the name 
+in the i-th (0 relative) entry of 
+.I names.vmods 
+is the i-th virtual modifier, represented by the mask (1<<i). Throughout Xkb, 
+various functions have a parameter that is a mask representing virtual modifier 
+choices. In each case, the i-th bit (0 relative) of the mask represents the i-th 
+virtual modifier.
+
+To set the name of a virtual modifier, use 
+.I XkbSetNames, 
+using XkbVirtualModNamesMask in 
+.I which 
+and the name in the 
+.I xkb 
+argument; to retrieve indicator names, use 
+.I XkbGetNames.
+
+If the 
+.I server 
+map has not been allocated in the 
+.I xkb 
+parameter, 
+.I XkbGetVirtualMods 
+allocates and initializes it before obtaining the virtual modifier bindings.
+
+If the server does not have a compatible version of Xkb, or the Xkb extension 
+has not been properly initialized, 
+.I XkbGetVirtualMods 
+returns BadMatch. Any errors in allocation cause 
+.I XkbGetVirtualMods 
+to return BadAlloc.
+.SH "RETURN VALUES"
+.TP 15
+Success
+The 
+.I XkbGetVirtualMods 
+function returns Success when it successfully updates the corresponding virtual modifier definition 
+in the 
+.I server->vmods 
+array of 
+.I xkb. 
+.SH STRUCTURES
+.LP
+The complete description of an Xkb keyboard is given by an XkbDescRec. The 
+component 
+structures in the XkbDescRec represent the major Xkb components.
+
+.nf
+typedef struct {
+   struct _XDisplay * display;      /\&* connection to X server */
+   unsigned short     flags;        /\&* private to Xkb, do not modify */
+   unsigned short     device_spec;  /\&* device of interest */
+   KeyCode            min_key_code; /\&* minimum keycode for device */
+   KeyCode            max_key_code; /\&* maximum keycode for device */
+   XkbControlsPtr     ctrls;        /\&* controls */
+   XkbServerMapPtr    server;       /\&* server keymap */
+   XkbClientMapPtr    map;          /\&* client keymap */
+   XkbIndicatorPtr    indicators;   /\&* indicator map */
+   XkbNamesPtr        names;        /\&* names for all components */
+   XkbCompatMapPtr    compat;       /\&* compatibility map */
+   XkbGeometryPtr     geom;         /\&* physical geometry of keyboard */
+} XkbDescRec, *XkbDescPtr;
+
+.fi
+The 
+.I display 
+field points to an X display structure. The 
+.I flags 
+field is private to the library: modifying 
+.I flags 
+may yield unpredictable results. The 
+.I device_spec 
+field specifies the device identifier of the keyboard input device, or XkbUseCoreKeyboard, which 
+specifies the core keyboard device. The 
+.I min_key_code
+and 
+.I max_key_code 
+fields specify the least and greatest keycode that can be returned by the keyboard.
+
+Each structure component has a corresponding mask bit that is used in function 
+calls to 
+indicate that the structure should be manipulated in some manner, such as 
+allocating it 
+or freeing it. These masks and their relationships to the fields in the 
+XkbDescRec are 
+shown in Table 1.
+
+.TS
+c s s
+l l l
+l l l.
+Table 1 Mask Bits for XkbDescRec
+_
+Mask Bit	XkbDescRec Field	Value
+_
+XkbControlsMask	ctrls	(1L<<0)
+XkbServerMapMask	server	(1L<<1)
+XkbIClientMapMask	map	(1L<<2)
+XkbIndicatorMapMask	indicators	(1L<<3)
+XkbNamesMask	names	(1L<<4)
+XkbCompatMapMask	compat	(1L<<5)
+XkbGeometryMask	geom	(1L<<6)
+XkbAllComponentsMask	All Fields	(0x7f)
+.TE
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has 
+correct type and range, but is otherwise invalid
+.SH "SEE ALSO"
+.BR XkbGetNames (__libmansuffix__),
+.BR XkbSetNames (__libmansuffix__)

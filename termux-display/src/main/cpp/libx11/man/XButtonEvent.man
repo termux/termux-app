@@ -1,0 +1,255 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XButtonEvent __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XButtonEvent, XKeyEvent, XMotionEvent \- KeyPress, KeyRelease, ButtonPress, ButtonRelease, and MotionNotify event structures
+.SH STRUCTURES
+The structures for
+.BR KeyPress ,
+.BR KeyRelease ,
+.BR ButtonPress ,
+.BR ButtonRelease ,
+and
+.B MotionNotify
+events contain:
+.LP
+.EX
+typedef struct {
+        int type;       /\&* ButtonPress or ButtonRelease */
+        unsigned long serial;   /\&* # of last request processed by server */
+        Bool send_event;        /\&* true if this came from a SendEvent request */
+        Display *display;       /\&* Display the event was read from */
+        Window window;  /\&* \*(lqevent\*(rq window it is reported relative to */
+        Window root;    /\&* root window that the event occurred on */
+        Window subwindow;       /\&* child window */
+        Time time;      /\&* milliseconds */
+        int x, y;       /\&* pointer x, y coordinates in event window */
+        int x_root, y_root;     /\&* coordinates relative to root */
+        unsigned int state;     /\&* key or button mask */
+        unsigned int button;    /\&* detail */
+        Bool same_screen;       /\&* same screen flag */
+} XButtonEvent;
+typedef XButtonEvent XButtonPressedEvent;
+typedef XButtonEvent XButtonReleasedEvent;
+.EE
+.LP
+.EX
+typedef struct {
+        int type;       /\&* KeyPress or KeyRelease */
+        unsigned long serial;   /\&* # of last request processed by server */
+        Bool send_event;        /\&* true if this came from a SendEvent request */
+        Display *display;       /\&* Display the event was read from */
+        Window window;  /\&* \*(lqevent\*(rq window it is reported relative to */
+        Window root;    /\&* root window that the event occurred on */
+        Window subwindow;       /\&* child window */
+        Time time;      /\&* milliseconds */
+        int x, y;       /\&* pointer x, y coordinates in event window */
+        int x_root, y_root;     /\&* coordinates relative to root */
+        unsigned int state;     /\&* key or button mask */
+        unsigned int keycode;   /\&* detail */
+        Bool same_screen;       /\&* same screen flag */
+} XKeyEvent;
+typedef XKeyEvent XKeyPressedEvent;
+typedef XKeyEvent XKeyReleasedEvent;
+.EE
+.LP
+.EX
+typedef struct {
+        int type;       /\&* MotionNotify */
+        unsigned long serial;   /\&* # of last request processed by server */
+        Bool send_event;        /\&* true if this came from a SendEvent request */
+        Display *display;       /\&* Display the event was read from */
+        Window window;  /\&* \*(lqevent\*(rq window reported relative to */
+        Window root;    /\&* root window that the event occurred on */
+        Window subwindow;       /\&* child window */
+        Time time;      /\&* milliseconds */
+        int x, y;       /\&* pointer x, y coordinates in event window */
+        int x_root, y_root;     /\&* coordinates relative to root */
+        unsigned int state;     /\&* key or button mask */
+        char is_hint;   /\&* detail */
+        Bool same_screen;       /\&* same screen flag */
+} XMotionEvent;
+typedef XMotionEvent XPointerMovedEvent;
+.EE
+.LP
+When you receive these events,
+their structure members are set as follows.
+.LP
+The type member is set to the event type constant name that uniquely identifies
+it.
+For example, when the X server reports a
+.B GraphicsExpose
+event to a client application, it sends an
+.B XGraphicsExposeEvent
+structure with the type member set to
+.BR GraphicsExpose .
+The display member is set to a pointer to the display the event was read on.
+The send_event member is set to
+.B True
+if the event came from a
+.B SendEvent
+protocol request.
+The serial member is set from the serial number reported in the protocol
+but expanded from the 16-bit least-significant bits to a full 32-bit value.
+The window member is set to the window that is most useful to toolkit
+dispatchers.
+.LP
+These structures have the following common members:
+window, root, subwindow, time, x, y, x_root, y_root, state, and same_screen.
+The window member is set to the window on which the
+event was generated and is referred to as the event window.
+As long as the conditions previously discussed are met,
+this is the window used by the X server to report the event.
+The root member is set to the source window's root window.
+The x_root and y_root members are set to the pointer's coordinates
+relative to the root window's origin at the time of the event.
+.LP
+The same_screen member is set to indicate whether the event
+window is on the same screen
+as the root window and can be either
+.B True
+or
+.BR False .
+If
+.BR True ,
+the event and root windows are on the same screen.
+If
+.BR False ,
+the event and root windows are not on the same screen.
+.LP
+If the source window is an inferior of the event window,
+the subwindow member of the structure is set to the child of the event window
+that is the source window or the child of the event window that is
+an ancestor of the source window.
+Otherwise, the X server sets the subwindow member to
+.BR None .
+The time member is set to the time when the event was generated
+and is expressed in milliseconds.
+.LP
+If the event window is on the same screen as the root window,
+the x and y members
+are set to the coordinates relative to the event window's origin.
+Otherwise, these members are set to zero.
+.LP
+The state member is set to indicate the logical state of the pointer buttons
+and modifier keys just prior to the event,
+which is the bitwise inclusive OR of one or more of the
+button or modifier key masks:
+.BR Button1Mask ,
+.BR Button2Mask ,
+.BR Button3Mask ,
+.BR Button4Mask ,
+.BR Button5Mask ,
+.BR ShiftMask ,
+.BR LockMask ,
+.BR ControlMask ,
+.BR Mod1Mask ,
+.BR Mod2Mask ,
+.BR Mod3Mask ,
+.BR Mod4Mask ,
+and
+.BR Mod5Mask .
+.LP
+Each of these structures also has a member that indicates the detail.
+For the
+.B XKeyPressedEvent
+and
+.B XKeyReleasedEvent
+structures, this member is called a keycode.
+It is set to a number that represents a physical key on the keyboard.
+The keycode is an arbitrary representation for any key on the keyboard
+(see sections 12.7 and 16.1).
+.LP
+For the
+.B XButtonPressedEvent
+and
+.B XButtonReleasedEvent
+structures, this member is called button.
+It represents the pointer button that changed state and can be the
+.BR Button1 ,
+.BR Button2 ,
+.BR Button3 ,
+.BR Button4 ,
+or
+.B Button5
+value.
+For the
+.B XPointerMovedEvent
+structure, this member is called is_hint.
+It can be set to
+.B NotifyNormal
+or
+.BR NotifyHint .
+.SH "SEE ALSO"
+XAnyEvent(__libmansuffix__),
+XCreateWindowEvent(__libmansuffix__),
+XCirculateEvent(__libmansuffix__),
+XCirculateRequestEvent(__libmansuffix__),
+XColormapEvent(__libmansuffix__),
+XConfigureEvent(__libmansuffix__),
+XConfigureRequestEvent(__libmansuffix__),
+XCrossingEvent(__libmansuffix__),
+XDestroyWindowEvent(__libmansuffix__),
+XErrorEvent(__libmansuffix__),
+XExposeEvent(__libmansuffix__),
+XFocusChangeEvent(__libmansuffix__),
+XGraphicsExposeEvent(__libmansuffix__),
+XGravityEvent(__libmansuffix__),
+XKeymapEvent(__libmansuffix__),
+XMapEvent(__libmansuffix__),
+XMapRequestEvent(__libmansuffix__),
+XPropertyEvent(__libmansuffix__),
+XReparentEvent(__libmansuffix__),
+XResizeRequestEvent(__libmansuffix__),
+XSelectionClearEvent(__libmansuffix__),
+XSelectionEvent(__libmansuffix__),
+XSelectionRequestEvent(__libmansuffix__),
+XUnmapEvent(__libmansuffix__),
+XVisibilityEvent(__libmansuffix__)
+.br
+\fI\*(xL\fP

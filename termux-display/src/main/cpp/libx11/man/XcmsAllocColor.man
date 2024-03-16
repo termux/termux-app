@@ -1,0 +1,161 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XcmsAllocColor __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XcmsAllocColor, XcmsAllocNamedColor \- allocate colors
+.SH SYNTAX
+.HP
+Status XcmsAllocColor\^(\^Display *\fIdisplay\fP\^, Colormap \fIcolormap\fP\^,
+XcmsColor *\fIcolor_in_out\fP\^, XcmsColorFormat \fIresult_format\fP\^);
+.HP
+Status XcmsAllocNamedColor\^(\^Display *\fIdisplay\fP\^, Colormap
+\fIcolormap\fP\^, _Xconst char *\fIcolor_string\fP\^, XcmsColor
+*\fIcolor_screen_return\fP\^, XcmsColor *\fIcolor_exact_return\fP\^, XcmsColorFormat \fIresult_format\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIcolormap\fP 1i
+Specifies the colormap.
+.IP \fIcolor_exact_return\fP 1i
+Returns the color specification parsed from the color string
+or parsed from the corresponding string found in a color-name database.
+.IP \fIcolor_in_out\fP 1i
+Specifies the color to allocate and returns the pixel and color
+that is actually used in the colormap.
+.IP \fIcolor_screen_return\fP 1i
+Returns the pixel value of the color cell and color specification
+that actually is stored for that cell.
+.ds St \
+.IP \fIcolor_string\fP 1i
+Specifies the color string whose color definition structure is to be returned.
+.IP \fIresult_format\fP 1i
+Specifies the color format for the returned color specification.
+.SH DESCRIPTION
+The
+.B XcmsAllocColor
+function is similar to
+.B XAllocColor
+except the color can be specified in any format.
+The
+.B XcmsAllocColor
+function ultimately calls
+.B XAllocColor
+to allocate a read-only color cell (colormap entry) with the specified color.
+.B XcmsAllocColor
+first converts the color specified
+to an RGB value and then passes this to
+.BR XAllocColor .
+.B XcmsAllocColor
+returns the pixel value of the color cell and the color specification
+actually allocated.
+This returned color specification is the result of converting the RGB value
+returned by
+.B XAllocColor
+into the format specified with the result_format argument.
+If there is no interest in a returned color specification,
+unnecessary computation can be bypassed if result_format is set to
+.BR XcmsRGBFormat .
+The corresponding colormap cell is read-only.
+If this routine returns
+.BR XcmsFailure ,
+the color_in_out color specification is left unchanged.
+.LP
+.B XcmsAllocColor
+can generate a
+.B BadColor
+errors.
+.LP
+The
+.B XcmsAllocNamedColor
+function is similar to
+.B XAllocNamedColor
+except that the color returned can be in any format specified.
+This function
+ultimately calls
+.B XAllocColor
+to allocate a read-only color cell with
+the color specified by a color string.
+The color string is parsed into an
+.B XcmsColor
+structure (see
+.BR XcmsLookupColor ),
+converted
+to an RGB value, and finally passed to
+.BR XAllocColor .
+If the color name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+.LP
+This function returns both the color specification as a result
+of parsing (exact specification) and the actual color specification
+stored (screen specification).
+This screen specification is the result of converting the RGB value
+returned by
+.B XAllocColor
+into the format specified in result_format.
+If there is no interest in a returned color specification,
+unnecessary computation can be bypassed if result_format is set to
+.BR XcmsRGBFormat .
+If color_screen_return and color_exact_return
+point to the same structure, the pixel field will be set correctly,
+but the color values are undefined.
+.LP
+.LP
+.B XcmsAllocNamedColor
+can generate a
+.B BadColor
+errors.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadColor
+A value for a Colormap argument does not name a defined Colormap.
+.SH "SEE ALSO"
+XcmsQueryColor(__libmansuffix__),
+XcmsStoreColor(__libmansuffix__)
+.br
+\fI\*(xL\fP

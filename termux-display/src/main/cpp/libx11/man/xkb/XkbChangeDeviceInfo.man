@@ -1,0 +1,74 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbChangeDeviceInfo __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbChangeDeviceInfo \- Update the server's description of a device with the changes noted in an 
+XkbDeviceChangesRec
+.SH SYNOPSIS
+.HP
+.B Bool XkbChangeDeviceInfo
+.BI "(\^Display *" "dpy" "\^,"
+.BI "XkbDeviceInfoPtr " "device_info" "\^,"
+.BI "XkbDeviceChangesPtr " "changes" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to X server
+.TP
+.I device_info
+local copy of device state and configuration
+.TP
+.I changes
+note specifying changes in device_info
+.SH DESCRIPTION
+.LP
+.I XkbChangeDeviceInfo 
+updates the server's description of the device specified in 
+.I device_info->device_spec 
+with the changes specified in 
+.I changes 
+and contained in 
+.I device_info. 
+The update is made by an 
+.I XkbSetDeviceInfo 
+request.
+.SH STRUCTURES
+.LP
+Changes to an Xkb extension device may be tracked by listening to XkbDeviceExtensionNotify events 
+and accumulating the changes in an XkbDeviceChangesRec structure. The changes noted in the 
+structure may then be used in subsequent operations to update either a server configuration or a 
+local copy of an Xkb extension device configuration. The changes structure is defined as follows:
+.nf
+
+typedef struct _XkbDeviceChanges {
+    unsigned int         changed;        /\&* bits indicating what has changed */
+    unsigned short       first_btn;      /\&* number of first button which changed, if any */
+    unsigned short       num_btns;       /\&* number of buttons that have changed */
+    XkbDeviceLedChangesRec leds;
+} XkbDeviceChangesRec,*XkbDeviceChangesPtr;
+
+.fi
+.SH "SEE ALSO"
+.BR XkbSetDeviceInfo (__libmansuffix__)

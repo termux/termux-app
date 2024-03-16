@@ -1,0 +1,71 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbLookupKeySym __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbLookupKeySym \- Find the symbol associated with a key for a particular state
+.SH SYNOPSIS
+.HP
+.B Bool XkbLookupKeySym
+.BI "(\^Display *" "dpy" "\^,"
+.BI "KeyCode " "key" "\^,"
+.BI "unsigned int " "state" "\^,"
+.BI "unsigned int *" "mods_rtrn" "\^,"
+.BI "KeySym *" "sym_rtrn" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to X server
+.TP
+.I key
+key for which symbols are to be found
+.TP
+.I state
+state for which symbol should be found
+.TP
+.I mods_rtrn
+backfilled with consumed modifiers
+.TP
+.I sym_rtrn
+backfilled with symbol associated with key + state
+.SH DESCRIPTION
+.LP
+.I XkbLookupKeySym 
+is the equivalent of the core 
+.I XLookupKeySym 
+function. For the core keyboard, given a keycode 
+.I key 
+and an Xkb state 
+.I state, XkbLookupKeySym 
+returns the symbol associated with the key in 
+.I sym_rtrn 
+and the list of modifiers that should still be applied in 
+.I mods_rtrn. 
+The 
+.I state 
+parameter is the state from a KeyPress or KeyRelease event. 
+.I XkbLookupKeySym 
+returns True if it succeeds.
+.SH "SEE ALSO"
+.BR XLookupKeySym (__libmansuffix__)
+

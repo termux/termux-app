@@ -1,0 +1,50 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbComputeSectionBounds __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbComputeSectionBounds \- Update the bounding box of a section
+.SH SYNOPSIS
+.HP
+.B Bool XkbComputeSectionBounds
+.BI "(\^XkbGeometryPtr " "geom" "\^,"
+.BI "XkbSectionPtr " "section" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I geom
+geometry that contains the section
+.TP
+.I section
+section to be examined and updated
+.SH DESCRIPTION
+.LP
+ If you add or delete a row to or from a section, or if you change the geometry 
+of any of the rows in that section, you may need to update the bounding box for 
+that section. 
+ 
+.I XkbComputeSectionBounds 
+examines all the rows of the 
+.I section 
+and updates the bounding box of that section so that it contains all rows.
+.I XkbComputeSectionBounds 
+returns False if any of the arguments is NULL; otherwise, it returns True.

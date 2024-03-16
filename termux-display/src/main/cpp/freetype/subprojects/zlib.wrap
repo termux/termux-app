@@ -1,0 +1,12 @@
+[wrap-file]
+directory = zlib-1.2.13
+source_url = http://zlib.net/fossils/zlib-1.2.13.tar.gz
+source_filename = zlib-1.2.13.tar.gz
+source_hash = b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30
+patch_filename = zlib_1.2.13-2_patch.zip
+patch_url = https://wrapdb.mesonbuild.com/v2/zlib_1.2.13-2/get_patch
+patch_hash = a7abea3ad65dc2c291ad5fbbf5355d0585a7f7b8c935d4a74335b8fe18684506
+wrapdb_version = 1.2.13-2
+
+[provide]
+zlib = zlib_dep

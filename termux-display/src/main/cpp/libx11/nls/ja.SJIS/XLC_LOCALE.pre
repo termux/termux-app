@@ -1,0 +1,382 @@
+XCOMM 
+XCOMM  XLocale Database Sample for ja_JP.sjis
+XCOMM 
+
+#ifndef __uxp__
+
+XCOMM 
+XCOMM 	XLC_FONTSET category
+XCOMM 
+XLC_FONTSET
+XCOMM 	fs0 class (7 bit ASCII)
+fs0	{
+	charset	{
+		name		ISO8859-1:GL
+	}
+	font	{
+		primary		ISO8859-1:GL
+		substitute	JISX0201.1976-0:GL
+		vertical_rotate	all
+	}
+}
+XCOMM 	fs1 class (Kanji)
+fs1	{
+	charset	{
+		name		JISX0208.1983-0:GL
+	}
+	font	{
+		primary		JISX0208.1983-0:GL
+		substitute      JISX0208.1990-0:GL
+	}
+}
+XCOMM 	fs2 class (Half Kana)
+fs2	{
+	charset	{
+		name		JISX0201.1976-0:GR
+	}
+	font	{
+		primary		JISX0201.1976-0:GR
+		substitute      JISX0201.1976-0:GR
+		vertical_rotate	all
+	}
+}
+XCOMM 	fs3 class (Supplementary Kanji)
+XCOMM fs3	{
+XCOMM	charset	{
+XCOMM		name		JISX0212.1990-0:GL
+XCOMM	}
+XCOMM	font	{
+XCOMM		primary		JISX0212.1990-0:GL
+XCOMM	}
+XCOMM }
+END XLC_FONTSET
+
+XCOMM 
+XCOMM 	XLC_XLOCALE category
+XCOMM 
+XLC_XLOCALE
+
+encoding_name		ja.sjis
+mb_cur_max		2
+state_depend_encoding	False
+#if WCHAR32
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+#else
+wc_encoding_mask	\x00008080
+wc_shift_bits		8
+#endif
+
+use_stdc_env		True
+force_convert_to_mb	True
+
+XCOMM 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-1:GL; JISX0201.1976-0:GL
+}
+
+XCOMM 	cs1 class
+cs1	{
+	side		none
+	length		2
+	byte1		\x81,\x9f;\xe0,\xef
+	byte2		\x40,\x7e;\x80,\xfc
+#if WCHAR32
+	wc_encoding	\x30000000
+#else
+	wc_encoding	\x00008080
+#endif
+	ct_encoding	JISX0208.1983-0:GL; JISX0208.1983-0:GR;\
+			JISX0208.1983-1:GL; JISX0208.1983-1:GR
+	mb_conversion	\
+    [\x8140,\x817e]->\x2121,[\x8180,\x819e]->\x2160,[\x819f,\x81fc]->\x2221,\
+    [\x8240,\x827e]->\x2321,[\x8280,\x829e]->\x2360,[\x829f,\x82fc]->\x2421,\
+    [\x8340,\x837e]->\x2521,[\x8380,\x839e]->\x2560,[\x839f,\x83fc]->\x2621,\
+    [\x8440,\x847e]->\x2721,[\x8480,\x849e]->\x2760,[\x849f,\x84fc]->\x2821,\
+    [\x8540,\x857e]->\x2921,[\x8580,\x859e]->\x2960,[\x859f,\x85fc]->\x2a21,\
+    [\x8640,\x867e]->\x2b21,[\x8680,\x869e]->\x2b60,[\x869f,\x86fc]->\x2c21,\
+    [\x8740,\x877e]->\x2d21,[\x8780,\x879e]->\x2d60,[\x879f,\x87fc]->\x2e21,\
+    [\x8840,\x887e]->\x2f21,[\x8880,\x889e]->\x2f60,[\x889f,\x88fc]->\x3021,\
+    [\x8940,\x897e]->\x3121,[\x8980,\x899e]->\x3160,[\x899f,\x89fc]->\x3221,\
+    [\x8a40,\x8a7e]->\x3321,[\x8a80,\x8a9e]->\x3360,[\x8a9f,\x8afc]->\x3421,\
+    [\x8b40,\x8b7e]->\x3521,[\x8b80,\x8b9e]->\x3560,[\x8b9f,\x8bfc]->\x3621,\
+    [\x8c40,\x8c7e]->\x3721,[\x8c80,\x8c9e]->\x3760,[\x8c9f,\x8cfc]->\x3821,\
+    [\x8d40,\x8d7e]->\x3921,[\x8d80,\x8d9e]->\x3960,[\x8d9f,\x8dfc]->\x3a21,\
+    [\x8e40,\x8e7e]->\x3b21,[\x8e80,\x8e9e]->\x3b60,[\x8e9f,\x8efc]->\x3c21,\
+    [\x8f40,\x8f7e]->\x3d21,[\x8f80,\x8f9e]->\x3d60,[\x8f9f,\x8ffc]->\x3e21,\
+    [\x9040,\x907e]->\x3f21,[\x9080,\x909e]->\x3f60,[\x909f,\x90fc]->\x4021,\
+    [\x9140,\x917e]->\x4121,[\x9180,\x919e]->\x4160,[\x919f,\x91fc]->\x4221,\
+    [\x9240,\x927e]->\x4321,[\x9280,\x929e]->\x4360,[\x929f,\x92fc]->\x4421,\
+    [\x9340,\x937e]->\x4521,[\x9380,\x939e]->\x4560,[\x939f,\x93fc]->\x4621,\
+    [\x9440,\x947e]->\x4721,[\x9480,\x949e]->\x4760,[\x949f,\x94fc]->\x4821,\
+    [\x9540,\x957e]->\x4921,[\x9580,\x959e]->\x4960,[\x959f,\x95fc]->\x4a21,\
+    [\x9640,\x967e]->\x4b21,[\x9680,\x969e]->\x4b60,[\x969f,\x96fc]->\x4c21,\
+    [\x9740,\x977e]->\x4d21,[\x9780,\x979e]->\x4d60,[\x979f,\x97fc]->\x4e21,\
+    [\x9840,\x987e]->\x4f21,[\x9880,\x989e]->\x4f60,[\x989f,\x98fc]->\x5021,\
+    [\x9940,\x997e]->\x5121,[\x9980,\x999e]->\x5160,[\x999f,\x99fc]->\x5221,\
+    [\x9a40,\x9a7e]->\x5321,[\x9a80,\x9a9e]->\x5360,[\x9a9f,\x9afc]->\x5421,\
+    [\x9b40,\x9b7e]->\x5521,[\x9b80,\x9b9e]->\x5560,[\x9b9f,\x9bfc]->\x5621,\
+    [\x9c40,\x9c7e]->\x5721,[\x9c80,\x9c9e]->\x5760,[\x9c9f,\x9cfc]->\x5821,\
+    [\x9d40,\x9d7e]->\x5921,[\x9d80,\x9d9e]->\x5960,[\x9d9f,\x9dfc]->\x5a21,\
+    [\x9e40,\x9e7e]->\x5b21,[\x9e80,\x9e9e]->\x5b60,[\x9e9f,\x9efc]->\x5c21,\
+    [\x9f40,\x9f7e]->\x5d21,[\x9f80,\x9f9e]->\x5d60,[\x9f9f,\x9ffc]->\x5e21,\
+    [\xe040,\xe07e]->\x5f21,[\xe080,\xe09e]->\x5f60,[\xe09f,\xe0fc]->\x6021,\
+    [\xe140,\xe17e]->\x6121,[\xe180,\xe19e]->\x6160,[\xe19f,\xe1fc]->\x6221,\
+    [\xe240,\xe27e]->\x6321,[\xe280,\xe29e]->\x6360,[\xe29f,\xe2fc]->\x6421,\
+    [\xe340,\xe37e]->\x6521,[\xe380,\xe39e]->\x6560,[\xe39f,\xe3fc]->\x6621,\
+    [\xe440,\xe47e]->\x6721,[\xe480,\xe49e]->\x6760,[\xe49f,\xe4fc]->\x6821,\
+    [\xe540,\xe57e]->\x6921,[\xe580,\xe59e]->\x6960,[\xe59f,\xe5fc]->\x6a21,\
+    [\xe640,\xe67e]->\x6b21,[\xe680,\xe69e]->\x6b60,[\xe69f,\xe6fc]->\x6c21,\
+    [\xe740,\xe77e]->\x6d21,[\xe780,\xe79e]->\x6d60,[\xe79f,\xe7fc]->\x6e21,\
+    [\xe840,\xe87e]->\x6f21,[\xe880,\xe89e]->\x6f60,[\xe89f,\xe8fc]->\x7021,\
+    [\xe940,\xe97e]->\x7121,[\xe980,\xe99e]->\x7160,[\xe99f,\xe9fc]->\x7221,\
+    [\xea40,\xea7e]->\x7321,[\xea80,\xea9e]->\x7360,[\xea9f,\xeafc]->\x7421,\
+    [\xeb40,\xeb7e]->\x7521,[\xeb80,\xeb9e]->\x7560,[\xeb9f,\xebfc]->\x7621,\
+    [\xec40,\xec7e]->\x7721,[\xec80,\xec9e]->\x7760,[\xec9f,\xecfc]->\x7821,\
+    [\xed40,\xed7e]->\x7921,[\xed80,\xed9e]->\x7960,[\xed9f,\xedfc]->\x7a21,\
+    [\xee40,\xee7e]->\x7b21,[\xee80,\xee9e]->\x7b60,[\xee9f,\xeefc]->\x7c21,\
+    [\xef40,\xef7e]->\x7d21,[\xef80,\xef9e]->\x7d60,[\xef9f,\xeffc]->\x7e21
+}
+
+XCOMM 	cs2 class
+cs2	{
+	side		GR
+	length		1
+#if WCHAR32
+	wc_encoding	\x10000000
+#else
+	wc_encoding	\x00000080
+#endif
+	ct_encoding	JISX0201.1976-0:GR
+}
+
+XCOMM 	cs3 class
+XCOMM cs3	{
+XCOMM 	side		GR
+XCOMM 	length		2
+XCOMM #if WCHAR32
+XCOMM 	wc_encoding	\x20000000
+XCOMM #else
+XCOMM 	wc_encoding	\x00008000
+XCOMM #endif
+XCOMM 	ct_encoding	JISX0212.1990-0:GL; JISX0212.1990-0:GR
+XCOMM }
+
+END XLC_XLOCALE
+
+#else /* __uxp__ */
+
+XCOMM  For UXP/DS plat form
+XCOMM
+XCOMM       XLC_CHARSET_DEFINE category
+XCOMM
+XLC_CHARSET_DEFINE
+csd0    {
+        charset_name    u90x03.1991-0
+        side            GL
+        length          2
+        gc_number       94
+        string_encoding False
+        sequence        \x1b\x25\x28\x32
+        encoding_name   fujitsu.U90X03
+}
+
+csd1    {
+        charset_name    u90x03.1991-0
+        side            GR
+        length          2
+        gc_number       94
+        string_encoding False
+        sequence        \x1b\x25\x2f\x32
+        encoding_name   fujitsu.U90X03
+}
+END XLC_CHARSET_DEFINE
+
+XCOMM 
+XCOMM 	XLC_FONTSET category
+XCOMM 
+XLC_FONTSET
+XCOMM 	fs0 class (7 bit ASCII)
+fs0	{
+	charset	{
+		name		JISX0201.1976-0:GL
+	}
+	font	{
+		primary		JISX0201.1976-0:GL
+		substitute	ISO8859-1:GL
+		vertical_rotate all
+	}
+}
+XCOMM 	fs1 class (Kanji)
+fs1	{
+	charset	{
+		name		JISX0208.1983-0:GL
+	}
+	font	{
+                primary         fujitsu.u90x01.1991-0:GL
+                substitute      u90x01.1991-0:GL;\
+                                JISX0208.1983-0:GL; JISX0208.1983-0:GR;\
+                                JISX0208.1983-1:GL; JISX0208.1983-1:GR;\
+                                JISX0208.1990-0:GL; JISX0208.1990-0:GR
+		vertical_map    u90x01.1991-0.2:GL,\
+                        [\x2122,\x2125]->\x7d21,[\x2131,\x2132]->\x7d25,\
+                        [\x213c,\x213e]->\x7d27,[\x2141,\x215b]->\x7d2a,\
+                        [\x2421,\x2421]->\x7d45,[\x2423,\x2423]->\x7d46,\
+                        [\x2425,\x2425]->\x7d47,[\x2427,\x2427]->\x7d48,\
+                        [\x2429,\x2429]->\x7d49,[\x2443,\x2443]->\x7d4a,\
+                        [\x2463,\x2463]->\x7d4b,[\x2465,\x2465]->\x7d4c,\
+                        [\x2467,\x2467]->\x7d4d,[\x246e,\x246e]->\x7d4e,\
+                        [\x2521,\x2521]->\x7d4f,[\x2523,\x2523]->\x7d50,\
+                        [\x2525,\x2525]->\x7d51,[\x2527,\x2527]->\x7d52,\
+                        [\x2529,\x2529]->\x7d53,[\x2543,\x2543]->\x7d54,\
+                        [\x2563,\x2563]->\x7d55,[\x2565,\x2565]->\x7d56,\
+                        [\x2567,\x2567]->\x7d57,[\x256e,\x256e]->\x7d58,\
+                        [\x2575,\x2576]->\x7d59,[\x2475,\x2476]->\x7d5b
+	}
+}
+XCOMM 	fs2 class (Half Kana)
+fs2	{
+	charset	{
+		name		JISX0201.1976-0:GR
+	}
+	font	{
+		primary		JISX0201.1976-0:GR
+		vertical_rotate all
+	}
+}
+XCOMM 	fs3 class (Supplementary Kanji)
+fs3	{
+	charset	{
+		name		u90x03.1991-0:GL; u90x03.1991-0:GR
+		udc_area        \x6521,\x787e
+	}
+	font	{
+                primary         fujitsu.u90x03.1991-0:GL
+                substitute      u90x03.1991-0:GL;\
+                                JISX0208.1983-0:GL; JISX0208.1983-0:GR;\
+                                JISX0208.1983-1:GL; JISX0208.1983-1:GR;\
+                                JISX0208.1990-0:GL; JISX0208.1990-0:GR
+	}
+}
+END XLC_FONTSET
+
+XCOMM 
+XCOMM 	XLC_XLOCALE category
+XCOMM 
+XLC_XLOCALE
+
+encoding_name		ja.sjis
+mb_cur_max		2
+state_depend_encoding	False
+
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+
+
+XCOMM 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	JISX0201.1976-0:GL; ISO8859-1:GL
+}
+
+XCOMM 	cs1 class
+cs1	{
+	side		none
+	length		2
+	byte1		\x81,\x9f;\xe0,\xef
+	byte2		\x40,\x7e;\x80,\xfc
+
+	wc_encoding	\x30000000
+
+	ct_encoding	JISX0208.1983-0:GL; JISX0208.1983-0:GR;\
+			JISX0208.1983-1:GL; JISX0208.1983-1:GR
+	mb_conversion	\
+    [\x8140,\x817e]->\x2121,[\x8180,\x819e]->\x2160,[\x819f,\x81fc]->\x2221,\
+    [\x8240,\x827e]->\x2321,[\x8280,\x829e]->\x2360,[\x829f,\x82fc]->\x2421,\
+    [\x8340,\x837e]->\x2521,[\x8380,\x839e]->\x2560,[\x839f,\x83fc]->\x2621,\
+    [\x8440,\x847e]->\x2721,[\x8480,\x849e]->\x2760,[\x849f,\x84fc]->\x2821,\
+    [\x8540,\x857e]->\x2921,[\x8580,\x859e]->\x2960,[\x859f,\x85fc]->\x2a21,\
+    [\x8640,\x867e]->\x2b21,[\x8680,\x869e]->\x2b60,[\x869f,\x86fc]->\x2c21,\
+    [\x8740,\x877e]->\x2d21,[\x8780,\x879e]->\x2d60,[\x879f,\x87fc]->\x2e21,\
+    [\x8840,\x887e]->\x2f21,[\x8880,\x889e]->\x2f60,[\x889f,\x88fc]->\x3021,\
+    [\x8940,\x897e]->\x3121,[\x8980,\x899e]->\x3160,[\x899f,\x89fc]->\x3221,\
+    [\x8a40,\x8a7e]->\x3321,[\x8a80,\x8a9e]->\x3360,[\x8a9f,\x8afc]->\x3421,\
+    [\x8b40,\x8b7e]->\x3521,[\x8b80,\x8b9e]->\x3560,[\x8b9f,\x8bfc]->\x3621,\
+    [\x8c40,\x8c7e]->\x3721,[\x8c80,\x8c9e]->\x3760,[\x8c9f,\x8cfc]->\x3821,\
+    [\x8d40,\x8d7e]->\x3921,[\x8d80,\x8d9e]->\x3960,[\x8d9f,\x8dfc]->\x3a21,\
+    [\x8e40,\x8e7e]->\x3b21,[\x8e80,\x8e9e]->\x3b60,[\x8e9f,\x8efc]->\x3c21,\
+    [\x8f40,\x8f7e]->\x3d21,[\x8f80,\x8f9e]->\x3d60,[\x8f9f,\x8ffc]->\x3e21,\
+    [\x9040,\x907e]->\x3f21,[\x9080,\x909e]->\x3f60,[\x909f,\x90fc]->\x4021,\
+    [\x9140,\x917e]->\x4121,[\x9180,\x919e]->\x4160,[\x919f,\x91fc]->\x4221,\
+    [\x9240,\x927e]->\x4321,[\x9280,\x929e]->\x4360,[\x929f,\x92fc]->\x4421,\
+    [\x9340,\x937e]->\x4521,[\x9380,\x939e]->\x4560,[\x939f,\x93fc]->\x4621,\
+    [\x9440,\x947e]->\x4721,[\x9480,\x949e]->\x4760,[\x949f,\x94fc]->\x4821,\
+    [\x9540,\x957e]->\x4921,[\x9580,\x959e]->\x4960,[\x959f,\x95fc]->\x4a21,\
+    [\x9640,\x967e]->\x4b21,[\x9680,\x969e]->\x4b60,[\x969f,\x96fc]->\x4c21,\
+    [\x9740,\x977e]->\x4d21,[\x9780,\x979e]->\x4d60,[\x979f,\x97fc]->\x4e21,\
+    [\x9840,\x987e]->\x4f21,[\x9880,\x989e]->\x4f60,[\x989f,\x98fc]->\x5021,\
+    [\x9940,\x997e]->\x5121,[\x9980,\x999e]->\x5160,[\x999f,\x99fc]->\x5221,\
+    [\x9a40,\x9a7e]->\x5321,[\x9a80,\x9a9e]->\x5360,[\x9a9f,\x9afc]->\x5421,\
+    [\x9b40,\x9b7e]->\x5521,[\x9b80,\x9b9e]->\x5560,[\x9b9f,\x9bfc]->\x5621,\
+    [\x9c40,\x9c7e]->\x5721,[\x9c80,\x9c9e]->\x5760,[\x9c9f,\x9cfc]->\x5821,\
+    [\x9d40,\x9d7e]->\x5921,[\x9d80,\x9d9e]->\x5960,[\x9d9f,\x9dfc]->\x5a21,\
+    [\x9e40,\x9e7e]->\x5b21,[\x9e80,\x9e9e]->\x5b60,[\x9e9f,\x9efc]->\x5c21,\
+    [\x9f40,\x9f7e]->\x5d21,[\x9f80,\x9f9e]->\x5d60,[\x9f9f,\x9ffc]->\x5e21,\
+    [\xe040,\xe07e]->\x5f21,[\xe080,\xe09e]->\x5f60,[\xe09f,\xe0fc]->\x6021,\
+    [\xe140,\xe17e]->\x6121,[\xe180,\xe19e]->\x6160,[\xe19f,\xe1fc]->\x6221,\
+    [\xe240,\xe27e]->\x6321,[\xe280,\xe29e]->\x6360,[\xe29f,\xe2fc]->\x6421,\
+    [\xe340,\xe37e]->\x6521,[\xe380,\xe39e]->\x6560,[\xe39f,\xe3fc]->\x6621,\
+    [\xe440,\xe47e]->\x6721,[\xe480,\xe49e]->\x6760,[\xe49f,\xe4fc]->\x6821,\
+    [\xe540,\xe57e]->\x6921,[\xe580,\xe59e]->\x6960,[\xe59f,\xe5fc]->\x6a21,\
+    [\xe640,\xe67e]->\x6b21,[\xe680,\xe69e]->\x6b60,[\xe69f,\xe6fc]->\x6c21,\
+    [\xe740,\xe77e]->\x6d21,[\xe780,\xe79e]->\x6d60,[\xe79f,\xe7fc]->\x6e21,\
+    [\xe840,\xe87e]->\x6f21,[\xe880,\xe89e]->\x6f60,[\xe89f,\xe8fc]->\x7021,\
+    [\xe940,\xe97e]->\x7121,[\xe980,\xe99e]->\x7160,[\xe99f,\xe9fc]->\x7221,\
+    [\xea40,\xea7e]->\x7321,[\xea80,\xea9e]->\x7360,[\xea9f,\xeafc]->\x7421,\
+    [\xeb40,\xeb7e]->\x7521,[\xeb80,\xeb9e]->\x7560,[\xeb9f,\xebfc]->\x7621,\
+    [\xec40,\xec7e]->\x7721,[\xec80,\xec9e]->\x7760,[\xec9f,\xecfc]->\x7821,\
+    [\xed40,\xed7e]->\x7921,[\xed80,\xed9e]->\x7960,[\xed9f,\xedfc]->\x7a21,\
+    [\xee40,\xee7e]->\x7b21,[\xee80,\xee9e]->\x7b60,[\xee9f,\xeefc]->\x7c21,\
+    [\xef40,\xef7e]->\x7d21,[\xef80,\xef9e]->\x7d60,[\xef9f,\xeffc]->\x7e21
+}
+
+XCOMM 	cs2 class
+cs2	{
+	side		GR
+	length		1
+	wc_encoding	\x10000000
+	ct_encoding	JISX0201.1976-0:GR
+}
+
+XCOMM 	cs3 class
+cs3	{
+	side		none
+	length		2
+	byte1		\xf0,\xfc
+	byte2		\x40,\x7e;\x80,\xfc
+ 	wc_encoding	\x20000000
+ 	ct_encoding	u90x03.1991-0:GL; u90x03.1991-0:GR
+	mb_conversion	\
+    [\xf040,\xf07e]->\x6521,[\xf080,\xf09e]->\x6560,[\xf09f,\xf0fc]->\x6621,\
+    [\xf140,\xf17e]->\x6721,[\xf180,\xf19e]->\x6760,[\xf19f,\xf1fc]->\x6821,\
+    [\xf240,\xf27e]->\x6921,[\xf280,\xf29e]->\x6960,[\xf29f,\xf2fc]->\x6a21,\
+    [\xf340,\xf37e]->\x6b21,[\xf380,\xf39e]->\x6b60,[\xf39f,\xf3fc]->\x6c21,\
+    [\xf440,\xf47e]->\x6d21,[\xf480,\xf49e]->\x6d60,[\xf49f,\xf4fc]->\x6e21,\
+    [\xf540,\xf57e]->\x6f21,[\xf580,\xf59e]->\x6f60,[\xf59f,\xf5fc]->\x7021,\
+    [\xf640,\xf67e]->\x7121,[\xf680,\xf69e]->\x7160,[\xf69f,\xf6fc]->\x7221,\
+    [\xf740,\xf77e]->\x7321,[\xf780,\xf79e]->\x7360,[\xf79f,\xf7fc]->\x7421,\
+    [\xf840,\xf87e]->\x7521,[\xf880,\xf89e]->\x7560,[\xf89f,\xf8fc]->\x7621,\
+    [\xf940,\xf97e]->\x7721,[\xf980,\xf99e]->\x7760,[\xf99f,\xf9fc]->\x7821,\
+    [\xfa40,\xfa7e]->\x7921,[\xfa80,\xfa9e]->\x7960,[\xfa9f,\xfafc]->\x7a21,\
+    [\xfb40,\xfb7e]->\x7b21,[\xfb80,\xfb9e]->\x7b60,[\xfb9f,\xfbfc]->\x7c21,\
+    [\xfc40,\xfc7e]->\x7d21,[\xfc80,\xfc9e]->\x7d60,[\xfc9f,\xfcfc]->\x7e21
+}
+
+END XLC_XLOCALE
+
+#endif /* __uxp__ */

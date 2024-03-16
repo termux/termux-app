@@ -1,0 +1,7 @@
+prefix=@prefix@
+includedir=@includedir@
+ 
+Name: GLProto
+Description: GL extension headers
+Version: 1.4.17
+Cflags: -I${includedir}

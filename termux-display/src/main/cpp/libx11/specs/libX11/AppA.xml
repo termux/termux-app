@@ -1,0 +1,2111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<appendix id="xlib_functions_and_protocol_requests">
+<title>Xlib Functions and Protocol Requests</title>
+<para>
+This appendix provides two tables that relate to Xlib functions
+and the X protocol.
+The following table lists each Xlib function (in alphabetical order)
+and the corresponding protocol request that it generates.
+</para>
+<table frame='topbot'>
+  <?dbfo keep-together="auto" ?>
+  <title>Protocol requests made by each Xlib function</title>
+  <tgroup cols="2" align='left' colsep='0' rowsep='0'>
+  <colspec colname="col1" colwidth="1.0*"/>
+  <colspec colname="col2" colwidth="1.0*"/>
+    <thead>
+      <row rowsep='1'>
+	<entry>Xlib Function</entry>
+	<entry>Protocol Request</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><xref linkend='XActivateScreenSaver' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ForceScreenSaver</systemitem></entry></row>
+      <row>
+	<entry><xref linkend='XAddHost' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeHosts</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAddHosts' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeHosts</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAddToSaveSet' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeSaveSet</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAllocColor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>AllocColor</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAllocColorCells' xrefstyle='select: title'/></entry>
+	<entry><systemitem>AllocColorCells</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAllocColorPlanes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>AllocColorPlanes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAllocNamedColor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>AllocNamedColor</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAllowEvents' xrefstyle='select: title'/></entry>
+	<entry><systemitem>AllowEvents</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAutoRepeatOff' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeKeyboardControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XAutoRepeatOn' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeKeyboardControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XBell' xrefstyle='select: title'/></entry>
+	<entry><systemitem>Bell</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XChangeActivePointerGrab' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeActivePointerGrab</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XChangeGC' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XChangeKeyboardControl' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeKeyboardControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XChangeKeyboardMapping' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeKeyboardMapping</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XChangePointerControl' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangePointerControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XChangeProperty' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XChangeSaveSet' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeSaveSet</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XChangeWindowAttributes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCirculateSubwindows' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CirculateWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCirculateSubwindowsDown' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CirculateWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCirculateSubwindowsUp' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CirculateWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XClearArea' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ClearArea</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XClearWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ClearArea</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XConfigureWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XConvertSelection' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConvertSelection</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCopyArea' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CopyArea</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCopyColormapAndFree' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CopyColormapAndFree</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCopyGC' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CopyGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCopyPlane' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CopyPlane</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="3"><xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateGC</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>CreatePixmap</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>FreeGC</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>PutImage</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCreateColormap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateColormap</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCreateFontCursor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateGlyphCursor</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCreateGC' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCreateGlyphCursor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateGlyphCursor</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCreatePixmap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreatePixmap</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCreatePixmapCursor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateCursor</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="3"><function>XCreatePixmapFromData</function></entry>
+	<entry><systemitem>CreateGC</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>CreatePixmap</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>FreeGC</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>PutImage</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCreateSimpleWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XCreateWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDefineCursor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDeleteProperty' xrefstyle='select: title'/></entry>
+	<entry><systemitem>DeleteProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDestroySubwindows' xrefstyle='select: title'/></entry>
+	<entry><systemitem>DestroySubwindows</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDestroyWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>DestroyWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDisableAccessControl' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetAccessControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawArc' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyArc</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawArcs' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyArc</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawImageString' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ImageText8</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawImageString16' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ImageText16</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawLine' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolySegment</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawLines' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyLine</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawPoint' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyPoint</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawPoints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyPoint</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawRectangle' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyRectangle</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawRectangles' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyRectangle</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawSegments' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolySegment</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawString' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyText8</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawString16' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyText16</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawText' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyText8</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XDrawText16' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyText16</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XEnableAccessControl' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetAccessControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFetchBytes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFetchName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFillArc' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyFillArc</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFillArcs' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyFillArc</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFillPolygon' xrefstyle='select: title'/></entry>
+	<entry><systemitem>FillPoly</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFillRectangle' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyFillRectangle</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFillRectangles' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PolyFillRectangle</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XForceScreenSaver' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ForceScreenSaver</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFreeColormap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>FreeColormap</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFreeColors' xrefstyle='select: title'/></entry>
+	<entry><systemitem>FreeColors</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFreeCursor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>FreeCursor</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFreeFont' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CloseFont</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFreeGC' xrefstyle='select: title'/></entry>
+	<entry><systemitem>FreeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XFreePixmap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>FreePixmap</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetAtomName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetAtomName</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetClassHint' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetFontPath' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetFontPath</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetGeometry' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetGeometry</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetIconName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetIconSizes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetImage' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetImage</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetInputFocus' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetInputFocus</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetKeyboardControl' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetKeyboardControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetKeyboardMapping' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetKeyboardMapping</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetModifierMapping' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetModifierMapping</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetMotionEvents' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetMotionEvents</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetNormalHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetPointerControl' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetPointerControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetPointerMapping' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetPointerMapping</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetRGBColormaps' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetScreenSaver' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetScreenSaver</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetSelectionOwner' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetSelectionOwner</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetSizeHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetTextProperty' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetTransientForHint' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetWMClientMachine' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XGetWMColormapWindows' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>InternAtom</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetWMHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetWMIconName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetWMName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetWMNormalHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XGetWMProtocols' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>InternAtom</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetWMSizeHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XGetWindowAttributes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>GetGeometry</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetWindowProperty' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGetZoomHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGrabButton' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GrabButton</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGrabKey' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GrabKey</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGrabKeyboard' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GrabKeyboard</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGrabPointer' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GrabPointer</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XGrabServer' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GrabServer</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XIconifyWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>InternAtom</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>SendEvent</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XInitExtension' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryExtension</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XInstallColormap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>InstallColormap</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XInternAtom' xrefstyle='select: title'/></entry>
+	<entry><systemitem>InternAtom</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XKillClient' xrefstyle='select: title'/></entry>
+	<entry><systemitem>KillClient</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XListExtensions' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ListExtensions</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XListFonts' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ListFonts</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XListFontsWithInfo' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ListFontsWithInfo</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XListHosts' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ListHosts</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XListInstalledColormaps' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ListInstalledColormaps</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XListProperties' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ListProperties</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XLoadFont' xrefstyle='select: title'/></entry>
+	<entry><systemitem>OpenFont</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XLoadQueryFont' xrefstyle='select: title'/></entry>
+	<entry><systemitem>OpenFont</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>QueryFont</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XLookupColor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>LookupColor</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XLowerWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XMapRaised' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>MapWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XMapSubwindows' xrefstyle='select: title'/></entry>
+	<entry><systemitem>MapSubwindows</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XMapWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>MapWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XMoveResizeWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XMoveWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XNoOp' xrefstyle='select: title'/></entry>
+	<entry><systemitem>NoOperation</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XOpenDisplay' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XParseColor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>LookupColor</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XPutImage' xrefstyle='select: title'/></entry>
+	<entry><systemitem>PutImage</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryBestCursor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryBestSize</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryBestSize' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryBestSize</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryBestStipple' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryBestSize</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryBestTile' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryBestSize</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryColor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryColors</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryColors' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryColors</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryExtension' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryExtension</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryFont' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryFont</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryKeymap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryKeymap</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryPointer' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryPointer</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryTextExtents' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryTextExtents</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryTextExtents16' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryTextExtents</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XQueryTree' xrefstyle='select: title'/></entry>
+	<entry><systemitem>QueryTree</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XRaiseWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="3"><xref linkend='XReadBitmapFile' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CreateGC</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>CreatePixmap</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>FreeGC</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>PutImage</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XRecolorCursor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>RecolorCursor</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XReconfigureWMWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>SendEvent</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XRemoveFromSaveSet' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeSaveSet</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XRemoveHost' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeHosts</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XRemoveHosts' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeHosts</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XReparentWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ReparentWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XResetScreenSaver' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ForceScreenSaver</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XResizeWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XRestackWindows' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XRotateBuffers' xrefstyle='select: title'/></entry>
+	<entry><systemitem>RotateProperties</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XRotateWindowProperties' xrefstyle='select: title'/></entry>
+	<entry><systemitem>RotateProperties</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSelectInput' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSendEvent' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SendEvent</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetAccessControl' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetAccessControl</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetArcMode' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetBackground' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetClassHint' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetClipMask' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetClipOrigin' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetClipRectangles' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetClipRectangles</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetCloseDownMode' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetCloseDownMode</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetCommand' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetDashes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetDashes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetFillRule' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetFillStyle' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetFont' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetFontPath' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetFontPath</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetForeground' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetFunction' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetGraphicsExposures' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetIconName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetIconSizes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetInputFocus' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetInputFocus</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetLineAttributes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetModifierMapping' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetModifierMapping</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetNormalHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetPlaneMask' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetPointerMapping' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetPointerMapping</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetRGBColormaps' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetScreenSaver' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetScreenSaver</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetSelectionOwner' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SetSelectionOwner</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetSizeHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetStandardProperties' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetState' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetStipple' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetSubwindowMode' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetTextProperty' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetTile' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetTransientForHint' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetTSOrigin' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeGC</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWMClientMachine' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XSetWMColormapWindows' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>InternAtom</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWMHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWMIconName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWMName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWMNormalHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWMProperties' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XSetWMProtocols' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>InternAtom</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWMSizeHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWindowBackground' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWindowBackgroundPixmap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWindowBorder' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWindowBorderPixmap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWindowBorderWidth' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ConfigureWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetWindowColormap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSetZoomHints' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XStoreBuffer' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XStoreBytes' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XStoreColor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>StoreColors</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XStoreColors' xrefstyle='select: title'/></entry>
+	<entry><systemitem>StoreColors</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XStoreName' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeProperty</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XStoreNamedColor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>StoreNamedColor</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XSync' xrefstyle='select: title'/></entry>
+	<entry><systemitem>GetInputFocus</systemitem></entry>
+      </row>
+      <row>
+	<entry><function>XSynchronize</function></entry>
+	<entry><systemitem>GetInputFocus</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XTranslateCoordinates' xrefstyle='select: title'/></entry>
+	<entry><systemitem>TranslateCoordinates</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUndefineCursor' xrefstyle='select: title'/></entry>
+	<entry><systemitem>ChangeWindowAttributes</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUngrabButton' xrefstyle='select: title'/></entry>
+	<entry><systemitem>UngrabButton</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUngrabKey' xrefstyle='select: title'/></entry>
+	<entry><systemitem>UngrabKey</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUngrabKeyboard' xrefstyle='select: title'/></entry>
+	<entry><systemitem>UngrabKeyboard</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUngrabPointer' xrefstyle='select: title'/></entry>
+	<entry><systemitem>UngrabPointer</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUngrabServer' xrefstyle='select: title'/></entry>
+	<entry><systemitem>UngrabServer</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUninstallColormap' xrefstyle='select: title'/></entry>
+	<entry><systemitem>UninstallColormap</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUnloadFont' xrefstyle='select: title'/></entry>
+	<entry><systemitem>CloseFont</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUnmapSubwindows' xrefstyle='select: title'/></entry>
+	<entry><systemitem>UnmapSubwindows</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XUnmapWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>UnmapWindow</systemitem></entry>
+      </row>
+      <row>
+	<entry><xref linkend='XWarpPointer' xrefstyle='select: title'/></entry>
+	<entry><systemitem>WarpPointer</systemitem></entry>
+      </row>
+      <row>
+	<entry morerows="1"><xref linkend='XWithdrawWindow' xrefstyle='select: title'/></entry>
+	<entry><systemitem>SendEvent</systemitem></entry>
+      </row>
+      <row>
+
+	<entry><systemitem>UnmapWindow</systemitem></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+<para>
+The following table lists each X protocol request (in alphabetical
+order) and the Xlib functions that reference it.
+</para>
+<table frame='topbot'>
+  <?dbfo keep-together="auto" ?>
+  <title>Xlib functions which use each Protocol Request</title>
+  <tgroup cols="2" align='left' colsep='0' rowsep='0'>
+  <colspec colname="col1" colwidth="1.0*"/>
+  <colspec colname="col2" colwidth="1.0*"/>
+    <thead>
+      <row rowsep='1'>
+	<entry>Protocol Request</entry>
+	<entry>Xlib Function</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><systemitem>AllocColor</systemitem></entry>
+	<entry><xref linkend='XAllocColor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>AllocColorCells</systemitem></entry>
+	<entry><xref linkend='XAllocColorCells' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>AllocColorPlanes</systemitem></entry>
+	<entry><xref linkend='XAllocColorPlanes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>AllocNamedColor</systemitem></entry>
+	<entry><xref linkend='XAllocNamedColor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>AllowEvents</systemitem></entry>
+	<entry><xref linkend='XAllowEvents' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>Bell</systemitem></entry>
+	<entry><xref linkend='XBell' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ChangeActivePointerGrab</systemitem></entry>
+	<entry><xref linkend='XChangeActivePointerGrab' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="17"><systemitem>ChangeGC</systemitem></entry>
+	<entry><xref linkend='XChangeGC' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetArcMode' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetBackground' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetClipMask' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetClipOrigin' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetFillRule' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetFillStyle' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetFont' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetForeground' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetFunction' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetGraphicsExposures' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetLineAttributes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetPlaneMask' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetState' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetStipple' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetSubwindowMode' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetTile' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetTSOrigin' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="3"><systemitem>ChangeHosts</systemitem></entry>
+	<entry><xref linkend='XAddHost' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XAddHosts' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XRemoveHost' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XRemoveHosts' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="2"><systemitem>ChangeKeyboardControl</systemitem></entry>
+	<entry><xref linkend='XAutoRepeatOff' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XAutoRepeatOn' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XChangeKeyboardControl' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ChangeKeyboardMapping</systemitem></entry>
+	<entry><xref linkend='XChangeKeyboardMapping' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ChangePointerControl</systemitem></entry>
+	<entry><xref linkend='XChangePointerControl' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="23"><systemitem>ChangeProperty</systemitem></entry>
+	<entry><xref linkend='XChangeProperty' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetClassHint' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetCommand' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetIconName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetIconSizes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetNormalHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetRGBColormaps' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetSizeHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetStandardProperties' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetTextProperty' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetTransientForHint' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMClientMachine' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMColormapWindows' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMIconName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMNormalHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMProperties' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMProtocols' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMSizeHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetZoomHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XStoreBuffer' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XStoreBytes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XStoreName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="2"><systemitem>ChangeSaveSet</systemitem></entry>
+	<entry><xref linkend='XAddToSaveSet' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XChangeSaveSet' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XRemoveFromSaveSet' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="8"><systemitem>ChangeWindowAttributes</systemitem></entry>
+	<entry><xref linkend='XChangeWindowAttributes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XDefineCursor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSelectInput' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWindowBackground' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWindowBackgroundPixmap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWindowBorder' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWindowBorderPixmap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWindowColormap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XUndefineCursor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="2"><systemitem>CirculateWindow</systemitem></entry>
+	<entry><xref linkend='XCirculateSubwindowsDown' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XCirculateSubwindowsUp' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XCirculateSubwindows' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>ClearArea</systemitem></entry>
+	<entry><xref linkend='XClearArea' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XClearWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>CloseFont</systemitem></entry>
+	<entry><xref linkend='XFreeFont' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XUnloadFont' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="9"><systemitem>ConfigureWindow</systemitem></entry>
+	<entry><xref linkend='XConfigureWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XLowerWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XMapRaised' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XMoveResizeWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XMoveWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XRaiseWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XReconfigureWMWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XResizeWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XRestackWindows' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWindowBorderWidth' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ConvertSelection</systemitem></entry>
+	<entry><xref linkend='XConvertSelection' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>CopyArea</systemitem></entry>
+	<entry><xref linkend='XCopyArea' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>CopyColormapAndFree</systemitem></entry>
+	<entry><xref linkend='XCopyColormapAndFree' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>CopyGC</systemitem></entry>
+	<entry><xref linkend='XCopyGC' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>CopyPlane</systemitem></entry>
+	<entry><xref linkend='XCopyPlane' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>CreateColormap</systemitem></entry>
+	<entry><xref linkend='XCreateColormap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>CreateCursor</systemitem></entry>
+	<entry><xref linkend='XCreatePixmapCursor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="4"><systemitem>CreateGC</systemitem></entry>
+	<entry><xref linkend='XCreateGC' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><function>XCreatePixmapFromData</function></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XOpenDisplay' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XReadBitmapFile' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>CreateGlyphCursor</systemitem></entry>
+	<entry><xref linkend='XCreateFontCursor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XCreateGlyphCursor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="3"><systemitem>CreatePixmap</systemitem></entry>
+	<entry><xref linkend='XCreatePixmap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><function>XCreatePixmapFromData</function></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XReadBitmapFile' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>CreateWindow</systemitem></entry>
+	<entry><xref linkend='XCreateSimpleWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XCreateWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>DeleteProperty</systemitem></entry>
+	<entry><xref linkend='XDeleteProperty' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>DestroySubwindows</systemitem></entry>
+	<entry><xref linkend='XDestroySubwindows' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>DestroyWindow</systemitem></entry>
+	<entry><xref linkend='XDestroyWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>FillPoly</systemitem></entry>
+	<entry><xref linkend='XFillPolygon' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="2"><systemitem>ForceScreenSaver</systemitem></entry>
+	<entry><xref linkend='XActivateScreenSaver' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XForceScreenSaver' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XResetScreenSaver' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>FreeColormap</systemitem></entry>
+	<entry><xref linkend='XFreeColormap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>FreeColors</systemitem></entry>
+	<entry><xref linkend='XFreeColors' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>FreeCursor</systemitem></entry>
+	<entry><xref linkend='XFreeCursor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="3"><systemitem>FreeGC</systemitem></entry>
+	<entry><xref linkend='XFreeGC' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><function>XCreatePixmapFromData</function></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XReadBitmapFile' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>FreePixmap</systemitem></entry>
+	<entry><xref linkend='XFreePixmap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetAtomName</systemitem></entry>
+	<entry><xref linkend='XGetAtomName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetFontPath</systemitem></entry>
+	<entry><xref linkend='XGetFontPath' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>GetGeometry</systemitem></entry>
+	<entry><xref linkend='XGetGeometry' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWindowAttributes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetImage</systemitem></entry>
+	<entry><xref linkend='XGetImage' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="2"><systemitem>GetInputFocus</systemitem></entry>
+	<entry><xref linkend='XGetInputFocus' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSync' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><function>XSynchronize</function></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetKeyboardControl</systemitem></entry>
+	<entry><xref linkend='XGetKeyboardControl' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetKeyboardMapping</systemitem></entry>
+	<entry><xref linkend='XGetKeyboardMapping' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetModifierMapping</systemitem></entry>
+	<entry><xref linkend='XGetModifierMapping' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetMotionEvents</systemitem></entry>
+	<entry><xref linkend='XGetMotionEvents' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetPointerControl</systemitem></entry>
+	<entry><xref linkend='XGetPointerControl' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetPointerMapping</systemitem></entry>
+	<entry><xref linkend='XGetPointerMapping' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="19"><systemitem>GetProperty</systemitem></entry>
+	<entry><xref linkend='XFetchBytes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XFetchName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetClassHint' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetIconName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetIconSizes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetNormalHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetRGBColormaps' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetSizeHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetTextProperty' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetTransientForHint' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMClientMachine' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMColormapWindows' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMIconName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMName' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMNormalHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMProtocols' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMSizeHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWindowProperty' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetZoomHints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetSelectionOwner</systemitem></entry>
+	<entry><xref linkend='XGetSelectionOwner' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GetWindowAttributes</systemitem></entry>
+	<entry><xref linkend='XGetWindowAttributes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GrabButton</systemitem></entry>
+	<entry><xref linkend='XGrabButton' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GrabKey</systemitem></entry>
+	<entry><xref linkend='XGrabKey' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GrabKeyboard</systemitem></entry>
+	<entry><xref linkend='XGrabKeyboard' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GrabPointer</systemitem></entry>
+	<entry><xref linkend='XGrabPointer' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>GrabServer</systemitem></entry>
+	<entry><xref linkend='XGrabServer' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ImageText8</systemitem></entry>
+	<entry><xref linkend='XDrawImageString' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ImageText16</systemitem></entry>
+	<entry><xref linkend='XDrawImageString16' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>InstallColormap</systemitem></entry>
+	<entry><xref linkend='XInstallColormap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="5"><systemitem>InternAtom</systemitem></entry>
+	<entry><xref linkend='XGetWMColormapWindows' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XGetWMProtocols' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XIconifyWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XInternAtom' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMColormapWindows' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetWMProtocols' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>KillClient</systemitem></entry>
+	<entry><xref linkend='XKillClient' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ListExtensions</systemitem></entry>
+	<entry><xref linkend='XListExtensions' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ListFonts</systemitem></entry>
+	<entry><xref linkend='XListFonts' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ListFontsWithInfo</systemitem></entry>
+	<entry><xref linkend='XListFontsWithInfo' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ListHosts</systemitem></entry>
+	<entry><xref linkend='XListHosts' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ListInstalledColormaps</systemitem></entry>
+	<entry><xref linkend='XListInstalledColormaps' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ListProperties</systemitem></entry>
+	<entry><xref linkend='XListProperties' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>LookupColor</systemitem></entry>
+	<entry><xref linkend='XLookupColor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XParseColor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>MapSubwindows</systemitem></entry>
+	<entry><xref linkend='XMapSubwindows' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>MapWindow</systemitem></entry>
+	<entry><xref linkend='XMapRaised' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XMapWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>NoOperation</systemitem></entry>
+	<entry><xref linkend='XNoOp' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>OpenFont</systemitem></entry>
+	<entry><xref linkend='XLoadFont' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XLoadQueryFont' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>PolyArc</systemitem></entry>
+	<entry><xref linkend='XDrawArc' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XDrawArcs' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>PolyFillArc</systemitem></entry>
+	<entry><xref linkend='XFillArc' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XFillArcs' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>PolyFillRectangle</systemitem></entry>
+	<entry><xref linkend='XFillRectangle' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XFillRectangles' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>PolyLine</systemitem></entry>
+	<entry><xref linkend='XDrawLines' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>PolyPoint</systemitem></entry>
+	<entry><xref linkend='XDrawPoint' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XDrawPoints' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>PolyRectangle</systemitem></entry>
+	<entry><xref linkend='XDrawRectangle' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XDrawRectangles' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>PolySegment</systemitem></entry>
+	<entry><xref linkend='XDrawLine' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XDrawSegments' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>PolyText8</systemitem></entry>
+	<entry><xref linkend='XDrawString' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XDrawText' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>PolyText16</systemitem></entry>
+	<entry><xref linkend='XDrawString16' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XDrawText16' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="3"><systemitem>PutImage</systemitem></entry>
+	<entry><xref linkend='XPutImage' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XCreateBitmapFromData' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><function>XCreatePixmapFromData</function></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XReadBitmapFile' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="3"><systemitem>QueryBestSize</systemitem></entry>
+	<entry><xref linkend='XQueryBestCursor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XQueryBestSize' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XQueryBestStipple' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XQueryBestTile' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>QueryColors</systemitem></entry>
+	<entry><xref linkend='XQueryColor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XQueryColors' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>QueryExtension</systemitem></entry>
+	<entry><xref linkend='XInitExtension' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XQueryExtension' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>QueryFont</systemitem></entry>
+	<entry><xref linkend='XLoadQueryFont' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XQueryFont' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>QueryKeymap</systemitem></entry>
+	<entry><xref linkend='XQueryKeymap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>QueryPointer</systemitem></entry>
+	<entry><xref linkend='XQueryPointer' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>QueryTextExtents</systemitem></entry>
+	<entry><xref linkend='XQueryTextExtents' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XQueryTextExtents16' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>QueryTree</systemitem></entry>
+	<entry><xref linkend='XQueryTree' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>RecolorCursor</systemitem></entry>
+	<entry><xref linkend='XRecolorCursor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>ReparentWindow</systemitem></entry>
+	<entry><xref linkend='XReparentWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>RotateProperties</systemitem></entry>
+	<entry><xref linkend='XRotateBuffers' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XRotateWindowProperties' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="3"><systemitem>SendEvent</systemitem></entry>
+	<entry><xref linkend='XIconifyWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XReconfigureWMWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSendEvent' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XWithdrawWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="2"><systemitem>SetAccessControl</systemitem></entry>
+	<entry><xref linkend='XDisableAccessControl' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XEnableAccessControl' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetAccessControl' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>SetClipRectangles</systemitem></entry>
+	<entry><xref linkend='XSetClipRectangles' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>SetCloseDownMode</systemitem></entry>
+	<entry><xref linkend='XSetCloseDownMode' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>SetDashes</systemitem></entry>
+	<entry><xref linkend='XSetDashes' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>SetFontPath</systemitem></entry>
+	<entry><xref linkend='XSetFontPath' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>SetInputFocus</systemitem></entry>
+	<entry><xref linkend='XSetInputFocus' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>SetModifierMapping</systemitem></entry>
+	<entry><xref linkend='XSetModifierMapping' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>SetPointerMapping</systemitem></entry>
+	<entry><xref linkend='XSetPointerMapping' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>SetScreenSaver</systemitem></entry>
+	<entry><xref linkend='XGetScreenSaver' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XSetScreenSaver' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>SetSelectionOwner</systemitem></entry>
+	<entry><xref linkend='XSetSelectionOwner' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>StoreColors</systemitem></entry>
+	<entry><xref linkend='XStoreColor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XStoreColors' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>StoreNamedColor</systemitem></entry>
+	<entry><xref linkend='XStoreNamedColor' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>TranslateCoordinates</systemitem></entry>
+	<entry><xref linkend='XTranslateCoordinates' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>UngrabButton</systemitem></entry>
+	<entry><xref linkend='XUngrabButton' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>UngrabKey</systemitem></entry>
+	<entry><xref linkend='XUngrabKey' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>UngrabKeyboard</systemitem></entry>
+	<entry><xref linkend='XUngrabKeyboard' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>UngrabPointer</systemitem></entry>
+	<entry><xref linkend='XUngrabPointer' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>UngrabServer</systemitem></entry>
+	<entry><xref linkend='XUngrabServer' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>UninstallColormap</systemitem></entry>
+	<entry><xref linkend='XUninstallColormap' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>UnmapSubwindows</systemitem></entry>
+	<entry><function>XUnmapSubWindows</function></entry>
+      </row>
+      <row>
+	<entry morerows="1"><systemitem>UnmapWindow</systemitem></entry>
+	<entry><xref linkend='XUnmapWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+
+	<entry><xref linkend='XWithdrawWindow' xrefstyle='select: title'/></entry>
+      </row>
+      <row>
+	<entry><systemitem>WarpPointer</systemitem></entry>
+	<entry><xref linkend='XWarpPointer' xrefstyle='select: title'/></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</appendix>

@@ -1,0 +1,143 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XAddConnectionWatch __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XAddConnectionWatch, XRemoveConnectionWatch, XProcessInternalConnection, XInternalConnectionNumbers \- handle Xlib internal connections
+.SH SYNTAX
+.HP
+typedef void (*XConnectionWatchProc)\^(\^Display *\fIdisplay\fP\^, XPointer
+\fIclient_data\fP\^, int \fIfd\fP\^, Bool \fIopening\fP\^, XPointer
+*\fIwatch_data\fP\^);
+.HP
+Status XAddConnectionWatch\^(\^Display *\fIdisplay\fP\^, XConnectionWatchProc
+\fIprocedure\fP\^, XPointer \fIclient_data\fP\^);
+.HP
+void XRemoveConnectionWatch\^(\^Display *\fIdisplay\fP\^, XConnectionWatchProc
+\fIprocedure\fP\^, XPointer \fIclient_data\fP\^);
+.HP
+void XProcessInternalConnection\^(\^Display *\fIdisplay\fP\^, int \fIfd\fP\^);
+.HP
+Status XInternalConnectionNumbers\^(\^Display *\fIdisplay\fP\^, int
+**\fIfd_return\fP\^, int *\fIcount_return\fP\^);
+.SH ARGUMENTS
+.IP \fIclient_data\fP 1i
+Specifies the additional client data.
+.IP \fIcount_return\fP 1i
+Returns the number of file descriptors.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIfd\fP 1i
+Specifies the file descriptor.
+.IP \fIfd_return\fP 1i
+Returns the file descriptors.
+.IP \fIprocedure\fP 1i
+Specifies the procedure to be called.
+.SH DESCRIPTION
+The
+.B XAddConnectionWatch
+function registers a procedure to be called each time Xlib opens or closes an
+internal connection for the specified display.
+The procedure is passed the
+display, the specified client_data, the file descriptor for the connection,
+a Boolean indicating whether the connection is being opened or closed, and a
+pointer to a location for private watch data.
+If opening is
+.BR True ,
+the procedure can store a pointer to private data in the location pointed
+to by watch_data;
+when the procedure is later called for this same connection and opening is
+.BR False ,
+the location pointed to by watch_data will hold this same private data pointer.
+.LP
+This function can be called at any time after a display is opened.
+If internal connections already exist, the registered procedure will
+immediately be called for each of them, before
+.B XAddConnectionWatch
+returns.
+.B XAddConnectionWatch
+returns a nonzero status if the procedure is successfully registered;
+otherwise, it returns zero.
+.LP
+The registered procedure should not call any Xlib functions.
+If the procedure directly or indirectly causes the state of internal
+connections or watch procedures to change, the result is not defined.
+If Xlib has been initialized for threads, the procedure is called with
+the display locked and the result of a call by the procedure to any
+Xlib function that locks the display is not defined unless the executing
+thread has externally locked the display using
+.BR XLockDisplay .
+.LP
+The
+.B XRemoveConnectionWatch
+function removes a previously registered connection watch procedure.
+The client_data must match the client_data used when the procedure
+was initially registered.
+
+.LP
+The
+.B XProcessInternalConnection
+function processes input available on an internal connection.
+This function should be called for an internal connection only
+after an operating system facility (for example,
+.B select
+or
+.BR poll )
+has indicated that input is available; otherwise,
+the effect is not defined.
+.LP
+The
+.B XInternalConnectionNumbers
+function returns a list of the file descriptors for all internal
+connections currently open for the specified display.
+When the allocated list is no longer needed,
+free it by using
+.BR XFree .
+This functions returns a nonzero status if the list is successfully allocated;
+otherwise, it returns zero.
+.SH "SEE ALSO"
+\fI\*(xL\fP

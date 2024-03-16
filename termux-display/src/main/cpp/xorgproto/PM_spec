@@ -1,0 +1,153 @@
+			 Proxy Management Protocol
+			     Draft Version 1.0
+			  Ralph Mor, X Consortium
+
+
+The Proxy Management Protocol is an ICE based protocol that provides a way
+for application servers to easily locate proxy services available to them.
+
+Typically, a service called a "proxy manager" is responsible for resolving
+requests for proxy services, starting new proxies when appropriate, and
+keeping track of all of the available proxy services.  The proxy manager
+strives to reuse existing proxies whenever possible.
+
+In order to request a proxy service, the GET_PROXY_ADDR message is sent to
+the proxy manager.  The proxy manager will in turn forward this message to
+a proxy that it thinks can satisfy the request.
+
+GET_PROXY_ADDR
+  proxy-service  : STRING
+  server-address : STRING
+  host-address   : STRING
+  options	 : STRING
+  auth-data-len	 : CARD16
+  auth-name	 : STRING or None
+  auth-data	 : LISTofCARD8 or None
+
+  -->
+
+  status	 : CARD8
+  proxy-address  : STRING
+  failure-reason : STRING
+
+
+proxy-service is the name of the proxy service to be requested, for example
+"LBX".  proxy-service is a case insensitive string.
+
+server-address is the network address of the target server.  The format of
+the address is specific to proxy-service.  For example, for a proxy service
+of "LBX", the address would be an X display address (e.g, "wkstn.x.org:0").
+
+host-address is the network address of the host on which the proxied
+application will run.  This information might be used by the proxy to
+restrict access to a specific host.
+
+options are proxy specific options that will be passed to the proxy.  The
+details of these options are not specified here.  Their syntax and
+semantics are defined by each proxy service.
+
+If auth-data-len is nonzero, then auth-name and auth-data contain
+authentication or authorization information that should be passed to
+the proxy.  The proxy will typically use this to authenticate and
+authorize itself to the target server.  The details of how the
+auth fields are used are specific to each proxy service.
+
+
+After sending GET_PROXY_ADDR the proxy manager expects a reply from
+the proxy. The status field of the reply indicates if the request can
+be satisfied.
+
+If status is Success, proxy-address will contain the network address of the
+proxy willing to handle this request.  The format of the proxy address is
+specific to the proxy service being used.  For example, for a proxy service
+of "LBX", the proxy address would be the X display address of the proxy
+(e.g, "gateway.x.org:63").  The proxy manager will forward the successful
+GET_PROXY_ADDR reply to whomever requested the proxy service.
+
+If status is Unable, the proxy is not able to satisfy the request but
+it believes some other proxy might be able to do so.  Proxy-address is
+the empty string and failure-reason indicates the reason for failure.
+The proxy manager may choose to forward the original GET_PROXY_ADDR to
+another already running proxy, or it may choose to start up a new
+proxy.  In the event that the proxy manager can not find or start a
+proxy, it will send a GET_PROXY_ADDR reply (with status Failure and an
+appropriate failure-reason) to whomever requested the proxy service.
+
+If status is Failure, the proxy is not able to satisfy the request and
+in addition is informing the requester that the request is invalid in
+some way and should not be retried.
+
+
+If the proxy manager starts up a new proxy, the proxy manager will
+need an indication from the proxy that it is ready to accept
+requests.  The proxy is required to send a START_PROXY message to the
+proxy manager to identify itself and signal its readiness to receive
+requests.
+
+START_PROXY
+  proxy-service  : STRING   (name of proxy service, e.g. "LBX")
+
+
+When the proxy manager receives the START_PROXY message from the
+proxy it checks that the proxy-service is the one that it's expecting.
+If the proxy-service is incorrect, an IceBadValue error will be sent
+to the proxy.  Otherwise, the proxy manager will forward the original
+GET_PROXY_ADDR request to the proxy and the proxy will respond to the
+GET_PROXY_ADDR request in the same way as discussed above.
+
+
+Protocol
+--------
+
+ICE protocol name is "PROXY_MANAGEMENT".
+The major opcode is assigned at run-time by ICE.
+
+
+Types
+-----
+
+STRING
+  2  CARD16	  length
+  n  LISTofCARD8  the string
+  p		  p = pad(2+n,8)
+
+
+
+Encoding
+--------
+
+GET_PROXY_ADDR
+
+  1  ?			PROXY_MANAGEMENT
+  1  1			opcode
+  2  n			auth-data-len (in bytes)
+  4  (a+b+c+d+e+n+p)/8	length of remaining data in 8-byte units
+  a  STRING		proxy-service
+  b  STRING		server-address
+  c  STRING		host-address
+  d  STRING		options
+  e  STRING		auth-name (if auth-data-len > 0)
+  n  LISTofCARD8	auth-data (if auth-data-len > 0)
+  p			unused, p=pad(n,8)
+
+GET_PROXY_ADDR_REPLY
+
+  1  ?			PROXY_MANAGEMENT
+  1  2			opcode
+  1  CARD8		status
+                          0	Unable
+			  1	Success
+			  2	Failure
+  1			unused
+  4  (a+b)/8		length of remaining data in 8-byte units
+  a  STRING		proxy-address
+  b  STRING		failure-reason
+
+
+START_PROXY
+
+  1  ?			PROXY_MANAGEMENT
+  1  3			opcode
+  2			unused
+  4  a/8		length of remaining data in 8-byte units
+  a  STRING		proxy-service

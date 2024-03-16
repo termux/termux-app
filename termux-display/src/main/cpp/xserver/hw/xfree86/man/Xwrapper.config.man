@@ -1,0 +1,1 @@
+.so man@appmansuffix@/Xorg.wrap.@appmansuffix@

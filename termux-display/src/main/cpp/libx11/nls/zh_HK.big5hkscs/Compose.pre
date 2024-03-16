@@ -1,0 +1,13 @@
+XCOMM
+XCOMM zh_HK.big5hkscs Compose Sequence
+XCOMM
+XCOMM Sequence Definition
+XCOMM
+XCOMM This file currently has no entries.  It appears that a compose file (even
+XCOMM just an empty one) is required for the appropriate keysyms to work for
+XCOMM this encoding.
+XCOMM
+XCOMM <Multi_key> Means <Compose>
+XCOMM Special Character
+
+XCOMM End of Sequence Definition

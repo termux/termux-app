@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This app should not be installable -->
+<manifest android:sharedUserId="android.uid.system"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Data_Structures'>
+<title>Data Structures</title>
+
+<para>
+An Xkb keyboard description consists of a variety of data structures, each of
+which describes some aspect of the keyboard. Although each data structure has
+its own peculiarities, there are a number of features common to nearly all Xkb
+structures. This chapter describes these common features and techniques for
+manipulating them.
+</para>
+
+
+<para>
+Many Xkb data structures are interdependent; changing a field in one might
+require changes to others. As an additional complication, some Xkb library
+functions allocate related components as a group to reduce fragmentation and
+allocator overhead. In these cases, simply allocating and freeing fields of Xkb
+structures might corrupt program memory. Creating and destroying such
+structures or keeping them properly synchronized during editing is complicated
+and error prone.
+</para>
+
+
+<para>
+Xkb provides functions and macros to allocate and free all major data
+structures. You should use them instead of allocating and freeing the
+structures yourself.
+</para>
+
+<sect1 id='Allocating_Xkb_Data_Structures'>
+<title>Allocating Xkb Data Structures</title>
+
+<para>
+Xkb provides functions, known as allocators, to create and initialize Xkb data
+structures. In most situations, the Xkb functions that read a keyboard
+description from the server call these allocators automatically. As a result,
+you will seldom have to directly allocate or initialize Xkb data structures.
+</para>
+
+
+<para>
+However, if you need to enlarge an existing structure or construct a keyboard
+definition from scratch, you may need to allocate and initialize Xkb data
+structures directly. Each major Xkb data structure has its own unique
+allocator. The allocator functions share common features: allocator functions
+for structures with optional components take as an input argument a mask of
+subcomponents to be allocated. Allocators for data structures containing
+variable-length data take an argument specifying the initial length of the data.
+</para>
+
+
+<para>
+You may call an allocator to change the size of the space allocated for
+variable-length data. When you call an allocator with an existing data
+structure as a parameter, the allocator does not change the data in any of the
+fields, with one exception: variable-length data might be moved. The allocator
+resizes the allocated memory if the current size is too small. This normally
+involves allocating new memory, copying existing data to the newly allocated
+memory, and freeing the original memory. This possible reallocation is
+important to note because local variables pointing into Xkb data structures
+might be invalidated by calls to allocator functions.
+</para>
+
+</sect1>
+<sect1 id='Adding_Data_and_Editing_Data_Structures'>
+<title>Adding Data and Editing Data Structures</title>
+
+<para>
+You should edit most data structures via the Xkb-supplied helper functions and
+macros, although a few data structures can be edited directly. The helper
+functions and macros make sure everything is initialized and interdependent
+values are properly updated for those Xkb structures that have
+interdependencies. As a general rule, if there is a helper function or macro to
+edit the data structure, use it. For example, increasing the width of a type
+requires you to resize every key that uses that type. This is complicated and
+ugly, which is why there’s an
+<function>XkbResizeKeyType</function>
+function.
+</para>
+
+
+<para>
+Many Xkb data structures have arrays whose size is reported by two fields. The
+first field, whose name is usually prefixed by
+<emphasis>sz_</emphasis>,
+represents the total number of elements that can be stored in the array. The
+second field, whose name is usually prefixed by
+<emphasis>num_</emphasis>,
+specifies the number of elements currently stored there. These arrays
+typically represent data whose total size cannot always be determined when the
+array is created. In these instances, the usual way to allocate space and add
+data is as follows:
+</para>
+
+<itemizedlist>
+  <listitem>
+    <para>
+Call the allocator function with some arbitrary size, as a hint.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+For those arrays that have an
+<function>Xkb...Add...</function>
+function, call it each time you want to add new data to the array. The
+function expands the array if necessary.
+    </para>
+  </listitem>
+</itemizedlist>
+
+<para>
+For example, call:
+
+<programlisting>
+XkbAllocGeomShapes(geom,4)
+</programlisting>
+
+to say <quote>I’ll need space for four new shapes in this geometry.</quote>
+This makes sure that
+<structfield>sz_shapes</structfield>
+&minus;
+<structfield>num_shapes</structfield>
+&gt;= 4, and resizes the shapes array if it isn’t. If this function
+succeeds, you are guaranteed to have space for the number of shapes you need.
+</para>
+
+
+<para>
+When you call an editing function for a structure, you do not need to check for
+space, because the function automatically checks the
+<emphasis>sz_</emphasis>
+and
+<emphasis>num_</emphasis>
+fields of the array, resizes the array if necessary, adds the entry to the
+array, and then updates the
+<emphasis>num_</emphasis>
+field.
+</para>
+
+
+</sect1>
+<sect1 id='Making_Changes_to_the_Servers_Keyboard_Description'>
+<title>Making Changes to the Server’s Keyboard Description</title>
+
+<para>
+In Xkb, as in the core protocol, the client and server have independent copies
+of the data structures that describe the keyboard. The recommended way to
+change some aspect of the keyboard mapping in the X server is to edit a local
+copy of the Xkb keyboard description and then send only the changes to the X
+server. This method helps eliminate the need to transfer the entire keyboard
+description or even an entire data structure for only minor changes.
+</para>
+
+
+<para>
+To help you keep track of the changes you make to a local copy of the keyboard
+description, Xkb provides separate special
+<firstterm>changes</firstterm>
+<indexterm significance="preferred" zone="Making_Changes_to_the_Servers_Keyboard_Description">
+<primary>changes data structures</primary></indexterm>
+data structures for each major Xkb data structure. These data structures do
+not contain the actual changed values: they only indicate the changes that have
+been made to the structures that actually describe the keyboard.
+</para>
+
+
+<para>
+When you wish to change the keyboard description in the server, you first
+modify a local copy of the keyboard description and then flag the modifications
+in an appropriate changes data structure. When you finish editing the local
+copy of the keyboard description, you pass your modified version of the
+keyboard description and the modified changes data structure to an Xkb
+function. This function uses the modified keyboard description and changes
+structure to pass only the changed information to the server. Note that
+modifying the keyboard description but not setting the appropriate flags in the
+changes data structure causes indeterminate behavior.
+</para>
+
+
+</sect1>
+<sect1 id='Tracking_Keyboard_Changes_in_the_Server'>
+<title>Tracking Keyboard Changes in the Server</title>
+
+<para>
+The server reports all changes in its keyboard description to any interested
+clients via special Xkb events. Just as clients use special changes data
+structures to change the keyboard description in the server, the server uses
+special changes data structures to tell a client what changed in the server’s
+keyboard description.
+</para>
+
+
+<para>
+Unlike clients, however, the server does not always pass the new values when it
+reports changes to its copy of the keyboard description. Instead, the server
+only passes a changes data structure when it reports changes to its keyboard
+description. This is done for efficiency reasons — some clients do not always
+need to update their copy of the keyboard description with every report from
+the server.
+</para>
+
+
+<para>
+When your client application receives a report from the server indicating the
+keyboard description has changed, you can determine the set of changes by
+passing the event to an Xkb function that <quote>notes</quote> event
+information in the corresponding changes data structure. These
+<quote>note changes</quote> functions are
+defined for all major Xkb components, and their names have the form
+<function>XkbNote<replaceable>{Component}</replaceable>Changes</function>,
+where
+<replaceable>Component</replaceable>
+is the name of a major Xkb component such as
+<literal>Map</literal>
+or
+<literal>Names</literal>.
+When you want to copy these changes from the server into a local copy of the
+keyboard description, use the corresponding
+<function>XkbGet<replaceable>{Component}</replaceable>Changes</function>
+function,
+passing it the changes structure. The function then retrieves only the changed
+structures from the server and copies the modified pieces into the local
+keyboard description.
+</para>
+
+</sect1>
+<sect1 id='Freeing_Data_Structures'>
+<title>Freeing Data Structures</title>
+
+<para>
+For the same reasons you should not directly use
+<function>malloc</function>
+to allocate Xkb data structures, you should not free Xkb data structures or
+components directly using
+<function>free</function>
+or
+<function>Xfree</function>.
+Xkb provides functions to free the various data structures and their
+components. Always use the free functions supplied by Xkb. There is no
+guarantee that any particular field can be safely freed by
+<function>free</function>
+or
+<function>Xfree</function>.
+</para>
+</sect1>
+</chapter>

@@ -1,0 +1,5 @@
+# user-specific cache/settings files
+*.opensdf
+*.sdf
+*.suo
+*.user

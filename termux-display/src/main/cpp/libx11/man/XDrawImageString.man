@@ -1,0 +1,165 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XDrawImageString __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XDrawImageString, XDrawImageString16 \- draw image text
+.SH SYNTAX
+.HP
+int XDrawImageString\^(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^, GC
+\fIgc\fP\^, int \fIx\fP\^, int \fIy\fP\^, _Xconst char *\fIstring\fP\^, int
+\fIlength\fP\^);
+.HP
+int XDrawImageString16\^(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^, GC
+\fIgc\fP\^, int \fIx\fP\^, int \fIy\fP\^, _Xconst XChar2b *\fIstring\fP\^, int
+\fIlength\fP\^);
+.SH ARGUMENTS
+.IP \fId\fP 1i
+Specifies the drawable.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIgc\fP 1i
+Specifies the GC.
+.IP \fIlength\fP 1i
+Specifies the number of characters in the string argument.
+.IP \fIstring\fP 1i
+Specifies the character string.
+.IP \fIx\fP 1i
+.br
+.ns
+.IP \fIy\fP 1i
+Specify the x and y coordinates, which are relative to the
+origin of the specified drawable
+and define the origin of the first character.
+.SH DESCRIPTION
+The
+.B XDrawImageString16
+function is similar to
+.B XDrawImageString
+except that it uses 2-byte or 16-bit characters.
+Both functions also use both the foreground and background pixels
+of the GC in the destination.
+.LP
+The effect is first to fill a
+destination rectangle with the background pixel defined in the GC and then
+to paint the text with the foreground pixel.
+The upper-left corner of the filled rectangle is at:
+.LP
+.EX
+[x, y \- font-ascent]
+.EE
+.LP
+The width is:
+.LP
+.EX
+overall-width
+.EE
+.LP
+The height is:
+.LP
+.EX
+font-ascent + font-descent
+.EE
+.LP
+The overall-width, font-ascent, and font-descent
+are as would be returned by
+.B XQueryTextExtents
+using gc and string.
+The function and fill-style defined in the GC are ignored for these functions.
+The effective function is
+.BR GXcopy ,
+and the effective fill-style is
+.BR FillSolid .
+.LP
+For fonts defined with 2-byte matrix indexing
+and used with
+.BR XDrawImageString ,
+each byte is used as a byte2 with a byte1 of zero.
+.LP
+Both functions use these GC components:
+plane-mask, foreground, background, font, subwindow-mode, clip-x-origin,
+clip-y-origin, and clip-mask.
+.LP
+.B XDrawImageString
+and
+.B XDrawImageString16
+can generate
+.BR BadDrawable ,
+.BR BadGC ,
+and
+.B BadMatch
+errors.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadDrawable
+A value for a Drawable argument does not name a defined Window or Pixmap.
+.TP 1i
+.B BadGC
+A value for a GContext argument does not name a defined GContext.
+.TP 1i
+.B BadMatch
+An
+.B InputOnly
+window is used as a Drawable.
+.TP 1i
+.B BadMatch
+Some argument or pair of arguments has the correct type and range but fails
+to match in some other way required by the request.
+.SH NOTES
+Unlike XDrawString and XDrawString16,
+these functions send no more than 255 characters at a time to the server.
+When the total number of characters to be sent is larger than 255,
+these functions split the string into chunks up to 255 characters.
+After sending each chunk,
+these functions query the server to determine the actual text extent.
+.SH "SEE ALSO"
+XDrawString(__libmansuffix__),
+XDrawText(__libmansuffix__),
+XLoadFont(__libmansuffix__),
+XTextExtents(__libmansuffix__)
+.br
+\fI\*(xL\fP

@@ -1,0 +1,157 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\" Copyright \(co 2000  The XFree86 Project, Inc.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XmbDrawText __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XmbDrawText, XwcDrawText, Xutf8DrawText \- draw text using multiple font sets
+.SH SYNTAX
+.HP
+void XmbDrawText\^(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^, GC
+\fIgc\fP\^, int \fIx\fP\^, int \fIy\fP\^, XmbTextItem *\fIitems\fP\^, int
+\fInitems\fP\^);
+.HP
+void XwcDrawText\^(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^, GC
+\fIgc\fP\^, int \fIx\fP\^, int \fIy\fP\^, XwcTextItem *\fIitems\fP\^, int
+\fInitems\fP\^);
+.HP
+void Xutf8DrawText\^(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^, GC
+\fIgc\fP\^, int \fIx\fP\^, int \fIy\fP\^, XmbTextItem *\fIitems\fP\^, int \fInitems\fP\^);
+.SH ARGUMENTS
+.IP \fId\fP 1i
+Specifies the drawable.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIgc\fP 1i
+Specifies the GC.
+.IP \fIitems\fP 1i
+Specifies an array of text items.
+.IP \fInitems\fP 1i
+Specifies the number of text items in the array.
+.IP \fIx\fP 1i
+.br
+.ns
+.IP \fIy\fP 1i
+Specify the x and y coordinates.
+.SH DESCRIPTION
+The
+.BR XmbDrawText ,
+.B XwcDrawText
+and
+.B Xutf8DrawText
+functions allow complex spacing and font set shifts between text strings.
+Each text item is processed in turn, with the origin of a text
+element advanced in the primary draw direction by the escapement of the
+previous text item.
+A text item delta specifies an additional escapement of the text item
+drawing origin in the primary draw direction.
+A font_set member other than
+.B None
+in an item causes the font set to be used for this and subsequent text items
+in the text_items list.
+Leading text items with a font_set member set to
+.B None
+will not be drawn.
+.LP
+.BR XmbDrawText ,
+.B XwcDrawText
+and
+.B Xutf8DrawText
+do not perform any context-dependent rendering between text segments.
+Clients may compute the drawing metrics by passing each text segment to
+.BR XmbTextExtents ,
+.BR XwcTextExtents ,
+.B Xutf8TextExtents
+or
+.BR XmbTextPerCharExtents ,
+.BR XwcTextPerCharExtents .
+.BR Xutf8TextPerCharExtents .
+When the
+.B XFontSet
+has missing charsets, each unavailable character is drawn
+with the default string returned by
+.BR XCreateFontSet .
+The behavior for an invalid codepoint is undefined.
+.LP
+The function
+.B Xutf8DrawText
+is an extension introduced by The XFree86 Project, Inc., in their 4.0.2
+release.
+Its presence is
+indicated by the macro
+.BR X_HAVE_UTF8_STRING .
+.SH STRUCTURES
+The
+.B XmbTextItem
+structure contains:
+.EX
+typedef struct {
+        char *chars;    /\&* pointer to string */
+        int nchars;     /\&* number of bytes */
+        int delta;      /\&* pixel delta between strings */
+        XFontSet font_set;      /\&* fonts, None means don't change */
+} XmbTextItem;
+.EE
+The
+.B XwcTextItem
+structure contains:
+.EX
+typedef struct {
+        wchar_t *chars; /\&* pointer to wide char string */
+        int nchars;     /\&* number of wide characters */
+        int delta;      /\&* pixel delta between strings */
+        XFontSet font_set;      /\&* fonts, None means don't change */
+} XwcTextItem;
+.EE
+.SH "SEE ALSO"
+XDrawImageString(__libmansuffix__),
+XDrawString(__libmansuffix__),
+XDrawText(__libmansuffix__),
+XmbDrawImageString(__libmansuffix__),
+XmbDrawString(__libmansuffix__)
+.br
+\fI\*(xL\fP
