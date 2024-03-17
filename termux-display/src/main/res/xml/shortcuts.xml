@@ -10,6 +10,6 @@
         <intent
             android:action="android.intent.action.MAIN"
             android:targetPackage="com.termux.x11"
-            android:targetClass="com.termux.x11.LoriePreferences" />
+            android:targetClass="com.termux.display.LoriePreferences" />
     </shortcut>
 </shortcuts>

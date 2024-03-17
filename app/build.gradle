@@ -214,7 +214,7 @@ def downloadBootstrap(String arch, String expectedChecksum, String version) {
 clean {
     doLast {
         def tree = fileTree(new File(projectDir, 'src/main/cpp'))
-        tree.include 'bootstrap-*.zip'
+        tree.include 'xxxxxxbootstrap-*.zip'
         tree.each { it.delete() }
     }
 }

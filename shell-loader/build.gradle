@@ -17,7 +17,7 @@ keyStore.load(new FileInputStream(signingConfig.storeFile), signingConfig.keyPas
 
 android.defaultConfig.buildConfigField "String", "logTag", "\"Termux:X11 loader\""
 android.defaultConfig.buildConfigField "int", "SIGNATURE", String.valueOf(Arrays.hashCode(keyStore.getCertificate(signingConfig.keyAlias).getEncoded()))
-android.defaultConfig.buildConfigField "String", "CLASS_ID", "\"com.termux.x11.CmdEntryPoint\""
+android.defaultConfig.buildConfigField "String", "CLASS_ID", "\"com.termux.display.CmdEntryPoint\""
 android.defaultConfig.buildConfigField "String", "packageNotInstalledErrorText",
         """\"Termux:X11 application is not found.\" +
         \"You should choose latest successful workflow here: https://github.com/termux/termux-x11/actions/workflows/debug_build.yml\" +

@@ -18,7 +18,7 @@
         android:paddingBottom="0dp"
         android:background="@android:color/black">
 
-        <com.termux.x11.LorieView
+        <com.termux.display.LorieView
             android:id="@+id/lorieView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

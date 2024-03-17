@@ -47,7 +47,6 @@ import android.widget.Toast;
 
 import com.termux.display.utils.KeyInterceptor;
 import com.termux.display.utils.SamsungDexUtils;
-import com.termux.display.utils.TermuxX11ExtraKeys;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -231,7 +230,6 @@ public class LoriePreferences extends AppCompatActivity {
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
                 EditText config = view.findViewById(R.id.extra_keys_config);
                 config.setTypeface(Typeface.MONOSPACE);
-                config.setText(preferences.getString("extra_keys_config", TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS));
                 TextView desc = view.findViewById(R.id.extra_keys_config_description);
                 desc.setLinksClickable(true);
                 desc.setText(R.string.extra_keys_config_desc);
@@ -241,12 +239,7 @@ public class LoriePreferences extends AppCompatActivity {
                         .setTitle("Extra keys config")
                         .setPositiveButton("OK",
                                 (dialog, whichButton) -> {
-                                    String text = config.getText().toString();
-                                    text = text.length() > 0 ? text : TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS;
-                                    preferences
-                                            .edit()
-                                            .putString("extra_keys_config", text)
-                                            .apply();
+
                                 }
                         )
                         .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
@@ -384,7 +377,6 @@ public class LoriePreferences extends AppCompatActivity {
                                         String key = parser.getAttributeValue(namespace, "key");
                                         String value = p.containsKey(key) ? Objects.requireNonNull(p.get(key)).toString() : parser.getAttributeValue(namespace, "defaultValue");
                                         if (key.equals("extra_keys_config") && !p.containsKey(key))
-                                            value = TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS;
                                         if (key.equals("touchMode")) {
                                             String[] options0 = context.getResources().getStringArray(R.array.touchscreenInputModesEntries);
                                             String[] options1 = context.getResources().getStringArray(R.array.touchscreenInputModesValues);
