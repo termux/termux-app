@@ -103,7 +103,7 @@ Java_com_termux_display_CmdEntryPoint_start(JNIEnv *env, unused jclass cls, jobj
             log(ERROR, "Failed to set process affinity: %s", strerror(errno));
     }
 
-    if (getenv("TERMUX_X11_DEBUG") && !fork()) {
+    if (getenv("TERMUX_DISPLAY_DEBUG") && !fork()) {
         // Printing logs of local logcat.
         char pid[32] = {0};
         prctl(PR_SET_PDEATHSIG, SIGTERM);
@@ -341,7 +341,7 @@ JNIEXPORT jobject JNICALL
 Java_com_termux_display_CmdEntryPoint_getLogcatOutput(JNIEnv *env, unused jobject cls) {
     jclass ParcelFileDescriptorClass = (*env)->FindClass(env, "android/os/ParcelFileDescriptor");
     jmethodID adoptFd = (*env)->GetStaticMethodID(env, ParcelFileDescriptorClass, "adoptFd", "(I)Landroid/os/ParcelFileDescriptor;");
-    const char *debug = getenv("TERMUX_X11_DEBUG");
+    const char *debug = getenv("TERMUX_DISPLAY_DEBUG");
     if (debug && !strcmp(debug, "1")) {
         pthread_t t;
         int p[2];
@@ -576,7 +576,7 @@ static void* stderrToLogcatThread(unused void* cookie) {
 
 __attribute__((constructor)) static void init(void) {
     pthread_t t;
-    if (!strcmp("com.termux.x11", __progname))
+    if (!strcmp("com.termux.display", __progname))
         pthread_create(&t, NULL, stderrToLogcatThread, NULL);
 }
 

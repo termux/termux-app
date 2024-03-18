@@ -1,7 +1,7 @@
 //file:noinspection UnnecessaryQualifiedReference, GrDeprecatedAPIUsage
 apply plugin: 'com.android.application'
 
-android.namespace 'com.termux.x11'
+android.namespace 'com.termux.display'
 android.defaultConfig.minSdkVersion 21
 android.compileSdkVersion 28
 android.buildTypes.debug.signingConfig null

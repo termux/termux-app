@@ -15,3 +15,4 @@
 # https://issuetracker.google.com/issues/189001730
 # https://android-review.googlesource.com/c/platform/frameworks/support/+/1757630
 -keep class androidx.window.** { *; }
+-keep class com.termux.display.**{ *; }

@@ -9,7 +9,7 @@
         tools:ignore="UnusedAttribute">
         <intent
             android:action="android.intent.action.MAIN"
-            android:targetPackage="com.termux.x11"
+            android:targetPackage="com.termux.display"
             android:targetClass="com.termux.display.LoriePreferences" />
     </shortcut>
 </shortcuts>

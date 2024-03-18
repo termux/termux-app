@@ -43,6 +43,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_9
         targetCompatibility JavaVersion.VERSION_1_9
     }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging false
+        }
+    }
     buildFeatures.aidl true
     buildFeatures.buildConfig true
 }

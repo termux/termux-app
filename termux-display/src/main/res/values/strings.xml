@@ -1,20 +1,20 @@
 <!DOCTYPE resources [
     <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
     <!ENTITY TERMUX_APP_NAME "Termux">
-    <!ENTITY TERMUX_X11_APP_NAME "Termux:X11">
+    <!ENTITY TERMUX_DISPLAY_APP_NAME "Termux:X11">
     ]>
 <resources>
-    <string name="app_name">&TERMUX_X11_APP_NAME;</string>
-    <string name="plugin_info">&TERMUX_X11_APP_NAME; is a plugin app for the &TERMUX_APP_NAME; app.
-        \n\nCheck &TERMUX_APP_NAME; app github %1$s and &TERMUX_X11_APP_NAME; app github %2$s for more info.</string>
+    <string name="app_name">&TERMUX_DISPLAY_APP_NAME;</string>
+    <string name="plugin_info">&TERMUX_DISPLAY_APP_NAME; is a plugin app for the &TERMUX_APP_NAME; app.
+        \n\nCheck &TERMUX_APP_NAME; app github %1$s and &TERMUX_DISPLAY_APP_NAME; app github %2$s for more info.</string>
 
     <!-- TermuxX11Activity -->
     <string name="msg_storage_permission_not_granted_warning">The storage permission must be granted
-        to &TERMUX_X11_APP_NAME; app to...</string>
+        to &TERMUX_DISPLAY_APP_NAME; app to...</string>
     <string name="action_grant_storage_permission">Grant Storage Permission</string>
 
     <string name="msg_battery_optimization_not_disabled_warning">Android battery optimizations
-        should be disabled for the &TERMUX_X11_APP_NAME; app so that…
+        should be disabled for the &TERMUX_DISPLAY_APP_NAME; app so that…
         Check https://developer.android.com/about/versions/oreo/background for more info and
         https://developer.android.com/guide/components/foreground-services#background-start-restrictions
         for more info.
@@ -25,7 +25,7 @@
     <string name="action_disable_battery_optimizations">Disable Battery Optimizations</string>
 
     <string name="msg_display_over_other_apps_permission_not_granted_warning">The display over other
-        apps permission should be granted to &TERMUX_X11_APP_NAME; app for starting foreground
+        apps permission should be granted to &TERMUX_DISPLAY_APP_NAME; app for starting foreground
         activities from background. Check https://developer.android.com/guide/components/activities/background-starts
         for more info.
     </string>
