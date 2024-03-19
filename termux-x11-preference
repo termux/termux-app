@@ -1,0 +1,51 @@
+#!/data/data/com.termux/files/usr/bin/bash
+COMMAND=("am" "broadcast" "-a" "com.termux.x11.CHANGE_PREFERENCE" "-p" "com.termux.x11")
+help() {
+  echo "$0 {list} {key:value}..."
+  exit 1
+}
+
+list() {
+  output="$("${COMMAND[@]}" -e list null 2>&1)"
+  result=$(sed -n '/result=[0-9]*/{s/.*result=\([0-9]*\).*/\1/p;q;}' <<< "$output")
+  if [[ "$result" == "0" ]]; then
+    echo "Something went wrong."
+    exit 1
+  fi
+  if [[ "$result" == "2" ]] || [[ "$result" == "4" ]]; then
+    echo "$(echo "$output" | sed -z 's/.*data="\([^"]*\)*/\1/' | sed '${s/"$//}')"
+    exit 0
+  fi
+  echo "list: Unexpected result $result"
+  echo "$output"
+  exit 1
+}
+
+if [ $# -eq 0 ]; then
+  help
+fi
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    list) list;;
+    *:*) COMMAND+=("-e" "${1%%:*}" "${1#*:}");;
+    *) echo "Unrecognised option $1"; help
+  esac
+  shift
+done
+
+output="$("${COMMAND[@]}")"
+result=$(sed -n '/result=[0-9]*/{s/.*result=\([0-9]*\).*/\1/p;q;}' <<< "$output")
+if [[ "$result" == "0" ]]; then
+  echo "Something went wrong."
+  exit 1
+fi
+
+if [[ "$result" == "2" ]] || [[ "$result" == "4" ]]; then
+  echo "$(echo "$output" | sed -z 's/.*data="\([^"]*\)*/\1/' | sed '${s/"$//}')"
+  exit 0
+fi
+
+echo "set: Unexpected result $result"
+echo "$output"
+exit 1

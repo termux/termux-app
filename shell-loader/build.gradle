@@ -1,6 +1,6 @@
 //file:noinspection UnnecessaryQualifiedReference, GrDeprecatedAPIUsage
 apply plugin: 'com.android.application'
-
+android.buildFeatures.buildConfig true
 android.namespace 'com.termux.display'
 android.defaultConfig.minSdkVersion 21
 android.compileSdkVersion 28
@@ -15,7 +15,7 @@ def signingConfig = project(':app').android.signingConfigs.debug
 def keyStore = java.security.KeyStore.getInstance(java.security.KeyStore.getDefaultType())
 keyStore.load(new FileInputStream(signingConfig.storeFile), signingConfig.keyPassword.toCharArray())
 
-android.defaultConfig.buildConfigField "String", "logTag", "\"Termux:X11 loader\""
+android.defaultConfig.buildConfigField "String", "logTag", "\"Termux:display loader\""
 android.defaultConfig.buildConfigField "int", "SIGNATURE", String.valueOf(Arrays.hashCode(keyStore.getCertificate(signingConfig.keyAlias).getEncoded()))
 android.defaultConfig.buildConfigField "String", "CLASS_ID", "\"com.termux.display.CmdEntryPoint\""
 android.defaultConfig.buildConfigField "String", "packageNotInstalledErrorText",
