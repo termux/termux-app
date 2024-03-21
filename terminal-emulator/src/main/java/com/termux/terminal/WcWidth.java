@@ -538,4 +538,29 @@ public final class WcWidth {
         return Character.isHighSurrogate(c) ? width(Character.toCodePoint(c, chars[index + 1])) : width(c);
     }
 
+    /**
+     * The zero width characters count like combining characters in the `chars` array from start
+     * index to end index (exclusive).
+     */
+    public static int zeroWidthCharsCount(char[] chars, int start, int end) {
+        if (start < 0 || start >= chars.length)
+            return 0;
+
+        int count = 0;
+        for (int i = start; i < end && i < chars.length;) {
+            if (Character.isHighSurrogate(chars[i])) {
+                if (width(Character.toCodePoint(chars[i], chars[i + 1])) <= 0) {
+                    count++;
+                }
+                i += 2;
+            } else {
+                if (width(chars[i]) <= 0) {
+                    count++;
+                }
+                i++;
+            }
+        }
+        return count;
+    }
+
 }
