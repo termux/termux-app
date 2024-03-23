@@ -33,7 +33,8 @@ import java.util.Arrays;
 @Keep @SuppressLint({"StaticFieldLeak", "UnsafeDynamicallyLoadedCode"})
 public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     public static final String ACTION_START = "com.termux.display.CmdEntryPoint.ACTION_START";
-    public static final int PORT = 7892;
+    public static final int PORT = 7893;
+//    public static final int PORT = 7892;
     public static final byte[] MAGIC = "0xDEADBEEF".getBytes();
     private static final Handler handler;
     public static Context ctx;
@@ -69,7 +70,7 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     void sendBroadcast() {
         String targetPackage = getenv("TERMUX_DISPLAY_OVERRIDE_PACKAGE");
         if (targetPackage == null)
-            targetPackage = "com.termux.display";
+            targetPackage = "com.termux";
         // We should not care about multiple instances, it should be called only by `Termux:X11` app
         // which is single instance...
         Bundle bundle = new Bundle();

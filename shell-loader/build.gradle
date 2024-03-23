@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android.buildFeatures.buildConfig true
 android.namespace 'com.termux.display'
 android.defaultConfig.minSdkVersion 21
+android.defaultConfig.applicationId 'com.termux'
 android.compileSdkVersion 28
 android.buildTypes.debug.signingConfig null
 android.buildFeatures.buildConfig true

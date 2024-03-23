@@ -88,7 +88,8 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
     private ICmdEntryInterface service = null;
 //    public TermuxX11ExtraKeys mExtraKeys;
     private Notification mNotification;
-    private final int mNotificationId = 7892;
+//    private final int mNotificationId = 7892;
+    private final int mNotificationId = 7893;
     NotificationManager mNotificationManager;
     private boolean mClientConnected = false;
     private View.OnKeyListener mLorieKeyListener;

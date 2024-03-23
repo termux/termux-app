@@ -1,7 +1,7 @@
 plugins {
     id('com.android.library')
 }
-
+android.buildFeatures.buildConfig true
 android {
     namespace 'com.termux.display'
     compileSdk 30

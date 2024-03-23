@@ -2,4 +2,8 @@
 <resources>
     <attr name="termuxActivityDrawerBackground" format="reference" />
     <attr name="termuxActivityDrawerImageTint" format="reference" />
+    <attr name="rightPadding" format="dimension" />
+    <declare-styleable name="BinarySlidingMenu">
+        <attr name="rightPadding" />
+    </declare-styleable>
 </resources>
