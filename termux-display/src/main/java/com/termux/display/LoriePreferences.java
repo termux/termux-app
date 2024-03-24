@@ -39,8 +39,10 @@ import androidx.preference.SeekBarPreference;
 
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -83,7 +85,7 @@ public class LoriePreferences extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         loriePreferenceFragment = new LoriePreferenceFragment();
-        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, loriePreferenceFragment).commit();
+//        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, loriePreferenceFragment).commit();
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -120,6 +122,17 @@ public class LoriePreferences extends AppCompatActivity {
     }
 
     public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
+        private View mPreferenceView;
+        public View getmPreferenceView(){
+            return mPreferenceView;
+        }
+        @NonNull
+        @Override
+        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+            mPreferenceView = super.onCreateView(inflater, container, savedInstanceState);
+            return mPreferenceView;
+        }
+
         @Override
         public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
             SharedPreferences p = getPreferenceManager().getSharedPreferences();

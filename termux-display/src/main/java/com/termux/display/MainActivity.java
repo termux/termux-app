@@ -43,6 +43,7 @@ import android.util.Log;
 import android.view.DragEvent;
 import android.view.InputDevice;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
@@ -78,12 +79,13 @@ import java.util.Objects;
 
 @SuppressLint("ApplySharedPref")
 @SuppressWarnings({"deprecation", "unused"})
-public class MainActivity extends AppCompatActivity implements View.OnApplyWindowInsetsListener {
+public class MainActivity extends LoriePreferences implements View.OnApplyWindowInsetsListener {
     static final String ACTION_STOP = "com.termux.display.ACTION_STOP";
     static final String REQUEST_LAUNCH_EXTERNAL_DISPLAY = "request_launch_external_display";
 
     public static Handler handler = new Handler();
     FrameLayout frm;
+    public View lorieContentView;
     private TouchInputHandler mInputHandler;
     private ICmdEntryInterface service = null;
 //    public TermuxX11ExtraKeys mExtraKeys;
@@ -139,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
     }
 
     @Override
-    @SuppressLint({"AppCompatMethod", "ObsoleteSdkInt", "ClickableViewAccessibility", "WrongConstant", "UnspecifiedRegisterReceiverFlag"})
+    @SuppressLint({"AppCompatMethod", "ObsoleteSdkInt", "ClickableViewAccessibility", "WrongConstant", "UnspecifiedRegisterReceiverFlag", "ResourceType", "MissingInflatedId"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -154,14 +156,15 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         preferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> onPreferencesChanged(key));
 
         getWindow().setFlags(FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS | FLAG_KEEP_SCREEN_ON | FLAG_TRANSLUCENT_STATUS, 0);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.main_activity);
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(com.termux.display.R.layout.main_activity);
+        lorieContentView = findViewById(com.termux.display.R.id.id_display_window);
 
-        frm = findViewById(R.id.frame);
-        findViewById(R.id.preferences_button).setOnClickListener((l) -> startActivity(new Intent(this, LoriePreferences.class) {{ setAction(Intent.ACTION_MAIN); }}));
-        findViewById(R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
+        frm = findViewById(com.termux.display.R.id.frame);
+//        findViewById(com.termux.display.R.id.preferences_button).setOnClickListener((l) -> startActivity(new Intent(this, LoriePreferences.class) {{ setAction(Intent.ACTION_MAIN); }}));
+//        findViewById(com.termux.display.R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
 
-        LorieView lorieView = findViewById(R.id.lorieView);
+        LorieView lorieView = findViewById(com.termux.display.R.id.lorieView);
         View lorieParent = (View) lorieView.getParent();
 
         mInputHandler = new TouchInputHandler(this, new RenderStub.NullStub() {
@@ -260,12 +263,12 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         boolean stylusMenuEnabled = p.getBoolean("showStylusClickOverride", false);
         final float menuUnselectedTrasparency = 0.66f;
         final float menuSelectedTrasparency = 1.0f;
-        Button left = findViewById(R.id.button_left_click);
-        Button right = findViewById(R.id.button_right_click);
-        Button middle = findViewById(R.id.button_middle_click);
-        Button visibility = findViewById(R.id.button_visibility);
-        LinearLayout overlay = findViewById(R.id.mouse_helper_visibility);
-        LinearLayout buttons = findViewById(R.id.mouse_helper_secondary_layer);
+        Button left = findViewById(com.termux.display.R.id.button_left_click);
+        Button right = findViewById(com.termux.display.R.id.button_right_click);
+        Button middle = findViewById(com.termux.display.R.id.button_middle_click);
+        Button visibility = findViewById(com.termux.display.R.id.button_visibility);
+        LinearLayout overlay = findViewById(com.termux.display.R.id.mouse_helper_visibility);
+        LinearLayout buttons = findViewById(com.termux.display.R.id.mouse_helper_secondary_layer);
         overlay.setOnTouchListener((v, e) -> true);
         overlay.setOnHoverListener((v, e) -> true);
         overlay.setOnGenericMotionListener((v, e) -> true);
@@ -354,12 +357,12 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
 
     @SuppressLint("ClickableViewAccessibility")
     void initMouseAuxButtons() {
-        Button left = findViewById(R.id.mouse_button_left_click);
-        Button right = findViewById(R.id.mouse_button_right_click);
-        Button middle = findViewById(R.id.mouse_button_middle_click);
-        ImageButton pos = findViewById(R.id.mouse_buttons_position);
-        LinearLayout primaryLayer = findViewById(R.id.mouse_buttons);
-        LinearLayout secondaryLayer = findViewById(R.id.mouse_buttons_secondary_layer);
+        Button left = findViewById(com.termux.display.R.id.mouse_button_left_click);
+        Button right = findViewById(com.termux.display.R.id.mouse_button_right_click);
+        Button middle = findViewById(com.termux.display.R.id.mouse_button_middle_click);
+        ImageButton pos = findViewById(com.termux.display.R.id.mouse_buttons_position);
+        LinearLayout primaryLayer = findViewById(com.termux.display.R.id.mouse_buttons);
+        LinearLayout secondaryLayer = findViewById(com.termux.display.R.id.mouse_buttons_secondary_layer);
 
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         boolean mouseHelperEnabled = p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1"));
@@ -388,12 +391,12 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
                 switch(e.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        getLorieView().sendMouseEvent(0, 0, b, true, true);
+                        getLorieContentView().sendMouseEvent(0, 0, b, true, true);
                         v.setPressed(true);
                         break;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_POINTER_UP:
-                        getLorieView().sendMouseEvent(0, 0, b, false, true);
+                        getLorieContentView().sendMouseEvent(0, 0, b, false, true);
                         v.setPressed(false);
                         break;
                 }
@@ -467,7 +470,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
             ParcelFileDescriptor fd = service == null ? null : service.getXConnection();
             if (fd != null) {
                 LorieView.connect(fd.detachFd());
-                getLorieView().triggerCallback();
+                getLorieContentView().triggerCallback();
                 clientConnectedStateChanged(true);
                 LorieView.setClipboardSyncEnabled(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("clipboardSync", false));
             } else
@@ -477,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
             service = null;
 
             // We should reset the View for the case if we have sent it's surface to the client.
-            getLorieView().regenerate();
+            getLorieContentView().regenerate();
         }
     }
 
@@ -486,7 +489,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
             return;
 
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        LorieView lorieView = getLorieView();
+        LorieView lorieView = getLorieContentView();
 
         int mode = Integer.parseInt(p.getString("touchMode", "1"));
         mInputHandler.setInputMode(mode);
@@ -532,8 +535,8 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         if (getRequestedOrientation() != requestedOrientation)
             setRequestedOrientation(requestedOrientation);
 
-        findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
-        LinearLayout buttons = findViewById(R.id.mouse_helper_visibility);
+        findViewById(com.termux.display.R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
+        LinearLayout buttons = findViewById(com.termux.display.R.id.mouse_helper_visibility);
         if (p.getBoolean("showStylusClickOverride", false)) {
             buttons.setVisibility(View.VISIBLE);
         } else {
@@ -541,10 +544,10 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
             TouchInputHandler.STYLUS_INPUT_HELPER_MODE = 1;
             final float menuUnselectedTrasparency = 0.66f;
             final float menuSelectedTrasparency = 1.0f;
-            findViewById(R.id.button_left_click).setAlpha(menuSelectedTrasparency);
-            findViewById(R.id.button_right_click).setAlpha(menuUnselectedTrasparency);
-            findViewById(R.id.button_middle_click).setAlpha(menuUnselectedTrasparency);
-            findViewById(R.id.button_visibility).setAlpha(menuUnselectedTrasparency);
+            findViewById(com.termux.display.R.id.button_left_click).setAlpha(menuSelectedTrasparency);
+            findViewById(com.termux.display.R.id.button_right_click).setAlpha(menuUnselectedTrasparency);
+            findViewById(com.termux.display.R.id.button_middle_click).setAlpha(menuUnselectedTrasparency);
+            findViewById(com.termux.display.R.id.button_visibility).setAlpha(menuUnselectedTrasparency);
             buttons.setVisibility(View.GONE);
         }
     }
@@ -556,7 +559,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         mNotificationManager.notify(mNotificationId, mNotification);
 
         setTerminalToolbarView();
-        getLorieView().requestFocus();
+        getLorieContentView().requestFocus();
     }
 
     @Override
@@ -567,12 +570,12 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         super.onPause();
     }
 
-    public LorieView getLorieView() {
-        return findViewById(R.id.lorieView);
+    public LorieView getLorieContentView() {
+        return findViewById(com.termux.display.R.id.lorieView);
     }
 
     public ViewPager getTerminalToolbarViewPager() {
-        return findViewById(R.id.terminal_toolbar_view_pager);
+        return findViewById(com.termux.display.R.id.terminal_toolbar_view_pager);
     }
 
     private void setTerminalToolbarView() {
@@ -586,7 +589,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
 //        boolean showNow = enabled && preferences.getBoolean("additionalKbdVisible", true);
 //
 //        terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
-//        findViewById(R.id.terminal_toolbar_view_pager).requestFocus();
+//        findViewById(com.termux.display.R.id.terminal_toolbar_view_pager).requestFocus();
 //
 //        handler.postDelayed(() -> {
 //            if (mExtraKeys != null) {
@@ -622,20 +625,20 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
 
             pager.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
 
-            getLorieView().requestFocus();
+            getLorieContentView().requestFocus();
         });
     }
 
     public void toggleExtraKeys() {
         int visibility = getTerminalToolbarViewPager().getVisibility();
         toggleExtraKeys(visibility != View.VISIBLE, true);
-        getLorieView().requestFocus();
+        getLorieContentView().requestFocus();
     }
 
     public boolean handleKey(KeyEvent e) {
         if (filterOutWinKey && (e.getKeyCode() == KEYCODE_META_LEFT || e.getKeyCode() == KEYCODE_META_RIGHT || e.isMetaPressed()))
             return false;
-        mLorieKeyListener.onKey(getLorieView(), e.getKeyCode(), e);
+        mLorieKeyListener.onKey(getLorieContentView(), e.getKeyCode(), e);
         return true;
     }
 
@@ -654,7 +657,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         return new NotificationCompat.Builder(this, getNotificationChannel(notificationManager))
             .setContentTitle("Termux:X11")
-            .setSmallIcon(R.drawable.ic_x11_icon)
+            .setSmallIcon(com.termux.display.R.drawable.ic_x11_icon)
             .setContentText("Pull down to show options")
             .setContentIntent(pIntent)
             .setOngoing(true)
@@ -668,8 +671,8 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
     }
 
     private String getNotificationChannel(NotificationManager notificationManager){
-        String channelId = getResources().getString(R.string.app_name);
-        String channelName = getResources().getString(R.string.app_name);
+        String channelId = getResources().getString(com.termux.display.R.string.app_name);
+        String channelName = getResources().getString(com.termux.display.R.string.app_name);
         NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT);
         channel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
@@ -689,7 +692,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
             InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
             View view = getCurrentFocus();
             if (view == null) {
-                view = getLorieView();
+                view = getLorieContentView();
                 view.requestFocus();
             }
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -709,7 +712,8 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         boolean fullscreen = p.getBoolean("fullscreen", false);
         boolean reseed = p.getBoolean("Reseed", true);
 
-        fullscreen = fullscreen || getIntent().getBooleanExtra(REQUEST_LAUNCH_EXTERNAL_DISPLAY, false);
+        android.content.Intent intent = getIntent();
+        fullscreen = fullscreen ||(null!= intent && intent.getBooleanExtra(REQUEST_LAUNCH_EXTERNAL_DISPLAY, false));
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
             ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -758,9 +762,9 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         SamsungDexUtils.dexMetaKeyCapture(this, hasFocus && p.getBoolean("dexMetaKeyCapture", false));
 
         if (hasFocus)
-            getLorieView().regenerate();
+            getLorieContentView().regenerate();
 
-        getLorieView().requestFocus();
+        getLorieContentView().requestFocus();
     }
 
     @Override
@@ -797,7 +801,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
     @SuppressLint("WrongConstant")
     @Override
     public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-        handler.postDelayed(() -> getLorieView().triggerCallback(), 100);
+        handler.postDelayed(() -> getLorieContentView().triggerCallback(), 100);
         return insets;
     }
 
@@ -818,22 +822,28 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
             SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
             mClientConnected = connected;
             toggleExtraKeys(connected && p.getBoolean("additionalKbdVisible", true), true);
-            findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
-            findViewById(R.id.stub).setVisibility(connected?View.INVISIBLE:View.VISIBLE);
-            getLorieView().setVisibility(connected?View.VISIBLE:View.INVISIBLE);
-            getLorieView().regenerate();
+            findViewById(com.termux.display.R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
+            findViewById(com.termux.display.R.id.stub).setVisibility(connected?View.INVISIBLE:View.VISIBLE);
+            getLorieContentView().setVisibility(connected?View.VISIBLE:View.INVISIBLE);
+            getLorieContentView().regenerate();
 
             // We should recover connection in the case if file descriptor for some reason was broken...
             if (!connected)
                 tryConnect();
 
             if (connected)
-                getLorieView().setPointerIcon(PointerIcon.getSystemIcon(this, PointerIcon.TYPE_NULL));
+                getLorieContentView().setPointerIcon(PointerIcon.getSystemIcon(this, PointerIcon.TYPE_NULL));
         });
     }
 
     private void checkXEvents() {
-        getLorieView().handleXEvents();
+        getLorieContentView().handleXEvents();
         handler.postDelayed(this::checkXEvents, 300);
     }
+//    public View getPreferenceView(){
+//        if (null != loriePreferenceFragment){
+//            return loriePreferenceFragment.getmPreferenceView();
+//        }
+//        return null;
+//    }
 }

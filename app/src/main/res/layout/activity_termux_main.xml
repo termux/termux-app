@@ -1,0 +1,22 @@
+<com.termux.app.terminal.DisplaySlidingWindow xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:termux="http://schemas.android.com/apk/res/com.termux"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/id_menu"
+    android:layout_width="wrap_content"
+    android:layout_height="fill_parent"
+    android:scrollbars="none"
+    termux:rightPadding="50dp"
+    tools:ignore="ResAuto">
+
+    <com.termux.app.terminal.DisplayWindowLinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal">
+
+        <include layout="@layout/activity_termux" />
+
+        <include layout="@layout/display_window" />
+
+        <include layout="@layout/window_preference" />
+    </com.termux.app.terminal.DisplayWindowLinearLayout>
+</com.termux.app.terminal.DisplaySlidingWindow>

@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,12 +26,15 @@ import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.api.file.FileReceiverActivity;
+import com.termux.app.terminal.DisplaySlidingWindow;
+import com.termux.app.terminal.DisplayWindowLinearLayout;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
@@ -66,6 +70,7 @@ import com.termux.view.TerminalViewClient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
@@ -127,6 +132,9 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
      * The space at the bottom of {@link @mTermuxActivityRootView} of the {@link TermuxActivity}.
      */
     View mTermuxActivityBottomSpaceView;
+    View mDisplayWindowView;
+    View mWindowPreferenceView;
+    View mContentView;
 
     /**
      * The terminal extra keys view.
@@ -198,6 +206,8 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 
     private static final String LOG_TAG = "TermuxActivity";
 
+
+    @SuppressLint("ResourceType")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Logger.logDebug(LOG_TAG, "onCreate");
@@ -214,10 +224,17 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         reloadProperties();
 
         setActivityTheme();
-
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_termux_main);
 
-        setContentView(R.layout.activity_termux);
+        ViewGroup vGroup = findViewById(R.id.id_menu);
+//        mWindowPreferenceView = getPreferenceView();
+
+        DisplayWindowLinearLayout mWraper = (DisplayWindowLinearLayout)vGroup.getChildAt(0);
+        LinearLayout lorieLayout = (LinearLayout) mWraper.getChildAt(1);
+        lorieLayout.addView(lorieContentView);
+        LinearLayout loriePreferenceLayout = (LinearLayout) mWraper.getChildAt(2);
+//        loriePreferenceLayout.addView(mWindowPreferenceView);
 
         // Load termux shared preferences
         // This will also fail if TermuxConstants.TERMUX_PACKAGE_NAME does not equal applicationId

@@ -128,7 +128,9 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         if (root_view_logging_enabled)
             Logger.logVerbose(LOG_TAG, ":\nonGlobalLayout:");
 
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
+//        android.view.ViewGroup.LayoutParams layoutParams = getLayoutParams();
+//        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) getLayoutParams();
 
         // Get the position Rects of the bottom space view and the main window holding it
         Rect[] windowAndViewRects = ViewUtils.getWindowAndViewRects(bottomSpaceView, mStatusBarHeight);
