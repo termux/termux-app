@@ -85,14 +85,14 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
     public static Handler handler = new Handler();
     FrameLayout frm;
-    public View lorieContentView;
+    protected View lorieContentView;
     private TouchInputHandler mInputHandler;
     private ICmdEntryInterface service = null;
 //    public TermuxX11ExtraKeys mExtraKeys;
     private Notification mNotification;
 //    private final int mNotificationId = 7892;
     private final int mNotificationId = 7893;
-    NotificationManager mNotificationManager;
+//    NotificationManager mNotificationManager;
     private boolean mClientConnected = false;
     private View.OnKeyListener mLorieKeyListener;
     private boolean filterOutWinKey = false;
@@ -230,9 +230,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         // Taken from Stackoverflow answer https://stackoverflow.com/questions/7417123/android-how-to-adjust-layout-in-full-screen-mode-when-softkeyboard-is-visible/7509285#
         FullscreenWorkaround.assistActivity(this);
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotification = buildNotification();
-        mNotificationManager.notify(mNotificationId, mNotification);
+//        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//        mNotification = buildNotification();
+//        mNotificationManager.notify(mNotificationId, mNotification);
 
         CmdEntryPoint.requestConnection();
         onPreferencesChanged("");
@@ -248,6 +248,10 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
             requestPermissions(new String[] { Manifest.permission.POST_NOTIFICATIONS }, 0);
         }
+//        new Thread(() -> {
+//            String args[] = {"1"};
+//            CmdEntryPoint.main(args);
+//        }).start();
     }
 
     @Override
@@ -556,7 +560,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     public void onResume() {
         super.onResume();
 
-        mNotificationManager.notify(mNotificationId, mNotification);
+//        mNotificationManager.notify(mNotificationId, mNotification);
 
         setTerminalToolbarView();
         getLorieContentView().requestFocus();
@@ -564,9 +568,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
     @Override
     public void onPause() {
-        for (StatusBarNotification notification: mNotificationManager.getActiveNotifications())
-            if (notification.getId() == mNotificationId)
-                mNotificationManager.cancel(mNotificationId);
+//        for (StatusBarNotification notification: mNotificationManager.getActiveNotifications())
+//            if (notification.getId() == mNotificationId)
+//                mNotificationManager.cancel(mNotificationId);
         super.onPause();
     }
 

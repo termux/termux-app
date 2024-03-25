@@ -1,7 +1,7 @@
 <com.termux.app.terminal.DisplaySlidingWindow xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:termux="http://schemas.android.com/apk/res/com.termux"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/id_menu"
+    android:id="@+id/id_termux_layout"
     android:layout_width="wrap_content"
     android:layout_height="fill_parent"
     android:scrollbars="none"

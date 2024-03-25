@@ -13,15 +13,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.widget.EditText;
@@ -31,33 +30,37 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.ViewPager;
+
 import com.termux.R;
+import com.termux.app.activities.HelpActivity;
+import com.termux.app.activities.SettingsActivity;
 import com.termux.app.api.file.FileReceiverActivity;
 import com.termux.app.terminal.DisplaySlidingWindow;
 import com.termux.app.terminal.DisplayWindowLinearLayout;
 import com.termux.app.terminal.TermuxActivityRootView;
+import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
+import com.termux.app.terminal.TermuxTerminalViewClient;
+import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
-import com.termux.display.CmdEntryPoint;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
-import com.termux.shared.data.IntentUtils;
 import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
+import com.termux.shared.data.IntentUtils;
+import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
-import com.termux.app.activities.HelpActivity;
-import com.termux.app.activities.SettingsActivity;
+import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
-import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
-import com.termux.app.terminal.TermuxSessionsListViewController;
-import com.termux.app.terminal.io.TerminalToolbarViewPager;
-import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.shared.termux.extrakeys.ExtraKeysView;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 import com.termux.shared.theme.NightMode;
@@ -67,14 +70,6 @@ import com.termux.terminal.TerminalSessionClient;
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewpager.widget.ViewPager;
-
-import java.net.URL;
 import java.util.Arrays;
 
 /**
@@ -88,6 +83,7 @@ import java.util.Arrays;
  * about memory leaks.
  */
 public class TermuxActivity extends com.termux.display.MainActivity implements ServiceConnection {
+    private DisplaySlidingWindow mMenu;
 
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -212,7 +208,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     public void onCreate(Bundle savedInstanceState) {
         Logger.logDebug(LOG_TAG, "onCreate");
         mIsOnResumeAfterOnCreate = true;
-
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         if (savedInstanceState != null)
             mIsActivityRecreated = savedInstanceState.getBoolean(ARG_ACTIVITY_RECREATED, false);
 
@@ -227,14 +223,34 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_termux_main);
 
-        ViewGroup vGroup = findViewById(R.id.id_menu);
-//        mWindowPreferenceView = getPreferenceView();
+        mMenu = (DisplaySlidingWindow) findViewById(R.id.id_termux_layout);
+        mMenu.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuOpenListener()
+        {
+            @Override
+            public void onMenuOpen(boolean isOpen, int flag)
+            {
+                if (isOpen)
+                {
+                    Toast.makeText(getApplicationContext(),
+                        flag == 0 ? "LeftMenu Open" : "RightMenu Open",
+                        Toast.LENGTH_SHORT).show();
+                } else
+                {
+                    Toast.makeText(getApplicationContext(),
+                        flag == 0 ? "LeftMenu Close" : "RightMenu Close",
+                        Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+        ViewGroup vGroup = findViewById(R.id.id_termux_layout);
 
         DisplayWindowLinearLayout mWraper = (DisplayWindowLinearLayout)vGroup.getChildAt(0);
         LinearLayout lorieLayout = (LinearLayout) mWraper.getChildAt(1);
         lorieLayout.addView(lorieContentView);
-        LinearLayout loriePreferenceLayout = (LinearLayout) mWraper.getChildAt(2);
-//        loriePreferenceLayout.addView(mWindowPreferenceView);
+        getSupportFragmentManager().beginTransaction().replace(R.id.id_window_preference, loriePreferenceFragment).commit();
+
 
         // Load termux shared preferences
         // This will also fail if TermuxConstants.TERMUX_PACKAGE_NAME does not equal applicationId

@@ -66,7 +66,7 @@ import java.util.regex.PatternSyntaxException;
 public class LoriePreferences extends AppCompatActivity {
     static final String ACTION_PREFERENCES_CHANGED = "com.termux.display.ACTION_PREFERENCES_CHANGED";
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
-    LoriePreferenceFragment loriePreferenceFragment;
+    protected LoriePreferenceFragment loriePreferenceFragment;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -122,17 +122,6 @@ public class LoriePreferences extends AppCompatActivity {
     }
 
     public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
-        private View mPreferenceView;
-        public View getmPreferenceView(){
-            return mPreferenceView;
-        }
-        @NonNull
-        @Override
-        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            mPreferenceView = super.onCreateView(inflater, container, savedInstanceState);
-            return mPreferenceView;
-        }
-
         @Override
         public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
             SharedPreferences p = getPreferenceManager().getSharedPreferences();
