@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.shared.shell.command.runner.app.AppShell;
+import com.termux.shared.shell.command.runner.nativerunner.NativeShell;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 
@@ -35,6 +36,11 @@ public class TermuxShellManager {
      */
     public final List<AppShell> mTermuxTasks = new ArrayList<>();
 
+    /**
+     * The background NativeShell tasks which this service manages.
+     */
+    public final List<NativeShell> mTermuxNativeTasks = new ArrayList<>();
+    
     /**
      * The pending plugin ExecutionCommands that have yet to be processed by this service.
      */

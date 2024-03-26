@@ -20,6 +20,18 @@
         android:label="@string/permission_run_command_label"
         android:protectionLevel="dangerous" />
 
+    <permission
+        android:name="${TERMUX_PACKAGE_NAME}.permission.TERMUX_PLUGIN"
+        android:description="@string/permission_plugin_description"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/permission_plugin_label"
+        android:protectionLevel="dangerous" />
+
+    <permission
+        android:name="${TERMUX_PACKAGE_NAME}.permission.TERMUX_SIGNATURE"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="${TERMUX_PACKAGE_NAME}.permission.TERMUX_SIGNATURE" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -207,6 +219,10 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".app.plugin.PluginService"
+            android:exported="true"
+            android:permission="${TERMUX_PACKAGE_NAME}.permission.TERMUX_PLUGIN"/>
 
         <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
         app with "This app is optimized to run in full screen." -->

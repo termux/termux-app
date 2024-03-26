@@ -35,6 +35,7 @@ android {
 
         implementation project(":terminal-view")
         implementation project(":termux-shared")
+        implementation project(":plugin-aidl")
     }
 
     defaultConfig {

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <unistd.h>
+#include <cstring>
 
 #include <android/log.h>
 
@@ -599,5 +600,125 @@ Java_com_termux_shared_net_socket_local_LocalSocketManager_getPeerCredNative(JNI
     }
 
     // Return success since PeerCred was filled successfully
+    return getJniResult(env, logTitle);
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_com_termux_shared_net_socket_local_LocalSocketManager_readFDNative(JNIEnv *env, jclass clazz,
+                                                                        jstring logTitle,
+                                                                        jint fd, jbyteArray dataArray,
+                                                                        jintArray readFDArray) {
+    if (fd < 0) {
+        return getJniResult(env, logTitle, -1, "readFDNative(): Invalid fd \"" + to_string(fd) + "\" passed");
+    }
+
+    jint* readFD = env->GetIntArrayElements(readFDArray, nullptr);
+    if (checkJniException(env)) return NULL;
+    if (readFD == NULL) {
+        return getJniResult(env, logTitle, -1, "readFDNative(): readFD passed is null");
+    }
+    
+    if (env->GetArrayLength(readFDArray) < 1) {
+        return getJniResult(env, logTitle, -1, "readFDNative(): readFD length is < 1");
+    }
+    if (checkJniException(env)) return NULL;
+    
+    readFD[0] = -1; // set to an invalid value to signify if an fd was received or not
+    
+    jbyte* data = env->GetByteArrayElements(dataArray, nullptr);
+    if (checkJniException(env)) return NULL;
+    if (data == nullptr) {
+        return getJniResult(env, logTitle, -1, "readFDNative(): data passed is null");
+    }
+    
+    if (env->GetArrayLength(dataArray) < 1) {
+        return getJniResult(env, logTitle, -1, "readFDNative(): data length is < 1");
+    }
+    if (checkJniException(env)) return NULL;
+    
+    
+    // enough size for exactly one control message with one fd, so the excess fds are automatically closed
+    constexpr int CONTROLLEN = CMSG_SPACE(sizeof(int));
+    union {
+        cmsghdr _; // for alignment
+        char controlBuffer[CONTROLLEN];
+    } controlBufferUnion;
+    memset(&controlBufferUnion, 0, CONTROLLEN); // clear the buffer to be sure
+
+    iovec buffer{data, 1};
+    msghdr receiveHeader{NULL, 0, &buffer, 1, controlBufferUnion.controlBuffer, sizeof(controlBufferUnion.controlBuffer), 0};
+
+    int ret = recvmsg(fd, &receiveHeader, 0);
+    if (ret == -1) {
+        int errnoBackup = errno;
+        env->ReleaseByteArrayElements(dataArray, data, 0);
+        if (checkJniException(env)) return NULL;
+        env->ReleaseIntArrayElements(readFDArray, readFD, 0);
+        if (checkJniException(env)) return NULL;
+        return getJniResult(env, logTitle, -1, errnoBackup, "readNative(): Failed to read on fd "  + to_string(fd));
+    }
+
+    for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(&receiveHeader); cmsg != NULL; cmsg = CMSG_NXTHDR(&receiveHeader, cmsg)) {
+        if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
+            int recfd;
+            memcpy(&recfd, CMSG_DATA(cmsg), sizeof(recfd));
+            readFD[0] = recfd;
+            break;
+        }
+    }
+
+    env->ReleaseByteArrayElements(dataArray, data, 0);
+    if (checkJniException(env)) return NULL;
+    
+    env->ReleaseIntArrayElements(readFDArray, readFD, 0);
+    if (checkJniException(env)) return NULL;
+
+    // Return success and bytes read in JniResult.intData field
+    return getJniResult(env, logTitle, ret);
+}
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_com_termux_shared_net_socket_local_LocalSocketManager_sendFDNative(JNIEnv *env, jclass clazz,
+                                                                        jstring logTitle,
+                                                                        jint fd, jbyte data,
+                                                                        jint sendFD) {
+    if (fd < 0) {
+        return getJniResult(env, logTitle, -1, "sendFDNative(): Invalid fd \"" + to_string(fd) + "\" passed");
+    }
+
+    if (sendFD < 0) {
+        return getJniResult(env, logTitle, -1, "sendFDNative(): Invalid sendFD \"" + to_string(fd) + "\" passed");
+    }
+    
+    const int sendFDInt = sendFD; // in case a platform has an int that isn't the same size as jint
+    
+    // enough size for exactly one control message with one fd
+    constexpr int CONTROLLEN = CMSG_SPACE(sizeof(int));
+    union {
+        cmsghdr _; // for alignment
+        char controlBuffer[CONTROLLEN];
+    } controlBufferUnion;
+    memset(&controlBufferUnion, 0, CONTROLLEN); // clear the buffer to be sure
+
+    iovec buffer{&data, 1};
+    msghdr sendHeader{nullptr, 0, &buffer, 1, controlBufferUnion.controlBuffer, sizeof(controlBufferUnion.controlBuffer), 0};
+    
+    struct cmsghdr* cmsg = CMSG_FIRSTHDR(&sendHeader);
+    if (cmsg == NULL) {
+        return getJniResult(env, logTitle, -1, "sendFDNative(): CMSG_FIRSTHDR returned NULL");
+    }
+    cmsg->cmsg_level = SOL_SOCKET;
+    cmsg->cmsg_type = SCM_RIGHTS;
+    cmsg->cmsg_len = CMSG_LEN(sizeof(sendFDInt));
+    memcpy(CMSG_DATA(cmsg), &sendFDInt, sizeof(sendFDInt));
+    
+    int ret = sendmsg(fd, &sendHeader, MSG_NOSIGNAL);
+    if (ret == -1) {
+        int errnoBackup = errno;
+        return getJniResult(env, logTitle, -1, errnoBackup, "sendFDNative(): Failed to send on fd " + to_string(fd));
+    }
+    
+    // Return success
     return getJniResult(env, logTitle);
 }

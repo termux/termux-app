@@ -23,7 +23,9 @@
     <string name="permission_run_command_description">execute arbitrary commands within &TERMUX_APP_NAME;
         environment and access files</string>
 
-
+    <!-- Termux TERMUX_PLUGIN permission -->
+    <string name="permission_plugin_label">Connect as a plugin to &TERMUX_APP_NAME;</string>
+    <string name="permission_plugin_description">manage an app directory under /data/data/&TERMUX_PACKAGE_NAME;/files/apps</string>
 
     <!-- Termux Bootstrap Packages Installation -->
     <string name="bootstrap_installer_body">Installing bootstrap packages…</string>
