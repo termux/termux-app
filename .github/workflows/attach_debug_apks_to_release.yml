@@ -63,7 +63,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
       - name: Upload APKs to release
-        uses: termux/upload-release-action@v4.1.0
+        uses: termux/upload-release-action@v4.2.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: "**/*.apk"
