@@ -13,11 +13,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -47,6 +49,7 @@ import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
+import com.termux.display.LorieView;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
@@ -83,7 +86,7 @@ import java.util.Arrays;
  * about memory leaks.
  */
 public class TermuxActivity extends com.termux.display.MainActivity implements ServiceConnection {
-    private DisplaySlidingWindow mMenu;
+    private DisplaySlidingWindow slideWindowLayout;
 
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -128,9 +131,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
      * The space at the bottom of {@link @mTermuxActivityRootView} of the {@link TermuxActivity}.
      */
     View mTermuxActivityBottomSpaceView;
-    View mDisplayWindowView;
-    View mWindowPreferenceView;
-    View mContentView;
 
     /**
      * The terminal extra keys view.
@@ -223,12 +223,10 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_termux_main);
 
-        mMenu = (DisplaySlidingWindow) findViewById(R.id.id_termux_layout);
-        mMenu.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuOpenListener()
-        {
+        slideWindowLayout = findViewById(R.id.id_termux_layout);
+        slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuOpenListener() {
             @Override
-            public void onMenuOpen(boolean isOpen, int flag)
-            {
+            public void onMenuOpen(boolean isOpen, int flag) {
                 if (isOpen)
                 {
                     Toast.makeText(getApplicationContext(),
@@ -240,7 +238,14 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                         flag == 0 ? "LeftMenu Close" : "RightMenu Close",
                         Toast.LENGTH_SHORT).show();
                 }
+            }
 
+            @Override
+            public boolean sendTouchEvent(MotionEvent ev) {
+                if (null != mInputHandler){
+                    mInputHandler.handleTouchEvent(slideWindowLayout,getLorieContentView(),ev);
+                }
+                return true;
             }
         });
 
@@ -314,6 +319,16 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
+        sliderSwitchListener= new SliderLayoutListener() {
+            @Override
+            public void onSwitch(boolean isOpen) {
+                slideWindowLayout.setSwitchSlider(isOpen);
+            }
+            @Override
+            public void switchSlider() {
+                slideWindowLayout.switchSlider();
+            }
+        };
     }
 
     @Override
@@ -474,11 +489,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         finishActivityIfNotFinishing();
     }
 
-
-
-
-
-
     private void reloadProperties() {
         mProperties.loadTermuxPropertiesFromDisk();
 
@@ -515,9 +525,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         if (getTermuxActivityRootView() != null)
             getTermuxActivityRootView().getViewTreeObserver().removeOnGlobalLayoutListener(getTermuxActivityRootView());
     }
-
-
-
     private void setTermuxTerminalViewAndClients() {
         // Set termux terminal view and session clients
         mTermuxTerminalSessionActivityClient = new TermuxTerminalSessionActivityClient(this);

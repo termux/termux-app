@@ -685,6 +685,7 @@ ProcessCommandLine(int argc, char *argv[])
     }
 
     for (i = 1; i < argc; i++) {
+
         /* call ddx first, so it can peek/override if it wants */
         if ((skip = ddxProcessArgument(argc, argv, i))) {
             i += (skip - 1);

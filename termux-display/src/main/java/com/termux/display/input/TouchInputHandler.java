@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PointF;
 import android.os.Handler;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -146,6 +147,7 @@ public class TouchInputHandler {
             int offsetY = viewLocation[1] - view0Location[1];
 
             event.offsetLocation(-offsetX, -offsetY);
+            Log.d("TouchInputHandler","offsetx:"+offsetX+" offsety:"+offsetY);
         }
 
         if (!view.isFocused() && event.getAction() == MotionEvent.ACTION_DOWN)

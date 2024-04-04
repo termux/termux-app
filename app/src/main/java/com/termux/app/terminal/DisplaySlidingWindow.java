@@ -46,6 +46,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
          * @param flag   0 左侧， 1右侧
          */
         void onMenuOpen(boolean isOpen, int flag);
+        boolean sendTouchEvent(MotionEvent ev);
     }
 
     public OnMenuOpenListener mOnMenuOpenListener;
@@ -66,9 +67,12 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
      * dp 菜单距离屏幕的右边距
      */
     private int mMenuRightPadding;
+    private boolean switchSlider;
 
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        setClickable(true);
+        switchSlider = true;
         mScreenWidth = ScreenUtils.getScreenWidth(context);
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
             R.styleable.BinarySlidingMenu, defStyle, 0);
@@ -127,7 +131,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             // Up时，进行判断，如果显示区域大于菜单宽度一半则完全显示，否则隐藏
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
-//            Log.e("onTouchEvent","scrollX:"+scrollX);
+                Log.e("ACTION_UP", "X:" + ev.getRawX());
                 //如果是操作左侧菜单
                 if (isOperateLeft) {
                     //如果影藏的区域大于菜单一半，则影藏菜单
@@ -169,25 +173,42 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         isRightMenuOpen = false;
                     }
                 }
-                return true;
+                return false;
         }
-        return super.onTouchEvent(ev);
+        if (switchSlider){
+            super.onTouchEvent(ev);
+        }else{
+            if (null != mOnMenuOpenListener){
+                mOnMenuOpenListener.sendTouchEvent(ev);
+            }
+        }
+        return false;
     }
 
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
-//        Log.e("onScrollChanged","l:"+l+", t:"+t+",oldl:"+oldl+",oldt:"+oldt);
+//        Log.d("onScrollChanged","l:"+l+", t:"+t+",oldl:"+oldl+",oldt:"+oldt);
         if (l > mMenuWidth) {
             isOperateRight = true;
             isOperateLeft = false;
-
         } else {
             isOperateRight = false;
             isOperateLeft = true;
-
         }
         float scale = l * 1.0f / mMenuWidth;
         ViewHelper.setTranslationX(mContent, mMenuWidth * (scale - 1));
+    }
+
+    public void setSwitchSlider(boolean openSlider) {
+        this.switchSlider = openSlider;
+        if (!openSlider){
+            this.smoothScrollTo(mMenuWidth, 0);
+        }else{
+            this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
+        }
+    }
+    public void switchSlider(){
+        this.switchSlider = !this.switchSlider;
     }
 }

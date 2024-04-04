@@ -67,7 +67,11 @@ public class LoriePreferences extends AppCompatActivity {
     static final String ACTION_PREFERENCES_CHANGED = "com.termux.display.ACTION_PREFERENCES_CHANGED";
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
     protected LoriePreferenceFragment loriePreferenceFragment;
-
+    protected interface SliderLayoutListener {
+        void onSwitch(boolean isOpen);
+        void switchSlider();
+    }
+    protected SliderLayoutListener sliderSwitchListener;
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
         @Override
@@ -135,6 +139,7 @@ public class LoriePreferences extends AppCompatActivity {
             addPreferencesFromResource(R.xml.preferences);
         }
 
+        @SuppressLint("RestrictedApi")
         @SuppressWarnings("ConstantConditions")
         void updatePreferencesLayout() {
             SharedPreferences p = getPreferenceManager().getSharedPreferences();
@@ -167,7 +172,6 @@ public class LoriePreferences extends AppCompatActivity {
                     findPreference("displayResolutionExact").setVisible(false);
                     findPreference("displayResolutionCustom").setVisible(false);
             }
-
             findPreference("hideEKOnVolDown").setEnabled(p.getBoolean("showAdditionalKbd", false));
             findPreference("dexMetaKeyCapture").setEnabled(!p.getBoolean("enableAccessibilityServiceAutomatically", false));
             findPreference("enableAccessibilityServiceAutomatically").setEnabled(!p.getBoolean("dexMetaKeyCapture", false));
@@ -180,7 +184,6 @@ public class LoriePreferences extends AppCompatActivity {
             findPreference("displayResolutionExact").setSummary(p.getString("displayResolutionExact", "1280x1024"));
             findPreference("displayResolutionCustom").setSummary(p.getString("displayResolutionCustom", "1280x1024"));
             findPreference("displayStretch").setEnabled("exact".contentEquals(p.getString("displayResolutionMode", "native")) || "custom".contentEquals(p.getString("displayResolutionMode", "native")));
-
             int modeValue = Integer.parseInt(p.getString("touchMode", "1")) - 1;
             String mode = getResources().getStringArray(R.array.touchscreenInputModesEntries)[modeValue];
             findPreference("touchMode").setSummary(mode);
@@ -260,7 +263,7 @@ public class LoriePreferences extends AppCompatActivity {
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             String key = preference.getKey();
-            Log.e("Preferences", "changed preference: " + key);
+            Log.d("Preferences", "changed preference: " + key);
             handler.postDelayed(this::updatePreferencesLayout, 100);
 
             if ("showIMEWhileExternalConnected".contentEquals(key)) {
@@ -340,7 +343,7 @@ public class LoriePreferences extends AppCompatActivity {
 
             Intent intent = new Intent(ACTION_PREFERENCES_CHANGED);
             intent.putExtra("key", key);
-            intent.setPackage("com.termux.display");
+            intent.setPackage("com.termux");
             requireContext().sendBroadcast(intent);
 
             handler.postAtTime(this::updatePreferencesLayout, 100);
@@ -530,6 +533,7 @@ public class LoriePreferences extends AppCompatActivity {
                                 }
                                 break;
                             }
+                            case "switchSlider":
                             case "displayStretch":
                             case "Reseed":
                             case "PIP":
@@ -559,7 +563,7 @@ public class LoriePreferences extends AppCompatActivity {
                         Intent intent0 = new Intent(ACTION_PREFERENCES_CHANGED);
                         intent0.putExtra("key", key);
                         intent0.putExtra("fromBroadcast", true);
-                        intent0.setPackage("com.termux.display");
+                        intent0.setPackage("com.termux");
                         context.sendBroadcast(intent0);
                     }
                     edit.commit();

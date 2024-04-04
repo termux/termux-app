@@ -23,7 +23,6 @@
 #include "lorie.h"
 
 #define log(prio, ...) __android_log_print(ANDROID_LOG_ ## prio, "LorieNative", __VA_ARGS__)
-
 static int argc = 0;
 static char** argv = NULL;
 static int conn_fd = -1;
@@ -357,7 +356,6 @@ JNIEXPORT jboolean JNICALL
 Java_com_termux_display_CmdEntryPoint_connected(__unused JNIEnv *env, __unused jclass clazz) {
     return conn_fd != -1;
 }
-
 static inline void checkConnection(JNIEnv* env) {
     int retval, b = 0;
 
@@ -426,8 +424,9 @@ Java_com_termux_display_LorieView_handleXEvents(JNIEnv *env, maybe_unused jobjec
                 (*env)->CallVoidMethod(env, thiz, id, str);
             }
         }
-
-        while(read(conn_fd, &none, sizeof(none)) > 0);
+        while(read(conn_fd, &none, sizeof(none)) > 0){
+            log(DEBUG, "read data from xserver");
+        }
     }
 }
 
@@ -454,28 +453,35 @@ Java_com_termux_display_LorieView_startLogcat(JNIEnv *env, unused jobject cls, j
 JNIEXPORT void JNICALL
 Java_com_termux_display_LorieView_setClipboardSyncEnabled(unused JNIEnv* env, unused jobject cls, jboolean enable) {
     if (conn_fd != -1) {
+        log(DEBUG,"setClipboardSyncEnabled start fd:%d enable:%d",conn_fd,enable);
         lorieEvent e = { .clipboardSync = { .t = EVENT_CLIPBOARD_SYNC, .enable = enable } };
         write(conn_fd, &e, sizeof(e));
         checkConnection(env);
+        log(DEBUG,"setClipboardSyncEnabled finish fd:%d",conn_fd);
     }
 }
 
 JNIEXPORT void JNICALL
 Java_com_termux_display_LorieView_sendWindowChange(unused JNIEnv* env, unused jobject cls, jint width, jint height, jint framerate) {
     if (conn_fd != -1) {
+        log(DEBUG,"sendWindowChange start fd:%d width:%d height:%d framerate:%d",conn_fd,width,height,framerate);
         lorieEvent e = { .screenSize = { .t = EVENT_SCREEN_SIZE, .width = width, .height = height, .framerate = framerate } };
         write(conn_fd, &e, sizeof(e));
+        log(DEBUG,"sendWindowChange finish fd:%d",conn_fd);
         checkConnection(env);
     }
 }
 
 JNIEXPORT void JNICALL
 Java_com_termux_display_LorieView_sendMouseEvent(unused JNIEnv* env, unused jobject cls, jfloat x, jfloat y, jint which_button, jboolean button_down, jboolean relative) {
+    log(DEBUG,"sendMouseEvent start");
     if (conn_fd != -1) {
+        log(DEBUG, "sendMouseEvent key: x=%d y=%d which_button=%d button_down=%d relative=%d", x,y,which_button,button_down,relative);
         lorieEvent e = { .mouse = { .t = EVENT_MOUSE, .x = x, .y = y, .detail = which_button, .down = button_down, .relative = relative } };
         write(conn_fd, &e, sizeof(e));
         checkConnection(env);
     }
+    log(DEBUG,"sendMouseEvent finished");
 }
 
 JNIEXPORT void JNICALL

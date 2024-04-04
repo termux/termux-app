@@ -38,6 +38,7 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     public static final byte[] MAGIC = "0xDEADBEEF".getBytes();
     private static final Handler handler;
     public static Context ctx;
+    public static boolean initFlag=false;
     static {
         try {
             ctx = createContext();
@@ -59,9 +60,22 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     }
 
     CmdEntryPoint(String[] args) {
+        Log.i("CmdEntryPoint", "display port: " + Arrays.toString(args));
         if (!start(args))
             System.exit(1);
 
+        spawnListeningThread();
+        sendBroadcastDelayed();
+    }
+    CmdEntryPoint() {
+        if (initFlag){
+            return;
+        }
+        String args[] = {":1"};
+        Log.i("CmdEntryPoint", "display port: " + Arrays.toString(args));
+        if (!start(args))
+            System.exit(1);
+        initFlag=true;
         spawnListeningThread();
         sendBroadcastDelayed();
     }
@@ -211,7 +225,6 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     private static native boolean connected();
 
     static {
-        Log.d("CmdEntryPoint","start load library");
         String path = "lib/" + Build.SUPPORTED_ABIS[0] + "/libXlorie.so";
         ClassLoader loader = CmdEntryPoint.class.getClassLoader();
         URL res = loader != null ? loader.getResource(path) : null;
@@ -219,7 +232,6 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
         if (libPath != null) {
             try {
                 System.load(libPath);
-                Log.d("CmdEntryPoint", "success to load " + libPath);
             } catch (Exception e) {
                 Log.e("CmdEntryPoint", "Failed to dlopen " + libPath, e);
                 System.err.println("Failed to load native library. Did you install the right apk? Try the universal one.");

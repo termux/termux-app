@@ -34,6 +34,8 @@ cp termux-x11-display $PREFIX/bin/
 mv $PREFIX/bin/termux-x11-display $PREFIX/bin/termux-display
 cp shell-loader/build/outputs/apk/debug/shell-loader-debug.apk \
 	$PREFIX/libexec/termux-display/loader.apk
+cp display $PREFIX/bin/
+cp startx11 $PREFIX/bin/
 
 mkdir -p $CONTROL_DIR
 cat <<EOF > $CONTROL_DIR/control
@@ -49,6 +51,10 @@ EOF
 cat <<EOF > $CONTROL_DIR/postinst
 #!/data/data/com.termux/files/usr/bin/sh
 chmod -w /data/data/com.termux/files/usr/libexec/termux-display/loader.apk
+chmod -w /data/data/com.termux/files/usr/bin/display
+chmod +x /data/data/com.termux/files/usr/bin/display
+chmod -w /data/data/com.termux/files/usr/bin/startx11
+chmod +x /data/data/com.termux/files/usr/bin/startx11
 EOF
 
 mkdir -p $PACKAGE_DIR
@@ -91,6 +97,10 @@ BUILD_DATE=$(date +%s)
 {
   echo "post_install() {"
   echo "    chmod -w /data/data/com.termux/files/usr/libexec/termux-display/loader.apk"
+  echo "    chmod -w /data/data/com.termux/files/usr/bin/display"
+  echo "    chmod +x /data/data/com.termux/files/usr/bin/display"
+  echo "    chmod -w /data/data/com.termux/files/usr/bin/startx11"
+  echo "    chmod +x /data/data/com.termux/files/usr/bin/startx11"
   echo "}"
 } > $DATA_DIR/.INSTALL
 

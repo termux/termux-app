@@ -26,7 +26,10 @@
             android:key="displayResolutionCustom"
             android:defaultValue="1280x1024"
             android:summary="Example: 1280x1024" />
-
+        <SwitchPreferenceCompat
+            android:title="Switch Slide Menu"
+            android:defaultValue="false"
+            android:key="switchSlider" />
         <SwitchPreferenceCompat
             android:title="Stretch to fit display"
             android:defaultValue="false"

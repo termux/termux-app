@@ -1,0 +1,1 @@
+env DISPLAY=:1 dbus-launch --exit-with-session xfce4-session
