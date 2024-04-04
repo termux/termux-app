@@ -147,7 +147,7 @@ public class TouchInputHandler {
             int offsetY = viewLocation[1] - view0Location[1];
 
             event.offsetLocation(-offsetX, -offsetY);
-            Log.d("TouchInputHandler","offsetx:"+offsetX+" offsety:"+offsetY);
+//            Log.d("TouchInputHandler","offsetx:"+offsetX+" offsety:"+offsetY);
         }
 
         if (!view.isFocused() && event.getAction() == MotionEvent.ACTION_DOWN)

@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -49,7 +48,6 @@ import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
-import com.termux.display.LorieView;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
@@ -222,23 +220,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         setActivityTheme();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_termux_main);
-
+//        setRequestedOrientation( SCREEN_ORIENTATION_LANDSCAPE);
         slideWindowLayout = findViewById(R.id.id_termux_layout);
         slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuOpenListener() {
             @Override
-            public void onMenuOpen(boolean isOpen, int flag) {
-                if (isOpen)
-                {
-                    Toast.makeText(getApplicationContext(),
-                        flag == 0 ? "LeftMenu Open" : "RightMenu Open",
-                        Toast.LENGTH_SHORT).show();
-                } else
-                {
-                    Toast.makeText(getApplicationContext(),
-                        flag == 0 ? "LeftMenu Close" : "RightMenu Close",
-                        Toast.LENGTH_SHORT).show();
-                }
-            }
+            public void onMenuOpen(boolean isOpen, int flag) {}
 
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
@@ -321,12 +307,17 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         TermuxUtils.sendTermuxOpenedBroadcast(this);
         sliderSwitchListener= new SliderLayoutListener() {
             @Override
-            public void onSwitch(boolean isOpen) {
+            public void onSwitchChange(boolean isOpen) {
                 slideWindowLayout.setSwitchSlider(isOpen);
             }
             @Override
-            public void switchSlider() {
+            public void onSwitchSliderChange() {
                 slideWindowLayout.switchSlider();
+            }
+
+            @Override
+            public void onChangeOrientation(int landscape) {
+                slideWindowLayout.changeLayoutOrientation(landscape);
             }
         };
     }

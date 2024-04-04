@@ -30,14 +30,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.InputDevice;
@@ -114,7 +112,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                         Log.v("Lorie", "Disconnected");
                         runOnUiThread(() -> clientConnectedStateChanged(false)); //recreate()); //onPreferencesChanged(""));
                     }, 0);
-
                     onReceiveConnection();
                 } catch (Exception e) {
                     Log.e("MainActivity", "Something went wrong while we extracted connection details from binder.", e);
@@ -123,8 +120,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 finishAffinity();
             } else if (ACTION_PREFERENCES_CHANGED.equals(intent.getAction())) {
                 Log.d("MainActivity", "preference: " + intent.getStringExtra("key"));
-                if (!"additionalKbdVisible".equals(intent.getStringExtra("key")))
+                if (!"additionalKbdVisible".equals(intent.getStringExtra("key"))){
                     onPreferencesChanged("");
+                }
             }
         }
     };
@@ -164,7 +162,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         findViewById(com.termux.display.R.id.preferences_button).setOnClickListener((l) -> {
 //            handler.post(() -> new CmdEntryPoint());
             if (null != sliderSwitchListener) {
-                sliderSwitchListener.onSwitch(false);
+                sliderSwitchListener.onSwitchChange(false);
             }
             mClientStartedFromShell = false;
         });
@@ -189,7 +187,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
             if (k == KEYCODE_BACK) {
                 if (null != sliderSwitchListener) {
-                    sliderSwitchListener.onSwitch(true);
+                    sliderSwitchListener.onSwitchChange(true);
 
                     SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
                     boolean isOpend = p.getBoolean("switchSlider", true);
@@ -590,13 +588,19 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             KeyInterceptor.shutdown();
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-        if (getRequestedOrientation() != requestedOrientation)
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        if (getRequestedOrientation() != requestedOrientation){
             setRequestedOrientation(requestedOrientation);
-        boolean switchSlideMenu = p.getBoolean("switchSlider", false);
-        if (null != sliderSwitchListener) {
-            sliderSwitchListener.onSwitch(switchSlideMenu);
+            if (null != sliderSwitchListener){
+                sliderSwitchListener.onChangeOrientation(requestedOrientation);
+            }
+
         }
+        boolean switchSlideMenu = p.getBoolean("switchSlider", false);
+        if (null != sliderSwitchListener){
+            sliderSwitchListener.onSwitchChange(switchSlideMenu);
+        }
+
         findViewById(com.termux.display.R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
         LinearLayout buttons = findViewById(com.termux.display.R.id.mouse_helper_visibility);
         if (p.getBoolean("showStylusClickOverride", false)) {

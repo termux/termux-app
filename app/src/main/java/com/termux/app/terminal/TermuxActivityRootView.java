@@ -62,7 +62,6 @@ import com.termux.shared.view.ViewUtils;
  * when the view is redrawn if the margin is incorrect, but logic has been implemented to avoid that.
  */
 public class TermuxActivityRootView extends LinearLayout implements ViewTreeObserver.OnGlobalLayoutListener {
-
     public TermuxActivity mActivity;
     public Integer marginBottom;
     public Integer lastMarginBottom;
@@ -103,6 +102,10 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        widthMeasureSpec = MeasureSpec.makeMeasureSpec(
+            MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY);
+        heightMeasureSpec = MeasureSpec.makeMeasureSpec(
+            MeasureSpec.getSize(heightMeasureSpec), MeasureSpec.EXACTLY);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (marginBottom != null) {

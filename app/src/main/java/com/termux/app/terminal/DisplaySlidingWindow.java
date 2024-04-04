@@ -1,12 +1,19 @@
 package com.termux.app.terminal;
 
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Point;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
@@ -62,11 +69,15 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     /**
      * 屏幕宽度
      */
+    private int mContentWidth;
     private int mScreenWidth;
+    private  int mScreenHeight;
+    public static boolean landscape = false;
     /**
      * dp 菜单距离屏幕的右边距
      */
     private int mMenuRightPadding;
+    private int verticalPadding;
     private boolean switchSlider;
 
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
@@ -74,6 +85,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         setClickable(true);
         switchSlider = true;
         mScreenWidth = ScreenUtils.getScreenWidth(context);
+        mScreenHeight = ScreenUtils.getScreenHeight(context);
+
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
             R.styleable.BinarySlidingMenu, defStyle, 0);
         int n = a.getIndexCount();
@@ -88,6 +101,13 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             }
         }
         a.recycle();
+        if (landscape){
+            mContentWidth = mScreenHeight;
+            mMenuRightPadding=mContentWidth*3/5;
+        }else{
+            verticalPadding = mMenuRightPadding;
+            mContentWidth = mScreenWidth;
+        }
     }
 
     public DisplaySlidingWindow(Context context) {
@@ -100,15 +120,22 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
          * 显示的设置一个宽度
          */
         if (!once) {
+            if (landscape) {
+                mContentWidth = mScreenHeight;
+                mMenuRightPadding = mContentWidth * 3 / 5;
+            } else {
+                mContentWidth = mScreenWidth;
+                mMenuRightPadding = verticalPadding;
+            }
             mWrapper = (LinearLayout) getChildAt(0);
             mLeftMenu = (ViewGroup) mWrapper.getChildAt(0);
             mContent = (ViewGroup) mWrapper.getChildAt(1);
             mRightMenu = (ViewGroup) mWrapper.getChildAt(2);
 
-            mMenuWidth = mScreenWidth - mMenuRightPadding;
+            mMenuWidth = mContentWidth - mMenuRightPadding;
             mHalfMenuWidth = mMenuWidth / 2;
             mLeftMenu.getLayoutParams().width = mMenuWidth;
-            mContent.getLayoutParams().width = mScreenWidth;
+            mContent.getLayoutParams().width = mContentWidth;
             mRightMenu.getLayoutParams().width = mMenuWidth;
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -131,7 +158,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             // Up时，进行判断，如果显示区域大于菜单宽度一半则完全显示，否则隐藏
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
-                Log.e("ACTION_UP", "X:" + ev.getRawX());
+//                Log.e("ACTION_UP", "X:" + ev.getRawX());
                 //如果是操作左侧菜单
                 if (isOperateLeft) {
                     //如果影藏的区域大于菜单一半，则影藏菜单
@@ -211,4 +238,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public void switchSlider(){
         this.switchSlider = !this.switchSlider;
     }
+    public void changeLayoutOrientation(int landscapeOriention){
+        once=false;
+        landscape = landscapeOriention == SCREEN_ORIENTATION_LANDSCAPE;
+        Log.d("changeLayoutOrientation",mContentWidth+":"+String.valueOf(mContentWidth)+",mScreenHeight:"+String.valueOf(mScreenHeight)+",mScreenWidth:"+String.valueOf(mScreenWidth));
+    }
+
 }

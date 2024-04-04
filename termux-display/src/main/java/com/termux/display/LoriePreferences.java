@@ -39,10 +39,8 @@ import androidx.preference.SeekBarPreference;
 
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,8 +66,9 @@ public class LoriePreferences extends AppCompatActivity {
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
     protected LoriePreferenceFragment loriePreferenceFragment;
     protected interface SliderLayoutListener {
-        void onSwitch(boolean isOpen);
-        void switchSlider();
+        void onSwitchChange(boolean isOpen);
+        void onSwitchSliderChange();
+        void  onChangeOrientation(int landscape);
     }
     protected SliderLayoutListener sliderSwitchListener;
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
