@@ -53,7 +53,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
          * @param flag   0 左侧， 1右侧
          */
         void onMenuOpen(boolean isOpen, int flag);
+
         boolean sendTouchEvent(MotionEvent ev);
+
+        void onEdgeReached();
     }
 
     public OnMenuOpenListener mOnMenuOpenListener;
@@ -71,7 +74,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
      */
     private int mContentWidth;
     private int mScreenWidth;
-    private  int mScreenHeight;
+    private int mScreenHeight;
     public static boolean landscape = false;
     /**
      * dp 菜单距离屏幕的右边距
@@ -101,10 +104,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             }
         }
         a.recycle();
-        if (landscape){
+        if (landscape) {
             mContentWidth = mScreenHeight;
-            mMenuRightPadding=mContentWidth*3/5;
-        }else{
+            mMenuRightPadding = mContentWidth * 3 / 5;
+        } else {
             verticalPadding = mMenuRightPadding;
             mContentWidth = mScreenWidth;
         }
@@ -158,7 +161,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             // Up时，进行判断，如果显示区域大于菜单宽度一半则完全显示，否则隐藏
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
-//                Log.e("ACTION_UP", "X:" + ev.getRawX());
+                if (scrollX <= 0&&null != mOnMenuOpenListener) {
+                    mOnMenuOpenListener.onEdgeReached();
+                }
+//                Log.d("onTouchEvent", "scrollX:" + scrollX);
                 //如果是操作左侧菜单
                 if (isOperateLeft) {
                     //如果影藏的区域大于菜单一半，则影藏菜单
@@ -202,10 +208,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 }
                 return false;
         }
-        if (switchSlider){
+        if (switchSlider) {
             super.onTouchEvent(ev);
-        }else{
-            if (null != mOnMenuOpenListener){
+        } else {
+            if (null != mOnMenuOpenListener) {
                 mOnMenuOpenListener.sendTouchEvent(ev);
             }
         }
@@ -229,19 +235,21 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
     public void setSwitchSlider(boolean openSlider) {
         this.switchSlider = openSlider;
-        if (!openSlider){
+        if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
-        }else{
+        } else {
             this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
         }
     }
-    public void switchSlider(){
+
+    public void switchSlider() {
         this.switchSlider = !this.switchSlider;
     }
-    public void changeLayoutOrientation(int landscapeOriention){
-        once=false;
+
+    public void changeLayoutOrientation(int landscapeOriention) {
+        once = false;
         landscape = landscapeOriention == SCREEN_ORIENTATION_LANDSCAPE;
-        Log.d("changeLayoutOrientation",mContentWidth+":"+String.valueOf(mContentWidth)+",mScreenHeight:"+String.valueOf(mScreenHeight)+",mScreenWidth:"+String.valueOf(mScreenWidth));
+        Log.d("changeLayoutOrientation", mContentWidth + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
     }
 
 }

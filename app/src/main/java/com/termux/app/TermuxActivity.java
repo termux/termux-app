@@ -233,6 +233,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                 }
                 return true;
             }
+
+            @Override
+            public void onEdgeReached() {
+                getDrawer().openDrawer(Gravity.START);
+            }
         });
 
         ViewGroup vGroup = findViewById(R.id.id_termux_layout);
