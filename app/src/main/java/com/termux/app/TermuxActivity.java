@@ -222,7 +222,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         setContentView(R.layout.activity_termux_main);
 //        setRequestedOrientation( SCREEN_ORIENTATION_LANDSCAPE);
         slideWindowLayout = findViewById(R.id.id_termux_layout);
-        slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuOpenListener() {
+        slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
             @Override
             public void onMenuOpen(boolean isOpen, int flag) {}
 

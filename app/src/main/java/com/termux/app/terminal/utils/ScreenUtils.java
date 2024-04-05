@@ -12,9 +12,9 @@ import android.view.View;
 import android.view.WindowManager;
 
 /**
- * 获得屏幕相关的辅助类
+ * utils of screen metric info
  *
- * @author zhy
+ *
  */
 public class ScreenUtils {
     private ScreenUtils() {
@@ -23,7 +23,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获得屏幕宽度
+     * get width of screen
      *
      * @param context
      * @return
@@ -37,7 +37,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获得屏幕高度
+     * get height of screen
      *
      * @param context
      * @return
@@ -51,7 +51,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取导航栏高度
+     * get navigation bar height
      * @param context
      * @return
      */
@@ -68,7 +68,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 检测是否是全面屏
+     * test is it full screen mobile
      * @param context
      * @return
      */
@@ -101,7 +101,7 @@ public class ScreenUtils {
         }
     }
     /**
-     * 获得状态栏的高度
+     * get height of status bar
      *
      * @param context
      * @return
@@ -122,7 +122,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取当前屏幕截图，包含状态栏
+     * snpshot screen, include status bar
      *
      * @param activity
      * @return
@@ -142,7 +142,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取当前屏幕截图，不包含状态栏
+     * snpshot screen, exclude status bar
      *
      * @param activity
      * @return

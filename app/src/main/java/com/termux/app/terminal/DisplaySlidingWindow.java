@@ -1,19 +1,14 @@
 package com.termux.app.terminal;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Point;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
@@ -21,15 +16,7 @@ import com.nineoldandroids.view.ViewHelper;
 import com.termux.app.terminal.utils.ScreenUtils;
 import com.termux.R;
 
-/**
- * http://blog.csdn.net/lmj623565791
- *
- * @author zhy
- */
 public class DisplaySlidingWindow extends HorizontalScrollView {
-    /**
-     * 菜单的宽度
-     */
     private int mMenuWidth;
     private int mHalfMenuWidth;
     private boolean isOperateRight;
@@ -43,14 +30,14 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean isRightMenuOpen;
 
     /**
-     * 回调的接口
+     * listener for menu changed
      *
-     * @author zhy
+     *
      */
-    public interface OnMenuOpenListener {
+    public interface OnMenuChangeListener {
         /**
-         * @param isOpen true打开菜单，false关闭菜单
-         * @param flag   0 左侧， 1右侧
+         * @param isOpen true open menu，false close menu
+         * @param flag   0 left， 1 right
          */
         void onMenuOpen(boolean isOpen, int flag);
 
@@ -59,10 +46,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         void onEdgeReached();
     }
 
-    public OnMenuOpenListener mOnMenuOpenListener;
+    public OnMenuChangeListener mOnMenuChangeListener;
 
-    public void setOnMenuOpenListener(OnMenuOpenListener mOnMenuOpenListener) {
-        this.mOnMenuOpenListener = mOnMenuOpenListener;
+    public void setOnMenuOpenListener(OnMenuChangeListener mOnMenuChangeListener) {
+        this.mOnMenuChangeListener = mOnMenuChangeListener;
     }
 
     public DisplaySlidingWindow(Context context, AttributeSet attrs) {
@@ -70,14 +57,14 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     /**
-     * 屏幕宽度
+     * content width
      */
     private int mContentWidth;
     private int mScreenWidth;
     private int mScreenHeight;
     public static boolean landscape = false;
     /**
-     * dp 菜单距离屏幕的右边距
+     * dp menu padding from screen edge
      */
     private int mMenuRightPadding;
     private int verticalPadding;
@@ -120,7 +107,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         /**
-         * 显示的设置一个宽度
+         * measure width of content and menu
          */
         if (!once) {
             if (landscape) {
@@ -148,7 +135,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
         if (changed) {
-            // 将菜单隐藏
+            // hide menu at start up
             this.scrollTo(mMenuWidth, 0);
             once = true;
         }
@@ -158,50 +145,46 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getAction();
         switch (action) {
-            // Up时，进行判断，如果显示区域大于菜单宽度一半则完全显示，否则隐藏
+            // open menu if scroll to distance that more than half menu width
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
-                if (scrollX <= 0&&null != mOnMenuOpenListener) {
-                    mOnMenuOpenListener.onEdgeReached();
+                if (scrollX <= 0&&null != mOnMenuChangeListener) {
+                    mOnMenuChangeListener.onEdgeReached();
                 }
 //                Log.d("onTouchEvent", "scrollX:" + scrollX);
-                //如果是操作左侧菜单
+                //operate left
                 if (isOperateLeft) {
-                    //如果影藏的区域大于菜单一半，则影藏菜单
+                    // area hidden more than half of menu width close it
                     if (scrollX > mHalfMenuWidth) {
                         this.smoothScrollTo(mMenuWidth, 0);
-                        //如果当前左侧菜单是开启状态，且mOnMenuOpenListener不为空，则回调关闭菜单
-                        if (isLeftMenuOpen && mOnMenuOpenListener != null) {
-                            //第一个参数true：打开菜单，false：关闭菜单;第二个参数 0 代表左侧；1代表右侧
-                            mOnMenuOpenListener.onMenuOpen(false, 0);
+                        //notify listener that left meun opened
+                        if (isLeftMenuOpen && mOnMenuChangeListener != null) {
+                            mOnMenuChangeListener.onMenuOpen(false, 0);
                         }
                         isLeftMenuOpen = false;
-                    } else//打开左侧菜单
+                    } else//open left menu
                     {
-//					mLeftMenu.bringToFront();
                         this.smoothScrollTo(0, 0);
-                        //如果当前左侧菜单是关闭状态，且mOnMenuOpenListener不为空，则回调打开菜单
-                        if (!isLeftMenuOpen && mOnMenuOpenListener != null) {
-                            mOnMenuOpenListener.onMenuOpen(true, 0);
+                        if (!isLeftMenuOpen && mOnMenuChangeListener != null) {
+                            mOnMenuChangeListener.onMenuOpen(true, 0);
                         }
                         isLeftMenuOpen = true;
                     }
                 }
-                //操作右侧
+                //operate right
                 if (isOperateRight) {
-                    //打开右侧侧滑菜单
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
                         this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
-                        if (!isRightMenuOpen && mOnMenuOpenListener != null) {
-                            mOnMenuOpenListener.onMenuOpen(true, 1);
+                        if (!isRightMenuOpen && mOnMenuChangeListener != null) {
+                            mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
                         isRightMenuOpen = true;
 //					mRightMenu.bringToFront();
-                    } else//关闭右侧侧滑菜单
+                    } else//cloae right menu
                     {
                         this.smoothScrollTo(mMenuWidth, 0);
-                        if (isRightMenuOpen && mOnMenuOpenListener != null) {
-                            mOnMenuOpenListener.onMenuOpen(false, 1);
+                        if (isRightMenuOpen && mOnMenuChangeListener != null) {
+                            mOnMenuChangeListener.onMenuOpen(false, 1);
                         }
                         isRightMenuOpen = false;
                     }
@@ -211,8 +194,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (switchSlider) {
             super.onTouchEvent(ev);
         } else {
-            if (null != mOnMenuOpenListener) {
-                mOnMenuOpenListener.sendTouchEvent(ev);
+            if (null != mOnMenuChangeListener) {
+                mOnMenuChangeListener.sendTouchEvent(ev);
             }
         }
         return false;
