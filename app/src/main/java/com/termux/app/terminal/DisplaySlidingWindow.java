@@ -111,10 +111,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
          */
         if (!once) {
             if (landscape) {
-                mContentWidth = mScreenHeight;
+                mContentWidth = mScreenHeight>mScreenWidth?mScreenHeight:mScreenWidth;
                 mMenuRightPadding = mContentWidth * 3 / 5;
             } else {
-                mContentWidth = mScreenWidth;
+                mContentWidth = mScreenWidth<mScreenHeight?mScreenWidth:mScreenHeight;
                 mMenuRightPadding = verticalPadding;
             }
             mWrapper = (LinearLayout) getChildAt(0);
@@ -127,6 +127,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             mLeftMenu.getLayoutParams().width = mMenuWidth;
             mContent.getLayoutParams().width = mContentWidth;
             mRightMenu.getLayoutParams().width = mMenuWidth;
+
+            Log.d("changeLayoutOrientation", "landscape:"+String.valueOf(landscape)+", mContentWidth" + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
@@ -232,7 +234,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public void changeLayoutOrientation(int landscapeOriention) {
         once = false;
         landscape = landscapeOriention == SCREEN_ORIENTATION_LANDSCAPE;
-        Log.d("changeLayoutOrientation", mContentWidth + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
     }
 
 }

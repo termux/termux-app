@@ -1,0 +1,2 @@
+XDG_RUNTIME_DIR=${TMPDIR} termux-display :1 &
+env DISPLAY=:1 dbus-launch --exit-with-session xfce4-seesion

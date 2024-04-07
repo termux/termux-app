@@ -161,9 +161,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         frm = findViewById(com.termux.display.R.id.frame);
         findViewById(com.termux.display.R.id.preferences_button).setOnClickListener((l) -> {
 //            handler.post(() -> new CmdEntryPoint());
-            if (null != sliderSwitchListener) {
-                sliderSwitchListener.onSwitchChange(false);
-            }
+//            if (null != sliderSwitchListener) {
+//                sliderSwitchListener.onSwitchChange(false);
+//            }
             mClientStartedFromShell = false;
         });
         findViewById(com.termux.display.R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
@@ -594,7 +594,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             if (null != sliderSwitchListener){
                 sliderSwitchListener.onChangeOrientation(requestedOrientation);
             }
-
+//            getLorieContentView().triggerCallback();
+//            getLorieContentView().regenerate();
         }
         boolean switchSlideMenu = p.getBoolean("switchSlider", false);
         if (null != sliderSwitchListener){

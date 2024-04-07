@@ -1,2 +1,0 @@
-termux-display :1 > ~/termux-display.log &
-env DISPLAY=:1 dbus-launch --exit-with-session xfce4-seesion > ~/x11.log
