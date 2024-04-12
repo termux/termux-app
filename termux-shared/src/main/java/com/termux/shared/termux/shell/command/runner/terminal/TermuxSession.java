@@ -69,7 +69,7 @@ public class TermuxSession {
      *                        available in the {@link TermuxSessionClient#onTermuxSessionExited(TermuxSession)}
      *                        callback will be set to the {@link TerminalSession} transcript. The session
      *                        transcript will contain both stdout and stderr combined, basically
-     *                        anything sent to the the pseudo terminal /dev/pts, including PS1 prefixes.
+     *                        anything sent to the pseudo terminal /dev/pts, including PS1 prefixes.
      *                        Set this to {@code true} only if the session transcript is required,
      *                        since this requires extra processing to get it.
      * @return Returns the {@link TermuxSession}. This will be {@code null} if failed to start the execution command.

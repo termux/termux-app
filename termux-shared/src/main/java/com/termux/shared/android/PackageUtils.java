@@ -602,7 +602,7 @@ public class PackageUtils {
     }
 
     /**
-     * Check if the current user is the primary user. This is done by checking if the the serial
+     * Check if the current user is the primary user. This is done by checking if the serial
      * number for the current user equals 0.
      *
      * @param context The {@link Context} for operations.

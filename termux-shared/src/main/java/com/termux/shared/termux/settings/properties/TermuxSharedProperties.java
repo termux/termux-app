@@ -77,7 +77,7 @@ public abstract class TermuxSharedProperties {
      *
      * @param key The key to read.
      * @param def The default value.
-     * @param cached If {@code true}, then the value is returned from the the {@link Properties} in-memory cache.
+     * @param cached If {@code true}, then the value is returned from the {@link Properties} in-memory cache.
      *               Otherwise the {@link Properties} object is read directly from the file
      *               and value is returned from it against the key.
      * @return Returns the {@link String} object. This will be {@code null} if key is not found.
@@ -91,7 +91,7 @@ public abstract class TermuxSharedProperties {
      * the {@link #mPropertiesFile} file.
      *
      * @param key The key to read.
-     * @param cached If {@code true}, then the value is checked from the the {@link Properties} in-memory cache.
+     * @param cached If {@code true}, then the value is checked from the {@link Properties} in-memory cache.
      *               Otherwise the {@link Properties} object is read directly from the file
      *               and value is checked from it.
      * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
@@ -109,7 +109,7 @@ public abstract class TermuxSharedProperties {
      * the {@link #mPropertiesFile} file.
      *
      * @param key The key to read.
-     * @param cached If {@code true}, then the value is checked from the the {@link Properties} in-memory cache.
+     * @param cached If {@code true}, then the value is checked from the {@link Properties} in-memory cache.
      *               Otherwise the {@link Properties} object is read directly from the file
      *               and value is checked from it.
      * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
@@ -143,7 +143,7 @@ public abstract class TermuxSharedProperties {
      * so a call to {@link #loadTermuxPropertiesFromDisk()} must be made before this.
      *
      * @param key The key to read from the {@link HashMap<>} in-memory cache.
-     * @param cached If {@code true}, then the value is returned from the the {@link HashMap <>} in-memory cache,
+     * @param cached If {@code true}, then the value is returned from the {@link HashMap <>} in-memory cache,
      *               but if the value is null, then an attempt is made to return the default value.
      *               If {@code false}, then the {@link Properties} object is read directly from the file
      *               and internal value is returned for the property value against the key.
