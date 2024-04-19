@@ -1,0 +1,3 @@
+#!/data/data/com.termux/files/usr/bin/sh
+ps -ef | grep 'termux.x11*' | grep -v grep | awk '{print $2}'| xargs -r kill -9
+ps -ef | grep 'termux.display*' | grep -v grep | awk '{print $2}'| xargs -r kill -9

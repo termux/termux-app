@@ -7,6 +7,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -65,12 +66,16 @@ public class LoriePreferences extends AppCompatActivity {
     static final String ACTION_PREFERENCES_CHANGED = "com.termux.display.ACTION_PREFERENCES_CHANGED";
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
     protected LoriePreferenceFragment loriePreferenceFragment;
-    protected interface SliderLayoutListener {
-        void onSwitchChange(boolean isOpen);
+    protected interface TermuxActivityListener {
+        void onX11PreferenceSwitchChange(boolean isOpen);
         void onSwitchSliderChange();
         void  onChangeOrientation(int landscape);
+        void reInstallX11StartScript(Activity activity);
+        void stopDesktop(Activity activity);
+        void openSoftwareKeyboard();
     }
-    protected SliderLayoutListener sliderSwitchListener;
+    protected TermuxActivityListener termuxActivityListener;
+
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
         @Override
@@ -96,6 +101,7 @@ public class LoriePreferences extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setTitle("Preferences");
         }
+        loriePreferenceFragment.setActivity(this);
     }
 
     @SuppressLint("WrongConstant")
@@ -123,8 +129,23 @@ public class LoriePreferences extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+    public void installX11ServerBridge(){
+        if (termuxActivityListener!=null){
+            termuxActivityListener.reInstallX11StartScript(this);
+        }
+    }
+    public void stopDesktop(){
+        if (termuxActivityListener!=null){
+            termuxActivityListener.stopDesktop(this);
+        }
+    }
 
     public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
+        private LoriePreferences activity;
+        public void setActivity(LoriePreferences activity) {
+            this.activity = activity;
+        }
+
         @Override
         public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
             SharedPreferences p = getPreferenceManager().getSharedPreferences();
@@ -250,7 +271,43 @@ public class LoriePreferences extends AppCompatActivity {
                         .create()
                         .show();
             }
-
+            if("install_x11_server_bridge".contentEquals(preference.getKey())){
+                View view = getLayoutInflater().inflate(R.layout.x11_server_bridge_config, null, false);
+                @SuppressLint({"MissingInflatedId", "LocalSuppress"})
+                TextView desc = view.findViewById(R.id.x11_server_bridge_config_description);
+                desc.setText(R.string.x11_server_bridge_config);
+                desc.setMovementMethod(LinkMovementMethod.getInstance());
+                new android.app.AlertDialog.Builder(getActivity())
+                    .setView(view)
+                    .setTitle("X11 server bridge installer")
+                    .setPositiveButton("OK",
+                        (dialog, whichButton) -> {
+                            if (activity!= null){
+                                activity.installX11ServerBridge();
+                            }
+                        }
+                    )
+                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
+                    .create()
+                    .show();
+            }
+            if ("stop_desktop".contentEquals(preference.getKey())){
+                new android.app.AlertDialog.Builder(getActivity())
+                    .setTitle("Stop Desktop")
+                    .setPositiveButton("OK",
+                        (dialog, whichButton) -> {
+                            if (activity!= null){
+                                activity.stopDesktop();
+                            }
+                        }
+                    )
+                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
+                    .create()
+                    .show();
+            }
+            if("open_keyboard".contentEquals(preference.getKey())){
+                activity.openSoftKeyboar();
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(preference.getKey()))
                 ActivityCompat.requestPermissions(requireActivity(), new String[]{ POST_NOTIFICATIONS }, 101);
 
@@ -348,6 +405,10 @@ public class LoriePreferences extends AppCompatActivity {
             handler.postAtTime(this::updatePreferencesLayout, 100);
             return true;
         }
+    }
+
+    private void openSoftKeyboar() {
+        termuxActivityListener.openSoftwareKeyboard();
     }
 
     public static class Receiver extends BroadcastReceiver {

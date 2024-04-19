@@ -383,6 +383,9 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             // Get full path including fragment (anything after last "#")
             executionCommand.executable = UriUtils.getUriFilePathWithFragment(executionCommand.executableUri);
             executionCommand.arguments = IntentUtils.getStringArrayExtraIfSet(intent, TERMUX_SERVICE.EXTRA_ARGUMENTS, null);
+            if (executionCommand.arguments==null){
+                executionCommand.arguments = IntentUtils.getStringListExtraIfSet(intent,TERMUX_SERVICE.EXTRA_ARGUMENTS,null);
+            }
             if (Runner.APP_SHELL.equalsRunner(executionCommand.runner))
                 executionCommand.stdin = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_STDIN, null);
             executionCommand.backgroundCustomLogLevel = IntentUtils.getIntegerExtraIfSet(intent, TERMUX_SERVICE.EXTRA_BACKGROUND_CUSTOM_LOG_LEVEL, null);

@@ -1,6 +1,9 @@
 package com.termux.app;
 
+import static com.termux.shared.termux.TermuxConstants.TERMUX_FILES_DIR_PATH;
+
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -9,6 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -48,6 +54,10 @@ import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
+import com.termux.app.terminal.utils.FilePathUtils;
+import com.termux.app.terminal.utils.FileUtils;
+import com.termux.app.terminal.utils.CommandUtils;
+import com.termux.app.terminal.utils.ScreenUtils;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
@@ -71,6 +81,8 @@ import com.termux.terminal.TerminalSessionClient;
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -84,6 +96,7 @@ import java.util.Arrays;
  * about memory leaks.
  */
 public class TermuxActivity extends com.termux.display.MainActivity implements ServiceConnection {
+    private static final int FILE_REQUEST_CODE = 10;
     private DisplaySlidingWindow slideWindowLayout;
 
     /**
@@ -99,14 +112,14 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     TerminalView mTerminalView;
 
     /**
-     *  The {@link TerminalViewClient} interface implementation to allow for communication between
-     *  {@link TerminalView} and {@link TermuxActivity}.
+     * The {@link TerminalViewClient} interface implementation to allow for communication between
+     * {@link TerminalView} and {@link TermuxActivity}.
      */
     TermuxTerminalViewClient mTermuxTerminalViewClient;
 
     /**
-     *  The {@link TerminalSessionClient} interface implementation to allow for communication between
-     *  {@link TerminalSession} and {@link TermuxActivity}.
+     * The {@link TerminalSessionClient} interface implementation to allow for communication between
+     * {@link TerminalSession} and {@link TermuxActivity}.
      */
     TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
 
@@ -224,12 +237,13 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         slideWindowLayout = findViewById(R.id.id_termux_layout);
         slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
             @Override
-            public void onMenuOpen(boolean isOpen, int flag) {}
+            public void onMenuOpen(boolean isOpen, int flag) {
+            }
 
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
-                if (null != mInputHandler){
-                    mInputHandler.handleTouchEvent(slideWindowLayout,getLorieContentView(),ev);
+                if (null != mInputHandler) {
+                    mInputHandler.handleTouchEvent(slideWindowLayout, getLorieContentView(), ev);
                 }
                 return true;
             }
@@ -242,7 +256,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 
         ViewGroup vGroup = findViewById(R.id.id_termux_layout);
 
-        DisplayWindowLinearLayout mWraper = (DisplayWindowLinearLayout)vGroup.getChildAt(0);
+        DisplayWindowLinearLayout mWraper = (DisplayWindowLinearLayout) vGroup.getChildAt(0);
         LinearLayout lorieLayout = (LinearLayout) mWraper.getChildAt(1);
         lorieLayout.addView(lorieContentView);
         getSupportFragmentManager().beginTransaction().replace(R.id.id_window_preference, loriePreferenceFragment).commit();
@@ -263,7 +277,15 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         mTermuxActivityRootView.setActivity(this);
         mTermuxActivityBottomSpaceView = findViewById(R.id.activity_termux_bottom_space_view);
         mTermuxActivityRootView.setOnApplyWindowInsetsListener(new TermuxActivityRootView.WindowInsetsListener());
-
+        Bitmap bitmap = null;
+        int width = ScreenUtils.getScreenWidth(this);
+        int height = ScreenUtils.getStatusHeight(this);
+        bitmap = Bitmap.createBitmap(width, height,
+            Bitmap.Config.ARGB_8888);
+        bitmap.eraseColor(Color.parseColor("#CC000000"));
+//        Bitmap blurBitmap = Blur.fastblur(this, bitmap, 20);
+//        mTermuxActivityRootView.setBackground(new BitmapDrawable(bitmap));
+        mTermuxActivityRootView.setBackground(new BitmapDrawable(getResources(), bitmap));
         View content = findViewById(android.R.id.content);
         content.setOnApplyWindowInsetsListener((v, insets) -> {
             mNavBarHeight = insets.getSystemWindowInsetBottom();
@@ -288,6 +310,9 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
 
+        setRecoverView();
+        setX11Server();
+        setBackupView();
         try {
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
             Intent serviceIntent = new Intent(this, TermuxService.class);
@@ -298,7 +323,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             if (!bindService(serviceIntent, this, 0))
                 throw new RuntimeException("bindService() failed");
         } catch (Exception e) {
-            Logger.logStackTraceWithMessage(LOG_TAG,"TermuxActivity failed to start TermuxService", e);
+            Logger.logStackTraceWithMessage(LOG_TAG, "TermuxActivity failed to start TermuxService", e);
             Logger.showToast(this,
                 getString(e.getMessage() != null && e.getMessage().contains("app is in background") ?
                     R.string.error_termux_service_start_failed_bg : R.string.error_termux_service_start_failed_general),
@@ -310,11 +335,12 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
-        sliderSwitchListener= new SliderLayoutListener() {
+        termuxActivityListener = new TermuxActivityListener() {
             @Override
-            public void onSwitchChange(boolean isOpen) {
-                slideWindowLayout.setSwitchSlider(isOpen);
+            public void onX11PreferenceSwitchChange(boolean isOpen) {
+                slideWindowLayout.setX11PreferenceSwitchSlider(isOpen);
             }
+
             @Override
             public void onSwitchSliderChange() {
                 slideWindowLayout.switchSlider();
@@ -323,6 +349,29 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public void onChangeOrientation(int landscape) {
                 slideWindowLayout.changeLayoutOrientation(landscape);
+            }
+
+            @Override
+            public void reInstallX11StartScript(Activity activity) {
+                activity.runOnUiThread(() -> {
+                    FileUtils.copyAssetsFile2Phone(activity, "install");
+                    ArrayList<String> args = new ArrayList<>();
+                    args.add("+x");
+                    args.add(TERMUX_FILES_DIR_PATH + "/home/install");
+                    CommandUtils.exec(activity, "chmod", args);
+                    FileUtils.copyAssetsFile2Phone(activity, "termux-display-nightly-1-0-all.deb");
+                    CommandUtils.execInPath(activity, "install", null, "/home/");
+                });
+            }
+
+            @Override
+            public void stopDesktop(Activity activity) {
+                CommandUtils.exec(activity, "stopserver", null);
+            }
+
+            @Override
+            public void openSoftwareKeyboard() {
+                switchSoftKeyboard(false);
             }
         };
     }
@@ -423,9 +472,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
 
 
-
-
-
     /**
      * Part of the {@link ServiceConnection} interface. The service is bound with
      * {@link #bindService(Intent, ServiceConnection, int)} in {@link #onCreate(Bundle)} which will cause a call to this
@@ -493,7 +539,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
 
 
-
     private void setActivityTheme() {
         // Update NightMode.APP_NIGHT_MODE
         TermuxThemeUtils.setAppNightMode(mProperties.getNightMode());
@@ -512,7 +557,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
 
 
-
     public void addTermuxActivityRootViewGlobalLayoutListener() {
         getTermuxActivityRootView().getViewTreeObserver().addOnGlobalLayoutListener(getTermuxActivityRootView());
     }
@@ -520,6 +564,48 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     public void removeTermuxActivityRootViewGlobalLayoutListener() {
         if (getTermuxActivityRootView() != null)
             getTermuxActivityRootView().getViewTreeObserver().removeOnGlobalLayoutListener(getTermuxActivityRootView());
+    }
+
+    private void setX11Server() {
+        findViewById(com.termux.display.R.id.help_button).setOnClickListener((l) -> {
+            CommandUtils.exec(this, "startxserver", null);
+        });
+    }
+
+    private void startX11Display() {
+        ArrayList<String> args = new ArrayList<>();
+        args.add(":1");
+        CommandUtils.exec(this, "termux-display", args);
+    }
+
+    private void setRecoverView() {
+        findViewById(R.id.recover_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(intent, FILE_REQUEST_CODE);
+            }
+        });
+    }
+    private void setBackupView(){
+        findViewById(R.id.backup_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String command = "tar -zcvf /sdcard/termux-backup.tar.gz -C /data/data/com.termux/files ./home ./usr \n";
+                File file = new File(getFilesDir().getAbsolutePath() + File.separator +"home" +File.separator+"storage");
+                if (!file.exists()){
+                    command= "termux-setup-storage;sleep 5s;tar -zcvf /sdcard/termux-backup.tar.gz -C /data/data/com.termux/files ./home ./usr \n";
+                }
+                mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
+                slideWindowLayout.setTerminalVIewSwitchSlider(true);
+                closeTerminalSessionListView();
+            }
+        });
+    }
+    private void closeTerminalSessionListView(){
+        getDrawer().closeDrawers();
     }
     private void setTermuxTerminalViewAndClients() {
         // Set termux terminal view and session clients
@@ -533,8 +619,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onCreate();
 
-        if (mTermuxTerminalSessionActivityClient != null)
-            mTermuxTerminalSessionActivityClient.onCreate();
     }
 
     private void setTermuxSessionsListView() {
@@ -546,13 +630,13 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
 
 
-
     private void setTerminalToolbarView(Bundle savedInstanceState) {
         mTermuxTerminalExtraKeys = new TermuxTerminalExtraKeys(this, mTerminalView,
             mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
 
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        if (mPreferences.shouldShowTerminalToolbar())
+            terminalToolbarViewPager.setVisibility(View.VISIBLE);
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         mTerminalToolbarDefaultHeight = layoutParams.height;
@@ -597,10 +681,10 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         final EditText textInputView = findViewById(R.id.terminal_toolbar_text_input);
         if (textInputView != null) {
             String textInput = textInputView.getText().toString();
-            if (!textInput.isEmpty()) savedInstanceState.putString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT, textInput);
+            if (!textInput.isEmpty())
+                savedInstanceState.putString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT, textInput);
         }
     }
-
 
 
     private void setSettingsButtonView() {
@@ -635,9 +719,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
 
 
-
-
-
     @SuppressLint("RtlHardcoded")
     @Override
     public void onBackPressed() {
@@ -655,7 +736,9 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         }
     }
 
-    /** Show a toast and dismiss the last one if still visible. */
+    /**
+     * Show a toast and dismiss the last one if still visible.
+     */
     public void showToast(String text, boolean longDuration) {
         if (text == null || text.isEmpty()) return;
         if (mLastToast != null) mLastToast.cancel();
@@ -663,7 +746,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         mLastToast.setGravity(Gravity.TOP, 0, 0);
         mLastToast.show();
     }
-
 
 
     @Override
@@ -694,7 +776,9 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         menu.add(Menu.NONE, CONTEXT_MENU_REPORT_ID, Menu.NONE, R.string.action_report_issue);
     }
 
-    /** Hook system menu to show context menu instead. */
+    /**
+     * Hook system menu to show context menu instead.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mTerminalView.showContextMenu();
@@ -789,6 +873,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                 .setNegativeButton(android.R.string.cancel, null).show();
         }
     }
+
     private void toggleKeepScreenOn() {
         if (mTerminalView.getKeepScreenOn()) {
             mTerminalView.setKeepScreenOn(false);
@@ -809,7 +894,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
 
 
-
     /**
      * For processes to access primary external storage (/sdcard, /storage/emulated/0, ~/storage/shared),
      * termux needs to be granted legacy WRITE_EXTERNAL_STORAGE or MANAGE_EXTERNAL_STORAGE permissions
@@ -823,7 +907,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                 int requestCode = isPermissionCallback ? -1 : PermissionUtils.REQUEST_GRANT_STORAGE_PERMISSION;
 
                 // If permission is granted, then also setup storage symlinks.
-                if(PermissionUtils.checkAndRequestLegacyOrManageExternalStoragePermission(
+                if (PermissionUtils.checkAndRequestLegacyOrManageExternalStoragePermission(
                     TermuxActivity.this, requestCode, !isPermissionCallback)) {
                     if (isPermissionCallback)
                         Logger.logInfoAndShowToast(TermuxActivity.this, LOG_TAG,
@@ -842,21 +926,51 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Logger.logVerbose(LOG_TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: "  + resultCode + ", data: "  + IntentUtils.getIntentString(data));
+        Logger.logVerbose(LOG_TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: " + resultCode + ", data: " + IntentUtils.getIntentString(data));
         if (requestCode == PermissionUtils.REQUEST_GRANT_STORAGE_PERMISSION) {
             requestStoragePermission(true);
+        }
+        if (requestCode == FILE_REQUEST_CODE) {
+            loadBackFile(requestCode, resultCode, data);
+        }
+    }
+
+    private void loadBackFile(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == RESULT_OK) {
+            Uri uri = data.getData();
+            String realPath = FilePathUtils.getPath(this, uri);
+//            Log.d(LOG_TAG,realPath);
+//            ArrayList<String> args = new ArrayList<>();
+//            args.add("-zxf");
+//            args.add(realPath);
+//            args.add("-C");
+//            args.add(TERMUX_FILES_DIR_PATH);
+//            args.add("--recursive-unlink");
+//            args.add("--preserve-permissions");
+//            CommandUtils.exec(this, "tar", args);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    File file = new File(getFilesDir().getAbsolutePath() + File.separator +"home" +File.separator+"storage");
+                    String command = "termux-setup-storage;sleep 5s;tar -zxvf "+realPath+" -C "+TERMUX_FILES_DIR_PATH + " --recursive-unlink"+" --preserve-permissions && exit \n";
+                    if (file.exists()){
+                        command="tar -zxvf "+realPath+" -C "+TERMUX_FILES_DIR_PATH + " --recursive-unlink"+" --preserve-permissions && exit \n";
+                    }
+                    mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
+                }
+            });
+            slideWindowLayout.setTerminalVIewSwitchSlider(true);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Logger.logVerbose(LOG_TAG, "onRequestPermissionsResult: requestCode: " + requestCode + ", permissions: "  + Arrays.toString(permissions) + ", grantResults: "  + Arrays.toString(grantResults));
+        Logger.logVerbose(LOG_TAG, "onRequestPermissionsResult: requestCode: " + requestCode + ", permissions: " + Arrays.toString(permissions) + ", grantResults: " + Arrays.toString(grantResults));
         if (requestCode == PermissionUtils.REQUEST_GRANT_STORAGE_PERMISSION) {
             requestStoragePermission(true);
         }
     }
-
 
 
     public int getNavBarHeight() {
@@ -922,7 +1036,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
 
 
-
     public TermuxService getTermuxService() {
         return mTermuxService;
     }
@@ -954,8 +1067,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     public TermuxAppSharedProperties getProperties() {
         return mProperties;
     }
-
-
 
 
     public static void updateTermuxActivityStyling(Context context, boolean recreateActivity) {
@@ -1047,7 +1158,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             TermuxActivity.this.recreate();
         }
     }
-
 
 
     public static void startTermuxActivity(@NonNull final Context context) {

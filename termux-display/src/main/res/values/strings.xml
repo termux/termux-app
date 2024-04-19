@@ -47,4 +47,6 @@
     <string name="log_level_verbose">Verbose</string>
     <string name="log_level_unknown">*Unknown*</string>
     <string name="log_level_value">Logcat log level set to \"%1$s\"</string>
+    <string name="help_button_start_x11">start x11 server</string>
+    <string name="x11_server_bridge_config">Reinstall the bridge that the x11 server uses to communicate with termux. The installation will cause the current graphical interface to stop running and require a restart. If any file is not saved, save it and retry.</string>
 </resources>

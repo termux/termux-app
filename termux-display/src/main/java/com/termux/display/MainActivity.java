@@ -26,7 +26,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -89,7 +88,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     private final int mNotificationId = 7893;
     //    NotificationManager mNotificationManager;
     private boolean mClientConnected = false;
-    private boolean mClientStartedFromShell = false;
+    //    private boolean mClientStartedFromShell = false;
     private View.OnKeyListener mLorieKeyListener;
     private boolean filterOutWinKey = false;
     private static final int KEY_BACK = 158;
@@ -100,7 +99,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         @Override
         public void onReceive(Context context, Intent intent) {
             if (ACTION_START.equals(intent.getAction())) {
-                mClientStartedFromShell = true;
+//                mClientStartedFromShell = true;
                 try {
                     Log.v("LorieBroadcastReceiver", "Got new ACTION_START intent");
                     IBinder b = Objects.requireNonNull(intent.getBundleExtra("")).getBinder("");
@@ -120,7 +119,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 finishAffinity();
             } else if (ACTION_PREFERENCES_CHANGED.equals(intent.getAction())) {
                 Log.d("MainActivity", "preference: " + intent.getStringExtra("key"));
-                if (!"additionalKbdVisible".equals(intent.getStringExtra("key"))){
+                if (!"additionalKbdVisible".equals(intent.getStringExtra("key"))) {
                     onPreferencesChanged("");
                 }
             }
@@ -155,27 +154,24 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         getWindow().setFlags(FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS | FLAG_KEEP_SCREEN_ON | FLAG_TRANSLUCENT_STATUS, 0);
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(com.termux.display.R.layout.main_activity);
-        lorieContentView = findViewById(com.termux.display.R.id.id_display_window);
+        setContentView(R.layout.main_activity);
+        lorieContentView = findViewById(R.id.id_display_window);
 
-        frm = findViewById(com.termux.display.R.id.frame);
-        findViewById(com.termux.display.R.id.preferences_button).setOnClickListener((l) -> {
-//            handler.post(() -> new CmdEntryPoint());
-//            if (null != sliderSwitchListener) {
-//                sliderSwitchListener.onSwitchChange(false);
-//            }
-            mClientStartedFromShell = false;
+        frm = findViewById(R.id.frame);
+        findViewById(R.id.preferences_button).setOnClickListener((l) -> {
+            if (null != termuxActivityListener) {
+                termuxActivityListener.onX11PreferenceSwitchChange(true);
+            }
         });
-        findViewById(com.termux.display.R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
-
-        LorieView lorieView = findViewById(com.termux.display.R.id.lorieView);
+//        findViewById(R.id.help_button).setOnClickListener((l) -> {
+//        });
+        LorieView lorieView = findViewById(R.id.lorieView);
         View lorieParent = (View) lorieView.getParent();
 //        Log.d("Mainactivity","frm==lorieParent:"+String.valueOf(frm==lorieParent));
 
         mInputHandler = new TouchInputHandler(this, new RenderStub.NullStub() {
             @Override
             public void swipeDown() {
-//                toggleExtraKeys();
             }
         }, new InputEventSender(lorieView));
         mLorieKeyListener = (v, k, e) -> {
@@ -186,8 +182,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             }
 
             if (k == KEYCODE_BACK) {
-                if (null != sliderSwitchListener) {
-                    sliderSwitchListener.onSwitchChange(true);
+                if (null != termuxActivityListener) {
+                    termuxActivityListener.onX11PreferenceSwitchChange(true);
 
                     SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
                     boolean isOpend = p.getBoolean("switchSlider", true);
@@ -315,12 +311,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         boolean stylusMenuEnabled = p.getBoolean("showStylusClickOverride", false);
         final float menuUnselectedTrasparency = 0.66f;
         final float menuSelectedTrasparency = 1.0f;
-        Button left = findViewById(com.termux.display.R.id.button_left_click);
-        Button right = findViewById(com.termux.display.R.id.button_right_click);
-        Button middle = findViewById(com.termux.display.R.id.button_middle_click);
-        Button visibility = findViewById(com.termux.display.R.id.button_visibility);
-        LinearLayout overlay = findViewById(com.termux.display.R.id.mouse_helper_visibility);
-        LinearLayout buttons = findViewById(com.termux.display.R.id.mouse_helper_secondary_layer);
+        Button left = findViewById(R.id.button_left_click);
+        Button right = findViewById(R.id.button_right_click);
+        Button middle = findViewById(R.id.button_middle_click);
+        Button visibility = findViewById(R.id.button_visibility);
+        LinearLayout overlay = findViewById(R.id.mouse_helper_visibility);
+        LinearLayout buttons = findViewById(R.id.mouse_helper_secondary_layer);
         overlay.setOnTouchListener((v, e) -> true);
         overlay.setOnHoverListener((v, e) -> true);
         overlay.setOnGenericMotionListener((v, e) -> true);
@@ -410,12 +406,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
     @SuppressLint("ClickableViewAccessibility")
     void initMouseAuxButtons() {
-        Button left = findViewById(com.termux.display.R.id.mouse_button_left_click);
-        Button right = findViewById(com.termux.display.R.id.mouse_button_right_click);
-        Button middle = findViewById(com.termux.display.R.id.mouse_button_middle_click);
-        ImageButton pos = findViewById(com.termux.display.R.id.mouse_buttons_position);
-        LinearLayout primaryLayer = findViewById(com.termux.display.R.id.mouse_buttons);
-        LinearLayout secondaryLayer = findViewById(com.termux.display.R.id.mouse_buttons_secondary_layer);
+        Button left = findViewById(R.id.mouse_button_left_click);
+        Button right = findViewById(R.id.mouse_button_right_click);
+        Button middle = findViewById(R.id.mouse_button_middle_click);
+        ImageButton pos = findViewById(R.id.mouse_buttons_position);
+        LinearLayout primaryLayer = findViewById(R.id.mouse_buttons);
+        LinearLayout secondaryLayer = findViewById(R.id.mouse_buttons_secondary_layer);
 
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         boolean mouseHelperEnabled = p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1"));
@@ -589,21 +585,21 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
             ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        if (getRequestedOrientation() != requestedOrientation){
+        if (getRequestedOrientation() != requestedOrientation) {
             setRequestedOrientation(requestedOrientation);
-            if (null != sliderSwitchListener){
-                sliderSwitchListener.onChangeOrientation(requestedOrientation);
+            if (null != termuxActivityListener) {
+                termuxActivityListener.onChangeOrientation(requestedOrientation);
+                getLorieContentView().triggerCallback();
+                getLorieContentView().regenerate();
             }
-//            getLorieContentView().triggerCallback();
-//            getLorieContentView().regenerate();
         }
         boolean switchSlideMenu = p.getBoolean("switchSlider", false);
-        if (null != sliderSwitchListener){
-            sliderSwitchListener.onSwitchChange(switchSlideMenu);
+        if (null != termuxActivityListener) {
+            termuxActivityListener.onX11PreferenceSwitchChange(switchSlideMenu);
         }
 
-        findViewById(com.termux.display.R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
-        LinearLayout buttons = findViewById(com.termux.display.R.id.mouse_helper_visibility);
+        findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
+        LinearLayout buttons = findViewById(R.id.mouse_helper_visibility);
         if (p.getBoolean("showStylusClickOverride", false)) {
             buttons.setVisibility(View.VISIBLE);
         } else {
@@ -611,10 +607,10 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             TouchInputHandler.STYLUS_INPUT_HELPER_MODE = 1;
             final float menuUnselectedTrasparency = 0.66f;
             final float menuSelectedTrasparency = 1.0f;
-            findViewById(com.termux.display.R.id.button_left_click).setAlpha(menuSelectedTrasparency);
-            findViewById(com.termux.display.R.id.button_right_click).setAlpha(menuUnselectedTrasparency);
-            findViewById(com.termux.display.R.id.button_middle_click).setAlpha(menuUnselectedTrasparency);
-            findViewById(com.termux.display.R.id.button_visibility).setAlpha(menuUnselectedTrasparency);
+            findViewById(R.id.button_left_click).setAlpha(menuSelectedTrasparency);
+            findViewById(R.id.button_right_click).setAlpha(menuUnselectedTrasparency);
+            findViewById(R.id.button_middle_click).setAlpha(menuUnselectedTrasparency);
+            findViewById(R.id.button_visibility).setAlpha(menuUnselectedTrasparency);
             buttons.setVisibility(View.GONE);
         }
     }
@@ -638,11 +634,11 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
 
     public LorieView getLorieContentView() {
-        return findViewById(com.termux.display.R.id.lorieView);
+        return findViewById(R.id.lorieView);
     }
 
     public ViewPager getTerminalToolbarViewPager() {
-        return findViewById(com.termux.display.R.id.terminal_toolbar_view_pager);
+        return findViewById(R.id.terminal_toolbar_view_pager);
     }
 
     private void setTerminalToolbarView() {
@@ -724,7 +720,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         return new NotificationCompat.Builder(this, getNotificationChannel(notificationManager))
             .setContentTitle("Termux:X11")
-            .setSmallIcon(com.termux.display.R.drawable.ic_x11_icon)
+            .setSmallIcon(R.drawable.ic_x11_icon)
             .setContentText("Pull down to show options")
             .setContentIntent(pIntent)
             .setOngoing(false)
@@ -738,8 +734,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
 
     private String getNotificationChannel(NotificationManager notificationManager) {
-        String channelId = getResources().getString(com.termux.display.R.string.app_name);
-        String channelName = getResources().getString(com.termux.display.R.string.app_name);
+        String channelId = getResources().getString(R.string.app_name);
+        String channelName = getResources().getString(R.string.app_name);
         NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT);
         channel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
@@ -756,17 +752,43 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         super.onConfigurationChanged(newConfig);
 
         if (newConfig.orientation != orientation) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-            View view = getCurrentFocus();
-            if (view == null) {
-                view = getLorieContentView();
-                view.requestFocus();
-            }
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            switchSoftKeyboard(true);
         }
 
         orientation = newConfig.orientation;
         setTerminalToolbarView();
+    }
+
+    @SuppressLint("RestrictedApi")
+    protected void switchSoftKeyboard(boolean hide) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        View view = getCurrentFocus();
+        if (view == null) {
+            view = getLorieContentView();
+            view.requestFocus();
+        }
+        if(hide){
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }else {
+            if (null != termuxActivityListener) {
+                SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
+                boolean isOpend = p.getBoolean("switchSlider", true);
+                SharedPreferences.Editor edit = p.edit();
+                edit.putBoolean("switchSlider", false);
+                edit.commit();
+                if (isOpend) {
+                    loriePreferenceFragment.findPreference("switchSlider").performClick();
+                }
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        loriePreferenceFragment.updatePreferencesLayout();
+                    }
+                }, 500);
+                termuxActivityListener.onX11PreferenceSwitchChange(false);
+            }
+            imm.showSoftInput(view, 0);
+        }
     }
 
     @SuppressLint("WrongConstant")
@@ -780,7 +802,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         boolean fullscreen = p.getBoolean("fullscreen", false);
         boolean reseed = p.getBoolean("Reseed", true);
 
-        android.content.Intent intent = getIntent();
+        Intent intent = getIntent();
         fullscreen = fullscreen || (null != intent && intent.getBooleanExtra(REQUEST_LAUNCH_EXTERNAL_DISPLAY, false));
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
@@ -838,13 +860,14 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
     @Override
     public void onBackPressed() {
+        
     }
 
     public static boolean hasPipPermission(@NonNull Context context) {
         AppOpsManager appOpsManager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
         if (appOpsManager == null)
             return false;
-        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        else if (Build.VERSION.SDK_INT >= VERSION_CODES.Q)
             return appOpsManager.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_PICTURE_IN_PICTURE, android.os.Process.myUid(), context.getPackageName()) == AppOpsManager.MODE_ALLOWED;
         else
             return appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_PICTURE_IN_PICTURE, android.os.Process.myUid(), context.getPackageName()) == AppOpsManager.MODE_ALLOWED;
@@ -894,8 +917,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
             mClientConnected = connected;
 //            toggleExtraKeys(connected && p.getBoolean("additionalKbdVisible", true), true);
-            findViewById(com.termux.display.R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
-            findViewById(com.termux.display.R.id.stub).setVisibility(connected ? View.INVISIBLE : View.VISIBLE);
+            findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
+            findViewById(R.id.stub).setVisibility(connected ? View.INVISIBLE : View.VISIBLE);
             getLorieContentView().setVisibility(connected ? View.VISIBLE : View.INVISIBLE);
             getLorieContentView().regenerate();
 

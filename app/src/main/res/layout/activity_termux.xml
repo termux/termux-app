@@ -59,6 +59,22 @@
                         android:background="@null"
                         android:contentDescription="@string/action_open_settings"
                         app:tint="?attr/termuxActivityDrawerImageTint" />
+                    <ImageButton
+                        android:id="@+id/recover_button"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/recover"
+                        android:background="@null"
+                        android:contentDescription="@string/action_recover_storage"
+                        app:tint="?attr/termuxActivityDrawerImageTint" />
+                    <ImageButton
+                        android:id="@+id/backup_button"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/backup"
+                        android:background="@null"
+                        android:contentDescription="@string/action_backup_storage"
+                        app:tint="?attr/termuxActivityDrawerImageTint" />
                 </LinearLayout>
 
                 <ListView

@@ -6,6 +6,7 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class IntentUtils {
@@ -16,9 +17,9 @@ public class IntentUtils {
     /**
      * Get a {@link String} extra from an {@link Intent} if its not {@code null} or empty.
      *
-     * @param intent The {@link Intent} to get the extra from.
-     * @param key The {@link String} key name.
-     * @param def The default value if extra is not set.
+     * @param intent                 The {@link Intent} to get the extra from.
+     * @param key                    The {@link String} key name.
+     * @param def                    The default value if extra is not set.
      * @param throwExceptionIfNotSet If set to {@code true}, then an exception will be thrown if extra
      *                               is not set.
      * @return Returns the {@link String} extra if set, otherwise {@code null}.
@@ -34,8 +35,8 @@ public class IntentUtils {
      * Get a {@link String} extra from an {@link Intent} if its not {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
-     * @param key The {@link String} key name.
-     * @param def The default value if extra is not set.
+     * @param key    The {@link String} key name.
+     * @param def    The default value if extra is not set.
      * @return Returns the {@link String} extra if set, otherwise {@code null}.
      */
     public static String getStringExtraIfSet(@NonNull Intent intent, String key, String def) {
@@ -54,8 +55,8 @@ public class IntentUtils {
      * {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
-     * @param key The {@link String} key name.
-     * @param def The default value if extra is not set.
+     * @param key    The {@link String} key name.
+     * @param def    The default value if extra is not set.
      * @return Returns the {@link Integer} extra if set, otherwise {@code null}.
      */
     public static Integer getIntegerExtraIfSet(@NonNull Intent intent, String key, Integer def) {
@@ -66,20 +67,18 @@ public class IntentUtils {
             }
 
             return Integer.parseInt(value);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return def;
         }
     }
 
 
-
     /**
      * Get a {@link String[]} extra from an {@link Intent} if its not {@code null} or empty.
      *
-     * @param intent The {@link Intent} to get the extra from.
-     * @param key The {@link String} key name.
-     * @param def The default value if extra is not set.
+     * @param intent                 The {@link Intent} to get the extra from.
+     * @param key                    The {@link String} key name.
+     * @param def                    The default value if extra is not set.
      * @param throwExceptionIfNotSet If set to {@code true}, then an exception will be thrown if extra
      *                               is not set.
      * @return Returns the {@link String[]} extra if set, otherwise {@code null}.
@@ -95,8 +94,8 @@ public class IntentUtils {
      * Get a {@link String[]} extra from an {@link Intent} if its not {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
-     * @param key The {@link String} key name.
-     * @param def The default value if extra is not set.
+     * @param key    The {@link String} key name.
+     * @param def    The default value if extra is not set.
      * @return Returns the {@link String[]} extra if set, otherwise {@code null}.
      */
     public static String[] getStringArrayExtraIfSet(Intent intent, String key, String[] def) {
@@ -106,6 +105,22 @@ public class IntentUtils {
                 return def;
             else
                 return null;
+        }
+        return value;
+    }
+
+    public static String[] getStringListExtraIfSet(Intent intent, String key, String[] def) {
+        ArrayList<String> list = intent.getStringArrayListExtra(key);
+        String[] value ;
+        if (list == null || list.size() == 0) {
+            if (def != null && def.length != 0)
+                return def;
+            else
+                return null;
+        }
+        value = new String[list.size()];
+        for (int i=0;i<list.size();i++){
+            value[i]=list.get(i);
         }
         return value;
     }

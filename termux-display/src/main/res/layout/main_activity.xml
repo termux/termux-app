@@ -78,7 +78,7 @@
                 android:id="@+id/help_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/help_button_text" />
+                android:text="@string/help_button_start_x11" />
         </LinearLayout>
 
 

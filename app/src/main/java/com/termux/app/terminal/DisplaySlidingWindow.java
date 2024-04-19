@@ -139,8 +139,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (changed) {
             // hide menu at start up
             this.scrollTo(mMenuWidth, 0);
-            once = true;
         }
+        once = true;
     }
 
     @Override
@@ -218,7 +218,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         ViewHelper.setTranslationX(mContent, mMenuWidth * (scale - 1));
     }
 
-    public void setSwitchSlider(boolean openSlider) {
+    public void setX11PreferenceSwitchSlider(boolean openSlider) {
         this.switchSlider = openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
@@ -226,7 +226,14 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
         }
     }
-
+    public void setTerminalVIewSwitchSlider(boolean openSlider){
+        this.switchSlider = openSlider;
+        if (!openSlider) {
+            this.smoothScrollTo(mMenuWidth, 0);
+        } else {
+            this.smoothScrollTo(0, 0);
+        }
+    }
     public void switchSlider() {
         this.switchSlider = !this.switchSlider;
     }

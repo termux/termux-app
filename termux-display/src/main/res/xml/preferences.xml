@@ -26,6 +26,15 @@
             android:key="displayResolutionCustom"
             android:defaultValue="1280x1024"
             android:summary="Example: 1280x1024" />
+        <Preference
+            android:title="Open keyboard"
+            android:key="open_keyboard" />
+        <Preference
+            android:title="Install x11 server bridge"
+            android:key="install_x11_server_bridge" />
+        <Preference
+            android:title="Stop desktop"
+            android:key="stop_desktop" />
         <SwitchPreferenceCompat
             android:title="Switch Slide Menu"
             android:defaultValue="false"
