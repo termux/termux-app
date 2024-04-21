@@ -11,11 +11,37 @@ public final class TerminalRow {
 
     private static final float SPARE_CAPACITY_FACTOR = 1.5f;
 
+    /**
+     * Max combining characters that can exist in a column, that are separate from the base character
+     * itself. Any additional combining characters will be ignored and not added to the column.
+     *
+     * There does not seem to be limit in unicode standard for max number of combination characters
+     * that can be combined but such characters are primarily under 10.
+     *
+     * "Section 3.6 Combination" of unicode standard contains combining characters info.
+     * - https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf
+     * - https://en.wikipedia.org/wiki/Combining_character#Unicode_ranges
+     * - https://stackoverflow.com/questions/71237212/what-is-the-maximum-number-of-unicode-combined-characters-that-may-be-needed-to
+     *
+     * UAX15-D3 Stream-Safe Text Format limits to max 30 combining characters.
+     * > The value of 30 is chosen to be significantly beyond what is required for any linguistic or technical usage.
+     * > While it would have been feasible to chose a smaller number, this value provides a very wide margin,
+     * > yet is well within the buffer size limits of practical implementations.
+     * - https://unicode.org/reports/tr15/#Stream_Safe_Text_Format
+     * - https://stackoverflow.com/a/11983435/14686958
+     *
+     * We choose the value 15 because it should be enough for terminal based applications and keep
+     * the memory usage low for a terminal row, won't affect performance or cause terminal to
+     * lag or hang, and will keep malicious applications from causing harm. The value can be
+     * increased if ever needed for legitimate applications.
+     */
+    private static final int MAX_COMBINING_CHARACTERS_PER_COLUMN = 15;
+
     /** The number of columns in this terminal row. */
     private final int mColumns;
     /** The text filling this terminal row. */
     public char[] mText;
-    /** The number of java char:s used in {@link #mText}. */
+    /** The number of java chars used in {@link #mText}. */
     private short mSpaceUsed;
     /** If this row has been line wrapped due to text output at the end of line. */
     boolean mLineWrap;
@@ -163,10 +189,18 @@ public final class TerminalRow {
         // Get the number of elements in the mText array this column uses now
         int oldCharactersUsedForColumn;
         if (columnToSet + oldCodePointDisplayWidth < mColumns) {
-            oldCharactersUsedForColumn = findStartOfColumn(columnToSet + oldCodePointDisplayWidth) - oldStartOfColumnIndex;
+            int oldEndOfColumnIndex = findStartOfColumn(columnToSet + oldCodePointDisplayWidth);
+            oldCharactersUsedForColumn = oldEndOfColumnIndex - oldStartOfColumnIndex;
         } else {
             // Last character.
             oldCharactersUsedForColumn = mSpaceUsed - oldStartOfColumnIndex;
+        }
+
+        // If MAX_COMBINING_CHARACTERS_PER_COLUMN already exist in column, then ignore adding additional combining characters.
+        if (newIsCombining) {
+            int combiningCharsCount = WcWidth.zeroWidthCharsCount(mText, oldStartOfColumnIndex, oldStartOfColumnIndex + oldCharactersUsedForColumn);
+            if (combiningCharsCount >= MAX_COMBINING_CHARACTERS_PER_COLUMN)
+                return;
         }
 
         // Find how many chars this column will need
@@ -174,7 +208,6 @@ public final class TerminalRow {
         if (newIsCombining) {
             // Combining characters are added to the contents of the column instead of overwriting them, so that they
             // modify the existing contents.
-            // FIXME: Put a limit of combining characters.
             // FIXME: Unassigned characters also get width=0.
             newCharactersUsedForColumn += oldCharactersUsedForColumn;
         }
@@ -189,7 +222,7 @@ public final class TerminalRow {
             if (mSpaceUsed + javaCharDifference > text.length) {
                 // We need to grow the array
                 char[] newText = new char[text.length + mColumns];
-                System.arraycopy(text, 0, newText, 0, oldStartOfColumnIndex + oldCharactersUsedForColumn);
+                System.arraycopy(text, 0, newText, 0, oldNextColumnIndex);
                 System.arraycopy(text, oldNextColumnIndex, newText, newNextColumnIndex, oldCharactersAfterColumn);
                 mText = text = newText;
             } else {
