@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -39,6 +40,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
@@ -236,6 +238,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 //        setRequestedOrientation( SCREEN_ORIENTATION_LANDSCAPE);
         slideWindowLayout = findViewById(R.id.id_termux_layout);
         slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
+            private boolean drawerOpened = false;
             @Override
             public void onMenuOpen(boolean isOpen, int flag) {
             }
@@ -593,10 +596,10 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         findViewById(R.id.backup_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String command = "tar -zcvf /sdcard/termux-backup.tar.gz -C /data/data/com.termux/files ./home ./usr \n";
+                String command = "tar -zcf /sdcard/termux-backup.tar.gz -C /data/data/com.termux/files ./home ./usr \n";
                 File file = new File(getFilesDir().getAbsolutePath() + File.separator +"home" +File.separator+"storage");
                 if (!file.exists()){
-                    command= "termux-setup-storage;sleep 5s;tar -zcvf /sdcard/termux-backup.tar.gz -C /data/data/com.termux/files ./home ./usr \n";
+                    command= "termux-setup-storage;sleep 5s;tar -zcf /sdcard/termux-backup.tar.gz -C /data/data/com.termux/files ./home ./usr \n";
                 }
                 mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
                 slideWindowLayout.setTerminalVIewSwitchSlider(true);
@@ -931,11 +934,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             requestStoragePermission(true);
         }
         if (requestCode == FILE_REQUEST_CODE) {
-            loadBackFile(requestCode, resultCode, data);
+            onRequestLoadBackFile(requestCode, resultCode, data);
         }
     }
 
-    private void loadBackFile(int requestCode, int resultCode, @Nullable Intent data) {
+    private void onRequestLoadBackFile(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK) {
             Uri uri = data.getData();
             String realPath = FilePathUtils.getPath(this, uri);
@@ -952,9 +955,9 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                 @Override
                 public void run() {
                     File file = new File(getFilesDir().getAbsolutePath() + File.separator +"home" +File.separator+"storage");
-                    String command = "termux-setup-storage;sleep 5s;tar -zxvf "+realPath+" -C "+TERMUX_FILES_DIR_PATH + " --recursive-unlink"+" --preserve-permissions && exit \n";
+                    String command = "termux-setup-storage;sleep 5s;tar -zxf "+realPath+" -C "+TERMUX_FILES_DIR_PATH + " --recursive-unlink"+" --preserve-permissions && exit \n";
                     if (file.exists()){
-                        command="tar -zxvf "+realPath+" -C "+TERMUX_FILES_DIR_PATH + " --recursive-unlink"+" --preserve-permissions && exit \n";
+                        command="tar -zxf "+realPath+" -C "+TERMUX_FILES_DIR_PATH + " --recursive-unlink"+" --preserve-permissions && exit \n";
                     }
                     mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
                 }
