@@ -1,1 +1,0 @@
-.so man__filemansuffix__/Compose.__filemansuffix__

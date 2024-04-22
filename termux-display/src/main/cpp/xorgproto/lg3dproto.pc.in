@@ -1,7 +1,0 @@
-prefix=@prefix@
-includedir=@includedir@
- 
-Name: Lg3dProto
-Description: LGE extension headers
-Version: 5.0
-Cflags: -I${includedir}

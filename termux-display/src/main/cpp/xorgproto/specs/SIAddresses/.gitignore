@@ -1,4 +1,0 @@
-# Override *.txt from toplevel .gitignore
-!hostname.txt
-!IPv6.txt
-!localuser.txt

@@ -1,7 +1,0 @@
-prefix=@prefix@
-includedir=@includedir@
- 
-Name: ResourceProto
-Description: Resource extension headers
-Version: 1.2.0
-Cflags: -I${includedir}

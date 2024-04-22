@@ -1,7 +1,0 @@
-prefix=@prefix@
-includedir=@includedir@
- 
-Name: InputProto
-Description: Input extension headers
-Version: 2.3.99.2
-Cflags: -I${includedir}

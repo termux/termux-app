@@ -1,8 +1,0 @@
-prefix=@prefix@
-includedir=@includedir@
-
-Name: FixesProto
-Description: X Fixes extension headers
-Version: 6.1
-Cflags: -I${includedir}
-Requires: xextproto >= 7.0.99.1

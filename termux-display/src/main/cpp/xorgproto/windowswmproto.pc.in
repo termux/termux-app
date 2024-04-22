@@ -1,7 +1,0 @@
-prefix=@prefix@
-includedir=@includedir@
- 
-Name: WindowsWMProto
-Description: WindowsWM extension headers
-Version: 1.0.4
-Cflags: -I${includedir}

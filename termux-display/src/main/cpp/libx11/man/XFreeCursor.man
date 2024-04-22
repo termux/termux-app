@@ -1,1 +1,0 @@
-.so man__libmansuffix__/XRecolorCursor.__libmansuffix__

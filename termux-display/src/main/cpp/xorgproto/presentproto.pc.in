@@ -1,7 +1,0 @@
-prefix=@prefix@
-includedir=@includedir@
- 
-Name: PresentProto
-Description: Present extension headers
-Version: 1.3
-Cflags: -I${includedir}

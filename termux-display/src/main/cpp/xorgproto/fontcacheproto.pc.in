@@ -1,7 +1,0 @@
-prefix=@prefix@
-includedir=@includedir@
- 
-Name: FontcacheProto
-Description: Fontcache extension headers
-Version: 0.1.3
-Cflags: -I${includedir}

@@ -1,7 +1,0 @@
-tests
-os
-sdksyms.c
-piglit-results
-simple-xinit
-*.log
-*.trs

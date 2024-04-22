@@ -1,1 +1,0 @@
-.so man__libmansuffix__/AllPlanes.__libmansuffix__
