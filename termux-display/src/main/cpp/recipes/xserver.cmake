@@ -266,6 +266,8 @@ add_library(Xlorie SHARED
         "libxcvt/lib/libxcvt.c"
         "lorie/shm/shmem.c"
         "lorie/android.c"
+        "lorie/clipboard.c"
+        "lorie/dri3.c"
         "lorie/InitOutput.c"
         "lorie/InitInput.c"
         "lorie/InputXKB.c"

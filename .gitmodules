@@ -43,9 +43,9 @@
 [submodule "termux-display/src/main/cpp/xkbcomp"]
 	path = termux-display/src/main/cpp/xkbcomp
 	url = https://gitlab.freedesktop.org/xorg/app/xkbcomp
-[submodule "termux-display/src/main/cpp/xserver"]
-	path = termux-display/src/main/cpp/xserver
-	url = https://gitlab.freedesktop.org/xorg/xserver
 [submodule "termux-display/src/main/cpp/bzip2"]
 	path = termux-display/src/main/cpp/bzip2
 	url = https://gitlab.com/bzip2/bzip2
+[submodule "termux-display/src/main/cpp/xserver"]
+	path = termux-display/src/main/cpp/xserver
+	url = https://gitlab.freedesktop.org/xorg/xserver

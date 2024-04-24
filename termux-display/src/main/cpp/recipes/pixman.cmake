@@ -1,4 +1,7 @@
 file(GENERATE
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/pixman-config.h"
+        CONTENT "")
+file(GENERATE
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/pixman-version.h"
         CONTENT "
 #pragma once
@@ -7,11 +10,11 @@ file(GENERATE
 #endif
 
 #define PIXMAN_VERSION_MAJOR 0
-#define PIXMAN_VERSION_MINOR 42
-#define PIXMAN_VERSION_MICRO 2
+#define PIXMAN_VERSION_MINOR 43
+#define PIXMAN_VERSION_MICRO 4
 
-#define PIXMAN_VERSION_STRING \"0.42.2\"
-#define PIXMAN_VERSION 4202
+#define PIXMAN_VERSION_STRING \"0.43.4\"
+#define PIXMAN_VERSION 4304
 
 #ifndef PIXMAN_API
 # define PIXMAN_API
@@ -60,27 +63,21 @@ set(PIXMAN_CFLAGS
         "-DUSE_OPENMP=1")
 
 if("${CMAKE_ANDROID_ARCH_ABI}" STREQUAL "arm64-v8a")
-    #set(CMAKE_C_COMPILER /usr/bin/gcc)
-    #set(CMAKE_CXX_COMPILER /usr/bin/g++)
     set(PIXMAN_SRC ${PIXMAN_SRC}
             "pixman/pixman/pixman-arm-neon.c"
             "pixman/pixman/pixman-arma64-neon-asm.S"
             "pixman/pixman/pixman-arma64-neon-asm-bilinear.S")
-#    set(PIXMAN_CFLAGS ${PIXMAN_CFLAGS} "-DUSE_ARM_A64_NEON=1" "-fno-integrated-as" "-B" "/usr/aarch64-linux-gnu/bin")
-    set(PIXMAN_CFLAGS ${PIXMAN_CFLAGS} "-DUSE_ARM_A64_NEON=1" "-fno-integrated-as" "-DASM_HAVE_FUNC_DIRECTIVE" "-B" "/usr/aarch64-linux-gnu/bin")
+    set(PIXMAN_CFLAGS ${PIXMAN_CFLAGS} "-DUSE_ARM_A64_NEON=1")
 endif()
 
 if("${CMAKE_ANDROID_ARCH_ABI}" STREQUAL "armeabi-v7a")
-#    set(CMAKE_C_COMPILER /usr/bin/gcc)
-#    set(CMAKE_CXX_COMPILER /usr/bin/g++)
     set(PIXMAN_SRC ${PIXMAN_SRC}
             "pixman/pixman/pixman-arm-neon.c"
             "pixman/pixman/pixman-arm-neon-asm.S"
             "pixman/pixman/pixman-arm-neon-asm-bilinear.S"
             "pixman/pixman/pixman-arm-simd-asm.S"
             "pixman/pixman/pixman-arm-simd-asm-scaled.S")
-#    set(PIXMAN_CFLAGS ${PIXMAN_CFLAGS} "-DUSE_ARM_SIMD=1" "-DUSE_ARM_NEON=1" "-fno-integrated-as" "-B" "/usr/arm-linux-gnueabihf/bin" "-v")
-    set(PIXMAN_CFLAGS ${PIXMAN_CFLAGS} "-DUSE_ARM_SIMD=1" "-DUSE_ARM_NEON=1" "-fno-integrated-as" "-DASM_HAVE_FUNC_DIRECTIVE" "-B" "/usr/arm-linux-gnueabihf/bin" "-v")
+    set(PIXMAN_CFLAGS ${PIXMAN_CFLAGS} "-DUSE_ARM_SIMD=1" "-DUSE_ARM_NEON=1" "-v")
 endif()
 
 if ("${CMAKE_ANDROID_ARCH_ABI}" STREQUAL "x86" OR "${CMAKE_ANDROID_ARCH_ABI}" STREQUAL "x86_64")
