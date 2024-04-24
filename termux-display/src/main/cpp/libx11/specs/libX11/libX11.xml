@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
+
+<book id="libX11" lang="en">
+
+<bookinfo>
+   <title>Xlib - C Language X Interface</title>
+   <subtitle>X Consortium Standard</subtitle>
+   <releaseinfo>X Version 11, Release &fullrelvers;</releaseinfo>
+   <authorgroup>
+      <author>
+         <firstname>James</firstname><surname>Gettys</surname>
+         <affiliation>
+	   <orgname>Digital Equipment Corporation</orgname>
+	   <orgdiv>Cambridge Research Laboratory</orgdiv>
+	 </affiliation>
+      </author>
+      <author>
+         <firstname>Robert</firstname><othername role='mi'>W.</othername> <surname>Scheifler</surname>
+         <affiliation>
+	   <orgname>Massachusetts Institute of Technology</orgname>
+	   <orgdiv>Laboratory for Computer Science</orgdiv>
+	 </affiliation>
+      </author>
+      <othercredit>
+         <firstname>Chuck</firstname><surname>Adams</surname>
+         <affiliation><orgname>Tektronix, Inc.</orgname></affiliation>
+      </othercredit>
+      <othercredit>
+         <firstname>Vania</firstname><surname>Joloboff</surname>
+         <affiliation><orgname>Open Software Foundation</orgname></affiliation>
+      </othercredit>
+      <othercredit>
+         <firstname>Hideki</firstname><surname>Hiura</surname>
+         <affiliation><orgname>Sun Microsystems, Inc.</orgname></affiliation>
+      </othercredit>
+      <othercredit>
+         <firstname>Bill</firstname><surname>McMahon</surname>
+         <affiliation><orgname>Hewlett-Packard Company</orgname></affiliation>
+      </othercredit>
+      <othercredit>
+         <firstname>Ron</firstname><surname>Newman</surname>
+         <affiliation><orgname>Massachusetts Institute of Technology</orgname></affiliation>
+      </othercredit>
+      <othercredit>
+         <firstname>Al</firstname><surname>Tabayoyon</surname>
+         <affiliation><orgname>Tektronix, Inc.</orgname></affiliation>
+      </othercredit>
+      <othercredit>
+         <firstname>Glenn</firstname><surname>Widener</surname>
+         <affiliation><orgname>Tektronix, Inc.</orgname></affiliation>
+      </othercredit>
+      <othercredit>
+         <firstname>Shigeru</firstname><surname>Yamada</surname>
+         <affiliation><orgname>Fujitsu OSSI</orgname></affiliation>
+      </othercredit>
+   </authorgroup>
+   <copyright><year>1985</year><year>1986</year><year>1987</year>
+     <year>1988</year><year>1989</year><year>1991</year><year>1994</year>
+     <year>1996</year><year>2002</year><holder>The Open Group</holder>
+   </copyright>
+
+<legalnotice>
+<para>
+Permission is hereby granted, free of charge, to any person obtaining a copy 
+of this software and associated documentation files 
+(the &ldquo;Software&rdquo;), to deal in the Software without restriction, 
+including without limitation the rights to use, copy, modify, merge, publish, 
+distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following 
+conditions:
+</para>
+<para>
+The above copyright notice and this permission notice shall be included in all 
+copies or substantial portions of the Software.
+</para>
+<para>
+THE SOFTWARE IS PROVIDED &ldquo;AS IS&rdquo;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</para>
+<para>
+Except as contained in this notice, the name of The Open Group shall not 
+be used in advertising or otherwise to promote the sale, use or other dealings 
+in this Software without prior written authorization from The Open Group.
+</para>
+</legalnotice>
+
+<legalnotice>
+<para role="multiLicensing">Copyright © 1985, 1986, 1987, 1988, 1989, 1991 Digital Equipment Corporation</para>
+<para>
+Permission to use, copy, modify and distribute this documentation for any
+purpose and without fee is hereby granted, provided that the above copyright
+notice appears in all copies and that both that copyright notice and this
+permission notice appear in supporting documentation, and that the names of
+Digital and Tetronix not be used in in advertising or publicity pertaining
+to distribution of the software without specific, written prior permission.
+Digital and Tetronix make no representations about the suitability of the
+software described herein for any purpose.
+It is provided &ldquo;as is&rdquo; without express or implied warranty.
+</para>
+
+
+<para>TekHVC is a trademark of Tektronix, Inc.</para>
+
+</legalnotice>
+</bookinfo>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="credits.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH01.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH02.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH03.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH04.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH05.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH06.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH07.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH08.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH09.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH10.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH11.xml"/>
+<!--   -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH12.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH13.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH14.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH15.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="CH16.xml"/>
+<!--  runs out of mem at here -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="AppA.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="AppB.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="AppC.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="AppD.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"  href="glossary.xml"/>
+<index />
+</book>
+

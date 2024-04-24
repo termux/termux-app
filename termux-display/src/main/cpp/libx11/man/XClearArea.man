@@ -1,0 +1,163 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XClearArea __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XClearArea, XClearWindow \- clear area or window
+.SH SYNTAX
+.HP
+int XClearArea\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, int \fIx\fP\^,
+int \fIy\fP\^, unsigned \fIwidth\fP\^, unsigned \fIheight\fP\^,
+Bool \fIexposures\fP\^);
+.HP
+int XClearWindow\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIexposures\fP 1i
+Specifies a Boolean value that indicates if
+.B Expose
+events are to be generated.
+.IP \fIw\fP 1i
+Specifies the window.
+.IP \fIwidth\fP 1i
+.br
+.ns
+.IP \fIheight\fP 1i
+Specify the width and height, which are the dimensions of the rectangle.
+.ds Xy
+.IP \fIx\fP 1i
+.br
+.ns
+.IP \fIy\fP 1i
+Specify the x and y coordinates, which are relative to the origin of the window
+and specify the upper-left corner of the rectangle.
+.SH DESCRIPTION
+The
+.B XClearArea
+function paints a rectangular area in the specified window according to the
+specified dimensions with the window's background pixel or pixmap.
+The subwindow-mode effectively is
+.BR ClipByChildren .
+If width is zero, it
+is replaced with the current width of the window minus x.
+If height is
+zero, it is replaced with the current height of the window minus y.
+If the window has a defined background tile,
+the rectangle clipped by any children is filled with this tile.
+If the window has
+background
+.BR None ,
+the contents of the window are not changed.
+In either
+case, if exposures is
+.BR True ,
+one or more
+.B Expose
+events are generated for regions of the rectangle that are either visible or are
+being retained in a backing store.
+If you specify a window whose class is
+.BR InputOnly ,
+a
+.B BadMatch
+error results.
+.LP
+.B XClearArea
+can generate
+.BR BadMatch ,
+.BR BadValue ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XClearWindow
+function clears the entire area in the specified window and is
+equivalent to
+.B XClearArea
+(display, w, 0, 0, 0, 0,
+.BR False ).
+If the window has a defined background tile, the rectangle is tiled with a
+plane-mask of all ones and
+.B GXcopy
+function.
+If the window has
+background
+.BR None ,
+the contents of the window are not changed.
+If you specify a window whose class is
+.BR InputOnly ,
+a
+.B BadMatch
+error results.
+.LP
+.B XClearWindow
+can generate
+.B BadMatch
+and
+.B BadWindow
+errors.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadMatch
+An
+.B InputOnly
+window is used as a Drawable.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XCopyArea(__libmansuffix__)
+.br
+\fI\*(xL\fP

@@ -1,0 +1,638 @@
+.\" $XdotOrg: xserver/xorg/hw/xfree86/doc/man/Xorg.man.pre,v 1.3 2005/07/04 18:41:01 ajax Exp $
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH Xorg @appmansuffix@ @vendorversion@
+.SH NAME
+Xorg - X11R7 X server
+.SH SYNOPSIS
+.B Xorg
+.RI [\fB:\fP display ]
+.RI [ option
+.IR ... ]
+.SH DESCRIPTION
+.B Xorg
+is a full featured X server that was originally designed for UNIX and
+UNIX-like operating systems running on Intel x86 hardware.  It now runs
+on a wider range of hardware and OS platforms.
+.PP
+This work was derived by the X.Org Foundation from the XFree86 Project's
+.I "XFree86\ 4.4rc2"
+release.
+The XFree86 release was originally derived from
+.I "X386\ 1.2"
+by Thomas Roell which was contributed to X11R5 by Snitily Graphics
+Consulting Service.
+.SH PLATFORMS
+.PP
+.B Xorg
+operates under a wide range of operating systems and hardware platforms.
+The Intel x86 (IA32) architecture is the most widely supported hardware
+platform.  Other hardware platforms include Compaq Alpha, Intel IA64, AMD64,
+SPARC and PowerPC.  The most widely supported operating systems are the
+free/OpenSource UNIX-like systems such as Linux, FreeBSD, NetBSD,
+OpenBSD, and Solaris.  Commercial UNIX operating systems such as
+UnixWare are also supported.  Other supported operating systems include
+GNU Hurd.  Mac OS X is supported with the
+Xquartz(@appmansuffix@) X server.  Win32/Cygwin is supported with the
+XWin(@appmansuffix@) X server.
+.PP
+.SH "NETWORK CONNECTIONS"
+.B Xorg
+supports connections made using the following reliable
+byte-streams:
+.TP 4
+.I "Local"
+On most platforms, the "Local" connection type is a UNIX-domain socket.
+On some System V platforms, the "local" connection types also include
+STREAMS pipes, named pipes, and some other mechanisms.  See the
+"LOCAL CONNECTIONS" section of X(@miscmansuffix@) for details.
+.TP 4
+.I TCP/IP
+.B Xorg
+listens on port
+.RI 6000+ n ,
+where
+.I n
+is the display number.  This connection type is usually disabled by default,
+but may be enabled with the
+.B \-listen
+option (see the Xserver(1) man page for details).
+.SH OPTIONS
+.B Xorg
+supports several mechanisms for supplying/obtaining configuration and
+run-time parameters: command line options, environment variables, the
+xorg.conf(@filemansuffix@) configuration files, auto-detection, and
+fallback defaults.  When the same information is supplied in more than
+one way, the highest precedence mechanism is used.  The list of mechanisms
+is ordered from highest precedence to lowest.  Note that not all parameters
+can be supplied via all methods.  The available command line options
+and environment variables (and some defaults) are described here and in
+the Xserver(@appmansuffix@) manual page.  Most configuration file
+parameters, with their defaults, are described in the
+xorg.conf(@filemansuffix@) manual page.  Driver and module specific
+configuration parameters are described in the relevant driver or module
+manual page.
+.PP
+In addition to the normal server options described in the
+Xserver(@appmansuffix@) manual page,
+.B Xorg
+accepts the following command line switches:
+.TP 8
+.BI vt XX
+.I XX
+specifies the Virtual Terminal device number which
+.B Xorg
+will use.  Without this option,
+.B Xorg
+will pick the first available Virtual Terminal that it can locate.  This
+option applies only to platforms that have virtual terminal support, such
+as Linux, BSD, OpenSolaris, SVR3, and SVR4.
+.TP
+.B \-allowMouseOpenFail
+Allow the server to start up even if the mouse device can't be opened
+or initialised.  This is equivalent to the
+.B AllowMouseOpenFail
+xorg.conf(@filemansuffix@) file option.
+.TP 8
+.B \-allowNonLocalXvidtune
+Make the VidMode extension available to remote clients.  This allows
+the xvidtune client to connect from another host.  This is equivalent
+to the
+.B AllowNonLocalXvidtune
+xorg.conf(@filemansuffix@) file option.  By default non-local
+connections are not allowed.
+.TP 8
+.BI \-bgamma " value"
+Set the blue gamma correction.
+.I value
+must be between 0.1 and 10.
+The default is 1.0.  Not all drivers support this.  See also the
+.BR \-gamma ,
+.BR \-rgamma ,
+and
+.B \-ggamma
+options.
+.TP 8
+.BI \-bpp " n"
+No longer supported.  Use
+.B \-depth
+to set the color depth, and use
+.B \-fbbpp
+if you really need to force a non-default framebuffer (hardware) pixel
+format.
+.TP 8
+.BI \-config " file"
+Read the server configuration from
+.IR file .
+This option will work for any file when the server is run as root (i.e,
+with real-uid 0), or for files relative to a directory in the config
+search path for all other users.
+.TP 8
+.BI \-configdir " directory"
+Read the server configuration files from
+.IR directory .
+This option will work for any directory when the server is run as root
+(i.e, with real-uid 0), or for directories relative to a directory in the
+config directory search path for all other users.
+.TP 8
+.B \-configure
+When this option is specified, the
+.B Xorg
+server loads all video driver modules, probes for available hardware,
+and writes out an initial xorg.conf(@filemansuffix@) file based on
+what was detected.  This option currently has some problems on some
+platforms, but in most cases it is a good way to bootstrap the
+configuration process.  This option is only available when the server
+is run as root (i.e, with real-uid 0).
+.TP 8
+.BI "\-crt /dev/tty" XX
+SCO only.  This is the same as the
+.B vt
+option, and is provided for compatibility with the native SCO X server.
+.TP 8
+.BI \-depth " n"
+Sets the default color depth.  Legal values are 1, 4, 8, 15, 16, and
+24.  Not all drivers support all values.
+.TP 8
+.B \-disableVidMode
+Disable the parts of the VidMode extension (used by the xvidtune
+client) that can be used to change the video modes.  This is equivalent
+to the
+.B DisableVidModeExtension
+xorg.conf(@filemansuffix@) file option.
+.TP 8
+.B \-fbbpp \fIn\fP
+Sets the number of framebuffer bits per pixel.  You should only set this
+if you're sure it's necessary; normally the server can deduce the correct
+value from
+.B \-depth
+above.  Useful if you want to run a depth 24 configuration with a 24
+bpp framebuffer rather than the (possibly default) 32 bpp framebuffer
+(or vice versa).  Legal values are 1, 8, 16, 24, 32.  Not all drivers
+support all values.
+.TP 8
+.BI \-gamma " value"
+Set the gamma correction.
+.I value
+must be between 0.1 and 10.  The default is 1.0.  This value is applied
+equally to the R, G and B values.  Those values can be set independently
+with the
+.BR \-rgamma ,
+.BR \-bgamma ,
+and
+.B \-ggamma
+options.  Not all drivers support this.
+.TP 8
+.BI \-ggamma " value"
+Set the green gamma correction.
+.I value
+must be between 0.1 and 10.  The default is 1.0.  Not all drivers support
+this.  See also the
+.BR \-gamma ,
+.BR \-rgamma ,
+and
+.B \-bgamma
+options.
+.TP 8
+.B \-ignoreABI
+The
+.B Xorg
+server checks the ABI revision levels of each module that it loads.  It
+will normally refuse to load modules with ABI revisions that are newer
+than the server's.  This is because such modules might use interfaces
+that the server does not have.  When this option is specified, mismatches
+like this are downgraded from fatal errors to warnings.  This option
+should be used with care.
+.TP 8
+.B \-isolateDevice \fIbus\-id\fP
+Restrict device resets to the device at
+.IR bus\-id .
+The
+.I bus\-id
+string has the form
+.IB bustype : bus : device : function
+(e.g., \(oqPCI:1:0:0\(cq).
+At present, only isolation of PCI devices is supported; i.e., this option
+is ignored if
+.I bustype
+is anything other than \(oqPCI\(cq.
+.TP 8
+.B \-keeptty
+Prevent the server from detaching its initial controlling terminal. If you
+want to use systemd-logind integration you must specify this option.
+Not all platforms support (or can use) this option.
+.TP 8
+.BI \-keyboard " keyboard-name"
+Use the xorg.conf(@filemansuffix@) file
+.B InputDevice
+section called
+.I keyboard-name
+as the core keyboard.  This option is ignored when the
+.B Layout
+section specifies a core keyboard.  In the absence of both a Layout
+section and this option, the first relevant
+.B InputDevice
+section is used for the core keyboard.
+.TP 8
+.BI \-layout " layout-name"
+Use the xorg.conf(@filemansuffix@) file
+.B Layout
+section called
+.IR layout-name .
+By default the first
+.B Layout
+section is used.
+.TP 8
+.BI \-logfile " filename"
+Use the file called
+.I filename
+as the
+.B Xorg
+server log file.  The default log file when running as root is
+.BI @logdir@/Xorg. n .log
+and for non root it is
+.BI $XDG_DATA_HOME/xorg/Xorg. n .log
+where
+.I n
+is the display number of the
+.B Xorg
+server.  The default may be in a different directory on some platforms.
+This option is only available when the server is run as root (i.e, with
+real-uid 0).
+.TP 8
+.BR \-logverbose " [\fIn\fP]"
+Sets the verbosity level for information printed to the
+.B Xorg
+server log file.  If the
+.I n
+value isn't supplied, each occurrence of this option increments the log
+file verbosity level.  When the
+.I n
+value is supplied, the log file verbosity level is set to that value.
+The default log file verbosity level is 3.
+.TP 8
+.BI \-modulepath " searchpath"
+Set the module search path to
+.IR searchpath .
+.I searchpath
+is a comma separated list of directories to search for
+.B Xorg
+server modules.  This option is only available when the server is run
+as root (i.e, with real-uid 0).
+.TP 8
+.B \-noautoBindGPU
+Disable automatically setting secondary GPUs up as output sinks and offload
+sources. This is equivalent to setting the
+.B AutoBindGPU
+xorg.conf(__filemansuffix__) file option. To
+.B false.
+.TP 8
+.B \-nosilk
+Disable Silken Mouse support.
+.TP 8
+.B \-novtswitch
+Disable the automatic switching on X server reset and shutdown to the
+VT that was active when the server started, if supported by the OS.
+.TP 8
+.BI \-pointer " pointer-name"
+Use the xorg.conf(@filemansuffix@) file
+.B InputDevice
+section called
+.I pointer-name
+as the core pointer.  This option is ignored when the
+.B Layout
+section specifies a core pointer.  In the absence of both a Layout
+section and this option, the first relevant
+.B InputDevice
+section is used for the core pointer.
+.TP 8
+.B \-quiet
+Suppress most informational messages at startup.  The verbosity level
+is set to zero.
+.TP 8
+.BI \-rgamma " value"
+Set the red gamma correction.
+.I value
+must be between 0.1 and 10.  The default is 1.0.  Not all drivers support
+this.  See also the
+.BR \-gamma ,
+.BR \-bgamma ,
+and
+.B \-ggamma
+options.
+.TP 8
+.B \-sharevts
+Share virtual terminals with another X server, if supported by the OS.
+.TP 8
+.BI \-screen " screen-name"
+Use the xorg.conf(@filemansuffix@) file
+.B Screen
+section called
+.IR screen-name .
+By default the screens referenced by the default
+.B Layout
+section are used, or the first
+.B Screen
+section when there are no
+.B Layout
+sections.
+.TP 8
+.B \-showconfig
+This is the same as the
+.B \-version
+option, and is included for compatibility reasons.  It may be removed
+in a future release, so the
+.B \-version
+option should be used instead.
+.TP 8
+.B \-showDefaultModulePath
+Print out the default module path the server was compiled with.
+.TP 8
+.B \-showDefaultLibPath
+Print out the path libraries should be installed to.
+.TP 8
+.B \-showopts
+For each driver module installed, print out the list of options and their
+argument types.
+.TP 8
+.BI \-weight " nnn"
+Set RGB weighting at 16 bpp.  The default is 565.  This applies only to
+those drivers which support 16 bpp.
+.TP 8
+.BR \-verbose " [\fIn\fP]"
+Sets the verbosity level for information printed on stderr.  If the
+.I n
+value isn't supplied, each occurrence of this option increments the
+verbosity level.  When the
+.I n
+value is supplied, the verbosity level is set to that value.  The default
+verbosity level is 0.
+.TP 8
+.B \-version
+Print out the server version, patchlevel, release date, the operating
+system/platform it was built on, and whether it includes module loader
+support.
+.SH "KEYBOARD"
+.PP
+The
+.B Xorg
+server is normally configured to recognize various special combinations
+of key presses that instruct the server to perform some action, rather
+than just sending the key press event to a client application. These actions
+depend on the XKB keymap loaded by a particular keyboard device and may or
+may not be available on a given configuration.
+.PP
+The following key combinations are commonly part of the default XKEYBOARD
+keymap.
+.TP 8
+.B Ctrl+Alt+Backspace
+Immediately kills the server -- no questions asked. It can be disabled by
+setting the
+.B DontZap
+xorg.conf(@filemansuffix@) file option to a TRUE value.
+.PP
+.RS 8
+It should be noted that zapping is triggered by the
+.B Terminate_Server
+action in the keyboard map. This action is not part of the default keymaps
+but can be enabled with the XKB option
+.B \*qterminate:ctrl_alt_bksp\*q.
+.RE
+.TP 8
+.B Ctrl+Alt+Keypad-Plus
+Change video mode to next one specified in the configuration file.
+This can be disabled with the
+.B DontZoom
+xorg.conf(@filemansuffix@) file option.
+.TP 8
+.B Ctrl+Alt+Keypad-Minus
+Change video mode to previous one specified in the configuration file.
+This can be disabled with the
+.B DontZoom
+xorg.conf(@filemansuffix@) file option.
+.TP 8
+.B Ctrl+Alt+F1...F12
+For systems with virtual terminal support, these keystroke
+combinations are used to switch to virtual terminals 1 through 12,
+respectively.  This can be disabled with the
+.B DontVTSwitch
+xorg.conf(@filemansuffix@) file option.
+.SH CONFIGURATION
+.B Xorg
+typically uses a configuration file called
+.B xorg.conf
+and configuration files with the suffix
+.I .conf
+in a directory called
+.B @xconfigdir@
+for its initial setup.
+Refer to the xorg.conf(@filemansuffix@) manual page for information
+about the format of this file.
+.PP
+.B Xorg
+has a mechanism for automatically generating a built-in configuration
+at run-time when no
+.B xorg.conf
+file or
+.B @xconfigdir@
+files are present.  The current version of this automatic configuration
+mechanism works in two ways.
+.PP
+The first is via enhancements that have made many components of the
+.B xorg.conf
+file optional.  This means that information that can be probed or
+reasonably deduced doesn't need to be specified explicitly, greatly
+reducing the amount of built-in configuration information that needs to
+be generated at run-time.
+.PP
+The second is to have "safe" fallbacks for most configuration information.
+This maximises the likelihood that the
+.B Xorg
+server will start up in some usable configuration even when information
+about the specific hardware is not available.
+.PP
+The automatic configuration support for Xorg is work in progress.
+It is currently aimed at the most popular hardware and software platforms
+supported by Xorg.  Enhancements are planned for future releases.
+.SH FILES
+The
+.B Xorg
+server config files can be found in a range of locations.  These are
+documented fully in the xorg.conf(@filemansuffix@) manual page.  The
+most commonly used locations are shown here.
+.TP 30
+.B /etc/X11/xorg.conf
+Server configuration file.
+.TP 30
+.B /etc/X11/xorg.conf-4
+Server configuration file.
+.TP 30
+.B /etc/xorg.conf
+Server configuration file.
+.TP 30
+.B @projectroot@/etc/xorg.conf
+Server configuration file.
+.TP 30
+.B @projectroot@/lib/X11/xorg.conf
+Server configuration file.
+.TP 30
+.B /etc/X11/@xconfigdir@
+Server configuration directory.
+.TP 30
+.B /etc/X11/@xconfigdir@-4
+Server configuration directory.
+.TP 30
+.B /etc/@xconfigdir@
+Server configuration directory.
+.TP 30
+.B @projectroot@/etc/@xconfigdir@
+Server configuration directory.
+.TP 30
+.B @projectroot@/lib/X11/@xconfigdir@
+Server configuration directory.
+.TP 30
+.BI @logdir@/Xorg. n .log
+Server log file for display
+.IR n .
+.TP 30
+.B @projectroot@/bin/\(**
+Client binaries.
+.TP 30
+.B @projectroot@/include/\(**
+Header files.
+.TP 30
+.B @projectroot@/lib/\(**
+Libraries.
+.TP 30
+.B @datadir@/fonts/X11/\(**
+Fonts.
+.TP 30
+.B @projectroot@/share/X11/XErrorDB
+Client error message database.
+.TP 30
+.B @projectroot@/lib/X11/app-defaults/\(**
+Client resource specifications.
+.TP 30
+.B @mandir@/man?/\(**
+Manual pages.
+.TP 30
+.BI /etc/X n .hosts
+Initial access control list for display
+.IR n .
+.SH "SEE ALSO"
+X(@miscmansuffix@), Xserver(@appmansuffix@), xdm(@appmansuffix@), xinit(@appmansuffix@),
+xorg.conf(@filemansuffix@), xvidtune(@appmansuffix@),
+xkeyboard-config (@miscmansuffix@),
+apm(@drivermansuffix@),
+ati(@drivermansuffix@),
+chips(@drivermansuffix@),
+cirrus(@drivermansuffix@),
+cyrix(@drivermansuffix@),
+fbdev(@drivermansuffix@),
+glide(@drivermansuffix@),
+glint(@drivermansuffix@),
+i128(@drivermansuffix@),
+i740(@drivermansuffix@),
+imstt(@drivermansuffix@),
+intel(@drivermansuffix@),
+mga(@drivermansuffix@),
+neomagic(@drivermansuffix@),
+nsc(@drivermansuffix@),
+nv(@drivermansuffix@),
+openchrome (@drivermansuffix@),
+r128(@drivermansuffix@),
+rendition(@drivermansuffix@),
+s3virge(@drivermansuffix@),
+siliconmotion(@drivermansuffix@),
+sis(@drivermansuffix@),
+sunbw2(@drivermansuffix@),
+suncg14(@drivermansuffix@),
+suncg3(@drivermansuffix@),
+suncg6(@drivermansuffix@),
+sunffb(@drivermansuffix@),
+sunleo(@drivermansuffix@),
+suntcx(@drivermansuffix@),
+tdfx(@drivermansuffix@),
+tga(@drivermansuffix@),
+trident(@drivermansuffix@),
+tseng(@drivermansuffix@),
+v4l(@drivermansuffix@),
+vesa(@drivermansuffix@),
+vmware(@drivermansuffix@),
+.br
+Web site
+.IR <https://www.x.org> .
+
+.SH AUTHORS
+Xorg has many contributors world wide.  The names of most of them
+can be found in the documentation, ChangeLog files in the source tree,
+and in the actual source code.
+.PP
+Xorg was originally based on XFree86 4.4rc2.
+That was originally based on \fIX386 1.2\fP by Thomas Roell, which
+was contributed to the then X Consortium's X11R5 distribution by SGCS.
+.PP
+Xorg is released by the X.Org Foundation.
+.PP
+The project that became XFree86 was originally founded in 1992 by
+David Dawes, Glenn Lai, Jim Tsillas and David Wexelblat.
+.PP
+XFree86 was later integrated in the then X Consortium's X11R6 release
+by a group of dedicated XFree86 developers, including the following:
+.PP
+.RS 4
+.nf
+Stuart Anderson    \fIanderson@metrolink.com\fP
+Doug Anson         \fIdanson@lgc.com\fP
+Gertjan Akkerman   \fIakkerman@dutiba.twi.tudelft.nl\fP
+Mike Bernson       \fImike@mbsun.mlb.org\fP
+Robin Cutshaw      \fIrobin@XFree86.org\fP
+David Dawes        \fIdawes@XFree86.org\fP
+Marc Evans         \fImarc@XFree86.org\fP
+Pascal Haible      \fIhaible@izfm.uni-stuttgart.de\fP
+Matthieu Herrb     \fIMatthieu.Herrb@laas.fr\fP
+Dirk Hohndel       \fIhohndel@XFree86.org\fP
+David Holland      \fIdavidh@use.com\fP
+Alan Hourihane     \fIalanh@fairlite.demon.co.uk\fP
+Jeffrey Hsu        \fIhsu@soda.berkeley.edu\fP
+Glenn Lai          \fIglenn@cs.utexas.edu\fP
+Ted Lemon          \fImellon@ncd.com\fP
+Rich Murphey       \fIrich@XFree86.org\fP
+Hans Nasten        \fInasten@everyware.se\fP
+Mark Snitily       \fImark@sgcs.com\fP
+Randy Terbush      \fIrandyt@cse.unl.edu\fP
+Jon Tombs          \fItombs@XFree86.org\fP
+Kees Verstoep      \fIversto@cs.vu.nl\fP
+Paul Vixie         \fIpaul@vix.com\fP
+Mark Weaver        \fIMark_Weaver@brown.edu\fP
+David Wexelblat    \fIdwex@XFree86.org\fP
+Philip Wheatley    \fIPhilip.Wheatley@ColumbiaSC.NCR.COM\fP
+Thomas Wolfram     \fIwolf@prz.tu-berlin.de\fP
+Orest Zborowski    \fIorestz@eskimo.com\fP
+.fi
+.RE
+.PP
+Xorg source is available from the FTP server
+\fI<ftp://ftp.x.org/>\fP, and from the X.Org
+server \fI<https://gitlab.freedesktop.org/xorg/>\fP.  Documentation and other
+information can be found from the X.Org web site
+\fI<https://www.x.org/>\fP.
+
+.SH LEGAL
+.PP
+.B Xorg
+is copyright software, provided under licenses that permit modification
+and redistribution in source and binary form without fee.
+.B Xorg is copyright by numerous authors and
+contributors from around the world.  Licensing information can be found
+at
+.IR <https://www.x.org> .
+Refer to the source code for specific copyright notices.
+.PP
+.B XFree86(TM)
+is a trademark of The XFree86 Project, Inc.
+.PP
+.B X11(TM)
+and
+.B X Window System(TM)
+are trademarks of The Open Group.

@@ -88,7 +88,6 @@ from The Open Group.
 extern DeviceIntPtr lorieMouse, lorieKeyboard;
 
 typedef struct {
-    DestroyPixmapProcPtr DestroyPixmap;
     CloseScreenProcPtr CloseScreen;
     CreateScreenResourcesProcPtr CreateScreenResources;
 
@@ -115,12 +114,10 @@ ScreenPtr pScreenPtr;
 static lorieScreenInfo lorieScreen = { .root.width = 1280, .root.height = 1024 };
 static lorieScreenInfoPtr pvfb = &lorieScreen;
 static char *xstartup = NULL;
-static DevPrivateKeyRec loriePixmapPrivateKeyRec;
 
 static Bool TrueNoop() { return TRUE; }
 static Bool FalseNoop() { return FALSE; }
 static void VoidNoop() {}
-static void lorieInitSelectionCallback();
 
 void
 ddxGiveUp(unused enum ExitCode error) {
@@ -332,7 +329,7 @@ static void lorieUpdateBuffer(void) {
         d0.width = pScreenPtr->width;
         d0.height = pScreenPtr->height;
         d0.layers = 1;
-        d0.usage = USAGE;
+        d0.usage = USAGE | AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
         d0.format = pvfb->root.flip
                 ? AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM
                 : AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM;
@@ -412,7 +409,7 @@ static inline Bool loriePixmapLock(PixmapPtr pixmap) {
     }
 
     AHardwareBuffer_describe(pvfb->root.buffer, &desc);
-    status = AHardwareBuffer_lock(pvfb->root.buffer, desc.usage, -1, NULL, &data);
+    status = AHardwareBuffer_lock(pvfb->root.buffer, USAGE, -1, NULL, &data);
     pvfb->root.locked = status == 0;
     if (pvfb->root.locked)
         pixmap->drawable.pScreen->ModifyPixmapHeader(pixmap, desc.width, desc.height, -1, -1, desc.stride * 4, data);
@@ -470,26 +467,6 @@ lorieCloseScreen(ScreenPtr pScreen) {
     unwrap(pvfb, pScreen, CloseScreen)
     // No need to call fbDestroyPixmap since AllocatePixmap sets pixmap as PRIVATE_SCREEN so it is destroyed automatically.
     return pScreen->CloseScreen(pScreen);
-}
-
-static Bool
-lorieDestroyPixmap(PixmapPtr pPixmap) {
-    Bool ret;
-    void *ptr = NULL;
-    size_t size = 0;
-
-    if (pPixmap->refcnt == 1) {
-        ptr = dixLookupPrivate(&pPixmap->devPrivates, &loriePixmapPrivateKeyRec);
-        size = pPixmap->devKind * pPixmap->drawable.height;
-    }
-
-    unwrap(pvfb, pScreenPtr, DestroyPixmap)
-    ret = (*pScreenPtr->DestroyPixmap) (pPixmap);
-    wrap(pvfb, pScreenPtr, DestroyPixmap, lorieDestroyPixmap)
-
-    if (ptr)
-        munmap(ptr, size);
-    return ret;
 }
 
 static Bool
@@ -563,47 +540,6 @@ static Bool resetRootCursor(unused ClientPtr pClient, unused void *closure) {
     return TRUE;
 }
 
-static PixmapPtr loriePixmapFromFds(ScreenPtr screen, CARD8 num_fds, const int *fds, CARD16 width, CARD16 height,
-                                    const CARD32 *strides, const CARD32 *offsets, CARD8 depth, unused CARD8 bpp, CARD64 modifier) {
-    const CARD64 RAW_MMAPPABLE_FD = 1274;
-    PixmapPtr pixmap;
-    void *addr = NULL;
-    if (num_fds != 1 || modifier != RAW_MMAPPABLE_FD) {
-        log(ERROR, "DRI3: More than 1 fd or modifier is not RAW_MMAPPABLE_FD");
-        return NULL;
-    }
-
-    addr = mmap(NULL, strides[0] * height, PROT_READ, MAP_SHARED, fds[0], offsets[0]);
-    if (!addr || addr == MAP_FAILED) {
-        log(ERROR, "DRI3: mmap failed");
-        return NULL;
-    }
-
-    pixmap = fbCreatePixmap(screen, 0, 0, depth, 0);
-    if (!pixmap) {
-        log(ERROR, "DRI3: failed to create pixmap");
-        munmap(addr, strides[0] * height);
-        return NULL;
-    }
-
-    dixSetPrivate(&pixmap->devPrivates, &loriePixmapPrivateKeyRec, addr);
-    screen->ModifyPixmapHeader(pixmap, width, height, 0, 0, strides[0], addr);
-
-    return pixmap;
-}
-
-static int lorieGetFormats(unused ScreenPtr screen, CARD32 *num_formats, CARD32 **formats) {
-    *num_formats = 0;
-    *formats = NULL;
-    return TRUE;
-}
-
-static int lorieGetModifiers(unused ScreenPtr screen, unused uint32_t format, uint32_t *num_modifiers, uint64_t **modifiers) {
-    *num_modifiers = 0;
-    *modifiers = NULL;
-    return TRUE;
-}
-
 static Bool
 lorieScreenInit(ScreenPtr pScreen, unused int argc, unused char **argv) {
     static int timerFd = -1;
@@ -621,30 +557,20 @@ lorieScreenInit(ScreenPtr pScreen, unused int argc, unused char **argv) {
     miSetZeroLineBias(pScreen, 0);
     pScreen->blackPixel = 0;
     pScreen->whitePixel = 1;
-    static dri3_screen_info_rec dri3Info = {
-            .version = 2,
-            .fds_from_pixmap = FalseNoop,
-            .pixmap_from_fds = loriePixmapFromFds,
-            .get_formats = lorieGetFormats,
-            .get_modifiers = lorieGetModifiers,
-            .get_drawable_modifiers = FalseNoop
-    };
 
     if (FALSE
           || !miSetVisualTypesAndMasks(24, ((1 << TrueColor) | (1 << DirectColor)), 8, TrueColor, 0xFF0000, 0x00FF00, 0x0000FF)
           || !miSetPixmapDepths()
           || !fbScreenInit(pScreen, NULL, pvfb->root.width, pvfb->root.height, monitorResolution, monitorResolution, 0, 32)
+          || !lorieInitDri3(pScreen)
           || !fbPictureInit(pScreen, 0, 0)
           || !lorieRandRInit(pScreen)
           || !miPointerInitialize(pScreen, &loriePointerSpriteFuncs, &loriePointerCursorFuncs, TRUE)
-          || !fbCreateDefColormap(pScreen)
-          || !dri3_screen_init(pScreen, &dri3Info)
-          || !dixRegisterPrivateKey(&loriePixmapPrivateKeyRec, PRIVATE_PIXMAP, 0))
+          || !fbCreateDefColormap(pScreen))
         return FALSE;
 
     wrap(pvfb, pScreen, CreateScreenResources, lorieCreateScreenResources)
     wrap(pvfb, pScreen, CloseScreen, lorieCloseScreen)
-    wrap(pvfb, pScreen, DestroyPixmap, lorieDestroyPixmap)
 
     QueueWorkProc(resetRootCursor, NULL, NULL);
     ShmRegisterFbFuncs(pScreen);
@@ -728,7 +654,7 @@ InitOutput(ScreenInfo * screen_info, int argc, char **argv) {
 
     renderer_init(pvfb->env, &pvfb->root.legacyDrawing, &pvfb->root.flip);
     xorgGlxCreateVendor();
-    lorieInitSelectionCallback();
+    lorieInitClipboard();
 
     if (-1 == AddScreen(lorieScreenInit, argc, argv)) {
         FatalError("Couldn't add screen %d\n", i);
@@ -803,157 +729,3 @@ __GLXprovider __glXDRISWRastProvider = {
         "DRISWRAST",
         NULL
 };
-
-/*################################################################################################*/
-
-static int (*origProcSendEvent)(ClientPtr) = NULL;
-static Atom xaCLIPBOARD = 0, xaTARGETS = 0, xaSTRING = 0, xaUTF8_STRING = 0;
-static Bool clipboardEnabled = FALSE;
-
-void lorieEnableClipboardSync(Bool enable) {
-    clipboardEnabled = enable;
-}
-
-static void lorieSelectionRequest(Atom selection, Atom target) {
-    Selection *pSel;
-
-    if (clipboardEnabled && dixLookupSelection(&pSel, selection, serverClient, DixGetAttrAccess) == Success) {
-        xEvent event = {0};
-        event.u.u.type = SelectionRequest;
-        event.u.selectionRequest.owner = pSel->window;
-        event.u.selectionRequest.time = currentTime.milliseconds;
-        event.u.selectionRequest.requestor = pScreenPtr->root->drawable.id;
-        event.u.selectionRequest.selection = selection;
-        event.u.selectionRequest.target = target;
-        event.u.selectionRequest.property = target;
-        WriteEventsToClient(pSel->client, 1, &event);
-    }
-}
-
-static Bool lorieHasAtom(Atom atom, const Atom list[], size_t size) {
-    for (size_t i = 0; i < size; i++)
-        if (list[i] == atom)
-            return TRUE;
-
-    return FALSE;
-}
-
-static inline void lorieConvertLF(const char* src, char *dst, size_t bytes) {
-    size_t i = 0, j = 0;
-    for (; i < bytes; i++)
-        if (src[i] != '\r')
-            dst[j++] = src[i];
-}
-
-static inline void lorieLatin1ToUTF8(unsigned char* out, const unsigned char* in) {
-    while (*in)
-        if (*in < 128)
-            *out++ = *in++;
-        else
-            *out++ = 0xc2 + (*in > 0xbf), *out++ = (*in++ & 0x3f) + 0x80;
-}
-
-static inline int lorieCheckUTF8(const unsigned char *utf, size_t size) {
-    int ix;
-    unsigned char c;
-
-    for (ix = 0; (c = utf[ix]) && ix < size;) {
-        if (c & 0x80) {
-            if ((utf[ix + 1] & 0xc0) != 0x80)
-                return 0;
-            if ((c & 0xe0) == 0xe0) {
-                if ((utf[ix + 2] & 0xc0) != 0x80)
-                    return 0;
-                if ((c & 0xf0) == 0xf0) {
-                    if ((c & 0xf8) != 0xf0 || (utf[ix + 3] & 0xc0) != 0x80)
-                        return 0;
-                    ix += 4;
-                    /* 4-byte code */
-                } else
-                    /* 3-byte code */
-                    ix += 3;
-            } else
-                /* 2-byte code */
-                ix += 2;
-        } else
-            /* 1-byte code */
-            ix++;
-    }
-    return 1;
-}
-
-static void lorieHandleSelection(Atom target) {
-    PropertyPtr prop;
-    if (target != xaTARGETS && target != xaSTRING && target != xaUTF8_STRING)
-        return;
-
-    if (dixLookupProperty(&prop, pScreenPtr->root, target, serverClient, DixReadAccess) != Success)
-        return;
-
-    log(DEBUG, "Selection notification for CLIPBOARD (target %s, type %s)\n", NameForAtom(target), NameForAtom(prop->type));
-
-    if (target == xaTARGETS && prop->type == XA_ATOM && prop->format == 32) {
-        if (lorieHasAtom(xaUTF8_STRING, (const Atom*)prop->data, prop->size))
-            lorieSelectionRequest(xaCLIPBOARD, xaUTF8_STRING);
-        else if (lorieHasAtom(xaSTRING, (const Atom*)prop->data, prop->size))
-            lorieSelectionRequest(xaCLIPBOARD, xaSTRING);
-    } else if (target == xaSTRING && prop->type == xaSTRING && prop->format == 8) {
-        if (prop->format != 8 || prop->type != xaSTRING)
-            return;
-
-        char filtered[prop->size + 1], utf8[(prop->size + 1) * 2];
-        memset(filtered, 0, sizeof(filtered));
-        memset(utf8, 0, sizeof(utf8));
-
-        lorieConvertLF(prop->data,  filtered, prop->size);
-        lorieLatin1ToUTF8((unsigned char*) utf8, (unsigned char*) filtered);
-        log(DEBUG, "Sending clipboard to clients (%zu bytes)\n", strlen(utf8));
-        lorieSendClipboardData(utf8);
-    } else if (target == xaUTF8_STRING && prop->type == xaUTF8_STRING && prop->format == 8) {
-        char filtered[prop->size + 1];
-
-        if (!lorieCheckUTF8(prop->data, prop->size)) {
-            dprintf(2, "Invalid UTF-8 sequence in clipboard\n");
-            return;
-        }
-
-        memset(filtered, 0, prop->size + 1);
-        lorieConvertLF(prop->data, filtered, prop->size);
-
-        log(DEBUG, "Sending clipboard to clients (%zu bytes)\n", strlen(filtered));
-        lorieSendClipboardData(filtered);
-    }
-}
-
-static int lorieProcSendEvent(ClientPtr client)
-{
-    REQUEST(xSendEventReq)
-    REQUEST_SIZE_MATCH(xSendEventReq);
-    __typeof__(stuff->event.u.selectionNotify)* e = &stuff->event.u.selectionNotify;
-
-    if (clipboardEnabled && e->requestor == pScreenPtr->root->drawable.id &&
-            stuff->event.u.u.type == SelectionNotify && e->selection == xaCLIPBOARD && e->target == e->property)
-        lorieHandleSelection(e->target);
-
-    return origProcSendEvent(client);
-}
-
-static void lorieSelectionCallback(maybe_unused CallbackListPtr *callbacks, maybe_unused void * data, void * args) {
-    SelectionInfoRec *info = (SelectionInfoRec *) args;
-
-    if (clipboardEnabled && info->selection->selection == xaCLIPBOARD && info->kind == SelectionSetOwner)
-        lorieSelectionRequest(xaCLIPBOARD, xaTARGETS);
-}
-
-static void lorieInitSelectionCallback() {
-#define ATOM(name) xa##name = MakeAtom(#name, strlen(#name), TRUE)
-    ATOM(CLIPBOARD); ATOM(TARGETS); ATOM(STRING); ATOM(UTF8_STRING);
-
-    if (!origProcSendEvent) {
-        origProcSendEvent = ProcVector[X_SendEvent];
-        ProcVector[X_SendEvent] = lorieProcSendEvent;
-    }
-
-    if (!AddCallback(&SelectionCallback, lorieSelectionCallback, NULL))
-        FatalError("Adding SelectionCallback failed\n");
-}

@@ -1,0 +1,89 @@
+Adding EXA support to your X.Org video driver
+---------------------------------------------
+EXA (for EXcellent Architecture or Ex-kaa aXeleration Architecture or
+whatever) aims to extend the life of the venerable XFree86 video drivers by
+introducing a new set of acceleration hooks that efficiently accelerate the X
+Render extension, including solid fills, blits within screen memory and to and
+from system memory, and Porter-Duff compositing and transform operations.
+
+Configuration
+-------------
+Some drivers implement a per-instance useEXA flag to track whether EXA is
+active or not.
+
+Setting the flag can be done in the driver's Options parsing routine.
+
+Loading EXA
+------------
+EXA drivers in the XFree86 DDX should use the loadable module loader to load
+the EXA core.  Careful versioning allows the EXA API to be extended without
+breaking the ABI for older versions of drivers.  Example code for loading EXA:
+
+static const char *exaSymbols[] = {
+    "exaDriverAlloc",
+    "exaDriverInit",
+    "exaDriverFini",
+    "exaOffscreenAlloc",
+    "exaOffscreenFree",
+    "exaGetPixmapOffset",
+    "exaGetPixmapPitch",
+    "exaGetPixmapSize",
+    "exaMarkSync",
+    "exaWaitSync",
+    NULL
+};
+
+	if (info->useEXA) {
+	    info->exaReq.majorversion = 2;
+	    info->exaReq.minorversion = 0;
+
+	    if (!LoadSubModule(pScrn->module, "exa", NULL, NULL, NULL,
+			       &info->exaReq, &errmaj, &errmin)) {
+		LoaderErrorMsg(NULL, "exa", errmaj, errmin);
+		return FALSE;
+	    }
+	    xf86LoaderReqSymLists(exaSymbols, NULL);
+	}
+
+EXA is then initialized using exaDriverAlloc and exaDriverInit.  See doxygen
+documentation for getting started there.
+
+Further documentation
+------------
+The EXA driver interface and public API is documented using doxygen in
+xserver/xorg/exa/.  To build the documentation, run:
+  doxygen -g
+  doxygen Doxyfile
+The resulting documentation will appear an html/index.html under the current
+directory.
+
+EXA initialization
+------------------
+Your driver's AccelInit routine must initialize an ExaDriverRec structure if
+EXA support is enabled, with appropriate error handling (i.e.  NoAccel and
+NoXvideo should be set to true if EXA fails to initialize for whatever
+reason).
+
+The AccelInit routine also needs to make sure that there's enough offscreen
+memory for certain operations to function, like Xvideo, which should advertise
+a maximum size no larger than can be dealt with given the amount of offscreen
+memory available.
+
+EXA and Xv
+----------
+Video support becomes easier with EXA since AllocateFBMemory can use
+exaOffscreenAlloc directly, freeing a previous area if necessary and
+allocating a new one.  Likewise, FreeFBMemory can call exaOffscreenFree.
+
+EXA teardown
+------------
+At screen close time, EXA drivers should call exaDriverFini with their screen
+pointer, free their EXADriver structure, and do any other necessary teardown.
+
+EXA misc.
+---------
+In many drivers, DGA support will need to be changed to be aware of the new
+EXA support.
+
+Send updates and corrections to Jesse Barnes <jbarnes@virtuousgeek.org> or
+just check them in if you have permission.

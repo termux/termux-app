@@ -1,0 +1,100 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\" Copyright \(co 2000  The XFree86 Project, Inc.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XmbTextEscapement __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XmbTextEscapement, XwcTextEscapement, Xutf8TextEscapement \- obtain the escapement of text
+.SH SYNTAX
+.HP
+int XmbTextEscapement\^(\^XFontSet \fIfont_set\fP\^,
+_Xconst char *\fIstring\fP\^, int
+\fInum_bytes\fP\^);
+.HP
+int XwcTextEscapement\^(\^XFontSet \fIfont_set\fP\^,
+_Xconst wchar_t *\fIstring\fP\^,
+int \fInum_wchars\fP\^);
+.HP
+int Xutf8TextEscapement\^(\^XFontSet \fIfont_set\fP\^,
+_Xconst char *\fIstring\fP\^,
+int \fInum_bytes\fP\^);
+.SH ARGUMENTS
+.IP \fIfont_set\fP 1i
+Specifies the font set.
+.IP \fInum_bytes\fP 1i
+Specifies the number of bytes in the string argument.
+.IP \fInum_wchars\fP 1i
+Specifies the number of characters in the string argument.
+.IP \fIstring\fP 1i
+Specifies the character string.
+.SH DESCRIPTION
+The
+.BR XmbTextEscapement ,
+.B XwcTextEscapement
+and
+.B Xutf8TextEscapement
+functions return the escapement in pixels of the specified string as a value,
+using the fonts loaded for the specified font set.
+The escapement is the distance in pixels in the primary draw
+direction from the drawing origin to the origin of the next character to
+be drawn, assuming that the rendering of the next character is not
+dependent on the supplied string.
+.LP
+Regardless of the character rendering order,
+the escapement is always positive.
+.LP
+The function
+.B Xutf8TextEscapement
+is an extension introduced by The XFree86 Project, Inc., in their 4.0.2
+release.
+Its presence is
+indicated by the macro
+.BR X_HAVE_UTF8_STRING .
+.SH "SEE ALSO"
+XmbTextExtents(__libmansuffix__),
+XmbTextPerCharExtents(__libmansuffix__)
+\fI\*(xL\fP

@@ -1,0 +1,11 @@
+# To use this config on you editor, follow the instructions at:
+# http://editorconfig.org
+
+root = true
+
+[*]
+tab_width = 8
+
+[meson.build,meson_options.txt]
+indent_style = space
+indent_size = 2

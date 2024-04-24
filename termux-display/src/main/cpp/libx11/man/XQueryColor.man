@@ -1,0 +1,251 @@
+'\" t
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XQueryColor __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XQueryColor, XQueryColors, XLookupColor, XParseColor \- obtain color values
+.SH SYNTAX
+.HP
+int XQueryColor\^(\^Display *\fIdisplay\fP\^, Colormap \fIcolormap\fP\^, XColor
+*\fIdef_in_out\fP\^);
+.HP
+int XQueryColors\^(\^Display *\fIdisplay\fP\^, Colormap \fIcolormap\fP\^,
+XColor \fIdefs_in_out\fP[\^]\^, int \fIncolors\fP\^);
+.HP
+Status XLookupColor\^(\^Display *\fIdisplay\fP\^, Colormap \fIcolormap\fP\^,
+_Xconst char *\fIcolor_name\fP\^, XColor *\fIexact_def_return\fP\^, XColor
+*\fIscreen_def_return\fP\^);
+.HP
+Status XParseColor\^(\^Display *\fIdisplay\fP\^, Colormap \fIcolormap\fP\^,
+_Xconst char *\fIspec\fP\^, XColor *\fIexact_def_return\fP\^);
+.SH ARGUMENTS
+.IP \fIcolormap\fP 1i
+Specifies the colormap.
+.IP \fIcolor_name\fP 1i
+Specifies the color name string (for example, red) whose color
+definition structure you want returned.
+.IP \fIdef_in_out\fP 1i
+Specifies and returns the RGB values for the pixel specified in the structure.
+.IP \fIdefs_in_out\fP 1i
+Specifies and returns an array of color definition structures for the pixel
+specified in the structure.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIexact_def_return\fP 1i
+Returns the exact RGB values.
+.IP \fIncolors\fP 1i
+.\"Specifies the number of color definition structures.
+Specifies the number of
+.B XColor
+structures in the color definition array.
+.IP \fIscreen_def_return\fP 1i
+Returns the closest RGB values provided by the hardware.
+.IP \fIspec\fP 1i
+Specifies the color name string;
+case is ignored.
+.IP \fIexact_def_return\fP 1i
+Returns the exact color value for later use and sets the
+.BR DoRed ,
+.BR DoGreen ,
+and
+.B DoBlue
+flags.
+.SH DESCRIPTION
+The
+.B XQueryColor
+function returns the current RGB value for the pixel in the
+.B XColor
+structure and sets the
+.BR DoRed ,
+.BR DoGreen ,
+and
+.B DoBlue
+flags.
+The
+.B XQueryColors
+function returns the RGB value for each pixel in each
+.B XColor
+structure and sets the
+.BR DoRed ,
+.BR DoGreen ,
+and
+.B DoBlue
+flags in each structure.
+
+.LP
+.B XQueryColor
+and
+.B XQueryColors
+can generate
+.B BadColor
+and
+.B BadValue
+errors.
+.LP
+The
+.B XLookupColor
+function looks up the string name of a color with respect to the screen
+associated with the specified colormap.
+It returns both the exact color values and
+the closest values provided by the screen
+with respect to the visual type of the specified colormap.
+If the color name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+.B XLookupColor
+returns nonzero if the name is resolved;
+otherwise, it returns zero.
+.LP
+The
+.B XParseColor
+function looks up the string name of a color with respect to the screen
+associated with the specified colormap.
+It returns the exact color value.
+If the color name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+.B XParseColor
+returns nonzero if the name is resolved;
+otherwise, it returns zero.
+.LP
+.B XLookupColor
+and
+.B XParseColor
+can generate
+.B BadColor
+error.
+.SH "COLOR NAMES"
+An RGB Device specification is identified by
+the prefix \*(lqrgb:\*(rq and conforms to the following syntax:
+.LP
+.\" Start marker code here
+.EX
+rgb:\fI<red>/<green>/<blue>\fP
+
+    \fI<red>\fP, \fI<green>\fP, \fI<blue>\fP := \fIh\fP | \fIhh\fP | \fIhhh\fP | \fIhhhh\fP
+    \fIh\fP := single hexadecimal digits (case insignificant)
+.EE
+.\" End marker code here
+.LP
+Note that \fIh\fP indicates the value scaled in 4 bits,
+\fIhh\fP the value scaled in 8 bits,
+\fIhhh\fP the value scaled in 12 bits,
+and \fIhhhh\fP the value scaled in 16 bits, respectively.
+.LP
+For backward compatibility, an older syntax for RGB Device is
+supported, but its continued use is not encouraged.
+The syntax is an initial sharp sign character followed by
+a numeric specification, in one of the following formats:
+.LP
+.TS
+l l.
+\&#RGB	(4 bits each)
+\&#RRGGBB	(8 bits each)
+\&#RRRGGGBBB	(12 bits each)
+\&#RRRRGGGGBBBB	(16 bits each)
+.TE
+.LP
+The R, G, and B represent single hexadecimal digits.
+When fewer than 16 bits each are specified,
+they represent the most significant bits of the value
+(unlike the \*(lqrgb:\*(rq syntax, in which values are scaled).
+For example, the string \*(lq#3a7\*(rq is the same as \*(lq#3000a0007000\*(rq.
+.LP
+An RGB intensity specification is identified
+by the prefix \*(lqrgbi:\*(rq and conforms to the following syntax:
+.LP
+.\" Start marker code here
+.EX
+rgbi:\fI<red>/<green>/<blue>\fP
+.EE
+.\" End marker code here
+.LP
+Note that red, green, and blue are floating-point values
+between 0.0 and 1.0, inclusive.
+The input format for these values is an optional sign,
+a string of numbers possibly containing a decimal point,
+and an optional exponent field containing an E or e
+followed by a possibly signed integer string.
+.LP
+The standard device-independent string specifications have
+the following syntax:
+.LP
+.\" Start marker code here
+.EX
+CIEXYZ:\fI<X>/<Y>/<Z>\fP
+CIEuvY:\fI<u>/<v>/<Y>\fP
+CIExyY:\fI<x>/<y>/<Y>\fP
+CIELab:\fI<L>/<a>/<b>\fP
+CIELuv:\fI<L>/<u>/<v>\fP
+TekHVC:\fI<H>/<V>/<C>\fP
+.EE
+.\" End marker code here
+.LP
+All of the values (C, H, V, X, Y, Z, a, b, u, v, y, x) are
+floating-point values.
+The syntax for these values is an optional plus or minus sign,
+a string of digits possibly containing a decimal point,
+and an optional exponent field consisting of an \*(lqE\*(rq or \*(lqe\*(rq
+followed by an optional plus or minus followed by a string of digits.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadColor
+A value for a Colormap argument does not name a defined Colormap.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.SH "SEE ALSO"
+XAllocColor(__libmansuffix__),
+XCreateColormap(__libmansuffix__),
+XStoreColors(__libmansuffix__)
+.br
+\fI\*(xL\fP

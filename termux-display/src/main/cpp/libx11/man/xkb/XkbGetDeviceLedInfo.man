@@ -1,0 +1,153 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbGetDeviceLedInfo __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbGetDeviceLedInfo \- Query the indicator names, maps, and state associated 
+with an LED feedback of an input extension device
+.SH SYNOPSIS
+.HP
+.B Status XkbGetDeviceLedInfo
+.BI "(\^Display *" "dpy" "\^,"
+.BI "XkbDeviceInfoPtr " "device_info" "\^,"
+.BI "unsigned int " "led_class" "\^,"
+.BI "unsigned int " "led_id" "\^,"
+.BI "unsigned int " "which" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to X server
+.TP
+.I device_info
+structure to update with results
+.TP
+.I led_class
+LED feedback class assigned by input extension
+.TP
+.I led_id
+LED feedback ID assigned by input extension
+.TP
+.I which
+mask indicating desired information
+.SH DESCRIPTION
+.LP
+.I XkbGetDeviceLedInfo 
+queries the server for the desired LED information for the feedback specified by
+.I led_class 
+and 
+.I led_id 
+for the X input extension device indicated by 
+.I device_spec->device_info 
+and waits for a reply. If successful, 
+.I XkbGetDeviceLedInfo 
+backfills the relevant fields of 
+.I device_info 
+as determined by 
+.I which 
+with the results and returns Success. Valid values for 
+.I which 
+are the inclusive OR of any of XkbXI_IndicatorNamesMask, 
+XkbXI_IndicatorMapsMask, and XkbXI_IndicatorStateMask.
+
+The fields of 
+.I device_info 
+that are filled in when this request succeeds are 
+.I name, type, supported, 
+and 
+.I unsupported, 
+and portions of the 
+.I leds 
+structure corresponding to 
+.I led_class 
+and 
+.I led_id 
+as indicated by the bits set in 
+.I which. 
+The 
+.I device_info->leds 
+vector is allocated if necessary and 
+.I sz_leds 
+and 
+.I num_leds 
+filled in. The 
+.I led_class, led_id 
+and 
+.I phys_indicators 
+fields of the 
+.I device_info->leds 
+entry corresponding to 
+.I led_class 
+and 
+.I led_id 
+are always filled in. 
+
+If 
+.I which 
+contains XkbXI_IndicatorNamesMask, the 
+.I names_present 
+and 
+.I names 
+fields of the 
+.I device_info->leds 
+structure corresponding to 
+.I led_class 
+and 
+.I led_id 
+are updated, if 
+.I which 
+contains XkbXI_IndicatorStateMask, the corresponding 
+.I state 
+field is updated, and if 
+.I which 
+contains XkbXI_IndicatorMapsMask, the 
+.I maps_present 
+and 
+.I maps 
+fields are updated.
+
+If a compatible version of Xkb is not available in the server or the Xkb 
+extension has not been properly initialized, 
+.I XkbGetDeviceLedInfo 
+returns BadAccess. If allocation errors occur, a BadAlloc status is returned. If 
+the device has no indicators, a BadMatch error is returned. If 
+.I ledClass 
+or 
+.I ledID 
+have illegal values, a BadValue error is returned. If they have legal values but 
+do not specify a feedback that contains LEDs and is associated with the 
+specified device, a BadMatch error is returned. 
+.SH DIAGNOSTICS
+.TP 15
+.B BadAccess
+The Xkb extension has not been properly initialized
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has 
+correct type and range, but is otherwise invalid
+.TP 15
+.B BadValue
+An argument is out of range

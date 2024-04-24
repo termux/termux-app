@@ -1,0 +1,194 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbChangeTypesOfKey __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbChangeTypesOfKey \- Change the number of groups and the types bound to a key 
+.SH SYNOPSIS
+.HP
+.B Status XkbChangeTypesOfKey
+.BI "(\^XkbDescPtr " "xkb" "\^,"
+.BI "int " "key" "\^,"
+.BI "int " "n_groups" "\^,"
+.BI "unsigned int " "groups" "\^,"
+.BI "int *" "new_types_in" "\^,"
+.BI "XkbMapChangesPtr " "p_changes" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I xkb
+keyboard description to be changed
+.TP
+.I key
+keycode for key of interest
+.TP
+.I n_groups
+new number of groups for key
+.TP
+.I groups
+mask indicating groups to change
+.TP
+.I new_types_in
+indices for new groups specified in groups
+.TP
+.I p_changes
+notes changes made to xkb
+.SH DESCRIPTION
+.LP
+.I XkbChangeTypesOfKey 
+reallocates the symbols and actions bound to the key, if necessary, and 
+initializes any new symbols 
+or actions to NoSymbol or NoAction, as appropriate. If the p_changes parameter 
+is not NULL, 
+.I XkbChangeTypesOfKey 
+adds the XkbKeySymsMask to the changes field of 
+.I p_changes 
+and modifies the 
+.I first_key_sym 
+and 
+.I num_key_syms 
+fields of 
+.I p_changes 
+to include the 
+.I key 
+that was changed. See STRUCTURE for more information on the XkbMapChangesPtr 
+structure. If 
+successful, 
+.I XkbChangeTypesOfKey 
+returns Success.
+
+The 
+.I n_groups 
+parameter specifies the new number of groups for the key. The 
+.I groups 
+parameter is a mask specifying the groups for which new types are supplied and 
+is a bitwise 
+inclusive OR of the following masks: XkbGroup1Mask, XkbGroup2Mask, 
+XkbGroup3Mask, and XkbGroup4Mask.
+
+The 
+.I new_types_in 
+parameter is an integer array of length 
+.I n_groups. 
+Each entry represents the type to use for the associated group and is an index 
+into 
+.I xkb->map->types. 
+The 
+.I new_types_in 
+array is indexed by group index; if 
+.I n_groups 
+is four and 
+.I groups 
+only has Group1Mask and Group3Mask set, 
+.I new_types_in 
+looks like this:
+.nf
+
+    new_types_in[0] = type for Group1
+    new_types_in[1] = ignored
+    new_types_in[2] = type for Group3
+    new_types_in[3] = ignored
+    
+.fi    
+For convenience, Xkb provides the following constants to use as indices to the 
+groups:
+
+.TS
+c s
+l l
+l l.
+Table 1 Group Index Constants
+_
+Constant Name	Value
+_
+XkbGroup1Index	0
+XkbGroup2Index	1
+XkbGroup3Index	2
+XkbGroup4Index	3
+.TE
+
+If the Xkb extension has not been properly initialized, 
+.I XkbChangeTypesOfKey 
+returns BadAccess. If the 
+.I xkb 
+parameter it not valid (that is, it is NULL or it does not contain a valid 
+client map), 
+.I XkbChangeTypesOfKey 
+returns BadMatch. If the 
+.I key 
+is not a valid keycode, 
+.I n_groups 
+is greater than XkbNumKbdGroups, or the 
+.I groups 
+mask does not contain any of the valid group mask bits, 
+.I XkbChangeTypesOfKey 
+returns BadValue. If it is necessary to resize the key symbols or key actions 
+arrays and any 
+allocation errors occur, 
+.I XkbChangeTypesOfKey 
+returns BadAlloc.
+.SH STRUCTURES
+.LP
+Use the XkbMapChangesRec structure to identify and track partial modifications 
+to the mapping 
+components and to reduce the amount of traffic between the server and clients.
+.nf
+
+typedef struct _XkbMapChanges {
+    unsigned short   changed;            /\&* identifies valid components in structure */
+    KeyCode          min_key_code;       /\&* lowest numbered keycode for device */
+    KeyCode          max_key_code;       /\&* highest numbered keycode for device */
+    unsigned char    first_type;         /\&* index of first key type modified */
+    unsigned char    num_types;          /\&* # types modified */
+    KeyCode          first_key_sym;      /\&* first key whose key_sym_map changed */
+    unsigned char    num_key_syms;       /\&* # key_sym_map entries changed */
+    KeyCode          first_key_act;      /\&* first key whose key_acts entry changed */
+    unsigned char    num_key_acts;       /\&* # key_acts entries changed */
+    KeyCode          first_key_behavior; /\&* first key whose behaviors changed */
+    unsigned char    num_key_behaviors;  /\&* # behaviors entries changed */
+    KeyCode          first_key_explicit; /\&* first key whose explicit entry changed */
+    unsigned char    num_key_explicit;   /\&* # explicit entries changed */
+    KeyCode          first_modmap_key;   /\&* first key whose modmap entry changed */
+    unsigned char    num_modmap_keys;    /\&* # modmap entries changed */
+    KeyCode          first_vmodmap_key;  /\&* first key whose vmodmap changed */
+    unsigned char    num_vmodmap_keys;   /\&* # vmodmap entries changed */
+    unsigned char    pad1;               /\&* reserved */
+    unsigned short   vmods;              /\&* mask indicating which vmods changed */
+} XkbMapChangesRec,*XkbMapChangesPtr;
+
+.fi
+.SH DIAGNOSTICS
+.TP 15
+.B BadAccess
+The Xkb extension has not been properly initialized
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has 
+correct type and 
+range, but is otherwise invalid
+.TP 15
+.B BadValue
+An argument is out of range

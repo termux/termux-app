@@ -1,0 +1,22 @@
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.man,v 1.1 2001/01/24 00:06:34 dawes Exp $
+.TH FBDEVHW @drivermansuffix@ @vendorversion@
+.SH NAME
+fbdevhw \- os-specific submodule for framebuffer device access
+.SH DESCRIPTION
+.B fbdevhw
+provides functions for talking to a framebuffer device.  It is
+os-specific.  It is a submodule used by other video drivers.
+A
+.B fbdevhw
+module is currently available for linux framebuffer devices.
+.PP
+fbdev(@drivermansuffix@) is a non-accelerated driver which runs on top of the
+fbdevhw module.  fbdevhw can be used by other drivers too, this
+is usually activated with `Option "UseFBDev"' in the device section.
+.SH "SEE ALSO"
+Xorg(@appmansuffix@), xorg.conf(@filemansuffix@),
+xorgconfig(@appmansuffix@), Xserver(@appmansuffix@), X(@miscmansuffix@),
+fbdev(@drivermansuffix@)
+.SH AUTHORS
+Authors include: Gerd Knorr, based on the XF68_FBDev Server code
+(Martin Schaller, Geert Uytterhoeven).

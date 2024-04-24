@@ -1,0 +1,2 @@
+subdir('src')
+subdir('ephyr')

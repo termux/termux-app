@@ -1,0 +1,201 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbFreeClientMap __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbFreeClientMap \- Free memory used by the client map member of an XkbDescRec 
+structure
+.SH SYNOPSIS
+.HP
+.B void XkbFreeClientMap
+.BI "(\^XkbDescPtr " "xkb" "\^,"
+.BI "unsigned int " "which" "\^,"
+.BI "Bool " "free_all" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I xkb
+keyboard description containing client map to free
+.TP
+.I which
+mask identifying components of map to free
+.TP
+.I free_all
+True => free all client components and map itself 
+.SH DESCRIPTION
+.LP
+.I XkbFreeClientMap 
+frees the components of client map specified by 
+.I which 
+in the XkbDescRec structure specified by the 
+.I xkb 
+parameter and sets the corresponding structure component values to NULL. The
+.I which 
+parameter specifies a combination of the client map masks shown in Table 1.
+
+If 
+.I free_all 
+is True, 
+.I which 
+is ignored; 
+.I XkbFreeClientMap 
+frees every non-NULL structure component in the client map, frees the 
+XkbClientMapRec 
+structure referenced by the 
+.I map 
+member of the 
+.I xkb 
+parameter, and sets the 
+.I map 
+member to NULL.
+
+.TS
+c s
+l l
+l lw(4i).
+Table 1 XkbAllocClientMap Masks
+_
+Mask	Effect
+_
+XkbKeyTypesMask	T{
+The type_count field specifies the number of entries to preallocate for the 
+types field of the client map. If the type_count field is less than 
+XkbNumRequiredTypes returns BadValue.
+T}
+.sp
+XkbKeySymsMask	T{
+The min_key_code and max_key_code fields of the xkb parameter are used to 
+allocate the syms and key_sym_map fields of the client map. The fields are 
+allocated to contain the maximum number of entries necessary for max_key_code - 
+min_key_code + 1 keys.
+T}
+.sp
+XkbModifierMapMask	T{
+The min_key_code and max_key_code fields of the xkb parameter are used to 
+allocate the modmap field of the client map. The field is allocated to contain 
+the maximum number of entries necessary for max_key_code - min_key_code + 1 
+keys.
+T}
+.TE
+
+NOTE: The 
+.I min_key_code 
+and 
+.I max_key_code 
+fields of the 
+.I xkb 
+parameter must be legal values if the XkbKeySymsMask or XkbModifierMapMask masks 
+are set in the 
+.I which 
+parameter. If they are not valid, 
+.I XkbAllocClientMap 
+returns BadValue. 
+.SH STRUCTURES
+.LP
+The complete description of an Xkb keyboard is given by an XkbDescRec. The 
+component 
+structures in the XkbDescRec represent the major Xkb components.
+
+.nf
+typedef struct {
+   struct _XDisplay * display;      /\&* connection to X server */
+   unsigned short     flags;        /\&* private to Xkb, do not modify */
+   unsigned short     device_spec;  /\&* device of interest */
+   KeyCode            min_key_code; /\&* minimum keycode for device */
+   KeyCode            max_key_code; /\&* maximum keycode for device */
+   XkbControlsPtr     ctrls;        /\&* controls */
+   XkbServerMapPtr    server;       /\&* server keymap */
+   XkbClientMapPtr    map;          /\&* client keymap */
+   XkbIndicatorPtr    indicators;   /\&* indicator map */
+   XkbNamesPtr        names;        /\&* names for all components */
+   XkbCompatMapPtr    compat;       /\&* compatibility map */
+   XkbGeometryPtr     geom;         /\&* physical geometry of keyboard */
+} XkbDescRec, *XkbDescPtr;
+
+.fi
+The 
+.I display 
+field points to an X display structure. The 
+.I flags field is private to the library: modifying 
+.I flags 
+may yield unpredictable results. The 
+.I device_spec 
+field specifies the device identifier of the keyboard input device, or 
+XkbUseCoreKeyboard, which specifies the core keyboard device. The 
+.I min_key_code
+and 
+.I max_key_code 
+fields specify the least and greatest keycode that can be returned by the 
+keyboard. 
+
+Each structure component has a corresponding mask bit that is used in function 
+calls to 
+indicate that the structure should be manipulated in some manner, such as 
+allocating it 
+or freeing it. These masks and their relationships to the fields in the 
+XkbDescRec are 
+shown in Table 2.
+
+.TS
+c s s
+l l l
+l l l.
+Table 2 Mask Bits for XkbDescRec
+_
+Mask Bit	XkbDescRec Field	Value
+_
+XkbControlsMask	ctrls	(1L<<0)
+XkbServerMapMask	server	(1L<<1)
+XkbIClientMapMask	map	(1L<<2)
+XkbIndicatorMapMask	indicators	(1L<<3)
+XkbNamesMask	names	(1L<<4)
+XkbCompatMapMask	compat	(1L<<5)
+XkbGeometryMask	geom	(1L<<6)
+XkbAllComponentsMask	All Fields	(0x7f)
+.TE
+
+The 
+.I map 
+field of the complete Xkb keyboard description is a pointer to the Xkb client 
+map, which is 
+of type XkbClientMapRec:
+.nf
+ 
+   typedef struct {                   /\&* Client Map */
+      unsigned char     size_types;   /\&* # occupied entries in types */
+      unsigned char     num_types;    /\&* # entries in types */
+      XkbKeyTypePtr     types;        /\&* vector of key types used by this keymap */
+      unsigned short    size_syms;    /\&* length of the syms array */
+      unsigned short    num_syms;     /\&* # entries in syms */
+      KeySym *          syms;         /\&* linear 2d tables of keysyms, 1 per key */
+      XkbSymMapPtr      key_sym_map;  /\&* 1 per keycode, maps keycode to syms */
+      unsigned char *   modmap;       /\&* 1 per keycode, real mods bound to key */
+} XkbClientMapRec, *XkbClientMapPtr;
+
+.fi
+.SH DIAGNOSTICS
+.TP 15
+.B BadValue
+An argument is out of range
+.SH "SEE ALSO"
+.BR XkbAllocClientMap (__libmansuffix__)

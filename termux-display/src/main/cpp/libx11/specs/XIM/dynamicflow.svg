@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="575.96063"
+   height="277.7157"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="dynamicflow.svg">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path3695"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="217.60452"
+     inkscape:cy="141.45567"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="pt"
+     inkscape:window-width="675"
+     inkscape:window-height="567"
+     inkscape:window-x="31"
+     inkscape:window-y="48"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-21.177732,-766.10217)">
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="120"
+       y="775.21936"
+       id="text2816"><tspan
+         sodipodi:role="line"
+         id="tspan2818"
+         x="120"
+         y="775.21936">IM Library</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="362.28571"
+       y="775.79077"
+       id="text2820"><tspan
+         sodipodi:role="line"
+         id="tspan2822"
+         x="362.28571"
+         y="775.79077">IM Server</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="19.999998"
+       y="825.79077"
+       id="text2824"><tspan
+         sodipodi:role="line"
+         id="tspan2826"
+         x="19.999998"
+         y="825.79077">Keys in the on-key-list</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="22.571426"
+       y="871.21936"
+       id="text2828"><tspan
+         sodipodi:role="line"
+         id="tspan2830"
+         x="22.571426"
+         y="871.21936">event mask is changed</tspan><tspan
+         sodipodi:role="line"
+         x="22.571426"
+         y="886.21936"
+         id="tspan2832">to deselect the event</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="31.14286"
+       y="1025.2195"
+       id="text2834"><tspan
+         sodipodi:role="line"
+         id="tspan2836"
+         x="31.14286"
+         y="1025.2195">event mask is changed</tspan><tspan
+         sodipodi:role="line"
+         x="31.14286"
+         y="1040.2195"
+         id="tspan2838">to select the event</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="192.85715"
+       y="863.79077"
+       id="text2844"><tspan
+         sodipodi:role="line"
+         id="tspan2846"
+         x="192.85715"
+         y="863.79077">XIM_EXT_SET_EVENT_MASK</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="206.84494"
+       y="876.07648"
+       id="text2848"><tspan
+         sodipodi:role="line"
+         id="tspan2850"
+         x="206.84494"
+         y="876.07648"
+         style="font-size:10px">intercept-event-mask is set</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="192.85715"
+       y="1026.3622"
+       id="text2852"><tspan
+         sodipodi:role="line"
+         id="tspan2854"
+         x="192.85715"
+         y="1026.3622">XIM_EXT_SET_EVENT_MASK</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="214.70139"
+       y="1039.5051"
+       id="text2856"><tspan
+         sodipodi:role="line"
+         id="tspan2858"
+         x="214.70139"
+         y="1039.5051"
+         style="font-size:10px">select-event-mask is set</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="419.71429"
+       y="875.21936"
+       id="text2860"><tspan
+         sodipodi:role="line"
+         id="tspan2862"
+         x="419.71429"
+         y="875.21936">event mask is changed</tspan><tspan
+         sodipodi:role="line"
+         x="419.71429"
+         y="890.21936"
+         id="tspan2864">to select the event</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="418.85712"
+       y="957.21936"
+       id="text2866"><tspan
+         sodipodi:role="line"
+         id="tspan2868"
+         x="418.85712"
+         y="957.21936">X events directly come</tspan><tspan
+         sodipodi:role="line"
+         x="418.85712"
+         y="972.21936"
+         id="tspan2870">to the IM Server</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="422.85712"
+       y="996.07648"
+       id="text2872"><tspan
+         sodipodi:role="line"
+         id="tspan2874"
+         x="422.85712"
+         y="996.07648">when preediting is turned off</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="423.42859"
+       y="1028.6479"
+       id="text2876"><tspan
+         sodipodi:role="line"
+         id="tspan2878"
+         x="423.42859"
+         y="1028.6479">event mask is changed</tspan><tspan
+         sodipodi:role="line"
+         x="423.42859"
+         y="1043.6479"
+         id="tspan2880">to deselect the event</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 181.42857,780.93364 c 0,239.99996 0,248.57146 0,248.57146"
+       id="path2882" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 367.14286,783.21935 c 0,244.28575 0,242.85715 0,242.85715"
+       id="path2884" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:none;marker-end:url(#Arrow1Lend)"
+       d="m 92.857143,77.142857 79.999997,0"
+       id="path2886"
+       transform="translate(0,752.36221)"
+       inkscape:connector-type="polyline" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 192.85714,82.857143 162.85715,1.428571"
+       id="path2888"
+       transform="translate(0,752.36221)"
+       inkscape:connector-type="polyline" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 352.85714,94.285714 -160,1.428572"
+       id="path2890"
+       transform="translate(0,752.36221)"
+       inkscape:connector-type="polyline" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="202.60631"
+       y="827.71936"
+       id="text2854"><tspan
+         sodipodi:role="line"
+         id="tspan2856"
+         x="202.60631"
+         y="827.71936">XIM_TRIGGER_NOTIFY</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="186.89201"
+       y="902.86224"
+       id="text2858"><tspan
+         sodipodi:role="line"
+         id="tspan2860"
+         x="186.89201"
+         y="902.86224">XIM_TRIGGER_NOTIFY_REPLY</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 322.85714,145.3315 -151.42857,0"
+       id="path2918"
+       transform="translate(21.177732,766.10217)"
+       inkscape:connector-type="polyline" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 327.14286,235.3315 -150,-1.42858"
+       id="path3892"
+       transform="translate(21.177732,766.10217)"
+       inkscape:connector-type="polyline" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="M 447.14286,166.76007 378.57143,165.3315"
+       id="path3894"
+       transform="translate(21.177732,766.10217)"
+       inkscape:connector-type="polyline" />
+  </g>
+</svg>

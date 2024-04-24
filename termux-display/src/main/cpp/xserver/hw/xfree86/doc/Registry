@@ -1,0 +1,407 @@
+This is the XFree86 driver/module registry.  To avoid name space clashes and
+to maintain some consistency between drivers the important name spaces are
+maintained here.
+
+1. Module Names.
+
+Each module is required to have a unique name.  Registered names are:
+
+GLcore
+acecad
+afb
+apm
+ark
+ati
+atimisc
+bitmap
+bt8xx
+calcomp
+cfb
+cfb16
+cfb24
+cfb32
+chips
+cirrus
+citron
+cyrix
+dbe
+ddc
+digitaledge
+dmc
+dri
+drm
+dynapro
+elo2300
+elographics
+extmod
+fb
+fbdev
+fbdevhw
+fi12x6
+freetype
+glide
+glint
+glx
+hyperpen
+i128
+i2c
+i740
+i810
+imstt
+int10
+joystick
+keyboard
+layer
+magellan
+magictouch
+mfb
+mga
+microtouch
+mouse
+msp34xx
+mutouch
+neomagic
+newport
+nv
+pcidata
+penmount
+pex5
+r128
+radeon
+rac
+ramdac
+record
+rendition
+s3
+s3virge
+savage
+shadow
+shadowfb
+siliconmotion
+sis
+spaceorb
+speedo
+summa
+sunbw2
+suncg14
+suncg3
+suncg6
+sunffb
+sunleo
+suntcx
+tdfx
+tga
+trident
+tseng
+type1
+v4l
+vbe
+vesa
+vga
+vgahw
+vmware
+void
+wacom
+xaa
+xf1bpp
+xf24_32bpp
+xf4bpp
+xf8_16bpp
+xf8_32bpp
+xf8_32wid
+xie
+xtrap
+xtt
+
+2. External Module Object Symbols.
+
+Each module is required to use a unique prefix or prefixes for all of
+its externally visible symbols. They should be unique without regard to
+case.  Registered prefixes are:
+
+ati
+bt8xx
+cfb
+chips
+fi12x6
+glide
+glint
+mfb
+mga
+msp34xx
+neo
+permedia
+tseng
+vga
+vgahw
+vmware
+xaa
+xf1bpp
+xf4bpp
+
+3. Chipset Names.
+
+Each video driver is required to use a unique set of chipset names.  Case,
+white space and underscore characters are ignored when comparing chipset
+names.  All names listed here are in lower case with all white space and
+underscores removed.  Registered chipset names are:
+
+ati
+ativga
+ct64200
+ct64300
+ct65520
+ct65525
+ct65530
+ct65535
+ct65540
+ct65545
+ct65546
+ct65548
+ct65550
+ct65554
+ct65555
+ct68554
+ct69000
+et4000
+et4000w32
+et4000w32i
+et4000w32p
+et6000
+et6100
+generic
+ibmvga
+ibm8514
+mach32
+mach64
+mach8
+mga2064w
+mga1064sg
+mga2164w
+mga2164wagp
+neo2070
+neo2090
+neo2093
+neo2097
+neo2160
+neo2200
+tipm2
+vgawonder
+voodoo
+
+4. Option Names.
+
+Option names and their usage should be consistent between drivers.
+Case, white space and underscore characters are ignored when comparing
+option names.  The prefix "no" may be added or removed from boolean
+option names.  All names listed here are in their preferred user-visible
+form.  Some registered option names are:
+
+Types are:  B = boolean, O = set/unset (no value), I = integer, S = string,
+            A = optional string, F = floating point number Q = frequency
+
+Scopes are: F = global flags, V = video driver, C = common (per screen),
+            I = input drivers, X = XAA, Xv = Xv extension, M = misc.
+
+Names currently in use:
+
+Name                    Type  Scope      Description
+----------------------------------------------------------------------------
+AllowMouseOpenFail        B     F    ignore mouse dev open failure
+AllowNonLocalModInDev     B     F    allow non-local mod of input devs
+AllowNonLocalXvidtune     B     F    allow non-local VidMode connections
+BlankTime                 I     F    Screen saver timeout (min)
+DisableModInDev           B     F    disallow changing input devs
+DisableVidModeExtension   B     F    disable VidMode extension
+DontVTSwitch              B     F    disable Ctrl-Alt-Fn
+DontZap                   B     F    disable Ctrl-Alt-BS sequence
+DontZoom                  B     F    disable Ctrl-Alt-+/-
+OffTime                   I     F    Time before DPMS off mode active (min)
+PciProbe1                 O     F    use PCI probe algorithm 1
+PciProbe2                 O     F    use PCI probe algorithm 2
+PciForceConfig1           O     F    force PCI config type 1
+PciForceConfig2           O     F    force PCI config type 2
+Pixmap                    I     F    depth 24 pixmap size (24 or 32)
+StandbyTime               I     F    Time before DPMS standby active (min)
+SuspendTime               I     F    Time before DPMS suspend mode active (min)
+
+BackingStore              B     C    Enable backing store
+DDC                       B     C    Enable/disable DDC
+DDC1                      B     C    Enable/disable DDC1
+DDC2                      B     C    Enable/disable DDC2
+DPMS                      O     C    Enable DPMS
+
+BaudRate                  I     I    Serial port baud rate
+ButtonNumber              I     I    Button number (for touch screen?)
+ButtonThreshold           I     I    ??
+ClearDTR                  O     I    Clear serial port DTR
+ClearRTS                  O     I    Clear serial port RTS
+DataBits                  I     I    Serial port data bits
+DemandLoad                O     I    ??
+Device                    S     I    Device file name
+DeviceName                S     I    Input device name
+FlowControl               S     I    Serial flow control ("xon", "none")
+Floating                  B     I    Device initialised as floating
+HistorySize               I     I    ??
+MaxX                      I     I    Maximum X coordinate
+MaxY                      I     I    Maximum Y coordinate
+MinX                      I     I    Minimum X coordinate
+MinY                      I     I    Minimum Y coordinate
+Parity                    S     I    Serial port parity ("odd", "even", "none")
+ReportDelay               I     I    ??
+ReportingMode             S     I    may be "raw" or "scaled"
+ScreenNumber              I     I    Screen number (for touch screen)
+SendCoreEvents            B     I    Send core events
+StopBits                  I     I    Serial port stop bits
+SwapXY                    B     I    Swap the X and Y axes
+UntouchDelay              I     I    ??
+Vmin                      I     I    Tty VMIN
+Vtime                     I     I    Tty VTIME
+
+
+18BitBus                  B     V    ??
+8Plus16                   B     V    Enable depth 8 + depth 16 with overlay
+8Plus24                   B     V    Enable depth 8 + depth 24 with overlay
+BlockWrite                B     V    Enable/disable block write
+ColorKey                  I     V    Set the color key for overlay modes
+CompositeSync             B     V    Composite sync
+CRTDisplay                B     V    Force display on CRT, not LCD
+CRTScreen                 B     V    Display on CRT, not LCD (Obsolete)
+EarlyRasPrecharge         O     V    Early RAS pre-charge
+FastDRAM                  O     V    Fast DRAM
+FifoAggressive            O     V    Aggressive FIFO setting
+FifoConservative          O     V    Conservative FIFO setting
+FifoModerate              O     V    Moderate FIFO setting
+FireGL3000                B     V    Card is Diamond FireGL3000
+FixPanelSize              B     V    ??
+FPClock8                  Q     V    Flat panel clock for 8bpp fb (MHz)
+FPClock16                 Q     V    Flat panel clock for 16bpp fb (MHz)
+FPClock24                 Q     V    Flat panel clock for 24bpp fb (MHz)
+FPClock32                 Q     V    Flat panel clock for 32bpp fb (MHz)
+FPMVRAM                   O     V    Fast page mode VRAM
+FramebufferWC             B     V    Enable/disable WC for the framebuffer
+GlideDevice               I     V    Selects which Voodoo board to use
+HiBitHigh                 O     V    High clock bit default to set
+HiBitLow                  O     V    High clock bit default to cleared
+HWClocks                  B     V    Enable/disable HW clocks
+HWCursor                  B     V    Enable/disable HW cursor
+LateRasPrecharge          O     V    Late RAS pre-charge
+Legend                    O     V    Card is Legend ET4000
+LCDCenter                 B     V    Enable/disable centering for LCD displays
+Linear                    B     V    Enable/disable linear framebuffer
+MCLK                      Q     V    Specify the current MCLK value (MHz)
+MedDRAM                   B     V    Medium speed DRAM
+MemCfg1                   I     V    ??
+MemCfg2                   I     V    ??
+MGASDRAM                  B     V    Mga card has SDRAM
+MMIO                      B     V    Enable/disable memory mapped I/O
+MMIOCache                 B     V    Enable/Disable MMIO cache
+MuxThreshold              I     V    Multiplexing threshold (kHz)
+NoAccel                   B     V    Disable/enable acceleration
+NoClockChip               B     V    ??
+NoStretch                 B     V    Disable/enable stretching for LCD displays
+OnAtExit                  B     V    Leave video signal on when exiting server
+OverclockMem              B     V    Enable memory overclocking
+Overlay                   A     V    Enable multi-depth/overlay.  An optional
+                                     string "M,N" may be specified, where
+                                     M, N are the depths.
+PanelDisplay              B     V    Force display on LCD
+PciBurst                  B     V    Enable/disable PCI burst mode
+PciRetry                  B     V    Enable/disable PCI retries
+ProbeClocks               B     V    Force probe for non-programmable clocks
+ReferenceClock            Q     V    Clock generator reference frequency
+RGBbits                   I     V    Number of significant bits per rgb
+Rotate                    S     V    Rotate the virtual display (CW or CCW)
+SetLCDClk                 Q     V    Set LCD clock (MHz)
+SetMclk                   Q     V    Set Memory Clock (MHz)
+ShadowFB                  B     V    Enable shadow framebuffer layer
+ShowCache                 B     V    Enable viewing of offscreen memory
+ShowOverscan              O     V    Set the overscan area to a visible colour
+SlowDRAM                  O     V    Slow DRAM
+SlowEDODRAM               O     V    Slow EDO DRAM
+STN                       B     V    STN screen type (??)
+SWCursor                  B     V    Enable/disable SW cursor
+SuspendHack               B     V    ??
+SyncOnGreen               B     V    Enable/disable sync on green
+TurboQueue                B     V    Enable/disable turbo queue
+UseFBDev                  B     V    Use the fbdev driver interface
+UseModeLine               B     V    Use Modeline (??)
+W32Interleave             B     V    ??
+
+Buffers			  I	Xv   Number of buffers
+Device			  S	Xv   Device file name
+Expose                    B     Xv   Disable occlusion clipping (see DESIGN)
+FramesPerSec		  I	Xv   Max. refresh frequency
+
+XAA options.  All are of type "O" and scope "X", and are self-explanatory
+
+XaaNoColor8x8PatternFillRect
+XaaNoColor8x8PatternFillTrap
+XaaNoCPUToScreenColorExpandFill
+XaaNoDashedBresenhamLine
+XaaNoDashedTwoPointLine
+XaaNoScreenToScreenCopy
+XaaNoImageReadRect
+XaaNoImageWriteRect
+XaaNoMono8x8PatternFillRect
+XaaNoMono8x8PatternFillTrap
+XaaNoOffscreenPixmaps
+XaaNoPixmapCache
+XaaNoScanlineCPUToScreenColorExpandFill
+XaaNoScanlineImageWriteRect
+XaaNoScreenToScreenColorExpandFill
+XaaNoSolidBresenhamLine
+XaaNoSolidFillRect
+XaaNoSolidFillTrap
+XaaNoSolidHorVertLine
+XaaNoSolidTwoPointLine
+
+
+Names used in previous versions:
+
+16Clocks
+8Clocks
+ClkDiv2
+EDO VRAM
+ExternDisp
+ExtFramBuf
+FastVRAM
+FavorBitBlt
+InternDisp
+NoBitBlt
+NoFontCache
+NoImageBlt
+NoMemAccess
+NoPciDisconnect
+NoPixmapCache
+NoProgramClocks
+NoSplitXfer
+OverrideBIOS
+OverrideValidateMode
+ProgLcdModeRegs
+ProgLcdModeStretch
+SlowDRAMrefresh
+SlowVRAM
+SwapHiBit
+
+
+5. Ramdac Names.
+
+Ramdac names should be consistent between drivers.  Case, white space
+and underscore characters are ignored when comparing ramdac names.  All
+names listed here are in lower case with all white space and underscores
+removed.
+
+
+6. Clock Chip Names.
+
+Clock chip names should be consistent between drivers.  Case, white
+space and underscore characters are ignored when comparing clock chip
+names.  All names listed here are in lower case with all white space
+and underscores removed.
+
+
+
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.18 2002/04/06 18:31:09 tsi Exp $

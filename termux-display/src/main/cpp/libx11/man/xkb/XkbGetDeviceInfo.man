@@ -1,0 +1,247 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbGetDeviceInfo __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbGetDeviceInfo \- Determine whether the X server allows Xkb access to particular capabilities of input devices other than 
+the core X keyboard, or to determine the status of indicator maps, indicator names or button actions on a non-KeyClass 
+extension device
+.SH SYNOPSIS
+.HP
+.B XkbDeviceInfoPtr XkbGetDeviceInfo
+.BI "(\^Display *" "dpy" "\^,"
+.BI "unsigned int " "which" "\^,"
+.BI "unsigned int " "device_spec" "\^,"
+.BI "unsigned int " "ind_class" "\^,"
+.BI "unsigned int " "ind_id" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to X server
+.TP
+.I which
+mask indicating information to return
+.TP
+.I device_spec
+device ID, or XkbUseCoreKbd
+.TP
+.I ind_class
+feedback class for indicator requests
+.TP
+.I ind_id
+feedback ID for indicator requests
+.SH DESCRIPTION
+.LP
+To determine whether the X server allows Xkb access to particular capabilities of input devices other than the core X 
+keyboard, or to determine the status of indicator maps, indicator names or button actions on a non-KeyClass extension 
+device, use 
+.I XkbGetDeviceInfo. 
+
+.I XkbGetDeviceInfo 
+returns information about the input device specified by 
+.I device_spec. 
+Unlike the 
+.I device_spec 
+parameter of most Xkb functions, 
+.I device_spec 
+does not need to be a keyboard device. It must, however, indicate either the core keyboard or a valid X Input Extension 
+device. 
+
+The 
+.I which 
+parameter is a mask specifying optional information to be returned. It is an inclusive OR of one or more of the values from 
+Table 1 and causes the returned XkbDeviceInfoRec to contain values for the corresponding fields specified in the table.
+
+.nf
+                         Table 1 XkbDeviceInfoRec Mask Bits                        
+____________________________________________________________________________________
+Name                         XkbDeviceInfoRec Value     Capability If Set
+                             Fields Effected            
+____________________________________________________________________________________
+XkbXI_KeyboardsMask                           (1L <<0) Clients can use all
+                                                       Xkb requests and events
+                                                       with KeyClass devices 
+                                                       supported by the input
+                                                       device extension.
+
+XkbXI_ButtonActionsMask       num_btns        (1L <<1) Clients can assign key 
+                              btn_acts                 actions to buttons 
+                                                       non-KeyClass input
+                                                       extension devices.
+                           
+XkbXI_IndicatorNamesMask      leds->names     (1L <<2) Clients can assign
+                                                       names to indicators on
+                                                       non-KeyClass input
+                                                       extension devices.
+                                                             
+XkbXI_IndicatorMapsMask       leds->maps      (1L <<3) Clients can assign
+                                                       indicator maps to
+                                                       indicators on 
+                                                       non-KeyClass input
+                                                       extension devices.
+
+XkbXI_IndicatorStateMask      leds->state     (1L <<4) Clients can request 
+                                                       the status of indicators
+                                                       on non-KeyClass input
+                                                       extension devices.
+
+XkbXI_IndicatorsMask          sz_leds         (0x1c)   XkbXI_IndicatorNamesMask |
+                              num_leds                 XkbXI_IndicatorMapsMask |
+                              leds->*                  XkbXI_IndicatorStateMask
+
+XkbXI_UnsupportedFeaturesMask unsupported     (1L <<15)
+
+XkbXI_AllDeviceFeaturesMask   Those selected  (0x1e)   XkbXI_IndicatorsMask |
+                              by Value Column          XkbSI_ButtonActionsMask
+                              masks 
+
+XkbXI_AllFeaturesMask         Those selected  (0x1f)   XkbSI_AllDeviceFeaturesMask |
+                              by Value Column          XkbSI_KeyboardsMask
+                              masks
+
+XkbXI_AllDetailsMask          Those selected  (0x801f) XkbXI_AllFeaturesMask |
+                              by Value column          XkbXI_UnsupportedFeaturesMask
+                              masks
+.fi
+
+The XkbDeviceInfoRec returned by 
+.I XkbGetDeviceInfo 
+always has values for 
+.I name 
+(may be a null string, ""), 
+.I type, supported, unsupported, has_own_state, dflt_kbd_fd, 
+and 
+.I dflt_kbd_fb. 
+Other fields are filled in as specified by 
+.I which.
+
+Upon return, the 
+.I supported 
+field will be set to the inclusive OR of zero or more bits from Table 1; each bit set indicates an optional Xkb extension 
+device feature supported by the server implementation, and a client may modify the associated behavior.
+
+If the XkbButtonActionsMask bit is set in 
+.I which, 
+the XkbDeviceInfoRec returned will have the button actions 
+.I (btn_acts 
+field) filled in for all buttons.
+
+If 
+.I which 
+includes one of the bits in XkbXI_IndicatorsMask, the feedback class of the indicators must be specified in
+.I ind_class, 
+and the feedback ID of the indicators must be specified in 
+.I ind_id. 
+If the request does not include any of the bits in XkbXI_IndicatorsMask, the 
+.I ind_class 
+and 
+.I ind_id 
+parameters are ignored. The class and ID can be obtained via the input device extension 
+.I XListInputDevices 
+request. 
+
+If any of the XkbXI_IndicatorsMask bits are set in 
+.I which, 
+the XkbDeviceInfoRec returned will have filled in the portions of the 
+.I leds 
+structure corresponding to the indicator feedback identified by 
+.I ind_class 
+and 
+.I ind_id. 
+The 
+.I leds 
+vector of the XkbDeviceInfoRec is allocated if necessary and 
+.I sz_leds 
+and 
+.I num_leds 
+filled in. The 
+.I led_class, led_id 
+and 
+.I phys_indicators 
+fields of the 
+.I leds 
+entry corresponding to 
+.I ind_class 
+and 
+.I ind_id 
+are always filled in. If 
+.I which 
+contains XkbXI_IndicatorNamesMask, the 
+.I names_present 
+and 
+.I names 
+fields of the 
+.I leds 
+structure corresponding to 
+.I ind_class 
+and 
+.I ind_id 
+are returned. If 
+.I which 
+contains XkbXI_IndicatorStateMask, the corresponding 
+.I state 
+field is updated. If 
+.I which 
+contains XkbXI_IndicatorMapsMask, the 
+.I maps_present 
+and 
+.I maps 
+fields are updated.
+
+Xkb provides convenience functions to request subsets of the information available via 
+.I XkbGetDeviceInfo. 
+These convenience functions mirror some of the mask bits. The functions all take an XkbDeviceInfoPtr as an input argument 
+and operate on the X Input Extension device specified by the 
+.I device_spec 
+field of the structure. Only the parts of the structure indicated in the function description are updated. The 
+XkbDeviceInfoRec structure used in the function call can be obtained by calling 
+.I XkbGetDeviceInfo 
+or can be allocated by calling 
+.I XkbAllocDeviceInfo.
+.SH STRUCTURES
+.LP
+Information about X Input Extension devices is transferred between a client program and the Xkb extension in an 
+XkbDeviceInfoRec structure:
+.nf
+
+typedef struct {
+    char *               name;          /\&* name for device */
+    Atom                 type;          /\&* name for class of devices */
+    unsigned short       device_spec;   /\&* device of interest */
+    Bool                 has_own_state; /\&* True=>this device has its own state */
+    unsigned short       supported;     /\&* bits indicating supported capabilities */
+    unsigned short       unsupported;   /\&* bits indicating unsupported capabilities */
+    unsigned short       num_btns;      /\&* number of entries in btn_acts */
+    XkbAction *          btn_acts;      /\&* button actions */
+    unsigned short       sz_leds;       /\&* total number of entries in LEDs vector */
+    unsigned short       num_leds;      /\&* number of valid entries in LEDs vector */
+    unsigned short       dflt_kbd_fb;   /\&* input extension ID of default (core kbd) indicator */
+    unsigned short       dflt_led_fb;   /\&* input extension ID of default indicator feedback */
+    XkbDeviceLedInfoPtr  leds;          /\&* LED descriptions */
+} XkbDeviceInfoRec, *XkbDeviceInfoPtr;
+    
+.fi
+.SH "SEE ALSO"
+.BR XkbAllocDeviceInfo (__libmansuffix__),
+.BR XListInputDevices (__libmansuffix__)

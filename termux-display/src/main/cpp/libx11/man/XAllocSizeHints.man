@@ -1,0 +1,413 @@
+'\" t
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface, \fRO'Reilly and Associates,
+.ds xC Inter-Client Communication Conventions Manual
+'\" t
+.TH XAllocSizeHints __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XAllocSizeHints, XSetWMNormalHints, XGetWMNormalHints, XSetWMSizeHints, XGetWMSizeHints, XSizeHints \- allocate size hints structure and set or read a window's WM_NORMAL_HINTS property
+.SH SYNTAX
+.HP
+XSizeHints *XAllocSizeHints\^(void\^);
+.HP
+void XSetWMNormalHints\^(\^Display *\fIdisplay\fP, Window \fIw\fP, XSizeHints *\fIhints\fP\^);
+.HP
+Status XGetWMNormalHints\^(\^Display *\fIdisplay\fP, Window \fIw\fP,
+XSizeHints *\fIhints_return\fP, long *\fIsupplied_return\fP\^);
+.HP
+void XSetWMSizeHints\^(\^Display *\fIdisplay\fP, Window \fIw\fP, XSizeHints
+*\fIhints\fP, Atom \fIproperty\fP\^);
+.HP
+Status XGetWMSizeHints\^(\^Display *\fIdisplay\fP, Window \fIw\fP, XSizeHints
+*\fIhints_return\fP, long *\fIsupplied_return\fP, Atom \fIproperty\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIhints\fP 1i
+Specifies the size hints for the window in its normal state.
+.IP \fIhints\fP 1i
+Specifies the
+.B XSizeHints
+structure to be used.
+.IP \fIhints_return\fP 1i
+Returns the size hints for the window in its normal state.
+.IP \fIproperty\fP 1i
+Specifies the property name.
+.IP \fIsupplied_return\fP 1i
+Returns the hints that were supplied by the user.
+.IP \fIw\fP 1i
+Specifies the window.
+.SH DESCRIPTION
+The
+.B XAllocSizeHints
+function allocates and returns a pointer to a
+.B XSizeHints
+structure.
+Note that all fields in the
+.B XSizeHints
+structure are initially set to zero.
+If insufficient memory is available,
+.B XAllocSizeHints
+returns NULL.
+To free the memory allocated to this structure,
+use
+.BR XFree .
+.LP
+The
+.B XSetWMNormalHints
+function replaces the size hints for the WM_NORMAL_HINTS property
+on the specified window.
+If the property does not already exist,
+.B XSetWMNormalHints
+sets the size hints for the WM_NORMAL_HINTS property on the specified window.
+The property is stored with a type of WM_SIZE_HINTS and a format of 32.
+.LP
+.B XSetWMNormalHints
+can generate
+.B BadAlloc
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XGetWMNormalHints
+function returns the size hints stored in the WM_NORMAL_HINTS property
+on the specified window.
+If the property is of type WM_SIZE_HINTS, is of format 32,
+and is long enough to contain either an old (pre-ICCCM)
+or new size hints structure,
+.B XGetWMNormalHints
+sets the various fields of the
+.B XSizeHints
+structure, sets the supplied_return argument to the list of fields
+that were supplied by the user (whether or not they contained defined values),
+and returns a nonzero status.
+Otherwise, it returns a zero status.
+.LP
+If
+.B XGetWMNormalHints
+returns successfully and a pre-ICCCM size hints property is read,
+the supplied_return argument will contain the following bits:
+.LP
+.EX
+(USPosition|USSize|PPosition|PSize|PMinSize|
+ PMaxSize|PResizeInc|PAspect)
+.EE
+.LP
+If the property is large enough to contain the base size
+and window gravity fields as well,
+the supplied_return argument will also contain the following bits:
+.LP
+.EX
+PBaseSize|PWinGravity
+.EE
+.LP
+.B XGetWMNormalHints
+can generate a
+PN BadWindow
+error.
+.LP
+The
+.B XSetWMSizeHints
+function replaces the size hints for the specified property
+on the named window.
+If the specified property does not already exist,
+.B XSetWMSizeHints
+sets the size hints for the specified property
+on the named window.
+The property is stored with a type of WM_SIZE_HINTS and a format of 32.
+To set a window's normal size hints,
+you can use the
+.B XSetWMNormalHints
+function.
+.LP
+.B XSetWMSizeHints
+can generate
+.BR BadAlloc ,
+.BR BadAtom ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XGetWMSizeHints
+function returns the size hints stored in the specified property
+on the named window.
+If the property is of type WM_SIZE_HINTS, is of format 32,
+and is long enough to contain either an old (pre-ICCCM)
+or new size hints structure,
+.B XGetWMSizeHints
+sets the various fields of the
+.B XSizeHints
+structure, sets the supplied_return argument to the
+list of fields that were supplied by the user
+(whether or not they contained defined values),
+and returns a nonzero status.
+Otherwise, it returns a zero status.
+To get a window's normal size hints,
+you can use the
+.B XGetWMNormalHints
+function.
+.LP
+If
+.B XGetWMSizeHints
+returns successfully and a pre-ICCCM size hints property is read,
+the supplied_return argument will contain the following bits:
+.LP
+.EX
+(USPosition|USSize|PPosition|PSize|PMinSize|
+ PMaxSize|PResizeInc|PAspect)
+.EE
+.LP
+If the property is large enough to contain the base size
+and window gravity fields as well,
+the supplied_return argument will also contain the following bits:
+.LP
+.EX
+PBaseSize|PWinGravity
+.EE
+.LP
+.B XGetWMSizeHints
+can generate
+.B BadAtom
+and
+.B BadWindow
+errors.
+.SH PROPERTIES
+.TP 1i
+\s-1WM_NORMAL_HINTS\s+1
+Size hints for a window in its normal state.
+The C type of this property is
+.BR XSizeHints .
+.SH STRUCTURES
+The
+.B XSizeHints
+structure contains:
+.LP
+.na
+/\&* Size hints mask bits */
+.TS
+lw(.4i) lw(1.0i) lw(1.1i) lw(2.8i).
+T{
+\&#define
+T}	T{
+.B USPosition
+T}	T{
+(1L << 0)
+T}	T{
+/\&* user specified x, y */
+T}
+T{
+\&#define
+T}	T{
+.B USSize
+T}	T{
+(1L << 1)
+T}	T{
+/\&* user specified width, height */
+T}
+T{
+\&#define
+T}	T{
+.B PPosition
+T}	T{
+(1L << 2)
+T}	T{
+/\&* program specified position */
+T}
+T{
+\&#define
+T}	T{
+.B PSize
+T}	T{
+(1L << 3)
+T}	T{
+/\&* program specified size */
+T}
+T{
+\&#define
+T}	T{
+.B PMinSize
+T}	T{
+(1L << 4)
+T}	T{
+/\&* program specified minimum size */
+T}
+T{
+\&#define
+T}	T{
+.B PMaxSize
+T}	T{
+(1L << 5)
+T}	T{
+/\&* program specified maximum size */
+T}
+T{
+\&#define
+T}	T{
+.B PResizeInc
+T}	T{
+(1L << 6)
+T}	T{
+/\&* program specified resize increments */
+T}
+T{
+\&#define
+T}	T{
+.B PAspect
+T}	T{
+(1L << 7)
+T}	T{
+/\&* program specified min and max aspect ratios */
+T}
+T{
+\&#define
+T}	T{
+.B PBaseSize
+T}	T{
+(1L << 8)
+T}
+T{
+\&#define
+T}	T{
+.B PWinGravity
+T}	T{
+(1L << 9)
+T}
+T{
+\&#define
+T}	T{
+.B PAllHints
+T}	T{
+(PPosition|
+.br
+ PSize|
+.br
+ PMinSize|
+.br
+ PMaxSize|
+.br
+ PResizeInc|
+.br
+ PAspect)
+T}	T{
+T}
+.TE
+.ad
+.EX
+/\&* Values */
+
+typedef struct {
+        long flags;     /\&* marks which fields in this structure are defined */
+        int x, y;       /\&* Obsolete */
+        int width, height;      /\&* Obsolete */
+        int min_width, min_height;
+        int max_width, max_height;
+        int width_inc, height_inc;
+        struct {
+               int x;   /\&* numerator */
+               int y;   /\&* denominator */
+        } min_aspect, max_aspect;
+        int base_width, base_height;
+        int win_gravity;
+        /\&* this structure may be extended in the future */
+} XSizeHints;
+.EE
+.LP
+The x, y, width, and height members are now obsolete
+and are left solely for compatibility reasons.
+The min_width and min_height members specify the
+minimum window size that still allows the application to be useful.
+The max_width and max_height members specify the maximum window size.
+The width_inc and height_inc members define an arithmetic progression of
+sizes (minimum to maximum) into which the window prefers to be resized.
+The min_aspect and max_aspect members are expressed
+as ratios of x and y,
+and they allow an application to specify the range of aspect
+ratios it prefers.
+The base_width and base_height members define the desired size of the window.
+The window manager will interpret the position of the window
+and its border width to position the point of the outer rectangle
+of the overall window specified by the win_gravity member.
+The outer rectangle of the window includes any borders or decorations
+supplied by the window manager.
+In other words,
+if the window manager decides to place the window where the client asked,
+the position on the parent window's border named by the win_gravity
+will be placed where the client window would have been placed
+in the absence of a window manager.
+.LP
+Note that use of the
+.B PAllHints
+macro is highly discouraged.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAlloc
+The server failed to allocate the requested resource or server memory.
+.TP 1i
+.B BadAtom
+A value for an Atom argument does not name a defined Atom.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XAllocClassHint(__libmansuffix__),
+XAllocIconSize(__libmansuffix__),
+XAllocWMHints(__libmansuffix__),
+XFree(__libmansuffix__),
+XSetCommand(__libmansuffix__),
+XSetTransientForHint(__libmansuffix__),
+XSetTextProperty(__libmansuffix__),
+XSetWMClientMachine(__libmansuffix__),
+XSetWMColormapWindows(__libmansuffix__),
+XSetWMIconName(__libmansuffix__),
+XSetWMName(__libmansuffix__),
+XSetWMProperties(__libmansuffix__),
+XSetWMProtocols(__libmansuffix__),
+XStringListToTextProperty(__libmansuffix__)
+.br
+\fI\*(xL\fP

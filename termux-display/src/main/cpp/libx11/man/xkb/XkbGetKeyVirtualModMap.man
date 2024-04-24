@@ -1,0 +1,103 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbGetKeyVirtualModMap __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbGetKeyVirtualModMap \- Obtain the virtual modifier map (the vmodmap array) 
+for a subset of the keys in a keyboard description
+.SH SYNOPSIS
+.HP
+.B Status XkbGetKeyVirtualModMap
+.BI "(\^Display *" "dpy" "\^,"
+.BI "unsigned int " "first" "\^,"
+.BI "unsigned int " "num" "\^,"
+.BI "XkbDescPtr " "xkb" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to server
+.TP
+.I first
+keycode of first key to fetch
+.TP
+.I num
+number of keys for which virtual mod maps are desired
+.TP
+.I xkb
+Xkb description where results will be placed
+.SH DESCRIPTION
+.LP
+.I XkbGetKeyVirutalModmap 
+sends a request to the server to obtain the virtual modifier mappings for 
+.I num 
+keys on the keyboard starting with key 
+.I first. 
+It waits for a reply and returns the virtual modifier mappings in the
+.I server->vmodmap 
+array of 
+.I xkb. 
+If successful, 
+.I XkbGetKeyVirtualModMap 
+returns Success. The 
+.I xkb 
+parameter must be a pointer to a valid Xkb keyboard description.
+
+If the 
+.I server 
+map in the 
+.I xkb 
+parameter has not been allocated, 
+.I XkbGetKeyVirtualModMap 
+allocates and initializes it before obtaining the virtual modifier mappings.
+
+If the server does not have a compatible version of Xkb, or the Xkb extension 
+has not been properly initialized, 
+.I XkbGetKeyVirtualModMap 
+returns BadMatch. If 
+.I num 
+is less than 1 or greater than XkbMaxKeyCount, 
+.I XkbGetKeyVirtualModMap 
+returns BadValue. If any allocation errors occur, 
+.I XkbGetKeyVirtualModMap 
+returns BadAlloc.
+.SH "RETURN VALUES"
+.TP 15
+Success
+The 
+.I XkbGetKeyVirutalModmap 
+function returns Success following a successful reply from the server to obtain 
+the virtual modifier mappings for 
+.I num 
+keys on the keyboard starting with key 
+.I first. 
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has 
+correct type and range, but is otherwise invalid
+.TP 15
+.B BadValue
+An argument is out of range

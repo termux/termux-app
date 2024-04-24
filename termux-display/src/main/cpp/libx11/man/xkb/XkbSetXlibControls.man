@@ -1,0 +1,105 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbSetXlibControls __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbSetXlibControls \- Changes the state of the Library Controls
+.SH SYNOPSIS
+.HP
+.B unsigned int XkbSetXlibControls
+.BI "(\^Display *" "display" "\^,"
+.BI "unsigned long " "bits_to_change" "\^,"
+.BI "unsigned long " "values_for_bits" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I display
+connection to X server
+.TP
+.I bits_to_change
+selects controls to be modified 
+.TP
+.I values_for_bits
+turns selected controls on (1) or off (0)
+.SH DESCRIPTION
+.LP
+.I XkbSetXlibControls 
+modifies the state of the controls selected by 
+.I bits_to_change; 
+only the controls selected by 
+.I bits_to_change 
+are modified. If the bit corresponding to a control is on in 
+.I bits_to_change 
+and also on in 
+.I values_for_bits, 
+the control is enabled. If the bit corresponding to a control is on in
+.I bits_to_change 
+but off in 
+.I values_for_bits, 
+the control is disabled. 
+.I bits_to_change 
+should be an inclusive OR of bits from Table 1.
+
+.TS
+c s
+l l
+l l.
+Table 1 Library Control Masks
+_
+Library Control Mask	Value
+_
+XkbLC_ForceLatin1Lookup	(1 << 0)
+XkbLC_ConsumeLookupMods	(1 << 1)
+XkbLC_AlwaysConsumeShiftAndLock	(1 << 2)
+XkbLC_IgnoreNewKeyboards	(1 << 3)
+XkbLC_ConsumeKeysOnComposeFail	(1 << 29)
+XkbLC_ComposeLED	(1 << 30)
+XkbLC_BeepOnComposeFail	(1 << 31)
+XkbLC_AllControls	(0xc0000007)
+.TE
+.SH "RETURN VALUES"
+.TP 15
+(1 << 0)
+XkbLC_ForceLatin1Lookup
+.TP 15
+(1 << 1)
+XkbLC_ConsumeLookupMods
+.TP 15
+(1 << 2)
+XkbLC_AlwaysConsumeShiftAndLock
+.TP 15
+(1 << 3)
+XkbLC_IgnoreNewKeyboards
+.TP 15
+(1 << 29)
+XkbLC_ConsumeKeysOnComposeFail
+.TP 15
+(1 << 30)
+XkbLC_ComposeLED
+.TP 15
+(1 << 31)
+XkbLC_BeepOnComposeFail
+.TP 15
+(0xc0000007)
+XkbLC_AllControls
+

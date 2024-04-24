@@ -1,0 +1,3 @@
+New in 0.1:
+* Portage from FreeBSD 5.2.1 (security part to be completed)
+* Use autoconf/automake

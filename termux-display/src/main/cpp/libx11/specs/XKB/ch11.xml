@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='X_Library_Controls'>
+<title>X Library Controls</title>
+
+<para>
+The Xkb extension is composed of two parts: a server extension, and a
+client-side X library extension. <xref linkend="Keyboard_Controls" /> discusses functions used to modify
+controls affecting the behavior of the server portion of the Xkb extension.
+This chapter discusses functions used to modify controls that affect only the
+behavior of the client portion of the extension; these controls are known as
+<firstterm>Library Controls</firstterm>.
+<indexterm significance="preferred" zone="X_Library_Controls">
+<primary>library controls</primary></indexterm>
+<indexterm significance="preferred" zone="X_Library_Controls">
+<primary>controls</primary><secondary>library</secondary></indexterm>
+</para>
+
+
+<para>
+All of the Library Controls are boolean flags that may be enabled and disabled.
+The controls can be divided into several categories:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+Controls affecting general string lookups
+  </para>
+</listitem>
+<listitem>
+  <para>
+Controls affecting compose processing
+  </para>
+</listitem>
+<listitem>
+  <para>
+Controls affecting event delivery
+  </para>
+</listitem>
+</itemizedlist>
+
+<para>
+There are two types of string lookups performed by
+<function>XLookupString</function>.
+<indexterm significance="preferred" zone="X_Library_Controls">
+<primary><function>XLookupString</function></primary></indexterm>
+The first type involves translating a single keycode into a string; the
+controls in the first category affect this type of lookup. The second type
+involves translating a series of keysyms into a string; the controls in the
+second category affect this type of lookup.
+</para>
+
+
+<para>
+An Xkb implementation is required to support the programming interface for all
+of the controls. However, an implementation may choose not to support the
+semantics associated with the controls that deal with compose processing. In
+this case, a program that accesses these controls should still function
+normally; however, the feedback that would normally occur with the controls
+enabled may be missing.
+</para>
+
+<sect1 id='Controls_Affecting_Keycode_to_String_Translation'>
+<title>Controls Affecting Keycode-to-String Translation</title>
+
+<para>
+The first type of string lookups, which are here called
+<firstterm>simple string lookups</firstterm>,
+involves translating a single keycode into a string. Because these simple
+lookups involve only a single keycode, all of the information needed to do the
+translation is contained in the keyboard state in a single event. The controls
+affecting simple string lookups are:
+
+  <simplelist type='vert' columns='1'>
+    <member><emphasis>ForceLatin1Lookup</emphasis></member>
+    <member><emphasis>ConsumeLookupMods</emphasis></member>
+    <member><emphasis>LevelOneUsesShiftAndLock</emphasis></member>
+  </simplelist>
+</para>
+
+<sect2 id='ForceLatin1Lookup'>
+<title>ForceLatin1Lookup</title>
+
+<para>
+If the
+<emphasis>ForceLatin1Lookup</emphasis>
+control is enabled,
+<function>XLookupString</function>
+only returns strings using the Latin1 character set. If
+<emphasis>ForceLatin1Lookup</emphasis>
+is not enabled,
+<function>XLookupString</function>
+can return characters that are not in the Latin1 set. By default, this control
+is disabled, allowing characters outside of the Latin1 set to be returned.
+</para>
+
+
+</sect2>
+<sect2 id='ConsumeLookupMods'>
+<title>ConsumeLookupMods</title>
+
+<para>
+Simple string lookups in
+<function>XLookupString</function>
+involve two different translation phases. The first phase translates raw
+device keycodes to individual keysyms. The second phase attempts to map the
+resulting keysym into a string of one or more characters. In the first phase,
+some of the modifiers are normally used to determine the appropriate shift
+level for a key.
+</para>
+
+
+<para>
+The
+<emphasis>ConsumeLookupMods</emphasis>
+control determines whether or not
+<function>XLookupString</function>
+<emphasis>consumes</emphasis>
+the modifiers it uses during the first phase of processing (mapping a keycode
+to a keysym). When a modifier is consumed, it is effectively removed from the
+working copy of the keyboard state information
+<function>XLookupString</function>
+is using and appears to be unset for the remainder of the processing.
+</para>
+
+
+<para>
+If the
+<emphasis>ConsumeLookupMods</emphasis>
+control is enabled,
+<function>XLookupString</function>
+does not use the modifiers used to translate the keycode of the event to a
+keysym when it is determining the string associated with a keysym. For example,
+assume the keymap for the ‘A’ key only contains the shift modifier and the
+<emphasis>ConsumeLookupMods</emphasis>
+control is enabled. If a user presses the
+<keycap>Shift</keycap>
+key and the
+<keycap>A</keycap>
+key while the
+<keycap>Num_Lock</keycap>
+key is locked,
+<function>XLookupString</function>
+uses the
+<symbol>Shift</symbol>
+modifier when mapping the keycode for the ‘a’ key to the keysym for
+‘A’; subsequently, it only uses the
+<emphasis>NumLock</emphasis>
+modifier when determining the string associated with the keysym ‘A’.
+</para>
+
+
+<para>
+If the
+<emphasis>ConsumeLookupMods</emphasis>
+control is not enabled,
+<function>XLookupString</function>
+uses all of the event modifiers to determine the string associated with a
+keysym. This behavior mirrors the behavior of
+<function>XLookupString</function>
+in the core implementation.
+</para>
+
+
+<para>
+The
+<emphasis>ConsumeLookupMods</emphasis>
+control is unset by default. For more information on modifier consumption,
+refer to <xref linkend="Interpreting_Key_Events" />.
+</para>
+
+
+</sect2>
+<sect2 id='AlwaysConsumeShiftAndLock'>
+<title>AlwaysConsumeShiftAndLock</title>
+
+<para>
+The
+<emphasis>AlwaysConsumeShiftAndLock</emphasis>
+control, if enabled, forces
+<function>XLookupString</function>
+to consume the
+<symbol>Shift</symbol>
+and
+<symbol>Lock</symbol>
+modifiers when processing all keys, even if the definition for the key type
+does not specify these modifiers. The
+<emphasis>AlwaysConsumeShiftAndLock</emphasis>
+control is unset by default. See <link linkend="Key_Types">section 15.2</link> for a discussion of key types.
+</para>
+
+
+</sect2>
+</sect1>
+<sect1 id='Controls_Affecting_Compose_Processing'>
+<title>Controls Affecting Compose Processing</title>
+
+<para>
+The second type of string lookup performed by
+<function>XLookupString</function>
+involves translating a series of keysyms into a string. Because these lookups
+can involve more than one key event, they require
+<function>XLookupString</function>
+to retain some state information between successive calls. The process of
+mapping a series of keysyms to a string is known as
+<firstterm>compose processing</firstterm>.
+<indexterm significance="preferred" zone="Controls_Affecting_Compose_Processing">
+<primary>compose processing</primary></indexterm>
+The controls affecting compose processing are:
+
+  <simplelist type='vert' columns='1'>
+    <member><emphasis>ConsumeKeysOnComposeFail</emphasis></member>
+    <member><emphasis>ComposeLED</emphasis></member>
+    <member><emphasis>BeepOnComposeFail</emphasis></member>
+  </simplelist>
+</para>
+
+<para>
+Because different vendors have historically used different algorithms to
+implement compose processing, and these algorithms may be incompatible with the
+semantics required by the Xkb compose processing controls, implementation of
+the compose processing controls is optional in an Xkb implementation.
+</para>
+
+
+<sect2 id='ConsumeKeysOnComposeFail'>
+<title>ConsumeKeysOnComposeFail</title>
+
+<para>
+Some compose processing algorithms signal the start of a compose sequence by a
+key event meaning <quote>start compose</quote>.
+<footnote><para>
+Another possibility is to have the compose processing simply be the result of a finite state acceptor; a compose sequence would never fail for a properly written finite state acceptor.
+</para></footnote>
+The subsequent key events should normally result in a valid composition yielding a
+valid translation to a string. If the subsequent key events do not have a valid
+translation, some decision must be made about what to do with the key events
+that were processed while attempting the compose. The
+<emphasis>ConsumeKeysOnComposeFail</emphasis>
+control allows a client to specify what happens with the key events
+<function>XLookupString</function>
+has been considering when it reaches a dead end in a compose sequence.
+</para>
+
+
+<para>
+If the
+<emphasis>ConsumeKeysOnComposeFail</emphasis>
+control is set, all keys associated with a failed compose sequence should be
+consumed (discarded). If the
+<emphasis>ConsumeKeysOnComposeFail</emphasis>
+control is not set, the key events associated with a failed compose sequence
+should be processed as a normal sequence of key events.
+</para>
+
+
+<para>
+The
+<emphasis>ConsumeKeysOnComposeFail</emphasis>
+control is disabled by default.
+</para>
+
+
+</sect2>
+<sect2 id='ComposeLED'>
+<title>ComposeLED</title>
+
+<para>
+The
+<emphasis>ComposeLED</emphasis>
+control allows a client to specify whether or not an indicator should be set
+and cleared to provide feedback when compose processing is in progress. The
+control does not specify which indicator should be used; the mapping for this
+is up to the individual implementation. If the
+<emphasis>ComposeLED</emphasis>
+control is enabled, it specifies that an indicator should be set when a
+compose sequence is in progress and cleared when one is not in progress. The
+<emphasis>ComposeLED</emphasis>
+control is disabled by default.
+</para>
+
+
+<para>
+While the Xkb extension does not specify the type of type of indicator to be
+used when the
+<emphasis>ComposeLED</emphasis>
+control is implemented, a consistent convention between implementations is to
+everyone’s benefit. If a named indicator is used for this purpose, the
+recommended name is “<literal>Compose</literal>”.
+Note that some implementations may use an unnamed, custom hardware LED for
+this purpose.
+</para>
+
+
+</sect2>
+<sect2 id='BeepOnComposeFail'>
+<title>BeepOnComposeFail</title>
+
+<para>
+The
+<emphasis>BeepOnComposeFail</emphasis>
+control allows a client to specify whether or not a bell should be activated
+to provide feedback when a compose sequence fails. The control does not specify
+the type of bell that should be used; the mapping for this is up to the
+individual implementation. If the
+<emphasis>BeepOnComposeFail</emphasis>
+control is enabled, it specifies that a bell should be activated when a
+compose sequence fails. The
+<emphasis>BeepOnComposeFail</emphasis>
+control is disabled by default. If implemented, the bell should be activated
+using
+<function>XkbBell</function>
+or
+<function>XkbDeviceBell</function>.
+</para>
+
+
+<para>
+While the Xkb extension does not specify the type of bell to be used when the
+<emphasis>BeepOnComposeFail</emphasis>
+control is implemented, a consistent convention between implementations is to
+everyone’s benefit. If a named bell is used for this purpose, the recommended
+name is “<literal>ComposeFail</literal>”.
+</para>
+
+
+</sect2>
+</sect1>
+<sect1 id='Controls_Effecting_Event_Delivery'>
+<title>Controls Effecting Event Delivery</title>
+
+<sect2 id='IgnoreNewKeyboards'>
+<title>IgnoreNewKeyboards</title>
+
+<indexterm zone="IgnoreNewKeyboards">
+<primary>events</primary><secondary><symbol>NewKeyboardNotify</symbol></secondary></indexterm>
+<indexterm zone="IgnoreNewKeyboards">
+<primary>events</primary><secondary><symbol>MappingNotify</symbol></secondary></indexterm>
+
+<para>
+When Xkb is initialized, it implicitly forces requests for
+<symbol>NewKeyboardNotify</symbol>
+events. These events may be used by the Xkb library extension internally; they
+are normally translated into core protocol
+<symbol>MappingNotify</symbol>
+events before being passed to the client. While delivering the event to the
+client is appropriate in most cases, it is not appropriate for some clients
+that maintain per-key data structures. This is because once the server has sent
+a
+<symbol>NewKeyboardNotify</symbol>
+event, it is free to send the client events for all keys in the new range and
+that range may be outside of the per-key data structures the client is
+maintaining.
+</para>
+
+
+<para>
+The
+<emphasis>IgnoreNewKeyboards</emphasis>
+control, if enabled, prevents Xkb from mapping
+<symbol>NewKeyboardNotify</symbol>
+events to core
+<symbol>MappingNotify</symbol>
+events and passing them to the client. The control is initially disabled.
+</para>
+
+
+</sect2>
+</sect1>
+<sect1 id='Manipulating_the_Library_Controls'>
+<title>Manipulating the Library Controls</title>
+
+<para>
+The Library Controls are manipulated using functions that deal with bitmasks to
+indicate which controls to manipulate. The controls are identified by the masks
+defined in <link linkend="table11.1">Table 11.1</link>.
+</para>
+
+<table id='table11.1' frame='topbot'>
+<title>Library Control Masks</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='2' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='1.0*'/>
+<colspec colname='c2' colwidth='1.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>Library Control Mask</entry>
+  <entry>Value</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><symbol>XkbLC_ForceLatin1Lookup</symbol></entry>
+    <entry>(1 &lt;&lt; 0)</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbLC_ConsumeLookupMods</symbol></entry>
+    <entry>(1 &lt;&lt; 1)</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbLC_AlwaysConsumeShiftAndLock</symbol></entry>
+    <entry>(1 &lt;&lt; 2)</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbLC_IgnoreNewKeyboards</symbol></entry>
+    <entry>(1 &lt;&lt; 3)</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbLC_ConsumeKeysOnComposeFail</symbol></entry>
+    <entry>(1 &lt;&lt; 29)</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbLC_ComposeLED</symbol></entry>
+    <entry>(1 &lt;&lt; 30)</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbLC_BeepOnComposeFail</symbol></entry>
+    <entry>(1 &lt;&lt; 31)</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbLC_AllControls</symbol></entry>
+    <entry>(0xc0000007)</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+<sect2 id='Determining_Which_Library_Controls_are_Implemented'>
+<title>Determining Which Library Controls are Implemented</title>
+
+<para>
+To determine which Library Controls are actually
+implemented, use <function>XkbXlibControlsImplemented</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbXlibControlsImplemented"><primary><function>XkbXlibControlsImplemented</function></primary></indexterm>
+<funcsynopsis id="XkbXlibControlsImplemented">
+  <funcprototype>
+    <funcdef>unsigned int <function>XkbXlibControlsImplemented</function></funcdef>
+<!-- (
+<parameter>display</parameter>
+) -->
+
+    <paramdef>Display *<parameter>display</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>display</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to X server
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbXlibControlsImplemented</function>
+returns a bitmask indicating the controls actually implemented in the Xkb
+library and is composed of an inclusive OR of bits from
+<link linkend="table11.1">Table 11.1</link>.
+</para>
+
+
+</sect2>
+<sect2 id='Determining_the_State_of_the_Library_Controls'>
+<title>Determining the State of the Library Controls</title>
+
+<para>
+To determine the current state of the Library Controls, use
+<function>XkbGetXlibControls</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbGetXlibControls"><primary><function>XkbGetXlibControls</function></primary></indexterm>
+<funcsynopsis id="XkbGetXlibControls">
+  <funcprototype>
+    <funcdef>unsigned int <function>XkbGetXlibControls</function></funcdef>
+<!-- (
+<parameter>display</parameter>
+) -->
+
+    <paramdef>Display *<parameter>display</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>display</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to X server
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbGetXlibControls</function>
+returns the current state of the Library Controls as a bit mask that is an
+inclusive OR of the control masks from
+<link linkend="table11.1">Table 11.1</link> for the controls that are
+enabled. For the optional compose processing controls, the fact that a control
+is enabled does not imply that it is actually implemented.
+</para>
+
+</sect2>
+<sect2 id='Changing_the_State_of_the_Library_Controls'>
+<title>Changing the State of the Library Controls</title>
+
+<para>
+To change the state of the Library Controls, use
+<function>XkbSetXlibControls</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbSetXlibControls"><primary><function>XkbSetXlibControls</function></primary></indexterm>
+<funcsynopsis id="XkbSetXlibControls">
+  <funcprototype>
+    <funcdef>Bool <function>XkbSetXlibControls</function></funcdef>
+<!-- (
+<parameter>display, bits_to_change, values_for_bits</parameter>
+) -->
+
+    <paramdef>Display *<parameter>display</parameter></paramdef>
+    <paramdef>unsigned long <parameter>bits_to_change</parameter></paramdef>
+    <paramdef>unsigned long <parameter>values_for_bits</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>display</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>bits_to_change</parameter>
+    </term>
+    <listitem>
+      <para>
+        selects controls to be modified
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>values_for_bits</parameter>
+    </term>
+    <listitem>
+      <para>
+        turns selected controls on (1) or off (0)
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbSetXlibControls</function>
+modifies the state of the controls selected by
+<parameter>bits_to_change</parameter>;
+only the controls selected by
+<parameter>bits_to_change</parameter>
+are modified. If the bit corresponding to a control is on in
+<parameter>bits_to_change</parameter>
+and also on in values_for_bits, the control is enabled. If the bit
+corresponding to a control is on in
+<parameter>bits_to_change</parameter>
+but off in
+<parameter>values_for_bits</parameter>,
+the control is disabled.
+<parameter>bits_to_change</parameter>
+should be an inclusive OR of bits from
+<link linkend="table11.1">Table 11.1</link>.
+</para>
+
+</sect2>
+</sect1>
+</chapter>

@@ -1,0 +1,175 @@
+.\" Copyright (c) 1999, 2017, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbSetNamedIndicator __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbSetNamedIndicator \- Names an indicator if it is not already named; toggles 
+the state of the indicator; sets the indicator to a specified state and sets the 
+indicator map for the indicator
+.SH SYNOPSIS
+.HP
+.HP
+.B Bool XkbSetNamedDeviceIndicator
+.BI "(\^Display *" "dpy" "\^,"
+.BI "unsigned int " "device_spec" "\^,"
+.BI "unsigned int " "led_class" "\^,"
+.BI "unsigned int " "led_id" "\^,"
+.BI "Atom " "name" "\^,"
+.BI "Bool " "change_state" "\^,"
+.BI "Bool " "state" "\^,"
+.BI "Bool " "create_new" "\^,"
+.BI "XkbIndicatorMapPtr " "map" "\^);"
+.B Bool XkbSetNamedIndicator
+.BI "(\^Display *" "dpy" "\^,"
+.BI "Atom " "name" "\^,"
+.BI "Bool " "change_state" "\^,"
+.BI "Bool " "state" "\^,"
+.BI "Bool " "create_new" "\^,"
+.BI "XkbIndicatorMapPtr " "map" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to the X server
+.TP
+.I device_spec
+device ID, or XkbUseCoreKbd
+.TP
+.I led_class
+feedback class, or XkbDfltXIClass
+.TP
+.I led_id
+feedback ID, or XkbDfltXIId
+.TP
+.I name
+name of the indicator to change
+.TP
+.I change_state
+whether to change the indicator state or not
+.TP
+.I state
+desired new state for the indicator
+.TP
+.I create_new
+whether a new indicator with the specified name should be created when necessary
+.TP
+.I map
+new map for the indicator
+.SH DESCRIPTION
+.LP
+If a compatible version of the Xkb extension is not available in the server, 
+.I XkbSetNamedDeviceIndicator
+returns False. Otherwise, it sends a request to the X server to change the 
+indicator specified by 
+.I name 
+and returns True.
+ 
+If 
+.I change_state 
+is True, 
+.I XkbSetNamedDeviceIndicator
+tells the server to change the state of the named indicator to the value 
+specified by 
+.IR state .
+If
+.I change_state
+is False, then
+.I state
+is not used.
+
+If an indicator with the name specified by 
+.I name 
+does not already exist, the 
+.I create_new 
+parameter tells the server whether it should create a new named indicator. If 
+.I create_new 
+is True, the server finds the first indicator that doesn't have a name and gives 
+it the name specified by 
+.IR name .
+If the optional parameter, 
+.IR map ,
+is not NULL,
+.I XkbSetNamedDeviceIndicator
+tells the server to change the indicator's map to the values specified in 
+.IR map .
+
+In addition, it can also generate XkbIndicatorStateNotify, 
+XkbIndicatorMapNotify, and XkbNamesNotify events.
+.LP
+.I XkbSetNamedIndicator
+is a convenience function that calls
+.I XkbSetNamedDeviceIndicator
+with a
+.I device_spec
+of
+.BR XkbUseCoreKbd ,
+a
+.I led_class
+of
+.BR XkbDfltXIClass ,
+and a
+.I led_id
+of
+.BR XkbDfltXIId .
+It returns the return value from
+.IR XkbSetNamedDeviceIndicator .
+.SH "RETURN VALUES"
+.TP 15
+True
+The 
+.IR XkbSetNamedIndicator " and " XkbSetNamedDeviceIndicator
+functions return True if a compatible version of the Xkb extension is available in the server.
+.TP 15
+False
+The 
+.IR XkbSetNamedIndicator " and " XkbSetNamedDeviceIndicator
+functions return False if a compatible version of the Xkb extension is not available in the server.
+.SH DIAGNOSTICS
+.TP 15
+.B BadAtom
+A name is neither a valid Atom or None
+.TP 15
+.B BadImplementation
+Invalid reply from server
+.TP 15
+.B BadKeyboard
+.I device_spec
+does not specify a device with indicators.
+.TP 15
+.B BadMatch
+.I led_id
+is not
+.B DfltXIId
+and does not specify a feedback of the class specified by
+.I led_class
+on the device specified by
+.IR device_spec .
+.TP 15
+.B BadValue
+.I led_class
+does not specify
+.BR DfltXIClass ", " LedFeedbackClass ", or " KbdFeedbackClass .
+.SH "SEE ALSO"
+.BR XkbIndicatorMapNotify (__libmansuffix__),
+.BR XkbIndicatorStateNotify (__libmansuffix__),
+.BR XkbNamesNotify (__libmansuffix__)
+

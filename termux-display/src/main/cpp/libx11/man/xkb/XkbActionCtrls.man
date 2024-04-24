@@ -1,0 +1,131 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbActionCtrls __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbActionCtrls \- Returns the ctrls fields of act converted to an unsigned int
+.SH SYNOPSIS
+.HP
+.B unsigned int XkbActionCtrls
+.BI "(\^XkbCtrlsAction " "act" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I act
+action from which to extract controls
+.SH DESCRIPTION
+.LP
+Actions associated with the XkbCtrlsAction structure change the state of the 
+boolean controls.
+
+The 
+.I type 
+field can have any one of the values shown in Table 1.
+
+.TS
+c s
+l l
+l lw(4i).
+Table 1 Controls Action Types
+_
+Type	Effect
+_
+XkbSA_SetControls	T{
+A key press enables any boolean controls specified in the ctrls fields that were 
+not already enabled at 
+the time of the key press.
+A key release disables any controls enabled by the key press.
+This action can cause XkbControlsNotify events.
+T}
+XkbSA_LockControls	T{
+If the XkbSA_LockNoLock bit is not set in the flags field, a key press enables 
+any controls specified in 
+the ctrls fields that were not already enabled at the time of the key press.
+.br
+If the XkbSA_LockNoUnlock bit is not set in the flags field, a key release 
+disables any controls 
+specified in the ctrls fields that were not already disabled at the time of the 
+key press.
+.br
+This action can cause XkbControlsNotify events.
+T}
+.TE
+
+The 
+.I flags 
+field is composed of the bitwise inclusive OR of the masks shown in Table 2.
+
+.TS
+c s
+l l
+l lw(4i).
+Table 2 Control Action Flags
+_
+Flag	Meaning
+_
+XkbSA_LockNoLock	T{
+If set, and the action type is XkbSA_LockControls, the server only disables 
+controls.
+T}
+XkbSA_LockNoUnlock	T{
+If set, and the action type is XkbSA_LockControls, the server only enables 
+controls.
+T}
+.TE
+
+The XkbSA_SetControls action implements a key that enables a boolean control 
+when pressed and disables it 
+when released. The XkbSA_LockControls action is used to implement a key that 
+toggles the state of a 
+boolean control each time it is pressed and released. The XkbSA_LockNoLock and 
+XkbSA_LockNoUnlock flags 
+allow modifying the toggling behavior to only unlock or only lock the boolean 
+control.
+
+The 
+.I ctrls0, ctrls1, ctrls2, 
+and 
+.I ctrls3 
+fields represent the boolean controls in the 
+.I enabled_ctrls 
+field of the controls structure. Xkb macros, to convert between the two formats.
+
+.I XkbActionCtrls 
+returns the 
+.I ctrls 
+fields of 
+.I act 
+converted to an unsigned int.
+.SH STRUCTURES
+.LP
+.nf
+
+    typedef struct _XkbCtrlsAction {
+        unsigned char    type;    /\&* XkbSA_SetControls, XkbSA_LockControls */
+        unsigned char    flags;   /\&* with type, controls enabling and disabling of controls */
+        unsigned char    ctrls3;  /\&* ctrls0 through ctrls3 represent the boolean controls */
+        unsigned char    ctrls2;  /\&* ctrls0 through ctrls3 represent the boolean controls */
+        unsigned char    ctrls1;  /\&* ctrls0 through ctrls3 represent the boolean controls */
+        unsigned char    ctrls0;  /\&* ctrls0 through ctrls3 represent the boolean controls */
+    } XkbCtrlsAction;
+.fi

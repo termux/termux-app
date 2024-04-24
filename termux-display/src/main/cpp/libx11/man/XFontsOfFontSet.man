@@ -1,0 +1,194 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XFontsOfFontSet __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XFontsOfFontSet, XBaseFontNameListOfFontSet, XLocaleOfFontSet, XContextDependentDrawing, XContextualDrawing, XDirectionalDependentDrawing \- obtain fontset information
+.SH SYNTAX
+.HP
+int XFontsOfFontSet\^(\^XFontSet \fIfont_set\fP\^, XFontStruct
+***\fIfont_struct_list_return\fP\^, char ***\fIfont_name_list_return\fP\^);
+.HP
+char *XBaseFontNameListOfFontSet\^(\^XFontSet \fIfont_set\fP\^);
+.HP
+char *XLocaleOfFontSet\^(\^XFontSet \fIfont_set\fP\^);
+.HP
+Bool XContextDependentDrawing\^(\^XFontSet \fIfont_set\fP\^);
+.HP
+Bool XContextualDrawing\^(\^XFontSet \fIfont_set\fP\^);
+.HP
+Bool XDirectionalDependentDrawing\^(\^XFontSet \fIfont_set\fP\^);
+.SH ARGUMENTS
+.IP \fIfont_set\fP 1i
+Specifies the font set.
+.IP \fIfont_name_list_return\fP 1i
+Returns the list of font names.
+.IP \fIfont_struct_list_return\fP 1i
+Returns the list of font structs.
+.SH DESCRIPTION
+The
+.B XFontsOfFontSet
+function returns a list of one or more
+.B XFontStructs
+and font names for the fonts used by the Xmb and Xwc layers
+for the given font set.
+A list of pointers to the
+.B XFontStruct
+structures is returned to font_struct_list_return.
+A list of pointers to null-terminated, fully specified font name strings
+in the locale of the font set is returned to font_name_list_return.
+The font_name_list order corresponds to the font_struct_list order.
+The number of
+.B XFontStruct
+structures and font names is returned as the value of the function.
+.LP
+Because it is not guaranteed that a given character will be imaged using a
+single font glyph,
+there is no provision for mapping a character or default string
+to the font properties, font ID, or direction hint for the font
+for the character.
+The client may access the
+.B XFontStruct
+list to obtain these values for all the fonts currently in use.
+.LP
+Xlib does not guarantee that fonts are loaded from the server
+at the creation of an
+.BR XFontSet .
+Xlib may choose to cache font data, loading it only as needed to draw text
+or compute text dimensions.
+Therefore, existence of the per_char metrics in the
+.B XFontStruct
+structures in the
+.B XFontStructSet
+is undefined.
+Also, note that all properties in the
+.B XFontStruct
+structures are in the STRING encoding.
+.LP
+The
+.B XFontStruct
+and font name lists are owned by Xlib
+and should not be modified or freed by the client.
+They will be freed by a call to
+.B XFreeFontSet
+with the associated
+.BR XFontSet .
+Until freed, their contents will not be modified by Xlib.
+.LP
+The
+.B XBaseFontNameListOfFontSet
+function returns the original base font name list supplied
+by the client when the
+.B XFontSet
+was created.
+A null-terminated string containing a list of
+comma-separated font names is returned
+as the value of the function.
+White space may appear immediately on either side of separating commas.
+.LP
+If
+.B XCreateFontSet
+obtained an XLFD name from the font properties for the font specified
+by a non-XLFD base name, the
+.B XBaseFontNameListOfFontSet
+function will return the XLFD name instead of the non-XLFD base name.
+.LP
+The base font name list is owned by Xlib and should not be modified or
+freed by the client.
+It will be freed by a call to
+.B XFreeFontSet
+with the associated
+.BR XFontSet .
+Until freed, its contents will not be modified by Xlib.
+.LP
+The
+.B XLocaleOfFontSet
+function
+returns the name of the locale bound to the specified
+.BR XFontSet ,
+as a null-terminated string.
+.LP
+The returned locale name string is owned by Xlib
+and should not be modified or freed by the client.
+It may be freed by a call to
+.B XFreeFontSet
+with the associated
+.BR XFontSet .
+Until freed, it will not be modified by Xlib.
+.LP
+The
+.B XContextDependentDrawing
+function returns
+.B True
+if the drawing functions implement implicit text directionality or
+if text drawn with the font_set might include context-dependent drawing;
+otherwise, it returns
+.BR False .
+.LP
+The
+.B XContextualDrawing
+function returns
+.B True
+if text drawn with the font set might include context-dependent drawing;
+otherwise, it returns
+.BR False .
+.LP
+The
+.B XDirectionalDependentDrawing
+function returns
+.B True
+if the drawing functions implement implicit text directionality;
+otherwise, it returns
+.BR False .
+.SH "SEE ALSO"
+XCreateFontSet(__libmansuffix__),
+XCreateOM(__libmansuffix__),
+XCreateOC(__libmansuffix__),
+XExtentsOfFontSet(__libmansuffix__),
+XFontSetExtents(__libmansuffix__)
+.br
+\fI\*(xL\fP

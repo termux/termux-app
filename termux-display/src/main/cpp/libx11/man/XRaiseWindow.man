@@ -1,0 +1,253 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XRaiseWindow __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XRaiseWindow, XLowerWindow, XCirculateSubwindows, XCirculateSubwindowsUp, XCirculateSubwindowsDown, XRestackWindows \- change window stacking order
+.SH SYNTAX
+.HP
+int XRaiseWindow\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^);
+.HP
+int XLowerWindow\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^);
+.HP
+int XCirculateSubwindows\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, int
+\fIdirection\fP\^);
+.HP
+int XCirculateSubwindowsUp\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^);
+.HP
+int XCirculateSubwindowsDown\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^);
+.HP
+int XRestackWindows\^(\^Display *\fIdisplay\fP\^, Window \fIwindows\fP\^[], int
+\fInwindows\fP\^);
+.SH ARGUMENTS
+.IP \fIdirection\fP 1i
+Specifies the direction (up or down) that you want to circulate
+the window.
+You can pass
+.B RaiseLowest
+or
+.BR LowerHighest .
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fInwindows\fP 1i
+Specifies the number of windows to be restacked.
+.IP \fIw\fP 1i
+Specifies the window.
+.IP \fIwindows\fP 1i
+Specifies an array containing the windows to be restacked.
+.SH DESCRIPTION
+The
+.B XRaiseWindow
+function
+raises the specified window to the top of the stack so that no sibling window
+obscures it.
+If the windows are regarded as overlapping sheets of paper stacked
+on a desk,
+then raising a window is analogous to moving the sheet to the top of
+the stack but leaving its x and y location on the desk constant.
+Raising a mapped window may generate
+.B Expose
+events for the window and any mapped subwindows that were formerly obscured.
+.LP
+If the override-redirect attribute of the window is
+.B False
+and some
+other client has selected
+.B SubstructureRedirectMask
+on the parent, the X server generates a
+.B ConfigureRequest
+event, and no processing is performed.
+Otherwise, the window is raised.
+.LP
+.B XRaiseWindow
+can generate a
+.B BadWindow
+error.
+.LP
+The
+.B XLowerWindow
+function lowers the specified window to the bottom of the stack
+so that it does not obscure any sibling
+windows.
+If the windows are regarded as overlapping sheets of paper
+stacked on a desk, then lowering a window is analogous to moving the
+sheet to the bottom of the stack but leaving its x and y location on
+the desk constant.
+Lowering a mapped window will generate
+.B Expose
+events on any windows it formerly obscured.
+.LP
+If the override-redirect attribute of the window is
+.B False
+and some
+other client has selected
+.B SubstructureRedirectMask
+on the parent, the X server generates a
+.B ConfigureRequest
+event, and no processing is performed.
+Otherwise, the window is lowered to the bottom of the
+stack.
+.LP
+.B XLowerWindow
+can generate a
+.B BadWindow
+error.
+.LP
+The
+.B XCirculateSubwindows
+function circulates children of the specified window in the specified
+direction.
+If you specify
+.BR RaiseLowest ,
+.B XCirculateSubwindows
+raises the lowest mapped child (if any) that is occluded
+by another child to the top of the stack.
+If you specify
+.BR LowerHighest ,
+.B XCirculateSubwindows
+lowers the highest mapped child (if any) that occludes another child
+to the bottom of the stack.
+Exposure processing is then performed on formerly obscured windows.
+If some other client has selected
+.B SubstructureRedirectMask
+on the window, the X server generates a
+.B CirculateRequest
+event, and no further processing is performed.
+If a child is actually restacked,
+the X server generates a
+.B CirculateNotify
+event.
+.LP
+.B XCirculateSubwindows
+can generate
+.B BadValue
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XCirculateSubwindowsUp
+function raises the lowest mapped child of the specified window that
+is partially
+or completely
+occluded by another child.
+Completely unobscured children are not affected.
+This is a convenience function equivalent to
+.B XCirculateSubwindows
+with
+.B RaiseLowest
+specified.
+.LP
+.B XCirculateSubwindowsUp
+can generate a
+.B BadWindow
+error.
+.LP
+The
+.B XCirculateSubwindowsDown
+function lowers the highest mapped child of the specified window that partially
+or completely occludes another child.
+Completely unobscured children are not affected.
+This is a convenience function equivalent to
+.B XCirculateSubwindows
+with
+.B LowerHighest
+specified.
+.LP
+.B XCirculateSubwindowsDown
+can generate a
+.B BadWindow
+error.
+.LP
+The
+.B XRestackWindows
+function restacks the windows in the order specified,
+from top to bottom.
+The stacking order of the first window in the windows array is unaffected,
+but the other windows in the array are stacked underneath the first window,
+in the order of the array.
+The stacking order of the other windows is not affected.
+For each window in the window array that is not a sibling of the first window,
+a
+.B BadMatch
+error results.
+.LP
+If the override-redirect attribute of a window is
+.B False
+and some
+other client has selected
+.B SubstructureRedirectMask
+on the parent, the X server generates
+.B ConfigureRequest
+events for each window whose override-redirect flag is not set,
+and no further processing is performed.
+Otherwise, the windows will be restacked in top-to-bottom order.
+.LP
+.B XRestackWindows
+can generate
+.B BadWindow
+error.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XChangeWindowAttributes(__libmansuffix__),
+XConfigureWindow(__libmansuffix__),
+XCreateWindow(__libmansuffix__),
+XDestroyWindow(__libmansuffix__),
+XMapWindow(__libmansuffix__),
+XUnmapWindow(__libmansuffix__)
+.br
+\fI\*(xL\fP

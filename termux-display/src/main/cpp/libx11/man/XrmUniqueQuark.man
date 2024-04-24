@@ -1,0 +1,210 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XrmUniqueQuark __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XrmUniqueQuark, XrmStringToQuark, XrmPermStringToQuark, XrmQuarkToString, XrmStringToQuarkList, XrmStringToBindingQuarkList \- manipulate resource quarks
+.SH SYNOPSIS
+.HP
+#include <X11/Xresource.h>
+.HP
+XrmQuark XrmUniqueQuark\^(void);
+.LP
+\&#define XrmStringToName(string) XrmStringToQuark(string)
+.br
+\&#define XrmStringToClass(string) XrmStringToQuark(string)
+.br
+\&#define XrmStringToRepresentation(string) XrmStringToQuark(string)
+.HP
+XrmQuark XrmStringToQuark\^(\^char *\fIstring\fP\^);
+.HP
+XrmQuark XrmPermStringToQuark\^(\^_Xconst char *\fIstring\fP\^);
+.LP
+\&#define XrmStringToName(string) XrmStringToQuark(string)
+.br
+\&#define XrmStringToClass(string) XrmStringToQuark(string)
+.br
+\&#define XrmStringToRepresentation(string) XrmStringToQuark(string)
+.HP
+XrmQuark XrmStringToQuark\^(\^char *\fIstring\fP\^);
+.HP
+XrmQuark XrmPermStringToQuark\^(\^_Xconst char *\fIstring\fP\^);
+.LP
+\&#define XrmNameToString(name) XrmQuarkToString(name)
+.br
+\&#define XrmClassToString(class) XrmQuarkToString(class)
+.br
+\&#define XrmRepresentationToString(type) XrmQuarkToString(type)
+.HP
+char *XrmQuarkToString\^(\^XrmQuark \fIquark\fP\^);
+.LP
+\&#define XrmStringToNameList(str, name)  XrmStringToQuarkList((str), (name))
+.br
+\&#define XrmStringToClassList(str,class) XrmStringToQuarkList((str), (class))
+.sp
+.HP
+void XrmStringToQuarkList\^(\^char *\fIstring\fP\^, XrmQuarkList
+\fIquarks_return\fP\^);
+.HP
+void XrmStringToBindingQuarkList\^(\^_Xconst char *\fIstring\fP\^, XrmBindingList
+\fIbindings_return\fP\^, XrmQuarkList \fIquarks_return\fP\^);
+.SH ARGUMENTS
+.IP \fIbindings_return\fP 1i
+Returns the binding list.
+.IP \fIquark\fP 1i
+Specifies the quark for which the equivalent string is desired.
+.IP \fIquarks_return\fP 1i
+Returns the list of quarks.
+.IP \fIstring\fP 1i
+Specifies the string for which a quark or quark list is to be allocated.
+.SH DESCRIPTION
+The
+.B XrmUniqueQuark
+function allocates a quark that is guaranteed not to represent any string that
+is known to the resource manager.
+.LP
+These functions can be used to convert from string to quark representation.
+If the string is not in the Host Portable Character Encoding,
+the conversion is implementation-dependent.
+The string argument to
+.B XrmStringToQuark
+need not be permanently allocated storage.
+.B XrmPermStringToQuark
+is just like
+.BR XrmStringToQuark ,
+except that Xlib is permitted to assume the string argument is permanently
+allocated,
+and, hence, that it can be used as the value to be returned by
+.BR XrmQuarkToString .
+.LP
+For any given quark, if
+.B XrmStringToQuark
+returns a non-NULL value,
+all future calls will return the same value (identical address).
+.LP
+These functions can be used to convert from quark representation to string.
+The string pointed to by the return value must not be modified or freed.
+The returned string is byte-for-byte equal to the original
+string passed to one of the string-to-quark routines.
+If no string exists for that quark,
+.B XrmQuarkToString
+returns NULL.
+For any given quark, if
+.B XrmQuarkToString
+returns a non-NULL value,
+all future calls will return the same value (identical address).
+.LP
+These functions can be used to convert from string to quark representation.
+If the string is not in the Host Portable Character Encoding,
+the conversion is implementation-dependent.
+The string argument to
+.B XrmStringToQuark
+need not be permanently allocated storage.
+.B XrmPermStringToQuark
+is just like
+.BR XrmStringToQuark ,
+except that Xlib is permitted to assume the string argument is permanently
+allocated,
+and, hence, that it can be used as the value to be returned by
+.BR XrmQuarkToString .
+.LP
+For any given quark, if
+.B XrmStringToQuark
+returns a non-NULL value,
+all future calls will return the same value (identical address).
+.LP
+The
+.B XrmStringToQuarkList
+function converts the null-terminated string (generally a fully qualified name)
+to a list of quarks.
+The caller must allocate sufficient space for the quarks list before calling
+.BR XrmStringToQuarkList .
+Note that the string must be in the valid ResourceName format
+(see section 15.1).
+If the string is not in the Host Portable Character Encoding,
+the conversion is implementation-dependent.
+.LP
+A binding list is a list of type
+.B XrmBindingList
+and indicates if components of name or class lists are bound tightly or loosely
+(that is, if wildcarding of intermediate components is specified).
+.LP
+.EX
+typedef enum {XrmBindTightly, XrmBindLoosely} XrmBinding, *XrmBindingList;
+.EE
+.LP
+.B XrmBindTightly
+indicates that a period separates the components, and
+.B XrmBindLoosely
+indicates that an asterisk separates the components.
+.LP
+The
+.B XrmStringToBindingQuarkList
+function converts the specified string to a binding list and a quark list.
+The caller must allocate sufficient space for the quarks list and the
+binding list before calling
+.BR XrmStringToBindingQuarkList .
+If the string is not in the Host Portable Character Encoding
+the conversion is implementation-dependent.
+Component names in the list are separated by a period or
+an asterisk character.
+If the string does not start with period or asterisk,
+a period is assumed.
+For example, \*(lq*a.b*c\*(rq becomes:
+.LP
+.TS
+L l l l.
+quarks	a	b	c
+bindings	loose	tight	loose
+.TE
+.SH "SEE ALSO"
+XrmGetResource(__libmansuffix__),
+XrmInitialize(__libmansuffix__),
+XrmMergeDatabases(__libmansuffix__),
+XrmPutResource(__libmansuffix__)
+.LP
+\fI\*(xL\fP

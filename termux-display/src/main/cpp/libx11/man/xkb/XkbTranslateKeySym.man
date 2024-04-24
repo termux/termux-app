@@ -1,0 +1,81 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbTranslateKeySym __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbTranslateKeySym \- Find the string and symbol associated with a keysym for a 
+given keyboard state
+.SH SYNOPSIS
+.HP
+.B int XkbTranslateKeySym
+.BI "(\^Display *" "dpy" "\^,"
+.BI "KeySym *" "sym_inout" "\^,"
+.BI "unsigned int " "mods" "\^,"
+.BI "char *" "buf" "\^,"
+.BI "int " "nbytes" "\^,"
+.BI "int *" "extra_rtrn" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to X server
+.TP
+.I sym_inout
+symbol to be translated; result of translation
+.TP
+.I mods
+modifiers to apply to sym_inout 
+.TP
+.I buf
+buffer into which returned string is written 
+.TP
+.I nbytes
+size of buffer in bytes
+.TP
+.I extra_rtrn
+number of bytes overflow
+.SH DESCRIPTION
+.LP
+.I XkbTranslateKeySym 
+applies the transformations specified in 
+.I mods 
+to the symbol specified by 
+.I sym_inout. 
+It returns in 
+.I buf 
+the string, if any, associated with the keysym for the current locale. If the 
+transformations in 
+.I mods 
+changes the keysym, 
+.I sym_inout 
+is updated accordingly. If the string returned is larger than 
+.I nbytes,
+a count of bytes that does not fit into the buffer is returned in 
+.I extra_rtrn. XkbTranslateKeySym 
+returns the number of bytes it placed into 
+.I buf.
+.SH "RETURN VALUES"
+.TP 15
+buf
+Returns the string, if any, associated with the keysym for the current locale.
+
+

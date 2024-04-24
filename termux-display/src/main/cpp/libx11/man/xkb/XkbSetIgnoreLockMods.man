@@ -1,0 +1,195 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbSetIgnoreLockMods __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbSetIgnoreLockMods \- Sets the modifiers that, if locked, are not to be 
+reported in matching events to passive grabs
+.SH SYNOPSIS
+.HP
+.B Bool XkbSetIgnoreLockMods
+.BI "(\^Display *" "display" "\^,"
+.BI "unsigned int " "device_spec" "\^,"
+.BI "unsigned int " "affect_real" "\^,"
+.BI "unsigned int " "real_values" "\^,"
+.BI "unsigned int " "affect_virtual" "\^,"
+.BI "unsigned int " "virtual_values" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I display
+connection to the X server
+.TP
+.I device_spec
+device ID, or XkbUseCoreKbd
+.TP
+.I affect_real
+mask of real modifiers affected by this call
+.TP
+.I real_values
+values for affected real modifiers (1=>set, 0=>unset) 
+.TP
+.I affect_virtual
+mask of virtual modifiers affected by this call 
+.TP
+.I virtual_values
+values for affected virtual modifiers (1=>set, 0=>unset) 
+.SH DESCRIPTION
+.LP
+The core protocol does not provide a way to exclude specific modifiers from grab 
+calculations, with the result that locking modifiers sometimes have 
+unanticipated side effects.
+
+The IgnoreLockMods control specifies modifiers that should be excluded from grab 
+calculations. These modifiers are also not reported in any core events except 
+KeyPress and KeyRelease events that do not activate a passive grab and that do 
+not occur while a grab is active.
+
+Manipulate the IgnoreLockMods control via the 
+.I ignore_lock 
+field in the XkbControlsRec structure, then use 
+.I XkbSetControls 
+and 
+.I XkbGetControls 
+to query and change this control. Alternatively, use 
+.I XkbSetIgnoreLockMods.
+
+.I XkbSetIgnoreLockMods 
+sends a request to the server to change the server's IgnoreLockMods control.
+.I affect_real 
+and 
+.I real_values 
+are masks of real modifier bits indicating which real modifiers are to be added 
+and removed from the server's IgnoreLockMods control. Modifiers selected by both
+.I affect_real 
+and 
+.I real_values 
+are added to the server's IgnoreLockMods control; those selected by 
+.I affect_real 
+but not by 
+.I real_values 
+are removed from the server's IgnoreLockMods control. Valid values for 
+.I affect_real 
+and 
+.I real_values 
+consist of any combination of the eight core modifier bits: ShiftMask, LockMask, 
+ControlMask, Mod1Mask - Mod5Mask. 
+.I affect_virtual 
+and 
+.I virtual_values 
+are masks of virtual modifier bits indicating which virtual modifiers are to be 
+added and removed from the server's IgnoreLockMods control. Modifiers selected 
+by both 
+.I affect_virtual 
+and 
+.I virtual_values 
+are added to the server's IgnoreLockMods control; those selected by 
+.I affect_virtual 
+but not by 
+.I virtual_values 
+are removed from the server's IgnoreLockMods control. See below for a discussion 
+of virtual modifier masks to use in 
+.I affect_virtual 
+and 
+.I virtual_values. XkbSetIgnoreLockMods 
+does not wait for a reply from the server. It returns True if the request was 
+sent, and False otherwise.
+
+Virtual modifiers are named by converting their string name to an X Atom and 
+storing the Atom in the 
+.I names.vmods 
+array in an XkbDescRec structure. The position of a name Atom in the 
+.I names.vmods 
+array defines the bit position used to represent the virtual modifier and also 
+the index used when accessing virtual modifier information in arrays: the name 
+in the i-th (0 relative) entry of 
+.I names.vmods 
+is the i-th virtual modifier, represented by the mask (1<<i). Throughout Xkb, 
+various functions have a parameter that is a mask representing virtual modifier 
+choices. In each case, the i-th bit (0 relative) of the mask represents the i-th 
+virtual modifier.
+
+To set the name of a virtual modifier, use 
+.I XkbSetNames, 
+using XkbVirtualModNamesMask in 
+.I which 
+and the name in the 
+.I xkb 
+argument; to retrieve indicator names, use 
+.I XkbGetNames.
+.SH STRUCTURES
+.LP
+The complete description of an Xkb keyboard is given by an XkbDescRec. The 
+component structures in the XkbDescRec represent the major Xkb components.
+.nf
+
+typedef struct {
+    struct _XDisplay * display;      /\&* connection to X server */
+    unsigned short     flags;        /\&* private to Xkb, do not modify */
+    unsigned short     device_spec;  /\&* device of interest */
+    KeyCode            min_key_code; /\&* minimum keycode for device */
+    KeyCode            max_key_code; /\&* maximum keycode for device */
+    XkbControlsPtr     ctrls;        /\&* controls */
+    XkbServerMapPtr    server;       /\&* server keymap */
+    XkbClientMapPtr    map;          /\&* client keymap */
+    XkbIndicatorPtr    indicators;   /\&* indicator map */
+    XkbNamesPtr        names;        /\&* names for all components */
+    XkbCompatMapPtr    compat;       /\&* compatibility map */
+    XkbGeometryPtr     geom;         /\&* physical geometry of keyboard */
+} XkbDescRec, *XkbDescPtr;
+
+.fi
+The display field points to an X display structure. The flags field is private 
+to the library: modifying flags may yield unpredictable results. The device_spec 
+field specifies the device identifier of the keyboard input device, or 
+XkbUseCoreKeyboard, which specifies the core keyboard device. The min_key_code 
+and max_key_code fields specify the least and greatest keycode that can be 
+returned by the keyboard.
+ 
+Each structure component has a corresponding mask bit that is used in function 
+calls to indicate that the structure should be manipulated in some manner, such 
+as allocating it or freeing it. These masks and their relationships to the 
+fields in the XkbDescRec are shown in Table 1.
+
+.TS
+c s s
+l l l
+l l l.
+Table 1 Mask Bits for XkbDescRec
+_
+Mask Bit	XkbDescRec Field	Value
+_
+XkbControlsMask	ctrls	(1L<<0)
+XkbServerMapMask	server	(1L<<1)
+XkbIClientMapMask	map	(1L<<2)
+XkbIndicatorMapMask	indicators	(1L<<3)
+XkbNamesMask	names	(1L<<4)
+XkbCompatMapMask	compat	(1L<<5)
+XkbGeometryMask	geom	(1L<<6)
+XkbAllComponentsMask	All Fields	(0x7f)
+.TE
+.SH "SEE ALSO"
+.BR XkbGetControls (__libmansuffix__),
+.BR XkbGetNames (__libmansuffix__),
+.BR XkbSetControls (__libmansuffix__),
+.BR XkbSetNames (__libmansuffix__)

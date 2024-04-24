@@ -1,0 +1,199 @@
+Pixman coding style.
+====================
+
+The pixman coding style is close to cairo's with one exception: braces
+go on their own line, rather than on the line of the if/while/for:
+
+	if (condition)
+	{
+	    do_something();
+	    do_something_else();
+	}
+
+not
+
+	if (condition) {
+	    do_something();
+	    do_something_else();
+        }
+
+
+
+Indentation
+===========
+
+Each new level is indented four spaces:
+
+	if (condition)
+	    do_something();
+
+This may be achieved with space characters or with a combination of
+tab characters and space characters. Tab characters are interpreted as
+
+	Advance to the next column which is a multiple of 8.
+
+
+Names
+=====
+
+In all names, words are separated with underscores. Do not use
+CamelCase for any names.
+
+Macros have ALL_CAPITAL_NAMES
+
+Type names are in lower case and end with "_t". For example
+pixman_image_t.
+
+Labels, functions and variables have lower case names.
+
+
+Braces
+======
+
+Braces always go on their own line:
+
+	if (condition)
+	{
+	    do_this ();
+	    do_that ();
+	}
+	else
+	{
+	    do_the_other ();
+	}
+
+Rules for braces and substatements of if/while/for/do:
+
+* If a substatement spans multiple lines, then there must be braces
+  around it.
+
+* If the condition of an if/while/for spans multiple lines, then 
+  braces must be used for the substatements.
+
+* If one substatement of an if statement has braces, then the other
+  must too.
+
+* Otherwise, don't add braces.
+
+
+Comments
+========
+
+For comments either like this:
+
+        /* One line comment */
+
+or like this:
+
+	/* This is a multi-line comment
+	 *
+         * It extends over multiple lines
+	 */
+
+Generally comments should say things that aren't clear from the code
+itself. If too many comments say obvious things, then people will just
+stop reading all comments, including the good ones.
+
+
+Whitespace
+==========
+
+* Put a single space after commas
+
+* Put spaces around arithmetic operators such a +, -, *, /:
+
+        y * stride + x
+
+        x / unit_x
+
+* Do not put spaces after the address-of operator, the * when used as
+  a pointer derefernce or the ! and ~ operators:
+
+     &foo;
+
+     ~0x00000000
+
+     !condition
+
+     *result = 100
+
+* Break up long lines (> ~80 characters) and use whitespace to align
+  things nicely. This is one way:
+
+  	 some_very_long_function name (
+	 	implementation, op, src, mask, dest, 
+		src_x, src_y, mask_x, mask_y, dest_x, dest_y,
+		width, height);
+
+  This is another:
+
+        some_very_long_function_name (implementation, op,
+                                      src, mask, dest,
+				      src_x, src_y,
+				      mask_x, mask_y,
+				      dest_x, dest_y,
+				      width, height);
+
+* Separate logically distinct chunks with a single newline. This
+  obviously applies between functions, but also applies within a
+  function or block or structure definition.
+
+* Use a newline after a block of variable declarations.
+
+* Use a single space before a left parenthesis, except where the
+  standard will not allow it, (eg. when defining a parameterized macro).
+
+* Don't eliminate newlines just because things would still fit on one
+  line. This breaks the expected visual structure of the code making
+  it much harder to read and understand:
+
+	if (condition) foo (); else bar ();	/* Yuck! */
+
+
+Function Definitions
+====================
+
+Function definitions should take the following form:
+
+	void
+	my_function (int argument)
+	{
+	    do_my_things ();
+	}
+
+If all the parameters to a function fit naturally on one line, format
+them that way. Otherwise, put one argument on each line, adding
+whitespace so that the parameter names are aligned with each other.
+
+I.e., do either this:
+
+        void
+        short_arguments (const char *str, int x, int y, int z)
+        {
+        }
+
+or this:
+
+	void
+	long_arguments (const char *char_star_arg,
+			int	    int_arg,
+			double	   *double_star_arg,
+			double	    double_arg)
+	{
+	}
+
+
+Mode lines
+==========
+
+Given the rules above, what is the best way to simplify one's life as
+a code monkey? Get your editor to do most of the tedious work of
+beautifying your code!
+
+As a reward for reading this far, here are some mode lines for the more
+popular editors:
+/*
+ * vim:sw=4:sts=4:ts=8:tw=78:fo=tcroq:cindent:cino=\:0,(0
+ * vim:isk=a-z,A-Z,48-57,_,.,-,>
+ */
+

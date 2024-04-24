@@ -1,0 +1,140 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XSetWMProtocols __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XSetWMProtocols, XGetWMProtocols \- set or read a window's WM_PROTOCOLS property
+.SH SYNTAX
+.HP
+Status XSetWMProtocols\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, Atom
+*\fIprotocols\fP\^, int \fIcount\fP\^);
+.HP
+Status XGetWMProtocols\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, Atom
+**\fIprotocols_return\fP\^, int *\fIcount_return\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIcount\fP 1i
+Specifies the number of protocols in the list.
+.IP \fIcount_return\fP 1i
+Returns the number of protocols in the list.
+.IP \fIprotocols\fP 1i
+Specifies the list of protocols.
+.IP \fIprotocols_return\fP 1i
+Returns the list of protocols.
+.SH DESCRIPTION
+The
+.B XSetWMProtocols
+function replaces the WM_PROTOCOLS property on the specified window
+with the list of atoms specified by the protocols argument.
+If the property does not already exist,
+.B XSetWMProtocols
+sets the WM_PROTOCOLS property on the specified window
+to the list of atoms specified by the protocols argument.
+The property is stored with a type of ATOM and a format of 32.
+If it cannot intern the WM_PROTOCOLS atom,
+.B XSetWMProtocols
+returns a zero status.
+Otherwise, it returns a nonzero status.
+.LP
+.B XSetWMProtocols
+can generate
+.B BadAlloc
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XGetWMProtocols
+function returns the list of atoms stored in the WM_PROTOCOLS property
+on the specified window.
+These atoms describe window manager protocols in which the owner
+of this window is willing to participate.
+If the property exists, is of type ATOM, is of format 32,
+and the atom WM_PROTOCOLS can be interned,
+.B XGetWMProtocols
+sets the protocols_return argument to a list of atoms,
+sets the count_return argument to the number of elements in the list,
+and returns a nonzero status.
+Otherwise, it sets neither of the return arguments
+and returns a zero status.
+To release the list of atoms, use
+.BR XFree .
+.LP
+.B XGetWMProtocols
+can generate a
+.B BadWindow
+error.
+.SH PROPERTIES
+.TP 1i
+\s-1WM_PROTOCOLS\s+1
+List of atoms that identify the communications protocols between the
+client and window manager in which the client is willing to participate.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAlloc
+The server failed to allocate the requested resource or server memory.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XAllocClassHint(__libmansuffix__),
+XAllocIconSize(__libmansuffix__),
+XAllocSizeHints(__libmansuffix__),
+XAllocWMHints(__libmansuffix__),
+XFree(__libmansuffix__),
+XSetCommand(__libmansuffix__),
+XSetTransientForHint(__libmansuffix__),
+XSetTextProperty(__libmansuffix__),
+XSetWMClientMachine(__libmansuffix__),
+XSetWMColormapWindows(__libmansuffix__),
+XSetWMIconName(__libmansuffix__),
+XSetWMName(__libmansuffix__),
+XSetWMProperties(__libmansuffix__),
+XStringListToTextProperty(__libmansuffix__)
+.br
+\fI\*(xL\fP

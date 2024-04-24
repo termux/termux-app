@@ -1,0 +1,12 @@
+XCOMM UTF-8 (Unicode) compose sequences
+XCOMM
+XCOMM Modified for Czech, following iso8859-2/Compose
+XCOMM   by James Cloos <cloos@jhcloos.com>
+XCOMM	based on bug report by Vladimír Marek <vlmarek@volny.cz>
+
+XCOMM Use the sequences from en_US.UTF-8 as the basis:
+include "X11_LOCALEDATADIR/en_US.UTF-8/Compose"
+
+XCOMM  Overriding U with caron:
+<dead_caron> <u>                        : "ů"   U016F  #  LATIN SMALL LETTER U WITH RING ABOVE
+<dead_caron> <U>                        : "Ů"   U016E  #  LATIN CAPITAL LETTER U WITH RING ABOVE

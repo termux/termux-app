@@ -1,0 +1,18 @@
+libXquartzXpr = static_library('XquartzXpr',
+    [
+     'appledri.c',
+     'dri.c',
+     'driWrap.c',
+     'xprAppleWM.c',
+     'xprCursor.c',
+     'xprEvent.c',
+     'xprFrame.c',
+     'xprScreen.c',
+     'x-hash.c',
+     'x-hook.c',
+     'x-list.c',
+    ],
+    include_directories: [inc, '..', '../../../pseudoramiX', '../../../miext/rootless'],
+    c_args: [bundle_id_def, '-DXQUARTZ'],
+    dependencies: [xproto_dep, pixman_dep],
+)

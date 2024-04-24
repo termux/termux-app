@@ -1,0 +1,218 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XGrabButton __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XGrabButton, XUngrabButton \- grab pointer buttons
+.SH SYNTAX
+.HP
+int XGrabButton\^(\^Display *\fIdisplay\fP\^, unsigned int \fIbutton\fP\^,
+unsigned int \fImodifiers\fP\^, Window \fIgrab_window\fP\^, Bool
+\fIowner_events\fP\^, unsigned int \fIevent_mask\fP\^, int
+\fIpointer_mode\fP\^, \fIkeyboard_mode\fP\^, Window \fIconfine_to\fP\^, Cursor
+\fIcursor\fP\^);
+.HP
+int XUngrabButton\^(\^Display *\fIdisplay\fP\^, unsigned int \fIbutton\fP\^,
+unsigned int \fImodifiers\fP\^, Window \fIgrab_window\fP\^);
+.SH ARGUMENTS
+.IP \fIbutton\fP 1i
+Specifies the pointer button that is to be grabbed or released or
+.BR AnyButton .
+.IP \fIconfine_to\fP 1i
+Specifies the window to confine the pointer in or
+.BR None .
+.IP \fIcursor\fP 1i
+Specifies the cursor that is to be displayed or
+.BR None .
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIevent_mask\fP 1i
+Specifies which pointer events are reported to the client.
+The mask is the bitwise inclusive OR of the valid pointer event mask bits.
+.IP \fIgrab_window\fP 1i
+Specifies the grab window.
+.IP \fIkeyboard_mode\fP 1i
+Specifies further processing of keyboard events.
+You can pass
+.B GrabModeSync
+or
+.BR GrabModeAsync .
+.IP \fImodifiers\fP 1i
+Specifies the set of keymasks or
+.BR AnyModifier .
+The mask is the bitwise inclusive OR of the valid keymask bits.
+.IP \fIowner_events\fP 1i
+Specifies a Boolean value that indicates whether the pointer
+events are to be reported as usual or reported with respect to the grab window
+if selected by the event mask.
+.IP \fIpointer_mode\fP 1i
+Specifies further processing of pointer events.
+You can pass
+.B GrabModeSync
+or
+.BR GrabModeAsync .
+.SH DESCRIPTION
+The
+.B XGrabButton
+function establishes a passive grab.
+In the future,
+the pointer is actively grabbed (as for
+.BR XGrabPointer ),
+the last-pointer-grab time is set to the time at which the button was pressed
+(as transmitted in the
+.B ButtonPress
+event), and the
+.B ButtonPress
+event is reported if all of the following conditions are true:
+.IP \(bu 5
+The pointer is not grabbed, and the specified button is logically pressed
+when the specified modifier keys are logically down,
+and no other buttons or modifier keys are logically down.
+.IP \(bu 5
+The grab_window contains the pointer.
+.IP \(bu 5
+The confine_to window (if any) is viewable.
+.IP \(bu 5
+A passive grab on the same button/key combination does not exist
+on any ancestor of grab_window.
+.LP
+The interpretation of the remaining arguments is as for
+.BR XGrabPointer .
+The active grab is terminated automatically when the logical state of the
+pointer has all buttons released
+(independent of the state of the logical modifier keys),
+at which point a
+.B ButtonRelease
+event is reported to the grabbing window.
+.LP
+Note that the logical state of a device (as seen by client applications)
+may lag the physical state if device event processing is frozen.
+.LP
+This request overrides all previous grabs by the same client on the same
+button/key combinations on the same window.
+A modifiers of
+.B AnyModifier
+is equivalent to issuing the grab request for all
+possible modifier combinations (including the combination of no modifiers).
+It is not required that all modifiers specified have currently assigned
+KeyCodes.
+A button of
+.B AnyButton
+is equivalent to
+issuing the request for all possible buttons.
+Otherwise, it is not required that the specified button currently be assigned
+to a physical button.
+.LP
+If some other client has already issued a
+.B XGrabButton
+with the same button/key combination on the same window, a
+.B BadAccess
+error results.
+When using
+.B AnyModifier
+or
+.BR AnyButton ,
+the request fails completely,
+and a
+.B BadAccess
+error results (no grabs are
+established) if there is a conflicting grab for any combination.
+.B XGrabButton
+has no effect on an active grab.
+.LP
+.B XGrabButton
+can generate
+.BR BadCursor ,
+.BR BadValue ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XUngrabButton
+function releases the passive button/key combination on the specified window if
+it was grabbed by this client.
+A modifiers of
+.B AnyModifier
+is
+equivalent to issuing
+the ungrab request for all possible modifier combinations, including
+the combination of no modifiers.
+A button of
+.B AnyButton
+is equivalent to issuing the
+request for all possible buttons.
+.B XUngrabButton
+has no effect on an active grab.
+.LP
+.B XUngrabButton
+can generate
+.B BadValue
+and
+.B BadWindow
+errors.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadCursor
+A value for a Cursor argument does not name a defined Cursor.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XAllowEvents(__libmansuffix__),
+XGrabPointer(__libmansuffix__),
+XGrabKey(__libmansuffix__),
+XGrabKeyboard(__libmansuffix__),
+.br
+\fI\*(xL\fP

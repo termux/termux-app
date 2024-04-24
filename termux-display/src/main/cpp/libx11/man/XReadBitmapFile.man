@@ -1,0 +1,261 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XReadBitmapFile __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XReadBitmapFile, XReadBitmapFileData, XWriteBitmapFile, XCreatePixmapFromBitmapData, XCreateBitmapFromData \- manipulate bitmaps
+.SH SYNTAX
+.HP
+int XReadBitmapFile(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^, _Xconst char
+*\fIfilename\fP\^, unsigned int *\fIwidth_return\fP, unsigned int
+*\fIheight_return\fP\^, Pixmap *\fIbitmap_return\fP\^, int
+*\fIx_hot_return\fP, int *\fIy_hot_return\fP\^);
+.HP
+int XReadBitmapFileData(\^_Xconst char *\fIfilename\fP\^, unsigned int
+*\fIwidth_return\fP, unsigned int *\fIheight_return\fP\^, unsigned char
+**\fIdata_return\fP\^, int *\fIx_hot_return\fP, int *\fIy_hot_return\fP\^);
+.HP
+int XWriteBitmapFile(\^Display *\fIdisplay\fP\^, _Xconst char *\fIfilename\fP\^,
+Pixmap \fIbitmap\fP\^, unsigned int \fIwidth\fP, unsigned int \fIheight\fP\^,
+int \fIx_hot\fP, int \fIy_hot\fP\^);
+.HP
+Pixmap XCreatePixmapFromBitmapData\^(\^Display *\fIdisplay\fP\^, Drawable
+\fId\fP\^, char *\fIdata\fP\^, unsigned int \fIwidth\fP, unsigned int
+\fIheight\fP\^, unsigned long \fIfg\fP, unsigned long \fIbg\fP\^, unsigned int
+\fIdepth\fP\^);
+.HP
+Pixmap XCreateBitmapFromData(\^Display *\fIdisplay\fP\^, Drawable \fId\fP\^,
+_Xconst char *\fIdata\fP\^, unsigned int \fIwidth\fP, unsigned int \fIheight\fP\^);
+.SH ARGUMENTS
+.IP \fIbitmap\fP 1i
+Specifies the bitmap.
+.IP \fIbitmap_return\fP 1i
+Returns the bitmap that is created.
+.IP \fId\fP 1i
+Specifies the drawable that indicates the screen.
+.IP \fIdata\fP 1i
+Specifies the data in bitmap format.
+.IP \fIdata\fP 1i
+Specifies the location of the bitmap data.
+.IP \fIdata_return\fP 1i
+Returns the bitmap data.
+.IP \fIdepth\fP 1i
+Specifies the depth of the pixmap.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIfg\fP 1i
+.br
+.ns
+.IP \fIbg\fP 1i
+Specify the foreground and background pixel values to use.
+.IP \fIfilename\fP 1i
+Specifies the file name to use.
+The format of the file name is operating-system dependent.
+.IP \fIwidth\fP 1i
+.br
+.ns
+.IP \fIheight\fP 1i
+Specify the width and height.
+.IP \fIwidth_return\fP 1i
+.br
+.ns
+.IP \fIheight_return\fP 1i
+Return the width and height values of the read in bitmap file.
+.IP \fIx_hot\fP 1i
+.br
+.ns
+.IP \fIy_hot\fP 1i
+Specify where to place the hotspot coordinates (or \-1,\-1 if none are present)
+in the file.
+.IP \fIx_hot_return\fP 1i
+.br
+.ns
+.IP \fIy_hot_return\fP 1i
+Return the hotspot coordinates.
+.SH DESCRIPTION
+The
+.B XReadBitmapFile
+function reads in a file containing a bitmap.
+The file is parsed in the encoding of the current locale.
+The ability to read other than the standard format
+is implementation-dependent.
+If the file cannot be opened,
+.B XReadBitmapFile
+returns
+.BR BitmapOpenFailed .
+If the file can be opened but does not contain valid bitmap data,
+it returns
+.BR BitmapFileInvalid .
+If insufficient working storage is allocated,
+it returns
+.BR BitmapNoMemory .
+If the file is readable and valid,
+it returns
+.BR BitmapSuccess .
+.LP
+.B XReadBitmapFile
+returns the bitmap's height and width, as read
+from the file, to width_return and height_return.
+It then creates a pixmap of the appropriate size,
+reads the bitmap data from the file into the pixmap,
+and assigns the pixmap to the caller's variable bitmap.
+The caller must free the bitmap using
+.B XFreePixmap
+when finished.
+If \fIname\fP_x_hot and \fIname\fP_y_hot exist,
+.B XReadBitmapFile
+returns them to x_hot_return and y_hot_return;
+otherwise, it returns \-1,\-1.
+.LP
+.B XReadBitmapFile
+can generate
+.B BadAlloc
+and
+.B BadDrawable
+errors.
+.LP
+The
+.B XReadBitmapFileData
+function reads in a file containing a bitmap, in the same manner as
+.BR XReadBitmapFile ,
+but returns the data directly rather than creating a pixmap in the server.
+The bitmap data is returned in data_return; the client must free this
+storage when finished with it by calling
+.BR XFree .
+The status and other return values are the same as for
+.BR XReadBitmapFile .
+.LP
+The
+.B XWriteBitmapFile
+function writes a bitmap out to a file in the X Version 11 format.
+The name used in the output file is derived from the file name
+by deleting the directory prefix.
+The file is written in the encoding of the current locale.
+If the file cannot be opened for writing,
+it returns
+.BR BitmapOpenFailed .
+If insufficient memory is allocated,
+.B XWriteBitmapFile
+returns
+.BR BitmapNoMemory ;
+otherwise, on no error,
+it returns
+.BR BitmapSuccess .
+If x_hot and y_hot are not \-1, \-1,
+.B XWriteBitmapFile
+writes them out as the hotspot coordinates for the bitmap.
+.LP
+.B XWriteBitmapFile
+can generate
+.B BadDrawable
+and
+.B BadMatch
+errors.
+.LP
+The
+.B XCreatePixmapFromBitmapData
+function creates a pixmap of the given depth and then does a bitmap-format
+.B XPutImage
+of the data into it.
+The depth must be supported by the screen of the specified drawable,
+or a
+.B BadMatch
+error results.
+.LP
+.B XCreatePixmapFromBitmapData
+can generate
+.B BadAlloc
+and
+.B BadMatch
+errors.
+.LP
+The
+.B XCreateBitmapFromData
+function allows you to include in your C program (using
+.BR #include )
+a bitmap file that was written out by
+.B XWriteBitmapFile
+(X version 11 format only) without reading in the bitmap file.
+The following example creates a gray bitmap:
+.LP
+.EX
+\&#include "gray.bitmap"
+.sp 6p
+Pixmap bitmap;
+bitmap = XCreateBitmapFromData(display, window, gray_bits, gray_width, gray_height);
+.EE
+.LP
+If insufficient working storage was allocated,
+.B XCreateBitmapFromData
+returns
+.BR None .
+It is your responsibility to free the
+bitmap using
+.B XFreePixmap
+when finished.
+.LP
+.B XCreateBitmapFromData
+can generate a
+.B BadAlloc
+error.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAlloc
+The server failed to allocate the requested resource or server memory.
+.TP 1i
+.B BadDrawable
+A value for a Drawable argument does not name a defined Window or Pixmap.
+.TP 1i
+.B BadMatch
+An
+.B InputOnly
+window is used as a Drawable.
+.SH "SEE ALSO"
+XCreatePixmap(__libmansuffix__),
+XPutImage(__libmansuffix__)
+.br
+\fI\*(xL\fP

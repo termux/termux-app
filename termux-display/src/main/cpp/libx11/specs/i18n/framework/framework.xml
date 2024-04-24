@@ -1,0 +1,1629 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
+<book id="framework">
+
+<bookinfo>
+   <title>X11R6 Sample Implementation Frame Work</title>
+   <releaseinfo>X Version 11, Release &fullrelvers;</releaseinfo>
+   <authorgroup>
+      <othercredit>
+         <firstname>Katsuhisa</firstname><surname>Yano</surname>
+         <affiliation><orgname>TOSHIBA Corporation</orgname></affiliation>
+      </othercredit>
+      <othercredit>
+         <firstname>Yoshio</firstname><surname>Horiuchi</surname>
+         <affiliation><orgname>IBM Japan</orgname></affiliation>
+      </othercredit>
+   </authorgroup>
+   <copyright><year>1994</year>
+     <holder>TOSHIBA Corporation</holder>
+     <holder>IBM Corporation</holder>
+   </copyright>
+
+<legalnotice>
+
+<para>
+Permission to use, copy, modify, and distribute this documentation for any purpose and without fee is hereby granted,
+provided that the above copyright notice and this permission notice appear in all copies. TOSHIBA Corporation and
+IBM Corporation make no representations about the suitability for any purpose of the information in this document.
+This documentation is provided as is without express or implied warranty.
+</para>
+
+<para role="multiLicensing">Copyright © 1994 X Consortium</para>
+<para>
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files
+(the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following
+conditions:
+</para>
+
+<para>
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+</para>
+
+<para>
+THE SOFTWARE IS PROVIDED &ldquo;AS IS&rdquo;, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN
+NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+</para>
+
+<para>
+Except as contained in this notice, the name of X Consortium shall not
+be used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from X Consortium.
+</para>
+
+<para>X Window System is a trademark of The Open Group.</para>
+
+</legalnotice>
+</bookinfo>
+
+<chapter id='Framework'>
+<title>Framework</title>
+<sect1 id='Preface'>
+<title>Preface</title>
+<para>
+This document proposes to define the structures, methods and their
+signatures that are expected to be common to all locale dependent
+functions within the Xlib sample implementation.  The following
+illustration (Fig.1) <!-- xref --> is proposed to outline the separating of
+the components within the sample implementation.
+</para>
+
+<para>
+Preface drawing.
+</para>
+
+<mediaobject  id="framework_locale_service_api_proposal">
+  <imageobject>
+    <imagedata   width="540px" depth="530px" contentwidth="560px" contentdepth="550px" format="SVG"  fileref="framework.svg"/>
+  </imageobject>
+  <caption>Frame work of Locale Service API Proposal</caption>
+</mediaobject>
+
+<para>
+Generally speaking, the internationalized portion of Xlib (Locale
+Dependent X, LDX) consists of three objects;
+locale (LC) , input method (IM) and output method (OM).
+The LC provides a set of information that depends on user's language
+environment.  The IM manages text inputing, and the OM manages text
+drawing.  Both IM and OM highly depend on LC data.
+</para>
+
+<para>
+In X11R5, there are two sample implementations, Ximp and Xsi, for
+Xlib internationalization.  But in both implementations, IM and OM
+actually refer the private extension of LC.  It breaks coexistence
+of these two sample implementations.  For example, if a user creates
+a new OM for special purpose as a part of Ximp, it will not work with
+Xsi.
+</para>
+
+<para>
+As a solution of this problem, we propose to define the standard
+APIs between these three objects, and define the structure that are
+common to these objects.
+</para>
+</sect1>
+
+<sect1 id="Objective">
+<title>Objective</title>
+
+<itemizedlist>
+  <listitem>
+    <para>
+Explain the current X11R6 sample implementation
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Document the common set of locale dependent interfaces
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Provide more flexible pluggable layer
+    </para>
+  </listitem>
+</itemizedlist>
+</sect1>
+
+<sect1 id="Locale_Object_Binding_Functions">
+<title>Locale Object Binding Functions</title>
+<!-- .XS (SN Locale Object Binding Functions -->
+<!-- .XE  -->
+<para>
+This chapter describes functions related locale object binding for
+implementing the pluggable layer.
+</para>
+
+<para>
+A locale loader is an entry point for locale object, which
+instantiates XLCd object and binds locale methods with specified
+locale name. The behavior of loader is implementation dependent.
+And, what kind of loaders are available is also implementation
+dependent.
+</para>
+
+<para>
+<!-- .LP -->
+The loader is called in
+<function>_XOpenLC, </function>
+but caller of
+<xref linkend='_XOpenLC' xrefstyle='select: title'/>
+does not need to care about its inside.  For example, if the loader is
+implemented with dynamic load functions, and the dynamic module is
+expected to be unloaded when the corresponding XLCd is freed,
+close methods of XLCdMethods should handle unloading.
+</para>
+
+<para>
+<emphasis role="bold">Initializing a locale loader list</emphasis>
+</para>
+
+<para>void _XlcInitLoader</para>
+
+
+<para>
+The
+<function>_XlcInitLoader</function>
+function initializes the locale loader list with vendor specific
+manner.  Each loader is registered with calling
+<function>_XlcAddLoader.</function>
+The number of loaders and their order in the loader list is
+implementation dependent.
+</para>
+
+<para>
+<emphasis role="bold">Add a loader</emphasis>
+</para>
+
+<literallayout>
+typedef XLCd (*XLCdLoadProc)(<emphasis remap='I'>name</emphasis>);
+      char <emphasis remap='I'>*name</emphasis>;
+
+typedef int XlcPosition;
+
+#define   XlcHead
+#define   XlcTail
+</literallayout>
+
+<funcsynopsis id='_XlcAddLoader'>
+<funcprototype>
+  <funcdef>Bool <function> _XlcAddLoader</function></funcdef>
+  <paramdef>XLCdLoadProc<parameter> proc</parameter></paramdef>
+  <paramdef>XlcPosition<parameter> position</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcAddLoader' xrefstyle='select: title'/>
+function registers the specified locale loader "<emphasis remap='I'>proc</emphasis>" to the
+internal loader list.  The position specifies that the loader
+"<emphasis remap='I'>proc</emphasis>" should be placed in the top of the loader list(XlcHead)
+or last(XlcTail).
+</para>
+
+<para>
+The object loader is called from the top of the loader list in order,
+when calling time.
+</para>
+
+<para>
+<function>Remove a loader</function>
+</para>
+
+<funcsynopsis id='_XlcRemoveLoader'>
+<funcprototype>
+  <funcdef>void <function> _XlcRemoveLoader</function></funcdef>
+  <paramdef>XLCdLoadProc<parameter> proc</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcRemoveLoader' xrefstyle='select: title'/>
+function removes the locale loader specified by "<emphasis remap='I'>proc</emphasis>" from the
+loader list.
+</para>
+
+<para>
+Current implementation provides following locale loaders;
+</para>
+
+<literallayout>
+<function>_XlcDefaultLoader</function>
+<function>_XlcGenericLoader</function>
+<function>_XlcUtfLoader</function>
+<function>_XaixOsDynamicLoad</function>
+</literallayout>
+
+</sect1>
+
+<sect1 id="Locale_Method_Interface">
+<title>Locale Method Interface</title>
+
+<para>
+This chapter describes the locale method API, which is a set of
+accessible functions from both IM and OM parts.
+The locale method API provides the functionalities;  obtaining locale
+dependent information, handling charset, converting text, etc.
+</para>
+
+<para>
+As a result of using these APIs instead of accessing vendor private
+extension of the locale object, we can keep locale, IM and OM
+independently each other.
+</para>
+
+</sect1>
+
+<sect1 id="Locale_Method_Functions">
+<title>Locale Method Functions</title>
+<para>
+<function>Open a Locale Method</function>
+</para>
+
+<funcsynopsis id='_XOpenLC'>
+<funcprototype>
+  <funcdef>XLCd <function> _XOpenLC</function></funcdef>
+  <paramdef>char<parameter> *name</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XOpenLC' xrefstyle='select: title'/>
+function opens a locale method which corresponds to the
+specified locale name.
+<xref linkend='_XOpenLC' xrefstyle='select: title'/>
+calls a locale object loader, which is registered via
+<function>_XlcAddLoader into the internal loader list.  If the called loader </function>
+is valid and successfully opens a locale,
+<xref linkend='_XOpenLC' xrefstyle='select: title'/>
+returns the XLCd.  If the loader is invalid or failed to open a locale,
+<xref linkend='_XOpenLC' xrefstyle='select: title'/>
+calls the next loader.  If all registered loaders cannot open a locale,
+<xref linkend='_XOpenLC' xrefstyle='select: title'/>
+returns NULL.
+</para>
+
+<para>XLCd _XlcCurrentLC</para>
+
+<para>
+The
+<function>_XlcCurrentLC</function>
+function returns an XLCd that are bound to current locale.
+</para>
+
+<para>
+<emphasis role="bold">Close a Locale Method</emphasis>
+</para>
+
+<funcsynopsis id='_XCloseLC'>
+<funcprototype>
+  <funcdef>void <function> _XCloseLC</function></funcdef>
+  <paramdef>XLCd<parameter> lcd</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+<!-- .LP -->
+The
+<xref linkend='_XCloseLC' xrefstyle='select: title'/>
+function close a locale method the specified lcd.
+</para>
+
+<para>
+<emphasis role="bold">Obtain Locale Method values</emphasis>
+</para>
+
+<funcsynopsis id='_XGetLCValues'>
+<funcprototype>
+  <funcdef>char *<function>_XGetLCValues</function></funcdef>
+  <paramdef>XLCd<parameter> lcd</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XGetLCValues' xrefstyle='select: title'/>
+function returns NULL if no error occurred; otherwise, it returns the
+name of the first argument that could not be obtained.
+The following values are defined as standard arguments. Other values
+are implementation dependent.
+</para>
+
+<informaltable frame="topbot">
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='3' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth="3.0*"/>
+  <colspec colname='c2' colwidth="1.0*"/>
+  <colspec colname='c3' colwidth="3.0*"/>
+  <thead>
+    <row rowsep='1'>
+      <entry>Name</entry>
+      <entry>Type</entry>
+      <entry>Description</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>XlcNCodeset</entry>
+      <entry>char*</entry>
+      <entry>codeset part of locale name</entry>
+    </row>
+    <row>
+      <entry>XlcNDefaultString</entry>
+      <entry>char*</entry>
+      <entry>XDefaultString()</entry>
+    </row>
+    <row>
+      <entry>XlcNEncodingName</entry>
+      <entry>char*</entry>
+      <entry>encoding name</entry>
+    </row>
+    <row>
+      <entry>XlcNLanguage</entry>
+      <entry>char*</entry>
+      <entry>language part of locale name</entry>
+    </row>
+    <row>
+      <entry>XlcNMbCurMax</entry>
+      <entry>int</entry>
+      <entry>ANSI C MB_CUR_MAX</entry>
+    </row>
+    <row>
+      <entry>XlcNStateDependentEncoding</entry>
+      <entry>Bool</entry>
+      <entry>is state-dependent encoding or not</entry>
+    </row>
+    <row>
+      <entry>XlcNTerritory</entry>
+      <entry>char*</entry>
+      <entry>territory part of locale name</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+</sect1>
+
+<sect1 id="Charset_functions">
+<title>Charset functions</title>
+<para>
+The XlcCharSet is an identifier which represents a subset of characters
+(character set) in the locale object.
+</para>
+
+<literallayout class="monospaced">
+typedef enum {
+      XlcUnknown, XlcC0, XlcGL, XlcC1, XlcGR, XlcGLGR, XlcOther
+} XlcSide;
+
+typedef struct _XlcCharSetRec *XlcCharSet;
+
+typedef struct {
+      char *name;
+      XPointer value;
+} XlcArg, *XlcArgList;
+
+typedef char* (*XlcGetCSValuesProc)(<emphasis remap='I'>charset</emphasis>, <emphasis remap='I'>args</emphasis>, <emphasis remap='I'>num_args</emphasis>);
+      XlcCharSet <emphasis remap='I'>charset</emphasis>;
+      XlcArgList <emphasis remap='I'>args</emphasis>;
+      int <emphasis remap='I'>num_args</emphasis>;
+
+typedef struct _XlcCharSetRec {
+      char *name;
+      XrmQuark xrm_name;
+      char *encoding_name;
+      XrmQuark xrm_encoding_name;
+      XlcSide side;
+      int char_size;
+      int set_size;
+      char *ct_sequence;
+      XlcGetCSValuesProc get_values;
+} XlcCharSetRec;
+</literallayout>
+
+<para>
+<emphasis role="bold">Get an XlcCharSet</emphasis>
+</para>
+
+<funcsynopsis id='_XlcGetCharSet'>
+<funcprototype>
+  <funcdef>XlcCharSet <function> _XlcGetCharSet</function></funcdef>
+  <paramdef>char<parameter> *name</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcGetCharSet' xrefstyle='select: title'/>
+function gets an XlcCharSet which corresponds to the charset name
+specified by "<emphasis remap='I'>name</emphasis>".
+<xref linkend='_XlcGetCharSet' xrefstyle='select: title'/>
+returns NULL, if no XlcCharSet bound to specified "<emphasis remap='I'>name</emphasis>".
+</para>
+
+<para>
+The following character sets are pre-registered.
+</para>
+
+<informaltable frame="topbot">
+  <?dbfo keep-together="auto" ?>
+  <tgroup cols='2' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth="1.0*"/>
+  <colspec colname='c2' colwidth="2.0*"/>
+  <thead>
+    <row rowsep='1'>
+      <entry>Name</entry>
+      <entry>Description</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>ISO8859-1:GL</entry>
+      <entry>7-bit ASCII graphics (ANSI X3.4-1968),</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>Left half of ISO 8859 sets</entry>
+    </row>
+    <row>
+      <entry>JISX0201.1976-0:GL</entry>
+      <entry>Left half of JIS X0201-1976 (reaffirmed 1984),</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>8-Bit Alphanumeric-Katakana Code</entry>
+    </row>
+    <row>
+      <entry>ISO8859-1:GR</entry>
+      <entry>Right half of ISO 8859-1, Latin alphabet No. 1</entry>
+    </row>
+    <row>
+      <entry>ISO8859-2:GR</entry>
+      <entry>Right half of ISO 8859-2, Latin alphabet No. 2</entry>
+    </row>
+    <row>
+      <entry>ISO8859-3:GR</entry>
+      <entry>Right half of ISO 8859-3, Latin alphabet No. 3</entry>
+    </row>
+    <row>
+      <entry>ISO8859-4:GR</entry>
+      <entry>Right half of ISO 8859-4, Latin alphabet No. 4</entry>
+    </row>
+    <row>
+      <entry>ISO8859-7:GR</entry>
+      <entry>Right half of ISO 8859-7, Latin/Greek alphabet</entry>
+    </row>
+    <row>
+      <entry>ISO8859-6:GR</entry>
+      <entry>Right half of ISO 8859-6, Latin/Arabic alphabet</entry>
+    </row>
+    <row>
+      <entry>ISO8859-8:GR</entry>
+      <entry>Right half of ISO 8859-8, Latin/Hebrew alphabet</entry>
+    </row>
+    <row>
+      <entry>ISO8859-5:GR</entry>
+      <entry>Right half of ISO 8859-5, Latin/Cyrillic alphabet</entry>
+    </row>
+    <row>
+      <entry>ISO8859-9:GR</entry>
+      <entry>Right half of ISO 8859-9, Latin alphabet No. 5</entry>
+    </row>
+    <row>
+      <entry>JISX0201.1976-0:GR</entry>
+      <entry>Right half of JIS X0201-1976 (reaffirmed 1984),</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>8-Bit Alphanumeric-Katakana Code</entry>
+    </row>
+    <row>
+      <entry>GB2312.1980-0:GL</entry>
+      <entry>GB2312-1980, China (PRC) Hanzi defined as GL</entry>
+    </row>
+    <row>
+      <entry>GB2312.1980-0:GR</entry>
+      <entry>GB2312-1980, China (PRC) Hanzi defined as GR</entry>
+    </row>
+    <row>
+      <entry>JISX0208.1983-0:GL</entry>
+      <entry>JIS X0208-1983, Japanese Graphic Character Set</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>defined as GL</entry>
+    </row>
+    <row>
+      <entry>JISX0208.1983-0:GR</entry>
+      <entry>JIS X0208-1983, Japanese Graphic Character Set</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>defined as GR</entry>
+    </row>
+    <row>
+      <entry>KSC5601.1987-0:GL</entry>
+      <entry>KS C5601-1987, Korean Graphic Character Set</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>defined as GL</entry>
+    </row>
+    <row>
+      <entry>KSC5601.1987-0:GR</entry>
+      <entry>KS C5601-1987, Korean Graphic Character Set</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>defined as GR</entry>
+    </row>
+    <row>
+      <entry>JISX0212.1990-0:GL</entry>
+      <entry>JIS X0212-1990, Japanese Graphic Character Set</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>defined as GL</entry>
+    </row>
+    <row>
+      <entry>JISX0212.1990-0:GR</entry>
+      <entry>JIS X0212-1990, Japanese Graphic Character Set</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry>defined as GR</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+<para>
+<emphasis role="bold">Add an XlcCharSet</emphasis>
+</para>
+
+<funcsynopsis id='_XlcAddCharSet'>
+<funcprototype>
+  <funcdef>Bool <function> _XlcAddCharSet</function></funcdef>
+  <paramdef>XlcCharSet<parameter> charset</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcAddCharSet' xrefstyle='select: title'/>
+function registers XlcCharSet specified by "<emphasis remap='I'>charset</emphasis>".
+</para>
+
+<para>
+<!-- .LP -->
+<!-- .sp -->
+<function>Obtain Character Set values</function>
+</para>
+
+<funcsynopsis id='_XlcGetCSValues'>
+<funcprototype>
+  <funcdef>char * <function> _XlcGetCSValues</function></funcdef>
+  <paramdef>XlcCharSet<parameter> charset</parameter></paramdef>
+  <paramdef><parameter> ...</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcGetCSValues' xrefstyle='select: title'/>
+function returns NULL if no error occurred;
+otherwise, it returns the name of the first argument that could not
+be obtained.  The following values are defined as standard arguments.
+Other values are implementation dependent.
+</para>
+
+<informaltable frame="topbot">
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='3' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth="2.0*"/>
+  <colspec colname='c2' colwidth="1.0*"/>
+  <colspec colname='c3' colwidth="3.0*"/>
+  <thead>
+    <row rowsep='1'>
+      <entry>Name</entry>
+      <entry>Type</entry>
+      <entry>Description</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>XlcNName</entry>
+      <entry>char*</entry>
+      <entry>charset name</entry>
+    </row>
+    <row>
+      <entry>XlcNEncodingName</entry>
+      <entry>char*</entry>
+      <entry>XLFD CharSet Registry and Encoding</entry>
+    </row>
+    <row>
+      <entry>XlcNSide</entry>
+      <entry>XlcSide</entry>
+      <entry>charset side (GL, GR, ...)</entry>
+    </row>
+    <row>
+      <entry>XlcNCharSize</entry>
+      <entry>int</entry>
+      <entry>number of octets per character</entry>
+    </row>
+    <row>
+      <entry>XlcNSetSize</entry>
+      <entry>int</entry>
+      <entry>number of character sets</entry>
+    </row>
+    <row>
+      <entry>XlcNControlSequence</entry>
+      <entry>char*</entry>
+      <entry>control sequence of Compound Text</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+</sect1>
+
+<sect1 id="Converter_Functions">
+<title>Converter Functions</title>
+<para>
+We provide a set of the common converter APIs, that are independent
+from both of source and destination text type.
+</para>
+
+<literallayout class="monospaced">
+typedef struct _XlcConvRec *XlcConv;
+
+typedef void (*XlcCloseConverterProc)(<emphasis remap='I'>conv</emphasis>);
+      XlcConv <emphasis remap='I'>conv</emphasis>;
+
+typedef int (*XlcConvertProc)(<emphasis remap='I'>conv</emphasis>, <emphasis remap='I'>from</emphasis>, <emphasis remap='I'>from_left</emphasis>, <emphasis remap='I'>to</emphasis>, <emphasis remap='I'>to_left</emphasis>, <emphasis remap='I'>args</emphasis>, <emphasis remap='I'>num_args</emphasis>);
+      XlcConv <emphasis remap='I'>conv</emphasis>;
+      XPointer <emphasis remap='I'>*from</emphasis>;
+      int <emphasis remap='I'>*from_left</emphasis>;
+      XPointer <emphasis remap='I'>*to</emphasis>;
+      int <emphasis remap='I'>*to_left</emphasis>;
+      XPointer <emphasis remap='I'>*args</emphasis>;
+      int <emphasis remap='I'>num_args</emphasis>;
+
+typedef void (*XlcResetConverterProc)(<emphasis remap='I'>conv</emphasis>);
+      XlcConv <emphasis remap='I'>conv</emphasis>;
+
+typedef struct _XlcConvMethodsRec {
+      XlcCloseConverterProc close;
+      XlcConvertProc convert;
+      XlcResetConverterProc reset;
+} XlcConvMethodsRec, *XlcConvMethods;
+
+typedef struct _XlcConvRec {
+    XlcConvMethods methods;
+    XPointer state;
+} XlcConvRec;
+</literallayout>
+
+<para>
+<function>Open a converter</function>
+</para>
+
+<funcsynopsis id='_XlcOpenConverter'>
+<funcprototype>
+  <funcdef>XlcConv <function> _XlcOpenConverter</function></funcdef>
+  <paramdef>XLCd<parameter> from_lcd</parameter></paramdef>
+  <paramdef>char<parameter> *from_type</parameter></paramdef>
+  <paramdef>XLCd<parameter> to_lcd</parameter></paramdef>
+  <paramdef>char<parameter> *to_type</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+<xref linkend='_XlcOpenConverter' xrefstyle='select: title'/>
+function opens the converter which converts a text from specified
+"<emphasis remap='I'>from_type</emphasis>" to specified "<emphasis remap='I'>to_type</emphasis>" encoding.  If the
+function cannot find proper converter or cannot open a corresponding
+converter, it returns NULL.  Otherwise, it returns the conversion
+descriptor.
+</para>
+
+<para>
+The following types are pre-defined. Other types are implementation
+dependent.
+</para>
+
+<informaltable frame="topbot">
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='4' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth="2.0*"/>
+  <colspec colname='c2' colwidth="1.0*"/>
+  <colspec colname='c3' colwidth="2.0*"/>
+  <colspec colname='c4' colwidth="3.0*"/>
+  <thead>
+    <row rowsep='1'>
+      <entry>Name</entry>
+      <entry>Type</entry>
+      <entry>Description</entry>
+      <entry>Arguments</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>XlcNMultiByte</entry>
+      <entry>char *</entry>
+      <entry>multibyte</entry>
+      <entry>-</entry>
+    </row>
+    <row>
+      <entry>XlcNWideChar</entry>
+      <entry>wchar_t *</entry>
+      <entry>wide character</entry>
+      <entry>-</entry>
+    </row>
+    <row>
+      <entry>XlcNCompoundText</entry>
+      <entry>char *</entry>
+      <entry>COMPOUND_TEXT</entry>
+      <entry>-</entry>
+    </row>
+    <row>
+      <entry>XlcNString</entry>
+      <entry>char *</entry>
+      <entry>STRING</entry>
+      <entry>-</entry>
+    </row>
+    <row>
+      <entry>XlcNCharSet</entry>
+      <entry>char *</entry>
+      <entry>per charset</entry>
+      <entry>XlcCharSet</entry>
+    </row>
+    <row>
+      <entry>XlcNChar</entry>
+      <entry>char *</entry>
+      <entry>per character</entry>
+      <entry>XlcCharSet</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+<para>
+<emphasis role="bold">Close a converter</emphasis>
+</para>
+
+<funcsynopsis id='_XlcCloseConverter'>
+<funcprototype>
+  <funcdef>void <function> _XlcCloseConverter</function></funcdef>
+  <paramdef>XlcConv<parameter> conv</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcCloseConverter' xrefstyle='select: title'/>
+function closes the specified converter "<emphasis remap='I'>conv</emphasis>".
+</para>
+
+<para>
+<emphasis role="bold">Code conversion</emphasis>
+</para>
+
+<funcsynopsis id='_XlcConvert'>
+<funcprototype>
+  <funcdef>int <function> _XlcConvert</function></funcdef>
+  <paramdef>XlcConv<parameter> conv</parameter></paramdef>
+  <paramdef>XPointer<parameter> *from</parameter></paramdef>
+  <paramdef>int<parameter> *from_left</parameter></paramdef>
+  <paramdef>XPointer<parameter> *to</parameter></paramdef>
+  <paramdef>int<parameter> *to_left</parameter></paramdef>
+  <paramdef>XPointer<parameter> *args</parameter></paramdef>
+  <paramdef>int<parameter> num_args</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcConvert' xrefstyle='select: title'/>
+function converts a sequence of characters from one type, in the array
+specified by "<emphasis remap='I'>from</emphasis>", into a sequence of corresponding characters
+in another type, in the array specified by "<emphasis remap='I'>to</emphasis>".  The types are
+those specified in the
+<function>_XlcOpenConverter() </function>
+call that returned the conversion descriptor, "<emphasis remap='I'>conv</emphasis>".
+The arguments "<emphasis remap='I'>from</emphasis>", "<emphasis remap='I'>from_left</emphasis>", "<emphasis remap='I'>to</emphasis>" and
+"<emphasis remap='I'>to_left</emphasis>" have the same specification of XPG4 iconv function.
+</para>
+
+<para>
+For state-dependent encodings, the conversion descriptor "<emphasis remap='I'>conv</emphasis>"
+is placed into its initial shift state by a call for which "<emphasis remap='I'>from</emphasis>"
+is a NULL pointer, or for which "<emphasis remap='I'>from</emphasis>" points to a null pointer.
+</para>
+
+<para>
+The following 2 converters prepared by locale returns appropriate
+charset (XlcCharSet) in an area pointed by args[0].
+</para>
+
+<informaltable frame="topbot">
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='3' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth="1.0*"/>
+  <colspec colname='c2' colwidth="1.0*"/>
+  <colspec colname='c3' colwidth="2.0*"/>
+  <thead>
+    <row rowsep='1'>
+      <entry>From</entry>
+      <entry>To</entry>
+      <entry>Description</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>XlcNMultiByte</entry>
+      <entry>XlcNCharSet</entry>
+      <entry>Segmentation (Decomposing)</entry>
+    </row>
+    <row>
+      <entry>XlcNWideChar</entry>
+      <entry>XlcNCharSet</entry>
+      <entry>Segmentation (Decomposing)</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+<para>
+The conversion, from XlcNMultiByte/XlcNWideChar to XlcNCharSet,
+extracts a segment which has same charset encoding characters.
+More than one segment cannot be converted in a call.
+</para>
+
+<para>
+<emphasis role="bold">Reset a converter</emphasis>
+</para>
+
+<funcsynopsis id='_XlcResetConverter'>
+<funcprototype>
+  <funcdef>void <function> _XlcResetConverter</function></funcdef>
+  <paramdef>XlcConv<parameter> conv</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcResetConverter' xrefstyle='select: title'/>
+function reset the specified converter "<emphasis remap='I'>conv</emphasis>".
+</para>
+
+<para>
+<emphasis role="bold">Register a converter</emphasis>
+</para>
+
+<literallayout class="monospaced">
+typedef XlcConv (*XlcOpenConverterProc)(<emphasis remap='I'>from_lcd</emphasis>, <emphasis remap='I'>from_type</emphasis>, <emphasis remap='I'>to_lcd</emphasis>, <emphasis remap='I'>to_type</emphasis>);
+      XLCd <emphasis remap='I'>from_lcd</emphasis>;
+      char <emphasis remap='I'>*from_type</emphasis>;
+      XLCd <emphasis remap='I'>to_lcd</emphasis>;
+      char <emphasis remap='I'>*to_type</emphasis>;
+</literallayout>
+
+<funcsynopsis id='_XlcSetConverter'>
+<funcprototype>
+  <funcdef>Bool <function> _XlcSetConverter</function></funcdef>
+  <paramdef>XLCd<parameter> from_lcd</parameter></paramdef>
+  <paramdef>char<parameter> *from</parameter></paramdef>
+  <paramdef>XLCd<parameter> to_lcd</parameter></paramdef>
+  <paramdef>char<parameter> *to</parameter></paramdef>
+  <paramdef>XlcOpenConverterProc<parameter> converter</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The <function>XlcSetConverter</function> function registers a converter which convert
+from "<emphasis remap='I'>from_type</emphasis>" to "<emphasis remap='I'>to_type</emphasis>" into the converter list
+(in the specified XLCd).
+</para>
+</sect1>
+
+<sect1 id="X_Locale_Database_functions">
+<title>X Locale Database functions</title>
+<para>
+X Locale Database contains the subset of user's environment that
+depends on language.  The following APIs are provided for accessing
+X Locale Database and other locale relative files.
+</para>
+
+<para>
+For more detail about  X Locale Database, please refer
+X Locale Database Definition document.
+</para>
+
+<para>
+<emphasis role="bold">Get a resource from database</emphasis>
+</para>
+
+<funcsynopsis id='_XlcGetResource'>
+<funcprototype>
+  <funcdef>void <function> _XlcGetResource</function></funcdef>
+  <paramdef>XLCd<parameter> lcd</parameter></paramdef>
+  <paramdef>char<parameter> *category</parameter></paramdef>
+  <paramdef>char<parameter> *class</parameter></paramdef>
+  <paramdef>char<parameter> ***value</parameter></paramdef>
+  <paramdef>int<parameter> *count</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcGetResource' xrefstyle='select: title'/>
+function obtains a locale dependent data which is associated with the
+locale of specified "<emphasis remap='I'>lcd</emphasis>".
+The locale data is provided by system locale or by X Locale Database
+file, and what kind of data is available is implementation dependent.
+</para>
+
+<para>
+The specified "<emphasis remap='I'>category</emphasis>" and "<emphasis remap='I'>class</emphasis>" are used for
+finding out the objective locale data.
+</para>
+
+<para>
+The returned  value is returned in value argument in string list form,
+and the returned count shows the number of strings in the value.
+</para>
+
+<para>
+The returned value is owned by locale method, and should not be modified
+or freed by caller.
+</para>
+
+<para>
+<emphasis role="bold">Get a locale relative file name</emphasis>
+</para>
+
+<funcsynopsis id='_XlcFileName'>
+<funcprototype>
+  <funcdef>char *<function>_XlcFileName</function></funcdef>
+  <paramdef>XLCd<parameter> lcd</parameter></paramdef>
+  <paramdef>char<parameter> *category</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_XlcFileName' xrefstyle='select: title'/>
+functions returns a file name which is bound to the specified "<emphasis remap='I'>lcd</emphasis>"
+and "<emphasis remap='I'>category</emphasis>", as a null-terminated string.  If no file name can
+be found, or there is no readable file for the found file name,
+<xref linkend='_XlcFileName' xrefstyle='select: title'/>
+returns NULL.  The returned file name should be freed by caller.
+</para>
+
+<para>
+The rule for searching a file name is implementation dependent.
+In current implementation,
+<xref linkend='_XlcFileName' xrefstyle='select: title'/>
+uses "{category}.dir" file as mapping table, which has pairs of
+strings, a full locale name and a corresponding file name.
+</para>
+
+</sect1>
+
+<sect1 id="Utility_Functions">
+<title>Utility Functions</title>
+
+<para>
+<emphasis role="bold">Compare Latin-1 strings</emphasis>
+</para>
+
+<funcsynopsis id='_XlcCompareISOLatin1'>
+<funcprototype>
+  <funcdef>int <function> _XlcCompareISOLatin1</function></funcdef>
+  <paramdef>char*str1,<parameter> *str2</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis id='_XlcNCompareISOLatin1'>
+<funcprototype>
+  <funcdef>int <function> _XlcNCompareISOLatin1</function></funcdef>
+  <paramdef>char*str1,<parameter> *str2</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<function>_XlcCompareIsoLatin1 </function>
+function to compares two ISO-8859-1 strings.  Bytes representing ASCII lower
+case letters are converted to upper case before making the comparison.
+The value returned is an integer less than, equal to, or greater than
+zero, depending on whether "<emphasis remap='I'>str1</emphasis>" is lexicographicly less than,
+equal to, or greater than "<emphasis remap='I'>str2</emphasis>".
+</para>
+
+<para>
+The
+<function>_XlcNCompareIsoLatin1</function>
+function is identical to
+<function>_XlcCompareISOLatin1,</function>
+except that at most "<emphasis remap='I'>len</emphasis>" bytes are compared.
+</para>
+
+<para>
+<emphasis role="bold">Resource Utility</emphasis>
+</para>
+
+<funcsynopsis id='XlcNumber'>
+<funcprototype>
+  <funcdef>int <function> XlcNumber</function></funcdef>
+  <paramdef>ArrayType<parameter> array</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+Similar to XtNumber.
+</para>
+
+<funcsynopsis id='_XlcCopyFromArg'>
+<funcprototype>
+  <funcdef>void <function> _XlcCopyFromArg</function></funcdef>
+  <paramdef>char<parameter> *src</parameter></paramdef>
+  <paramdef>char<parameter> *dst</parameter></paramdef>
+  <paramdef>int<parameter> size</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis id='_XlcCopyToArg'>
+<funcprototype>
+  <funcdef>void <function> _XlcCopyToArg</function></funcdef>
+  <paramdef>char<parameter> *src</parameter></paramdef>
+  <paramdef>char<parameter> **dst</parameter></paramdef>
+  <paramdef>int<parameter> size</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+Similar to
+<function>_XtCopyFromArg </function>
+and
+<function>_XtCopyToArg.</function>
+</para>
+
+<funcsynopsis id='_XlcCountVaList'>
+<funcprototype>
+  <funcdef>void <function> _XlcCountVaList</function></funcdef>
+  <paramdef>va_list<parameter> var</parameter></paramdef>
+  <paramdef>int<parameter> *count_ret</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+Similar to
+<function>_XtCountVaList.</function>
+</para>
+
+<funcsynopsis id='_XlcVaToArgList'>
+<funcprototype>
+  <funcdef>void <function> _XlcVaToArgList</function></funcdef>
+  <paramdef>va_list<parameter> var</parameter></paramdef>
+  <paramdef>int<parameter> count</parameter></paramdef>
+  <paramdef>XlcArgList<parameter> *args_ret</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+Similar to
+<function>_XtVaToArgList.</function>
+</para>
+
+<literallayout class="monospaced">
+typedef struct _XlcResource {
+      char *name;
+      XrmQuark xrm_name;
+      int size;
+      int offset;
+      unsigned long mask;
+} XlcResource, *XlcResourceList;
+</literallayout>
+
+<literallayout class="monospaced">
+#define    XlcCreateMask   (1L&lt;&lt;0)
+#define    XlcDefaultMask  (1L&lt;&lt;1)
+#define    XlcGetMask      (1L&lt;&lt;2)
+#define    XlcSetMask      (1L&lt;&lt;3)
+#define    XlcIgnoreMask   (1L&lt;&lt;4)
+</literallayout>
+
+<funcsynopsis id='_XlcCompileResourceList'>
+<funcprototype>
+  <funcdef>void <function> _XlcCompileResourceList</function></funcdef>
+  <paramdef>XlcResourceList<parameter> resources</parameter></paramdef>
+  <paramdef>int<parameter> num_resources</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+Similar to
+<function>_XtCompileResourceList.</function>
+</para>
+
+<funcsynopsis id='_XlcGetValues'>
+<funcprototype>
+  <funcdef>char * <function> _XlcGetValues</function></funcdef>
+  <paramdef>XPointer<parameter> base</parameter></paramdef>
+  <paramdef>XlcResourceList<parameter> resources</parameter></paramdef>
+  <paramdef>int<parameter> num_resources</parameter></paramdef>
+  <paramdef>XlcArgList<parameter> args</parameter></paramdef>
+  <paramdef>int<parameter> num_args</parameter></paramdef>
+  <paramdef>unsignedlong<parameter> mask</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+Similar to XtGetSubvalues.
+</para>
+
+<funcsynopsis id='_XlcSetValues'>
+<funcprototype>
+  <funcdef>char * <function> _XlcSetValues</function></funcdef>
+  <paramdef>XPointer<parameter> base</parameter></paramdef>
+  <paramdef>XlcResourceList<parameter> resources</parameter></paramdef>
+  <paramdef>int<parameter> num_resources</parameter></paramdef>
+  <paramdef>XlcArgList<parameter> args</parameter></paramdef>
+  <paramdef>int<parameter> num_args</parameter></paramdef>
+  <paramdef>unsignedlong<parameter> mask</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+Similar to XtSetSubvalues.
+</para>
+
+<para>
+<emphasis role="bold">ANSI C Compatible Functions</emphasis>
+</para>
+
+<para>
+The following are ANSI C/MSE Compatible Functions for non-ANSI C environment.
+</para>
+
+<funcsynopsis id='_Xmblen'>
+<funcprototype>
+  <funcdef>int <function> _Xmblen</function></funcdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xmblen' xrefstyle='select: title'/>
+function returns the number of characters pointed to by "<emphasis remap='I'>str</emphasis>".
+Only "<emphasis remap='I'>len</emphasis>" bytes in "<emphasis remap='I'>str</emphasis>" are used in determining the
+character count returned.  "<emphasis remap='I'>Str</emphasis>" may point at characters from
+any valid codeset in the current locale.
+</para>
+
+<para>
+The call
+<xref linkend='_Xmblen' xrefstyle='select: title'/>
+is equivalent to
+_Xmbtowc(_Xmbtowc((<emphasis remap='I'>wchar_t*</emphasis>)NULL, <emphasis remap='I'>str</emphasis>, <emphasis remap='I'>len</emphasis>))
+</para>
+
+<funcsynopsis id='_Xmbtowc'>
+<funcprototype>
+  <funcdef>int <function> _Xmbtowc</function></funcdef>
+  <paramdef>wchar_t<parameter> *wstr</parameter></paramdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xmbtowc' xrefstyle='select: title'/>
+function converts the character(s) pointed to by "<emphasis remap='I'>str</emphasis>"
+to their wide character representation(s) pointed to by "<emphasis remap='I'>wstr</emphasis>".
+"<emphasis remap='I'>Len</emphasis>" is the number of bytes in "<emphasis remap='I'>str</emphasis>" to be converted.
+The return value is the number of characters converted.
+</para>
+
+<para>
+The call
+<xref linkend='_Xmbtowc' xrefstyle='select: title'/>
+is equivalent to
+_Xlcmbtowc((XLCd)NULL, <emphasis remap='I'>wstr</emphasis>, <emphasis remap='I'>str</emphasis>, <emphasis remap='I'>len</emphasis>)
+</para>
+
+<funcsynopsis id='_Xlcmbtowc'>
+<funcprototype>
+  <funcdef>int <function> _Xlcmbtowc</function></funcdef>
+  <paramdef>XLCd<parameter> lcd</parameter></paramdef>
+  <paramdef>wchar_t<parameter> *wstr</parameter></paramdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xlcmbtowc' xrefstyle='select: title'/>
+function is identical to
+<function>_Xmbtowc, </function>
+except that it requires the "<emphasis remap='I'>lcd</emphasis>" argument.  If "<emphasis remap='I'>lcd</emphasis>"
+is (XLCd) NULL,
+<function>_Xlcmbtowc, </function>
+calls
+<function>_XlcCurrentLC </function>
+to determine the current locale.
+</para>
+
+<funcsynopsis id='_Xwctomb'>
+<funcprototype>
+  <funcdef>int <function> _Xwctomb</function></funcdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>wchar_t<parameter> wc</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xwctomb' xrefstyle='select: title'/>
+function converts a single wide character pointed to by "<emphasis remap='I'>wc</emphasis>" to
+its multibyte representation pointed to by "<emphasis remap='I'>str</emphasis>".
+On success, the return value is 1.
+</para>
+
+<para>
+The call
+<xref linkend='_Xwctomb' xrefstyle='select: title'/>
+is equivalent to
+_Xlcwctomb((XLCd)NULL, <emphasis remap='I'>str</emphasis>, <emphasis remap='I'>wstr</emphasis>)
+</para>
+
+<funcsynopsis id='_Xlcwctomb'>
+<funcprototype>
+  <funcdef>int <function> _Xlcwctomb</function></funcdef>
+  <paramdef>XLCd<parameter> lcd</parameter></paramdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>wchar_t<parameter> wc</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xlcwctomb' xrefstyle='select: title'/>
+function is identical to _Xwctomb, except that it requires the
+"<emphasis remap='I'>lcd</emphasis>" argument.  If "<emphasis remap='I'>lcd</emphasis>" is (XLCd) NULL,
+<function>_Xlcwctomb, </function>
+calls
+<function>_XlcCurrentLC </function>
+to determine the current locale.
+</para>
+
+<funcsynopsis id='_Xmbstowcs'>
+<funcprototype>
+  <funcdef>int <function> _Xmbstowcs</function></funcdef>
+  <paramdef>wchar_t<parameter> *wstr</parameter></paramdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xmbstowcs' xrefstyle='select: title'/>
+function converts the NULL-terminated string pointed to by "<emphasis remap='I'>str</emphasis>"
+to its wide character string representation pointed to by "<emphasis remap='I'>wstr</emphasis>".
+"<emphasis remap='I'>Len</emphasis>" is the number of characters in "<emphasis remap='I'>str</emphasis>" to be converted.
+</para>
+
+<para>
+The call
+<xref linkend='_Xmbstowcs' xrefstyle='select: title'/>
+is equivalent to
+_Xlcmbstowcs((XLCd)NULL, <emphasis remap='I'>wstr</emphasis>, <emphasis remap='I'>str</emphasis>, <emphasis remap='I'>len</emphasis>)
+</para>
+
+<funcsynopsis id='_Xlcmbstowcs'>
+<funcprototype>
+  <funcdef>int <function> _Xlcmbstowcs</function></funcdef>
+  <paramdef>XLCd<parameter> lcd</parameter></paramdef>
+  <paramdef>wchar_t<parameter> *wstr</parameter></paramdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xlcmbstowcs' xrefstyle='select: title'/>
+function is identical to _Xmbstowcs, except that it requires the
+"<emphasis remap='I'>lcd</emphasis>" argument.  If "<emphasis remap='I'>lcd</emphasis>" is (XLCd) NULL,
+<function>_Xlcmbstowcs, </function>
+calls
+<function>_XlcCurrentLC</function>
+to determine the current locale.
+</para>
+
+<funcsynopsis id='_Xwcstombs'>
+<funcprototype>
+  <funcdef>int <function> _Xwcstombs</function></funcdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>wchar_t<parameter> *wstr</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xwcstombs' xrefstyle='select: title'/>
+function converts the (wchar_t) NULL terminated wide character string
+pointed to by "<emphasis remap='I'>wstr</emphasis>" to the NULL terminated multibyte string
+pointed to by "<emphasis remap='I'>str</emphasis>".
+</para>
+
+<para>
+The call
+<xref linkend='_Xwcstombs' xrefstyle='select: title'/>
+is equivalent to
+_Xlcwcstombs((XLCd)NULL, <emphasis remap='I'>str</emphasis>, <emphasis remap='I'>wstr</emphasis>, <emphasis remap='I'>len</emphasis>)
+</para>
+
+<funcsynopsis id='_Xlcwcstombs'>
+<funcprototype>
+  <funcdef>int <function> _Xlcwcstombs</function></funcdef>
+  <paramdef>XLCd<parameter> lcd</parameter></paramdef>
+  <paramdef>char<parameter> *str</parameter></paramdef>
+  <paramdef>wchar_t<parameter> *wstr</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xlcwcstombs' xrefstyle='select: title'/>
+function is identical to _Xwcstombs, except that it requires the
+"<emphasis remap='I'>lcd</emphasis>" argument.  If "<emphasis remap='I'>lcd</emphasis>" is (XLCd) NULL,
+<function>_Xlcwcstombs, </function>
+calls
+<function>_XlcCurrentLC </function>
+to determine the current locale.
+</para>
+
+<funcsynopsis id='_Xwcslen'>
+<funcprototype>
+  <funcdef>int <function> _Xwcslen</function></funcdef>
+  <paramdef>wchar_t<parameter> *wstr</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xwcslen' xrefstyle='select: title'/>
+function returns the count of wide characters in the (wchar_t) NULL
+terminated wide character string pointed to by "<emphasis remap='I'>wstr</emphasis>".
+</para>
+
+<funcsynopsis id='_Xwcscpy'>
+<funcprototype>
+  <funcdef>wchar_t *<function> _Xwcscpy</function></funcdef>
+  <paramdef>wchar_t<parameter> *wstr1</parameter></paramdef>
+  <paramdef>wchar_t<parameter> *wstr2</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis id='_Xwcsncpy'>
+<funcprototype>
+  <funcdef>wchar_t * <function> _Xwcsncpy</function></funcdef>
+  <paramdef>wchar_t<parameter> *wstr1</parameter></paramdef>
+  <paramdef>wchar_t<parameter> *wstr2</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xwcscpy' xrefstyle='select: title'/>
+function copies the (wchar_t) NULL terminated wide character string
+pointed to by "<emphasis remap='I'>wstr2</emphasis>" to the object pointed at by "<emphasis remap='I'>wstr1</emphasis>".
+"<emphasis remap='I'>Wstr1</emphasis>" is (wchar_t) NULL terminated.  The return value is a
+pointer to "<emphasis remap='I'>wstr1</emphasis>".
+</para>
+
+<para>
+The
+<xref linkend='_Xwcsncpy' xrefstyle='select: title'/>
+function is identical to
+<function>_Xwcscpy, </function>
+except that it copies "<emphasis remap='I'>len</emphasis>" wide characters from the object
+pointed to by "<emphasis remap='I'>wstr2</emphasis>" to the object pointed to "<emphasis remap='I'>wstr1</emphasis>".
+</para>
+
+<funcsynopsis id='_Xwcscmp'>
+<funcprototype>
+  <funcdef>int <function> _Xwcscmp</function></funcdef>
+  <paramdef>wchar_t*wstr1,<parameter> *wstr2</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis id='_Xwcsncmp'>
+<funcprototype>
+  <funcdef>int <function> _Xwcsncmp</function></funcdef>
+  <paramdef>wchar_t*wstr1,<parameter> *wstr2</parameter></paramdef>
+  <paramdef>int<parameter> len</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>
+The
+<xref linkend='_Xwcscmp' xrefstyle='select: title'/>
+function  compares two (wchar_t) NULL terminated wide character strings.
+The value returned is an integer less than, equal to, or greater than zero,
+depending on whether "<emphasis remap='I'>wstr1</emphasis>" is lexicographicly less then, equal to,
+or greater than "<emphasis remap='I'>str2</emphasis>".
+</para>
+
+<para>
+The
+<xref linkend='_Xwcsncmp' xrefstyle='select: title'/>
+function is identical to
+<function>_XlcCompareISOLatin1, </function>
+except that at most "<emphasis remap='I'>len</emphasis>" wide characters are compared.
+</para>
+
+
+<!-- .sp -->
+<!-- .\" .LP -->
+<!-- .\" <function>Locale Method Internal Functions</function> -->
+<!-- .\" .LP -->
+<!-- .\" .FD 0 -->
+<!-- .\" XlcCharSet _XlcCreateDefaultCharSet(<emphasis remap='I'>name</emphasis>, <emphasis remap='I'>ct_sequence</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*name</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*ct_sequence</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .FD 0 -->
+<!-- .\" Bool _XlcParseCharSet(<emphasis remap='I'>charset</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       XlcCharSet <emphasis remap='I'>charset</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .FD 0 -->
+<!-- .\" void _XlcGetLocaleDataBase(<emphasis remap='I'>lcd</emphasis>, <emphasis remap='I'>category</emphasis>, <emphasis remap='I'>name</emphasis>, <emphasis remap='I'>value</emphasis>, <emphasis remap='I'>count</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       XLCd <emphasis remap='I'>lcd</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*category</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*name</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>***value</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       int <emphasis remap='I'>*count</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .FD 0 -->
+<!-- .\" void _XlcDestroyLocaleDataBase(<emphasis remap='I'>lcd</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       XLCd <emphasis remap='I'>lcd</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .FD 0 -->
+<!-- .\" XPointer _XlcCreateLocaleDataBase(<emphasis remap='I'>lcd</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       XLCd <emphasis remap='I'>lcd</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .LP -->
+<!-- .\" .sp -->
+<!-- .\" <function>Obtain an locale database path</function> -->
+<!-- .\" .LP -->
+<!-- .\" .FD 0 -->
+<!-- .\" int _XlcResolveI18NPath(<emphasis remap='I'>dir</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*dir</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .LP -->
+<!-- .\" The  -->
+<!-- .\" .PN _XlcResolveI18NPath  -->
+<!-- .\" function returns path name list that is related to X Locale Database. -->
+<!-- .\" The obtained path is stored into the array which is pointed by -->
+<!-- .\" specified "<emphasis remap='I'>dir</emphasis>".  The path consists of directory paths which  -->
+<!-- .\" are separated with colon. -->
+<!-- .\" If the environment variable XLOCALEDIR is specified, the path -->
+<!-- .\" contains its contents. -->
+<!-- .\" .LP -->
+<!-- .\" The default path of X Locale Database is implementation dependent. -->
+<!-- .\" In current implementation, it's determined in build time. -->
+<!-- .\" .LP -->
+<!-- .\" .PN _XlcResolveI18NPath  -->
+<!-- .\" does not check overflow of the array to which the "<emphasis remap='I'>dir</emphasis>"  -->
+<!-- .\" parameter points.  Caller should provide enough buffer to store this  -->
+<!-- .\" string. -->
+<!-- .\" .LP -->
+<!-- .\" .sp -->
+<!-- .\" <function>Obtain a full locale name</function> -->
+<!-- .\" .LP -->
+<!-- .\" .FD 0 -->
+<!-- .\" int _XlcResolveLocaleName(<emphasis remap='I'>lc_name</emphasis>, <emphasis remap='I'>full_name</emphasis>, <emphasis remap='I'>language</emphasis>, <emphasis remap='I'>territory</emphasis>, <emphasis remap='I'>codeset</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*lc_name</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*full_name</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*language</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*territory</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*codeset</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .LP -->
+<!-- .\" The  -->
+<!-- .\" .PN _XlcResolveLocaleName  -->
+<!-- .\" function returns a full locale name. -->
+<!-- .\" The obtained full locale name is stored into the array which is -->
+<!-- .\" pointed by specified "<emphasis remap='I'>full_name</emphasis>". -->
+<!-- .\" The language, territory and codeset part of the full locale name -->
+<!-- .\" are copied to the return arguments, "<emphasis remap='I'>language</emphasis>",  -->
+<!-- .\" "<emphasis remap='I'>territory</emphasis>" and "<emphasis remap='I'>codeset</emphasis>", respectively. -->
+<!-- .\" NULL can be specified for these arguments. -->
+<!-- .\" .LP -->
+<!-- .\" The rule for mapping from locale name to full locale name is -->
+<!-- .\" implementation dependent. -->
+<!-- .\" .LP -->
+<!-- .\" .PN _XlcResolveLocaleName  -->
+<!-- .\" does not check overflow of the array to which -->
+<!-- .\" "<emphasis remap='I'>full_name</emphasis>", "<emphasis remap='I'>language</emphasis>", "<emphasis remap='I'>territory</emphasis>" and  -->
+<!-- .\" "<emphasis remap='I'>codeset</emphasis>" parameter point. -->
+<!-- .\" Caller should provide enough buffer to store those string. -->
+<!-- .\" .LP -->
+<!-- .\" In current implementation,  -->
+<!-- .\" .PN _XlcResolveLocaleName  -->
+<!-- .\" uses locale.alias file as mapping table, which has pairs of strings,  -->
+<!-- .\" a locale name and a full locale name. -->
+<!-- .\" .LP -->
+<!-- .\" .FD 0 -->
+<!-- .\" int _XlcResolveDBName(<emphasis remap='I'>lc_name</emphasis>, <emphasis remap='I'>file_name</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*lc_name</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*file_name</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .FD 0  -->
+<!-- .\" XLCd _XlcCreateLC(<emphasis remap='I'>name</emphasis>, <emphasis remap='I'>methods</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       char <emphasis remap='I'>*name</emphasis>; -->
+<!-- .\" .br -->
+<!-- .\"       XLCdMethods <emphasis remap='I'>methods</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .FD 0 -->
+<!-- .\" void _XlcDestroyLC(<emphasis remap='I'>lcd</emphasis>) -->
+<!-- .\" .br -->
+<!-- .\"       XLCd <emphasis remap='I'>lcd</emphasis>; -->
+<!-- .\" .FN -->
+<!-- .\" .LP -->
+<!-- .\"  -->
+
+</sect1>
+</chapter>
+</book>

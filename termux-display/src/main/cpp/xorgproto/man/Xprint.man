@@ -1,0 +1,421 @@
+.\" -*- coding: us-ascii -*-
+.TH Xprint __miscmansuffix__ "8 October 2004"
+.SH NAME
+Xprint \- The "X print service" - a portable, network-transparent printing system based on the X11 protocol
+.SH SYNOPSIS
+Xprint is a very flexible, extensible, scalable, client/server
+print system based on ISO 10175 (and some other specs) and the X11
+rendering protocol.
+Using Xprint an application can search, query and use devices like
+printers, FAX machines or create documents in formats like PDF.
+In particular, an application can seek a printer, query supported
+attributes (like paper size, trays, fonts etc.), configure the printer
+device to match it\(cqs needs and print on it like on any other X device
+reusing parts of the code which is used for the video card Xserver.
+.SH OVERVIEW
+The "X Print Service" technology allows X rendering to devices such as
+printers and fax. Most of the service is available in the X11
+technology stack as Xp, with the remainder in single toolkit stacks (e.g. DtPrint for CDE).
+Modifications have also been made to the LessTif/Motif/Qt technology
+stacks to support Xprint.
+.PP
+The Xp portion consists of:
+.TP 0.2i
+\(bu
+Xp Extension for the X-Server (included in the X-Server Xprt)
+.TP 0.2i
+\(bu
+Xp Extension API for the client side (libXp/libXprintUtils)
+.TP 0.2i
+\(bu
+PCL ddx driver that converts core X to native PCL
+.TP 0.2i
+\(bu
+PDF ddx driver that converts core X to native PDF
+.TP 0.2i
+\(bu
+PostScript ddx driver that converts core X to native PostScript
+.TP 0.2i
+\(bu
+Raster ddx driver that generates xwd rasters which can be converted to PCL, PDF or PostScript rasters
+.PP
+.PP
+From an X clients perspective, it can attach to one of two nearly
+identical X-Servers, a "Video" X-Server, and a "Print" X-Server
+which has the additional Xp capability but otherwise looks and
+behaves the same.
+.SH "HOW THE X PRINT SERVICE WORKS"
+The X Print Service expands on the traditional X-Server and Xlib world
+in four ways.
+.TP 0.4i
+1.
+Most obvious is the use of "print ddx drivers" instead of
+"video ddx drivers". While a video ddx driver modifies pixels
+in a video frame buffer, a print ddx driver generates "page
+description language (PDL)" output (such as PCL, PDF or PostScript)
+or sends the print rendering instructions to a platform-specific
+print API (like Win32/GDI).
+
+Once a print ddx driver generates PDL output, it can be sent to
+a spooler such as \fBlp\fR(1)
+or retrieved by the client (to implement functionality like "print-to-file").
+
+Though not currently done, a single X-Server can support both
+print and video ddx drivers.
+.TP 0.4i
+2.
+Since printers support "paged" output, unlike video, a portion
+of the Xp Extension supports APIs to delineate printed output.
+For example, XpStartPage and XpEndPage tell the X-Server where
+a physical page starts and ends in an otherwise continuous
+stream of X rendering primitives. Likewise, XpStartJob and
+XpEndJob determine when a collection of pages starts and ends.
+XpEndJob typically causes the generated PDL to be submitted to
+a spooler, such as \fBlp\fR(1).
+.TP 0.4i
+3.
+Since printers have extensive capabilities, another portion of
+the Xp Extension supports APIs to manipulate "print contexts".
+
+Once a printer is selected using the Xp Extension API, a print
+context to represent it can be created. A print context
+embodies the printer selected - it contains the printer's
+default capabilities, selectable range of capabilities,
+printer state, and generated output. Some "attributes" within
+the print context can be modified by the user, and the
+X-Server and print ddx driver will react accordingly. For
+example, the attribute "content-orientation" can be set to
+"landscape" or "portrait" (if the printer supports these
+values - which can be queried using the Xprint API as well).
+.TP 0.4i
+4.
+Since printers can have "built in" fonts, the Xp Extension in
+the X-Server works with the print ddx drivers to make
+available (for printing only) additional fonts on a per print
+context basis.
+
+When a print context is created and set for a given printer,
+the X font calls may be able to access additional printer
+fonts. To do this (typically), the X-Server must have access
+to "printer metric files" (.pmf) that describe at minimum the
+metrics of the built in fonts.
+.PP
+.SH USAGE
+There are three tasks to start the X Print Service:
+.TP 0.4i
+1.
+configuring the X Print Server,
+.TP 0.4i
+2.
+starting the X Print Service
+.TP 0.4i
+3.
+configuring the user session so that clients can find the running X Print Service
+.PP
+.PP
+The tasks are described in detail below.
+.SH "SERVER CONFIGURATION"
+The X Print Server (Xprt) can read a number of configuration files which
+control its behavior and support for printers. Each vendor platform has
+a default location for this information. Xprt can also read the
+environment variable \fBXPCONFIGDIR\fR to locate alternate configuration
+directories. Common settings include:
+
+export XPCONFIGDIR=/X11/lib/X11/XpConfig/
+.PP
+export XPCONFIGDIR=/proj/x11/xc/programs/Xserver/XpConfig/
+
+.PP
+Xprt has many built-in defaults, and lacking any configuration files,
+will immediately try to support all printers visible via \fBlpstat\fR(1).
+.PP
+In order of importance for configuration by a system administrator, the
+configuration files for a "C" locale are as follows (see \fBXprt\fR(__appmansuffix__) for more
+details (including support for non-"C" locales)):
+.TP
+\fB${XPCONFIGDIR}/C/print/Xprinters\fR
+\&'Xprinters' is the top most configuration file. It tells
+Xprt which specific printer names (e.g. mylaser) should
+be supported, and whether \fBlpstat\fR(1) or other commands
+should be used to automatically supplement the list of
+printers.
+.TP
+\fB${XPCONFIGDIR}/C/print/attributes/printer\fR
+The 'printer' file maps printer names to model
+configurations (see 'model-config' below). For example,
+"mylaser" could be mapped to a "HPDJ1600C", and all other
+arbitrary printers could be mapped to a default, such as
+"HPLJ4SI". When depending on \fBlpstat\fR(1) in the Xprinters
+file, setting up defaults in 'printer' becomes all the
+more important.
+.TP
+\fB${XPCONFIGDIR}/C/print/attributes/document\fR
+The 'document' file specifies the initial document values
+for any print jobs. For example, which paper tray to
+use, what default resolution, etc.
+.TP
+\fB${XPCONFIGDIR}/C/print/attributes/job\fR
+The 'job' file specifies the initial job values for any
+print jobs. For example, "notification-profile" can be
+set so that when a print job is successfully sent to a
+printer, e-mail is sent to the user.
+.TP
+\fB${XPCONFIGDIR}/C/print/models/PSdefault/model\-config\fR, \fB${XPCONFIGDIR}/C/print/models/PSdefault/fonts/fonts.dir\fR, \fB${XPCONFIGDIR}/C/print/models/PSdefault/fonts/9nb00051.pmf\fR, \fB${XPCONFIGDIR}/C/print/models/PSdefault/fonts/9nb00093.pmf\fR
+The 'model-config' file has attributes that describe the
+printer model\(cqs capabilities and default settings.
+Printer model fonts may also be present. The model-config
+file also identifies the print ddx driver to be used.
+For each printer model supported, a complete hierarchy of
+files should exist. In most cases, these files do not
+need to be modified.
+.TP
+\fB${XPCONFIGDIR}/C/print/ddx\-config/raster/pcl\fR, \fB${XPCONFIGDIR}/C/print/ddx\-config/raster/pdf\fR, \fB${XPCONFIGDIR}/C/print/ddx\-config/raster/postscript\fR
+The print ddx drivers can have highly specific
+configuration files to control their behavior. In most
+cases, these files do not need to be modified.
+.PP
+More information in how to configure and customize the X print server can be found in the
+\fBXprt\fR(__appmansuffix__)
+manual page.
+.SH "STARTING UP"
+The summary checklist for starting the X Print Service is as follows:
+.TP 0.4i
+1.
+Choose an execution model for the X Print Service. The X
+Print Service can be run on a per-user session basis, per
+machine basis, or can be run on a few machines globally
+available to a number of users.
+.TP 0.4i
+2.
+If print jobs are to be submitted to a spooler (almost always
+the case), make sure all needed printers are available to the
+spooler subsystem (most often \fBlp\fR(1))
+on the same machine running the X Print Service.
+.TP 0.4i
+3.
+Configure the X Print Server. See ``X Print Server
+Configuration''.
+.TP 0.4i
+4.
+Depending on #1, start the X Print Server process "Xprt", and
+then the toolkit-specific Print Dialog Manager Daemon process
+(such as CDEnext's "dtpdmd") at the appropriate times.
+Note that libXprintUtils-based applications/toolkits do not need
+a Print Dialog Manager Daemon process to use Xprint.
+.PP
+The details are described below.
+.PP
+Because the X Print Service is based on X, it can be easily distributed.
+The most significant factors in which execution model to choose will be
+driven by:
+.TP 0.2i
+\(bu
+how many printers will be accessible through the printer
+subsystem on any given machine. A system administrator may
+choose to cluster printers on a few given machines, or
+scatter them across an organization and possibly make
+extensive use of remote spoolers to make them globally
+available.
+.TP 0.2i
+\(bu
+how many machines will need a copy of the X Print Server
+configuration files. The files have been architected so
+that one super-set version of them can be maintained and
+distributed (e.g. via NFS), and a per-machine or per-user
+version of the `Xprinters' is all that is needed to have the
+appropriate information in them utilized or ignored.
+.TP 0.2i
+\(bu
+how many users can demand services from a given X Print
+Service.
+.PP
+With the above in mind, some obvious execution models include:
+.TP 0.2i
+\(bu
+Global - in this model, the system administrator is choosing
+to run the X Print Service on a *few* select machines with
+appropriate printers configured, and allow clients access to
+the global resource. This can centralize the administration
+of printers and configuration files, but may have to be
+monitored for performance loading.
+
+Startup would likely be done by boot-up scripts (such as \fB/etc/init.d/xprint\fR).
+.TP 0.2i
+\(bu
+Per-machine - every machine with potential X Print Service
+users would run the service. Printer and configuration file
+administration is decentralized, and usage would be limited
+to the users on the machine.
+
+Startup would likely be done by boot-up scripts (such as \fB/etc/init.d/xprint\fR).
+.TP 0.2i
+\(bu
+Per-user session - every user would run an entire X Print
+Service for themselves. In the future, the Video X Server
+normally started may contain Print X Server capability, so
+this model becomes very natural.
+
+Startup would likely be done at session login or by
+launching actions or processes manually once the user
+logs in. Note: Daemons like "dtpdmd" must be started after Xprt.
+.PP
+.PP
+Starting of the processes is straight forward. In strict order (example is for manually starting the X print server for CDEnext usage):
+.TP 0.4i
+1.
+
+.nf
+[machineA] % Xprt [\-XpFile <Xprinters file>] [:dispNum] &
+.fi
+
+
+Note that Xprt will look for configuration files in either
+a default location or where \fBXPCONFIGDIR\fR points.
+
+\fB\-XpFile\fR specifies an alternate `Xprinters' file, rather
+than the default one or `\fB${XPCONFIGDIR}/C/print/Xprinters\fR'.
+.TP 0.4i
+2.
+
+.nf
+[machineA] % dtpdmd \-d machineA[:dispNum] [\-l /tmp/dtpdmd.log] &
+.fi
+
+
+The dtpdmd will maintain an X-Selection on the X-Server,
+and will start dtpdm's as required to service requests.
+.PP
+.PP
+In all but the per-user session model, the machine running the dtpdmd
+(thus dtpdm's) will need display authorization to the users video
+display.
+.SH "CLIENT CONFIGURATION"
+Once a X Print Server and dtpdmd have been started -- many of them
+in some cases -- clients will need to find and use them. There are
+two mechanisms that allow clients to discover X Print Servers and
+printers.
+.TP 0.2i
+\(bu
+"X Print Specifier" - assuming usage of the DtPrint/XprintUtils-based print
+applications, the following notation is understood:
+
+
+.nf
+printer_name@machine[:dispNum]
+.fi
+
+
+For example:
+
+
+.nf
+colorlj7@printhub:2
+.fi
+
+
+In the above example, the X Print Server running at `printhub:2'
+is assumed to support the printer named `colorlj7'.
+.TP 0.2i
+\(bu
+\fB${XPSERVERLIST}\fR - assuming usage of the DtPrint print dialogs,
+the environment variable \fB${XPSERVERLIST}\fR can contain a list
+of X Print Servers. For example:
+
+
+.nf
+XPSERVERLIST="printhub:2 printhub:3 otherdept:0"
+.fi
+
+
+Then in the dialogs, only a printer name needs to be entered.
+The dialog will then search the X Print Servers in \fB${XPSERVERLIST}\fR
+for a server than supports the printer, and then establish
+contact.
+.PP
+.SH "END-USER SEQUENCE"
+From most CDEnext applications, printing is accomplished by bringing
+down the <File> menu and selecting <Print...>. This will result in
+the DtPrintSetupBox dialog, which will request the name of a printer,
+and offer limited capability to configure print options (e.g. number
+of copies). If the user wishes, they can select <Setup...>, which
+will start a dtpdm capable of modifying additional print options.
+Finally, the user should select <Print>.
+.SH ENVIRONMENT
+.TP
+\fB${XPCONFIGDIR}\fR
+This environment variable points to the root
+of the Xprint server configuration directory hierarchy.
+If the variable is not defined, the default
+path is be assumed. The default path may be
+\fB/usr/X11R6/lib/X11/xserver/\fR,
+\fB/usr/lib/X11/xserver/\fR,
+\fB/usr/share/Xprint/xserver/\fR or
+\fB/usr/openwin/server/etc/XpConfig\fR, depending on the
+system, and may be configured in \fB/etc/init.d/xprint\fR.
+.TP
+\fB${LANG}\fR
+This environment variable selects the locale settings used by the Xprint server.
+Xprt allows language-specific settings (stored in \fB${XPCONFIGDIR}/${LANG}/print/\fR)
+which will override the default settings (stored in \fB${XPCONFIGDIR}/C/print/\fR).
+If \fB${LANG}\fR is not set "C" is assumed.
+.TP
+\fB${XPSERVERLIST}\fR
+The environment variable \fB${XPSERVERLIST}\fR contains a list
+of display identifiers (separated by whitespace) which tell an
+application where it can find the Xprint servers. Usually
+\fB${XPSERVERLIST}\fR is set by the profile startup scripts (e.g.
+\fB/etc/profile\fR or \fB/etc/profile.d/xprint.sh\fR) using the output of
+\fB/etc/init.d/xprint get_xpserverlist\fR.
+
+Example:
+
+.nf
+
+		export XPSERVERLIST="`/etc/init.d/xprint get_xpserverlist`"
+.fi
+
+
+Alternatively \fB${XPSERVERLIST}\fR can be set
+manually. Example:
+
+.nf
+
+		export XPSERVERLIST="littlecat:80 bitdog:72"
+.fi
+
+instructs an application to find an Xprint server at display
+80 on the machine "littlecat" and at display 72 on the
+machine bigdog.
+.TP
+\fB${XPRINTER}\fR
+The environment variable \fB${XPRINTER}\fR
+defines the default printer used by print
+applications. The syntax is either
+\fIprintername\fR or
+\fIprintername\fR@\fIdisplay\fR.
+
+Examples:
+.RS
+.TP
+\fBXPRINTER=ps003\fR
+tells an application to look for the
+first printer named "ps003" on all Xprint
+servers.
+.TP
+\fBXPRINTER=hplaser19@littlecat:80\fR
+tells an application to use the printer "hplaser19"
+on the Xprint server at display
+"littlecat:80".
+.RE
+
+
+If \fB${XPRINTER}\fR is not set the applications
+will examine the values of the \fB${PDPRINTER}\fR,
+\fB${LPDEST}\fR, and
+\fB${PRINTER}\fR environment variables (in that order).
+.SH "SEE ALSO"
+\fBX11\fR(__miscmansuffix__), \fBxplsprinters\fR(__appmansuffix__), \fBxprehashprinterlist\fR(__appmansuffix__), \fBxphelloworld\fR(__appmansuffix__), \fBxpxmhelloworld\fR(__appmansuffix__), \fBxpawhelloworld\fR(__appmansuffix__), \fBxpxthelloworld\fR(__appmansuffix__), \fBxpsimplehelloworld\fR(__appmansuffix__), \fBXserver\fR(__appmansuffix__), \fBXprt\fR(__appmansuffix__), \fBlibXp\fR(__libmansuffix__), \fBlibXprintUtils\fR(__libmansuffix__), \fBlibXprintAppUtils\fR(__libmansuffix__), \fBXmPrintShell\fR(__libmansuffix__), \fBXawPrintShell\fR(__libmansuffix__), Xprint FAQ (http://xprint.mozdev.org/docs/Xprint_FAQ.html), Xprint main site (http://xprint.mozdev.org/)
+.SH AUTHORS
+This manual page was written by
+Roland Mainz <roland.mainz@nrubsig.org> based on the original X11R6.6
+\fBxc/programs/Xserver/XpConfig/README\fR.

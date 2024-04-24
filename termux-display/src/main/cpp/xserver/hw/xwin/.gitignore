@@ -1,0 +1,3 @@
+winprefslex.c
+winprefsyacc.c
+winprefsyacc.h

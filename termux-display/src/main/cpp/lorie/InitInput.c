@@ -39,7 +39,7 @@ from The Open Group.
 
 #define unused __attribute__((unused))
 
-unused DeviceIntPtr lorieMouse, lorieMouseRelative, lorieTouch, lorieKeyboard;
+unused DeviceIntPtr lorieMouse, lorieTouch, lorieKeyboard;
 
 void
 ProcessInputEvents(void) {
@@ -98,43 +98,8 @@ lorieInitPointerButtons(DeviceIntPtr device)
 #undef NBUTTONS
 }
 
-static int
-lorieMouseProc(DeviceIntPtr device, int onoff) {
-#define NAXES 2
-    DevicePtr pDev = (DevicePtr) device;
-
-    switch (onoff) {
-    case DEVICE_INIT: {
-        Atom axes_labels[NAXES] = { 0 };
-
-        axes_labels[0] = XIGetKnownProperty(AXIS_LABEL_PROP_ABS_X);
-        axes_labels[1] = XIGetKnownProperty(AXIS_LABEL_PROP_ABS_Y);
-
-        if (!lorieInitPointerButtons(device)
-        || !InitValuatorClassDeviceStruct(device, NAXES, axes_labels, GetMotionHistorySize(), Absolute)
-        ||  !InitValuatorAxisStruct(device, 0, axes_labels[0], 0, 0xFFFF, 10000, 0, 10000, Absolute)
-        ||  !InitValuatorAxisStruct(device, 1, axes_labels[1], 0, 0xFFFF, 10000, 0, 10000, Absolute)
-        ||  !InitPointerAccelerationScheme(device, PtrAccelNoOp))
-            return BadValue;
-        break;
-    }
-    case DEVICE_ON:
-        pDev->on = TRUE;
-        break;
-    case DEVICE_OFF:
-        pDev->on = FALSE;
-        break;
-    case DEVICE_CLOSE:
-        break;
-    default:
-        return BadMatch;
-    }
-    return Success;
-#undef NAXES
-}
-
 unused static int
-lorieMouseRelativeProc(DeviceIntPtr device, int what)
+lorieMouseProc(DeviceIntPtr device, int what)
 {
 #define NAXES 4
     Atom axes_labels[NAXES] = { 0 };
@@ -222,12 +187,10 @@ lorieTouchProc(DeviceIntPtr device, int what)
 
 void
 InitInput(unused int argc, unused char *argv[]) {
-    lorieMouseRelative = AddInputDevice(serverClient, lorieMouseRelativeProc, TRUE);
     lorieMouse = AddInputDevice(serverClient, lorieMouseProc, TRUE);
     lorieTouch = AddInputDevice(serverClient, lorieTouchProc, TRUE);
     lorieKeyboard = AddInputDevice(serverClient, lorieKeybdProc, TRUE);
-    AssignTypeAndName(lorieMouseRelative, MakeAtom(XI_MOUSE, sizeof(XI_MOUSE) - 1, TRUE), "Lorie mouse");
-    AssignTypeAndName(lorieMouse, MakeAtom(XI_MOUSE, sizeof(XI_MOUSE) - 1, FALSE), "Lorie absolute mouse");
+    AssignTypeAndName(lorieMouse, MakeAtom(XI_MOUSE, sizeof(XI_MOUSE) - 1, TRUE), "Lorie mouse");
     AssignTypeAndName(lorieTouch, MakeAtom(XI_TOUCHSCREEN, sizeof(XI_TOUCHSCREEN) - 1, TRUE), "Lorie touch");
     AssignTypeAndName(lorieKeyboard, MakeAtom(XI_KEYBOARD, sizeof(XI_KEYBOARD) - 1, TRUE), "Lorie keyboard");
     (void) mieqInit();

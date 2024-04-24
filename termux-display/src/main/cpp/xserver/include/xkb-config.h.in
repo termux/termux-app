@@ -1,0 +1,32 @@
+/* xkb-config.h.in: not at all generated.                      -*- c -*-
+ * 
+ */
+
+#ifndef _XKB_CONFIG_H_
+#define _XKB_CONFIG_H_
+
+/* Default set of XKB rules. */
+#undef XKB_DFLT_RULES
+
+/* Default XKB model. */
+#undef XKB_DFLT_MODEL
+
+/* Default XKB layout. */
+#undef XKB_DFLT_LAYOUT
+
+/* Default XKB variant. */
+#undef XKB_DFLT_VARIANT
+
+/* Default XKB options. */
+#undef XKB_DFLT_OPTIONS
+
+/* Path to XKB definitions. */
+#undef XKB_BASE_DIRECTORY
+
+/* Path to xkbcomp. */
+#undef XKB_BIN_DIRECTORY
+
+/* XKB output dir for compiled keymaps. */
+#undef XKM_OUTPUT_DIR
+
+#endif /* _XKB_CONFIG_H_ */

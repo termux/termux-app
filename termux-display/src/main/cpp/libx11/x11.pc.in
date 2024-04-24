@@ -1,0 +1,15 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+xthreadlib=@XTHREADLIB@
+
+Name: X11
+Description: X Library
+Version: @PACKAGE_VERSION@
+Requires: xproto @XKBPROTO_REQUIRES@
+Requires.private: @X11_EXTRA_DEPS@
+Cflags: -I${includedir} @XTHREAD_CFLAGS@
+Libs: -L${libdir} -lX11
+Libs.private: @XTHREADLIB@

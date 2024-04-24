@@ -1,0 +1,2012 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Window_and_Session_Manager_Functions'>
+<title>Window and Session Manager Functions</title>
+
+<para>
+Although it is difficult to categorize functions as exclusively for an application,
+a window manager, or a session manager, the functions in this chapter are most
+often used by window managers and session managers. It is not expected that
+these functions will be used by most application programs. Xlib provides
+management functions to:
+</para>
+
+<itemizedlist>
+  <listitem><para>Change the parent of a window</para></listitem>
+  <listitem><para>Control the lifetime of a window</para></listitem>
+  <listitem><para>Manage installed colormaps</para></listitem>
+  <listitem><para>Set and retrieve the font search path</para></listitem>
+  <listitem><para>Grab the server</para></listitem>
+  <listitem><para>Kill a client</para></listitem>
+  <listitem><para>Control the screen saver</para></listitem>
+  <listitem><para>Control host access</para></listitem>
+</itemizedlist>
+
+<sect1 id="Changing_the_Parent_of_a_Window">
+<title>Changing the Parent of a Window</title>
+<!-- .XS -->
+<!-- (SN Changing the Parent of a Window  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To change a window's parent to another window on the same screen, use
+<xref linkend='XReparentWindow' xrefstyle='select: title'/>.
+There is no way to move a window between screens.
+</para>
+<indexterm significance="preferred"><primary>XReparentWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XReparentWindow'>
+<funcprototype>
+  <funcdef><function>XReparentWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Window <parameter>parent</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>parent</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the parent window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates of the position in the new parent window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If the specified window is mapped,
+<xref linkend='XReparentWindow' xrefstyle='select: title'/>
+automatically performs an
+<systemitem>UnmapWindow</systemitem>
+request on it, removes it from its current position in the hierarchy,
+and inserts it as the child of the specified parent.
+The window is placed in the stacking order on top with respect to
+sibling windows.
+</para>
+<para>
+<!-- .LP -->
+After reparenting the specified window,
+<xref linkend='XReparentWindow' xrefstyle='select: title'/>
+causes the X server to generate a
+<symbol>ReparentNotify</symbol>
+event.
+The override_redirect member returned in this event is
+set to the window's corresponding attribute.
+Window manager clients usually should ignore this window if this member
+is set to
+<symbol>True</symbol>.
+Finally, if the specified window was originally mapped,
+the X server automatically performs a
+<systemitem>MapWindow</systemitem>
+request on it.
+</para>
+<para>
+<!-- .LP -->
+The X server performs normal exposure processing on formerly obscured
+windows.
+The X server might not generate 
+<symbol>Expose</symbol>
+events for regions from the initial
+<systemitem>UnmapWindow</systemitem>
+request that are immediately obscured by the final
+<systemitem>MapWindow</systemitem>
+request.
+A
+<errorname>BadMatch</errorname>
+error results if:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+The new parent window is not on the same screen as
+the old parent window.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The new parent window is the specified window or an inferior of the
+specified window.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The new parent is
+<symbol>InputOnly</symbol>,
+and the window is not.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The specified window has a
+<symbol>ParentRelative</symbol>
+background, and the new parent window is not the same depth as the
+specified window.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+<xref linkend='XReparentWindow' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+</sect1>
+<sect1 id="Controlling_the_Lifetime_of_a_Window">
+<title>Controlling the Lifetime of a Window</title>
+<!-- .XS -->
+<!-- (SN Controlling the Lifetime of a Window  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The save-set of a client is a list of other clients' windows that,
+if they are inferiors of one of the client's windows at connection close,
+should not be destroyed and should be remapped if they are unmapped.
+For further information about close-connection processing,
+see <link linkend='Using_X_Server_Connection_Close_Operations'>section 2.6</link>.
+To allow an application's window to survive when a window manager that
+has reparented a window fails,
+Xlib provides the save-set functions that you can 
+use to control the longevity of subwindows
+that are normally destroyed when the parent is destroyed.
+For example, a window manager that wants to add decoration
+to a window by adding a frame might reparent an application's
+window. 
+When the frame is destroyed,
+the application's window should not be destroyed 
+but be returned to its previous place in the window hierarchy.
+</para>
+<para>
+<!-- .LP -->
+The X server automatically removes windows from the save-set
+when they are destroyed.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To add or remove a window from the client's save-set, use
+<xref linkend='XChangeSaveSet' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XChangeSaveSet</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XChangeSaveSet'>
+<funcprototype>
+  <funcdef><function>XChangeSaveSet</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>int <parameter>change_mode</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window that you want to add to or delete from the client's
+save-set.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>change_mode</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the mode.
+You can pass
+<symbol>SetModeInsert</symbol>
+or
+<symbol>SetModeDelete</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Depending on the specified mode,
+<xref linkend='XChangeSaveSet' xrefstyle='select: title'/>
+either inserts or deletes the specified window from the client's save-set. 
+The specified window must have been created by some other client,
+or a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XChangeSaveSet' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>,
+<errorname>BadValue</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To add a window to the client's save-set, use
+<xref linkend='XAddToSaveSet' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XAddToSaveSet</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XAddToSaveSet'>
+<funcprototype>
+  <funcdef><function>XAddToSaveSet</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window that you want to add to the client's save-set.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XAddToSaveSet' xrefstyle='select: title'/>
+function adds the specified window to the client's save-set.
+The specified window must have been created by some other client,
+or a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XAddToSaveSet' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To remove a window from the client's save-set, use
+<xref linkend='XRemoveFromSaveSet' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRemoveFromSaveSet</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRemoveFromSaveSet'>
+<funcprototype>
+  <funcdef><function>XRemoveFromSaveSet</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window that you want to delete from the client's save-set.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XRemoveFromSaveSet' xrefstyle='select: title'/>
+function removes the specified window from the client's save-set.
+The specified window must have been created by some other client,
+or a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XRemoveFromSaveSet' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+</sect1>
+<sect1 id="Managing_Installed_Colormaps">
+<title>Managing Installed Colormaps</title>
+<!-- .XS -->
+<!-- (SN Managing Installed Colormaps -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The X server maintains a list of installed colormaps.
+Windows using these colormaps are guaranteed to display with
+correct colors; windows using other colormaps may or may not display
+with correct colors.
+Xlib provides functions that you can use to install a colormap, 
+uninstall a colormap, and obtain a list of installed colormaps.
+</para>
+<para>
+<!-- .LP -->
+At any time,
+there is a subset of the installed maps that is viewed as an ordered list
+and is called the required list.
+The length of the required list is at most M,
+where M is the minimum number of installed colormaps specified for the screen
+in the connection setup.
+The required list is maintained as follows.
+When a colormap is specified to
+<xref linkend='XInstallColormap' xrefstyle='select: title'/>,
+it is added to the head of the list;
+the list is truncated at the tail, if necessary, to keep its length to 
+at most M.
+When a colormap is specified to
+<xref linkend='XUninstallColormap' xrefstyle='select: title'/>
+and it is in the required list,
+it is removed from the list.
+A colormap is not added to the required list when it is implicitly installed
+by the X server,
+and the X server cannot implicitly uninstall a colormap that is in the
+required list.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To install a colormap, use
+<xref linkend='XInstallColormap' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XInstallColormap</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XInstallColormap'>
+<funcprototype>
+  <funcdef><function>XInstallColormap</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Colormap <parameter>colormap</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>colormap</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the colormap.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XInstallColormap' xrefstyle='select: title'/>
+function installs the specified colormap for its associated screen.
+All windows associated with this colormap immediately display with
+true colors.
+You associated the windows with this colormap when you created them by calling
+<xref linkend='XCreateWindow' xrefstyle='select: title'/>,
+<xref linkend='XCreateSimpleWindow' xrefstyle='select: title'/>,
+<xref linkend='XChangeWindowAttributes' xrefstyle='select: title'/>,
+or
+<xref linkend='XSetWindowColormap' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+If the specified colormap is not already an installed colormap, 
+the X server generates a
+<symbol>ColormapNotify</symbol>
+event on each window that has that colormap.
+In addition, for every other colormap that is installed as 
+a result of a call to
+<xref linkend='XInstallColormap' xrefstyle='select: title'/>,
+the X server generates a
+<symbol>ColormapNotify</symbol>
+event on each window that has that colormap.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XInstallColormap' xrefstyle='select: title'/>
+can generate a
+<errorname>BadColor</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To uninstall a colormap, use
+<xref linkend='XUninstallColormap' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XUninstallColormap</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XUninstallColormap'>
+<funcprototype>
+  <funcdef><function>XUninstallColormap</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Colormap <parameter>colormap</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>colormap</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the colormap.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XUninstallColormap' xrefstyle='select: title'/>
+function removes the specified colormap from the required
+list for its screen.
+As a result,
+the specified colormap might be uninstalled, 
+and the X server might implicitly install or uninstall additional colormaps.
+Which colormaps get installed or uninstalled is server dependent
+except that the required list must remain installed.
+</para>
+<para>
+<!-- .LP -->
+If the specified colormap becomes uninstalled, 
+the X server generates a
+<symbol>ColormapNotify</symbol>
+event on each window that has that colormap.
+In addition, for every other colormap that is installed or uninstalled as a 
+result of a call to 
+<xref linkend='XUninstallColormap' xrefstyle='select: title'/>,
+the X server generates a
+<symbol>ColormapNotify</symbol>
+event on each window that has that colormap.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XUninstallColormap' xrefstyle='select: title'/>
+can generate a
+<errorname>BadColor</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain a list of the currently installed colormaps for a given screen, use
+<xref linkend='XListInstalledColormaps' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XListInstalledColormaps</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XListInstalledColormaps'>
+<funcprototype>
+  <funcdef>Colormap *<function>XListInstalledColormaps</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>int *<parameter>num_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window that determines the screen.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>num_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of currently installed colormaps.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XListInstalledColormaps' xrefstyle='select: title'/>
+function returns a list of the currently installed colormaps for the screen 
+of the specified window.
+The order of the colormaps in the list is not significant
+and is no explicit indication of the required list.
+When the allocated list is no longer needed,
+free it by using
+<xref linkend='XFree' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XListInstalledColormaps' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+</sect1>
+<sect1 id="Setting_and_Retrieving_the_Font_Search_Path">
+<title>Setting and Retrieving the Font Search Path</title>
+<!-- .XS -->
+<!-- (SN Setting and Retrieving the Font Search Path  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The set of fonts available from a server depends on a font
+search path.  Xlib provides functions to set and retrieve the
+search path for a server.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set the font search path, use
+<xref linkend='XSetFontPath' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetFontPath</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetFontPath'>
+<funcprototype>
+  <funcdef><function>XSetFontPath</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char **<parameter>directories</parameter></paramdef>
+  <paramdef>int <parameter>ndirs</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>directories</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the directory path used to look for a font.
+Setting the path to the empty list restores the default path defined
+for the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ndirs</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of directories in the path.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetFontPath' xrefstyle='select: title'/>
+function defines the directory search path for font lookup.
+There is only one search path per X server, not one per client.
+The encoding and interpretation of the strings are implementation-dependent,
+but typically they specify directories or font servers to be searched 
+in the order listed.
+An X server is permitted to cache font information internally;
+for example, it might cache an entire font from a file and not
+check on subsequent opens of that font to see if the underlying
+font file has changed.
+However,
+when the font path is changed,
+the X server is guaranteed to flush all cached information about fonts 
+for which there currently are no explicit resource IDs allocated.
+The meaning of an error from this request is implementation-dependent.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetFontPath' xrefstyle='select: title'/>
+can generate a
+<errorname>BadValue</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To get the current font search path, use
+<xref linkend='XGetFontPath' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetFontPath</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetFontPath'>
+<funcprototype>
+  <funcdef>char **<function>XGetFontPath</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int *<parameter>npaths_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>npaths_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of strings in the font path array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetFontPath' xrefstyle='select: title'/>
+function allocates and returns an array of strings containing the search path.
+The contents of these strings are implementation-dependent
+and are not intended to be interpreted by client applications.
+When it is no longer needed,
+the data in the font path should be freed by using
+<xref linkend='XFreeFontPath' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To free data returned by
+<xref linkend='XGetFontPath' xrefstyle='select: title'/>,
+use
+<xref linkend='XFreeFontPath' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFreeFontPath</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFreeFontPath'>
+<funcprototype>
+  <funcdef><function>XFreeFontPath</function></funcdef>
+  <paramdef>char **<parameter>list</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>list</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the array of strings you want to free.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XFreeFontPath' xrefstyle='select: title'/>
+function
+frees the data allocated by
+<xref linkend='XGetFontPath' xrefstyle='select: title'/>.
+</para>
+</sect1>
+<sect1 id='Grabbing_the_Server'>
+<title>Grabbing the Server</title>
+<!-- .XS -->
+<!-- (SN Grabbing the Server  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to grab and ungrab the server.
+These functions can be used to control processing of output on other
+connections by the window system server.
+While the server is grabbed,
+no processing of requests or close downs on any other connection will occur.
+A client closing its connection automatically ungrabs the server.
+<indexterm><primary>Menus</primary></indexterm>
+<indexterm><primary>Window</primary><secondary>managers</secondary></indexterm>
+Although grabbing the server is highly discouraged, it is sometimes necessary.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To grab the server, use
+<xref linkend='XGrabServer' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Server</primary><secondary>grabbing</secondary></indexterm>
+<indexterm><primary>Grabbing</primary><secondary>server</secondary></indexterm>
+<indexterm significance="preferred"><primary>XGrabServer</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGrabServer'>
+<funcprototype>
+  <funcdef><function>XGrabServer</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGrabServer' xrefstyle='select: title'/>
+function disables processing of requests and close downs on all other 
+connections than the one this request arrived on.
+You should not grab the X server any more than is absolutely necessary.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To ungrab the server, use
+<xref linkend='XUngrabServer' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XUngrabServer</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XUngrabServer'>
+<funcprototype>
+  <funcdef><function>XUngrabServer</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XUngrabServer' xrefstyle='select: title'/>
+function restarts processing of requests and close downs on other connections.
+You should avoid grabbing the X server as much as possible.
+</para>
+</sect1>
+<sect1 id="Killing_Clients">
+<title>Killing Clients</title>
+<!-- .XS -->
+<!-- (SN Killing Clients  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides a function to cause the connection to
+a client to be closed and its resources to be destroyed.
+To destroy a client, use
+<xref linkend='XKillClient' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XKillClient</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XKillClient'>
+<funcprototype>
+  <funcdef><function>XKillClient</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XID <parameter>resource</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>resource</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies any resource associated with the client that you want to destroy or
+<symbol>AllTemporary</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XKillClient' xrefstyle='select: title'/>
+function
+forces a close down of the client
+that created the resource
+if a valid resource is specified.
+If the client has already terminated in
+either 
+<symbol>RetainPermanent</symbol>
+or 
+<symbol>RetainTemporary</symbol>
+mode, all of the client's
+resources are destroyed.
+If 
+<symbol>AllTemporary</symbol>
+is specified, the resources of all clients that have terminated in
+<symbol>RetainTemporary</symbol>
+are destroyed (see <link linkend="Closing_the_Display">section 2.5</link>).
+This permits implementation of window manager facilities that aid debugging.
+A client can set its close-down mode to
+<symbol>RetainTemporary</symbol>.
+If the client then crashes,
+its windows would not be destroyed. 
+The programmer can then inspect the application's window tree 
+and use the window manager to destroy the zombie windows.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XKillClient' xrefstyle='select: title'/>
+can generate a
+<errorname>BadValue</errorname>
+error.
+</para>
+</sect1>
+<sect1 id='Controlling_the_Screen_Saver'>
+<title>Controlling the Screen Saver</title>
+<!-- .XS -->
+<!-- (SN Controlling the Screen Saver  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to set or reset the mode 
+of the screen saver, to force or activate the screen saver,
+or to obtain the current screen saver values.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set the screen saver mode, use
+<xref linkend='XSetScreenSaver' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetScreenSaver</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetScreenSaver'>
+<funcprototype>
+  <funcdef><function>XSetScreenSaver</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>timeout</parameter></paramdef>
+  <paramdef>int <parameter>interval</parameter></paramdef>
+  <paramdef>int <parameter>prefer_blanking</parameter></paramdef>
+  <paramdef>int <parameter>allow_exposures</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>timeout</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the timeout, in seconds, until the screen saver turns on.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>interval</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the interval, in seconds, between screen saver alterations.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>prefer_blanking</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies how to enable screen blanking.
+You can pass
+<symbol>DontPreferBlanking</symbol>,
+<symbol>PreferBlanking</symbol>,
+or
+<symbol>DefaultBlanking</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>allow_exposures</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the screen save control values.
+You can pass
+<symbol>DontAllowExposures</symbol>,
+<symbol>AllowExposures</symbol>,
+or
+<symbol>DefaultExposures</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Timeout and interval are specified in seconds. 
+A timeout of 0 disables the screen saver 
+(but an activated screen saver is not deactivated),
+and a timeout of &minus;1 restores the default.
+Other negative values generate a
+<errorname>BadValue</errorname>
+error.
+If the timeout value is nonzero, 
+<xref linkend='XSetScreenSaver' xrefstyle='select: title'/>
+enables the screen saver.
+An interval of 0 disables the random-pattern motion.
+If no input from devices (keyboard, mouse, and so on) is generated 
+for the specified number of timeout seconds once the screen saver is enabled,
+the screen saver is activated.
+</para>
+<para>
+<!-- .LP -->
+For each screen, 
+if blanking is preferred and the hardware supports video blanking, 
+the screen simply goes blank.  
+Otherwise, if either exposures are allowed or the screen can be regenerated 
+without sending 
+<symbol>Expose</symbol>
+events to clients, 
+the screen is tiled with the root window background tile randomly 
+re-origined each interval seconds.
+Otherwise, the screens' state do not change, 
+and the screen saver is not activated.
+The screen saver is deactivated,
+and all screen states are restored at the next
+keyboard or pointer input or at the next call to
+<xref linkend='XForceScreenSaver' xrefstyle='select: title'/>
+with mode
+<symbol>ScreenSaverReset</symbol>.
+</para>
+<para>
+<!-- .LP -->
+If the server-dependent screen saver method supports periodic change,
+the interval argument serves as a hint about how long the change period
+should be, and zero hints that no periodic change should be made.
+Examples of ways to change the screen include scrambling the colormap
+periodically, moving an icon image around the screen periodically, or tiling
+the screen with the root window background tile, randomly re-origined
+periodically.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetScreenSaver' xrefstyle='select: title'/>
+can generate a
+<errorname>BadValue</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To force the screen saver on or off, use
+<xref linkend='XForceScreenSaver' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XForceScreenSaver</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XForceScreenSaver'>
+<funcprototype>
+  <funcdef><function>XForceScreenSaver</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>mode</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>mode</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the mode that is to be applied.
+You can pass
+<symbol>ScreenSaverActive</symbol>
+or
+<symbol>ScreenSaverReset</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If the specified mode is 
+<symbol>ScreenSaverActive</symbol>
+and the screen saver currently is deactivated,
+<xref linkend='XForceScreenSaver' xrefstyle='select: title'/>
+activates the screen saver even if the screen saver had been disabled
+with a timeout of zero.
+If the specified mode is 
+<symbol>ScreenSaverReset</symbol>
+and the screen saver currently is enabled,
+<xref linkend='XForceScreenSaver' xrefstyle='select: title'/>
+deactivates the screen saver if it was activated,
+and the activation timer is reset to its initial state 
+(as if device input had been received).
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XForceScreenSaver' xrefstyle='select: title'/>
+can generate a
+<errorname>BadValue</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To activate the screen saver, use
+<xref linkend='XActivateScreenSaver' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XActivateScreenSaver</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XActivateScreenSaver'>
+<funcprototype>
+  <funcdef><function>XActivateScreenSaver</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To reset the screen saver, use
+<xref linkend='XResetScreenSaver' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XResetScreenSaver</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XResetScreenSaver'>
+<funcprototype>
+  <funcdef><function>XResetScreenSaver</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To get the current screen saver values, use
+<xref linkend='XGetScreenSaver' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetScreenSaver</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetScreenSaver'>
+<funcprototype>
+  <funcdef><function>XGetScreenSaver</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int *<parameter>timeout_return</parameter></paramdef>
+  <paramdef>int *<parameter>interval_return</parameter></paramdef>
+  <paramdef>int *<parameter>prefer_blanking_return</parameter></paramdef>
+  <paramdef>int *<parameter>allow_exposures_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>timeout_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the timeout, in seconds, until the screen saver turns on.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>interval_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the interval between screen saver invocations.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>prefer_blanking_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the current screen blanking preference
+(<symbol>DontPreferBlanking</symbol>,
+<symbol>PreferBlanking</symbol>,
+or
+<symbol>DefaultBlanking</symbol>).
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>allow_exposures_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the current screen save control value
+(<symbol>DontAllowExposures</symbol>,
+<symbol>AllowExposures</symbol>,
+or
+<symbol>DefaultExposures</symbol>).
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+</para>
+</sect1>
+<sect1 id="Controlling_Host_Access">
+<title>Controlling Host Access</title>
+<!-- .XS -->
+<!-- (SN Controlling Host Access  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+This section discusses how to:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+Add, get, or remove hosts from the access control list
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Change, enable, or disable access
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+<indexterm><primary>Access control list</primary></indexterm>
+<indexterm><primary>Authentication</primary></indexterm>
+X does not provide any protection on a per-window basis.
+If you find out the resource ID of a resource, you can manipulate it.
+To provide some minimal level of protection, however,
+connections are permitted only from machines you trust.
+This is adequate on single-user workstations but obviously
+breaks down on timesharing machines.
+Although provisions exist in the X protocol for proper connection
+authentication, the lack of a standard authentication server
+leaves host-level access control as the only common mechanism.
+</para>
+<para>
+<!-- .LP -->
+<indexterm><primary>Default Protection</primary></indexterm>
+The initial set of hosts allowed to open connections typically consists of:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+The host the window system is running on.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+On <acronym>POSIX</acronym>-conformant systems, each host listed in the
+<filename>/etc/X<replaceable>?</replaceable>.hosts</filename>
+file.
+The ? indicates the number of the
+display.
+<indexterm><primary>Files</primary><secondary><filename>/etc/X<replaceable>?</replaceable>.hosts</filename></secondary></indexterm>
+This file should consist of host names separated by newlines.
+DECnet nodes must terminate in :: to distinguish them from Internet hosts.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+If a host is not in the access control list when the access control 
+mechanism is enabled and if the host attempts to establish a connection,
+the server refuses the connection.
+To change the access list,
+the client must reside on the same host as the server and/or must
+have been granted permission in the initial authorization at connection
+setup.
+</para>
+<para>
+<!-- .LP -->
+Servers also can implement other access control policies in addition to
+or in place of this host access facility.
+For further information about other access control implementations,
+see <olink targetdoc='x11protocol' targetptr='Connection_Setup'
+><citetitle>X Window System Protocol</citetitle></olink>.
+</para>
+<sect2 id="Adding_Getting_or_Removing_Hosts">
+<title>Adding, Getting, or Removing Hosts</title>
+<!-- .XS -->
+<!-- (SN Adding, Getting, or Removing Hosts  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to add, get, or remove hosts
+from the access control list.
+All the host access control functions use the 
+<structname>XHostAddress</structname>
+structure, which contains:
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XHostAddress</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {
+     int family;        /* for example FamilyInternet */
+     int length;        /* length of address, in bytes */
+     char *address;     /* pointer to where to find the address */
+} XHostAddress;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The family member specifies which protocol address family to use 
+(for example, <acronym>TCP</acronym>/<acronym>IP</acronym> or DECnet) and can be
+<symbol>FamilyInternet</symbol>,
+<symbol>FamilyInternet6</symbol>,
+<symbol>FamilyServerInterpreted</symbol>,
+<symbol>FamilyDECnet</symbol>,
+or
+<symbol>FamilyChaos</symbol>.
+The length member specifies the length of the address in bytes.
+The address member specifies a pointer to the address.
+</para>
+<para>
+<!-- .LP -->
+For <acronym>TCP</acronym>/<acronym>IP</acronym>, the address should be in network byte order.
+For <acronym>IP</acronym> version 4 addresses, the family should be FamilyInternet
+and the length should be 4 bytes.  For <acronym>IP</acronym> version 6 addresses, the
+family should be FamilyInternet6 and the length should be 16 bytes.
+</para>
+<para>
+<!-- .LP -->
+For the DECnet family, 
+the server performs no automatic swapping on the address bytes.
+A Phase IV address is 2 bytes long.
+The first byte contains the least significant 8 bits of the node number.
+The second byte contains the most significant 2 bits of the
+node number in the least significant 2 bits of the byte
+and the area in the most significant 6 bits of the byte.
+</para>
+<para>
+<!-- .LP -->
+For the ServerInterpreted family, the length is ignored and the address 
+member is a pointer to a 
+<structname>XServerInterpretedAddress</structname>
+structure, which contains:
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XServerInterpretedAddress</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {
+     int typelength;     /* length of type string, in bytes */
+     int valuelength;    /* length of value string, in bytes */
+     char *type;         /* pointer to where to find the type string */
+     char *value;        /* pointer to where to find the address */
+} XServerInterpretedAddress;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The type and value members point to strings representing the type and value of
+the server interpreted entry.  These strings may not be NULL-terminated so care
+should be used when accessing them.  The typelength and valuelength members
+specify the length in byte of the type and value strings.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To add a single host, use
+<xref linkend='XAddHost' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XAddHost</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XAddHost'>
+<funcprototype>
+  <funcdef><function>XAddHost</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XHostAddress *<parameter>host</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>host</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the host that is to be added.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XAddHost' xrefstyle='select: title'/>
+function adds the specified host to the access control list for that display.
+The server must be on the same host as the client issuing the command, or a
+<errorname>BadAccess</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XAddHost' xrefstyle='select: title'/>
+can generate
+<errorname>BadAccess</errorname>
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To add multiple hosts at one time, use
+<xref linkend='XAddHosts' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XAddHosts</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XAddHosts'>
+<funcprototype>
+  <funcdef><function>XAddHosts</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XHostAddress *<parameter>hosts</parameter></paramdef>
+  <paramdef>int <parameter>num_hosts</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>hosts</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies each host that is to be added.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>num_hosts</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of hosts.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XAddHosts' xrefstyle='select: title'/>
+function adds each specified host to the access control list for that display.
+The server must be on the same host as the client issuing the command, or a
+<errorname>BadAccess</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XAddHosts' xrefstyle='select: title'/>
+can generate
+<errorname>BadAccess</errorname>
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain a host list, use
+<xref linkend='XListHosts' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XListHosts</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XListHosts'>
+<funcprototype>
+  <funcdef>XHostAddress *<function>XListHosts</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int *<parameter>nhosts_return</parameter></paramdef>
+  <paramdef>Bool *<parameter>state_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nhosts_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of hosts currently in the access control list.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>state_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the state of the access control.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XListHosts' xrefstyle='select: title'/>
+function returns the current access control list as well as whether the use 
+of the list at connection setup was enabled or disabled.
+<xref linkend='XListHosts' xrefstyle='select: title'/>
+allows a program to find out what machines can make connections.
+It also returns a pointer to a list of host structures that
+were allocated by the function. 
+When no longer needed,
+this memory should be freed by calling
+<xref linkend='XFree' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To remove a single host, use
+<xref linkend='XRemoveHost' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRemoveHost</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRemoveHost'>
+<funcprototype>
+  <funcdef><function>XRemoveHost</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XHostAddress *<parameter>host</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>host</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the host that is to be removed.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XRemoveHost' xrefstyle='select: title'/>
+function removes the specified host from the access control list 
+for that display.
+The server must be on the same host as the client process, or a
+<errorname>BadAccess</errorname>
+error results.
+If you remove your machine from the access list,
+you can no longer connect to that server,
+and this operation cannot be reversed unless you reset the server.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XRemoveHost' xrefstyle='select: title'/>
+can generate
+<errorname>BadAccess</errorname>
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To remove multiple hosts at one time, use
+<xref linkend='XRemoveHosts' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XRemoveHosts</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRemoveHosts'>
+<funcprototype>
+  <funcdef><function>XRemoveHosts</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XHostAddress *<parameter>hosts</parameter></paramdef>
+  <paramdef>int <parameter>num_hosts</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>hosts</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies each host that is to be removed.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>num_hosts</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of hosts.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XRemoveHosts' xrefstyle='select: title'/>
+function removes each specified host from the access control list for that 
+display.  
+The X server must be on the same host as the client process, or a
+<errorname>BadAccess</errorname>
+error results.
+If you remove your machine from the access list, 
+you can no longer connect to that server,
+and this operation cannot be reversed unless you reset the server.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XRemoveHosts' xrefstyle='select: title'/>
+can generate
+<errorname>BadAccess</errorname>
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Changing_Enabling_or_Disabling_Access_Control">
+<title>Changing, Enabling, or Disabling Access Control</title>
+<!-- .XS -->
+<!-- (SN Changing, Enabling, or Disabling Access Control  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to enable, disable, 
+or change access control.
+</para>
+<para>
+<!-- .LP -->
+For these functions to execute successfully,
+the client application must reside on the same host as the X server
+and/or have been given permission in the initial authorization
+at connection setup.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To change access control, use
+<xref linkend='XSetAccessControl' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XSetAccessControl</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetAccessControl'>
+<funcprototype>
+  <funcdef><function>XSetAccessControl</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>int <parameter>mode</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>mode</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the mode.
+You can pass
+<symbol>EnableAccess</symbol>
+or
+<symbol>DisableAccess</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetAccessControl' xrefstyle='select: title'/>
+function either enables or disables the use of the access control list 
+at each connection setup.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetAccessControl' xrefstyle='select: title'/>
+can generate
+<errorname>BadAccess</errorname>
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To enable access control, use
+<xref linkend='XEnableAccessControl' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XEnableAccessControl</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XEnableAccessControl'>
+<funcprototype>
+  <funcdef><function>XEnableAccessControl</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XEnableAccessControl' xrefstyle='select: title'/>
+function enables the use of the access control list at each connection setup.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XEnableAccessControl' xrefstyle='select: title'/>
+can generate a
+<errorname>BadAccess</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To disable access control, use
+<xref linkend='XDisableAccessControl' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDisableAccessControl</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDisableAccessControl'>
+<funcprototype>
+  <funcdef><function>XDisableAccessControl</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDisableAccessControl' xrefstyle='select: title'/>
+function disables the use of the access control list at each connection setup.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDisableAccessControl' xrefstyle='select: title'/>
+can generate a
+<errorname>BadAccess</errorname>
+error.
+<!-- .bp -->
+
+</para>
+</sect2>
+</sect1>
+</chapter>

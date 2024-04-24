@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/prctl.h>
+#include <sys/ioctl.h>
 #include <libgen.h>
 #include <globals.h>
 #include <xkbsrv.h>
@@ -23,11 +24,12 @@
 #include "lorie.h"
 
 #define log(prio, ...) __android_log_print(ANDROID_LOG_ ## prio, "LorieNative", __VA_ARGS__)
+
 static int argc = 0;
 static char** argv = NULL;
 static int conn_fd = -1;
 extern char *__progname; // NOLINT(bugprone-reserved-identifier)
-extern DeviceIntPtr lorieMouse, lorieMouseRelative, lorieTouch, lorieKeyboard;
+extern DeviceIntPtr lorieMouse, lorieTouch, lorieKeyboard;
 extern ScreenPtr pScreenPtr;
 extern int ucs2keysym(long ucs);
 void lorieKeysymKeyboardEvent(KeySym keysym, int down);
@@ -36,7 +38,15 @@ char *xtrans_unix_path_x11 = NULL;
 char *xtrans_unix_dir_x11 = NULL;
 
 typedef enum {
-    EVENT_SCREEN_SIZE, EVENT_TOUCH, EVENT_MOUSE, EVENT_KEY, EVENT_UNICODE, EVENT_CLIPBOARD_SYNC
+    EVENT_SCREEN_SIZE,
+    EVENT_TOUCH,
+    EVENT_MOUSE,
+    EVENT_KEY,
+    EVENT_UNICODE,
+    EVENT_CLIPBOARD_ENABLE,
+    EVENT_CLIPBOARD_ANNOUNCE,
+    EVENT_CLIPBOARD_REQUEST,
+    EVENT_CLIPBOARD_SEND,
 } eventType;
 typedef union {
     uint8_t type;
@@ -65,13 +75,55 @@ typedef union {
     struct {
         uint8_t t;
         uint8_t enable;
-    } clipboardSync;
+    } clipboardEnable;
+    struct {
+        uint8_t t;
+        uint32_t count;
+    } clipboardSend;
 } lorieEvent;
+
+static struct {
+    jclass self;
+    jmethodID forName;
+    jmethodID decode;
+} Charset = {0};
+
+static struct {
+    jclass self;
+    jmethodID toString;
+} CharBuffer = {0};
 
 static void* startServer(unused void* cookie) {
     lorieSetVM((JavaVM*) cookie);
     char* envp[] = { NULL };
     exit(dix_main(argc, (char**) argv, envp));
+}
+
+static jclass FindClassOrDie(JNIEnv *env, const char* name) {
+    jclass clazz = (*env)->FindClass(env, name);
+    if (!clazz) {
+        char buffer[1024] = {0};
+        sprintf(buffer, "class %s not found", name);
+        log(ERROR, "%s", buffer);
+        (*env)->FatalError(env, buffer);
+        return NULL;
+    }
+
+    return (*env)->NewGlobalRef(env, clazz);
+}
+
+static jclass FindMethodOrDie(JNIEnv *env, jclass clazz, const char* name, const char* signature, jboolean isStatic) {
+    __typeof__((*env)->GetMethodID) getMethodID = isStatic ? (*env)->GetStaticMethodID : (*env)->GetMethodID;
+    jmethodID method = getMethodID(env, clazz, name, signature);
+    if (!method) {
+        char buffer[1024] = {0};
+        sprintf(buffer, "method %s %s not found", name, signature);
+        log(ERROR, "%s", buffer);
+        (*env)->FatalError(env, buffer);
+        return NULL;
+    }
+
+    return method;
 }
 
 JNIEXPORT jboolean JNICALL
@@ -102,7 +154,7 @@ Java_com_termux_display_CmdEntryPoint_start(JNIEnv *env, unused jclass cls, jobj
             log(ERROR, "Failed to set process affinity: %s", strerror(errno));
     }
 
-    if (getenv("TERMUX_DISPLAY_DEBUG") && !fork()) {
+    if (getenv("TERMUX_display_DEBUG") && !fork()) {
         // Printing logs of local logcat.
         char pid[32] = {0};
         prctl(PR_SET_PDEATHSIG, SIGTERM);
@@ -167,6 +219,7 @@ Java_com_termux_display_CmdEntryPoint_start(JNIEnv *env, unused jclass cls, jobj
         if (access(current_path, F_OK) == 0)
             setenv("XKB_CONFIG_ROOT", current_path, 1);
     }
+
     if (!getenv("XKB_CONFIG_ROOT")) {
         // proot case
         if (access("/usr/share/X11/xkb", F_OK) == 0)
@@ -201,13 +254,33 @@ Java_com_termux_display_CmdEntryPoint_windowChanged(JNIEnv *env, unused jobject 
     QueueWorkProc(lorieChangeWindow, NULL, surface ? (*env)->NewGlobalRef(env, surface) : NULL);
 }
 
-void handleLorieEvents(int fd, maybe_unused int ready, maybe_unused void *data) {
+static Bool sendConfigureNotify(unused ClientPtr pClient, void *closure) {
+    // This must be done only on X server thread.
+    lorieEvent* e = closure;
+    __android_log_print(ANDROID_LOG_ERROR, "termux-display-request", "window changed: %d %d", e->screenSize.width, e->screenSize.height);
+    lorieConfigureNotify(e->screenSize.width, e->screenSize.height, e->screenSize.framerate);
+    free(e);
+    return TRUE;
+}
+
+static Bool handleClipboardAnnounce(unused ClientPtr pClient, void *closure) {
+    // This must be done only on X server thread.
+    lorieHandleClipboardAnnounce();
+    return TRUE;
+}
+
+static Bool handleClipboardData(unused ClientPtr pClient, void *closure) {
+    // This must be done only on X server thread.
+    lorieHandleClipboardData(closure);
+    return TRUE;
+}
+
+void handleLorieEvents(int fd, __unused int ready, __unused void *ignored) {
     ValuatorMask mask;
     lorieEvent e = {0};
     valuator_mask_zero(&mask);
 
     if (ready & X_NOTIFY_ERROR) {
-//        RemoveNotifyFd(fd);
         InputThreadUnregisterDev(fd);
         close(fd);
         conn_fd = -1;
@@ -215,12 +288,15 @@ void handleLorieEvents(int fd, maybe_unused int ready, maybe_unused void *data) 
         return;
     }
 
+    again:
     if (read(fd, &e, sizeof(e)) == sizeof(e)) {
         switch(e.type) {
-            case EVENT_SCREEN_SIZE:
-                __android_log_print(ANDROID_LOG_ERROR, "tx11-request", "window changed: %d %d", e.screenSize.width, e.screenSize.height);
-                lorieConfigureNotify(e.screenSize.width, e.screenSize.height, e.screenSize.framerate);
+            case EVENT_SCREEN_SIZE: {
+                lorieEvent *copy = calloc(1, sizeof(lorieEvent));
+                *copy = e;
+                QueueWorkProc(sendConfigureNotify, NULL, copy);
                 break;
+            }
             case EVENT_TOUCH: {
                 double x, y;
                 DDXTouchPointInfoPtr touch = TouchFindByDDXID(lorieTouch, e.touch.id, FALSE);
@@ -245,7 +321,7 @@ void handleLorieEvents(int fd, maybe_unused int ready, maybe_unused void *data) 
                 if (e.touch.type == XI_TouchEnd && (!touch || !touch->active))
                     break;
 
-                __android_log_print(ANDROID_LOG_ERROR, "tx11-request", "touch event: %d %d %d %d", e.touch.type, e.touch.id, e.touch.x, e.touch.y);
+                __android_log_print(ANDROID_LOG_ERROR, "termux-display-request", "touch event: %d %d %d %d", e.touch.type, e.touch.id, e.touch.x, e.touch.y);
                 valuator_mask_set_double(&mask, 0, x);
                 valuator_mask_set_double(&mask, 1, y);
                 QueueTouchEvents(lorieTouch, e.touch.type, e.touch.id, 0, &mask);
@@ -255,32 +331,26 @@ void handleLorieEvents(int fd, maybe_unused int ready, maybe_unused void *data) 
                 int flags;
                 switch(e.mouse.detail) {
                     case 0: // BUTTON_UNDEFINED
-                        if (e.mouse.relative) {
-                            valuator_mask_set_double(&mask, 0, (double) e.mouse.x);
-                            valuator_mask_set_double(&mask, 1, (double) e.mouse.y);
-                            QueuePointerEvents(lorieMouseRelative, MotionNotify, 0, POINTER_RELATIVE | POINTER_ACCELERATE, &mask);
-                        } else {
-                            flags = POINTER_ABSOLUTE | POINTER_SCREEN | POINTER_NORAW;
-                            valuator_mask_set_double(&mask, 0, (double) e.mouse.x);
-                            valuator_mask_set_double(&mask, 1, (double) e.mouse.y);
-                            QueuePointerEvents(lorieMouse, MotionNotify, 0, flags, &mask);
-                        }
+                        flags = (e.mouse.relative) ? POINTER_RELATIVE | POINTER_ACCELERATE : POINTER_ABSOLUTE | POINTER_SCREEN | POINTER_NORAW;
+                        valuator_mask_set_double(&mask, 0, (double) e.mouse.x);
+                        valuator_mask_set_double(&mask, 1, (double) e.mouse.y);
+                        QueuePointerEvents(lorieMouse, MotionNotify, 0, flags, &mask);
                         break;
                     case 1: // BUTTON_LEFT
                     case 2: // BUTTON_MIDDLE
                     case 3: // BUTTON_RIGHT
-                        QueuePointerEvents(e.mouse.relative ? lorieMouseRelative : lorieMouse, e.mouse.down ? ButtonPress : ButtonRelease, e.mouse.detail, 0, &mask);
+                        QueuePointerEvents(lorieMouse, e.mouse.down ? ButtonPress : ButtonRelease, e.mouse.detail, 0, &mask);
                         break;
                     case 4: // BUTTON_SCROLL
                         if (e.mouse.x) {
                             valuator_mask_zero(&mask);
                             valuator_mask_set_double(&mask, 2, (double) e.mouse.x / 120);
-                            QueuePointerEvents(lorieMouseRelative, MotionNotify, 0, POINTER_RELATIVE, &mask);
+                            QueuePointerEvents(lorieMouse, MotionNotify, 0, POINTER_RELATIVE, &mask);
                         }
                         if (e.mouse.y) {
                             valuator_mask_zero(&mask);
                             valuator_mask_set_double(&mask, 3, (double) e.mouse.y / 120);
-                            QueuePointerEvents(lorieMouseRelative, MotionNotify, 0, POINTER_RELATIVE, &mask);
+                            QueuePointerEvents(lorieMouse, MotionNotify, 0, POINTER_RELATIVE, &mask);
                         }
                         break;
                 }
@@ -296,20 +366,43 @@ void handleLorieEvents(int fd, maybe_unused int ready, maybe_unused void *data) 
                 lorieKeysymKeyboardEvent(ks, FALSE);
                 break;
             }
-            case EVENT_CLIPBOARD_SYNC:
-                lorieEnableClipboardSync(e.clipboardSync.enable);
+            case EVENT_CLIPBOARD_ENABLE:
+                lorieEnableClipboardSync(e.clipboardEnable.enable);
                 break;
+            case EVENT_CLIPBOARD_ANNOUNCE:
+                QueueWorkProc(handleClipboardAnnounce, NULL, NULL);
+                break;
+            case EVENT_CLIPBOARD_SEND: {
+                char *data = calloc(1, e.clipboardSend.count + 1);
+                read(conn_fd, data, e.clipboardSend.count);
+                data[e.clipboardSend.count] = 0;
+                QueueWorkProc(handleClipboardData, NULL, data);
+            }
         }
+
+        int n;
+        if (ioctl(fd, FIONREAD, &n) >= 0 && n > sizeof(e))
+            goto again;
     }
 }
 
 void lorieSendClipboardData(const char* data) {
-    if (data && conn_fd != -1)
-        write(conn_fd, data, strlen(data));
+    if (data && conn_fd != -1) {
+        size_t len = strlen(data);
+        lorieEvent e = { .clipboardSend = { .t = EVENT_CLIPBOARD_SEND, .count = len } };
+        write(conn_fd, &e, sizeof(e));
+        write(conn_fd, data, len);
+    }
+}
+
+void lorieRequestClipboard(void) {
+    if (conn_fd != -1) {
+        lorieEvent e = { .type = EVENT_CLIPBOARD_REQUEST };
+        write(conn_fd, &e, sizeof(e));
+    }
 }
 
 static Bool addFd(unused ClientPtr pClient, void *closure) {
-//    SetNotifyFd((int) (int64_t) closure, handleLorieEvents, X_NOTIFY_READ, NULL);
     InputThreadRegisterDev((int) (int64_t) closure, handleLorieEvents, NULL);
     conn_fd = (int) (int64_t) closure;
     return TRUE;
@@ -340,7 +433,7 @@ JNIEXPORT jobject JNICALL
 Java_com_termux_display_CmdEntryPoint_getLogcatOutput(JNIEnv *env, unused jobject cls) {
     jclass ParcelFileDescriptorClass = (*env)->FindClass(env, "android/os/ParcelFileDescriptor");
     jmethodID adoptFd = (*env)->GetStaticMethodID(env, ParcelFileDescriptorClass, "adoptFd", "(I)Landroid/os/ParcelFileDescriptor;");
-    const char *debug = getenv("TERMUX_DISPLAY_DEBUG");
+    const char *debug = getenv("TERMUX_display_DEBUG");
     if (debug && !strcmp(debug, "1")) {
         pthread_t t;
         int p[2];
@@ -356,6 +449,7 @@ JNIEXPORT jboolean JNICALL
 Java_com_termux_display_CmdEntryPoint_connected(__unused JNIEnv *env, __unused jclass clazz) {
     return conn_fd != -1;
 }
+
 static inline void checkConnection(JNIEnv* env) {
     int retval, b = 0;
 
@@ -376,57 +470,56 @@ static inline void checkConnection(JNIEnv* env) {
 
 JNIEXPORT void JNICALL
 Java_com_termux_display_LorieView_connect(unused JNIEnv* env, unused jobject cls, jint fd) {
+    if (!Charset.self) {
+        // Init clipboard-related JNI stuff
+        Charset.self = FindClassOrDie(env, "java/nio/charset/Charset");
+        Charset.forName = FindMethodOrDie(env, Charset.self, "forName", "(Ljava/lang/String;)Ljava/nio/charset/Charset;", JNI_TRUE);
+        Charset.decode = FindMethodOrDie(env, Charset.self, "decode", "(Ljava/nio/ByteBuffer;)Ljava/nio/CharBuffer;", JNI_FALSE);
+
+        CharBuffer.self = FindClassOrDie(env,  "java/nio/CharBuffer");
+        CharBuffer.toString = FindMethodOrDie(env, CharBuffer.self, "toString", "()Ljava/lang/String;", JNI_FALSE);
+    }
+
     conn_fd = fd;
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
     checkConnection(env);
     log(DEBUG, "XCB connection is successfull");
 }
 
-static char clipboard[1024*1024] = {0};
-
 JNIEXPORT void JNICALL
-Java_com_termux_display_LorieView_handleXEvents(JNIEnv *env, maybe_unused jobject thiz) {
+Java_com_termux_display_LorieView_handleXEvents(JNIEnv *env, jobject thiz) {
     checkConnection(env);
     if (conn_fd != -1) {
-        char none;
-        memset(clipboard, 0, sizeof(clipboard));
-        if (read(conn_fd, clipboard, sizeof(clipboard)) > 0) {
-            clipboard[sizeof(clipboard) - 1] = 0;
-            log(DEBUG, "Clipboard content (%zu symbols) is %s", strlen(clipboard), clipboard);
-            jmethodID id = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, thiz), "setClipboardText","(Ljava/lang/String;)V");
+        lorieEvent e = {0};
 
-            jclass cls_Charset = (*env)->FindClass(env, "java/nio/charset/Charset");
-            jclass cls_CharBuffer = (*env)->FindClass(env, "java/nio/CharBuffer");
-            jmethodID mid_Charset_forName = cls_Charset ? (*env)->GetStaticMethodID(env, cls_Charset, "forName", "(Ljava/lang/String;)Ljava/nio/charset/Charset;") : NULL;
-            jmethodID mid_Charset_decode = cls_Charset ? (*env)->GetMethodID(env, cls_Charset, "decode", "(Ljava/nio/ByteBuffer;)Ljava/nio/CharBuffer;") : NULL;
-            jmethodID mid_CharBuffer_toString = cls_CharBuffer ? (*env)->GetMethodID(env, cls_CharBuffer, "toString", "()Ljava/lang/String;") : NULL;
+        again:
+        if (read(conn_fd, &e, sizeof(e)) == sizeof(e)) {
+            switch(e.type) {
+                case EVENT_CLIPBOARD_SEND: {
+                    char clipboard[e.clipboardSend.count + 1];
+                    read(conn_fd, clipboard, sizeof(clipboard));
+                    clipboard[e.clipboardSend.count] = 0;
+                    log(DEBUG, "Clipboard content (%zu symbols) is %s", strlen(clipboard), clipboard);
+                    jmethodID id = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, thiz), "setClipboardText","(Ljava/lang/String;)V");
+                    jobject bb = (*env)->NewDirectByteBuffer(env, clipboard, strlen(clipboard));
+                    jobject charset = (*env)->CallStaticObjectMethod(env, Charset.self, Charset.forName, (*env)->NewStringUTF(env, "UTF-8"));
+                    jobject cb = (*env)->CallObjectMethod(env, charset, Charset.decode, bb);
+                    (*env)->DeleteLocalRef(env, bb);
 
-            if (!id)
-                log(ERROR, "setClipboardText method not found");
-            if (!cls_Charset)
-                log(ERROR, "java.nio.charset.Charset class not found");
-            if (!cls_CharBuffer)
-                log(ERROR, "java.nio.CharBuffer class not found");
-            if (!mid_Charset_forName)
-                log(ERROR, "java.nio.charset.Charset.forName method not found");
-            if (!mid_Charset_decode)
-                log(ERROR, "java.nio.charset.Charset.decode method not found");
-            if (!mid_CharBuffer_toString)
-                log(ERROR, "java.nio.CharBuffer.toString method not found");
-
-            if (id && cls_Charset && cls_CharBuffer && mid_Charset_forName && mid_Charset_decode && mid_CharBuffer_toString) {
-                jobject bb = (*env)->NewDirectByteBuffer(env, clipboard, strlen(clipboard));
-                jobject charset = (*env)->CallStaticObjectMethod(env, cls_Charset, mid_Charset_forName, (*env)->NewStringUTF(env, "UTF-8"));
-                jobject cb = (*env)->CallObjectMethod(env, charset, mid_Charset_decode, bb);
-                (*env)->DeleteLocalRef(env, bb);
-
-                jstring str = (*env)->CallObjectMethod(env, cb, mid_CharBuffer_toString);
-                (*env)->CallVoidMethod(env, thiz, id, str);
+                    jstring str = (*env)->CallObjectMethod(env, cb, CharBuffer.toString);
+                    (*env)->CallVoidMethod(env, thiz, id, str);
+                    break;
+                }
+                case EVENT_CLIPBOARD_REQUEST: {
+                    (*env)->CallVoidMethod(env, thiz, (*env)->GetMethodID(env, (*env)->GetObjectClass(env, thiz), "requestClipboard", "()V"));
+                    break;
+                }
             }
         }
-        while(read(conn_fd, &none, sizeof(none)) > 0){
-//            log(DEBUG, "read data from xserver");
-        }
+
+        int n;
+        if (ioctl(conn_fd, FIONREAD, &n) >= 0 && n > sizeof(e))
+            goto again;
     }
 }
 
@@ -451,38 +544,52 @@ Java_com_termux_display_LorieView_startLogcat(JNIEnv *env, unused jobject cls, j
 }
 
 JNIEXPORT void JNICALL
-Java_com_termux_display_LorieView_setClipboardSyncEnabled(unused JNIEnv* env, unused jobject cls, jboolean enable) {
+Java_com_termux_display_LorieView_setClipboardSyncEnabled(unused JNIEnv* env, unused jobject cls, jboolean enable, __unused jboolean ignored) {
     if (conn_fd != -1) {
-        log(DEBUG,"setClipboardSyncEnabled start fd:%d enable:%d",conn_fd,enable);
-        lorieEvent e = { .clipboardSync = { .t = EVENT_CLIPBOARD_SYNC, .enable = enable } };
+        lorieEvent e = { .clipboardEnable = { .t = EVENT_CLIPBOARD_ENABLE, .enable = enable } };
         write(conn_fd, &e, sizeof(e));
         checkConnection(env);
-        log(DEBUG,"setClipboardSyncEnabled finish fd:%d",conn_fd);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_termux_display_LorieView_sendClipboardAnnounce(JNIEnv *env, jobject thiz) {
+    if (conn_fd != -1) {
+        lorieEvent e = { .type = EVENT_CLIPBOARD_ANNOUNCE };
+        write(conn_fd, &e, sizeof(e));
+        checkConnection(env);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_termux_display_LorieView_sendClipboardEvent(JNIEnv *env, unused jobject thiz, jbyteArray text) {
+    if (conn_fd != -1 && text) {
+        jsize length = (*env)->GetArrayLength(env, text);
+        jbyte* str = (*env)->GetByteArrayElements(env, text, NULL);
+        lorieEvent e = { .clipboardSend = { .t = EVENT_CLIPBOARD_SEND, .count = length } };
+        write(conn_fd, &e, sizeof(e));
+        write(conn_fd, str, length);
+        (*env)->ReleaseByteArrayElements(env, text, str, JNI_ABORT);
+        checkConnection(env);
     }
 }
 
 JNIEXPORT void JNICALL
 Java_com_termux_display_LorieView_sendWindowChange(unused JNIEnv* env, unused jobject cls, jint width, jint height, jint framerate) {
     if (conn_fd != -1) {
-        log(DEBUG,"sendWindowChange start fd:%d width:%d height:%d framerate:%d",conn_fd,width,height,framerate);
         lorieEvent e = { .screenSize = { .t = EVENT_SCREEN_SIZE, .width = width, .height = height, .framerate = framerate } };
         write(conn_fd, &e, sizeof(e));
-        log(DEBUG,"sendWindowChange finish fd:%d",conn_fd);
         checkConnection(env);
-        log(DEBUG,"checkConnection finish fd:%d",conn_fd);
     }
 }
 
 JNIEXPORT void JNICALL
 Java_com_termux_display_LorieView_sendMouseEvent(unused JNIEnv* env, unused jobject cls, jfloat x, jfloat y, jint which_button, jboolean button_down, jboolean relative) {
-//    log(DEBUG,"sendMouseEvent start");
     if (conn_fd != -1) {
-//        log(DEBUG, "sendMouseEvent key: x=%d y=%d which_button=%d button_down=%d relative=%d", x,y,which_button,button_down,relative);
         lorieEvent e = { .mouse = { .t = EVENT_MOUSE, .x = x, .y = y, .detail = which_button, .down = button_down, .relative = relative } };
         write(conn_fd, &e, sizeof(e));
         checkConnection(env);
     }
-//    log(DEBUG,"sendMouseEvent finished");
 }
 
 JNIEXPORT void JNICALL
@@ -511,7 +618,7 @@ JNIEXPORT void JNICALL
 Java_com_termux_display_LorieView_sendTextEvent(JNIEnv *env, unused jobject thiz, jbyteArray text) {
     if (conn_fd != -1 && text) {
         jsize length = (*env)->GetArrayLength(env, text);
-        jbyte *str = (*env)->GetByteArrayElements(env, text, JNI_FALSE);
+        jbyte *str = (*env)->GetByteArrayElements(env, text, NULL);
         char *p = (char*) str;
         mbstate_t state = { 0 };
         log(DEBUG, "Parsing text: %.*s", length, str);
@@ -587,170 +694,5 @@ __attribute__((constructor)) static void init(void) {
         pthread_create(&t, NULL, stderrToLogcatThread, NULL);
 }
 
-JNIEXPORT jboolean JNICALL
-Java_com_termux_display_X11ServerCommand_start(JNIEnv *env, jclass clazz, jobjectArray args) {
-    pthread_t t;
-    JavaVM* vm = NULL;
-    // execv's argv array is a bit incompatible with Java's String[], so we do some converting here...
-    argc = (*env)->GetArrayLength(env, args) + 1; // Leading executable path
-    argv = (char**) calloc(argc, sizeof(char*));
-
-    argv[0] = (char*) "Xlorie";
-    for(int i=1; i<argc; i++) {
-        jstring js = (jstring)((*env)->GetObjectArrayElement(env, args, i - 1));
-        const char *pjc = (*env)->GetStringUTFChars(env, js, JNI_FALSE);
-        argv[i] = (char *) calloc(strlen(pjc) + 1, sizeof(char)); //Extra char for the terminating NULL
-        strcpy((char *) argv[i], pjc);
-        (*env)->ReleaseStringUTFChars(env, js, pjc);
-    }
-
-    {
-        cpu_set_t mask;
-        long num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
-
-        for (int i = num_cpus/2; i < num_cpus; i++)
-            CPU_SET(i, &mask);
-
-        if (sched_setaffinity(0, sizeof(cpu_set_t), &mask) == -1)
-            log(ERROR, "Failed to set process affinity: %s", strerror(errno));
-    }
-
-    if (getenv("TERMUX_DISPLAY_DEBUG") && !fork()) {
-        // Printing logs of local logcat.
-        char pid[32] = {0};
-        prctl(PR_SET_PDEATHSIG, SIGTERM);
-        sprintf(pid, "%d", getppid());
-        execlp("logcat", "logcat", "--pid", pid, NULL);
-    }
-
-    // adb sets TMPDIR to /data/local/tmp which is pretty useless.
-    if (!strcmp("/data/local/tmp", getenv("TMPDIR") ?: ""))
-        unsetenv("TMPDIR");
-
-    if (!getenv("TMPDIR")) {
-        if (access("/tmp", F_OK) == 0)
-            setenv("TMPDIR", "/tmp", 1);
-        else if (access("/data/data/com.termux/files/usr/tmp", F_OK) == 0)
-            setenv("TMPDIR", "/data/data/com.termux/files/usr/tmp", 1);
-    }
-
-    if (!getenv("TMPDIR")) {
-        char* error = (char*) "$TMPDIR is not set. Normally it is pointing to /tmp of a container.";
-        log(ERROR, "%s", error);
-        dprintf(2, "%s\n", error);
-        return JNI_FALSE;
-    }
-
-    {
-        char* tmp = getenv("TMPDIR");
-        char cwd[1024] = {0};
-
-        if (!getcwd(cwd, sizeof(cwd)) || access(cwd, F_OK) != 0)
-            chdir(tmp);
-        asprintf(&xtrans_unix_path_x11, "%s/.X11-unix/X", tmp);
-        asprintf(&xtrans_unix_dir_x11, "%s/.X11-unix/", tmp);
-    }
-
-    log(VERBOSE, "Using TMPDIR=\"%s\"", getenv("TMPDIR"));
-
-    {
-        const char *root_dir = dirname(getenv("TMPDIR"));
-        const char* pathes[] = {
-                "/etc/X11/fonts", "/usr/share/fonts/X11", "/share/fonts", NULL
-        };
-        for (int i=0; pathes[i]; i++) {
-            char current_path[1024] = {0};
-            snprintf(current_path, sizeof(current_path), "%s%s", root_dir, pathes[i]);
-            if (access(current_path, F_OK) == 0) {
-                char default_font_path[4096] = {0};
-                snprintf(default_font_path, sizeof(default_font_path),
-                         "%s/misc,%s/TTF,%s/OTF,%s/Type1,%s/100dpi,%s/75dpi",
-                         current_path, current_path, current_path, current_path, current_path, current_path);
-                defaultFontPath = strdup(default_font_path);
-                break;
-            }
-        }
-    }
-
-    if (!getenv("XKB_CONFIG_ROOT")) {
-        // chroot case
-        const char *root_dir = dirname(getenv("TMPDIR"));
-        char current_path[1024] = {0};
-        snprintf(current_path, sizeof(current_path), "%s/usr/share/X11/xkb", root_dir);
-        if (access(current_path, F_OK) == 0)
-            setenv("XKB_CONFIG_ROOT", current_path, 1);
-    }
-    if (!getenv("XKB_CONFIG_ROOT")) {
-        // proot case
-        if (access("/usr/share/X11/xkb", F_OK) == 0)
-            setenv("XKB_CONFIG_ROOT", "/usr/share/X11/xkb", 1);
-            // Termux case
-        else if (access("/data/data/com.termux/files/usr/share/X11/xkb", F_OK) == 0)
-            setenv("XKB_CONFIG_ROOT", "/data/data/com.termux/files/usr/share/X11/xkb", 1);
-    }
-
-    if (!getenv("XKB_CONFIG_ROOT")) {
-        char* error = (char*) "$XKB_CONFIG_ROOT is not set. Normally it is pointing to /usr/share/X11/xkb of a container.";
-        log(ERROR, "%s", error);
-        dprintf(2, "%s\n", error);
-        return JNI_FALSE;
-    }
-
-    XkbBaseDirectory = getenv("XKB_CONFIG_ROOT");
-    if (access(XkbBaseDirectory, F_OK) != 0) {
-        log(ERROR, "%s is unaccessible: %s\n", XkbBaseDirectory, strerror(errno));
-        printf("%s is unaccessible: %s\n", XkbBaseDirectory, strerror(errno));
-        return JNI_FALSE;
-    }
-
-    (*env)->GetJavaVM(env, &vm);
-
-    pthread_create(&t, NULL, startServer, vm);
-    return JNI_TRUE;
-}
-
-JNIEXPORT void JNICALL
-Java_com_termux_display_X11ServerCommand_windowChanged(JNIEnv *env, jobject thiz, jobject surface) {
-    QueueWorkProc(lorieChangeWindow, NULL, surface ? (*env)->NewGlobalRef(env, surface) : NULL);
-}
-
-JNIEXPORT jobject JNICALL
-Java_com_termux_display_X11ServerCommand_getXConnection(JNIEnv *env, jobject thiz) {
-    int client[2];
-    jclass ParcelFileDescriptorClass = (*env)->FindClass(env, "android/os/ParcelFileDescriptor");
-    jmethodID adoptFd = (*env)->GetStaticMethodID(env, ParcelFileDescriptorClass, "adoptFd", "(I)Landroid/os/ParcelFileDescriptor;");
-    socketpair(AF_UNIX, SOCK_STREAM, 0, client);
-    fcntl(client[0], F_SETFL, fcntl(client[0], F_GETFL, 0) | O_NONBLOCK);
-    QueueWorkProc(addFd, NULL, (void*) (int64_t) client[1]);
-
-    return (*env)->CallStaticObjectMethod(env, ParcelFileDescriptorClass, adoptFd, client[0]);
-}
-
-JNIEXPORT jobject JNICALL
-Java_com_termux_display_X11ServerCommand_getLogcatOutput(JNIEnv *env, jobject thiz) {
-    jclass ParcelFileDescriptorClass = (*env)->FindClass(env, "android/os/ParcelFileDescriptor");
-    jmethodID adoptFd = (*env)->GetStaticMethodID(env, ParcelFileDescriptorClass, "adoptFd", "(I)Landroid/os/ParcelFileDescriptor;");
-    const char *debug = getenv("TERMUX_DISPLAY_DEBUG");
-    if (debug && !strcmp(debug, "1")) {
-        pthread_t t;
-        int p[2];
-        pipe(p);
-        fchmod(p[1], 0777);
-        pthread_create(&t, NULL, logcatThread, (void*) (uint64_t) p[0]);
-        return (*env)->CallStaticObjectMethod(env, ParcelFileDescriptorClass, adoptFd, p[1]);
-    }
-    return NULL;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_com_termux_display_X11ServerCommand_connected(JNIEnv *env, jclass clazz) {
-    return conn_fd != -1;
-}
-
 #endif
-
-
-
-
-
 

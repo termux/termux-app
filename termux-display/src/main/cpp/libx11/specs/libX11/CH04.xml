@@ -1,0 +1,2507 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Window_Information_Functions'>
+<title>Window Information Functions</title>
+
+<para>
+After you connect the display to the X server and create a window, you can use the Xlib window
+information functions to:
+</para>
+<itemizedlist>
+  <listitem><para>Obtain information about a window</para></listitem>
+  <listitem><para>Translate screen coordinates</para></listitem>
+  <listitem><para>Manipulate property lists</para></listitem>
+  <listitem><para>Obtain and change window properties</para></listitem>
+  <listitem><para>Manipulate selections</para></listitem>
+</itemizedlist>
+
+<sect1 id="Obtaining_Window_Information">
+<title>Obtaining Window Information</title>
+<!-- .XS -->
+<!-- (SN Obtaining Window Information  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to obtain information about 
+the window tree, the window's current attributes, 
+the window's current geometry, or the current pointer coordinates.
+Because they are most frequently used by window managers,
+these functions all return a status to indicate whether the window still
+exists.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain the parent, a list of children, and number of children for 
+a given window, use 
+<xref linkend='XQueryTree' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Child Window</primary></indexterm>
+<indexterm><primary>Parent Window</primary></indexterm>
+<indexterm significance="preferred"><primary>XQueryTree</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XQueryTree'>
+<funcprototype>
+  <funcdef>Status <function>XQueryTree</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Window *<parameter>root_return</parameter></paramdef>
+  <paramdef>Window *<parameter>parent_return</parameter></paramdef>
+  <paramdef>Window **<parameter>children_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>nchildren_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window whose list of children, root, parent, and number of
+children you want to obtain.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>root_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the root window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>parent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the parent window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>children_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the list of children.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nchildren_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of children.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XQueryTree' xrefstyle='select: title'/>
+function returns the root ID, the parent window ID, 
+a pointer to the list of children windows
+(NULL when there are no children), 
+and the number of children in the list for the specified window.
+The children are listed in current stacking order, from bottom-most 
+(first) to top-most (last).
+<xref linkend='XQueryTree' xrefstyle='select: title'/>
+returns zero if it fails and nonzero if it succeeds.
+To free a non-NULL children list when it is no longer needed, use 
+<xref linkend='XFree' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XQueryTree' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain the current attributes of a given window, use 
+<xref linkend='XGetWindowAttributes' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetWindowAttributes</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetWindowAttributes'>
+<funcprototype>
+  <funcdef>Status <function>XGetWindowAttributes</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>XWindowAttributes *<parameter>window_attributes_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window whose current attributes you want to obtain.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>window_attributes_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the specified window's attributes in the
+<structname>XWindowAttributes</structname>
+structure.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetWindowAttributes' xrefstyle='select: title'/>
+function returns the current attributes for the specified window to an
+<structname>XWindowAttributes</structname>
+structure.
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XWindowAttributes</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {
+     int x, y;                     /* location of window */
+     int width, height;            /* width and height of window */
+     int border_width;             /* border width of window */
+     int depth;                    /* depth of window */
+     Visual *visual;               /* the associated visual structure */
+     Window root;                  /* root of screen containing window */
+     int class;                    /* InputOutput, InputOnly*/
+     int bit_gravity;              /* one of the bit gravity values */
+     int win_gravity;              /* one of the window gravity values */
+     int backing_store;            /* NotUseful, WhenMapped, Always */
+     unsigned long backing_planes; /* planes to be preserved if possible */
+     unsigned long backing_pixel;  /* value to be used when restoring planes */
+     Bool save_under;              /* boolean, should bits under be saved? */
+     Colormap colormap;            /* color map to be associated with window */
+     Bool map_installed;           /* boolean, is color map currently installed*/
+     int map_state;                /* IsUnmapped, IsUnviewable, IsViewable */
+     long all_event_masks;         /* set of events all people have interest in*/
+     long your_event_mask;         /* my event mask */
+     long do_not_propagate_mask;   /* set of events that should not propagate */
+     Bool override_redirect;       /* boolean value for override-redirect */
+     Screen *screen;               /* back pointer to correct screen */
+} XWindowAttributes;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The x and y members are set to the upper-left outer
+corner relative to the parent window's origin.
+The width and height members are set to the inside size of the window, 
+not including the border.
+The border_width member is set to the window's border width in pixels.
+The depth member is set to the depth of the window 
+(that is, bits per pixel for the object).
+The visual member is a pointer to the screen's associated
+<structname>Visual</structname>
+structure.
+The root member is set to the root window of the screen containing the window.
+The class member is set to the window's class and can be either
+<symbol>InputOutput</symbol>
+or
+<symbol>InputOnly</symbol>.
+</para>
+<para>
+<!-- .LP -->
+The bit_gravity member is set to the window's bit gravity
+and can be one of the following:
+  <simplelist type="vert" columns="2">
+    <member><symbol>ForgetGravity</symbol></member>
+    <member><symbol>NorthWestGravity</symbol></member>
+    <member><symbol>NorthGravity</symbol></member>
+    <member><symbol>NorthEastGravity</symbol></member>
+    <member><symbol>WestGravity</symbol></member>
+
+    <member><symbol>EastGravity</symbol></member>
+    <member><symbol>SouthWestGravity</symbol></member>
+    <member><symbol>SouthGravity</symbol></member>
+    <member><symbol>SouthEastGravity</symbol></member>
+    <member><symbol>StaticGravity</symbol></member>
+  </simplelist>
+</para>
+<para>
+The win_gravity member is set to the window's window gravity
+and can be one of the following:
+  <simplelist type="vert" columns="2">
+    <member><symbol>UnmapGravity</symbol></member>
+    <member><symbol>NorthWestGravity</symbol></member>
+    <member><symbol>NorthGravity</symbol></member>
+    <member><symbol>NorthEastGravity</symbol></member>
+    <member><symbol>WestGravity</symbol></member>
+
+    <member><symbol>EastGravity</symbol></member>
+    <member><symbol>SouthWestGravity</symbol></member>
+    <member><symbol>SouthGravity</symbol></member>
+    <member><symbol>SouthEastGravity</symbol></member>
+    <member><symbol>StaticGravity</symbol></member>
+    <member><symbol>CenterGravity</symbol></member>
+  </simplelist>
+</para>
+<para>
+<!-- .LP -->
+For additional information on gravity,
+see <link linkend="Gravity_Attributes">section 3.2.3</link>.
+</para>
+<para>
+<!-- .LP -->
+The backing_store member is set to indicate how the X server should maintain
+the contents of a window 
+and can be 
+<symbol>WhenMapped</symbol>,
+<symbol>Always</symbol>,
+or
+<symbol>NotUseful</symbol>.
+The backing_planes member is set to indicate (with bits set to 1) which bit 
+planes of the window hold dynamic data that must be preserved in backing_stores 
+and during save_unders.
+The backing_pixel member is set to indicate what values to use 
+for planes not set in backing_planes.
+</para>
+<para>
+<!-- .LP -->
+The save_under member is set to 
+<symbol>True</symbol>
+or
+<symbol>False</symbol>.
+The colormap member is set to the colormap for the specified window and can be
+a colormap ID or 
+<symbol>None</symbol>.
+The map_installed member is set to indicate whether the colormap is 
+currently installed and can be 
+<symbol>True</symbol>
+or
+<symbol>False</symbol>.
+The map_state member is set to indicate the state of the window and can be
+<symbol>IsUnmapped</symbol>,
+<symbol>IsUnviewable</symbol>,
+or
+<symbol>IsViewable</symbol>.
+<symbol>IsUnviewable</symbol>
+is used if the window is mapped but some ancestor is unmapped.
+</para>
+<para>
+<!-- .LP -->
+The all_event_masks member is set to the bitwise inclusive OR of all event 
+masks selected on the window by all clients.
+The your_event_mask member is set to the bitwise inclusive OR of all event 
+masks selected by the querying client.
+The do_not_propagate_mask member is set to the bitwise inclusive OR of the 
+set of events that should not propagate.
+</para>
+<para>
+<!-- .LP -->
+The override_redirect member is set to indicate whether this window overrides
+structure control facilities and can be 
+<symbol>True</symbol>
+or
+<symbol>False</symbol>.
+Window manager clients should ignore the window if this member is
+<symbol>True</symbol>.
+</para>
+<para>
+<!-- .LP -->
+The screen member is set to a screen pointer that gives you a back pointer 
+to the correct screen.
+This makes it easier to obtain the screen information without
+having to loop over the root window fields to see which field matches.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetWindowAttributes' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain the current geometry of a given drawable, use 
+<xref linkend='XGetGeometry' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetGeometry</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetGeometry'>
+<funcprototype>
+  <funcdef>Status <function>XGetGeometry</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>Window *<parameter>root_return</parameter></paramdef>
+  <paramdef>int *<parameter>x_return</parameter></paramdef>
+  <paramdef>int *<parameter>y_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>width_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>height_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>border_width_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>depth_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable, which can be a window or a pixmap.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>root_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the root window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the x and y coordinates that define the location of the drawable.
+For a window, 
+these coordinates specify the upper-left outer corner relative to
+its parent's origin.
+For pixmaps, these coordinates are always zero.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the drawable's dimensions (width and height).
+For a window, 
+these dimensions specify the inside size, not including the border.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>border_width_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the border width in pixels. 
+If the drawable is a pixmap, it returns zero.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>depth_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the depth of the drawable (bits per pixel for the object).
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetGeometry' xrefstyle='select: title'/>
+function returns the root window and the current geometry of the drawable.
+The geometry of the drawable includes the x and y coordinates, width and height,
+border width, and depth.
+These are described in the argument list.
+It is legal to pass to this function a window whose class is
+<symbol>InputOnly</symbol>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetGeometry' xrefstyle='select: title'/>
+can generate a
+<errorname>BadDrawable</errorname>
+error.
+</para>
+</sect1>
+<sect1 id="Translating_Screen_Coordinates">
+<title>Translating Screen Coordinates</title>
+<!-- .XS -->
+<!-- (SN Translating Screen Coordinates  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Applications sometimes
+need to perform a coordinate transformation from the coordinate
+space of one window to another window or need to determine which
+window the pointing device is in.
+<xref linkend='XTranslateCoordinates' xrefstyle='select: title'/>
+and
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>
+fulfill these needs (and avoid any race conditions) by
+asking the X server to perform these operations.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To translate a coordinate in one window to the coordinate
+space of another window, use
+<xref linkend='XTranslateCoordinates' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XTranslateCoordinates</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XTranslateCoordinates'>
+<funcprototype>
+  <funcdef>Bool <function>XTranslateCoordinates</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>src_w</parameter></paramdef>
+  <paramdef>Window <parameter>dest_w</parameter></paramdef>
+  <paramdef>int <parameter>src_x</parameter></paramdef>
+  <paramdef>int <parameter>src_y</parameter></paramdef>
+  <paramdef>int *<parameter>dest_x_return</parameter></paramdef>
+  <paramdef>int *<parameter>dest_y_return</parameter></paramdef>
+  <paramdef>Window *<parameter>child_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the source window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the destination window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates within the source window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_x_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_y_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the x and y coordinates within the destination window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>child_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the child if the coordinates are contained in a mapped child of the
+destination window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If
+<xref linkend='XTranslateCoordinates' xrefstyle='select: title'/>
+returns
+<symbol>True</symbol>,
+it takes the src_x and src_y coordinates relative
+to the source window's origin and returns these coordinates to 
+dest_x_return and dest_y_return
+relative to the destination window's origin.
+If
+<xref linkend='XTranslateCoordinates' xrefstyle='select: title'/>
+returns 
+<symbol>False</symbol>,
+src_w and dest_w are on different screens,
+and dest_x_return and dest_y_return are zero.
+If the coordinates are contained in a mapped child of dest_w,
+that child is returned to child_return.
+Otherwise, child_return is set to
+<symbol>None</symbol>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XTranslateCoordinates' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain the screen coordinates of the pointer
+or to determine the pointer coordinates relative to a specified window, use 
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XQueryPointer</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XQueryPointer'>
+<funcprototype>
+  <funcdef>Bool <function>XQueryPointer</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Window *<parameter>root_return</parameter></paramdef>
+  <paramdef>Window *<parameter>child_return</parameter></paramdef>
+  <paramdef>int *<parameter>root_x_return</parameter></paramdef>
+  <paramdef>int *<parameter>root_y_return</parameter></paramdef>
+  <paramdef>int *<parameter>win_x_return</parameter></paramdef>
+  <paramdef>int *<parameter>win_y_return</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>mask_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>root_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the root window that the pointer is in.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>child_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the child window that the pointer is located in, if any.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>root_x_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>root_y_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the pointer coordinates relative to the root window's origin.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>win_x_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>win_y_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Return the pointer coordinates relative to the specified window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>mask_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the current state of the modifier keys and pointer buttons.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>
+function returns the root window the pointer is logically on and the pointer
+coordinates relative to the root window's origin.
+If
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>
+returns 
+<symbol>False</symbol>,
+the pointer is not on the same screen as the specified window, and
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>
+returns 
+<symbol>None</symbol>
+to child_return and zero to win_x_return and win_y_return.
+If 
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>
+returns 
+<symbol>True</symbol>,
+the pointer coordinates returned to win_x_return and win_y_return
+are relative to the origin of the specified window.
+In this case, 
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>
+returns the child that contains the pointer, if any,
+or else
+<symbol>None</symbol>
+to child_return.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>
+returns the current logical state of the keyboard buttons 
+and the modifier keys in mask_return.
+It sets mask_return to the bitwise inclusive OR of one or more
+of the button or modifier key bitmasks to match 
+the current state of the mouse buttons and the modifier keys.
+</para>
+<para>
+<!-- .LP -->
+Note that the logical state of a device (as seen through Xlib)
+may lag the physical state if device event processing is frozen
+(see <link linkend='Pointer_Grabbing'>section 12.1</link>).
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XQueryPointer' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+</sect1>
+<sect1 id="Properties_and_Atoms">
+<title>Properties and Atoms</title>
+<!-- .XS -->
+<!-- (SN Properties and Atoms  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+A property is a collection of named, typed data.
+The window system has a set of predefined properties
+<indexterm><primary>Atom</primary><secondary>predefined</secondary></indexterm>
+(for example, the name of a window, size hints, and so on), and users can
+define any other arbitrary information and associate it with windows.
+Each property has a name,
+which is an ISO Latin-1 string.
+For each named property,
+a unique identifier (atom) is associated with it. 
+A property also has a type, for example, string or integer.
+These types are also indicated using atoms, so arbitrary new
+types can be defined.
+Data of only one type may be associated with a single
+property name.
+Clients can store and retrieve properties associated with windows.
+For efficiency reasons,
+an atom is used rather than a character string.
+<xref linkend='XInternAtom' xrefstyle='select: title'/>
+can be used to obtain the atom for property names.
+<indexterm><primary>Atom</primary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+A property is also stored in one of several possible formats.
+The X server can store the information as 8-bit quantities, 16-bit
+quantities, or 32-bit quantities.
+This permits the X server to present the data in the byte order that the
+client expects.
+<!-- .NT Note -->
+If you define further properties of complex type, 
+you must encode and decode them yourself.
+These functions must be carefully written if they are to be portable.
+For further information about how to write a library extension,
+see <link linkend="extensions">appendix C</link>.
+<!-- .NE -->
+The type of a property is defined by an atom, which allows for
+arbitrary extension in this type scheme.
+<indexterm><primary>Atom</primary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+Certain property names are
+predefined in the server for commonly used functions.
+The atoms for these properties are defined in 
+<filename class="headerfile">&lt;X11/Xatom.h&gt;</filename>.
+<indexterm type="file"><primary><filename class="headerfile">X11/Xatom.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xatom.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xatom.h&gt;</filename></secondary></indexterm>
+To avoid name clashes with user symbols, the 
+<code>#define</code>
+name for each atom has the XA_ prefix.
+For an explanation of the functions that let you get and set
+much of the information stored in these predefined properties,
+see <link linkend='Inter_Client_Communication_Functions'>chapter 14</link>.
+</para>
+<para>
+<!-- .LP -->
+The core protocol imposes no semantics on these property names,
+but semantics are specified in other X Consortium standards,
+such as the <olink targetdoc='icccm' targetptr='icccm'><citetitle>Inter-Client Communication Conventions Manual</citetitle></olink>
+and the <olink targetdoc='xlfd' targetptr='xlfd'><citetitle>X Logical Font Description Conventions</citetitle></olink>.
+</para>
+<para>
+<!-- .LP -->
+You can use properties to communicate other information between
+applications.
+The functions described in this section let you define new properties 
+and get the unique atom IDs in your applications.
+</para>
+<para>
+<!-- .LP -->
+Although any particular atom can have some client interpretation 
+within each of the name spaces, 
+atoms occur in five distinct name spaces within the protocol: 
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+Selections
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Property names
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Property types
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Font properties 
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Type of a 
+<symbol>ClientMessage</symbol>
+event (none are built into the X server)
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+</para>
+<para>
+<!-- .LP -->
+The built-in selection property names are:
+<simplelist type="vert" columns="2">
+  <member><property>PRIMARY</property></member>
+  <member><property>SECONDARY</property></member>
+</simplelist>
+</para>
+<para>
+<!-- .LP -->
+The built-in property names are: 
+  <simplelist type="vert" columns="2">
+    <member><property>CUT_BUFFER0</property></member>
+    <member><property>CUT_BUFFER1</property></member>
+    <member><property>CUT_BUFFER2</property></member>
+    <member><property>CUT_BUFFER3</property></member>
+    <member><property>CUT_BUFFER4</property></member>
+    <member><property>CUT_BUFFER5</property></member>
+    <member><property>CUT_BUFFER6</property></member>
+    <member><property>CUT_BUFFER7</property></member>
+    <member><property>RGB_BEST_MAP</property></member>
+    <member><property>RGB_BLUE_MAP</property></member>
+    <member><property>RGB_DEFAULT_MAP</property></member>
+    <member><property>RGB_GRAY_MAP</property></member>
+    <member><property>RGB_GREEN_MAP</property></member>
+    <member><property>RGB_RED_MAP</property></member>
+
+    <member><property>RESOURCE_MANAGER</property></member>
+    <member><property>WM_CLASS</property></member>
+    <member><property>WM_CLIENT_MACHINE</property></member>
+    <member><property>WM_COLORMAP_WINDOWS</property></member>
+    <member><property>WM_COMMAND</property></member>
+    <member><property>WM_HINTS</property></member>
+    <member><property>WM_ICON_NAME</property></member>
+    <member><property>WM_ICON_SIZE</property></member>
+    <member><property>WM_NAME</property></member>
+    <member><property>WM_NORMAL_HINTS</property></member>
+    <member><property>WM_PROTOCOLS</property></member>
+    <member><property>WM_STATE</property></member>
+    <member><property>WM_TRANSIENT_FOR</property></member>
+    <member><property>WM_ZOOM_HINTS</property></member>
+  </simplelist>
+</para>
+<para>
+The built-in property types are: 
+  <simplelist type="vert" columns="2">
+    <member><property>ARC</property></member>
+    <member><property>ATOM</property></member>
+    <member><property>BITMAP</property></member>
+    <member><property>CARDINAL</property></member>
+    <member><property>COLORMAP</property></member>
+    <member><property>CURSOR</property></member>
+    <member><property>DRAWABLE</property></member>
+    <member><property>FONT</property></member>
+    <member><property>INTEGER</property></member>
+    <member><property>PIXMAP</property></member>
+    <member><property>POINT</property></member>
+    <member><property>RGB_COLOR_MAP</property></member>
+    <member><property>RECTANGLE</property></member>
+    <member><property>STRING</property></member>
+    <member><property>VISUALID</property></member>
+    <member><property>WINDOW</property></member>
+    <member><property>WM_HINTS</property></member>
+    <member><property>WM_SIZE_HINTS</property></member>
+  </simplelist>
+</para>
+<para>
+The built-in font property names are: 
+  <simplelist type="vert" columns="2">
+    <member><property>MIN_SPACE</property></member>
+    <member><property>NORM_SPACE</property></member>
+    <member><property>MAX_SPACE</property></member>
+    <member><property>END_SPACE</property></member>
+    <member><property>SUPERSCRIPT_X</property></member>
+    <member><property>SUPERSCRIPT_Y</property></member>
+    <member><property>SUBSCRIPT_X</property></member>
+    <member><property>SUBSCRIPT_Y</property></member>
+    <member><property>UNDERLINE_POSITION</property></member>
+    <member><property>UNDERLINE_THICKNESS</property></member>
+    <member><property>FONT_NAME</property></member>
+    <member><property>FULL_NAME</property></member>
+
+    <member><property>STRIKEOUT_DESCENT</property></member>
+    <member><property>STRIKEOUT_ASCENT</property></member>
+    <member><property>ITALIC_ANGLE</property></member>
+    <member><property>X_HEIGHT</property></member>
+    <member><property>QUAD_WIDTH</property></member>
+    <member><property>WEIGHT</property></member>
+    <member><property>POINT_SIZE</property></member>
+    <member><property>RESOLUTION</property></member>
+    <member><property>COPYRIGHT</property></member>
+    <member><property>NOTICE</property></member>
+    <member><property>FAMILY_NAME</property></member>
+    <member><property>CAP_HEIGHT</property></member>
+  </simplelist>
+</para>
+<para>
+<!-- .LP -->
+For further information about font properties,
+see <link linkend="Font_Metrics">section 8.5</link>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return an atom for a given name, use 
+<xref linkend='XInternAtom' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Atom</primary><secondary>interning</secondary></indexterm>
+<indexterm significance="preferred"><primary>XInternAtom</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XInternAtom'>
+<funcprototype>
+  <funcdef>Atom <function>XInternAtom</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>atom_name</parameter></paramdef>
+  <paramdef>Bool <parameter>only_if_exists</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>atom_name</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the name associated with the atom you want returned.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>only_if_exists</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a Boolean value that indicates whether the atom must be created.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XInternAtom' xrefstyle='select: title'/>
+function returns the atom identifier associated with the specified atom_name
+string.
+If only_if_exists is 
+<symbol>False</symbol>,
+the atom is created if it does not exist.
+Therefore,
+<xref linkend='XInternAtom' xrefstyle='select: title'/>
+can return
+<symbol>None</symbol>.
+If the atom name is not in the Host Portable Character Encoding, 
+the result is implementation-dependent.
+Uppercase and lowercase matter;
+the strings ``thing'', ``Thing'', and ``thinG'' 
+all designate different atoms.  
+The atom will remain defined even after the client's connection closes.
+It will become undefined only when the last connection to
+the X server closes.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XInternAtom' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return atoms for an array of names, use 
+<xref linkend='XInternAtoms' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Atom</primary><secondary>interning</secondary></indexterm>
+<indexterm significance="preferred"><primary>XInternAtoms</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XInternAtoms'>
+<funcprototype>
+  <funcdef>Status <function>XInternAtoms</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char **<parameter>names</parameter></paramdef>
+  <paramdef>int <parameter>count</parameter></paramdef>
+  <paramdef>Bool <parameter>only_if_exists</parameter></paramdef>
+  <paramdef>Atom *<parameter>atoms_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>names</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the array of atom names.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>count</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of atom names in the array.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>only_if_exists</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a Boolean value that indicates whether the atom must be created.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>atoms_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the atoms.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XInternAtoms' xrefstyle='select: title'/>
+function returns the atom identifiers associated with the specified names.
+The atoms are stored in the atoms_return array supplied by the caller.
+Calling this function is equivalent to calling
+<xref linkend='XInternAtom' xrefstyle='select: title'/>
+for each of the names in turn with the specified value of only_if_exists,
+but this function minimizes the number of round-trip protocol exchanges
+between the client and the X server.
+</para>
+<para>
+<!-- .LP -->
+This function returns a nonzero status if atoms are returned for
+all of the names;
+otherwise, it returns zero.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XInternAtoms' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return a name for a given atom identifier, use 
+<xref linkend='XGetAtomName' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Atom</primary><secondary>getting name</secondary></indexterm>
+<indexterm significance="preferred"><primary>XGetAtomName</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetAtomName'>
+<funcprototype>
+  <funcdef>char *<function>XGetAtomName</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Atom <parameter>atom</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>atom</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the atom for the property name you want returned.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetAtomName' xrefstyle='select: title'/>
+function returns the name associated with the specified atom.
+If the data returned by the server is in the Latin Portable Character Encoding,
+then the returned string is in the Host Portable Character Encoding.
+Otherwise, the result is implementation-dependent.
+To free the resulting string,
+call
+<xref linkend='XFree' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetAtomName' xrefstyle='select: title'/>
+can generate a
+<errorname>BadAtom</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return the names for an array of atom identifiers, use 
+<xref linkend='XGetAtomNames' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Atom</primary><secondary>getting name</secondary></indexterm>
+<indexterm significance="preferred"><primary>XGetAtomNames</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetAtomNames'>
+<funcprototype>
+  <funcdef>Status <function>XGetAtomNames</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Atom *<parameter>atoms</parameter></paramdef>
+  <paramdef>int <parameter>count</parameter></paramdef>
+  <paramdef>char **<parameter>names_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>atoms</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the array of atoms.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>count</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of atoms in the array.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>names_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the atom names.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetAtomNames' xrefstyle='select: title'/>
+function returns the names associated with the specified atoms.
+The names are stored in the names_return array supplied by the caller.
+Calling this function is equivalent to calling
+<xref linkend='XGetAtomName' xrefstyle='select: title'/>
+for each of the atoms in turn,
+but this function minimizes the number of round-trip protocol exchanges
+between the client and the X server.
+</para>
+<para>
+<!-- .LP -->
+This function returns a nonzero status if names are returned for
+all of the atoms;
+otherwise, it returns zero.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetAtomNames' xrefstyle='select: title'/>
+can generate a
+<errorname>BadAtom</errorname>
+error.
+</para>
+</sect1>
+<sect1 id="Obtaining_and_Changing_Window_Properties">
+<title>Obtaining and Changing Window Properties</title>
+<!-- .XS -->
+<!-- (SN Obtaining and Changing Window Properties  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+You can attach a property list to every window.
+Each property has a name, a type, and a value
+(see <link linkend="Properties_and_Atoms">section 4.3</link>).
+The value is an array of 8-bit, 16-bit, or 32-bit quantities,
+whose interpretation is left to the clients.  The type
+<type>char</type>
+is used to represent 8-bit quantities, the type
+<type>short</type>
+is used to represent 16-bit quantities, and the type
+<type>long</type>
+is used to represent 32-bit quantities.
+</para>
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to obtain, 
+change, update, or interchange window properties.
+In addition, Xlib provides other utility functions for inter-client
+communication
+(see <link linkend='Inter_Client_Communication_Functions'>chapter 14</link>).
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain the type, format, and value of a property of a given window, use 
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>.
+<indexterm><primary>Property</primary><secondary>getting</secondary></indexterm>
+</para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XGetWindowProperty</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetWindowProperty'>
+<funcprototype>
+  <funcdef>int <function>XGetWindowProperty</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window  <parameter>w</parameter></paramdef>
+  <paramdef>Atom <parameter>property</parameter></paramdef>
+  <paramdef>long <parameter>long_offset</parameter></paramdef>
+  <paramdef>long <parameter>long_length</parameter></paramdef>
+  <paramdef>Bool <parameter>delete</parameter></paramdef>
+  <paramdef>Atom <parameter>req_type</parameter></paramdef>
+  <paramdef>Atom *<parameter>actual_type_return</parameter></paramdef>
+  <paramdef>int *<parameter>actual_format_return</parameter></paramdef>
+  <paramdef>unsigned long *<parameter>nitems_return</parameter></paramdef>
+  <paramdef>unsigned long *<parameter>bytes_after_return</parameter></paramdef>
+  <paramdef>unsigned char **<parameter>prop_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window whose property you want to obtain.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>property</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property name.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>long_offset</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the offset in the specified property (in 32-bit quantities) 
+where the data is to be retrieved.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>long_length</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the length in 32-bit multiples of the data to be retrieved.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>delete</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a Boolean value that determines whether the property is deleted.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>req_type</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the atom identifier associated with the property type or
+<symbol>AnyPropertyType</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>actual_type_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the atom identifier  that defines the actual type of the property.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>actual_format_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the actual format of the property.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nitems_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the actual number of 8-bit, 16-bit, or 32-bit items 
+stored in the prop_return data.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>bytes_after_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the number of bytes remaining to be read in the property if 
+a partial read was performed.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>prop_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the data in the specified format.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>
+function returns the actual type of the property; the actual format of the property;
+the number of 8-bit, 16-bit, or 32-bit items transferred; the number of bytes remaining
+to be read in the property; and a pointer to the data actually returned.
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>
+sets the return arguments as follows:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+If the specified property does not exist for the specified window,
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>
+returns 
+<symbol>None</symbol>
+to actual_type_return and the value zero to 
+actual_format_return and bytes_after_return.
+The nitems_return argument is empty.
+In this case, the delete argument is ignored.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If the specified property exists 
+but its type does not match the specified type,
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>
+returns the actual property type to actual_type_return, 
+the actual property format (never zero) to actual_format_return, 
+and the property length in bytes
+(even if the actual_format_return is 16 or 32) 
+to bytes_after_return.
+It also ignores the delete argument.
+The nitems_return argument is empty.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If the specified property exists and either you assign 
+<symbol>AnyPropertyType</symbol>
+to the req_type argument or the specified type matches the actual property type,
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>
+returns the actual property type to actual_type_return and the actual
+property format (never zero) to actual_format_return. 
+It also returns a value to bytes_after_return and nitems_return, by 
+defining the following
+values:
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<!-- .nf -->
+     N = actual length of the stored property in bytes
+          (even if the format is 16 or 32)
+     I = 4 * long_offset
+     T = N - I
+     L = MINIMUM(T, 4 * long_length)
+     A = N - (I + L)
+<!-- .fi -->
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The returned value starts at byte index I in the property (indexing
+from zero), and its length in bytes is L.
+If the value for long_offset causes L to be negative,
+a
+<errorname>BadValue</errorname>
+error results. 
+The value of bytes_after_return is A, 
+giving the number of trailing unread bytes in the stored property.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+If the returned format is 8, the returned data is represented as a
+<type>char</type>
+array.
+If the returned format is 16, the returned data is represented as a
+<type>short</type>
+array and should be cast to that type to obtain the elements.
+If the returned format is 32, the returned data is represented as a
+<type>long</type>
+array and should be cast to that type to obtain the elements.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>
+always allocates one extra byte in prop_return 
+(even if the property is zero length) 
+and sets it to zero so that simple properties consisting of characters
+do not have to be copied into yet another string before use.
+</para>
+<para>
+<!-- .LP -->
+If delete is 
+<symbol>True</symbol>
+and bytes_after_return is zero, 
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>
+deletes the property 
+from the window and generates a 
+<symbol>PropertyNotify</symbol>
+event on the window.
+</para>
+<para>
+<!-- .LP -->
+The function returns
+<symbol>Success</symbol>
+if it executes successfully.
+To free the resulting data,
+use
+<xref linkend='XFree' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>
+can generate
+<errorname>BadAtom</errorname>,
+<errorname>BadValue</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain a given window's property list, use 
+<xref linkend='XListProperties' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Property</primary><secondary>listing</secondary></indexterm>
+<indexterm significance="preferred"><primary>XListProperties</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XListProperties'>
+<funcprototype>
+  <funcdef>Atom *<function>XListProperties</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>int *<parameter>num_prop_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window whose property list you want to obtain.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>num_prop_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the length of the properties array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XListProperties' xrefstyle='select: title'/>
+function returns a pointer to an array of atom properties that are defined for 
+the specified window or returns NULL if no properties were found.
+To free the memory allocated by this function, use
+<xref linkend='XFree' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XListProperties' xrefstyle='select: title'/>
+can generate a
+<errorname>BadWindow</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To change a property of a given window, use
+<xref linkend='XChangeProperty' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Property</primary><secondary>changing</secondary></indexterm>
+<indexterm><primary>Property</primary><secondary>appending</secondary></indexterm>
+<indexterm><primary>Property</primary><secondary>prepending</secondary></indexterm>
+<indexterm><primary>Property</primary><secondary>replacing</secondary></indexterm>
+<indexterm><primary>Property</primary><secondary>format</secondary></indexterm>
+<indexterm><primary>Property</primary><secondary>type</secondary></indexterm>
+<indexterm significance="preferred"><primary>XChangeProperty</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XChangeProperty'>
+<funcprototype>
+  <funcdef><function>XChangeProperty</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Atom <parameter>property</parameter></paramdef>
+  <paramdef>Atom <parameter>type</parameter></paramdef>
+  <paramdef>int <parameter>format</parameter></paramdef>
+  <paramdef>int <parameter>mode</parameter></paramdef>
+  <paramdef>unsignedchar *<parameter>data</parameter></paramdef>
+  <paramdef>int <parameter>nelements</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window whose property you want to change.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>property</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property name.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>type</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the type of the property.
+The X server does not interpret the type but simply
+passes it back to an application that later calls 
+<xref linkend='XGetWindowProperty' xrefstyle='select: title'/>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>format</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies whether the data should be viewed as a list
+of 8-bit, 16-bit, or 32-bit quantities.
+Possible values are 8, 16, and 32.
+This information allows the X server to correctly perform
+byte-swap operations as necessary.
+If the format is 16-bit or 32-bit,
+you must explicitly cast your data pointer to an (unsigned char *) in the call
+to 
+<xref linkend='XChangeProperty' xrefstyle='select: title'/>.
+<!-- .\" Changed name of this file to prop_mode.a on 1/13/87 -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>mode</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the mode of the operation.
+You can pass
+<symbol>PropModeReplace</symbol>,
+<symbol>PropModePrepend</symbol>,
+or
+<symbol>PropModeAppend</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>data</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property data.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nelements</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of elements of the specified data format.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XChangeProperty' xrefstyle='select: title'/>
+function alters the property for the specified window and
+causes the X server to generate a
+<symbol>PropertyNotify</symbol>
+event on that window.
+<xref linkend='XChangeProperty' xrefstyle='select: title'/>
+performs the following:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+If mode is
+<symbol>PropModeReplace</symbol>,
+<xref linkend='XChangeProperty' xrefstyle='select: title'/>
+discards the previous property value and stores the new data.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If mode is
+<symbol>PropModePrepend</symbol>
+or
+<symbol>PropModeAppend</symbol>,
+<xref linkend='XChangeProperty' xrefstyle='select: title'/>
+inserts the specified data before the beginning of the existing data
+or onto the end of the existing data, respectively.
+The type and format must match the existing property value,
+or a
+<errorname>BadMatch</errorname>
+error results.
+If the property is undefined, 
+it is treated as defined with the correct type and
+format with zero-length data.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+If the specified format is 8, the property data must be a
+<type>char</type>
+array.
+If the specified format is 16, the property data must be a
+<type>short</type>
+array.
+If the specified format is 32, the property data must be a
+<type>long</type>
+array.
+</para>
+<para>
+<!-- .LP -->
+The lifetime of a property is not tied to the storing client.
+Properties remain until explicitly deleted, until the window is destroyed,
+or until the server resets.
+For a discussion of what happens when the connection to the X server is closed,
+see <link linkend='Using_X_Server_Connection_Close_Operations'>section 2.6</link>.
+The maximum size of a property is server dependent and can vary dynamically
+depending on the amount of memory the server has available.
+(If there is insufficient space, a
+<errorname>BadAlloc</errorname>
+error results.)
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XChangeProperty' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadAtom</errorname>,
+<errorname>BadMatch</errorname>,
+<errorname>BadValue</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To rotate a window's property list, use
+<xref linkend='XRotateWindowProperties' xrefstyle='select: title'/>.
+</para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XRotateWindowProperties</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XRotateWindowProperties'>
+<funcprototype>
+  <funcdef><function>XRotateWindowProperties</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Atom <parameter>properties[]</parameter></paramdef>
+  <paramdef>int <parameter>num_prop</parameter></paramdef>
+  <paramdef>int <parameter>npositions</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>properties</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the array of properties that are to be rotated.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>num_prop</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the length of the properties array.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>npositions</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the rotation amount.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XRotateWindowProperties' xrefstyle='select: title'/>
+function allows you to rotate properties on a window and causes
+the X server to generate
+<symbol>PropertyNotify</symbol>
+events.
+If the property names in the properties array are viewed as being numbered 
+starting from zero and if there are num_prop property names in the list,
+then the value associated with property name I becomes the value associated 
+with property name (I + npositions) mod N for all I from zero to N &minus; 1.
+The effect is to rotate the states by npositions places around the virtual ring
+of property names (right for positive npositions, 
+left for negative npositions).
+If npositions mod N is nonzero,
+the X server generates a
+<symbol>PropertyNotify</symbol>
+event for each property in the order that they are listed in the array.
+If an atom occurs more than once in the list or no property with that 
+name is defined for the window,
+a 
+<errorname>BadMatch</errorname>
+error results.
+If a 
+<errorname>BadAtom</errorname>
+or 
+<errorname>BadMatch</errorname>
+error results,
+no properties are changed.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XRotateWindowProperties' xrefstyle='select: title'/>
+can generate
+<errorname>BadAtom</errorname>,
+<errorname>BadMatch</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To delete a property on a given window, use 
+<xref linkend='XDeleteProperty' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Property</primary><secondary>deleting</secondary></indexterm>
+<indexterm significance="preferred"><primary>XDeleteProperty</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDeleteProperty'>
+<funcprototype>
+  <funcdef><function>XDeleteProperty</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>Atom <parameter>property</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window whose property you want to delete.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>property</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property name.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDeleteProperty' xrefstyle='select: title'/>
+function deletes the specified property only if the
+property was defined on the specified window
+and causes the X server to generate a
+<symbol>PropertyNotify</symbol>
+event on the window unless the property does not exist.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDeleteProperty' xrefstyle='select: title'/>
+can generate
+<errorname>BadAtom</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+</sect1>
+<sect1 id="Selections">
+<title>Selections</title>
+<!-- .XS -->
+<!-- (SN Selections -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Selection</primary></indexterm>
+Selections are one method used by applications to exchange data.
+By using the property mechanism,
+applications can exchange data of arbitrary types and can negotiate
+the type of the data.
+A selection can be thought of as an indirect property with a dynamic type.
+That is, rather than having the property stored in the X server,
+the property is maintained by some client (the owner).
+A selection is global in nature (considered to belong to the user 
+but be maintained by clients) rather than being private to a particular 
+window subhierarchy or a particular set of clients.
+</para>
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to set, get, or request conversion
+of selections.
+This allows applications to implement the notion of current selection,
+which requires that notification be sent to applications when they no 
+longer own the selection.
+Applications that support selection often highlight the current selection
+and so must be informed when another application has
+acquired the selection so that they can unhighlight the selection.
+</para>
+<para>
+<!-- .LP -->
+When a client asks for the contents of
+a selection, it specifies a selection target type.
+This target type
+can be used to control the transmitted representation of the contents.
+For example, if the selection is ``the last thing the user clicked on''
+and that is currently an image, then the target type might specify
+whether the contents of the image should be sent in XY format or Z format.
+</para>
+<para>
+<!-- .LP -->
+The target type can also be used to control the class of
+contents transmitted, for example, 
+asking for the ``looks'' (fonts, line
+spacing, indentation, and so forth) of a paragraph selection, not the
+text of the paragraph.
+The target type can also be used for other
+purposes.
+The protocol does not constrain the semantics.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To set the selection owner, use 
+<xref linkend='XSetSelectionOwner' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Selection</primary><secondary>setting the owner</secondary></indexterm>
+<indexterm significance="preferred"><primary>XSetSelectionOwner</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XSetSelectionOwner'>
+<funcprototype>
+  <funcdef><function>XSetSelectionOwner</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Atom <parameter>selection</parameter></paramdef>
+  <paramdef>Window <parameter>owner</parameter></paramdef>
+  <paramdef>Time <parameter>time</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>selection</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the selection atom.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>owner</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the owner of the specified selection atom.
+You can pass a window or
+<symbol>None</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>time</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the time.
+You can pass either a timestamp or
+<symbol>CurrentTime</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XSetSelectionOwner' xrefstyle='select: title'/>
+function changes the owner and last-change time for the specified selection
+and has no effect if the specified time is earlier than the current
+last-change time of the specified selection 
+or is later than the current X server time.
+Otherwise, the last-change time is set to the specified time,
+with
+<symbol>CurrentTime</symbol>
+replaced by the current server time.
+If the owner window is specified as
+<symbol>None</symbol>,
+then the owner of the selection becomes 
+<symbol>None</symbol>
+(that is, no owner).
+Otherwise, the owner of the selection becomes the client executing
+the request.
+</para>
+<para>
+<!-- .LP  -->
+If the new owner (whether a client or
+<symbol>None</symbol>)
+is not
+the same as the current owner of the selection and the current
+owner is not
+<symbol>None</symbol>,
+the current owner is sent a 
+<symbol>SelectionClear</symbol>
+event.
+If the client that is the owner of a selection is later
+terminated (that is, its connection is closed)
+or if the owner window it has specified in the request is later
+destroyed,
+the owner of the selection automatically
+reverts to
+<symbol>None</symbol>,
+but the last-change time is not affected.
+The selection atom is uninterpreted by the X server.
+<xref linkend='XGetSelectionOwner' xrefstyle='select: title'/>
+returns the owner window, which is reported in 
+<symbol>SelectionRequest</symbol>
+and
+<symbol>SelectionClear</symbol>
+events.
+Selections are global to the X server.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XSetSelectionOwner' xrefstyle='select: title'/>
+can generate
+<errorname>BadAtom</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return the selection owner, use 
+<xref linkend='XGetSelectionOwner' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Selection</primary><secondary>getting the owner</secondary></indexterm>
+<indexterm significance="preferred"><primary>XGetSelectionOwner</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetSelectionOwner'>
+<funcprototype>
+  <funcdef>Window <function>XGetSelectionOwner</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Atom <parameter>selection</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>selection</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the selection atom whose owner you want returned.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetSelectionOwner' xrefstyle='select: title'/>
+function
+returns the window ID associated with the window that currently owns the
+specified selection.
+If no selection was specified, the function returns the constant
+<symbol>None</symbol>.
+If
+<symbol>None</symbol>
+is returned,
+there is no owner for the selection.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetSelectionOwner' xrefstyle='select: title'/>
+can generate a
+<errorname>BadAtom</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To request conversion of a selection, use 
+<xref linkend='XConvertSelection' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Selection</primary><secondary>converting</secondary></indexterm>
+<indexterm significance="preferred"><primary>XConvertSelection</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XConvertSelection'>
+<funcprototype>
+  <funcdef><function>XConvertSelection</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Atom <parameter>selection</parameter></paramdef>
+  <paramdef>Atom <parameter>target</parameter></paramdef>
+  <paramdef>Atom <parameter>property</parameter></paramdef>
+  <paramdef>Window <parameter>requestor</parameter></paramdef>
+  <paramdef>Time <parameter>time</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>selection</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the selection atom.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>target</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the target atom.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>property</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the property name.
+You also can pass 
+<symbol>None</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>requestor</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the requestor.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>time</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the time.
+You can pass either a timestamp or
+<symbol>CurrentTime</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<xref linkend='XConvertSelection' xrefstyle='select: title'/>
+requests that the specified selection be converted to the specified target
+type:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+If the specified selection has an owner, the X server sends a
+<symbol>SelectionRequest</symbol>
+event to that owner.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If no owner for the specified
+selection exists, the X server generates a
+<symbol>SelectionNotify</symbol>
+event to the
+requestor with property
+<symbol>None</symbol>.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+The arguments are passed on unchanged in either of the events.
+There are two predefined selection atoms: PRIMARY and SECONDARY.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XConvertSelection' xrefstyle='select: title'/>
+can generate
+<errorname>BadAtom</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+<!-- .bp -->
+
+
+</para>
+</sect1>
+</chapter>

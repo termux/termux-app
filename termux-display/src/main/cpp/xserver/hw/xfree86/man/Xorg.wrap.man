@@ -1,0 +1,67 @@
+.\" Xwrapper.wrap.@appmansuffix@
+.\"
+.\" Copyright 2014 Red Hat, Inc.
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and its
+.\" documentation for any purpose is hereby granted without fee, provided that
+.\" the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation.
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of The Open Group shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from The Open Group.
+.\"
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH Xorg.wrap @appmansuffix@ @xorgversion@
+.SH NAME
+Xorg.wrap \- Xorg X server binary wrapper
+.SH DESCRIPTION
+The Xorg X server may need root rights to function properly. To start the
+Xorg X server with these rights your system is using a suid root wrapper
+installed as @suid_wrapper_dir@/Xorg.wrap which will execute the real
+X server which is installed as @suid_wrapper_dir@/Xorg.
+.PP
+By default Xorg.wrap will autodetect if root rights are necessary, and
+if not it will drop its elevated rights before starting the real X server.
+By default Xorg.wrap will only allow executing the real X server from login
+sessions on a physical console.
+
+.SH CONFIG FILE
+Xorg.wrap's default behavior can be overridden from the
+\fI@sysconfdir@/X11/Xwrapper.config\fP config file. Lines starting with a
+\fB#\fP in Xwrapper.config are considered comments and will be ignored. Any
+other non empty lines must take the form of \fBkey\fP = \fIvalue\fP.
+.TP 8
+\fBallowed_users\fP = \fIrootonly\fP|\fIconsole\fP|\fIanybody\fP
+Specify which users may start the X server through the wrapper. Use
+\fIrootonly\fP to only allow root, use \fIconsole\fP to only allow users
+logged into a physical console, and use \fIanybody\fP to allow anybody.
+The default is \fIconsole\fP.
+.TP 8
+\fBneeds_root_rights\fP = \fIyes\fP|\fIno\fP|\fIauto\fP
+Configure if the wrapper should drop its elevated (root) rights before starting
+the X server. Use \fIyes\fP to force execution as root, \fIno\fP to force
+execution with all suid rights dropped, and \fIauto\fP to let the wrapper
+auto-detect. The default is \fIauto\fP.
+.PP
+When auto-detecting the wrapper will drop rights if kms graphics are available
+and not drop them if no kms graphics are detected. If a system has multiple
+graphics cards and some are not kms capable auto-detection may fail,
+in this case manual configuration should be used.
+
+.SH "SEE ALSO"
+Xorg X server information: \fIXorg\fP(1)

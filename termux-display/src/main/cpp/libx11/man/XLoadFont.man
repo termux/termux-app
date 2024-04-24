@@ -1,0 +1,441 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.de EX
+.sp
+.nf
+.ft CW
+..
+.de EE
+.ft R
+.fi
+.sp
+..
+.TH XLoadFont __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XLoadFont, XQueryFont, XLoadQueryFont, XFreeFont, XGetFontProperty, XUnloadFont, XCharStruct, XFontProp, XChar2b, XFontStruct \- load or unload fonts and font metric structures
+.SH SYNTAX
+.HP
+Font XLoadFont\^(\^Display *\fIdisplay\fP\^, _Xconst char *\fIname\fP\^);
+.HP
+XFontStruct *XQueryFont\^(\^Display *\fIdisplay\fP\^, XID \fIfont_ID\fP\^);
+.HP
+XFontStruct *XLoadQueryFont\^(\^Display *\fIdisplay\fP\^, _Xconst char
+*\fIname\fP\^);
+.HP
+int XFreeFont\^(\^Display *\fIdisplay\fP\^, XFontStruct *\fIfont_struct\fP\^);
+.HP
+Bool XGetFontProperty\^(\^XFontStruct *\fIfont_struct\fP\^, Atom \fIatom\fP\^,
+unsigned long *\fIvalue_return\fP\^);
+.HP
+int XUnloadFont\^(\^Display *\fIdisplay\fP\^, Font \fIfont\fP\^);
+.SH ARGUMENTS
+.IP \fIatom\fP 1i
+Specifies the atom for the property name you want returned.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIfont\fP 1i
+Specifies the font.
+.IP \fIfont_ID\fP 1i
+Specifies the font ID or the
+.B GContext
+ID.
+.IP \fIfont_struct\fP 1i
+Specifies the storage associated with the font.
+.IP \fIgc\fP 1i
+Specifies the GC.
+.IP \fIname\fP 1i
+Specifies the name of the font,
+which is a null-terminated string.
+.IP \fIvalue_return\fP 1i
+Returns the value of the font property.
+.SH DESCRIPTION
+The
+.B XLoadFont
+function loads the specified font and returns its associated font ID.
+If the font name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+When the characters \*(lq?\*(rq and \*(lq\*(rq are used in a font name, a
+pattern match is performed and any matching font is used.
+In the pattern,
+the \*(lq?\*(rq character will match any single character,
+and the \*(lq*\*(rq character will match any number of characters.
+A structured format for font names is specified in the X Consortium standard
+\fIX Logical Font Description Conventions\fP.
+If
+.B XLoadFont
+was unsuccessful at loading the specified font,
+a
+.B BadName
+error results.
+Fonts are not associated with a particular screen
+and can be stored as a component
+of any GC.
+When the font is no longer needed, call
+.BR XUnloadFont .
+.LP
+.B XLoadFont
+can generate
+.B BadAlloc
+and
+.B BadName
+errors.
+.LP
+The
+.B XQueryFont
+function returns a pointer to the
+.B XFontStruct
+structure, which contains information associated with the font.
+You can query a font or the font stored in a GC.
+The font ID stored in the
+.B XFontStruct
+structure will be the
+.B GContext
+ID, and you need to be careful when using this ID in other functions
+(see
+.BR XGContextFromGC ).
+If the font does not exist,
+.B XQueryFont
+returns NULL.
+To free this data, use
+.BR XFreeFontInfo .
+.LP
+.B XLoadQueryFont
+can generate a
+.B BadAlloc
+error.
+.LP
+The
+.B XLoadQueryFont
+function provides the most common way for accessing a font.
+.B XLoadQueryFont
+both opens (loads) the specified font and returns a pointer to the
+appropriate
+.B XFontStruct
+structure.
+If the font name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+If the font does not exist,
+.B XLoadQueryFont
+returns NULL.
+.LP
+The
+.B XFreeFont
+function deletes the association between the font resource ID and the specified
+font and frees the
+.B XFontStruct
+structure.
+The font itself will be freed when no other resource references it.
+The data and the font should not be referenced again.
+.LP
+.B XFreeFont
+can generate a
+.B BadFont
+error.
+.LP
+Given the atom for that property,
+the
+.B XGetFontProperty
+function returns the value of the specified font property.
+.B XGetFontProperty
+also returns
+.B False
+if the property was not defined or
+.B True
+if it was defined.
+A set of predefined atoms exists for font properties,
+which can be found in
+.BR X11/Xatom.h .
+This set contains the standard properties associated with
+a font.
+Although it is not guaranteed,
+it is likely that the predefined font properties will be present.
+.LP
+The
+.B XUnloadFont
+function deletes the association between the font resource ID and the specified font.
+The font itself will be freed when no other resource references it.
+The font should not be referenced again.
+.LP
+.B XUnloadFont
+can generate a
+.B BadFont
+error.
+.SH STRUCTURES
+The
+.B XFontStruct
+structure contains all of the information for the font
+and consists of the font-specific information as well as
+a pointer to an array of
+.B XCharStruct
+structures for the
+characters contained in the font.
+The
+.BR XFontStruct ,
+.BR XFontProp ,
+and
+.B XCharStruct
+structures contain:
+.LP
+.EX
+typedef struct {
+	short lbearing;	/\&* origin to left edge of raster */
+	short rbearing;	/\&* origin to right edge of raster */
+	short width;	/\&* advance to next char's origin */
+	short ascent;	/\&* baseline to top edge of raster */
+	short descent;	/\&* baseline to bottom edge of raster */
+	unsigned short attributes;	/\&* per char flags (not predefined) */
+} XCharStruct;
+.EE
+.LP
+.EX
+typedef struct {
+	Atom	name;
+	unsigned long card32;
+} XFontProp;
+.EE
+.LP
+.EX
+typedef struct {	/\&* normal 16 bit characters are two bytes */
+    unsigned char byte1;
+    unsigned char byte2;
+} XChar2b;
+.EE
+.LP
+.EX
+typedef struct {
+	XExtData *ext_data;	/\&* hook for extension to hang data */
+	Font fid;	/\&* Font id for this font */
+	unsigned direction;	/\&* hint about the direction font is painted */
+	unsigned min_char_or_byte2;	/\&* first character */
+	unsigned max_char_or_byte2;	/\&* last character */
+	unsigned min_byte1;	/\&* first row that exists */
+	unsigned max_byte1;	/\&* last row that exists */
+	Bool all_chars_exist;	/\&* flag if all characters have nonzero size */
+	unsigned default_char;	/\&* char to print for undefined character */
+	int n_properties;	/\&* how many properties there are */
+	XFontProp *properties;	/\&* pointer to array of additional properties */
+	XCharStruct min_bounds;	/\&* minimum bounds over all existing char */
+	XCharStruct max_bounds;	/\&* maximum bounds over all existing char */
+	XCharStruct *per_char;	/\&* first_char to last_char information */
+	int ascent;	/\&* logical extent above baseline for spacing */
+	int descent;	/\&* logical decent below baseline for spacing */
+} XFontStruct;
+.EE
+.LP
+X supports single byte/character, two bytes/character matrix,
+and 16-bit character text operations.
+Note that any of these forms can be used with a font, but a
+single byte/character text request can only specify a single byte
+(that is, the first row of a 2-byte font).
+You should view 2-byte fonts as a two-dimensional matrix of defined
+characters: byte1 specifies the range of defined rows and
+byte2 defines the range of defined columns of the font.
+Single byte/character fonts have one row defined, and the byte2 range
+specified in the structure defines a range of characters.
+.LP
+The bounding box of a character is defined by the
+.B XCharStruct
+of that character.
+When characters are absent from a font,
+the default_char is used.
+When fonts have all characters of the same size,
+only the information in the
+.B XFontStruct
+min and max bounds are used.
+.LP
+The members of the
+.B XFontStruct
+have the following semantics:
+.IP \(bu 5
+The direction member can be either
+.B FontLeftToRight
+or
+.BR FontRightToLeft .
+It is just a hint as to whether most
+.B XCharStruct
+elements
+have a positive
+.RB ( FontLeftToRight )
+or a negative
+.RB ( FontRightToLeft )
+character width
+metric.
+The core protocol defines no support for vertical text.
+.IP \(bu 5
+If the min_byte1 and max_byte1 members are both zero, min_char_or_byte2
+specifies the linear character index corresponding to the first element
+of the per_char array, and max_char_or_byte2 specifies the linear character
+index of the last element.
+.IP
+If either min_byte1 or max_byte1 are nonzero, both
+min_char_or_byte2 and max_char_or_byte2 are less than 256,
+and the 2-byte character index values corresponding to the
+per_char array element N (counting from 0) are:
+.IP
+.EX
+	byte1 = N/D + min_byte1
+	byte2 = N\\D + min_char_or_byte2
+.EE
+where:
+.EX
+        D = max_char_or_byte2 \- min_char_or_byte2 + 1
+        / = integer division
+        \e\e = integer modulus
+.EE
+.IP \(bu 5
+If the per_char pointer is NULL,
+all glyphs between the first and last character indexes
+inclusive have the same information,
+as given by both min_bounds and max_bounds.
+.IP \(bu 5
+If all_chars_exist is
+.BR True ,
+all characters in the per_char array have nonzero bounding boxes.
+.IP \(bu 5
+The default_char member specifies the character that will be used when an
+undefined or nonexistent character is printed.
+The default_char is a 16-bit character (not a 2-byte character).
+For a font using 2-byte matrix format,
+the default_char has byte1 in the most-significant byte
+and byte2 in the least significant byte.
+If the default_char itself specifies an undefined or nonexistent character,
+no printing is performed for an undefined or nonexistent character.
+.IP \(bu 5
+The min_bounds and max_bounds members contain the most extreme values of
+each individual
+.B XCharStruct
+component over all elements of this array
+(and ignore nonexistent characters).
+The bounding box of the font (the smallest
+rectangle enclosing the shape obtained by superimposing all of the
+characters at the same origin [x,y]) has its upper-left coordinate at:
+.EX
+	[x + min_bounds.lbearing, y \- max_bounds.ascent]
+.EE
+.IP
+Its width is:
+.EX
+	max_bounds.rbearing \- min_bounds.lbearing
+.EE
+.IP
+Its height is:
+.EX
+	max_bounds.ascent + max_bounds.descent
+.EE
+.IP \(bu 5
+The ascent member is the logical extent of the font above the baseline that is
+used for determining line spacing.
+Specific characters may extend beyond
+this.
+.IP \(bu 5
+The descent member is the logical extent of the font at or below the
+baseline that is used for determining line spacing.
+Specific characters may extend beyond this.
+.IP \(bu 5
+If the baseline is at Y-coordinate y,
+the logical extent of the font is inclusive between the Y-coordinate
+values (y \- font.ascent) and (y + font.descent \- 1).
+Typically,
+the minimum interline spacing between rows of text is given
+by ascent + descent.
+.LP
+For a character origin at [x,y],
+the bounding box of a character (that is,
+the smallest rectangle that encloses the character's shape)
+described in terms of
+.B XCharStruct
+components is a rectangle with its upper-left corner at:
+.LP
+.EX
+[x + lbearing, y \- ascent]
+.EE
+.LP
+Its width is:
+.LP
+.EX
+rbearing \- lbearing
+.EE
+.LP
+Its height is:
+.LP
+.EX
+ascent + descent
+.EE
+.LP
+The origin for the next character is defined to be:
+.LP
+.EX
+[x + width, y]
+.EE
+.LP
+The lbearing member defines the extent of the left edge of the character ink
+from the origin.
+The rbearing member defines the extent of the right edge of the character ink
+from the origin.
+The ascent member defines the extent of the top edge of the character ink
+from the origin.
+The descent member defines the extent of the bottom edge of the character ink
+from the origin.
+The width member defines the logical width of the character.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAlloc
+The server failed to allocate the requested resource or server memory.
+.TP 1i
+.B BadFont
+A value for a Font or GContext argument does not name a defined Font.
+.TP 1i
+.B BadName
+A font or color of the specified name does not exist.
+.SH "SEE ALSO"
+XCreateGC(__libmansuffix__),
+XListFonts(__libmansuffix__),
+XSetFontPath(__libmansuffix__)
+.br
+\fI\*(xL\fP

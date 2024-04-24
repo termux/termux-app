@@ -1,0 +1,76 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbAddGeomKey __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbAddGeomKey \- Add one key at the end of an existing row of keys
+.SH SYNOPSIS
+.HP
+.B XkbKeyPtr XkbAddGeomKey
+.BI "(\^XkbRowPtr " "row" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I row
+row to be updated
+.SH DESCRIPTION
+.LP
+Xkb provides functions to add a single new element to the top-level keyboard geometry. In each case 
+the 
+.I num_ * 
+fields of the corresponding structure is incremented by 1. These functions do not change 
+.I sz_* 
+unless there is no more room in the array. Some of these functions fill in the values of the 
+element's structure from the arguments. For other functions, you must explicitly write code to fill 
+the structure's elements.
+
+The top-level geometry description includes a list of 
+.I geometry properties. 
+A geometry property associates an arbitrary string with an equally arbitrary name. Programs that 
+display images of keyboards can use geometry properties as hints, but they are not interpreted by 
+Xkb. No other geometry structures refer to geometry properties.
+
+Keys are grouped into rows. 
+.I XkbAddGeomKey 
+adds one key to the end of the specified 
+.I row. 
+The key is allocated and zeroed. 
+.I XkbAddGeomKey 
+returns NULL if 
+.I row 
+is empty or if it was not able to allocate space for the key. To allocate space for an arbitrary 
+number of keys to a row, use 
+.I XkbAllocGeomKeys.
+.SH STRUCTURES
+.LP
+.nf
+
+    typedef struct _XkbKey {              /\&* key in a row */
+        XkbKeyNameRec   name;             /\&* key name */
+        short           gap;              /\&* gap in mm/10 from previous key in row */
+        unsigned char   shape_ndx;        /\&* index of shape for key */
+        unsigned char   color_ndx;        /\&* index of color for key body */
+    } XkbKeyRec, *XkbKeyPtr;
+    
+.fi
+.SH "SEE ALSO"
+.BR XkbAllocGeomKeys (__libmansuffix__)

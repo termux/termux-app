@@ -1,0 +1,172 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XListFonts __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XListFonts, XFreeFontNames, XListFontsWithInfo, XFreeFontInfo \- obtain or free font names and information
+.SH SYNTAX
+.HP
+char **XListFonts\^(\^Display *\^\fIdisplay\fP\^, _Xconst char *\^\fIpattern\fP\^, int
+\fImaxnames\fP\^, int *\^\fIactual_count_return\fP\^);
+.HP
+int XFreeFontNames\^(\^char *\fIlist\fP\^[\^]\^);
+.HP
+char **XListFontsWithInfo\^(\^Display *\fIdisplay\fP\^, _Xconst char *\fIpattern\fP\^,
+int \fImaxnames\fP\^, int *\fIcount_return\fP\^, XFontStruct
+**\fIinfo_return\fP\^);
+.HP
+int XFreeFontInfo(\^char **\fInames\fP\^, XFontStruct *\fIfree_info\fP, int
+\fIactual_count\fP\^);
+.SH ARGUMENTS
+.IP \fIactual_count\fP 1i
+Specifies the actual number of font names.
+
+.IP \fIactual_count_return\fP 1i
+Returns the actual number of font names.
+.IP \fIcount_return\fP 1i
+Returns the actual number of matched font names.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIinfo_return\fP 1i
+Returns the font information.
+.IP \fIfree_info\fP 1i
+Specifies the font information.
+
+.IP \fIlist\fP 1i
+Specifies the array of strings you want to free.
+.IP \fImaxnames\fP 1i
+Specifies the maximum number of names to be returned.
+.IP \fInames\fP 1i
+Specifies the list of font names.
+
+.IP \fIpattern\fP 1i
+Specifies the null-terminated pattern string that can contain wildcard
+characters.
+.SH DESCRIPTION
+The
+.B XListFonts
+function returns an array of available font names
+(as controlled by the font search path; see
+.BR XSetFontPath )
+that match the string you passed to the pattern argument.
+The pattern string can contain any characters,
+but each asterisk (*) is a wildcard for any number of characters,
+and each question mark (?) is a wildcard for a single character.
+If the pattern string is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+Each returned string is null-terminated.
+If the data returned by the server is in the Latin Portable Character Encoding,
+then the returned strings are in the Host Portable Character Encoding.
+Otherwise, the result is implementation-dependent.
+If there are no matching font names,
+.B XListFonts
+returns NULL.
+The client should call
+.B XFreeFontNames
+when finished with the result to free the memory.
+.LP
+The
+.B XFreeFontNames
+function frees the array and strings returned by
+.B XListFonts
+or
+.BR XListFontsWithInfo .
+.LP
+The
+.B XListFontsWithInfo
+function returns a list of font names that match the specified pattern and their
+associated font information.
+The list of names is limited to size specified by maxnames.
+The information returned for each font is identical to what
+.B XLoadQueryFont
+would return except that the per-character metrics are not returned.
+The pattern string can contain any characters,
+but each asterisk (*) is a wildcard for any number of characters,
+and each question mark (?) is a wildcard for a single character.
+If the pattern string is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+Each returned string is null-terminated.
+If the data returned by the server is in the Latin Portable Character Encoding,
+then the returned strings are in the Host Portable Character Encoding.
+Otherwise, the result is implementation-dependent.
+If there are no matching font names,
+.B XListFontsWithInfo
+returns NULL.
+.LP
+To free only the allocated name array,
+the client should call
+.BR XFreeFontNames .
+To free both the name array and the font information array
+or to free just the font information array,
+the client should call
+.BR XFreeFontInfo .
+.LP
+The
+.B XFreeFontInfo
+function frees a font structure or an array of font structures
+and optionally an array of font names.
+If NULL is passed for names, no font names are freed.
+If a font structure for an open font (returned by
+.BR XLoadQueryFont )
+is passed, the structure is freed,
+but the font is not closed; use
+.B XUnloadFont
+to close the font.
+.LP
+Note that
+.B XListFontsWithInfo
+is not thread-safe.
+If other threads make X requests on the same
+.BR Display ,
+then this function's behavior is undefined.
+.SH "SEE ALSO"
+XLoadFont(__libmansuffix__),
+XSetFontPath(__libmansuffix__)
+.br
+\fI\*(xL\fP

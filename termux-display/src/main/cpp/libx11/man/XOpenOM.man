@@ -1,0 +1,162 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\" Copyright \(co 2000  The XFree86 Project, Inc.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XOpenOM __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XOpenOM, XCloseOM, XSetOMValues, XGetOMValues, XDisplayOfOM, XLocaleOfOM \- open output methods
+.SH SYNTAX
+.HP
+XOM XOpenOM\^(\^Display *\fIdisplay\fP\^, XrmDatabase \fIdb\fP\^, char
+*\fIres_name\fP\^, char *\fIres_class\fP\^);
+.HP
+Status XCloseOM\^(\^XOM \fIom\fP\^);
+.HP
+char *XSetOMValues\^(\^XOM \fIom\fP, ...\^);
+.HP
+char *XGetOMValues\^(\^XOM \fIom\fP, ...\^);
+.HP
+Display *XDisplayOfOM\^(\^XOM \fIom\fP\^);
+.HP
+char *XLocaleOfOM\^(\^XOM \fIom\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIdb\fP 1i
+Specifies a pointer to the resource database.
+.IP \fIres_name\fP 1i
+Specifies the full resource name of the application.
+.IP \fIres_class\fP 1i
+Specifies the full class name of the application.
+.IP \fIom\fP 1i
+Specifies the output method.
+.IP ... 1i
+Specifies the variable length argument list to set or get XOM values.
+.SH DESCRIPTION
+The
+.B XOpenOM
+function opens an output method
+matching the current locale and modifiers specification.
+The current locale and modifiers are bound to the output method
+when
+.B XOpenOM
+is called.
+The locale associated with an output method cannot be changed.
+.LP
+The specific output method to which this call will be routed
+is identified on the basis of the current locale and modifiers.
+.B XOpenOM
+will identify a default output method corresponding to the
+current locale.
+That default can be modified using
+.B XSetLocaleModifiers
+to set the output method modifier.
+.LP
+The db argument is the resource database to be used by the output method
+for looking up resources that are private to the output method.
+It is not intended that this database be used to look
+up values that can be set as OC values in an output context.
+If db is NULL,
+no database is passed to the output method.
+.LP
+The res_name and res_class arguments specify the resource name
+and class of the application.
+They are intended to be used as prefixes by the output method
+when looking up resources that are common to all output contexts
+that may be created for this output method.
+The characters used for resource names and classes must be in the
+X Portable Character Set.
+The resources looked up are not fully specified
+if res_name or res_class is NULL.
+.LP
+The res_name and res_class arguments are not assumed to exist beyond
+the call to
+.BR XOpenOM .
+The specified resource database is assumed to exist for the lifetime
+of the output method.
+.LP
+.B XOpenOM
+returns NULL if no output method could be opened.
+.LP
+The
+.B XCloseOM
+function closes the specified output method.
+.LP
+The
+.B XSetOMValues
+function presents a variable argument list programming interface
+for setting properties or features of the specified output method.
+This function returns NULL if it succeeds;
+otherwise,
+it returns the name of the first argument that could not be set.
+Xlib does not attempt to set arguments from the supplied list that
+follow the failed argument;
+all arguments in the list preceding the failed argument have been set
+correctly.
+.LP
+No standard arguments are currently defined by Xlib.
+.LP
+The
+.B XGetOMValues
+function presents a variable argument list programming interface
+for querying properties or features of the specified output method.
+This function returns NULL if it succeeds;
+otherwise,
+it returns the name of the first argument that could not be obtained.
+.LP
+The
+.B XDisplayOfOM
+function returns the display associated with the specified output method.
+.LP
+The
+.B XLocaleOfOM
+returns the locale associated with the specified output method.
+.SH "SEE ALSO"
+XCreateOC(__libmansuffix__),
+XCreateFontSet(__libmansuffix__)
+.br
+\fI\*(xL\fP

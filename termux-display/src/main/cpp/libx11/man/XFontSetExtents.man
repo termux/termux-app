@@ -1,0 +1,97 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XFontSetExtents __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XFontSetExtents \- XFontSetExtents structure
+.SH STRUCTURES
+The
+.B XFontSetExtents
+structure contains:
+.LP
+.EX
+typedef struct {
+        XRectangle max_ink_extent;      /\&* over all drawable characters */
+        XRectangle max_logical_extent;  /\&* over all drawable characters */
+} XFontSetExtents;
+.EE
+.LP
+The
+.B XRectangle
+structures used to return font set metrics are the usual Xlib screen-oriented
+rectangles
+with x, y giving the upper left corner, and width and height always positive.
+.LP
+The max_ink_extent member gives the maximum extent, over all drawable characters, of
+the rectangles that bound the character glyph image drawn in the
+foreground color, relative to a constant origin.
+See
+.B XmbTextExtents
+and
+.B XwcTextExtents
+for detailed semantics.
+.LP
+The max_logical_extent member gives the maximum extent,
+over all drawable characters, of the rectangles
+that specify minimum spacing to other graphical features,
+relative to a constant origin.
+Other graphical features drawn by the client, for example,
+a border surrounding the text, should not intersect this rectangle.
+The max_logical_extent member should be used to compute minimum
+interline spacing and the minimum area that must be allowed
+in a text field to draw a given number of arbitrary characters.
+.LP
+Due to context-dependent rendering,
+appending a given character to a string may change
+the string's extent by an amount other than that character's
+individual extent.
+.SH "SEE ALSO"
+XCreateFontSet(__libmansuffix__),
+XExtentsOfFontSet(__libmansuffix__),
+XFontsOfFontSet(__libmansuffix__)
+.br
+\fI\*(xL\fP

@@ -1,0 +1,44 @@
+.TH GTF 1 @vendorversion@
+.SH NAME
+gtf - calculate VESA GTF mode lines
+.SH SYNOPSIS
+.B gtf
+.I h-resolution
+.I v-resolution
+.I refresh
+.RB [ \-v | \-\-verbose ]
+.RB [ \-f | \-\-fbmode ]
+.RB [ \-x | \-\-xorgmode ]
+.SH DESCRIPTION
+.I Gtf
+is a utility for calculating VESA GTF modes.  Given the desired
+horizontal and vertical resolutions and refresh rate (in Hz), the parameters
+for a matching VESA GTF mode are printed out.  Two output formats are
+supported: mode lines suitable for the Xorg
+.B xorg.conf(@filemansuffix@)
+file, and mode parameters suitable for the Linux
+.B fbset(8)
+utility.
+
+.SH OPTIONS
+.TP 8
+.BR \-v | \-\-verbose
+Enable verbose printouts  This shows a trace for each step of the
+computation.
+.TP 8
+.BR \-x | \-\-xorgmode
+Print the mode parameters as Xorg-style mode lines.  This is the
+default format.
+.TP 8
+.BR \-f | \-\-fbset
+Print the mode parameters in a format suitable for
+.BR fbset(8) .
+.SH "SEE ALSO"
+xorg.conf(@filemansuffix@), cvt(@appmansuffix@)
+.SH AUTHOR
+Andy Ritger.
+.PP
+This program is based on the Generalized Timing Formula (GTF(TM)) Standard
+Version: 1.0, Revision: 1.0.  The GTF Excel(TM) spreadsheet, a sample
+(and the definitive) implementation of the GTF Timing Standard is
+available at <ftp://ftp.vesa.org/pub/GTF/VTF_V1R1.xls>.

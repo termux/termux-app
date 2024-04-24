@@ -1,0 +1,201 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbSetNames __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbSetNames \- Change the symbolic names in the server
+.SH SYNOPSIS
+.HP
+.B Bool XkbSetNames
+.BI "(\^Display *" "dpy" "\^,"
+.BI "unsigned int " "which" "\^,"
+.BI "unsigned int " "first_type" "\^,"
+.BI "unsigned int " "num_types" "\^,"
+.BI "XkbDescPtr " "xkb" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I dpy
+connection to the X server
+.TP
+.I which
+mask of names or map components to be changed
+.TP
+.I first_type
+first type whose name is to be changed
+.TP
+.I num_types
+number of types for which names are to be changed
+.TP
+.I xkb
+keyboard description from which names are to be taken
+.SH DESCRIPTION
+.LP
+To change the symbolic names in the server, first modify a local copy of the 
+keyboard description and then 
+use either 
+.I XkbSetNames, 
+or, to save network traffic, use a XkbNameChangesRecstructure and call
+.I XkbChangeNames 
+to download the changes to the server. 
+.I XkbSetNames 
+and 
+.I XkbChangeNames 
+can generate BadAlloc, BadAtom, BadLength, BadMatch, and BadImplementation 
+errors.
+
+Use 
+.I XkbSetNames 
+to change many names at the same time. For each bit set in 
+.I which, XkbSetNames 
+takes the corresponding value (or values in the case of arrays) from the 
+keyboard description 
+.I xkb 
+and sends it to the server.
+
+The 
+.I first_type 
+and 
+.I num_types 
+arguments are used only if XkbKeyTypeNamesMask or XkbKTLevelNamesMask is set in
+.I which 
+and specify a subset of the types for which the corresponding names are to be 
+changed. If either or both of 
+these mask bits are set but the specified types are illegal, 
+.I XkbSetNames 
+returns False and does not update any of the names specified in 
+.I which. 
+The specified types are illegal if 
+.I xkb 
+does not include a map component or if 
+.I first_type 
+and 
+.I num_types 
+specify types that are not defined in the keyboard description.
+.SH STRUCTURES
+.LP
+The XkbNameChangesRec allows applications to identify small modifications to the 
+symbolic names and 
+effectively reduces the amount of traffic sent to the server:
+.nf
+
+    typedef struct _XkbNameChanges {
+        unsigned int   changed;          /\&* name components that have changed */
+        unsigned char  first_type;       /\&* first key type with a new name */
+        unsigned char  num_types;        /\&* number of types with new names */
+        unsigned char  first_lvl;        /\&* first key type with new level names */
+        unsigned char  num_lvls;         /\&* number of key types with new level names */
+        unsigned char  num_aliases;      /\&* if key aliases changed, total number of key aliases */
+        unsigned char  num_rg;           /\&* if radio groups changed, total number of radio groups */
+        unsigned char  first_key;        /\&* first key with a new name */
+        unsigned char  num_keys;         /\&* number of keys with new names */
+        unsigned short changed_vmods;    /\&* mask of virtual modifiers for which names have changed */
+        unsigned long  changed_indicators; /\&* mask of indicators for which names were changed */
+        unsigned char  changed_groups;     /\&* mask of groups for which names were changed */
+    } XkbNameChangesRec, *XkbNameChangesPtr
+    
+.fi    
+The 
+.I changed 
+field specifies the name components that have changed and is the bitwise 
+inclusive OR of the valid names 
+mask bits defined in Table 1. The rest of the fields in the structure specify 
+the ranges that have changed 
+for the various kinds of symbolic names, as shown in Table 2.
+
+Xkb provides several functions that work with symbolic names. Each of these 
+functions uses a mask to 
+specify individual fields of the structures described above. These masks and 
+their relationships to the 
+fields in a keyboard description are shown in Table 1.
+
+.TS
+c s s s
+l l l l.
+Table 1 Symbolic Names Masks
+_
+Mask Bit	Value	Keyboard	Field
+		Component
+_
+XkbKeycodesNameMask	(1<<0)	Xkb->names	keycodes
+XkbGeometryNameMask	(1<<1)	Xkb->names	geometry
+XkbSymbolsNameMask	(1<<2)	Xkb->names	symbols
+XkbPhysSymbolsNameMask	(1<<3)	Xkb->names	phys_symbols
+XkbTypesNameMask	(1<<4)	Xkb->names	type
+XkbCompatNameMask	(1<<5)	Xkb->names	compat
+XkbKeyTypeNamesMask	(1<<6)	Xkb->map	type[*].name
+XkbKTLevelNamesMask	(1<<7)	Xkb->map	type[*].lvl_names[*]
+XkbIndicatorNamesMask	(1<<8)	Xkb->names	indicators[*]
+XkbKeyNamesMask	(1<<9)	Xkb->names	keys[*], num_keys
+XkbKeyAliasesMask	(1<<10)	Xkb->names	key_aliases[*], num_key_aliases
+XkbVirtualModNamesMask	(1<<11)	Xkb->names	vmods[*]
+XkbGroupNamesMask	(1<<12)	Xkb->names	groups[*]
+XkbRGNamesMask	(1<<13)	Xkb->names	radio_groups[*], num_rg
+XkbComponentNamesMask	(0x3f)	Xkb->names	keycodes,
+			geometry,
+			symbols,
+			physical symbols,
+			types, and
+			compatibility map
+XkbAllNamesMask	(0x3fff)	Xkb->names	all name components
+.TE
+
+.TS
+c s s s
+l l l l.
+Table 2 XkbNameChanges Fields
+_
+Mask	Fields	Component	Field
+_
+XkbKeyTypeNamesMask	first_type,	Xkb->map	type[*].name
+	num_types
+XkbKTLevelNamesMask	first_lvl,	Xkb->map	type[*].lvl_names[*]
+	num_lvls
+XkbKeyAliasesMask	num_aliases	Xkb->names	key_aliases[*]
+XkbRGNamesMask	num_rg	Xkb->names	radio_groups[*]
+XkbKeyNamesMask	first_key,	Xkb->names	keys[*]
+	num_keys
+XkbVirtualModNamesMask	changed_vmods	Xkb->names	vmods[*]
+XkbIndicatorNamesMask	changed_indicators	Xkb->names	indicators[*]
+XkbGroupNamesMask	changed_groups	Xkb->names	groups[*]
+.TE
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadAtom
+A name is neither a valid Atom or None
+.TP 15
+.B BadImplementation
+Invalid reply from server
+.TP 15
+.B BadLength
+The length of a request is shorter or longer than that required to minimally 
+contain the arguments
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has 
+correct type and range, but is otherwise invalid
+.SH "SEE ALSO"
+.BR XkbChangeNames (__libmansuffix__)

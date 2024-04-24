@@ -1,0 +1,198 @@
+			Client Scheduling in X
+			    Keith Packard
+			       SuSE
+			     10/28/99
+
+History:
+
+Since the original X server was written at Digital in 1987, the OS and DIX
+layers shared responsibility for scheduling the order to service
+client requests.  The original design was simplistic; under the maximum
+first make it work, then make it work well, this was a good idea.  Now 
+that we have a bit more experience with X applications, it's time to
+rethink the design.
+
+The basic dispatch loop in DIX looks like:
+
+	for (;;)
+	{
+		nready = WaitForSomething (...);
+		while (nready--)
+		{
+			isItTimeToYield = FALSE;
+			while (!isItTimeToYield)
+			{
+				if (!ReadRequestFromClient (...))
+					break;
+				(execute request);
+			}
+		}
+	}
+
+WaitForSomething looks like:
+
+	for (;;)
+		if (ANYSET (ClientsWithInput))
+			return popcount (ClientsWithInput);
+		select (...)
+		compute clientsReadable from select result;
+		return popcount (clientsReadable)
+	}
+
+ReadRequestFromClient looks like:
+
+	if (!fullRequestQueued)
+	{
+		read ();
+		if (!fullRequestQueued)
+		{
+			remove from ClientsWithInput;
+			timesThisConnection = 0;
+			return 0;
+		}
+	}
+	if (twoFullRequestsQueued)
+		add to ClientsWithInput;
+
+	if (++timesThisConnection >= 10)
+	{
+		isItTimeToYield = TRUE;
+		timesThisConnection = 0;
+	}
+	return 1;
+
+Here's what happens in this code:
+
+With a single client executing a stream of requests:
+
+	A client sends a packet of requests to the server.
+
+	WaitForSomething wakes up from select and returns that client
+	to Dispatch
+
+	Dispatch calls ReadRequestFromClient which reads a buffer (4K)
+	full of requests from the client
+
+	The server executes requests from this buffer until it emptys,
+	in two stages -- 10 requests at a time are executed in the
+	inner Dispatch loop, a buffer full of requests are executed
+	because WaitForSomething immediately returns if any clients
+	have complete requests pending in their input queues.
+
+	When the buffer finally emptys, the next call to ReadRequest
+	FromClient will return zero and Dispatch will go back to
+	WaitForSomething; now that the client has no requests pending,
+	WaitForSomething will block in select again.  If the client
+	is active, this select will immediately return that client
+	as ready to read.
+
+With multiple clients sending streams of requests, the sequence
+of operations is similar, except that ReadRequestFromClient will
+set isItTimeToYield after each 10 requests executed causing the
+server to round-robin among the clients with available requests.
+
+It's important to realize here that any complete requests which have been
+read from clients will be executed before the server will use select again
+to discover input from other clients.  A single busy client can easily
+monopolize the X server.
+
+So, the X server doesn't share well with clients which are more interactive
+in nature.
+
+The X server executes at most a buffer full of requests before again heading
+into select; ReadRequestFromClient causes the server to yield when the
+client request buffer doesn't contain a complete request.  When
+that buffer is executed quickly, the server spends a lot of time
+in select discovering that the same client again has input ready.  Thus
+the server also runs busy clients less efficiently than is would be
+possible.
+
+What to do.
+
+There are several things evident from the above discussion:
+
+ 1	The server has a poor metric for deciding how much work it
+	should do at one time on behalf of a particular client.
+
+ 2	The server doesn't call select often enough to detect less
+ 	aggressive clients in the face of busy clients, especially
+	when those clients are executing slow requests.
+
+ 3	The server calls select too often when executing fast requests.
+
+ 4	Some priority scheme is needed to keep interactive clients
+ 	responding to the user.
+
+And, there are some assumptions about how X applications work:
+
+ 1	Each X request is executed relatively quickly; a request-granularity
+ 	is good enough for interactive response almost all of the time.
+
+ 2	X applications receiving mouse/keyboard events are likely to
+ 	warrant additional attention from the X server.
+
+Instead of a request-count metric for work, a time-based metric should be
+used.  The server should select a reasonable time slice for each client
+and execute requests for the entire timeslice before yielding to
+another client.
+
+Instead of returning immediately from WaitForSomething if clients have
+complete requests queued, the server should go through select each
+time and gather as many ready clients as possible.  This involves
+polling instead of blocking and adding the ClientsWithInput to
+clientsReadable after the select returns.
+
+Instead of yielding when the request buffer is empty for a particular
+client, leave the yielding to the upper level scheduling and allow
+the server to try and read again from the socket.  If the client
+is busy, another buffer full of requests will already be waiting
+to be delivered thus avoiding the call through select and the
+additional overhead in WaitForSomething.
+
+Finally, the dispatch loop should not simply execute requests from the
+first available client, instead each client should be prioritized with
+busy clients penalized and clients receiving user events praised.
+
+How it's done:
+
+Polling the current time of day from the OS is too expensive to
+be done at each request boundary, so instead an interval timer is
+set allowing the server to track time changes by counting invocations
+of the related signal handler.  Instead of using the wall time for
+this purpose, the process CPU time is used instead.  This serves
+two purposes -- first, it allows the server to consume no CPU cycles
+when idle, second it avoids conflicts with SIGALRM usage in other
+parts of the server code.  It's not without problems though; other
+CPU intensive processes on the same machine can reduce interactive
+response time within the X server.  The dispatch loop can now
+calculate an approximate time value using the number of signals
+received.  The granularity of the timer sets the scheduling jitter,
+at 20ms it's only occasionally noticeable.
+
+The changes to WaitForSomething and ReadRequestFromClient are
+straightforward, adjusting when select is called and avoiding
+setting isItTimeToYield too often.
+
+The dispatch loop changes are more extensive, now instead of
+executing requests from all available clients, a single client
+is chosen after each call to WaitForSomething, requests are
+executed for that client and WaitForSomething is called again.
+
+Each client is assigned a priority, the dispatch loop chooses the
+client with the highest priority to execute.  Priorities are
+updated in three ways:
+
+ 1.	Clients which consume their entire slice are penalized
+ 	by having their priority reduced by one until they
+	reach some minimum value.
+
+ 2.	Clients which have executed no requests for some time
+ 	are praised by having their priority raised until they
+	return to normal priority.
+
+ 3.	Clients which receive user input are praised by having
+ 	their priority rased until they reach some maximal
+	value, above normal priority.
+
+The effect of these changes is to both improve interactive application
+response and benchmark numbers at the same time.

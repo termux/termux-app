@@ -1,0 +1,172 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XcmsQueryColor __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XcmsQueryColor, XcmsQueryColors, XcmsLookupColor \- obtain color values
+.SH SYNTAX
+.HP
+Status XcmsQueryColor\^(\^Display *\fIdisplay\fP\^, Colormap \fIcolormap\fP\^,
+XcmsColor *\fIcolor_in_out\fP\^, XcmsColorFormat \fIresult_format\fP\^);
+.HP
+Status XcmsQueryColors\^(\^Display *\fIdisplay\fP\^, Colormap
+\fIcolormap\fP\^, XcmsColor \fIcolors_in_out\fP\^[\^]\^, unsigned int
+\fIncolors\fP\^, XcmsColorFormat \fIresult_format\fP\^);
+.HP
+Status XcmsLookupColor\^(\^Display *\fIdisplay\fP\^, Colormap
+\fIcolormap\fP\^, _Xconst char *\fIcolor_string\fP\^, XcmsColor
+*\fIcolor_exact_return\fP\^, XcmsColor *\fIcolor_screen_return\fP\^,
+XcmsColorFormat \fIresult_format\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIcolormap\fP 1i
+Specifies the colormap.
+.IP \fIcolor_exact_return\fP 1i
+Returns the color specification parsed from the color string
+or parsed from the corresponding string found in a color-name database.
+.IP \fIcolor_in_out\fP 1i
+Specifies the pixel member that indicates the color cell to query.
+The color specification stored for the color cell is returned in this
+.B XcmsColor
+structure.
+.IP \fIcolor_screen_return\fP 1i
+Returns the color that can be reproduced on the screen.
+.IP \fIcolor_string\fP 1i
+Specifies the color string.
+.IP \fIresult_format\fP 1i
+Specifies the color format for the returned color
+specifications (color_screen_return and color_exact_return arguments).
+If the format is
+.B XcmsUndefinedFormat
+and the color string contains a
+numerical color specification,
+the specification is returned in the format used in that numerical
+color specification.
+If the format is
+.B XcmsUndefinedFormat
+and the color string contains a color name,
+the specification is returned in the format used
+to store the color in the database.
+.IP \fIncolors\fP 1i
+Specifies the number of
+.B XcmsColor
+structures in the color-specification array.
+.SH DESCRIPTION
+The
+.B XcmsQueryColor
+function obtains the RGB value
+for the pixel value in the pixel member of the specified
+.B XcmsColor
+structure and then
+converts the value to the target format as
+specified by the result_format argument.
+If the pixel is not a valid index in the specified colormap, a
+.B BadValue
+error results.
+The
+.B XcmsQueryColors
+function obtains the RGB values
+for pixel values in the pixel members of
+.B XcmsColor
+structures and then
+converts the values to the target format as
+specified by the result_format argument.
+If a pixel is not a valid index into the specified colormap, a
+.B BadValue
+error results.
+If more than one pixel is in error,
+the one that gets reported is arbitrary.
+.LP
+.B XcmsQueryColor
+and
+.B XcmsQueryColors
+can generate
+.B BadColor
+and
+.B BadValue
+errors.
+.LP
+The
+.B XcmsLookupColor
+function looks up the string name of a color with respect to the screen
+associated with the specified colormap.
+It returns both the exact color values and
+the closest values provided by the screen
+with respect to the visual type of the specified colormap.
+The values are returned in the format specified by result_format.
+If the color name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+.B XcmsLookupColor
+returns
+.B XcmsSuccess
+or
+.B XcmsSuccessWithCompression
+if the name is resolved; otherwise, it returns
+.BR XcmsFailure .
+If
+.B XcmsSuccessWithCompression
+is returned, the color specification returned in
+color_screen_return is the result of gamut compression.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadColor
+A value for a Colormap argument does not name a defined Colormap.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.SH "SEE ALSO"
+XcmsAllocColor(__libmansuffix__),
+XcmsStoreColor(__libmansuffix__),
+XQueryColor(__libmansuffix__)
+.br
+\fI\*(xL\fP

@@ -1,0 +1,222 @@
+/* xorg-server.h.in						-*- c -*-
+ *
+ * This file is the template file for the xorg-server.h file which gets
+ * installed as part of the SDK.  The #defines in this file overlap
+ * with those from config.h, but only for those options that we want
+ * to export to external modules.  Boilerplate autotool #defines such
+ * as HAVE_STUFF and PACKAGE_NAME is kept in config.h
+ *
+ * It is still possible to update config.h.in using autoheader, since
+ * autoheader only creates a .h.in file for the first
+ * AM_CONFIG_HEADER() line, and thus does not overwrite this file.
+ *
+ * However, it should be kept in sync with this file.
+ */
+
+#ifndef _XORG_SERVER_H_
+#define _XORG_SERVER_H_
+
+#ifdef HAVE_XORG_CONFIG_H
+#error Include xorg-config.h when building the X server
+#endif
+
+/* Support BigRequests extension */
+#mesondefine BIGREQS
+
+/* Default font path */
+#mesondefine COMPILEDDEFAULTFONTPATH
+
+/* Support Composite Extension */
+#mesondefine COMPOSITE
+
+/* Build DPMS extension */
+#mesondefine DPMSExtension
+
+/* Build DRI3 extension */
+#mesondefine DRI3
+
+/* Build GLX extension */
+#mesondefine GLXEXT
+
+/* Support XDM-AUTH*-1 */
+#mesondefine HASXDMAUTH
+
+/* Support SHM */
+#mesondefine HAS_SHM
+
+/* Define to 1 if you have the `reallocarray' function. */
+#mesondefine HAVE_REALLOCARRAY
+
+/* Define to 1 if you have the `strcasecmp' function. */
+#mesondefine HAVE_STRCASECMP
+
+/* Define to 1 if you have the `strcasestr' function. */
+#mesondefine HAVE_STRCASESTR
+
+/* Define to 1 if you have the `strlcat' function. */
+#mesondefine HAVE_STRLCAT
+
+/* Define to 1 if you have the `strlcpy' function. */
+#mesondefine HAVE_STRLCPY
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#mesondefine HAVE_STRNCASECMP
+
+/* Define to 1 if you have the `strndup' function. */
+#mesondefine HAVE_STRNDUP
+
+/* Support IPv6 for TCP connections */
+#mesondefine IPv6
+
+/* Support MIT-SHM Extension */
+#mesondefine MITSHM
+
+/* Internal define for Xinerama */
+#mesondefine PANORAMIX
+
+/* Support Present extension */
+#mesondefine PRESENT
+
+/* Support RANDR extension */
+#mesondefine RANDR
+
+/* Support RENDER extension */
+#mesondefine RENDER
+
+/* Support X resource extension */
+#mesondefine RES
+
+/* Support MIT-SCREEN-SAVER extension */
+#mesondefine SCREENSAVER
+
+/* Support SHAPE extension */
+#mesondefine SHAPE
+
+/* Define to 1 on systems derived from System V Release 4 */
+#mesondefine SVR4
+
+/* Support TCP socket connections */
+#mesondefine TCPCONN
+
+/* Support UNIX socket connections */
+#mesondefine UNIXCONN
+
+/* Support XCMisc extension */
+#mesondefine XCMISC
+
+/* Support Xdmcp */
+#mesondefine XDMCP
+
+/* Build XFree86 BigFont extension */
+#mesondefine XF86BIGFONT
+
+/* Support XFree86 Video Mode extension */
+#mesondefine XF86VIDMODE
+
+/* Build XDGA support */
+#mesondefine XFreeXDGA
+
+/* Support Xinerama extension */
+#mesondefine XINERAMA
+
+/* Support X Input extension */
+#mesondefine XINPUT
+
+/* XKB default rules */
+#mesondefine XKB_DFLT_RULES
+
+/* Build DRI extension */
+#mesondefine XF86DRI
+
+/* Build DRI2 extension */
+#mesondefine DRI2
+
+/* Build Xorg server */
+#mesondefine XORGSERVER
+
+/* Current Xorg version */
+#mesondefine XORG_VERSION_CURRENT
+
+/* Build Xv Extension */
+#mesondefine XvExtension
+
+/* Build XvMC Extension */
+#mesondefine XvMCExtension
+
+/* Support XSync extension */
+#mesondefine XSYNC
+
+/* Support XTest extension */
+#mesondefine XTEST
+
+/* Support Xv Extension */
+#mesondefine XV
+
+/* Vendor name */
+#mesondefine XVENDORNAME
+
+/* BSD-compliant source */
+#mesondefine _BSD_SOURCE
+
+/* POSIX-compliant source */
+#mesondefine _POSIX_SOURCE
+
+/* X/Open-compliant source */
+#mesondefine _XOPEN_SOURCE
+
+/* Vendor web address for support */
+#mesondefine __VENDORDWEBSUPPORT__
+
+/* Location of configuration file */
+#mesondefine XCONFIGFILE
+
+/* Name of X server */
+#mesondefine __XSERVERNAME__
+
+/* Building vgahw module */
+#mesondefine WITH_VGAHW
+
+/* System is BSD-like */
+#mesondefine CSRG_BASED
+
+/* System has PC console */
+#mesondefine PCCONS_SUPPORT
+
+/* System has PCVT console */
+#mesondefine PCVT_SUPPORT
+
+/* System has syscons console */
+#mesondefine SYSCONS_SUPPORT
+
+/* System has wscons console */
+#mesondefine WSCONS_SUPPORT
+
+/* Loadable XFree86 server awesomeness */
+#define XFree86LOADER
+
+/* Use libpciaccess */
+#mesondefine XSERVER_LIBPCIACCESS
+
+/* X Access Control Extension */
+#mesondefine XACE
+
+/* Have X server platform bus support */
+#mesondefine XSERVER_PLATFORM_BUS
+
+#ifdef _LP64
+#define _XSERVER64 1
+#endif
+
+/* Have support for X shared memory fence library (xshmfence) */
+#mesondefine HAVE_XSHMFENCE
+
+/* Use XTrans FD passing support */
+#mesondefine XTRANS_SEND_FDS
+
+/* Ask fontsproto to make font path element names const */
+#define FONT_PATH_ELEMENT_NAME_CONST    1
+
+/* byte order */
+#mesondefine X_BYTE_ORDER
+
+#endif /* _XORG_SERVER_H_ */

@@ -1,0 +1,91 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbAddGeomOverlay __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbAddGeomOverlay \- Add one overlay to a section
+.SH SYNOPSIS
+.HP
+.B XkbOverlayPtr XkbAddGeomOverlay
+.BI "(\^XkbSectionPtr " "section" "\^,"
+.BI "Atom " "name" "\^,"
+.BI "int " "sz_rows" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I section
+section to which an overlay will be added
+.TP
+.I name
+name of the overlay
+.TP
+.I sz_rows
+number of rows to reserve in the overlay
+.SH DESCRIPTION
+.LP
+Xkb provides functions to add a single new element to the top-level keyboard 
+geometry. In each case the 
+.I num_ * 
+fields of the corresponding structure is incremented by 1. These functions do 
+not change 
+.I sz_* 
+unless there is no more room in the array. Some of these functions fill in the 
+values of the element's structure from the arguments. For other functions, you 
+must explicitly write code to fill the structure's elements.
+
+The top-level geometry description includes a list of 
+.I geometry properties. 
+A geometry property associates an arbitrary string with an equally arbitrary 
+name. Programs that display images of keyboards can use geometry properties as 
+hints, but they are not interpreted by Xkb. No other geometry structures refer 
+to geometry properties.
+
+.I XkbAddGeomOverlay 
+adds an overlay with the specified name to the specified 
+.I section. 
+The new overlay is created with space allocated for 
+.I sz_rows 
+rows. If an overlay with name 
+.I name 
+already exists in the section, a pointer to the existing overlay is returned.
+.I XkbAddGeomOverlay 
+returns NULL if any of the parameters is empty or if it was not able to allocate 
+space for the overlay. To allocate space for an arbitrary number of overlays to 
+a section, use the 
+.I XkbAllocGeomOverlay 
+function.
+.SH STRUCTURES
+.LP
+.nf
+
+    typedef struct _XkbOverlayRec {
+        Atom                  name;            /\&* overlay name */
+        XkbSectionPtr         section_under;   /\&* the section under this overlay */
+        unsigned short        num_rows;        /\&* number of rows in the rows array */
+        unsigned short        sz_rows;         /\&* size of the rows array */
+        XkbOverlayRowPtr      rows;            /\&* array of rows in the overlay */
+        XkbBoundsPtr          bounds;          /\&* bounding box for the overlay */
+    } XkbOverlayRec,*XkbOverlayPtr;
+    
+.fi
+.SH "SEE ALSO"
+.BR XkbAllocGeomOverlay (__libmansuffix__)

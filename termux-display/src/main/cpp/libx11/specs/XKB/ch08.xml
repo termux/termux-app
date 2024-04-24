@@ -1,0 +1,2378 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Indicators'>
+<title>Indicators</title>
+
+<indexterm significance="preferred" zone="Indicators">
+<primary>indicators</primary></indexterm>
+
+<para>
+Although the core X implementation supports up to 32 LEDs on an input device,
+it does not provide any linkage between the state of the LEDs and the logical
+state of the input device. For example, most keyboards have a
+<guilabel>CapsLock</guilabel>
+LED, but X does not provide a mechanism to make the LED automatically follow
+the logical state of the
+<keycap>CapsLock</keycap>
+key.
+</para>
+
+
+<para>
+Furthermore, the core X implementation does not provide clients with the
+ability to determine what bits in the
+<structfield>led_mask</structfield>
+field of the
+<structname>XKeyboardState</structname>
+map to the particular LEDs on the keyboard. For example, X does not provide a
+method for a client to determine what bit to set in the
+<structfield>led_mask</structfield>
+field to turn on the
+<guilabel>Scroll Lock</guilabel>
+LED or whether the keyboard even has a
+<guilabel>Scroll Lock</guilabel>
+LED.
+</para>
+
+
+<para>
+Xkb provides indicator names and programmable indicators to help solve these
+problems. Using Xkb, clients can determine the names of the various indicators,
+determine and control the way that the individual indicators should be updated
+to reflect keyboard changes, and determine which of the 32 keyboard indicators
+reported by the protocol are actually present on the keyboard. Clients may also
+request immediate notification of changes to the state of any subset of the
+keyboard indicators, which makes it straightforward to provide an on-screen
+<quote>virtual</quote> LED panel.
+This chapter describes Xkb indicators and the functions
+used for manipulating them.
+</para>
+
+<sect1 id='Indicator_Names'>
+<title>Indicator Names</title>
+
+<para>
+Xkb provides the capability of symbolically naming indicators. Xkb itself
+doesn’t use these symbolic names for anything; they are there only to help
+make the keyboard description comprehensible to humans. To set the names of
+specific indicators, use
+<function>XkbSetNames</function>
+as discussed in <xref linkend="Symbolic_Names" />. Then set the map using
+<function>XkbSetMap</function>
+(see <link linkend="Changing_Map_Components_in_the_Server">section 14.3</link>)
+or
+<function>XkbSetNamedDeviceIndicator</function>
+(below). To retrieve indicator names, use
+<function>XkbGetNames</function>
+(<xref linkend="Symbolic_Names" />).
+</para>
+
+
+</sect1>
+<sect1 id='Indicator_Data_Structures'>
+<title>Indicator Data Structures</title>
+
+<para>
+Use the indicator description record,
+<structname>XkbIndicatorRec</structname>,
+and its indicator map,
+<structname>XkbIndicatorMapRec</structname>,
+to inquire about and control most indicator properties and behaviors.
+</para>
+
+
+<sect2 id='XkbIndicatorRec'>
+<title>XkbIndicatorRec</title>
+
+<indexterm significance="preferred" zone="XkbIndicatorRec">
+<primary><structname>XkbIndicatorRec</structname></primary></indexterm>
+
+<para>
+The description for all the Xkb indicators is held in the
+<structfield>indicators</structfield>
+field of the complete keyboard description (see <xref linkend="Complete_Keyboard_Description" />), which is defined
+as follows:
+
+<programlisting>
+#define      XkbNumIndicators      32
+
+typedef struct {
+    unsigned long           phys_indicators;            /* LEDs existence */
+    XkbIndicatorMapRec      maps[XkbNumIndicators];     /* indicator maps */
+} <structname>XkbIndicatorRec</structname>, *XkbIndicatorPtr;
+</programlisting></para>
+
+<para>
+This structure contains the
+<structfield>phys_indicators</structfield>
+field, which relates some information about the correspondence between
+indicators and physical LEDs on the keyboard, and an array of indicator
+<structfield>maps</structfield>,
+one map per indicator.
+</para>
+
+<para>
+The
+<structfield>phys_indicators</structfield>
+field indicates which indicators are bound to physical LEDs on the keyboard;
+if a bit is set in
+<structfield>phys_indicators</structfield>,
+then the associated indicator has a physical LED associated with it. This
+field is necessary because some indicators may not have corresponding physical
+LEDs on the keyboard. For example, most keyboards have an LED for indicating
+the state of
+<keycap>CapsLock</keycap>,
+but most keyboards do not have an LED that indicates the current group.
+Because
+<structfield>phys_indicators</structfield>
+describes a physical characteristic of the keyboard, you cannot directly
+change it under program control. However, if a client program loads a
+completely new keyboard description via
+<function>XkbGetKeyboardByName</function>,
+or if a new keyboard is attached and the X implementation notices,
+<structfield>phys_indicators</structfield>
+changes if the indicators for the new keyboard are different.
+</para>
+
+
+</sect2>
+<sect2 id='XkbIndicatorMapRec'>
+<title>XkbIndicatorMapRec</title>
+
+<indexterm significance="preferred" zone="XkbIndicatorMapRec">
+<primary><structname>XkbIndicatorMapRec</structname></primary></indexterm>
+
+<para>
+Each indicator has its own set of attributes that specify whether clients can
+explicitly set its state and whether it tracks the keyboard state. The
+attributes of each indicator are held in the
+<structfield>maps</structfield>
+array, which is an array of
+<structname>XkbIndicatorRec</structname>
+structures:
+
+<programlisting>
+typedef struct {
+    unsigned char  flags;         /* how the indicator can be changed */
+    unsigned char  which_groups;  /* match criteria for groups */
+    unsigned char  groups;        /* which keyboard groups the indicator watches */
+    unsigned char  which_mods;    /* match criteria for modifiers */
+    XkbModsRec     mods;          /* which modifiers the indicator watches */
+    unsigned int   ctrls;         /* which controls the indicator watches */
+} <structname>XkbIndicatorMapRec</structname>, *XkbIndicatorMapPtr;
+</programlisting></para>
+
+<para>
+This indicator map specifies for each indicator:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+The conditions under which the keyboard modifier state affects the indicator
+  </para>
+</listitem>
+<listitem>
+  <para>
+The conditions under which the keyboard group state affects the indicator
+  </para>
+</listitem>
+<listitem>
+  <para>
+The conditions under which the state of the boolean controls affects the
+indicator
+  </para>
+</listitem>
+<listitem>
+  <para>
+The effect (if any) of attempts to explicitly change the state of the indicator
+using the functions
+<function>XkbSetControls</function>
+or
+<function>XChangeKeyboardControl</function>
+
+  </para>
+</listitem>
+</itemizedlist>
+
+<para>
+For more information on the effects of explicit changes to indicators and the
+relationship to the indicator map, see <link linkend="Effects_of_Explicit_Changes_on_Indicators">section 8.4.1</link>.
+</para>
+
+<sect3 id='XkbIndicatorMapRec_flags_field'>
+<title>XkbIndicatorMapRec flags field</title>
+
+<para>
+The
+<structfield>flags</structfield>
+field specifies the conditions under which the indicator can be changed and
+the effects of changing the indicator. The valid values for
+<structfield>flags</structfield>
+and their effects are shown in <link linkend="table8.1">Table 8.1</link>.
+</para>
+
+<table id='table8.1' frame='topbot'>
+<title>XkbIndicatorMapRec flags Field</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='3' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='2.0*'/>
+<colspec colname='c2' colwidth='1.0*'/>
+<colspec colname='c3' colwidth='3.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>Value</entry>
+  <entry></entry>
+  <entry>Effect</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><symbol>XkbIM_NoExplicit</symbol></entry>
+    <entry>(1L&lt;&lt;7)</entry>
+    <entry>Client applications cannot change the state of the indicator.</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_NoAutomatic</symbol></entry>
+    <entry>(1L&lt;&lt;6)</entry>
+    <entry>Xkb does not automatically change the value of the indicator based
+upon a change in the keyboard state, regardless of the values for the other
+fields of the indicator map.</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_LEDDrivesKB</symbol></entry>
+    <entry>(1L&lt;&lt;5)</entry>
+    <entry>A client application changing the state of the indicator causes the
+state of the keyboard to change.</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+Note that if
+<symbol>XkbIM_NoAutomatic</symbol>
+is not set, by default the indicator follows the keyboard state.
+</para>
+
+
+<para>
+If
+<symbol>XkbIM_LEDDrivesKB</symbol>
+is set and
+<symbol>XkbIM_NoExplicit</symbol>
+is not, and if you call a function which updates the server’s image of the
+indicator map (such as
+<function>XkbSetIndicatorMap</function>
+or
+<function>XkbSetNamedDeviceIndicator</function>),
+Xkb changes the keyboard state and controls to reflect the other fields of
+the indicator map, as described in the remainder of this section. If you
+attempt to explicitly change the value of an indicator for which
+<symbol>XkbIM_LEDDrivesKB</symbol>
+is absent or for which
+<symbol>XkbIM_NoExplicit</symbol>
+is present, keyboard state or controls are unaffected.
+</para>
+
+
+<para>
+For example, a keyboard designer may want to make the
+<guilabel>CapsLock</guilabel>
+LED controllable only by the server, but allow the
+<guilabel>Scroll Lock</guilabel>
+LED to be controlled by client applications. To do so, the keyboard designer
+could set the
+<symbol>XkbIM_NoExplicit</symbol>
+flag for the
+<guilabel>CapsLock</guilabel>
+LED, but not set it for the
+<guilabel>Scroll Lock</guilabel>
+LED. Or the keyboard designer may wish to allow the
+<guilabel>CapsLock</guilabel>
+LED to be controlled by both the server and client applications and also have
+the server to automatically change the
+<emphasis>CapsLock</emphasis>
+
+modifier state whenever a client application changes the
+<guilabel>CapsLock</guilabel>
+LED. To do so, the keyboard designer would not set the
+<symbol>XkbIM_NoExplicit</symbol>
+flag, but would instead set the
+<symbol>XkbIM_LEDDrivesKB</symbol>
+flag.
+</para>
+
+<para>
+The remaining fields in the indicator map specify the conditions under which
+Xkb automatically turns an indicator on or off (only if
+<symbol>XkbIM_NoAutomatic</symbol>
+is not set). If these conditions match the keyboard state, Xkb turns the
+indicator on. If the conditions do not match, Xkb turns the indicator off.
+</para>
+
+</sect3>
+
+<sect3 id='XkbIndicatorMapRec_which_groups_and_groups_fields'>
+<title>XkbIndicatorMapRec which_groups and groups fields</title>
+
+<para>
+The
+<structfield>which_groups</structfield>
+and the
+<structfield>groups</structfield>
+fields of an indicator map determine how the keyboard group state affects the
+corresponding indicator. The
+<structfield>which_groups</structfield>
+field controls the interpretation of
+<structfield>groups</structfield>
+and may contain any one of the following values:
+
+<programlisting>
+#define XkbIM_UseNone             0
+#define XkbIM_UseBase             (1L &lt;&lt; 0)
+#define XkbIM_UseLatched          (1L &lt;&lt; 1)
+#define XkbIM_UseLocked           (1L &lt;&lt; 2)
+#define XkbIM_UseEffective        (1L &lt;&lt; 3)
+#define XkbIM_UseAnyGroup         XkbIM_UseLatched | XkbIM_UseLocked |
+                                  XkbIM_UseEffective
+</programlisting></para>
+
+<para>
+The
+<structfield>groups</structfield>
+field specifies what keyboard groups an indicator watches and is the bitwise
+inclusive OR of the following valid values:
+
+<programlisting>
+#define XkbGroup1Mask            (1&lt;&lt;0)
+#define XkbGroup2Mask            (1&lt;&lt;1)
+#define XkbGroup3Mask            (1&lt;&lt;2)
+#define XkbGroup4Mask            (1&lt;&lt;3)
+#define XkbAnyGroupMask          (1&lt;&lt;7)
+#define XkbAllGroupsMask         (0xf)
+</programlisting></para>
+
+<para>
+If
+<symbol>XkbIM_NoAutomatic</symbol>
+is not set (the keyboard drives the indicator), the effect of
+<structfield>which_groups</structfield>
+and
+<structfield>groups</structfield>
+is shown in <link linkend="table8.2">Table 8.2</link>.
+</para>
+
+<table id='table8.2' frame='topbot'>
+<title>XkbIndicatorMapRec which_groups and groups, Keyboard Drives
+Indicator</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='2' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='1.0*'/>
+<colspec colname='c2' colwidth='2.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>which_groups</entry>
+  <entry>Effect</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><symbol>XkbIM_UseNone</symbol></entry>
+    <entry>
+The
+<structfield>groups</structfield>
+field and the current keyboard group state are ignored.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseBase</symbol></entry>
+    <entry>
+If
+<structfield>groups</structfield>
+is nonzero, the indicator is lit whenever the base keyboard group is nonzero.
+If
+<structfield>groups</structfield>
+is zero, the indicator is lit whenever the base keyboard group is zero.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLatched</symbol></entry>
+    <entry>
+If
+<structfield>groups</structfield>
+is nonzero, the indicator is lit whenever the latched keyboard group is
+nonzero. If
+<structfield>groups</structfield>
+is zero, the indicator is lit whenever the latched keyboard group is zero.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLocked</symbol></entry>
+    <entry>
+The
+<structfield>groups</structfield>
+field is interpreted as a mask. The indicator is lit when the current locked
+keyboard group matches one of the bits that are set in
+<structfield>groups</structfield>.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseEffective</symbol></entry>
+    <entry>
+The
+<structfield>groups</structfield>
+field is interpreted as a mask. The indicator is lit when the current
+effective keyboard group matches one of the bits that are set in
+<structfield>groups</structfield>.
+</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+The effect of
+<structfield>which_groups</structfield>
+and
+<structfield>groups</structfield>
+when you change an indicator for which
+<symbol>XkbIM_LEDDrivesKB</symbol>
+is set (the indicator drives the keyboard) is shown in
+<link linkend="table8.3">Table 8.3</link>. The <quote>New State</quote>
+column refers to the new state to which you set the indicator.
+</para>
+
+<table id='table8.3' frame='topbot'>
+<title>XkbIndicatorMapRec which_groups and groups, Indicator Drives
+Keyboard</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='3' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='2.0*'/>
+<colspec colname='c2' colwidth='1.0*'/>
+<colspec colname='c3' colwidth='3.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>which_groups</entry>
+  <entry>New State</entry>
+  <entry>Effect on Keyboard Group State</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><symbol>XkbIM_UseNone</symbol></entry>
+    <entry>On or Off</entry>
+    <entry>No effect</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseBase</symbol></entry>
+    <entry>On or Off</entry>
+    <entry>No effect</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLatched</symbol></entry>
+    <entry>On</entry>
+    <entry>
+The
+<structfield>groups</structfield>
+field is treated as a group mask. The keyboard group latch is changed to the
+lowest numbered group specified in
+<structfield>groups</structfield>;
+if
+<structfield>groups</structfield>
+is empty, the keyboard group latch is changed to zero.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLatched</symbol></entry>
+    <entry>Off</entry>
+    <entry>
+The
+<structfield>groups</structfield>
+field is treated as a group mask. If the indicator is explicitly extinguished,
+keyboard group latch is changed to the lowest numbered group not specified in
+<structfield>groups</structfield>;
+if
+<structfield>groups</structfield>
+is zero, the keyboard group latch is set to the index of the highest legal
+keyboard group.
+    </entry>
+  </row>
+  <row>
+    <entry>XkbIM_UseLocked or XkbIM_UseEffective</entry>
+    <entry>On</entry>
+    <entry>
+If the
+<structfield>groups</structfield>
+mask is empty, group is not changed; otherwise, the locked keyboard group is
+changed to the lowest numbered group specified in
+<structfield>groups</structfield>.
+    </entry>
+  </row>
+  <row>
+    <entry>XkbIM_UseLocked or XkbIM_UseEffective</entry>
+    <entry>Off</entry>
+    <entry>
+Locked keyboard group is changed to the lowest numbered group that is not
+specified in the
+<structfield>groups</structfield>
+mask, or to
+<emphasis>Group1</emphasis>
+if the
+<structfield>groups</structfield>
+mask contains all keyboard groups.
+    </entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+</sect3>
+<sect3 id='XkbIndicatorMapRec_which_mods_and_mods_fields'>
+<title>XkbIndicatorMapRec which_mods and mods fields</title>
+
+<para>
+The
+<structfield>mods</structfield>
+field specifies what modifiers an indicator watches. The
+<structfield>mods</structfield>
+field is an Xkb modifier definition,
+<structname>XkbModsRec</structname>,
+as described in <link linkend="Modifier_Definitions">section 7.2</link>, which can specify both real and virtual
+modifiers. The
+<structfield>mods</structfield>
+field takes effect even if some or all of the virtual indicators specified in
+<structfield>mods</structfield>
+are unbound. To specify the mods field, in general, assign the modifiers of
+interest to
+<structfield>mods.real_mods</structfield>
+and the virtual modifiers of interest to
+<structfield>mods.vmods</structfield>.
+You can disregard the
+<structfield>mods.mask</structfield>
+field unless your application needs to interpret the indicator map directly
+(that is, to simulate automatic indicator behavior on its own). Relatively few
+applications need to do so, but if you find it necessary, you can either read
+the indicator map back from the server after you update it (the server
+automatically updates the mask field whenever any of the real or virtual
+modifiers are changed in the modifier definition) or you can use
+<function>XkbVirtualModsToReal</function>
+to determine the proper contents for the mask field, assuming that the
+<structname>XkbDescRec</structname>
+contains the virtual modifier definitions.
+</para>
+
+<para>
+<structfield>which_mods</structfield>
+specifies what criteria Xkb uses to determine a match with the corresponding
+<structfield>mods</structfield>
+field by specifying one or more components of the Xkb keyboard state. If
+<symbol>XkbIM_NoAutomatic</symbol>
+is not set (the keyboard drives the indicator), the indicator is lit whenever
+any of the modifiers specified in the
+<structfield>mask</structfield>
+field of the
+<structfield>mods</structfield>
+modifier definition are also set in any of the current keyboard state
+components specified by
+<structfield>which_mods</structfield>.
+Remember that the
+<structfield>mask</structfield>
+field is comprised of all of the real modifiers specified in the definition
+plus any real modifiers that are bound to the virtual modifiers specified in
+the definition. (See <xref linkend="Keyboard_State" /> for more information on the keyboard state and
+<xref linkend="Virtual_Modifiers" /> for more information on virtual modifiers.) Use a bitwise inclusive
+OR of the following values to compose a value for
+<structfield>which_mods</structfield>:
+
+<programlisting>
+#define XkbIM_UseNone             0
+#define XkbIM_UseBase             (1L &lt;&lt; 0)
+#define XkbIM_UseLatched          (1L &lt;&lt; 1)
+#define XkbIM_UseLocked           (1L &lt;&lt; 2)
+#define XkbIM_UseEffective        (1L &lt;&lt; 3)
+#define XkbIM_UseCompat           (1L &lt;&lt; 4)
+#define XkbIM_UseAnyMods          XkbIM_UseBase | XkbIM_UseLatched |
+                                  XkbIM_UseLocked | XkbIM_UseEffective |
+                                  XkbIM_UseCompat
+</programlisting></para>
+
+<para>
+If
+<symbol>XkbIM_NoAutomatic</symbol>
+is not set (the keyboard drives the indicator), the effect of
+<structfield>which_mods</structfield>
+and
+<structfield>mods</structfield>
+is shown in <link linkend="table8.4">Table 8.4</link>
+</para>
+
+<table id='table8.4' frame='topbot'>
+<title>XkbIndicatorMapRec which_mods and mods, Keyboard Drives Indicator</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='2' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='1.0*'/>
+<colspec colname='c2' colwidth='2.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>which_mods</entry>
+  <entry>Effect on Keyboard Modifiers</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><symbol>XkbIM_UseNone</symbol></entry>
+    <entry>The mods field and the current keyboard modifier state are
+ignored.</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseBase</symbol></entry>
+    <entry>
+The indicator is lit when any of the modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are on in the keyboard base state. If both
+<structfield>mods.real_mods</structfield>
+and
+<structfield>mods.vmods</structfield>
+are zero, the indicator is lit when the base keyboard state contains no
+modifiers.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLatched</symbol></entry>
+    <entry>
+The indicator is lit when any of the modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are latched. If both
+<structfield>mods.real_mods</structfield>
+and
+<structfield>mods.vmods</structfield>
+are zero, the indicator is lit when none of the modifier keys are latched.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLocked</symbol></entry>
+    <entry>
+The indicator is lit when any of the modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are locked. If both
+<structfield>mods.real_mods</structfield>
+and
+<structfield>mods.vmods</structfield>
+are zero, the indicator is lit when none of the modifier keys are locked.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseEffective</symbol></entry>
+    <entry>
+The indicator is lit when any of the modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are in the effective keyboard state. If both
+<structfield>mods.real_mods</structfield>
+and
+<structfield>mods.vmods</structfield>
+are zero, the indicator is lit when the effective keyboard state contains no
+modifiers.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseCompat</symbol></entry>
+    <entry>
+The indicator is lit when any of the modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are in the keyboard compatibility state. If both
+<structfield>mods.real_mods</structfield>
+and
+<structfield>mods.vmods</structfield>
+are zero, the indicator is lit when the keyboard compatibility state contains
+no modifiers.
+    </entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+The effect on the keyboard modifiers of
+<structfield>which_mods</structfield>
+and
+<structfield>mods</structfield>
+when you change an indicator for which
+<symbol>XkbIM_LEDDrivesKB</symbol>
+is set (the indicator drives the keyboard) is shown in
+<link linkend="table8.5">Table 8.5</link>. The <quote>New State</quote>
+column refers to the new state to which you set the indicator.
+</para>
+
+<table id='table8.5' frame='topbot'>
+<title>XkbIndicatorMapRec which_mods and mods, Indicator Drives Keyboard</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='3' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='2.0*'/>
+<colspec colname='c2' colwidth='1.0*'/>
+<colspec colname='c3' colwidth='3.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>which_mods</entry>
+  <entry>New State</entry>
+  <entry>Effect on Keyboard Modifiers</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry>XkbIM_UseNone or XkbIM_UseBase</entry>
+    <entry>On or Off</entry>
+    <entry>No Effect</entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLatched</symbol></entry>
+    <entry>On</entry>
+    <entry>
+Any modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are added to the latched modifiers.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLatched</symbol></entry>
+    <entry>Off</entry>
+    <entry>
+Any modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are removed from the latched modifiers.
+    </entry>
+  </row>
+  <row>
+    <entry>XkbIM_UseLocked, XkbIM_UseCompat, or XkbIM_UseEffective</entry>
+    <entry>On</entry>
+    <entry>
+Any modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are added to the locked modifiers.
+    </entry>
+  </row>
+  <row>
+    <entry><symbol>XkbIM_UseLocked</symbol></entry>
+    <entry>Off</entry>
+    <entry>
+Any modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are removed from the locked modifiers.
+    </entry>
+  </row>
+  <row>
+    <entry>XkbIM_UseCompat or XkbIM_UseEffective</entry>
+    <entry>Off</entry>
+    <entry>
+Any modifiers specified in the
+<structfield>mask</structfield>
+field of
+<structfield>mods</structfield>
+are removed from both the locked and latched modifiers.
+    </entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+</sect3>
+<sect3 id='XkbIndicatorMapRec_ctrls_field'>
+<title>XkbIndicatorMapRec ctrls field</title>
+
+<para>
+The
+<structfield>ctrls</structfield>
+field specifies what controls (see <xref linkend="Keyboard_Controls" />) the indicator watches and is
+composed using the bitwise inclusive OR of the following values:
+
+<programlisting>
+#define XkbRepeatKeysMask           (1L &lt;&lt; 0)
+#define XkbSlowKeysMask             (1L &lt;&lt; 1)
+#define XkbBounceKeysMask           (1L &lt;&lt; 2)
+#define XkbStickyKeysMask           (1L &lt;&lt; 3)
+#define XkbMouseKeysMask            (1L &lt;&lt; 4)
+#define XkbMouseKeysAccelMask       (1L &lt;&lt; 5)
+#define XkbAccessXKeysMask          (1L &lt;&lt; 6)
+#define XkbAccessXTimeoutMask       (1L &lt;&lt; 7)
+#define XkbAccessXFeedbackMask      (1L &lt;&lt; 8)
+#define XkbAudibleBellMask          (1L &lt;&lt; 9)
+#define XkbOverlay1Mask             (1L &lt;&lt; 10)
+#define XkbOverlay2Mask             (1L &lt;&lt; 11)
+#define XkbAllBooleanCtrlsMask      (0x00001FFF)
+</programlisting></para>
+
+<para>
+Xkb lights the indicator whenever any of the boolean controls specified in
+<structfield>ctrls</structfield>
+is enabled.
+</para>
+
+
+</sect3>
+</sect2>
+</sect1>
+<sect1 id='Getting_Information_About_Indicators'>
+<title>Getting Information About Indicators</title>
+
+<para>
+Xkb allows applications to obtain information about indicators using two
+different methods. The first method, which is similar to the core X
+implementation, uses a mask to specify the indicators. The second method, which
+is more suitable for applications concerned with interoperability, uses
+indicator names. The correspondence between the indicator name and the bit
+position in masks is as follows: one of the parameters returned from
+<function>XkbGetNamedDeviceIndicator</function>
+is an index that is the bit position to use in any function call that requires
+a mask of indicator bits, as well as the indicator’s index into the
+<structname>XkbIndicatorRec</structname>
+array of indicator maps.
+</para>
+
+
+<sect2 id='Getting_Indicator_State'>
+<title>Getting Indicator State</title>
+
+<para>
+Because the state of the indicators is relatively volatile, the keyboard
+description does not hold the current state of the indicators. To obtain the
+current state of the keyboard indicators, use
+<function>XkbGetIndicatorState</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbGetIndicatorState"><primary><function>XkbGetIndicatorState</function></primary></indexterm>
+<funcsynopsis id="XkbGetIndicatorState">
+  <funcprototype>
+    <funcdef>Status <function>XkbGetIndicatorState</function></funcdef>
+<!-- (
+<parameter>display</parameter>,
+<parameter>device_spec</parameter>,
+<parameter>state_return</parameter>
+) -->
+
+    <paramdef>Display *<parameter>display</parameter></paramdef>
+    <paramdef>unsigned int <parameter>device_spec</parameter></paramdef>
+    <paramdef>unsigned int *<parameter>state_return</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>display</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>device_spec</parameter>
+    </term>
+    <listitem>
+      <para>
+        device ID, or <symbol>XkbUseCoreKbd</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>state_return</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with a mask of the indicator state
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbGetIndicatorState</function>
+queries the
+<parameter>display</parameter>
+for the state of the indicators on the device specified by the
+<parameter>device_spec</parameter>.
+For each indicator that is <quote>turned on</quote> on the device,
+the associated bit is set in
+<parameter>state_return</parameter>.
+If a compatible version of the Xkb extension is not available in the server,
+<function>XkbGetIndicatorState</function>
+returns a
+<errorname>BadMatch</errorname>
+error. Otherwise, it sends the request to the X server, places the state of
+the indicators into
+<parameter>state_return</parameter>,
+and returns
+<symbol>Success</symbol>.
+Thus the value reported by
+<function>XkbGetIndicatorState</function>
+is identical to the value reported by the core protocol.
+</para>
+
+
+</sect2>
+<sect2 id='Getting_Indicator_Information_by_Index'>
+<title>Getting Indicator Information by Index</title>
+
+<para>
+To get the map for one or more indicators, using a mask to specify the
+indicators, use
+<function>XkbGetIndicatorMap</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbGetIndicatorMap"><primary><function>XkbGetIndicatorMap</function></primary></indexterm>
+<funcsynopsis id="XkbGetIndicatorMap">
+  <funcprototype>
+    <funcdef>Status <function>XkbGetIndicatorMap</function></funcdef>
+<!-- (
+<parameter>dpy</parameter>,
+<parameter>which</parameter>,
+<parameter>desc</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>unsigned int <parameter>which</parameter></paramdef>
+    <paramdef>XkbDescPtr <parameter>desc</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>which</parameter>
+    </term>
+    <listitem>
+      <para>
+        mask of indicators for which maps should be returned
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>desc</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbGetIndicatorMap</function>
+obtains the maps from the server for only those indicators specified by the
+<parameter>which</parameter>
+mask and copies the values into the keyboard description specified by
+<parameter>desc</parameter>.
+If the
+<structfield>indicators</structfield>
+field of the
+<parameter>desc</parameter>
+parameter is
+<symbol>NULL</symbol>,
+<function>XkbGetIndicatorMap</function>
+allocates and initializes it.
+</para>
+
+
+<para>
+<function>XkbGetIndicatorMap</function>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadLength</errorname>,
+<errorname>BadMatch</errorname>,
+and
+<errorname>BadImplementation</errorname>
+errors.
+</para>
+
+
+<para>
+To free the indicator maps, use
+<function>XkbFreeIndicatorMaps</function>
+(see <link linkend="Allocating_and_Freeing_Indicator_Maps">section 8.6</link>).
+</para>
+
+
+</sect2>
+<sect2 id='Getting_Indicator_Information_by_Name'>
+<title>Getting Indicator Information by Name</title>
+
+<para>
+Xkb also allows applications to refer to indicators by name. Use
+<function>XkbGetNames</function>
+to get the indicator names (see <xref linkend="Symbolic_Names" />). Using names eliminates the need
+for hard-coding bitmask values for particular keyboards. For example, instead
+of using vendor-specific constants such as
+<symbol>WSKBLed_ScrollLock</symbol>
+mask on Digital workstations or
+<symbol>XLED_SCROLL_LOCK</symbol>
+on Sun workstations, you can instead use
+<function>XkbGetNamedDeviceIndicator</function> or
+<function>XkbGetNamedIndicator</function>
+to look up information on the indicator named <quote>Scroll Lock.</quote>
+</para>
+
+<para>
+Use
+<function>XkbGetNamedDeviceIndicator</function>
+to look up the indicator map and other information for an indicator by name
+on a specific device.
+</para>
+
+<indexterm significance="preferred" zone="XkbGetNamedDeviceIndicator"><primary><function>XkbGetNamedDeviceIndicator</function></primary></indexterm>
+<funcsynopsis id="XkbGetNamedDeviceIndicator">
+  <funcprototype>
+    <funcdef>Bool <function>XkbGetNamedDeviceIndicator</function></funcdef>
+<!-- (
+<parameter>dpy</parameter>,
+<parameter>dev_spec</parameter>,
+<parameter>name</parameter>,
+<parameter>ndx_rtrn</parameter>,
+<parameter>state_rtrn</parameter>,
+<parameter>map_rtrn</parameter>,
+<parameter>real_rtrn</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>unsigned int <parameter>device_spec</parameter></paramdef>
+    <paramdef>unsigned int <parameter>led_class</parameter></paramdef>
+    <paramdef>unsigned int <parameter>led_id</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+    <paramdef>int *<parameter>ndx_rtrn</parameter></paramdef>
+    <paramdef>Bool *<parameter>state_rtrn</parameter></paramdef>
+    <paramdef>XkbIndicatorMapPtr <parameter>map_rtrn</parameter></paramdef>
+    <paramdef>Bool *<parameter>real_rtrn</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>device_spec</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard device ID, or <symbol>XkbUseCoreKbd</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>led_class</parameter>
+    </term>
+    <listitem>
+      <para>
+        feedback class, or <symbol>XkbDfltXIClass</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>led_id</parameter>
+    </term>
+    <listitem>
+      <para>
+        feedback ID, or <symbol>XkbDfltXIId</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the indicator to be retrieved
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>ndx_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the index of the retrieved indicator
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>state_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the current state of the retrieved indicator
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>map_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the mapping for the retrieved indicator
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>real_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with <symbol>True</symbol>
+         if the named indicator is real (physical)
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If the device specified by
+<parameter>device_spec</parameter>
+with feedback specified by
+<parameter>led_class</parameter> and <parameter>led_id</parameter>
+has an indicator named
+<parameter>name</parameter>,
+<function>XkbGetNamedDeviceIndicator</function>
+returns
+<symbol>True</symbol>
+and populates the rest of the parameters with information about the indicator.
+Otherwise,
+<function>XkbGetNamedDeviceIndicator</function>
+returns
+<symbol>False</symbol>.
+</para>
+
+
+<para>
+The
+<parameter>ndx_rtrn</parameter>
+field returns the zero-based index of the named indicator. This index is the
+bit position to use in any function call that requires a mask of indicator
+bits, as well as the indicator’s index into the
+<structname>XkbIndicatorRec</structname>
+array of indicator maps.
+<parameter>state_rtrn</parameter>
+returns the current state of the named indicator
+(<symbol>True</symbol>
+= on,
+<symbol>False</symbol>
+= off).
+<parameter>map_rtrn</parameter>
+returns the indicator map for the named indicator. In addition, if the
+indicator is mapped to a physical LED, the
+<parameter>real_rtrn</parameter>
+parameter is set to
+<symbol>True</symbol>.
+</para>
+
+
+<para>
+Each of the "<parameter>_rtrn</parameter>" arguments is optional; you can pass
+<symbol>NULL</symbol>
+for any unneeded "<parameter>_rtrn</parameter>" arguments.
+</para>
+
+
+<para>
+<function>XkbGetNamedDeviceIndicator</function>
+can generate
+<errorname>BadAtom</errorname>
+and
+<errorname>BadImplementation</errorname>
+errors.
+</para>
+
+<para>
+As a convenience function, Xkb provides a function to get information about
+indicators with the default class and identifier on the default device:
+<function>XkbGetNamedIndicator</function>.
+</para>
+
+
+<indexterm significance="preferred" zone="XkbGetNamedIndicator"><primary><function>XkbGetNamedIndicator</function></primary></indexterm>
+<funcsynopsis id="XkbGetNamedIndicator">
+  <funcprototype>
+    <funcdef>Bool <function>XkbGetNamedIndicator</function></funcdef>
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+    <paramdef>int *<parameter>ndx_rtrn</parameter></paramdef>
+    <paramdef>Bool *<parameter>state_rtrn</parameter></paramdef>
+    <paramdef>XkbIndicatorMapPtr <parameter>map_rtrn</parameter></paramdef>
+    <paramdef>Bool *<parameter>real_rtrn</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the indicator to be retrieved
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>ndx_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the index of the retrieved indicator
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>state_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the current state of the retrieved indicator
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>map_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the mapping for the retrieved indicator
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>real_rtrn</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with <symbol>True</symbol>
+         if the named indicator is real (physical)
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbGetNamedIndicator</function>
+calls
+<function>XkbGetNamedDeviceIndicator</function>
+with the specified parameters, a
+<structfield>device_spec</structfield>
+of
+<symbol>XkbUseCoreKbd</symbol>,
+a
+<structfield>led_class</structfield>
+of
+<symbol>XkbDfltXIClass</symbol>,
+and a
+<structfield>led_id</structfield>
+of
+<symbol>XkbDfltXIId</symbol>,
+and returns the value which was returned by
+<function>XkbGetNamedDeviceIndicator</function>.
+</para>
+
+</sect2>
+</sect1>
+<sect1 id='Changing_Indicator_Maps_and_State'>
+<title>Changing Indicator Maps and State</title>
+
+<para>
+Just as you can get the indicator map using a mask or using an indicator name,
+so you can change it using a mask or a name.
+</para>
+
+<note><para>You cannot change the
+<structfield>phys_indicators</structfield>
+field of the indicators structure. The only way to change the
+<structfield>phys_indicators</structfield>
+field is to change the keyboard map.</para></note>
+
+<para>
+There are two ways to make changes to indicator maps and state: either change a
+local copy of the indicator maps and use
+<function>XkbSetIndicatorMap</function>
+or
+<function>XkbSetNamedDeviceIndicator</function>,
+or, to reduce network traffic, use an
+<structname>XkbIndicatorChangesRec</structname>
+structure and use
+<function>XkbChangeIndicators</function>.
+</para>
+
+
+<sect2 id='Effects_of_Explicit_Changes_on_Indicators'>
+<title>Effects of Explicit Changes on Indicators</title>
+
+<para>
+This section discusses the effects of explicitly changing indicators depending
+upon different settings in the indicator map. See
+<link linkend="table8.3">Table 8.3</link> and
+<link linkend="table8.5">Table 8.5</link> for
+information on the effects of the indicator map fields when explicit changes
+are made.
+</para>
+
+
+<para>
+If
+<symbol>XkbIM_LEDDrivesKB</symbol>
+is set and
+<symbol>XkbIM_NoExplicit</symbol>
+is not, and if you call a function that updates the server’s image of the
+indicator map (such as
+<function>XkbSetIndicatorMap</function>
+or
+<function>XkbSetNamedDeviceIndicator</function>),
+Xkb changes the keyboard state and controls to reflect the other fields of
+the indicator map. If you attempt to explicitly change the value of an
+indicator for which
+<symbol>XkbIM_LEDDrivesKB</symbol>
+is absent or for which
+<symbol>XkbIM_NoExplicit</symbol>
+is present, keyboard state or controls are unaffected.
+</para>
+
+
+<para>
+If neither
+<symbol>XkbIM_NoAutomatic</symbol>
+nor
+<symbol>XkbIM_NoExplicit</symbol>
+is set in an indicator map, Xkb honors any request to change the state of the
+indicator, but the new state might be immediately superseded by automatic
+changes to the indicator state if the keyboard state or controls change.
+</para>
+
+
+<para>
+The effects of changing an indicator that drives the keyboard are cumulative;
+it is possible for a single change to affect keyboard group, modifiers, and
+controls simultaneously.
+</para>
+
+
+<para>
+If you change an indicator for which both the
+<symbol>XkbIM_LEDDrivesKB</symbol>
+and
+<symbol>XkbIM_NoAutomatic</symbol>
+flags are specified, Xkb applies the keyboard changes specified in the other
+indicator map fields and changes the indicator to reflect the state that was
+explicitly requested. The indicator remains in the new state until it is
+explicitly changed again.
+</para>
+
+
+<para>
+If the
+<symbol>XkbIM_NoAutomatic</symbol>
+flag is not set and
+<symbol>XkbIM_LEDDrivesKB</symbol>
+is set, Xkb applies the changes specified in the other indicator map fields
+and sets the state of the indicator to the values specified by the indicator
+map. Note that it is possible in this case for the indicator to end up in a
+different state than the one that was explicitly requested. For example, Xkb
+does not extinguish an indicator with
+<structfield>which_mods</structfield>
+of
+<symbol>XkbIM_UseBase</symbol>
+and
+<structfield>mods</structfield>
+of
+<symbol>Shift</symbol>
+if, at the time Xkb processes the request to extinguish the indicator, one of
+the
+<symbol>Shift</symbol>
+keys is physically depressed.
+</para>
+
+
+<para>
+If you explicitly light an indicator for which
+<symbol>XkbIM_LEDDrivesKB</symbol>
+is set, Xkb enables all of the boolean controls specified in the
+<structfield>ctrls</structfield>
+field of its indicator map. Explicitly extinguishing such an indicator causes
+Xkb to disable all of the boolean controls specified in
+<structfield>ctrls</structfield>.
+</para>
+
+
+</sect2>
+<sect2 id='Changing_Indicator_Maps_by_Index'>
+<title>Changing Indicator Maps by Index</title>
+
+<para>
+To update the maps for one or more indicators, first modify a local copy of the
+keyboard description, then use
+<function>XkbSetIndicatorMap</function>
+to download the changes to the server:
+</para>
+
+<indexterm significance="preferred" zone="XkbSetIndicatorMap"><primary><function>XkbSetIndicatorMap</function></primary></indexterm>
+<funcsynopsis id="XkbSetIndicatorMap">
+  <funcprototype>
+    <funcdef>Bool <function>XkbSetIndicatorMap</function></funcdef>
+<!-- (
+<parameter>dpy</parameter>,
+<parameter>which</parameter>,
+<parameter>desc</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>unsigned int <parameter>which</parameter></paramdef>
+    <paramdef>XkbDescPtr <parameter>desc</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>which</parameter>
+    </term>
+    <listitem>
+      <para>
+        mask of indicators to change
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>desc</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description from which the maps are taken
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+For each
+bit set in the
+<parameter>which</parameter>
+parameter,
+<function>XkbSetIndicatorMap</function>
+sends the corresponding indicator map from the
+<parameter>desc</parameter>
+parameter to the server.
+</para>
+
+
+</sect2>
+<sect2 id='Changing_Indicator_Maps_by_Name'>
+<title>Changing Indicator Maps by Name</title>
+
+<para>
+<function>XkbSetNamedDeviceIndicator</function> and
+<function>XkbSetNamedIndicator</function>
+can do several related things:
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+Name an indicator if it is not already named
+  </para>
+</listitem>
+<listitem>
+  <para>
+Toggle the state of the indicator
+  </para>
+</listitem>
+<listitem>
+  <para>
+Set the indicator to a specified state
+  </para>
+</listitem>
+<listitem>
+  <para>
+Set the indicator map for the indicator
+  </para>
+</listitem>
+</itemizedlist>
+
+<indexterm significance="preferred" zone="XkbSetNamedDeviceIndicator"><primary><function>XkbSetNamedDeviceIndicator</function></primary></indexterm>
+<funcsynopsis id="XkbSetNamedDeviceIndicator">
+  <funcprototype>
+    <funcdef>Bool<function>XkbSetNamedDeviceIndicator</function></funcdef>
+<!-- (
+<parameter>dpy</parameter>,
+<parameter>device_spec</parameter>,
+<parameter>name</parameter>,
+<parameter>change_state, state</parameter>,
+<parameter>create_new</parameter>,
+<parameter>map</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>unsigned int <parameter>device_spec</parameter></paramdef>
+    <paramdef>unsigned int <parameter>led_class</parameter></paramdef>
+    <paramdef>unsigned int <parameter>led_id</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+    <paramdef>Bool <parameter>change_state</parameter></paramdef>
+    <paramdef>Bool <parameter>state</parameter></paramdef>
+    <paramdef>Bool <parameter>create_new</parameter></paramdef>
+    <paramdef>XkbIndicatorMapPtr <parameter>map</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>device_spec</parameter>
+    </term>
+    <listitem>
+      <para>
+        device ID, or <symbol>XkbUseCoreKbd</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>led_class</parameter>
+    </term>
+    <listitem>
+      <para>
+        feedback class, or <symbol>XkbDfltXIClass</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>led_id</parameter>
+    </term>
+    <listitem>
+      <para>
+        feedback ID, or <symbol>XkbDfltXIId</symbol>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the indicator to change
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>change_state</parameter>
+    </term>
+    <listitem>
+      <para>
+        whether to change the indicator state or not
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>state</parameter>
+    </term>
+    <listitem>
+      <para>
+        desired new state for the indicator
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>create_new</parameter>
+    </term>
+    <listitem>
+      <para>
+        whether a new indicator with the specified name should be
+        created when necessary
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>map</parameter>
+    </term>
+    <listitem>
+      <para>
+        new map for the indicator
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If a compatible version of the Xkb extension is not available in the server,
+<function>XkbSetNamedDeviceIndicator</function>
+returns
+<symbol>False</symbol>.
+Otherwise, it sends a request to the X server to change the indicator
+specified by
+<parameter>name</parameter>
+and returns
+<symbol>True</symbol>.
+</para>
+
+
+<para>
+If
+<parameter>change_state</parameter>
+is
+<symbol>True</symbol>,
+<function>XkbSetNamedDeviceIndicator</function>
+tells the server to change the state of the named indicator to the value
+specified by
+<parameter>state</parameter>.
+If
+<parameter>change_state</parameter>
+is
+<symbol>False</symbol>,
+<parameter>state</parameter>
+is not used.
+</para>
+
+
+<para>
+If an indicator with the name specified by
+<parameter>name</parameter>
+does not already exist, the
+<parameter>create_new</parameter>
+parameter tells the server whether it should create a new named indicator. If
+<parameter>create_new</parameter>
+is
+<symbol>True</symbol>,
+the server finds the first indicator that doesn’t have a name and gives it
+the name specified by
+<parameter>name</parameter>.
+</para>
+
+
+<para>
+If the optional parameter,
+<parameter>map</parameter>,
+is not
+<symbol>NULL</symbol>,
+<function>XkbSetNamedDeviceIndicator</function>
+tells the server to change the indicator’s map to the values specified
+in <parameter>map</parameter>.
+</para>
+
+<para>
+<function>XkbSetNamedDeviceIndicator</function>
+can generate
+<errorname>BadAtom</errorname>
+and
+<errorname>BadImplementation</errorname>
+errors. In addition, it can also generate
+<symbol>XkbIndicatorStateNotify</symbol>
+(see <link linkend="Tracking_Changes_to_Indicator_State_or_Map">section 8.5</link>),
+<symbol>XkbIndicatorMapNotify</symbol>,
+and
+<symbol>XkbNamesNotify</symbol>
+events (see <link linkend="Tracking_Name_Changes">section 18.5</link>).
+</para>
+
+<para>
+As a convenience function, Xkb provides a function to set information about
+indicators with the default class and identifier on the default device:
+<function>XkbSetNamedIndicator</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbSetNamedIndicator"><primary><function>XkbSetNamedIndicator</function></primary></indexterm>
+<funcsynopsis id="XkbSetNamedIndicator">
+  <funcprototype>
+    <funcdef>Bool<function>XkbSetNamedIndicator</function></funcdef>
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>Atom <parameter>name</parameter></paramdef>
+    <paramdef>Bool <parameter>change_state</parameter></paramdef>
+    <paramdef>Bool <parameter>state</parameter></paramdef>
+    <paramdef>Bool <parameter>create_new</parameter></paramdef>
+    <paramdef>XkbIndicatorMapPtr <parameter>map</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>name</parameter>
+    </term>
+    <listitem>
+      <para>
+        name of the indicator to change
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>change_state</parameter>
+    </term>
+    <listitem>
+      <para>
+        whether to change the indicator state or not
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>state</parameter>
+    </term>
+    <listitem>
+      <para>
+        desired new state for the indicator
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>create_new</parameter>
+    </term>
+    <listitem>
+      <para>
+        whether a new indicator with the specified name should be
+        created when necessary
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>map</parameter>
+    </term>
+    <listitem>
+      <para>
+        new map for the indicator
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbSetNamedIndicator</function>
+calls
+<function>XkbSetNamedDeviceIndicator</function>
+with the specified parameters, a
+<structfield>device_spec</structfield>
+of
+<symbol>XkbUseCoreKbd</symbol>,
+a
+<structfield>led_class</structfield>
+of
+<symbol>XkbDfltXIClass</symbol>,
+and a
+<structfield>led_id</structfield>
+of
+<symbol>XkbDfltXIId</symbol>,
+and returns the value which was returned by
+<function>XkbSetNamedDeviceIndicator</function>.
+</para>
+
+</sect2>
+<sect2 id='XkbIndicatorChangesRec'>
+<title>The XkbIndicatorChangesRec Structure</title>
+
+<indexterm significance="preferred" zone="XkbIndicatorChangesRec">
+<primary><structname>XkbIndicatorChangesRec</structname></primary></indexterm>
+
+<para>
+The
+<structname>XkbIndicatorChangesRec</structname>
+identifies small modifications to the indicator map. Use it with the function
+<function>XkbChangeIndicators</function>
+to reduce the amount of traffic sent to the server.
+</para>
+
+<para><programlisting>
+typedef struct _XkbIndicatorChanges {
+    unsigned int             state_changes;
+    unsigned int             map_changes;
+} <structname>XkbIndicatorChangesRec</structname>,*XkbIndicatorChangesPtr;
+</programlisting></para>
+
+<para>
+The
+<structfield>state_changes</structfield>
+field is a mask that specifies the indicators that have changed state, and
+<structfield>map_changes</structfield>
+is a mask that specifies the indicators whose maps have changed.
+</para>
+
+
+<para>
+To change indicator maps or state without passing the entire keyboard
+description, use
+<function>XkbChangeIndicators</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbChangeIndicators"><primary><function>XkbChangeIndicators</function></primary></indexterm>
+<funcsynopsis id="XkbChangeIndicators">
+  <funcprototype>
+    <funcdef>Bool <function>XkbChangeIndicators</function></funcdef>
+<!-- (
+<parameter>dpy, xkb, changes, state</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>XkbDescPtr <parameter>xkb</parameter></paramdef>
+    <paramdef>XkbIndicatorChangesPtr <parameter>changes</parameter></paramdef>
+    <paramdef>unsigned int <parameter>state</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>xkb</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description from which names are to be  taken.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>changes</parameter>
+    </term>
+    <listitem>
+      <para>
+        indicators to be updated on the server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>state</parameter>
+    </term>
+    <listitem>
+      <para>
+        new state of indicators listed in <parameter>changes</parameter>-&gt;<structfield>state_changes</structfield>
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbChangeIndicators</function>
+copies any maps specified by
+<parameter>changes</parameter>
+from the keyboard description,
+<parameter>xkb</parameter>,
+to the server specified by
+<parameter>dpy</parameter>.
+If any bits are set in the
+<structfield>state_changes</structfield>
+field of
+<parameter>changes</parameter>,
+<function>XkbChangeIndicators</function>
+also sets the state of those indicators to the values specified in the
+<parameter>state</parameter>
+mask. A 1 bit in
+<parameter>state</parameter>
+turns the corresponding indicator on, a 0 bit turns it off.
+</para>
+
+
+<para>
+<function>XkbChangeIndicators</function>
+can generate
+<errorname>BadAtom</errorname>
+and
+<errorname>BadImplementation</errorname>
+errors. In addition, it can also generate
+<symbol>XkbIndicatorStateNotify</symbol>
+and
+<symbol>XkbIndicatorMapNotify</symbol>
+events (see <link linkend="Tracking_Changes_to_Indicator_State_or_Map">section 8.5</link>).
+</para>
+
+
+</sect2>
+</sect1>
+<sect1 id='Tracking_Changes_to_Indicator_State_or_Map'>
+<title>Tracking Changes to Indicator State or Map</title>
+
+<indexterm significance="preferred" zone="Tracking_Changes_to_Indicator_State_or_Map">
+<primary>events</primary><secondary><symbol>XkbIndicatorStateNotify</symbol></secondary></indexterm>
+<indexterm significance="preferred" zone="Tracking_Changes_to_Indicator_State_or_Map">
+<primary><structname>XkbIndicatorStateNotifyEvent</structname></primary></indexterm>
+
+<indexterm significance="preferred" zone="Tracking_Changes_to_Indicator_State_or_Map">
+<primary>events</primary><secondary><symbol>XkbIndicatorMapNotify</symbol></secondary></indexterm>
+<indexterm significance="preferred" zone="Tracking_Changes_to_Indicator_State_or_Map">
+<primary><structname>XkbIndicatorMapNotifyEvent</structname></primary></indexterm>
+
+<para>
+Whenever an indicator changes state, the server sends
+<symbol>XkbIndicatorStateNotify</symbol>
+events to all interested clients. Similarly, whenever an indicator’s map
+changes, the server sends
+<symbol>XkbIndicatorMapNotify</symbol>
+events to all interested clients.
+</para>
+
+
+<para>
+To receive
+<symbol>XkbIndicatorStateNotify</symbol>
+events, use
+<function>XkbSelectEvents</function>
+(see <link linkend="Selecting_Xkb_Events">section 4.3</link>) with both the
+<parameter>bits_to_change</parameter>
+and
+<parameter>values_for_bits</parameter>
+parameters containing
+<symbol>XkbIndicatorStateNotifyMask</symbol>.
+To receive
+<symbol>XkbIndicatorMapNotify</symbol>
+events, use
+<function>XkbSelectEvents</function>
+with
+<symbol>XkbIndicatorMapNotifyMask</symbol>.
+</para>
+
+
+<para>
+To receive events for only specific indicators, use
+<function>XkbSelectEventDetails</function>.
+Set the
+<structfield>event_type</structfield>
+parameter to
+<symbol>XkbIndicatorStateNotify</symbol>
+or
+<symbol>XkbIndicatorMapNotify</symbol>,
+and set both the
+<parameter>bits_to_change</parameter>
+and
+<parameter>values_for_bits</parameter>
+detail parameters to a mask where each bit specifies one indicator, turning on
+those bits that specify the indicators for which you want to receive events.
+</para>
+
+
+<para>
+Both types of indicator events use the same structure:
+
+<programlisting>
+typedef struct _XkbIndicatorNotify {
+    int            type;        /* Xkb extension base event code */
+    unsigned long  serial;      /* X server serial number for event */
+    Bool           send_event;  /* <symbol>True</symbol> &rArr; synthetically generated */
+    Display *      display;     /* server connection where event generated */
+    Time           time;        /* server time when event generated */
+    int            xkb_type;    /* specifies state or map notify */
+    int            device;      /* Xkb device ID, will not be <symbol>XkbUseCoreKbd</symbol> */
+    unsigned int   changed;     /* mask of indicators with new state or map */
+    unsigned int   state;       /* current state of all indicators */
+} <structname>XkbIndicatorNotifyEvent</structname>;
+</programlisting></para>
+
+<para>
+<structfield>xkb_type</structfield>
+is either
+<symbol>XkbIndicatorStateNotify</symbol>
+or
+<symbol>XkbIndicatorMapNotify</symbol>,
+depending on whether the event is a
+<symbol>XkbIndicatorStateNotify</symbol>
+event or
+<symbol>XkbIndicatorMapNotify</symbol>,
+event.
+</para>
+
+<para>
+The
+<structfield>changed</structfield>
+parameter is a mask that is the bitwise inclusive OR of the indicators that
+have changed. If the event is of type
+<symbol>XkbIndicatorMapNotify</symbol>,
+<structfield>changed</structfield>
+reports the maps that changed. If the event is of type
+<symbol>XkbIndicatorStateNotify</symbol>,
+<structfield>changed</structfield>
+reports the indicators that have changed state.
+<parameter>state</parameter>
+is a mask that specifies the current state of all indicators, whether they
+have changed or not, for both
+<symbol>XkbIndicatorStateNotify</symbol>
+and <symbol>XkbIndicatorMapNotify</symbol> events.
+</para>
+
+<para>
+When your client application receives either a
+<symbol>XkbIndicatorStateNotify</symbol>
+event or
+<symbol>XkbIndicatorMapNotify</symbol>
+event, you can note the changes in a changes structure by calling
+<function>XkbNoteIndicatorChanges</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbNoteIndicatorChanges"><primary><function>XkbNoteIndicatorChanges</function></primary></indexterm>
+<funcsynopsis id="XkbNoteIndicatorChanges">
+  <funcprototype>
+    <funcdef>void <function>XkbNoteIndicatorChanges</function></funcdef>
+<!-- (
+<parameter>old</parameter>,
+<parameter>new</parameter>,
+<parameter>wanted</parameter>
+) -->
+
+    <paramdef>XkbIndicatorChangesPtr <parameter>old</parameter></paramdef>
+    <paramdef>XkbIndicatorNotifyEvent *<parameter>new</parameter></paramdef>
+    <paramdef>unsigned int <parameter>wanted</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>old</parameter>
+    </term>
+    <listitem>
+      <para>
+        XkbIndicatorChanges structure to be updated
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>new</parameter>
+    </term>
+    <listitem>
+      <para>
+        event from which changes are to be copied
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>wanted</parameter>
+    </term>
+    <listitem>
+      <para>
+        which changes are to be noted
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+The
+<parameter>wanted</parameter>
+parameter is the bitwise inclusive OR of
+<symbol>XkbIndicatorMapMask</symbol>
+and
+<emphasis>XkbIndicatorStateMask</emphasis>.
+<function>XkbNoteIndicatorChanges</function>
+copies any changes reported in
+<parameter>new</parameter>
+and specified in
+<parameter>wanted</parameter>
+into the changes record specified by
+<parameter>old</parameter>.
+</para>
+
+
+<para>
+To update a local copy of the keyboard description with the actual values, pass
+the results of one or more calls to
+<function>XkbNoteIndicatorChanges</function>
+to
+<function>XkbGetIndicatorChanges</function>:
+</para>
+
+
+<indexterm significance="preferred" zone="XkbGetIndicatorChanges"><primary><function>XkbGetIndicatorChanges</function></primary></indexterm>
+<funcsynopsis id="XkbGetIndicatorChanges">
+  <funcprototype>
+    <funcdef>Status <function>XkbGetIndicatorChanges</function></funcdef>
+<!-- (
+<parameter>dpy</parameter>,
+<parameter>xkb</parameter>,
+<parameter>changes</parameter>,
+<parameter>state</parameter>
+) -->
+
+    <paramdef>Display *<parameter>dpy</parameter></paramdef>
+    <paramdef>XkbDescPtr <parameter>xkb</parameter></paramdef>
+    <paramdef>XkbIndicatorChangesPtr <parameter>changes</parameter></paramdef>
+    <paramdef>unsigned int *<parameter>state</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>dpy</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to the X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>xkb</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description to hold the new values
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>changes</parameter>
+    </term>
+    <listitem>
+      <para>
+        indicator maps/state to be obtained from the server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>state</parameter>
+    </term>
+    <listitem>
+      <para>
+        backfilled with the state of the indicators
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbGetIndicatorChanges</function>
+examines the
+<parameter>changes</parameter>
+parameter, pulls over the necessary information from the server, and copies
+the results into the
+<parameter>xkb</parameter>
+keyboard description. If any bits are set in the
+<structfield>state_changes</structfield>
+field of
+<parameter>changes</parameter>,
+<function>XkbGetIndicatorChanges</function>
+also places the state of those indicators in
+<parameter>state</parameter>.
+If the
+<structfield>indicators</structfield>
+field of
+<parameter>xkb</parameter>
+is
+<symbol>NULL</symbol>,
+<function>XkbGetIndicatorChanges</function>
+allocates and initializes it. To free the
+<structfield>indicators</structfield>
+field, use
+<function>XkbFreeIndicatorMaps</function>
+(see <link linkend="Allocating_and_Freeing_Indicator_Maps">section 8.6</link>).
+</para>
+
+
+<para>
+<function>XkbGetIndicatorChanges</function>
+can generate
+<errorname>BadAlloc</errorname>,
+<errorname>BadImplementation</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+
+
+</sect1>
+<sect1 id='Allocating_and_Freeing_Indicator_Maps'>
+<title>Allocating and Freeing Indicator Maps</title>
+
+<para>
+Most applications do not need to directly allocate the
+<structfield>indicators</structfield>
+member of the keyboard description record (the keyboard description record is
+described in <xref linkend="Complete_Keyboard_Description" />). If the need arises, however, use
+<function>XkbAllocIndicatorMaps</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbAllocIndicatorMaps"><primary><function>XkbAllocIndicatorMaps</function></primary></indexterm>
+<funcsynopsis id="XkbAllocIndicatorMaps">
+  <funcprototype>
+    <funcdef>Status <function>XkbAllocIndicatorMaps</function></funcdef>
+<!-- (
+<parameter>xkb</parameter>
+) -->
+
+    <paramdef>XkbDescPtr <parameter>xkb</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>xkb</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description structure
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+The
+<parameter>xkb</parameter>
+parameter must point to a valid keyboard description. If it doesn’t,
+<function>XkbAllocIndicatorMaps</function>
+returns a
+<errorname>BadMatch</errorname>
+error. Otherwise,
+<function>XkbAllocIndicatorMaps</function>
+allocates and initializes the
+<structfield>indicators</structfield>
+member of the keyboard description record and returns
+<symbol>Success</symbol>.
+If
+<function>XkbAllocIndicatorMaps</function>
+was unable to allocate the indicators record, it reports a
+<errorname>BadAlloc</errorname>
+error.
+</para>
+
+<para>
+To free memory used by the
+<structfield>indicators</structfield>
+member of an
+<structname>XkbDescRec</structname>
+structure, use
+<function>XkbFreeIndicatorMaps</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbFreeIndicatorMaps"><primary><function>XkbFreeIndicatorMaps</function></primary></indexterm>
+<funcsynopsis id="XkbFreeIndicatorMaps">
+  <funcprototype>
+    <funcdef>void <function>XkbFreeIndicatorMaps</function></funcdef>
+<!-- (
+<parameter>xkb</parameter>
+) -->
+
+    <paramdef>XkbDescPtr <parameter>xkb</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>xkb</parameter>
+    </term>
+    <listitem>
+      <para>
+        keyboard description structure
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+If the <structfield>indicators</structfield>
+member of the keyboard description record
+pointed to by <parameter>xkb</parameter>
+is not <symbol>NULL</symbol>,
+<function>XkbFreeIndicatorMaps</function>
+frees the memory associated with
+the <structfield>indicators</structfield>
+member of <parameter>xkb</parameter>.
+</para>
+
+</sect1>
+</chapter>

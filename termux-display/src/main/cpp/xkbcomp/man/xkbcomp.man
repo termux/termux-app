@@ -1,0 +1,118 @@
+.\"
+.TH XKBCOMP 1 __xorgversion__
+.SH NAME
+xkbcomp \- compile XKB keyboard description
+.SH SYNOPSIS
+.B xkbcomp
+[option] source [ destination ]
+.SH DESCRIPTION
+.PP
+The
+.I xkbcomp
+keymap compiler converts a description of an XKB keymap into one of several
+output formats.   The most common use for xkbcomp is to create a compiled
+keymap file (.xkm extension) which can be read directly by XKB-capable X
+servers or utilities.   The keymap compiler can also produce C header
+files or XKB source files.  The C header files produced by xkbcomp can be
+included by X servers or utilities that need a built-in default keymap.
+The XKB source files produced by \fIxkbcomp\fP are fully resolved and can be
+used to verify that the files which typically make up an XKB keymap
+are merged correctly or to create a single file which contains a complete
+description of the keymap.
+.PP
+The \fIsource\fP may specify an X display, or an \fI.xkb\fP or \fI.xkm\fP
+file;  unless explicitly specified, the format of \fIdestination\fP
+depends on the format of the source.   Compiling a \fI.xkb\fP (keymap source)
+file generates a \fI.xkm\fP (compiled keymap file) by default.   If the
+source is a \fI.xkm\fP file or an X display, \fIxkbcomp\fP generates a
+keymap source file by default.
+.PP
+If the \fIdestination\fP is an X display, the keymap for the display
+is updated with the compiled keymap.
+.PP
+The name of the \fIdestination\fP is usually computed from the name
+of the source, with the extension replaced as appropriate.  When compiling
+a single map from a file which contains several maps, \fIxkbcomp\fP constructs
+the destination file name by appending an appropriate extension to the
+name of the map to be used.
+.SH OPTIONS
+.TP 8
+.B \-a
+Show all keyboard information, reporting implicit or derived information
+as a comment.  Only affects \fI.xkb\fP format output.
+.TP 8
+.B \-C
+Produce a C header file as output (.h extension).
+.TP 8
+.B \-dflts
+Compute defaults for any missing components, such as key names.
+.TP 8
+.B \-em1 \fImsg\fP
+Print \fImsg\fP before printing first error message.
+.TP 8
+.B \-emp \fImsg\fP
+Print \fImsg\fP at the start of each message line.
+.TP 8
+.B \-eml \fImsg\fP
+If there were any errors, print \fImsg\fP before exiting.
+.TP 8
+.B \-help, -?
+Show available options.
+.TP 8
+.B \-I\fIdir\fP
+Specifies top-level directories to be searched for files included by the
+keymap description.  After all directories specified by \-I options
+have been searched, the current directory and finally, the default
+xkb directory __xkbconfigroot__ will be searched.
+.sp
+To prevent the current and default directories from being searched,
+use the \-I option alone (i.e. without a directory), before any \-I
+options that specify the directories you do want searched.
+.TP 8
+.B \-i\ \fIdeviceid\fP
+If \fIsource\fP or \fIdestination\fP is a valid X display, load the keymap
+from/into the device with the specified ID (not name).
+.TP 8
+.B \-l
+List maps that specify the \fImap\fP pattern in any files listed on the
+command line (not implemented yet).
+.TP 8
+.B \-m\ \fIname\fP
+Specifies a map to be compiled from an file with multiple entries.
+.TP 8
+.B \-merge
+Merge the compiled information with the map from the server (not implemented
+yet).
+.TP 8
+.B \-o\ \fIname\fP
+Specifies a name for the generated output file.  The default is the name of
+the source file with an appropriate extension for the output format.
+.TP 8
+.B \-opt\ \fIparts\fP
+Specifies a list of optional parts.  Compilation errors in any optional parts
+are not fatal.  Parts may consist of any combination of the letters \fIc\fP,
+\fIg\fP,\fIk\fP,\fIs\fP,\fIt\fP which specify the compatibility map, geometry,
+keycodes, symbols and types, respectively.
+.TP 8
+.B -R\fIdir\fP
+Specifies the root directory for relative path names.
+.TP 8
+.B -synch
+Force synchronization for X requests.
+.TP 8
+.B -version
+Print version number.
+.TP 8
+.B \-w\ \fIlvl\fP
+Controls the reporting of warnings during compilation.  A warning level
+of 0 disables all warnings; a warning level of 10 enables them all.
+.TP 8
+.B \-xkb
+Generate a source description of the keyboard as output (.xkb extension).
+.TP 8
+.B \-xkm
+Generate a compiled keymap file as output (.xkm extension).
+.SH "SEE ALSO"
+X(__miscmansuffix__)
+.SH AUTHOR
+Erik Fortune, Silicon Graphics

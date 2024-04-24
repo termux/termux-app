@@ -1,0 +1,156 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XOpenDisplay __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XOpenDisplay, XCloseDisplay \- connect or disconnect to X server
+.SH SYNTAX
+.HP
+Display *XOpenDisplay\^(\^_Xconst char *\fIdisplay_name\fP\^);
+.HP
+int XCloseDisplay\^(Display *\fIdisplay\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIdisplay_name\fP 1i
+Specifies the hardware display name, which determines the display
+and communications domain to be used.
+On a POSIX-conformant system, if the display_name is NULL,
+it defaults to the value of the DISPLAY environment variable.
+.SH DESCRIPTION
+The
+.B XOpenDisplay
+function returns a
+.B Display
+structure that serves as the
+connection to the X server and that contains all the information
+about that X server.
+.B XOpenDisplay
+connects your application to the X server through TCP
+or DECnet communications protocols,
+or through some local inter-process communication protocol.
+If the hostname is a host machine name and a single colon (:)
+separates the hostname and display number,
+.B XOpenDisplay
+connects using TCP streams.
+If the hostname is not specified,
+Xlib uses whatever it believes is the fastest transport.
+If the hostname is a host machine name and a double colon (::)
+separates the hostname and display number,
+.B XOpenDisplay
+connects using DECnet.
+A single X server can support any or all of these transport mechanisms
+simultaneously.
+A particular Xlib implementation can support many more of these transport
+mechanisms.
+.LP
+If successful,
+.B XOpenDisplay
+returns a pointer to a
+.B Display
+structure,
+which is defined in
+.BR X11/Xlib.h .
+If
+.B XOpenDisplay
+does not succeed, it returns NULL.
+After a successful call to
+.BR XOpenDisplay ,
+all of the screens in the display can be used by the client.
+The screen number specified in the display_name argument is returned
+by the
+.B DefaultScreen
+macro (or the
+.B XDefaultScreen
+function).
+You can access elements of the
+.B Display
+and
+.B Screen
+structures only by using the information macros or functions.
+For information about using macros and functions to obtain information from
+the
+.B Display
+structure,
+see section 2.2.1.
+.LP
+The
+.B XCloseDisplay
+function closes the connection to the X server for the display specified in the
+.B Display
+structure and destroys all windows, resource IDs
+.RB ( Window ,
+.BR Font ,
+.BR Pixmap ,
+.BR Colormap ,
+.BR Cursor ,
+and
+.BR GContext ),
+or other resources that the client has created
+on this display, unless the close-down mode of the resource has been changed
+(see
+.BR XSetCloseDownMode ).
+Therefore, these windows, resource IDs, and other resources should never be
+referenced again or an error will be generated.
+Before exiting, you should call
+.B XCloseDisplay
+explicitly so that any pending errors are reported as
+.B XCloseDisplay
+performs a final
+.B XSync
+operation.
+.LP
+.B XCloseDisplay
+can generate a
+.B BadGC
+error.
+.SH "SEE ALSO"
+AllPlanes(__libmansuffix__),
+XFlush(__libmansuffix__),
+XSetCloseDownMode(__libmansuffix__)
+.br
+\fI\*(xL\fP

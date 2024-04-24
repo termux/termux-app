@@ -1,0 +1,213 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XNextEvent __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XNextEvent, XPeekEvent, XWindowEvent, XCheckWindowEvent, XMaskEvent, XCheckMaskEvent, XCheckTypedEvent, XCheckTypedWindowEvent \- select events by type
+.SH SYNTAX
+.HP
+int XNextEvent\^(\^Display *\fIdisplay\fP\^, XEvent *\fIevent_return\fP\^);
+.HP
+int XPeekEvent\^(\^Display *\fIdisplay\fP\^, XEvent *\fIevent_return\fP\^);
+.HP
+int XWindowEvent\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, long
+\fIevent_mask\fP\^, XEvent *\fIevent_return\fP\^);
+.HP
+Bool XCheckWindowEvent\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, long
+\fIevent_mask\fP\^, XEvent *\fIevent_return\fP\^);
+.HP
+int XMaskEvent\^(\^Display *\fIdisplay\fP\^, long \fIevent_mask\fP\^, XEvent
+*\fIevent_return\fP\^);
+.HP
+Bool XCheckMaskEvent\^(\^Display *\fIdisplay\fP\^, long \fIevent_mask\fP\^,
+XEvent *\fIevent_return\fP\^);
+.HP
+Bool XCheckTypedEvent\^(\^Display *\fIdisplay\fP\^, int \fIevent_type\fP\^,
+XEvent *\fIevent_return\fP\^);
+.HP
+Bool XCheckTypedWindowEvent\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^,
+int \fIevent_type\fP\^, XEvent *\fIevent_return\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIevent_mask\fP 1i
+Specifies the event mask.
+.IP \fIevent_return\fP 1i
+Returns the matched event's associated structure.
+.IP \fIevent_return\fP 1i
+Returns the next event in the queue.
+.IP \fIevent_return\fP 1i
+Returns a copy of the matched event's associated structure.
+.IP \fIevent_type\fP 1i
+Specifies the event type to be compared.
+.IP \fIw\fP 1i
+Specifies the window whose event you are interested in.
+.SH DESCRIPTION
+The
+.B XNextEvent
+function copies the first event from the event queue into the specified
+.B XEvent
+structure and then removes it from the queue.
+If the event queue is empty,
+.B XNextEvent
+flushes the output buffer and blocks until an event is received.
+.LP
+The
+.B XPeekEvent
+function returns the first event from the event queue,
+but it does not remove the event from the queue.
+If the queue is empty,
+.B XPeekEvent
+flushes the output buffer and blocks until an event is received.
+It then copies the event into the client-supplied
+.B XEvent
+structure without removing it from the event queue.
+.LP
+The
+.B XWindowEvent
+function searches the event queue for an event that matches both the specified
+window and event mask.
+When it finds a match,
+.B XWindowEvent
+removes that event from the queue and copies it into the specified
+.B XEvent
+structure.
+The other events stored in the queue are not discarded.
+If a matching event is not in the queue,
+.B XWindowEvent
+flushes the output buffer and blocks until one is received.
+.LP
+The
+.B XCheckWindowEvent
+function searches the event queue and then the events available
+on the server connection for the first event that matches the specified window
+and event mask.
+If it finds a match,
+.B XCheckWindowEvent
+removes that event, copies it into the specified
+.B XEvent
+structure, and returns
+.BR True .
+The other events stored in the queue are not discarded.
+If the event you requested is not available,
+.B XCheckWindowEvent
+returns
+.BR False ,
+and the output buffer will have been flushed.
+.LP
+The
+.B XMaskEvent
+function searches the event queue for the events associated with the
+specified mask.
+When it finds a match,
+.B XMaskEvent
+removes that event and copies it into the specified
+.B XEvent
+structure.
+The other events stored in the queue are not discarded.
+If the event you requested is not in the queue,
+.B XMaskEvent
+flushes the output buffer and blocks until one is received.
+.LP
+The
+.B XCheckMaskEvent
+function searches the event queue and then any events available on the
+server connection for the first event that matches the specified mask.
+If it finds a match,
+.B XCheckMaskEvent
+removes that event, copies it into the specified
+.B XEvent
+structure, and returns
+.BR True .
+The other events stored in the queue are not discarded.
+If the event you requested is not available,
+.B XCheckMaskEvent
+returns
+.BR False ,
+and the output buffer will have been flushed.
+.LP
+The
+.B XCheckTypedEvent
+function searches the event queue and then any events available
+on the server connection for the first event that matches the specified type.
+If it finds a match,
+.B XCheckTypedEvent
+removes that event, copies it into the specified
+.B XEvent
+structure, and returns
+.BR True .
+The other events in the queue are not discarded.
+If the event is not available,
+.B XCheckTypedEvent
+returns
+.BR False ,
+and the output buffer will have been flushed.
+.LP
+The
+.B XCheckTypedWindowEvent
+function searches the event queue and then any events available
+on the server connection for the first event that matches the specified
+type and window.
+If it finds a match,
+.B XCheckTypedWindowEvent
+removes the event from the queue, copies it into the specified
+.B XEvent
+structure, and returns
+.BR True .
+The other events in the queue are not discarded.
+If the event is not available,
+.B XCheckTypedWindowEvent
+returns
+.BR False ,
+and the output buffer will have been flushed.
+.SH "SEE ALSO"
+XAnyEvent(__libmansuffix__),
+XIfEvent(__libmansuffix__),
+XPutBackEvent(__libmansuffix__),
+XSendEvent(__libmansuffix__)
+.br
+\fI\*(xL\fP

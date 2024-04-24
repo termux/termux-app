@@ -1,0 +1,285 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH AllPlanes __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+AllPlanes, BlackPixel, WhitePixel, ConnectionNumber, DefaultColormap, DefaultDepth, XListDepths, DefaultGC, DefaultRootWindow, DefaultScreenOfDisplay, DefaultScreen, DefaultVisual, DisplayCells, DisplayPlanes, DisplayString, XMaxRequestSize, XExtendedMaxRequestSize, LastKnownRequestProcessed, NextRequest, ProtocolVersion, ProtocolRevision, QLength, RootWindow, ScreenCount, ScreenOfDisplay, ServerVendor, VendorRelease \- Display macros and functions
+.SH SYNTAX
+unsigned long AllPlanes;
+.HP
+unsigned long BlackPixel\^(\^Display *\fIdisplay\fP\^, int \^\fIscreen_number\fP\^);
+.HP
+unsigned long WhitePixel\^(\^Display *\fIdisplay\fP\^, int \^\fIscreen_number\fP\^);
+.HP
+int ConnectionNumber\^(\^Display *\fIdisplay\fP\^);
+.HP
+Colormap DefaultColormap\^(\^Display *\fIdisplay\fP\^,
+\^int \fIscreen_number\fP\^);
+.HP
+int DefaultDepth\^(\^Display *\fIdisplay\fP\^, \^int \fIscreen_number\fP\^);
+.HP
+int *XListDepths\^(\^Display *\fIdisplay\fP, int \fIscreen_number\fP, int
+*\fIcount_return\fP\^);
+.HP
+GC DefaultGC\^(\^Display *\fIdisplay\fP\^, \^int \fIscreen_number\fP\^);
+.HP
+Window DefaultRootWindow\^(\^Display *\fIdisplay\fP\^);
+.HP
+Screen *DefaultScreenOfDisplay\^(\^Display *\fIdisplay\fP\^);
+.HP
+int DefaultScreen\^(\^Display *\fIdisplay\fP\^);
+.HP
+Visual *DefaultVisual\^(\^Display *\fIdisplay\fP\^, \^int
+\fIscreen_number\fP\^);
+.HP
+int DisplayCells\^(\^Display *\fIdisplay\fP\^, \^int \fIscreen_number\fP\^);
+.HP
+int DisplayPlanes\^(\^Display *\fIdisplay\fP\^, \^int \fIscreen_number\fP\^);
+.HP
+char *DisplayString\^(\^Display *\fIdisplay\fP\^);
+.HP
+long XMaxRequestSize(\^Display *\fIdisplay\fP\^);
+.HP
+long XExtendedMaxRequestSize(\^Display *\fIdisplay\fP\^);
+.HP
+unsigned long LastKnownRequestProcessed\^(\^Display *\fIdisplay\fP\^);
+.HP
+unsigned long NextRequest\^(\^Display *\fIdisplay\fP\^);
+.HP
+int ProtocolVersion\^(\^Display *\fIdisplay\fP\^);
+.HP
+int ProtocolRevision\^(\^Display *\fIdisplay\fP\^);
+.HP
+int QLength\^(\^Display *\fIdisplay\fP\^);
+.HP
+Window RootWindow\^(\^Display *\fIdisplay\fP\^, \^int \fIscreen_number\fP\^);
+.HP
+int ScreenCount\^(\^Display *\fIdisplay\fP\^);
+.HP
+Screen *ScreenOfDisplay\^(\^Display *\fIdisplay\fP, int
+\fIscreen_number\fP\^);
+.HP
+char *ServerVendor\^(\^Display *\fIdisplay\fP\^);
+.HP
+int VendorRelease\^(\^Display *\fIdisplay\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIscreen_number\fP 1i
+Specifies the appropriate screen number on the host server.
+.IP \fIcount_return\fP 1i
+Returns the number of depths.
+.SH DESCRIPTION
+The
+.B AllPlanes
+macro returns a value with all bits set to 1 suitable for use in a plane
+argument to a procedure.
+.LP
+The
+.B BlackPixel
+macro returns the black pixel value for the specified screen.
+.LP
+The
+.B WhitePixel
+macro returns the white pixel value for the specified screen.
+.LP
+The
+.B ConnectionNumber
+macro returns a connection number for the specified display.
+.LP
+The
+.B DefaultColormap
+macro returns the default colormap ID for allocation on the specified screen.
+.LP
+The
+.B DefaultDepth
+macro returns the depth (number of planes) of the default root window for the
+specified screen.
+.LP
+The
+.B XListDepths
+function returns the array of depths
+that are available on the specified screen.
+If the specified screen_number is valid and sufficient memory for the array
+can be allocated,
+.B XListDepths
+sets count_return to the number of available depths.
+Otherwise, it does not set count_return and returns NULL.
+To release the memory allocated for the array of depths, use
+.BR XFree .
+.LP
+The
+.B DefaultGC
+macro returns the default GC for the root window of the
+specified screen.
+.LP
+The
+.B DefaultRootWindow
+macro returns the root window for the default screen.
+.LP
+The
+.B DefaultScreenOfDisplay
+macro returns the default screen of the specified display.
+.LP
+The
+.B DefaultScreen
+macro returns the default screen number referenced in the
+.B XOpenDisplay
+routine.
+.LP
+The
+.B DefaultVisual
+macro returns the default visual type for the specified screen.
+.LP
+The
+.B DisplayCells
+macro returns the number of entries in the default colormap.
+.LP
+The
+.B DisplayPlanes
+macro returns the depth of the root window of the specified screen.
+.LP
+The
+.B DisplayString
+macro returns the string that was passed to
+.B XOpenDisplay
+when the current display was opened.
+.LP
+The
+.B XMaxRequestSize
+function returns the maximum request size (in 4-byte units) supported
+by the server without using an extended-length protocol encoding.
+Single protocol requests to the server can be no larger than this size
+unless an extended-length protocol encoding is supported by the server.
+The protocol guarantees the size to be no smaller than 4096 units
+(16384 bytes).
+Xlib automatically breaks data up into multiple protocol requests
+as necessary for the following functions:
+.BR XDrawPoints ,
+.BR XDrawRectangles ,
+.BR XDrawSegments ,
+.BR XFillArcs ,
+.BR XFillRectangles ,
+and
+.BR XPutImage .
+.LP
+The
+.B XExtendedMaxRequestSize
+function returns zero if the specified display does not support an
+extended-length protocol encoding; otherwise,
+it returns the maximum request size (in 4-byte units) supported
+by the server using the extended-length encoding.
+The Xlib functions
+.BR XDrawLines ,
+.BR XDrawArcs ,
+.BR XFillPolygon ,
+.BR XChangeProperty ,
+.BR XSetClipRectangles ,
+and
+.B XSetRegion
+will use the extended-length encoding as necessary, if supported
+by the server.
+Use of the extended-length encoding in other Xlib
+functions (for example,
+.BR XDrawPoints ,
+.BR XDrawRectangles ,
+.BR XDrawSegments ,
+.BR XFillArcs ,
+.BR XFillRectangles ,
+.BR XPutImage )
+is permitted but not required; an Xlib implementation may choose to
+split the data across multiple smaller requests instead.
+.LP
+The
+.B LastKnownRequestProcessed
+macro extracts the full serial number of the last request known by Xlib
+to have been processed by the X server.
+.LP
+The
+.B NextRequest
+macro extracts the full serial number that is to be used for the next request.
+.LP
+The
+.B ProtocolVersion
+macro returns the major version number (11) of the X protocol associated with
+the connected display.
+.LP
+The
+.B ProtocolRevision
+macro returns the minor protocol revision number of the X server.
+.LP
+The
+.B QLength
+macro returns the length of the event queue for the connected display.
+.LP
+The
+.B RootWindow
+macro returns the root window.
+.LP
+The
+.B ScreenCount
+macro returns the number of available screens.
+.LP
+The
+.B ScreenOfDisplay
+macro returns a pointer to the screen of the specified display.
+.LP
+The
+.B ServerVendor
+macro returns a pointer to a null-terminated string that provides
+some identification of the owner of the X server implementation.
+.LP
+The
+.B VendorRelease
+macro returns a number related to a vendor's release of the X server.
+.SH "SEE ALSO"
+BlackPixelOfScreen(__libmansuffix__),
+ImageByteOrder(__libmansuffix__),
+IsCursorKey(__libmansuffix__),
+XOpenDisplay(__libmansuffix__)
+.br
+\fI\*(xL\fP

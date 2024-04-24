@@ -235,7 +235,7 @@ int renderer_init(JNIEnv* env, int* legacy_drawing, uint8_t* flip) {
                 .width = 64,
                 .height = 64,
                 .layers = 1,
-                .usage = AHARDWAREBUFFER_USAGE_CPU_WRITE_OFTEN | AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN,
+                .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_CPU_WRITE_OFTEN | AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN,
                 .format = AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM
         };
 
@@ -248,7 +248,7 @@ int renderer_init(JNIEnv* env, int* legacy_drawing, uint8_t* flip) {
         }
 
         uint32_t *pixels;
-        if (AHardwareBuffer_lock(new, d0.usage, -1, NULL, (void **) &pixels) == 0) {
+        if (AHardwareBuffer_lock(new, AHARDWAREBUFFER_USAGE_CPU_WRITE_OFTEN | AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, -1, NULL, (void **) &pixels) == 0) {
             pixels[0] = 0xAABBCCDD;
             AHardwareBuffer_unlock(new, NULL);
         } else {
@@ -696,7 +696,7 @@ static void draw(GLuint id, float x0, float y0, float x1, float y1, uint8_t flip
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); checkGlError();
 }
 
-maybe_unused static void draw_cursor(void) {
+__unused static void draw_cursor(void) {
     float x, y, w, h;
 
     if (!cursor.width || !cursor.height)

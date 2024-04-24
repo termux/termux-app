@@ -1,0 +1,121 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbAllocServerMap __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbAllocServerMap \- Allocate and initialize an empty server map description record
+.SH SYNOPSIS
+.HP
+.B Status XkbAllocServerMap
+.BI "(\^XkbDescPtr " "xkb" "\^,"
+.BI "unsigned int " "which" "\^,"
+.BI "unsigned int " "count_acts" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I xkb
+keyboard description in which to allocate server map
+.TP
+.I which
+mask selecting map components to allocate
+.TP
+.I count_acts
+value of num_acts field in map to be allocated
+.SH DESCRIPTION
+.LP
+.I XkbAllocServerMap 
+allocates and initializes an empty server map in the 
+.I server 
+field of the keyboard description specified by 
+.I xkb. 
+The 
+.I which 
+parameter specifies the particular components of the server map structure to allocate, as specified in Table 1. 
+
+.TS
+c s
+l l
+l lw(4i).
+Table 1 XkbAllocServerMap Masks
+_
+Mask	Effect
+_
+XkbExplicitComponentsMask	T{
+The min_key_code and max_key_code fields of the xkb parameter are used to
+allocate the explicit field of the server map.
+T}
+.sp
+XkbKeyActionsMask	T{
+The min_key_code and max_key_code fields of the xkb parameter are used to allocate the key_acts field of the server map. The count_acts parameter is used to allocate the acts field of the server map.
+T}
+.sp
+XkbKeyBehaviorsMask	T{
+The min_key_code and max_key_code fields of the xkb parameter are used to allocate the behaviors field of the server map.
+T}
+.sp
+XkbVirtualModMapMask	T{
+The min_key_code and max_key_code fields of the xkb parameter are used to allocate the vmodmap field of the server map.
+T}
+
+.TE
+
+If the server map of the keyboard description is not NULL and any fields are already allocated in the server map, 
+.I XkbAllocServerMap 
+does not overwrite the existing values. The only exception is with the 
+.I acts 
+array. If the 
+.I count_acts 
+parameter is greater than the current 
+.I num_acts 
+field of the server map, 
+.I XkbAllocServerMap 
+resizes the 
+.I acts 
+array and resets the 
+.I num_acts 
+field accordingly.
+
+If 
+.I XkbAllocServerMap 
+is successful, it returns Success. Otherwise, it can return either BadMatch or BadAlloc errors.
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has correct type and range, but is otherwise invalid
+.TP 15
+.B BadValue
+An argument is out of range
+.SH NOTES
+.LP
+The 
+.I min_key_code 
+and 
+.I max_key_code 
+fields of the 
+.I xkb 
+parameter must be legal values. If they are not valid, 
+.I XkbAllocServerMap 
+returns BadValue. 

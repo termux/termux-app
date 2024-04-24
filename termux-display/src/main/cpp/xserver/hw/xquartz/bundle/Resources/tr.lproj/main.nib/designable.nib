@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="17701" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment version="1040" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="17701"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
+            <connections>
+                <outlet property="delegate" destination="196" id="429"/>
+                <outlet property="dockMenu" destination="423" id="426"/>
+                <outlet property="menu" destination="29" id="300334"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <menu title="MainMenu" systemMenu="main" id="29" userLabel="MainMenu">
+            <items>
+                <menuItem title="X11" id="56">
+                    <menu key="submenu" title="X11" systemMenu="apple" id="57">
+                        <items>
+                            <menuItem title="X11 Hakkında" id="58">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="433"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Tercihler..." keyEquivalent="," id="129">
+                                <connections>
+                                    <action selector="prefs_show:" target="196" id="318"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="143">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Servisler" id="131">
+                                <menu key="submenu" title="Servisler" systemMenu="services" id="130"/>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="144">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Tam Ekranı Aç/Kapat" keyEquivalent="a" id="544">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggle_fullscreen:" target="196" id="548"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="545">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="X11’i Gizle" tag="42" keyEquivalent="h" id="134">
+                                <connections>
+                                    <action selector="hide:" target="-2" id="430"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Diğerlerini Gizle" keyEquivalent="h" id="145">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="hideOtherApplications:" target="-2" id="263"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Tümünü Göster" tag="42" id="150">
+                                <connections>
+                                    <action selector="unhideAllApplications:" target="-2" id="431"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="149">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="X11’den Çık" keyEquivalent="q" id="136">
+                                <connections>
+                                    <action selector="terminate:" target="-2" id="300336"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Uygulamalar" id="269">
+                    <menu key="submenu" title="Uygulamalar" id="270">
+                        <items>
+                            <menuItem isSeparatorItem="YES" id="272">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Özelleştir..." id="305">
+                                <connections>
+                                    <action selector="apps_table_show:" target="196" id="308"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Düzen" id="163">
+                    <menu key="submenu" title="Düzen" id="169">
+                        <items>
+                            <menuItem title="Kopyala" keyEquivalent="c" id="157">
+                                <connections>
+                                    <action selector="copy:" target="-1" id="181"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Pencere" id="19">
+                    <menu key="submenu" title="Pencere" systemMenu="window" id="24">
+                        <items>
+                            <menuItem title="Kapat" keyEquivalent="w" id="203">
+                                <connections>
+                                    <action selector="close_window:" target="196" id="205"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Simge Durumuna Küçült" keyEquivalent="m" id="23">
+                                <connections>
+                                    <action selector="minimize_window:" target="196" id="202"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Büyüt/Küçült" id="204">
+                                <connections>
+                                    <action selector="zoom_window:" target="196" id="206"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="92">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Pencereler Arasında Dolaş" keyEquivalent="`" id="537">
+                                <connections>
+                                    <action selector="next_window:" target="196" id="539"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Pencereler Arasında Geriye Doğru Dolaş" keyEquivalent="~" id="538">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="previous_window:" target="196" id="540"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="536">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Tümünü Öne Getir" id="5">
+                                <connections>
+                                    <action selector="bring_to_front:" target="196" id="207"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Yardım" id="419">
+                    <menu key="submenu" title="Yardım" id="420">
+                        <items>
+                            <menuItem title="X11 Yardım" id="421">
+                                <connections>
+                                    <action selector="x11_help:" target="196" id="422"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+            </items>
+            <point key="canvasLocation" x="73" y="114"/>
+        </menu>
+        <customObject id="196" userLabel="X11Controller" customClass="X11Controller">
+            <connections>
+                <outlet property="apps_separator" destination="272" id="273"/>
+                <outlet property="apps_table" destination="296" id="301"/>
+                <outlet property="click_through" destination="300359" id="300392"/>
+                <outlet property="copy_menu_item" destination="157" id="300443"/>
+                <outlet property="depth" destination="382" id="389"/>
+                <outlet property="dock_apps_menu" destination="527" id="530"/>
+                <outlet property="dock_menu" destination="423" id="428"/>
+                <outlet property="dock_window_separator" destination="524" id="531"/>
+                <outlet property="enable_auth" destination="374" id="387"/>
+                <outlet property="enable_fullscreen" destination="541" id="546"/>
+                <outlet property="enable_fullscreen_menu" destination="300472" id="300474"/>
+                <outlet property="enable_fullscreen_menu_text" destination="300487" id="300489"/>
+                <outlet property="enable_keyequivs" destination="368" id="393"/>
+                <outlet property="enable_tcp" destination="375" id="388"/>
+                <outlet property="fake_buttons" destination="363" id="391"/>
+                <outlet property="focus_follows_mouse" destination="300362" id="300393"/>
+                <outlet property="focus_on_new_window" destination="300368" id="300394"/>
+                <outlet property="option_sends_alt" destination="300477" id="300481"/>
+                <outlet property="prefs_panel" destination="244" id="402"/>
+                <outlet property="scroll_in_device_direction" destination="300482" id="300490"/>
+                <outlet property="sync_clipboard_to_pasteboard" destination="300453" id="300461"/>
+                <outlet property="sync_keymap" destination="370" id="392"/>
+                <outlet property="sync_pasteboard" destination="300424" id="300444"/>
+                <outlet property="sync_pasteboard_to_clipboard" destination="300447" id="300462"/>
+                <outlet property="sync_pasteboard_to_primary" destination="300451" id="300463"/>
+                <outlet property="sync_primary_immediately" destination="300457" id="300464"/>
+                <outlet property="sync_text1" destination="300455" id="300470"/>
+                <outlet property="sync_text2" destination="300459" id="300471"/>
+                <outlet property="toggle_fullscreen_item" destination="544" id="549"/>
+                <outlet property="x11_about_item" destination="58" id="321"/>
+            </connections>
+        </customObject>
+        <window title="X11 Tercihleri" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" deferred="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="x11_prefs" animationBehavior="default" id="244" userLabel="PrefsPanel" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="266" y="365.03906000000001" width="599" height="340"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1025"/>
+            <value key="minSize" type="size" width="320" height="240"/>
+            <view key="contentView" id="245">
+                <rect key="frame" x="0.0" y="0.0" width="599" height="340"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="348">
+                        <rect key="frame" x="13" y="9" width="573" height="325"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <font key="font" metaFont="system"/>
+                        <tabViewItems>
+                            <tabViewItem label="Giriş" identifier="1" id="349">
+                                <view key="view" id="351">
+                                    <rect key="frame" x="10" y="33" width="553" height="279"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <button fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="363">
+                                            <rect key="frame" x="18" y="243" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Üç düğmeli fareye öykün" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="100363">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="394"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="381" translatesAutoresizingMaskIntoConstraints="NO" id="364">
+                                            <rect key="frame" x="36" y="93" width="385" height="31"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Etkinleştirildiğinde, menü çubuğu tuş karşılıkları Meta niteleyicisini kullanan X11 uygulamalarıyla çelişebilir." id="100364">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="381" translatesAutoresizingMaskIntoConstraints="NO" id="365">
+                                            <rect key="frame" x="36" y="195" width="385" height="42"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" id="100365">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <string key="title">Ortadaki veya sağdaki fare düğmelerini etkinleştirmek için tıklarken Option veya Komut tuşunu basılı tutun.
+</string>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="368">
+                                            <rect key="frame" x="18" y="130" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="X11 altında tuş karşılıklarını etkinleştir" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="100368">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="396"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="457" translatesAutoresizingMaskIntoConstraints="NO" id="369">
+                                            <rect key="frame" x="36" y="159" width="461" height="14"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Giriş menüsü değişikliklerinin şu anki X11 tuş eşleminin üzerine yazmasına izin verir." id="100369">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="370">
+                                            <rect key="frame" x="18" y="179" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Sistemin klavye yerleşimini takip et" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="100370">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="395"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="381" translatesAutoresizingMaskIntoConstraints="NO" id="300476">
+                                            <rect key="frame" x="36" y="32" width="385" height="31"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Etkinleştirildiğinde, Option tuşları Mode_switch yerine Alt_L ve Alt_R X11 tuş sembollerini gönderir." id="300479">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300477">
+                                            <rect key="frame" x="18" y="69" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Option tuşları Alt_L ve Alt_R gönderir" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300478">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300480"/>
+                                            </connections>
+                                        </button>
+                                        <button fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300482">
+                                            <rect key="frame" x="18" y="8" width="418" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Her zaman parmağın hareket yönünde kaydır" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300483">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300484"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                            <tabViewItem label="Çıkış" identifier="2" id="352">
+                                <view key="view" id="350">
+                                    <rect key="frame" x="10" y="33" width="553.21875" height="279"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <popUpButton verticalHuggingPriority="750" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="382">
+                                            <rect key="frame" x="71" y="227" width="128" height="26"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <popUpButtonCell key="cell" type="push" title="Ekrandan" bezelStyle="rounded" alignment="left" lineBreakMode="clipping" state="on" borderStyle="borderAndBezel" tag="-1" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="384" id="100382">
+                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="menu"/>
+                                                <menu key="menu" title="OtherViews" id="380">
+                                                    <items>
+                                                        <menuItem title="Ekrandan" state="on" tag="-1" id="384"/>
+                                                        <menuItem title="256 Renk" tag="8" id="435"/>
+                                                        <menuItem title="Binlerce" tag="15" id="383"/>
+                                                        <menuItem title="Milyonlarca" tag="24" id="381"/>
+                                                    </items>
+                                                </menu>
+                                            </popUpButtonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="398"/>
+                                            </connections>
+                                        </popUpButton>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="60" translatesAutoresizingMaskIntoConstraints="NO" id="385">
+                                            <rect key="frame" x="17" y="231" width="64" height="20"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Renkler:" id="100385">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="388" translatesAutoresizingMaskIntoConstraints="NO" id="386">
+                                            <rect key="frame" x="36" y="212" width="392" height="14"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Bu seçenek X11 yeniden başlatıldığında etkili olacaktır." id="100386">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="541">
+                                            <rect key="frame" x="18" y="182" width="409" height="23"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Tam ekran modu" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="100541">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="enable_fullscreen_changed:" target="196" id="547"/>
+                                            </connections>
+                                        </button>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300472">
+                                            <rect key="frame" x="37" y="116" width="409" height="23"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Tam ekran modunda menü çubuğu erişimine izin ver" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300473">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300475"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="381" translatesAutoresizingMaskIntoConstraints="NO" id="543">
+                                            <rect key="frame" x="36" y="145" width="385" height="31"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="X11 kök penceresini etkinleştirir. Tam ekran moduna geçmek ve tam ekran modundan çıkmak için Komut-Option-A tuşlarını kullanın." id="100543">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="358" translatesAutoresizingMaskIntoConstraints="NO" id="300487">
+                                            <rect key="frame" x="54" y="79" width="362" height="31"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Fare imleci birincil ekranınızın en üstüne yerleştirildiğinde menü çubuğu görünür olacaktır." id="300488">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                            <tabViewItem label="Yapıştırma Alanı" identifier="2" id="300421">
+                                <view key="view" id="300422">
+                                    <rect key="frame" x="10" y="33" width="553.21875" height="279"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300424">
+                                            <rect key="frame" x="18" y="255" width="409" height="23"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Eşzamanlamayı etkinleştir" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300440">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300465"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="381" translatesAutoresizingMaskIntoConstraints="NO" id="300423">
+                                            <rect key="frame" x="36" y="221" width="385" height="28"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" id="300441">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <string key="title">"Kopyala" menü öğesini etkinleştirir ve OSX yapıştırma alanıyla X11 CLIPBOARD ve PRIMARY arabelleklerinin eşzamanlanmasına izin verir.</string>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300447">
+                                            <rect key="frame" x="34" y="129" width="409" height="23"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Yapıştırma alanı değiştiğinde CLIPBOARD’u güncelle" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300450">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300467"/>
+                                            </connections>
+                                        </button>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300451">
+                                            <rect key="frame" x="34" y="109" width="511" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Yapıştırma alanı değiştiğinde PRIMARY’yi (ortadaki düğmeyi tıklama) güncelle" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300452">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300468"/>
+                                            </connections>
+                                        </button>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300457">
+                                            <rect key="frame" x="34" y="79" width="409" height="23"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Yeni metin seçildiğinde Yapıştırma Alanı’nı hemen güncelle" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300458">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300469"/>
+                                            </connections>
+                                        </button>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300453">
+                                            <rect key="frame" x="34" y="192" width="409" height="23"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="CLIPBOARD değiştiğinde Yapıştırma Alanı’nı güncelle" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300454">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300466"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="381" translatesAutoresizingMaskIntoConstraints="NO" id="300455">
+                                            <rect key="frame" x="48" y="158" width="385" height="28"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="xclipboard’u, klipper’ı veya başka bir X11 pano yöneticisini kullanmak istiyorsanız bu seçeneği etkisizleştirin." id="300456">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="366" translatesAutoresizingMaskIntoConstraints="NO" id="300459">
+                                            <rect key="frame" x="48" y="47" width="370" height="28"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="X11 protokolündeki sınırlamalardan dolayı, bu seçenek bazı uygulamalarda her zaman çalışmayabilir." id="300460">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                            <tabViewItem label="Pencereler" identifier="2" id="300337">
+                                <view key="view" id="300338">
+                                    <rect key="frame" x="10" y="33" width="553.21875" height="279"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300359">
+                                            <rect key="frame" x="15" y="245" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Etkin Olmayan Pencerelere Tıklayarak Geç" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300360">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300389"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="476" translatesAutoresizingMaskIntoConstraints="NO" id="300358">
+                                            <rect key="frame" x="23" y="197" width="480" height="42"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" id="300361">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <string key="title">Etkinleştirildiğinde; etkin olmayan bir pencereyi tıklamak, pencerenin etkinleştirilmesinin yanı sıra o fare tıklamasının o pencereye geçirilmesine de neden olacaktır.</string>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300362">
+                                            <rect key="frame" x="15" y="184" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Odak Fareyi Takip Eder" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300363">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300390"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="381" translatesAutoresizingMaskIntoConstraints="NO" id="300364">
+                                            <rect key="frame" x="23" y="161" width="385" height="17"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="X11 pencere odağı imleci takip eder.  Bunun bazı yan etkileri olabilir." id="300365">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="300368">
+                                            <rect key="frame" x="15" y="140" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Yeni Pencerelere Odaklan" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="300369">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="300391"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="363" translatesAutoresizingMaskIntoConstraints="NO" id="300370">
+                                            <rect key="frame" x="23" y="92" width="367" height="42"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" id="300371">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <string key="title">Etkinleştirildiğinde; yeni bir X11 penceresinin yaratılması, X11.app uygulamasının öne gelmesine (Finder.app, Terminal.app vb. yerine) neden olacaktır.</string>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                            <tabViewItem label="Güvenlik" identifier="" id="353">
+                                <view key="view" id="354">
+                                    <rect key="frame" x="10" y="33" width="553" height="279"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="374">
+                                            <rect key="frame" x="18" y="243" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Bağlantılarda kimlik doğrula" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="100374">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="399"/>
+                                            </connections>
+                                        </button>
+                                        <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="375">
+                                            <rect key="frame" x="18" y="166" width="402" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Ağ istemcilerinin bağlantılarına izin ver" bezelStyle="regularSquare" imagePosition="leading" alignment="left" inset="2" id="100375">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="prefs_changed:" target="196" id="401"/>
+                                            </connections>
+                                        </button>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="459.73827999999997" translatesAutoresizingMaskIntoConstraints="NO" id="376">
+                                            <rect key="frame" x="36" y="195" width="463.73827999999997" height="42"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" id="100376">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <string key="title">X11’i başlatma, Xauthority erişim denetimi tuşlarını yaratacaktır. Sistemin IP adresi değiştiğinde bu tuşlar geçersiz olur ve bu durum X11 uygulamalarının başlamasını engelleyebilir.</string>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="445" translatesAutoresizingMaskIntoConstraints="NO" id="377">
+                                            <rect key="frame" x="36" y="104" width="449" height="56"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" id="100377">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <string key="title">Etkinleştirildiğinde, sistem güvenliğini sağlamak için Bağlantılarda kimlik doğrula seçeneğinin de etkinleştirilmesi gerekir. Etkisizleştirildiğinde, uzaktaki uygulamaların bağlantılarına izin verilmez.</string>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="400" translatesAutoresizingMaskIntoConstraints="NO" id="379">
+                                            <rect key="frame" x="17" y="17" width="404" height="14"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Bu seçenekler X11’in bir sonraki başlatılışında etkili olacaktır." id="100379">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                        </tabViewItems>
+                    </tabView>
+                </subviews>
+            </view>
+        </window>
+        <window title="X11 Uygulama Menüsü" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" deferred="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="x11_apps" animationBehavior="default" id="285" userLabel="EditPrograms" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="302" y="440" width="454" height="271"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1025"/>
+            <value key="minSize" type="size" width="320" height="240"/>
+            <view key="contentView" id="286">
+                <rect key="frame" x="0.0" y="0.0" width="454" height="271"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="292">
+                        <rect key="frame" x="340" y="191" width="100" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Çoğalt" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="100292">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="apps_table_duplicate:" target="196" id="304"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="293">
+                        <rect key="frame" x="340" y="159" width="100" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Sil" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="100293">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="apps_table_delete:" target="196" id="303"/>
+                        </connections>
+                    </button>
+                    <scrollView fixedFrame="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="295">
+                        <rect key="frame" x="20" y="20" width="318" height="231"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <clipView key="contentView" id="QW2-zh-wIQ">
+                            <rect key="frame" x="1" y="1" width="301" height="214"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" headerView="300295" id="296">
+                                    <rect key="frame" x="0.0" y="0.0" width="301" height="186"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <size key="intercellSpacing" width="3" height="2"/>
+                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                    <tableColumns>
+                                        <tableColumn width="109.23100280761719" minWidth="62.730998992919922" maxWidth="1000" id="298">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Ad">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" alignment="left" title="Metin Hücresi" id="573">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                        <tableColumn width="86.5" minWidth="40" maxWidth="1000" id="297">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Komut">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" alignment="left" title="Metin Hücresi" id="574">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                        <tableColumn width="59" minWidth="10" maxWidth="1000" id="535">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Kestirme">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" alignment="left" title="Metin Hücresi" drawsBackground="YES" id="575">
+                                                <font key="font" metaFont="cellTitle"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                    </tableColumns>
+                                </tableView>
+                            </subviews>
+                        </clipView>
+                        <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="200295">
+                            <rect key="frame" x="1" y="215" width="301" height="15"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" verticalHuggingPriority="750" horizontal="NO" id="100295">
+                            <rect key="frame" x="302" y="29" width="15" height="186"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <tableHeaderView key="headerView" wantsLayer="YES" id="300295">
+                            <rect key="frame" x="0.0" y="0.0" width="301" height="28"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </tableHeaderView>
+                    </scrollView>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="310">
+                        <rect key="frame" x="340" y="223" width="100" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Öğe Ekle" bezelStyle="rounded" alignment="center" state="on" borderStyle="border" inset="2" id="100310">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="apps_table_new:" target="196" id="311"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <point key="canvasLocation" x="27" y="351"/>
+        </window>
+        <menu title="Menü" id="423" userLabel="DockMenu">
+            <items>
+                <menuItem isSeparatorItem="YES" id="524">
+                    <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                </menuItem>
+                <menuItem title="Uygulamalar" id="526">
+                    <menu key="submenu" title="Uygulamalar" id="527">
+                        <items>
+                            <menuItem isSeparatorItem="YES" id="533">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Özelleştir…" id="532">
+                                <connections>
+                                    <action selector="apps_table_show:" target="196" id="534"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+            </items>
+        </menu>
+    </objects>
+</document>

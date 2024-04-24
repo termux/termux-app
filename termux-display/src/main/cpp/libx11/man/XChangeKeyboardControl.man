@@ -1,0 +1,354 @@
+'\" t
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+'\" t
+.TH XChangeKeyboardControl __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XChangeKeyboardControl, XGetKeyboardControl, XAutoRepeatOn, XAutoRepeatOff, XBell, XQueryKeymap, XKeyboardControl \- manipulate keyboard settings and keyboard control structure
+.SH SYNTAX
+.HP
+int XChangeKeyboardControl\^(\^Display *\fIdisplay\fP, unsigned long
+\fIvalue_mask\fP\^, XKeyboardControl *\fIvalues\fP\^);
+.HP
+int XGetKeyboardControl\^(\^Display *\fIdisplay\fP, XKeyboardState
+*\fIvalues_return\fP\^);
+.HP
+int XAutoRepeatOn\^(\^Display *\fIdisplay\fP\^);
+.HP
+int XAutoRepeatOff\^(\^Display *\fIdisplay\fP\^);
+.HP
+int XBell\^(\^Display *\fIdisplay\fP, int \fIpercent\fP\^);
+.HP
+int XQueryKeymap\^(\^Display *\fIdisplay\fP, char \fIkeys_return\fP[32]\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIkeys_return\fP 1i
+Returns an array of bytes that identifies which keys are pressed down.
+Each bit represents one key of the keyboard.
+.IP \fIpercent\fP 1i
+Specifies the volume for the bell,
+which can range from \-100 to 100 inclusive.
+.IP \fIvalue_mask\fP 1i
+Specifies which controls to change.
+This mask is the bitwise inclusive OR of the valid control mask bits.
+.IP \fIvalues\fP 1i
+Specifies one value for each bit set to 1 in the mask.
+.IP \fIvalues_return\fP 1i
+Returns the current keyboard controls in the specified
+.B XKeyboardState
+structure.
+.SH DESCRIPTION
+The
+.B XChangeKeyboardControl
+function controls the keyboard characteristics defined by the
+.B XKeyboardControl
+structure.
+The value_mask argument specifies which values are to be changed.
+.LP
+.B XChangeKeyboardControl
+can generate
+.B BadMatch
+and
+.B BadValue
+errors.
+.LP
+The
+.B XGetKeyboardControl
+function returns the current control values for the keyboard to the
+.B XKeyboardState
+structure.
+.LP
+The
+.B XAutoRepeatOn
+function turns on auto-repeat for the keyboard on the specified display.
+.LP
+The
+.B XAutoRepeatOff
+function turns off auto-repeat for the keyboard on the specified display.
+.LP
+The
+.B XBell
+function rings the bell on the keyboard on the specified display, if possible.
+The specified volume is relative to the base volume for the keyboard.
+If the value for the percent argument is not in the range \-100 to 100
+inclusive, a
+.B BadValue
+error results.
+The volume at which the bell rings
+when the percent argument is nonnegative is:
+.IP
+base \- [(base * percent) / 100] + percent
+.LP
+The volume at which the bell rings
+when the percent argument is negative is:
+.IP
+base + [(base * percent) / 100]
+.LP
+To change the base volume of the bell, use
+.BR XChangeKeyboardControl .
+.LP
+.B XBell
+can generate a
+.B BadValue
+error.
+.LP
+The
+.B XQueryKeymap
+function returns a bit vector for the logical state of the keyboard,
+where each bit set to 1 indicates that the corresponding key is currently
+pressed down.
+The vector is represented as 32 bytes.
+Byte N (from 0) contains the bits for keys 8N to 8N + 7
+with the least significant bit in the byte representing key 8N.
+.LP
+Note that the logical state of a device (as seen by client applications)
+may lag the physical state if device event processing is frozen.
+.SH STRUCTURES
+The
+.B XKeyboardControl
+structure contains:
+.LP
+.LP
+/\&* Mask bits for ChangeKeyboardControl */
+.TS
+lw(.5i) lw(2.5i) lw(.8i).
+T{
+\&#define
+T}	T{
+.B KBKeyClickPercent
+T}	T{
+(1L<<0)
+T}
+T{
+\&#define
+T}	T{
+.B KBBellPercent
+T}	T{
+(1L<<1)
+T}
+T{
+\&#define
+T}	T{
+.B KBBellPitch
+T}	T{
+(1L<<2)
+T}
+T{
+\&#define
+T}	T{
+.B KBBellDuration
+T}	T{
+(1L<<3)
+T}
+T{
+\&#define
+T}	T{
+.B KBLed
+T}	T{
+(1L<<4)
+T}
+T{
+\&#define
+T}	T{
+.B KBLedMode
+T}	T{
+(1L<<5)
+T}
+T{
+\&#define
+T}	T{
+.B KBKey
+T}	T{
+(1L<<6)
+T}
+T{
+\&#define
+T}	T{
+.B KBAutoRepeatMode
+T}	T{
+(1L<<7)
+T}
+.TE
+.EX
+/\&* Values */
+
+typedef struct {
+        int key_click_percent;
+        int bell_percent;
+        int bell_pitch;
+        int bell_duration;
+        int led;
+        int led_mode;   /\&* LedModeOn, LedModeOff */
+        int key;
+        int auto_repeat_mode;   /\&* AutoRepeatModeOff, AutoRepeatModeOn,
+                                AutoRepeatModeDefault */
+} XKeyboardControl;
+.EE
+.LP
+The key_click_percent member sets the volume for key clicks between 0 (off)
+and 100 (loud) inclusive, if possible.
+A setting of \-1 restores the default.
+Other negative values generate a
+.B BadValue
+error.
+.LP
+The bell_percent sets the base volume for the bell between 0 (off) and 100
+(loud) inclusive, if possible.
+A setting of \-1 restores the default.
+Other negative values generate a
+.B BadValue
+error.
+The bell_pitch member sets the pitch (specified in Hz) of the bell, if possible.
+A setting of \-1 restores the default.
+Other negative values generate a
+.B BadValue
+error.
+The bell_duration member sets the duration of the
+bell specified in milliseconds, if possible.
+A setting of \-1 restores the default.
+Other negative values generate a
+.B BadValue
+error.
+.LP
+If both the led_mode and led members are specified,
+the state of that LED is changed, if possible.
+The led_mode member can be set to
+.B LedModeOn
+or
+.BR LedModeOff .
+If only led_mode is specified, the state of
+all LEDs are changed, if possible.
+At most 32 LEDs numbered from one are supported.
+No standard interpretation of LEDs is defined.
+If led is specified without led_mode, a
+.B BadMatch
+error results.
+.LP
+If both the auto_repeat_mode and key members are specified,
+the auto_repeat_mode of that key is changed (according to
+.BR AutoRepeatModeOn ,
+.BR AutoRepeatModeOff ,
+or
+.BR AutoRepeatModeDefault ),
+if possible.
+If only auto_repeat_mode is
+specified, the global auto_repeat_mode for the entire keyboard is
+changed, if possible, and does not affect the per-key settings.
+If a key is specified without an auto_repeat_mode, a
+.B BadMatch
+error results.
+Each key has an individual mode of whether or not it should auto-repeat
+and a default setting for the mode.
+In addition,
+there is a global mode of whether auto-repeat should be enabled or not
+and a default setting for that mode.
+When global mode is
+.BR AutoRepeatModeOn ,
+keys should obey their individual auto-repeat modes.
+When global mode is
+.BR AutoRepeatModeOff ,
+no keys should auto-repeat.
+An auto-repeating key generates alternating
+.B KeyPress
+and
+.B KeyRelease
+events.
+When a key is used as a modifier,
+it is desirable for the key not to auto-repeat,
+regardless of its auto-repeat setting.
+.LP
+The
+.B XKeyboardState
+structure contains:
+.LP
+.EX
+typedef struct {
+        int key_click_percent;
+        int bell_percent;
+        unsigned int bell_pitch, bell_duration;
+        unsigned long led_mask;
+        int global_auto_repeat;
+        char auto_repeats[32];
+} XKeyboardState;
+.EE
+.LP
+For the LEDs,
+the least significant bit of led_mask corresponds to LED one,
+and each bit set to 1 in led_mask indicates an LED that is lit.
+The global_auto_repeat member can be set to
+.B AutoRepeatModeOn
+or
+.BR AutoRepeatModeOff .
+The auto_repeats member is a bit vector.
+Each bit set to 1 indicates that auto-repeat is enabled
+for the corresponding key.
+The vector is represented as 32 bytes.
+Byte N (from 0) contains the bits for keys 8N to 8N + 7
+with the least significant bit in the byte representing key 8N.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadMatch
+Some argument or pair of arguments has the correct type and range but fails
+to match in some other way required by the request.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.SH "SEE ALSO"
+XChangeKeyboardMapping(__libmansuffix__),
+XkbChangeEnabledControls(__libmansuffix__),
+XkbBell(__libmansuffix__),
+XkbDeviceBell(__libmansuffix__),
+XkbGetMap(__libmansuffix__),
+XSetPointerMapping(__libmansuffix__)
+.br
+\fI\*(xL\fP

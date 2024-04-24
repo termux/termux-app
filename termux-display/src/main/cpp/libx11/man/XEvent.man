@@ -1,0 +1,1 @@
+.so man__libmansuffix__/XAnyEvent.__libmansuffix__

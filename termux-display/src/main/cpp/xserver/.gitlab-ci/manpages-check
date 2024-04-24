@@ -1,0 +1,33 @@
+#!/bin/sh
+
+find build/ -regex ".*\.[1-9]$" -exec grep -E \
+@vendorversion@\|\
+@xorgversion@\|\
+@xservername@\|\
+@xconfigfile@\|\
+@projectroot@\|\
+@apploaddir@\|\
+@appmansuffix@\|\
+@drivermansuffix@\|\
+@adminmansuffix@\|\
+@libmansuffix@\|\
+@miscmansuffix@\|\
+@filemansuffix@\|\
+@logdir@\|\
+@datadir@\|\
+@mandir@\|\
+@sysconfdir@\|\
+@xconfigdir@\|\
+@xkbdir@\|\
+@XKB_DFLT_RULES@\|\
+@XKB_DFLT_MODEL@\|\
+@XKB_DFLT_LAYOUT@\|\
+@XKB_DFLT_VARIANT@\|\
+@XKB_DFLT_OPTIONS@\|\
+@bundle_id_prefix@\|\
+@modulepath@\|\
+@suid_wrapper_dir@\|\
+@default_font_path@\
+ '{}' + && { echo "Missing manpage substitutions detected!" >&2 ; exit 1; }
+
+exit 0

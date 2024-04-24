@@ -1,0 +1,75 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbComputeShapeTop __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbComputeShapeTop \- Determines the bounding box of the top surface of a shape
+.SH SYNOPSIS
+.HP
+.B Bool XkbComputeShapeTop
+.BI "(\^XkbShapePtr " "shape" "\^,"
+.BI "XkbBoundsPtr " "bounds_rtrn" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I shape
+shape to be examined
+.TP
+.I bounds_rtrn
+backfilled with the bounding box for the shape
+.SH DESCRIPTION
+.LP
+Xkb provides a number of convenience functions to help use a keyboard geometry. 
+These include functions to return the bounding box of a shape's top surface and 
+to update the bounding box of a shape row or section.
+
+A shape is made up of a number of outlines. Each outline is a polygon made up of 
+a number of points. The bounding box of a shape is a rectangle that contains all 
+the outlines of that shape. 
+
+.I XkbComputeShapeTop 
+returns a BoundsRec that contains two x and y coordinates. These coordinates
+describe the corners of a rectangle that contains the outline that describes the 
+top surface of the shape. The top surface is defined to be the approximating 
+outline if the 
+.I approx 
+field of 
+.I shape 
+is not NULL. If 
+.I approx 
+is NULL, the top surface is defined as the last outline in the 
+.I shape's 
+array of outlines. 
+.I XkbComputeShapeTop 
+returns False if 
+.I shape 
+is NULL or if there are no outlines for the shape; otherwise, it returns True.
+.SH STRUCTURES
+.LP
+.nf
+
+typedef struct _XkbBounds {
+	short	x1,y1;	/\&* upper left corner of the bounds, in mm/10 */
+	short	x2,y2;	/\&* lower right corner of the bounds, in mm/10 */
+} XkbBoundsRec, *XkbBoundsPtr;
+
+.fi

@@ -1,0 +1,6 @@
+#		Add & Override for this directory and it's subdirectories
+*.html
+*.ps
+*.pdf
+*.txt
+*.db

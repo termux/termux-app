@@ -1,0 +1,184 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0 filetype=yaml:
+#
+# This CI uses the freedesktop.org ci-templates.
+# Please see the ci-templates documentation for details:
+# https://freedesktop.pages.freedesktop.org/ci-templates/
+
+.templates_sha: &template_sha c5626190ec14b475271288dda7a7dae8dbe0cd76 # see https://docs.gitlab.com/ee/ci/yaml/#includefile
+
+include:
+  # Arch container builder template
+  - project: 'freedesktop/ci-templates'
+    ref: *template_sha
+    file:
+      - '/templates/arch.yml'
+  - project: 'freedesktop/ci-templates'
+    ref: *template_sha
+    file: '/templates/ci-fairy.yml'
+  - template: Security/SAST.gitlab-ci.yml
+
+# global variables to be used by most/all jobs.
+variables:
+  FDO_UPSTREAM_REPO: 'xorg/proto/xorgproto'
+  # Changing the tag will rebuild the container images. The value is just a
+  # string, but we use the date for human benefits.
+  FDO_DISTRIBUTION_TAG: '2021-04-30.0'
+
+stages:
+  - prep
+  - check
+  - build
+  - test
+
+
+#
+# Verify that commit messages are as expected
+#
+check-commits:
+  extends:
+    - .fdo.ci-fairy
+  stage: check
+  script:
+    - ci-fairy check-commits --junit-xml=results.xml
+  except:
+    - master@xorg/proto/xorgproto
+  variables:
+    GIT_DEPTH: 100
+  artifacts:
+    reports:
+      junit: results.xml
+  allow_failure: true
+
+#
+# Verify that the merge request has the allow-collaboration checkbox ticked
+#
+check-merge-request:
+  extends:
+    - .fdo.ci-fairy
+  stage: check
+  script:
+    - ci-fairy check-merge-request --require-allow-collaboration --junit-xml=results.xml
+  artifacts:
+    when: on_failure
+    reports:
+      junit: results.xml
+  allow_failure: true
+
+
+#
+# Build a container with the given tag and the packages pre-installed.
+# This only happens if/when the tag changes, otherwise the existing image is
+# re-used.
+#
+container-prep:
+  extends:
+    - .fdo.container-build@arch
+  stage: prep
+  variables:
+    GIT_STRATEGY: none
+    # minimal set of packages required to build and install
+    BASE_PACKAGES: 'meson ninja gcc autoconf automake make xorg-util-macros pkgconf'
+    # extra packages we need for various tests
+    EXTRA_PACKAGES: 'git libevdev python python-libevdev python-black jq'
+    FDO_DISTRIBUTION_PACKAGES: $BASE_PACKAGES $EXTRA_PACKAGES
+
+meson:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: build
+  parallel:
+    matrix:
+      - MESON_OPTIONS: ['', '-Dlegacy=true']
+  script:
+    - mkdir -p ../_inst
+    - meson builddir --prefix="$PWD/../_inst" $MESON_OPTIONS
+    - meson configure builddir
+    - meson test -C builddir
+    - meson install -C builddir
+
+autotools:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: build
+  parallel:
+    matrix:
+      - CONFIGURE_OPTIONS: ['', '--enable-legacy']
+  script:
+    - mkdir -p ../_inst _build
+    - autoreconf -ivf
+    - pushd _build
+    - ../configure --prefix="$PWD/../_inst" $CONFIGURE_OPTIONS
+    - make check
+    - make install
+    - make distcheck
+    - mv xorgproto*.tar.gz ..
+    - popd
+  artifacts:
+    paths:
+      - xorgproto*.tar.gz
+
+meson from tarball:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: test
+  script:
+    - mkdir -p _tarball_build
+    - tar xf xorgproto-*.tar.gz -C _tarball_build
+    - pushd _tarball_build/xorgproto-*
+    - meson builddir
+    - meson configure builddir
+    - meson test -C builddir
+  needs:
+    - autotools
+  variables:
+    GIT_STRATEGY: none
+
+compare meson and autotools:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: test
+  script:
+    - mkdir -p $PWD/_meson_inst
+    - mkdir -p $PWD/_autotools_inst
+    # the prefix ends up in the pkgconfig files, so we use a symlink
+    # to use the same --prefix for meson and autotools
+    - ln -sf $PWD/_meson_inst $PWD/_inst
+    - meson builddir
+    - meson configure builddir --prefix=$PWD/_inst
+    - meson install -C builddir
+    - rm $PWD/_inst
+    - ln -sf $PWD/_autotools_inst $PWD/_inst
+    - autoreconf -ivf
+    # meson doesn't build the specs yet
+    - ./configure --prefix=$PWD/_inst --disable-specs
+    - make && make install
+    - diff --brief --recursive $PWD/_meson_inst $PWD/_autotools_inst
+
+check evdev keysyms:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: test
+  script:
+    - ./scripts/keysym-generator.py --header=include/X11/XF86keysym.h verify
+
+check formatting:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: check
+  script:
+    - black scripts/keysym-generator.py
+    - git diff --exit-code || (echo "Please run Black against the Python script" && false)
+  only:
+    changes:
+      - scripts/keysym-generator.py
+
+check versions are in sync:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: test
+  script:
+    - autoreconf -ivf
+    - ./configure --version | head -n 1 | sed -e 's/xorgproto configure //' > autotools.version
+    - meson builddir
+    - meson introspect --projectinfo builddir | jq -r '.version' > meson.version
+    - diff -u autotools.version meson.version || (echo "ERROR - autotools and meson versions not in sync" && false)

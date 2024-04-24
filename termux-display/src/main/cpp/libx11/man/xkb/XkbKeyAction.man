@@ -1,0 +1,129 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbKeyAction __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbKeyAction \-  Returns the key action
+.SH SYNOPSIS
+.HP
+.B XkbAction XkbKeyAction
+.BI "(\^XkbDescPtr " "xkb" "\^,"
+.BI "KeyCode " "keycode" "\^,"
+.BI "int " "idx" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I xkb
+Xkb description of interest
+.TP
+.I keycode
+keycode of interest
+.TP
+.I idx
+index for group and shift level
+.SH DESCRIPTION
+.LP
+A key action defines the effect key presses and releases have on the internal 
+state of the server. For 
+example, the expected key action associated with pressing the Shift key is to 
+set the Shift modifier. 
+There is zero or one key action associated with each keysym bound to each key.
+
+Just as the entire list of key symbols for the keyboard mapping is held in the
+.I syms 
+field of the client map, the entire list of key actions for the keyboard mapping 
+is held in the 
+.I acts 
+array of the server map. The total size of 
+.I acts 
+is specified by 
+.I size_acts, 
+and the number of entries is specified by 
+.I num_acts. 
+
+The 
+.I key_acts 
+array, indexed by keycode, describes the actions associated with a key. The
+.I key_acts 
+array has 
+.I min_key_code 
+unused entries at the start to allow direct indexing using a keycode. If a
+.I key_acts 
+entry is zero, it means the key does not have any actions associated with it. If 
+an entry is not zero, 
+the entry represents an index into the 
+.I acts 
+field of the server map, much as the 
+.I offset 
+field of a KeySymMapRec structure is an index into the 
+.I syms 
+field of the client map. 
+
+The reason the 
+.I acts 
+field is a linear list of XkbActions is to reduce the memory consumption 
+associated with a keymap. 
+Because Xkb allows individual keys to have multiple shift levels and a different 
+number of groups per 
+key, a single two-dimensional array of KeySyms would potentially be very large 
+and sparse. Instead, Xkb 
+provides a small two-dimensional array of XkbActions for each key. To store all 
+of these individual 
+arrays, Xkb concatenates each array together in the 
+.I acts 
+field of the server map.
+
+The key action structures consist only of fields of type char or unsigned char. 
+This is done to 
+optimize data transfer when the server sends bytes over the wire. If the fields 
+are anything but bytes, 
+the server has to sift through all of the actions and swap any nonbyte fields. 
+Because they consist of 
+nothing but bytes, it can just copy them out.
+
+.I XkbKeyAction 
+returns the key action indexed by 
+.I idx 
+in the two-dimensional array of key actions associated with the key 
+corresponding to 
+.I keycode.idx 
+may be computed from the group and shift level of interest as follows:
+.nf
+
+    idx = group_index * key_width + shift_level
+.fi    
+.SH STRUCTURES
+.LP
+The KeySymMapRec structure is defined as follows:
+.nf
+
+    #define XkbNumKbdGroups             4
+    #define XkbMaxKbdGroup              (XkbNumKbdGroups-1)
+    
+    typedef struct {                    /\&* map to keysyms for a single keycode */
+        unsigned char       kt_index[XkbNumKbdGroups];  /\&* key type index for each group */
+        unsigned char       group_info; /\&* # of groups and out of range group handling */
+        unsigned char       width;      /\&* max # of shift levels for key */
+        unsigned short      offset;     /\&* index to keysym table in syms array */
+} XkbSymMapRec, *XkbSymMapPtr;
+
+.fi

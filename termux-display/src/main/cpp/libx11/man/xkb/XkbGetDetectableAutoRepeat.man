@@ -1,0 +1,92 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbGetDetectableAutoRepeat __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbGetDetectableAutoRepeat \- Determines whether or not the server supports
+DetectableAutoRepeat
+.SH SYNOPSIS
+.HP
+.B Bool XkbGetDetectableAutoRepeat
+.BI "(\^Display *" "display" "\^,"
+.BI "Bool *" "supported_rtrn" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I display
+connection to X server
+.TP
+.I supported_rtrn
+backfilled True if DetectableAutoRepeat supported
+.SH DESCRIPTION
+.LP
+Auto-repeat is the generation of multiple key events by a keyboard when the user
+presses a key and holds it down. Keyboard hardware and device-dependent X server
+software often implement auto-repeat by generating multiple KeyPress events with no
+intervening KeyRelease event. The standard behavior of the X server is to generate
+a KeyRelease event for every KeyPress event. If the keyboard hardware and
+device-dependent software of the X server implement auto-repeat by generating
+multiple KeyPress events, the device-independent part of the X server by default
+synthetically generates a KeyRelease event after each KeyPress event. This provides
+predictable behavior for X clients, but does not allow those clients to detect the
+fact that a key is auto-repeating.
+
+Xkb allows clients to request
+.I detectable auto-repeat.
+If a client requests and the server supports DetectableAutoRepeat, Xkb generates
+KeyRelease events only when the key is physically released. If DetectableAutoRepeat
+is not supported or has not been requested, the server synthesizes a KeyRelease
+event for each repeating KeyPress event it generates.
+
+DetectableAutoRepeat, unlike other controls, is not contained in the XkbControlsRec
+structure, nor can it be enabled or disabled via the EnabledControls control.
+Instead, query and set DetectableAutoRepeat using
+.I XkbGetDetectableAutoRepeat
+and
+.I XkbSetDetectableAutoRepeat.
+
+DetectableAutoRepeat is a condition that applies to all keyboard devices for a
+client's connection to a given X server; it cannot be selectively set for some
+devices and not for others. For this reason, none of the Xkb library functions
+involving DetectableAutoRepeat involve a device specifier.
+
+.I XkbGetDetectableAutoRepeat
+queries the server for the current state of DetectableAutoRepeat and waits for a
+reply. If
+.I supported_rtrn
+is not NULL, it backfills
+.I supported_rtrn
+with True if the server supports DetectableAutoRepeat, and False otherwise.
+.I XkbGetDetectableAutoRepeat
+returns the current state of DetectableAutoRepeat for the requesting client:
+True if DetectableAutoRepeat is set, and False otherwise.
+.SH "RETURN VALUES"
+.TP 15
+True
+The
+.I XkbGetDetectableAutoRepeat
+function returns True if the server supports DetectableAutoRepeat.
+.TP 15
+False
+The
+.I XkbGetDetectableAutoRepeat
+function returns False if the server does not support DetectableAutoRepeat.

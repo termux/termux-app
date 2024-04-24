@@ -1,0 +1,100 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbResizeKeyActions __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbResizeKeyActions \- Change the number of actions bound to a key
+.SH SYNOPSIS
+.HP
+.B XkbAction * XkbResizeKeyActions
+.BI "(\^XkbDescRec *" "xkb" "\^,"
+.BI "int " "key" "\^,"
+.BI "int " "needed" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I xkb
+keyboard description to change
+.TP
+.I key
+keycode of key to change
+.TP
+.I needed
+new number of actions required
+.SH DESCRIPTION
+.LP
+The 
+.I xkb 
+parameter points to the keyboard description containing the 
+.I key 
+whose number of actions is to be changed. The 
+.I key 
+parameter is the keycode of the key to change, and needed specifies the new 
+number of actions required for the key.
+
+.I XkbResizeKeyActions 
+reserves the space needed for the actions and returns a pointer to the beginning 
+of the new array that holds the actions. It can change the 
+.I acts, num_acts, 
+and 
+.I size_acts 
+fields of 
+.I xkb->server 
+if it is necessary to reallocate the 
+.I acts 
+array.
+
+If 
+.I needed 
+is greater than the current number of keysyms for the key, 
+.I XkbResizeKeyActions 
+initializes all new actions in the array to NoAction.
+
+Because the number of actions needed by a key is normally computed as width * 
+number of groups, and 
+.I XkbResizeKeyActions 
+does not modify either the width or number of groups for the key, a discrepancy 
+exists on return from 
+.I XkbResizeKeyActions 
+between the space allocated for the actions and the number required. The unused 
+entries in the list of actions returned by 
+.I XkbResizeKeyActions 
+are not preserved across future calls to any of the map editing functions, so 
+you must update the key actions (which updates the width and number of groups 
+for the key) before calling another allocator function. A call to
+.I XkbChangeTypesOfKey 
+updates these.
+
+If any allocation errors occur while resizing the number of actions bound to the 
+key, 
+.I XkbResizeKeyActions 
+returns NULL.
+.SH "SEE ALSO"
+.BR XkbChangeTypesOfKey (__libmansuffix__),
+.BR XkbResizeKeySyms (__libmansuffix__)
+.SH NOTES
+.LP
+A change to the number of actions bound to a key should be accompanied by a 
+change in the number of symbols bound to a key. Refer to 
+.I XkbResizeKeySyms 
+for more information on changing the number of symbols bound to a key.

@@ -1,0 +1,1245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+                      "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
+<!-- lifted from troff+ms+XMan by doclifter -->
+<book id="xtrans">
+
+<bookinfo>
+   <title>X Transport Interface</title>
+   <subtitle>X Consortium Standard</subtitle>
+   <authorgroup>
+     <author>
+       <firstname>Stuart</firstname><surname>Anderson</surname>
+       <affiliation><orgname>NCR Corporation</orgname></affiliation>
+     </author>
+     <othercredit><firstname>Ralph</firstname><surname>Mor</surname>
+       <affiliation><orgname>X Consortium</orgname></affiliation>
+     </othercredit>
+     <othercredit><firstname>Alan</firstname><surname>Coopersmith</surname>
+       <affiliation><orgname>Oracle Corp.</orgname></affiliation>
+     </othercredit>
+   </authorgroup>
+   <releaseinfo>X Version 11, Release &fullrelvers;</releaseinfo>
+   <releaseinfo>Version 1.2</releaseinfo>
+   <copyright><year>1993</year><year>1994</year>
+     <holder>NCR Corporation - Dayton, Ohio, USA</holder>
+   </copyright>
+
+<legalnotice>
+<para>
+All Rights Reserved
+</para>
+<para>
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name NCR not be used in advertising
+or publicity pertaining to distribution of the software without specific,
+written prior permission.  NCR makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+</para>
+<para>
+NCR DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN
+NO EVENT SHALL NCR BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+</para>
+</legalnotice>
+
+<legalnotice>
+<para role="multiLicensing">
+Copyright &copy; 1993, 1994, 2002 The Open Group
+</para>
+<para>
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &ldquo;Software&rdquo;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+</para>
+<para>
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+</para>
+<para>
+THE SOFTWARE IS PROVIDED &ldquo;AS IS&rdquo;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</para>
+<para>
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+</para>
+<para>
+X Window System is a trademark of The Open Group, Inc.
+</para>
+</legalnotice>
+</bookinfo>
+
+<preface><title>The X Transport Interface</title>
+<para>
+Designed by Stuart Anderson (NCR) with help from Ralph Mor (X Consortium)
+</para>
+
+<note><para>
+This documentation does not completely match the implementation in R6
+(as a result of some late changes made in the code). Specifically, support
+was added for font server cloning, and conditional compliation was introduced
+for client vs. server code.
+</para></note>
+</preface>
+
+<chapter id='Purposes_and_Goals'>
+<title>Purposes and Goals</title>
+
+<para>The X Transport Interface is intended to combine all system and
+transport specific code into a single place in the source tree. This API
+should be used by all libraries, clients and servers of the X Window System.
+Use of this API should allow the addition of new types of transports and
+support for new platforms without making any changes to the source except
+in the X Transport Interface code.</para>
+<para>This interface should solve the problem of multiple
+<code>#ifdef TRANSPORT</code> and <code>#ifdef PLATFORM</code>
+statements scattered throughout the source tree.</para>
+<para>This interface should provide enough functionality to support all
+types of protocols, including connection oriented protocols such as X11 and
+FS, and connection-less oriented protocols such as XDMCP.</para>
+
+</chapter>
+
+<chapter id='Overview_of_the_Interface'>
+<title>Overview of the Interface</title>
+
+<para>
+The interface provides an API for use by applications. The functions in
+this API perform work that is common to all transports and systems, such
+as parsing an address into a host and port number. The functions in this
+API call transport specific functions that are contained in a table whose
+contents are defined at compile time. This table contains an entry for each
+type of transport. Each entry is a record containing mostly pointers to
+function that implements the interface for the given transport.
+</para>
+<para>
+This API does not provide an abstraction for <function>select()</function>
+or <function>poll()</function>.
+These functions are themselves transport independent, so an additional
+interface is not needed for these functions. It is also unclear how such
+an interface would affect performance.
+</para>
+</chapter>
+
+<chapter id='Definition_of_Address_Specification_Format'>
+<title>Definition of Address Specification Format</title>
+
+<para>
+Addresses are specified in the following syntax,
+
+<synopsis>
+<replaceable>protocol</replaceable>/<replaceable>host</replaceable>:<replaceable>port</replaceable>
+</synopsis>
+
+where <replaceable>protocol</replaceable> specifies a protocol family
+or an alias for a protocol family. A definition of common protocol
+families is given in a later section.
+</para>
+<para>
+The <replaceable>host</replaceable> part specifies the name of a host or other
+transport dependent entity that could be interpreted as a Network Service Access Point
+(NSAP).
+</para>
+<para>
+The <replaceable>port</replaceable> part specifies the name of a Transport Service
+Access Point (TSAP). The format of the TSAP is defined by the underlying transport
+implementation, but it is represented using a string format when it is
+part of an address.
+</para>
+</chapter>
+
+<chapter id='Internal_Data_Structures'>
+<title>Internal Data Structures</title>
+<para>
+There are two major data structures associated with the transport
+independent portion of this interface.  Additional data structures
+may be used internally by each transport.
+</para>
+<sect1 id='Xtransport'>
+<title>Xtransport</title>
+<para>
+Each transport supported has an entry in the transport table. The transport
+table is an array of Xtransport records. Each record contains all the entry
+points for a single transport. This record is defined as:
+</para>
+
+<synopsis>
+typedef struct _Xtransport {
+
+    const char *TransName;
+    int  flags;
+
+    XtransConnInfo (*OpenCOTSClient)(
+     struct _Xtransport *,    /* transport */
+     const char *,            /* protocol */
+     const char *,            /* host */
+     const char *             /* port */
+    );
+
+    XtransConnInfo (*OpenCOTSServer)(
+     struct _Xtransport *,    /* transport */
+     const char *,            /* protocol */
+     const char *,            /* host */
+     const char *             /* port */
+    );
+
+    int     (*SetOption)(
+     XtransConnInfo,          /* connection */
+     int,               /* option */
+     int               /* arg */
+    );
+
+    int     (*CreateListener)(
+     XtransConnInfo,          /* connection */
+     const char *,            /* port */
+     int                      /* flags */
+    );
+
+    int     (*ResetListener)(
+     XtransConnInfo          /* connection */
+    );
+
+    XtransConnInfo (*Accept)(
+     XtransConnInfo          /* connection */
+    );
+
+    int     (*Connect)(
+     XtransConnInfo,          /* connection */
+     const char *,            /* host */
+     const char *             /* port */
+    );
+
+    int     (*BytesReadable)(
+     XtransConnInfo,          /* connection */
+     BytesReadable_t *     /* pend */
+    );
+
+    int     (*Read)(
+     XtransConnInfo,          /* connection */
+     char *,               /* buf */
+     int               /* size */
+    );
+
+    int     (*Write)(
+     XtransConnInfo,          /* connection */
+     char *,               /* buf */
+     int               /* size */
+    );
+
+    int     (*Readv)(
+     XtransConnInfo,          /* connection */
+     struct iovec *,          /* buf */
+     int               /* size */
+    );
+
+    int     (*Writev)(
+     XtransConnInfo,          /* connection */
+     struct iovec *,          /* buf */
+     int               /* size */
+    );
+
+    int     (*Disconnect)(
+     XtransConnInfo          /* connection */
+    );
+
+    int     (*Close)(
+     XtransConnInfo          /* connection */
+    );
+
+} Xtransport;
+</synopsis>
+
+<para>
+The <structfield>flags</structfield> field can contain an OR of
+the following masks:
+<variablelist>
+  <varlistentry>
+    <term><symbol>TRANS_ALIAS</symbol></term>
+    <listitem><para>
+indicates that this record is providing an alias, and should
+not be used to create a listener.
+      </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><symbol>TRANS_LOCAL</symbol></term>
+    <listitem><para>
+indicates that this is a <symbol>LOCALCONN</symbol> transport.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><symbol>TRANS_ABSTRACT</symbol></term>
+    <listitem><para>
+indicates that a local connection transport uses the abstract socket namespace.
+    </para></listitem>
+  </varlistentry>
+</variablelist>
+</para>
+
+<para>
+Some additional flags may be set in the <structfield>flags</structfield>
+field by the library while it is running:
+<variablelist>
+  <varlistentry>
+    <term><symbol>TRANS_DISABLED</symbol></term>
+    <listitem><para>
+indicates that this transport has been disabled.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><symbol>TRANS_NOLISTEN</symbol></term>
+    <listitem><para>
+indicates that servers should not open new listeners using this transport.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><symbol>TRANS_NOUNLINK</symbol></term>
+    <listitem><para>
+set by a transport backend to indicate that the endpoints for its connection
+should not be unlinked.
+    </para></listitem>
+  </varlistentry>
+</variablelist>
+</para>
+</sect1>
+
+<sect1 id='XtransConnInfo'>
+<title>XtransConnInfo</title>
+<para>
+Each connection will have an opaque <structname>XtransConnInfo</structname>
+transport connection
+object allocated for it. This record contains information specific to the
+connection. The record is defined as:
+
+<synopsis>
+typedef struct _XtransConnInfo *XtransConnInfo;
+
+struct _XtransConnInfo {
+    struct _Xtransport     *transptr;
+    char     *priv;
+    int          flags;
+    int          fd;
+    int          family;
+    char     *addr;
+    int          addrlen;
+    char     *peeraddr;
+    int          peeraddrlen;
+};
+</synopsis>
+</para>
+</sect1>
+</chapter>
+
+<chapter id='Exposed_Transport_Independent_API'>
+<title>Exposed Transport Independent API</title>
+
+<para>
+This API is included in each library and server that uses it. The API may
+be used by the library, but it is not added to the public API for that
+library. This interface is simply an implementation facilitator. This API
+contains a low level set of core primitives, and a few utility functions
+that are built on top of the primitives.  The utility functions exist to
+provide a more familiar interface that can be used to port existing code.
+</para>
+<para>
+A macro is defined in Xtrans.h for TRANS(func) that creates a unique function
+name depending on where the code is compiled. For example, when built for
+Xlib, <function>TRANS(OpenCOTSClient)</function> becomes
+<function>_X11TransOpenCOTSClient</function>.
+</para>
+<para>
+All failures are considered fatal, and the connection should be closed
+and re-established if desired. In most cases, however, the value of
+errno will be available for debugging purposes.
+</para>
+<sect1 id='Core_Interface_API'>
+<title>Core Interface API</title>
+<itemizedlist mark='bullet'>
+  <listitem>
+    <funcsynopsis id='TRANSOpenCOTSClient'>
+      <funcprototype>
+        <funcdef>XtransConnInfo <function>TRANS(OpenCOTSClient)</function></funcdef>
+        <paramdef>const char *<parameter>address</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function creates a Connection-Oriented Transport that is
+suitable for use by a client. The parameter <parameter>address</parameter>
+contains the full address of the server to which this endpoint will be
+connected.  This function returns an opaque transport connection object on
+success, or <constant>NULL</constant> on failure.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSOpenCOTSServer'>
+      <funcprototype>
+        <funcdef>XtransConnInfo <function>TRANS(OpenCOTSServer)</function></funcdef>
+        <paramdef>const char *<parameter>address</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function creates a Connection-Oriented Transport that is suitable
+for use by a server. The parameter <parameter>address</parameter> contains the
+full address to which this server will be bound. This function returns an
+opaque transport connection object on success, or <constant>NULL</constant>
+on failure.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSSetOption'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(SetOption)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>int <parameter>option</parameter></paramdef>
+        <paramdef>int <parameter>arg</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function sets transport options, similar to the way
+<function>setsockopt()</function> and <function>ioctl()</function> work.
+The parameter <parameter>connection</parameter> is an endpoint
+that was obtained from <function>_XTransOpen*()</function> functions.
+The parameter <parameter>option</parameter> contains the option that will
+be set. The actual values for <parameter>option</parameter> are defined in a
+<link linkend='Transport_Option_Definition'>later section</link>.
+The parameter <parameter>arg</parameter> can be used to pass
+in an additional value that may be required by some options.
+This function returns 0 on success and -1 on failure.
+    </para>
+    <note><para>
+Based on current usage, the complimentary function
+<function>TRANS(GetOption)</function> is not necessary.
+    </para></note>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSCreateListener'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(CreateListener)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>const char *<parameter>port</parameter></paramdef>
+        <paramdef>int <parameter>flags</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function sets up the server endpoint for listening. The parameter
+<parameter>connection</parameter> is an endpoint that was obtained from
+<function>TRANS(OpenCOTSServer)()</function>. The parameter
+<parameter>port</parameter> specifies the port to which this endpoint
+should be bound for listening. If port is <constant>NULL</constant>,
+then the transport may attempt to allocate any available TSAP for this
+connection. If the transport cannot support this, then this function will
+return a failure. The <parameter>flags</parameter> parameter can be set
+to <symbol>ADDR_IN_USE_ALLOWED</symbol> to allow the call to the underlying
+binding function to fail with a <errorname>EADDRINUSE</errorname> error
+without causing the <function>TRANS(CreateListener)</function>
+function itself to fail. This function return 0 on success and -1 on failure.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSResetListener'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(ResetListener)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+When a server is restarted, certain listen ports may need to be reset.
+For example, unix domain needs to check that the file used for
+communication has not been deleted. If it has, it must be recreated.
+The parameter <parameter>connection</parameter> is an opened and bound
+endpoint that was obtained from <function>TRANS(OpenCOTSServer)()</function>
+and passed to <function>TRANS(CreateListener)()</function>.
+This function will return one of the following values:
+<symbol>TRANS_RESET_NOOP</symbol>,
+<symbol>TRANS_RESET_NEW_FD</symbol>, or
+<symbol>TRANS_RESET_FAILURE</symbol>.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSAccept'>
+      <funcprototype>
+        <funcdef>XtransConnInfo <function>TRANS(Accept)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+Once a connection indication is received, this function can be called to
+accept the connection. The parameter <parameter>connection</parameter> is
+an opened and bound endpoint that was obtained from
+<function>TRANS(OpenCOTSServer)()</function> and passed to
+<function>TRANS(CreateListener)()</function>. This function will return a
+new opaque transport connection object upon success,
+<constant>NULL</constant> otherwise.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSConnect'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(Connect)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>const char *<parameter>address</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function creates a connection to a server. The parameter
+<parameter>connection</parameter> is an endpoint that was obtained
+from <function>TRANS(OpenCOTSClient)()</function>. The parameter
+<parameter>address</parameter> specifies the TSAP to which this endpoint
+should connect. If the protocol is included in the address, it will be
+ignored. This function returns 0 on success and -1 on failure.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSBytesReadable'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(BytesReadable)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>BytesReadable_t *<parameter>pend</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function provides the same functionality as the
+<function>BytesReadable</function> macro.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSRead'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(Read)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>char *<parameter>buf</parameter></paramdef>
+        <paramdef>int <parameter>size</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function will return the number of bytes requested on a COTS
+connection, and will return the minimum of the number bytes requested.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSWrite'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(Write)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>char *<parameter>buf</parameter></paramdef>
+        <paramdef>int <parameter>size</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function will write the requested number of bytes on a COTS
+connection.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSReadv'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(Readv)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>struct iovec *<parameter>buf</parameter></paramdef>
+        <paramdef>int <parameter>size</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+Similar to <function>TRANS(Read)()</function>.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSWritev'>
+      <funcprototype>
+        <funcdef>  int <function>TRANS(Writev)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>struct iovec *<parameter>buf</parameter></paramdef>
+        <paramdef>int <parameter>size</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+Similar to <function>TRANS(Write)()</function>.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSDisconnect'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(Disconnect)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function is used when an orderly disconnect is desired. This function
+breaks the connection on the transport. It is similar to the socket function
+<function>shutdown()</function>.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSClose'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(Close)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function closes the transport, unbinds it, and frees all resources that
+was associated with the transport. If a <function>TRANS(Disconnect)</function>
+call was not made on the connection, a disorderly disconnect may occur.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSIsLocal'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(IsLocal)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+Returns TRUE if it is a local transport.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSGetMyAddr'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(GetMyAddr)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>int *<parameter>familyp</parameter></paramdef>
+        <paramdef>int *<parameter>addrlenp</parameter></paramdef>
+        <paramdef>Xtransaddr **<parameter>addrp</parameter></paramdef>
+       </funcprototype>
+    </funcsynopsis>
+    <para>
+This function is similar to <function>getsockname()</function>.
+This function will allocate space for the address, so it must be freed by
+the caller. Not all transports will have a valid address until a connection
+is established.  This function should not be used until the connection is
+established with <function>Connect()</function> or
+<function>Accept()</function>.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSGetPeerAddr'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(GetPeerAddr)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+        <paramdef>int *<parameter>familyp</parameter></paramdef>
+        <paramdef>int *<parameter>addrlenp</parameter></paramdef>
+        <paramdef>Xtransaddr **<parameter>addrp</parameter></paramdef>
+       </funcprototype>
+    </funcsynopsis>
+    <para>
+This function is similar to <function>getpeername()</function>.
+This function will allocate space for the address, so it must be freed by
+the caller. Not all transports will have a valid address until a connection
+is established.  This function should not be used until the connection is
+established with <function>Connect()</function> or
+<function>Accept()</function>.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSGetConnectionNumber'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(GetConnectionNumber)</function></funcdef>
+        <paramdef>XtransConnInfo <parameter>connection</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+Returns the file descriptor associated with this transport.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='TRANSMakeAllCOTSServerListeners'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(MakeAllCOTSServerListeners)</function></funcdef>
+        <paramdef>const char *<parameter>port</parameter></paramdef>
+        <paramdef>int *<parameter>partial_ret</parameter></paramdef>
+        <paramdef>int *<parameter>count_ret</parameter></paramdef>
+        <paramdef>XtransConnInfo **<parameter>connections_ret</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function should be used by most servers. It will try to establish
+a COTS server endpoint for each transport listed in the transport table.
+<parameter>partial_ret</parameter> will be set to <symbol>True</symbol> if
+only a partial network could be created. <parameter>count_ret</parameter> is
+the number of transports returned, and <parameter>connections_ret</parameter>
+is the list of transports.
+    </para>
+  </listitem>
+</itemizedlist>
+</sect1>
+
+<sect1 id='Utility_API'>
+<title>Utility API</title>
+<para>
+This section describes a few useful functions that have been implemented on
+top of the Core Interface API.  These functions are being provided as a
+convenience.
+</para>
+<itemizedlist mark='bullet'>
+  <listitem>
+    <funcsynopsis id='TRANSConvertAddress'>
+      <funcprototype>
+        <funcdef>int <function>TRANS(ConvertAddress)</function></funcdef>
+        <paramdef>int *<parameter>familyp</parameter></paramdef>
+        <paramdef>int *<parameter>addrlenp</parameter></paramdef>
+        <paramdef>Xtransaddr *<parameter>addrp</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function converts a sockaddr based address to an X authorization based
+address (ie <symbol>AF_INET</symbol>, <symbol>AF_UNIX</symbol> to the X
+protocol definition (ie <symbol>FamilyInternet</symbol>,
+<symbol>FamilyLocal</symbol>)).
+    </para>
+  </listitem>
+</itemizedlist>
+</sect1>
+</chapter>
+
+<chapter id='Transport_Option_Definition'>
+<title>Transport Option Definition</title>
+<para>
+The following options are defined for the
+<link linkend='TRANSSetOption'><function>TRANS(SetOption)()</function></link>
+function. If an OS or transport does not support any of these options,
+then it will silently ignore the option.
+</para>
+
+<itemizedlist mark='bullet'>
+  <listitem>
+    <para>
+<symbol>TRANS_NONBLOCKING</symbol>
+    </para>
+    <para>
+This option controls the blocking mode of the connection. If the argument
+is set to 1, then the connection will be set to blocking. If the argument
+is set to 0, then the connection will be set to non- blocking.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<symbol>TRANS_CLOSEONEXEC</symbol>
+    </para>
+    <para>
+This option determines what will happen to the connection when an exec is
+encountered. If the argument is set to 1, then the connection will be
+closed when an exec occurs. If the argument is set to 0, then the
+connection will not be closed when an exec occurs.
+    </para>
+  </listitem>
+</itemizedlist>
+</chapter>
+
+<chapter id='Hidden_Transport_Dependent_API'>
+<title>Hidden Transport Dependent API</title>
+<para>
+The hidden transport dependent functions are placed in the Xtransport record.
+These function are similar to the Exposed Transport Independent API, but
+some of the parameters and return values are slightly different.  Stuff like
+the <code>#ifdef SUNSYSV</code> should be handled inside these functions.
+</para>
+
+<itemizedlist mark='bullet'>
+  <listitem>
+    <funcsynopsis id='OpenCOTSClient'>
+      <funcprototype>
+        <funcdef>XtransConnInfo *<function>OpenCOTSClient</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>const char *<parameter>protocol</parameter></paramdef>
+        <paramdef>const char *<parameter>host</parameter></paramdef>
+        <paramdef>const char *<parameter>port</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function creates a Connection-Oriented Transport. The parameter
+<parameter>thistrans</parameter> points to an Xtransport entry in the
+transport table. The parameters <parameter>protocol</parameter>,
+<parameter>host</parameter>, and <parameter>port</parameter>, point to
+strings containing the corresponding parts of the address that was passed into
+<link linkend='TRANSOpenCOTSClient'><function>TRANS(OpenCOTSClient)()</function></link>.
+This function must allocate and initialize the contents of the XtransConnInfo
+structure that is returned by this function. This function will open the
+transport, and bind it into the transport namespace if applicable. The local
+address portion of the XtransConnInfo structure will also be filled in by
+this function.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='OpenCOTSServer'>
+      <funcprototype>
+        <funcdef>XtransConnInfo *<function>OpenCOTSServer</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>const char *<parameter>protocol</parameter></paramdef>
+        <paramdef>const char *<parameter>host</parameter></paramdef>
+        <paramdef>const char *<parameter>port</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function creates a Connection-Oriented Transport. The parameter
+<parameter>thistrans</parameter> points to an Xtransport entry in the
+transport table. The parameters <parameter>protocol</parameter>,
+<parameter>host</parameter>, and <parameter>port</parameter> point to
+strings containing the corresponding parts of the address that was passed into
+<link linkend='TRANSOpenCOTSServer'><function>TRANS(OpenCOTSServer)()</function></link>.
+This function must allocate and initialize the contents of the
+XtransConnInfo structure that is returned by this function. This function
+will open the transport.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='SetOption'>
+      <funcprototype>
+        <funcdef>int <function>SetOption</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>int <parameter>option</parameter></paramdef>
+        <paramdef>int <parameter>arg</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function provides a transport dependent way of implementing the
+options defined by the X Transport Interface. In the current prototype,
+this function is not being used, because all of the options defined so far
+are transport independent. This function will have to be used if a radically
+different transport type is added, or a transport dependent option is defined.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='CreateListener'>
+      <funcprototype>
+        <funcdef>int <function>CreateListener</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>const char <parameter>*port</parameter></paramdef>
+        <paramdef>int <parameter>flags</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function takes a transport endpoint opened for a server, and sets it
+up to listen for incoming connection requests. The parameter
+<parameter>port</parameter>
+contains the port portion of the address that was passed to the Open function.
+The parameter <parameter>flags</parameter> should be set to
+<symbol>ADDR_IN_USE_ALLOWED</symbol> if the underlying transport endpoint
+may be already bound and this should not be considered
+as an error. Otherwise flags should be set to 0. This is used by IPv6 code,
+where the same socket can be bound to both an IPv6 address and then to a
+IPv4 address.  This function will bind the transport into the transport
+name space if applicable, and fill in the local address portion of the
+XtransConnInfo structure. The transport endpoint will then be set to
+listen for incoming connection requests.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='ResetListener'>
+      <funcprototype>
+        <funcdef>int <function>ResetListener</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function resets the transport for listening.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='Accept'>
+      <funcprototype>
+        <funcdef> XtransConnInfo <function>Accept</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function creates a new transport endpoint as a result of an
+incoming connection request. The parameter
+<parameter>thistrans</parameter> is the endpoint
+that was opened for listening by the server. The new endpoint is
+opened and bound into the transport’s namespace. A XtransConnInfo
+structure describing the new endpoint is returned from this function
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='Connect'>
+      <funcprototype>
+        <funcdef>int <function>Connect</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>const char *<parameter>host</parameter></paramdef>
+        <paramdef>const char *<parameter>port</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function establishes a connection to a server. The parameters
+<parameter>host</parameter> and <parameter>port</parameter>
+describe the server to which the connection should be
+established. The connection will be established so that
+<function>Read()</function> and
+<function>Write()</function> call can be made.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='BytesReadable'>
+      <funcprototype>
+        <funcdef>int <function>BytesReadable</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>BytesReadable_t *<parameter>pend</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function replaces the <function>BytesReadable()</function>
+macro. This allows each transport to have its own mechanism for determining
+how much data is ready to be read.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='Read'>
+      <funcprototype>
+        <funcdef>int <function>Read</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>char *<parameter>buf</parameter></paramdef>
+        <paramdef>int <parameter>size</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function reads <parameter>size</parameter> bytes into
+<parameter>buf</parameter> from the connection.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='Write'>
+      <funcprototype>
+        <funcdef>int <function>Write</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>char *<parameter>buf</parameter></paramdef>
+        <paramdef>int <parameter>size</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function writes <parameter>size</parameter> bytes from
+<parameter>buf</parameter> to the connection.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='Readv'>
+      <funcprototype>
+        <funcdef>int <function>Readv</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>struct iovec *<parameter>buf</parameter></paramdef>
+        <paramdef>int <parameter>size</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function performs a <function>readv()</function> on the connection.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='Writev'>
+      <funcprototype>
+        <funcdef>int <function>Writev</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+        <paramdef>struct iovec *<parameter>buf</parameter></paramdef>
+        <paramdef>int <parameter>size</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function performs a <function>writev()</function> on the connection.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='Disconnect'>
+      <funcprototype>
+        <funcdef>int <function>Disconnect</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function initiates an orderly shutdown of a connection. If a
+transport does not distinguish between orderly and disorderly
+disconnects, then a call to this function will have no affect.
+    </para>
+  </listitem>
+  <listitem>
+    <funcsynopsis id='Close'>
+      <funcprototype>
+        <funcdef>int <function>Close</function></funcdef>
+        <paramdef>struct _Xtransport *<parameter>thistrans</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+    <para>
+This function will break the connection, and close the endpoint.
+    </para>
+  </listitem>
+</itemizedlist>
+</chapter>
+<chapter id='Configuration'>
+<title>Configuration</title>
+
+<para>
+The implementation of each transport can be platform specific. It is expected
+that existing connection types such as <symbol>TCPCONN</symbol>,
+<symbol>UNIXCONN</symbol>, <symbol>LOCALCONN</symbol>, and
+<symbol>STREAMSCONN</symbol> will be replaced with flags for each
+possible transport type.
+</para>
+<para>
+In X11R6, the below flags to enable transport types were set in
+<symbol>ConnectionFlags</symbol> in the <filename>vendor.cf</filename> or
+<filename>site.def</filename> config files.
+</para>
+<para>
+In X11R7 modular releases, these flags are set when running
+<filename>configure</filename> scripts which include the
+<function>XTRANS_CONNECTION_FLAGS</function> macro from
+<filename>xtrans.m4</filename>.
+</para>
+
+<informaltable frame='topbot'>
+  <tgroup cols='3' align='left' colsep='0' rowsep='0'>
+    <colspec colname='define' colwidth='1.0*' />
+    <colspec colname='enable' colwidth='2.0*' />
+    <colspec colname='desc'   colwidth='2.0*'/>
+    <thead>
+      <row rowsep='1'>
+	<entry><code>#define</code></entry>
+	<entry>configure flag</entry>
+	<entry>Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><symbol>TCPCONN</symbol></entry>
+	<entry><option>--enable-tcp-transport</option></entry>
+	<entry>
+	Enables the INET (IPv4) Domain Socket based transport
+	</entry>
+      </row>
+      <row>
+	<entry><symbol>IPv6</symbol></entry>
+	<entry><option>--enable-ipv6</option></entry>
+	<entry>
+	Extends <symbol>TCPCONN</symbol> to enable IPv6 Socket based transport
+	</entry>
+      </row>
+      <row>
+	<entry><symbol>UNIXCONN</symbol></entry>
+	<entry><option>--enable-unix-transport</option></entry>
+	<entry>
+	Enables the UNIX Domain Socket based transport
+	</entry>
+      </row>
+      <row>
+	<entry><symbol>STREAMSCONN</symbol></entry>
+	<entry><emphasis>Not available in X11R7</emphasis></entry>
+	<entry>
+	Enables the TLI based transports
+	</entry>
+      </row>
+      <row>
+	<entry><symbol>LOCALCONN</symbol></entry>
+	<entry><option>--enable-local-transport</option></entry>
+	<entry>
+	Enables the SYSV Local connection transports
+	</entry>
+      </row>
+      <row>
+	<entry><symbol>DNETCONN</symbol></entry>
+	<entry><emphasis>Not available in X11R7</emphasis></entry>
+	<entry>
+	Enables the DECnet transports
+	</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</informaltable>
+
+
+</chapter>
+
+<chapter id='Transport_Specific_Definitions'>
+<title>Transport Specific Definitions</title>
+
+<informaltable frame='all' colsep='1' rowsep='1'>
+  <tgroup cols='4' align='center'>
+    <colspec colname='c1' colwidth='1.0*'/>
+    <colspec colname='c2' colwidth='1.0*'/>
+    <colspec colname='c3' colwidth='3.0*'/>
+    <colspec colname='c4' colwidth='2.0*'/>
+    <thead>
+      <row>
+        <entry morerows="1">Protocol Family</entry>
+        <entry namest="c2" nameend="c4"  align='center'>Address Component</entry>
+      </row>
+      <row>
+        <entry align='center'>protocol</entry>
+        <entry align='center'>host</entry>
+        <entry align='center'>port</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry>Internet</entry>
+        <entry>inet inet6 tcp udp</entry>
+        <entry>name of an internet addressable host</entry>
+        <entry>string containing the name of a service or a valid port number.  Example: "xserver0", "7100"</entry>
+      </row>
+      <row>
+        <entry>DECnet</entry>
+        <entry>decnet</entry>
+        <entry>name of a DECnet addressable host</entry>
+        <entry>string containing the complete name of the object.  Example: "X$X0"</entry>
+      </row>
+      <row>
+        <entry>NETware</entry>
+        <entry>ipx</entry>
+        <entry>name of a NETware addressable host</entry>
+        <entry>Not sure of the specifics yet.</entry>
+      </row>
+      <row>
+        <entry>OSI</entry>
+        <entry>osi</entry>
+        <entry>name of an OSI adressable host.</entry>
+        <entry>Not sure of the specifics yet.</entry>
+      </row>
+      <row>
+        <entry>Local</entry>
+        <entry>local pts named sco isc</entry>
+        <entry>(ignored)</entry>
+        <entry>String containing the port name, ie "xserver0", "fontserver0".</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</informaltable>
+
+</chapter>
+
+<chapter id='Implementation_Notes'>
+<title>Implementation Notes</title>
+<para>
+This section refers to the prototype implementation that is being developed
+concurrently with this document. This prototype has been able to flush out many
+details and problems as the specification was being developed.
+</para>
+<para>
+In X11R6, all of the source code for this interface was located in
+<filename>xc/lib/xtrans</filename>.
+</para>
+<para>
+In X11R7, all of the source code for this interface is delivered via
+the <systemitem>lib/libxtrans</systemitem> modular package from X.Org,
+and is installed under
+<filename><replaceable>${prefix}</replaceable>/X11/Xtrans</filename>
+so that other modules may find it when they build.
+</para>
+<para>
+All functions names in the source are of the format
+<function>TRANS(func)()</function>. The
+<function>TRANS()</function>
+macro is defined as
+<programlisting language="C">
+#define TRANS(func) _PROTOCOLTrans##func
+</programlisting>
+</para>
+
+<para>
+<symbol>PROTOCOL</symbol> will be uniquely defined in each directory
+where this code is compiled.
+<symbol>PROTOCOL</symbol> will be defined to be the name of the protocol
+that is implemented by the library or server, such as X11, FS, and ICE.
+</para>
+
+<para>
+All libraries and servers that use the X Transport Interface should have a new
+file called <filename><replaceable>TRANSPORT</replaceable>trans.c</filename>.
+This file will include the transports based on the configuration flags
+provided by the <filename>configure</filename> script. Below is an
+example <filename>xfstrans.c</filename> for the font server.
+</para>
+
+<programlisting language="C">
+#include "config.h"
+
+#define FONT_t 1
+#define TRANS_REOPEN 1
+#define TRANS_SERVER 1
+
+#include &lt;X11/Xtrans/transport.c&gt;
+</programlisting>
+<para>
+The source files for this interface are listed below.
+</para>
+
+<variablelist>
+  <varlistentry>
+    <term><filename>Xtrans.h</filename></term>
+    <listitem><para>
+Function prototypes and defines for the Transport Independent API.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><filename>Xtransint.h</filename></term>
+    <listitem><para>
+Used by the interface implementation only.
+Contains the internal data structures.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><filename>Xtranssock.c</filename></term>
+    <listitem><para>
+Socket implementation of the Transport Dependent API.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><filename>Xtranstli.c</filename></term>
+    <listitem><para>
+TLI implementation of the Transport Dependent API.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><filename>Xtransdnet.c</filename></term>
+    <listitem><para>
+DECnet implementation of the Transport Dependent API.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><filename>Xtranslocal.c</filename></term>
+    <listitem><para>
+Implementation of the Transport Dependent API for SYSV Local connections.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><filename>Xtrans.c</filename></term>
+    <listitem><para>
+Exposed Transport Independent API Functions.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><filename>Xtransutil.c</filename></term>
+    <listitem><para>
+Collection of Utility functions that use the X Transport Interface.
+    </para></listitem>
+  </varlistentry>
+</variablelist>
+
+
+<para>
+The file <filename>Xtransint.h</filename> contains much of the transport
+related code that was previously in <filename>Xlibint.h</filename> and
+<filename>Xlibnet.h</filename>.
+This will make the definitions available for all transport users. This
+should also obsolete the equivalent code in other libraries.
+</para>
+
+</chapter>
+</book>

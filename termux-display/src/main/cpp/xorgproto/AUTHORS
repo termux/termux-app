@@ -1,0 +1,32 @@
+The architect of the X11 core protocol was Bob Scheifler of MIT LCS, with
+significant contributions from Jim Gettys, Phil Karlton and Scott
+McGregor of Digital, Dave Rosenthal of Sun, and many others of
+the xpert mailing list.
+
+The original sample server implementation of the X11 protocol was
+implemented by Phil Karlton and Susan Angebrandt doing the device
+independent part of the server, with Raymond Drewry and Todd Newman of
+Digital Equipment Corporation, doing the mi and original ddx
+implementation; their feedback was vital to a good design, along with
+that of the more than 100 alpha and beta testers who bravely tested
+the X11 core design.
+
+The X11 protocol library (Xlib) was built principally by Jim Gettys of
+Digital and MIT Project Athena, with assistance from Ron Newman of MIT
+Project Athena.
+
+Our thanks to those at MIT, Digital Equipment Corporation, Hewlett-Packard,
+IBM, and many others who had faith in us reimplementing X from first
+principles.
+
+If there are mistakes here, they are mine; entirely possible after
+over 15 years. - Jim Gettys
+
+---
+
+The above is a description of the core protocol, inherited from the merge of
+the various per-protocol repos into this unified project. The LG3D protocol was
+by Deron Johnson at Sun Microsystems. XFIXES, DAMAGE and COMPOSITE were by
+Keith Packard at HP; DAMAGE had additional contributions from Eric Anholt at
+Intel. The remaining extensions had no AUTHORS file; contributions for correct
+attribution here would be most welcome. - Adam Jackson

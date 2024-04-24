@@ -1,0 +1,358 @@
+'\" t
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+'\" t
+.TH XConfigureWindow __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XConfigureWindow, XMoveWindow, XResizeWindow, XMoveResizeWindow, XSetWindowBorderWidth, XWindowChanges \- configure windows and window changes structure
+.SH SYNTAX
+.HP
+int XConfigureWindow\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, unsigned \fIvalue_mask\fP\^, \^XWindowChanges *\fIchanges\fP\^);
+.HP
+int XMoveWindow\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, int \fIx\fP\^, \fIy\fP\^);
+.HP
+int XResizeWindow\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, unsigned
+\fIwidth\fP\^, unsigned \fIheight\fP\^);
+.HP
+int XMoveResizeWindow\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^, int
+\fIx\fP\^, int \fIy\fP\^, unsigned \fIwidth\fP\^, unsigned \fIheight\fP\^);
+.HP
+int XSetWindowBorderWidth\^(\^Display *\fIdisplay\fP\^, Window \fIw\fP\^,
+unsigned \fIwidth\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIvalue_mask\fP 1i
+Specifies which values are to be set using information in
+the values structure.
+This mask is the bitwise inclusive OR of the valid configure window values bits.
+.IP \fIvalues\fP 1i
+Specifies the
+.B XWindowChanges
+structure.
+.IP \fIw\fP 1i
+Specifies the window to be reconfigured, moved, or resized..
+.IP \fIwidth\fP 1i
+Specifies the width of the window border.
+.IP \fIwidth\fP 1i
+.br
+.ns
+.IP \fIheight\fP 1i
+Specify the width and height, which are the interior dimensions of the window.
+.IP \fIx\fP 1i
+.br
+.ns
+.IP \fIy\fP 1i
+Specify the x and y coordinates, which define the new location of the top-left pixel
+of the window's border or the window itself if it has no border
+or define the new position of the window relative to its parent.
+.SH DESCRIPTION
+The
+.B XConfigureWindow
+function uses the values specified in the
+.B XWindowChanges
+structure to reconfigure a window's size, position, border, and stacking order.
+Values not specified are taken from the existing geometry of the window.
+.LP
+If a sibling is specified without a stack_mode or if the window
+is not actually a sibling,
+a
+.B BadMatch
+error results.
+Note that the computations for
+.BR BottomIf ,
+.BR TopIf ,
+and
+.B Opposite
+are performed with respect to the window's final geometry (as controlled by the
+other arguments passed to
+.BR XConfigureWindow ),
+not its initial geometry.
+Any backing store contents of the window, its
+inferiors, and other newly visible windows are either discarded or
+changed to reflect the current screen contents
+(depending on the implementation).
+.LP
+.B XConfigureWindow
+can generate
+.BR BadMatch ,
+.BR BadValue ,
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XMoveWindow
+function moves the specified window to the specified x and y coordinates,
+but it does not change the window's size, raise the window, or
+change the mapping state of the window.
+Moving a mapped window may or may not lose the window's contents
+depending on if the window is obscured by nonchildren
+and if no backing store exists.
+If the contents of the window are lost,
+the X server generates
+.B Expose
+events.
+Moving a mapped window generates
+.B Expose
+events on any formerly obscured windows.
+.LP
+If the override-redirect flag of the window is
+.B False
+and some
+other client has selected
+.B SubstructureRedirectMask
+on the parent, the X server generates a
+.B ConfigureRequest
+event, and no further processing is
+performed.
+Otherwise, the window is moved.
+.LP
+.B XMoveWindow
+can generate a
+.B BadWindow
+error.
+.LP
+The
+.B XResizeWindow
+function changes the inside dimensions of the specified window, not including
+its borders.
+This function does not change the window's upper-left coordinate or
+the origin and does not restack the window.
+Changing the size of a mapped window may lose its contents and generate
+.B Expose
+events.
+If a mapped window is made smaller,
+changing its size generates
+.B Expose
+events on windows that the mapped window formerly obscured.
+.LP
+If the override-redirect flag of the window is
+.B False
+and some
+other client has selected
+.B SubstructureRedirectMask
+on the parent, the X server generates a
+.B ConfigureRequest
+event, and no further processing is performed.
+If either width or height is zero,
+a
+.B BadValue
+error results.
+.LP
+.B XResizeWindow
+can generate
+.B BadValue
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XMoveResizeWindow
+function changes the size and location of the specified window
+without raising it.
+Moving and resizing a mapped window may generate an
+.B Expose
+event on the window.
+Depending on the new size and location parameters,
+moving and resizing a window may generate
+.B Expose
+events on windows that the window formerly obscured.
+.LP
+If the override-redirect flag of the window is
+.B False
+and some
+other client has selected
+.B SubstructureRedirectMask
+on the parent, the X server generates a
+.B ConfigureRequest
+event, and no further processing is performed.
+Otherwise, the window size and location are changed.
+.LP
+.B XMoveResizeWindow
+can generate
+.B BadValue
+and
+.B BadWindow
+errors.
+.LP
+The
+.B XSetWindowBorderWidth
+function sets the specified window's border width to the specified width.
+.LP
+.B XSetWindowBorderWidth
+can generate a
+.B BadWindow
+error.
+.SH STRUCTURES
+The
+.B XWindowChanges
+structure contains:
+.LP
+.LP
+/\&* Configure window value mask bits */
+.TS
+lw(.5i) lw(2.5i) lw(.8i).
+T{
+\&#define
+T}	T{
+.B CWX
+T}	T{
+(1<<0)
+T}
+T{
+\&#define
+T}	T{
+.B CWY
+T}	T{
+(1<<1)
+T}
+T{
+\&#define
+T}	T{
+.B CWWidth
+T}	T{
+(1<<2)
+T}
+T{
+\&#define
+T}	T{
+.B CWHeight
+T}	T{
+(1<<3)
+T}
+T{
+\&#define
+T}	T{
+.B CWBorderWidth
+T}	T{
+(1<<4)
+T}
+T{
+\&#define
+T}	T{
+.B CWSibling
+T}	T{
+(1<<5)
+T}
+T{
+\&#define
+T}	T{
+.B CWStackMode
+T}	T{
+(1<<6)
+T}
+.TE
+.EX
+/\&* Values */
+
+typedef struct {
+        int x, y;
+        int width, height;
+        int border_width;
+        Window sibling;
+        int stack_mode;
+} XWindowChanges;
+.EE
+.LP
+The x and y members are used to set the window's x and y coordinates,
+which are relative to the parent's origin
+and indicate the position of the upper-left outer corner of the window.
+The width and height members are used to set the inside size of the window,
+not including the border, and must be nonzero, or a
+.B BadValue
+error results.
+Attempts to configure a root window have no effect.
+.LP
+The border_width member is used to set the width of the border in pixels.
+Note that setting just the border width leaves the outer-left corner of the window
+in a fixed position but moves the absolute position of the window's origin.
+If you attempt to set the border-width attribute of an
+.B InputOnly
+window nonzero, a
+.B BadMatch
+error results.
+.LP
+The sibling member is used to set the sibling window for stacking operations.
+The stack_mode member is used to set how the window is to be restacked
+and can be set to
+.BR Above ,
+.BR Below ,
+.BR TopIf ,
+.BR BottomIf ,
+or
+.BR Opposite .
+.SH DIAGNOSTICS
+.TP 1i
+.B BadMatch
+An
+.B InputOnly
+window is used as a Drawable.
+.TP 1i
+.B BadMatch
+Some argument or pair of arguments has the correct type and range but fails
+to match in some other way required by the request.
+.TP 1i
+.B BadValue
+Some numeric value falls outside the range of values accepted by the request.
+Unless a specific range is specified for an argument, the full range defined
+by the argument's type is accepted.
+Any argument defined as a set of
+alternatives can generate this error.
+.TP 1i
+.B BadWindow
+A value for a Window argument does not name a defined Window.
+.SH "SEE ALSO"
+XChangeWindowAttributes(__libmansuffix__),
+XCreateWindow(__libmansuffix__),
+XDestroyWindow(__libmansuffix__),
+XMapWindow(__libmansuffix__),
+XRaiseWindow(__libmansuffix__),
+XUnmapWindow(__libmansuffix__)
+.br
+\fI\*(xL\fP

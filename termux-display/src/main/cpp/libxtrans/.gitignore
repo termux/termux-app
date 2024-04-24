@@ -1,0 +1,84 @@
+#
+#		X.Org module default exclusion patterns
+#		The next section if for module specific patterns
+#
+#	Do not edit the following section
+# 	GNU Build System (Autotools)
+aclocal.m4
+autom4te.cache/
+autoscan.log
+ChangeLog
+compile
+config.guess
+config.h
+config.h.in
+config.log
+config-ml.in
+config.py
+config.status
+config.status.lineno
+config.sub
+configure
+configure.scan
+depcomp
+.deps/
+INSTALL
+install-sh
+.libs/
+libtool
+libtool.m4
+ltmain.sh
+lt~obsolete.m4
+ltoptions.m4
+ltsugar.m4
+ltversion.m4
+Makefile
+Makefile.in
+mdate-sh
+missing
+mkinstalldirs
+*.pc
+py-compile
+stamp-h?
+symlink-tree
+texinfo.tex
+ylwrap
+
+#	Do not edit the following section
+# 	Edit Compile Debug Document Distribute
+*~
+*.[0-9]
+*.[0-9]x
+*.bak
+*.bin
+core
+*.dll
+*.exe
+*-ISO*.bdf
+*-JIS*.bdf
+*-KOI8*.bdf
+*.kld
+*.ko
+*.ko.cmd
+*.lai
+*.l[oa]
+*.[oa]
+*.obj
+*.patch
+*.so
+*.pcf.gz
+*.pdb
+*.tar.bz2
+*.tar.gz
+#
+#		Add & Override patterns for libxtrans
+#
+#		Edit the following section as needed
+# For example, !report.pc overrides *.pc. See 'man gitignore'
+# 
+Xtrans.html
+Xtrans.pdf
+Xtrans.txt
+index.Xtrans.html.raw
+index.Xtrans.ps.raw
+index.Xtrans.txt.raw

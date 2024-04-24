@@ -1,0 +1,329 @@
+File: .../x11/server/dix/BuiltInAtoms
+
+This file is of a fixed format and is used to generate both the file
+include/XAtom.h and dix/initatoms.c. Neither of those files should be
+edited directly. Changing the atoms in this file, or even the order in
+which they occur, is equivalent to forcing a new (minor) version number
+on the server. Take care.
+
+The format of the file is that each built in atom starts in column 1
+with no text, other than spaces and tabs, on that line other than a
+mandatory trailing "@" at the end of the line. For each atom (Foo)
+below the defines will be of the form
+	#define XA_Foo <n>
+and the string value of the atom will be "Foo".
+
+The comment lines in this file are not guaranteed to be accurate. To see the
+current truth, look at the Xlib documentation as well as the protocol spec.
+
+Atoms occur in five distinct name spaces within the protocol. Any particular
+atom may or may not have some client interpretation within each of the name
+spaces. For each of the built in atoms, the intended semantics and the space
+within which it is defined is indicated.
+
+Those name spaces are
+	Property names
+	Property types
+	Selections
+	Font properties
+	Type of a ClientMessage event	(none built into server)
+
+For the font properties mentioned here, see the spec for more information.
+
+				-- Selections --
+
+PRIMARY									      @
+	Selection.
+SECONDARY								      @
+	Selection.
+
+			-- Property types and names --
+
+ARC									      @
+	Property type:
+		x, y: INT16
+		width, height: CARD16,
+		angle1, angle2: INT16
+ATOM									      @
+	Property type:
+		atom: ATOM
+BITMAP									      @
+	Property type:
+		bitmap: PIXMAP
+			This is asserted to be of depth 1.
+CARDINAL								      @
+	Property type:
+		card: CARD32 or CARD16 or CARD8
+		the datum size is dependent on the property format
+COLORMAP								      @
+	Property type:
+		colormap: COLORMAP
+CURSOR									      @
+	Property type:
+		cursor: CURSOR
+CUT_BUFFER0								      @
+CUT_BUFFER1								      @
+CUT_BUFFER2								      @
+CUT_BUFFER3								      @
+CUT_BUFFER4								      @
+CUT_BUFFER5								      @
+CUT_BUFFER6								      @
+CUT_BUFFER7								      @
+	Property name:	(type: STRING)
+		Used to implement cut buffer ring, in particular Andrew uses
+		this mechanism.  Anyone else using this sort of IPC mechanism
+		should use these properties.
+
+		Data is normally fetched and stored out of CUT_BUFFER0; the
+		RotateProperties request is used to rotate these buffers.
+DRAWABLE								      @
+	Property type:
+		drawable: DRAWABLE
+FONT									      @
+	Property type:
+		font: FONT
+INTEGER									      @
+	Property type:
+		card: INT32 or INT16 or INT8
+		the datum size is dependent on the property format
+PIXMAP									      @
+	Property type:
+		pixmap: PIXMAP
+POINT									      @
+	Property type:
+		x, y: INT16
+RECTANGLE								      @
+	Property type:
+		x, y: INT16
+		width, height: CARD16
+RESOURCE_MANAGER							      @
+	Property name: (type: STRING)
+		Contents of the user's resource manager data base.
+RGB_COLOR_MAP								      @
+	Property type:
+		colormap:	COLORMAP
+		red-max:	CARD32
+		red-mult:	CARD32
+		green-max:	CARD32
+		green-mult:	CARD32
+		blue-max:	CARD32
+		blue-mult:	CARD32
+		base-pixel:	CARD32
+
+	The fields `red_max', `green_max', and `blue_max' give the maximum
+	red, green, and blue values, respectively.  Each color
+	coefficient ranges from 0 to its max, inclusive.  For example,
+	a common colormap allocation is 3/3/2:  3 planes for red, 3
+	planes for green, and 2 planes for blue.  Such a colormap would
+	have red_max == 7, green_max = 7, and blue_max = 3.  An alternate
+	allocation that uses only 216 colors is red_max = 5, green_max =
+	5, and blue_max = 5.
+
+	The fields `red_mult', `green_mult', and `blue_mult' give the
+	scale factors used to compose a full pixel value.  (See next
+	paragraph.)  For a 3/3/2 allocation red_mult might be 32,
+	green_mult might be 4, and blue_mult might be 1.  For a
+	6-colors-each allocation, red_mult might be 36, green_mult might
+	be 6, and blue_mult might be 1.
+
+	The field `base_pixel' gives the base pixel value used to
+	compose a full pixel value.  Normally base_pixel is obtained
+	from a call to XAllocColorPlanes().  Given integer red, green,
+	and blue coefficients in their appropriate ranges, one can
+	compute a corresponding pixel value with the expression:
+
+		r * red_mult + g * green_mult + b * blue_mult + base_pixel
+	
+	For gray-scale colormaps, only the colormap, red_max, red_mult,
+	and base_pixel fields are defined; the other fields are
+	ignored.  To compute a gray-scale pixel value, use:
+
+		gray * red_mult + base_pixel
+
+	This is provided to allow applications to share color maps.
+
+RGB_BEST_MAP								      @
+RGB_BLUE_MAP								      @
+RGB_DEFAULT_MAP								      @
+RGB_GRAY_MAP								      @
+RGB_GREEN_MAP								      @
+RGB_RED_MAP								      @
+	Property name:	(type: RGB_COLOR_MAP)
+		The needs of most applications can be met with five colormaps.
+		Polite applications may need only a small RGB space, and can
+		use a portion of the default color map. Applications doing
+		high-quality RGB rendering will need an entire colormap,
+		filled with as large an RGB space as possible, e.g. 332. For
+		color separations, an application may need maximum device
+		resolution for each of red, green, and blue, even if this
+		requires three renderings with three colormaps.
+
+		Each of the above five names would be used for sharing color
+		maps.
+STRING									      @
+	Property type:
+		sequence of Bytes
+VISUALID								      @
+	Property type:
+		visual: VISUALID
+WINDOW									      @
+	Property type:
+		window: WINDOW
+WM_COMMAND								      @
+	Property name: (type: STRING)
+		Command line arguments used to invoke this application. The
+		arguments are delimited by null characters (ASCII 0).
+WM_HINTS								      @
+	Property type:
+		flags:		CARD32
+		input:		BOOL32
+		initial-state:	CARD32
+		icon-pixmap:	PIXMAP
+		icon-window:	WINDOW
+		icon_mask:	BITMAP
+		icon-x, icon-y:	INT32
+		    flags contains the following bits
+			0x00000001	input hint
+			0x00000002	state hint
+			0x00000004	icon pixmap hint
+			0x00000008	icon window hint
+			0x00000010	icon position hint
+		     values for initial-state
+			0		unspecified -> application does not
+				care and WM should pick one.
+			1		normal
+			2		zoomed
+			3		iconic
+			4		inactive -> application believes
+				itself to be seldomly used. WM may wish to
+				place it on an inactive menu.
+		This type is potentially extensible. The order is critical;
+		append to the end only.
+	Property name:	(type: WM_HINTS)
+		Additional hints set by the client for use by the window
+		manager.
+WM_CLIENT_MACHINE							      @
+	Property name:	(type: STRING)
+		used to communicate with the window manager.  The host name
+		of the machine the client is running on may be set here.
+WM_ICON_NAME								      @
+	Property name:	(type: STRING)
+		what the application would like the label to be for
+		the iconic form of the window.
+WM_ICON_SIZE								      @
+	Property type:
+		minWidth, min-height:	CARD32
+		maxWidth, max-height:	CARD32
+		widthInc, height-inc:	CARD32
+	Property name:	(type: ICON_SIZE)
+		The window manager may set this property on the root window
+		to specify the icon sizes it allows.
+WM_NAME									      @
+	Property name:	(type: STRING)
+		used to communicate with the window manager. This is
+		what the application would like the label for the window.
+WM_NORMAL_HINTS								      @
+	Property name:	(type: SIZE_HINTS)
+		used to communicate with the window manager. This is size
+		hints for a window in its "normal" state.
+WM_SIZE_HINTS								      @
+	Property type:
+		flags:				CARD32
+		x, y:				INT32
+		width, height:			CARD32
+		min-width, min-height:		CARD32
+		max-width, max-height:		CARD32
+		width-inc, height-inc:		CARD32
+		min-aspect-x, min-aspect-y:	CARD32
+		max-aspect-x, max-aspect-y:	CARD32
+		    flags contains the following bits
+			0x00000001	user specified x and y
+			0x00000002	user specified width and height
+			0x00000004	program specified position
+			0x00000008	program specified size
+			0x00000010	program specified minimum size
+			0x00000020	program specified maximum size
+			0x00000040	program specified resize increment
+			0x00000080	program specified aspect ratio
+		This type is potentially extensible. The order is critical;
+		append to the end only.
+WM_ZOOM_HINTS								      @
+	Property name:	(type: SIZE_HINTS)
+		used to communicate with the window manager. This is size
+		hints for a window in its "zoomed" state.
+
+				-- Font properties --
+
+MIN_SPACE 								      @
+	Font property: CARD32
+NORM_SPACE 								      @
+	Font property: CARD32
+MAX_SPACE 								      @
+	Font property: CARD32
+END_SPACE 								      @
+	Font property: CARD32
+SUPERSCRIPT_X 								      @
+	Font property: INT32
+SUPERSCRIPT_Y 								      @
+	Font property: INT32
+SUBSCRIPT_X 								      @
+	Font property: INT32
+SUBSCRIPT_Y 								      @
+	Font property: INT32
+UNDERLINE_POSITION 							      @
+	Font property: INT32
+UNDERLINE_THICKNESS 							      @
+	Font property: CARD32	
+STRIKEOUT_ASCENT 							      @
+	Font property: INT32
+STRIKEOUT_DESCENT 							      @
+	Font property: INT32
+ITALIC_ANGLE 								      @
+	Font property: INT32
+X_HEIGHT 								      @
+	Font property: INT32
+QUAD_WIDTH 								      @
+	Font property: INT32
+WEIGHT 									      @
+	Font property: CARD32
+POINT_SIZE 								      @
+	Font property: CARD32
+RESOLUTION 								      @
+	Font property: CARD32
+
+The following optional properties on fonts have values that are atoms. The
+atom print name is the useful information.
+
+COPYRIGHT 								      @
+	of the font distribution
+NOTICE									      @
+	trademark/copyright of the character shapes
+FONT_NAME 								      @
+	name of this particular instance of a font
+FAMILY_NAME 								      @
+	name of the 'font family' to which it belongs
+FULL_NAME 								      @
+	full text name of the font
+
+The following aren't in order but putting them at the end avoids encoding
+changes.
+
+CAP_HEIGHT 								      @
+	Font property: CARD32
+
+
+WM_CLASS 								      @
+	Property name: (type: STRING)
+		Used (possibly by some window managers; definitely by 
+		session managers) to look up resources in the resource 
+		data base on behalf of the client who set this property.
+		There are 2 elements:
+			{char *resource_name; char *resource_class;}
+		delimited by a null character (ascii 0)
+
+WM_TRANSIENT_FOR							      @
+	Property name: (type: WINDOW)
+		Used by transient top-level windows, such as dialog 
+		boxes, to point to their logical "parents".  The window 
+		manager can then take down the dialog boxes when the
+		"parent" gets iconified, for instance.

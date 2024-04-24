@@ -1,0 +1,147 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XSetTile __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XSetTile, XSetStipple, XSetTSOrigin \- GC convenience routines
+.SH SYNTAX
+.HP
+int XSetTile\^(\^Display *\fIdisplay\fP\^, GC \fIgc\fP\^, Pixmap
+\fItile\fP\^);
+.HP
+int XSetStipple\^(\^Display *\fIdisplay\fP\^, GC \fIgc\fP\^, Pixmap
+\fIstipple\fP\^);
+.HP
+int XSetTSOrigin\^(\^Display *\fIdisplay\fP\^, GC \fIgc\fP\^, int
+\fIts_x_origin\fP\^, int \fIts_y_origin\fP\^);
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIgc\fP 1i
+Specifies the GC.
+.IP \fIstipple\fP 1i
+Specifies the stipple you want to set for the specified GC.
+.IP \fItile\fP 1i
+Specifies the fill tile you want to set for the specified GC.
+.IP \fIts_x_origin\fP 1i
+.br
+.ns
+.IP \fIts_y_origin\fP 1i
+Specify the x and y coordinates of the tile and stipple origin.
+.SH DESCRIPTION
+The
+.B XSetTile
+function sets the fill tile in the specified GC.
+The tile and GC must have the same depth,
+or a
+.B BadMatch
+error results.
+.LP
+.B XSetTile
+can generate
+.BR BadAlloc ,
+.BR BadGC ,
+.BR BadMatch ,
+and
+.B BadPixmap
+errors.
+.LP
+The
+.B XSetStipple
+function sets the stipple in the specified GC.
+The stipple must have a depth of one,
+or a
+.B BadMatch
+error results.
+.LP
+.B XSetStipple
+can generate
+.BR BadAlloc ,
+.BR BadGC ,
+.BR BadMatch ,
+and
+.B BadPixmap
+errors.
+.LP
+The
+.B XSetTSOrigin
+function sets the tile/stipple origin in the specified GC.
+When graphics requests call for tiling or stippling,
+the parent's origin will be interpreted relative to whatever destination
+drawable is specified in the graphics request.
+.LP
+.B XSetTSOrigin
+can generate
+.B BadAlloc
+and
+.B BadGC
+errors.
+.SH DIAGNOSTICS
+.TP 1i
+.B BadAlloc
+The server failed to allocate the requested resource or server memory.
+.TP 1i
+.B BadGC
+A value for a GContext argument does not name a defined GContext.
+.TP 1i
+.B BadMatch
+Some argument or pair of arguments has the correct type and range but fails
+to match in some other way required by the request.
+.TP 1i
+.B BadPixmap
+A value for a Pixmap argument does not name a defined Pixmap.
+.SH "SEE ALSO"
+XCreateGC(__libmansuffix__),
+XQueryBestSize(__libmansuffix__),
+XSetArcMode(__libmansuffix__),
+XSetClipOrigin(__libmansuffix__),
+XSetFillStyle(__libmansuffix__),
+XSetFont(__libmansuffix__),
+XSetLineAttributes(__libmansuffix__),
+XSetState(__libmansuffix__)
+.br
+\fI\*(xL\fP

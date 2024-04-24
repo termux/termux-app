@@ -1,0 +1,167 @@
+'\" t
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbSetControls __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbSetControls \- Copies changes to the X server based on a modified ctrls 
+structure in a local copy of the keyboard description
+.SH SYNOPSIS
+.HP
+.B Bool XkbSetControls
+.BI "(\^Display *" "display" "\^,"
+.BI "unsigned long " "which" "\^,"
+.BI "XkbDescPtr " "xkb" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I display
+connection to X server
+.TP
+.I which
+mask of controls requested
+.TP
+.I xkb
+keyboard description for controls information
+.SH DESCRIPTION
+.LP
+For each bit that is set in the 
+.I which 
+parameter, 
+.I XkbSetControls 
+sends the corresponding values from the 
+.I xkb->ctrls 
+field to the server. Valid values for 
+.I which 
+are any combination of the masks listed in Table 1 that have "ok" in the
+.I which 
+column.
+
+Table 1 shows the actual values for the individual mask bits used to select 
+controls for 
+modification and to enable and disable the control. Note that the same mask bit 
+is used to 
+specify general modifications to the parameters used to configure the control 
+(which), and to 
+enable and disable the control (enabled_ctrls). The anomalies in the table (no 
+"ok" in column) 
+are for controls that have no configurable attributes; and for controls that are 
+not boolean 
+controls and therefore cannot be enabled or disabled.
+
+.TS
+c s s s
+l l l l
+l l l l
+l l l l. 
+Table 1 Controls Mask Bits
+_
+Mask Bit	which or	enabled	Value
+	changed_ctrls	_ctrls
+_
+XkbRepeatKeysMask	ok	ok	(1L<<0)
+XkbSlowKeysMask	ok	ok	(1L<<1)
+XkbBounceKeysMask	ok	ok	(1L<<2)
+XkbStickyKeysMask	ok	ok	(1L<<3)
+XkbMouseKeysMask	ok	ok	(1L<<4)
+XkbMouseKeysAccelMask	ok	ok	(1L<<5)
+XkbAccessXKeysMask	ok	ok	(1L<<6)
+XkbAccessXTimeoutMask	ok	ok	(1L<<7)
+XkbAccessXFeedbackMask	ok	ok	(1L<<8)
+XkbAudibleBellMask		ok	(1L<<9)
+XkbOverlay1Mask		ok	(1L<<10)
+XkbOverlay2Mask		ok	(1L<<11)
+XkbIgnoreGroupLockMask		ok	(1L<<12)
+XkbGroupsWrapMask	ok		(1L<<27)
+XkbInternalModsMask	ok		(1L<<28)
+XkbIgnoreLockModsMask	ok		(1L<<29)
+XkbPerKeyRepeatMask	ok		(1L<<30)
+XkbControlsEnabledMask	ok		(1L<<31)
+XkbAccessXOptionsMask	ok	ok	(XkbStickyKeysMask | 
+			XkbAccessXFeedbackMask)
+XkbAllBooleanCtrlsMask		ok	(0x00001FFF) 
+XkbAllControlsMask	ok		(0xF8001FFF)
+.TE
+
+If 
+.I xkb->ctrls 
+is NULL, the server does not support a compatible version of Xkb, or the Xkb 
+extension has not been properly initialized, 
+.I XkbSetControls 
+returns False. Otherwise, it sends the request to the X server and returns True.
+
+Note that changes to attributes of controls in the XkbControlsRec structure are 
+apparent only when the associated control is enabled, although the corresponding 
+values are still updated in the X server. For example, the 
+.I repeat_delay 
+and 
+.I repeat_interval 
+fields are ignored unless the RepeatKeys control is enabled (that is, the X 
+server's equivalent of 
+.I xkb->ctrls 
+has XkbRepeatKeyMask set in 
+.I enabled_ctrls). 
+It is permissible to modify the attributes of a control in one call to
+.I XkbSetControls 
+and enable the control in a subsequent call. See 
+.I XkbChangeEnabledControls 
+for more information on enabling and disabling controls.
+
+Note that the 
+.I enabled_ctrls 
+field is itself a control - the EnabledControls control. As such, to set a 
+specific configuration of enabled and disabled boolean controls, you must set
+.I enabled_ctrls 
+to the appropriate bits to enable only the controls you want and disable all 
+others, then specify the XkbControlsEnabledMask in a call to 
+.I XkbSetControls. 
+
+Because this is somewhat awkward if all you want to do is enable and disable 
+controls, and not modify any of their attributes, a convenience function is also 
+provided for this purpose, 
+.I XkbChangeEnabledControls.
+.SH "RETURN VALUES"
+.TP 15
+True
+The 
+.I XkbSetControls 
+function returns True when it sends the request to the X server.
+.TP 15
+False
+The 
+.I XkbSetControls 
+function returns False when 
+.I xkb->ctrls 
+is NULL, the server does not support a compatible version of Xkb, or the Xkb 
+extension has not been properly initialized.
+.SH DIAGNOSTICS
+.TP 15
+.B BadAlloc
+Unable to allocate storage
+.TP 15
+.B BadMatch
+A compatible version of Xkb was not available in the server or an argument has 
+correct type and range, but is otherwise invalid
+.SH "SEE ALSO"
+.BR XkbChangeEnabledControls (__libmansuffix__),
+.BR XkbFreeControls (__libmansuffix__)
+

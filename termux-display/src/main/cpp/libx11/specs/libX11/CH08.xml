@@ -1,0 +1,5990 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Graphics_Functions'>
+<title>Graphics Functions</title>
+<para>
+Once you have established a connection to a display, you can use the Xlib graphics functions to:
+</para>
+<itemizedlist>
+  <listitem><para>Clear and copy areas</para></listitem>
+  <listitem><para>Draw points, lines, rectangles, and arcs</para></listitem>
+  <listitem><para>Fill areas</para></listitem>
+  <listitem><para>Manipulate fonts</para></listitem>
+  <listitem><para>Draw text</para></listitem>
+  <listitem><para>Transfer images between clients and the server</para></listitem>
+</itemizedlist>
+<para>
+If the same drawable and GC is used for each call, Xlib batches back-to-back
+calls to XDrawPoint, XDrawLine, XDrawRectangle, XFillArc, and XFillRectangle.
+Note that this reduces the total number of requests sent to the server.
+</para>
+<sect1 id="Clearing_Areas">
+<title>Clearing Areas</title>
+<!-- .XS -->
+<!-- (SN Clearing Areas  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to clear an area or the entire window.
+Because pixmaps do not have defined backgrounds, 
+they cannot be filled by using the functions described in this section.
+Instead, to accomplish an analogous operation on a pixmap,
+you should use 
+<xref linkend='XFillRectangle' xrefstyle='select: title'/>,
+which sets the pixmap to a known value.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To clear a rectangular area of a given window, use
+<xref linkend='XClearArea' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Areas</primary><secondary>clearing</secondary></indexterm>
+<indexterm><primary>Clearing</primary><secondary>areas</secondary></indexterm>
+<indexterm significance="preferred"><primary>XClearArea</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XClearArea'>
+<funcprototype>
+  <funcdef><function>XClearArea</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>Bool <parameter>exposures</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+window and specify the upper-left corner of the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the dimensions of the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>exposures</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a Boolean value that indicates if
+<symbol>Expose</symbol>
+events are to be generated.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XClearArea' xrefstyle='select: title'/>
+function paints a rectangular area in the specified window according to the
+specified dimensions with the window's background pixel or pixmap.
+The subwindow-mode effectively is
+<symbol>ClipByChildren</symbol>.
+If width is zero, it
+is replaced with the current width of the window minus x.
+If height is
+zero, it is replaced with the current height of the window minus y.
+If the window has a defined background tile, 
+the rectangle clipped by any children is filled with this tile.
+If the window has
+background 
+<symbol>None</symbol>,
+the contents of the window are not changed.  
+In either
+case, if exposures is 
+<symbol>True</symbol>,
+one or more 
+<symbol>Expose</symbol>
+events are generated for regions of the rectangle that are either visible or are
+being retained in a backing store.
+If you specify a window whose class is
+<symbol>InputOnly</symbol>,
+a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XClearArea' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>,
+<errorname>BadValue</errorname>,
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To clear the entire area in a given window, use
+<xref linkend='XClearWindow' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Window</primary><secondary>clearing</secondary></indexterm>
+<indexterm><primary>Clearing</primary><secondary>windows</secondary></indexterm>
+<indexterm significance="preferred"><primary>XClearWindow</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XClearWindow'>
+<funcprototype>
+  <funcdef><function>XClearWindow</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Window <parameter>w</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>w</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the window.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XClearWindow' xrefstyle='select: title'/>
+function clears the entire area in the specified window and is
+equivalent to
+<xref linkend='XClearArea' xrefstyle='select: title'/>
+(display, w, 0, 0, 0, 0, 
+<symbol>False</symbol>).
+If the window has a defined background tile, the rectangle is tiled with a
+plane-mask of all ones and 
+<symbol>GXcopy</symbol>
+function.
+If the window has
+background 
+<symbol>None</symbol>,
+the contents of the window are not changed.  
+If you specify a window whose class is
+<symbol>InputOnly</symbol>,
+a
+<errorname>BadMatch</errorname>
+error results. 
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XClearWindow' xrefstyle='select: title'/>
+can generate
+<errorname>BadMatch</errorname>
+and
+<errorname>BadWindow</errorname>
+errors.
+</para>
+</sect1>
+<sect1 id="Copying_Areas">
+<title>Copying Areas</title>
+<!-- .XS -->
+<!-- (SN Copying Areas  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to copy an area or a bit plane.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To copy an area between drawables of the same
+root and depth, use
+<xref linkend='XCopyArea' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Areas</primary><secondary>copying</secondary></indexterm>
+<indexterm><primary>Copying</primary><secondary>areas</secondary></indexterm>
+<indexterm significance="preferred"><primary>XCopyArea</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCopyArea'>
+<funcprototype>
+  <funcdef><function>XCopyArea</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>src</parameter></paramdef>
+  <paramdef>Drawable <parameter>dest</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>src_x</parameter></paramdef>
+  <paramdef>int <parameter>src_y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>int <parameter>dest_x</parameter></paramdef>
+  <paramdef>int <parameter>dest_y</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the source and destination rectangles to be combined. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, 
+which are relative to the origin of the source rectangle
+and specify its upper-left corner.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the dimensions of both the source
+and destination rectangles.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+destination rectangle and specify its upper-left corner.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCopyArea' xrefstyle='select: title'/>
+function combines the specified rectangle of src with the specified rectangle 
+of dest.
+The drawables must have the same root and depth,
+or a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+If regions of the source rectangle are obscured and have not been
+retained in backing store 
+or if regions outside the boundaries of the source drawable are specified, 
+those regions are not copied. 
+Instead, the 
+following occurs on all corresponding destination regions that are either
+visible or are retained in backing store.  
+If the destination is a window with a background other than 
+<symbol>None</symbol>,
+corresponding regions
+of the destination are tiled with that background
+(with plane-mask of all ones and
+<symbol>GXcopy</symbol>
+function).
+Regardless of tiling or whether the destination is a window or a pixmap,
+if graphics-exposures is 
+<symbol>True</symbol>,
+then
+<symbol>GraphicsExpose</symbol>
+events for all corresponding destination regions are generated.
+If graphics-exposures is 
+<symbol>True</symbol>
+but no
+<symbol>GraphicsExpose</symbol>
+events are generated, a
+<symbol>NoExpose</symbol>
+event is generated.
+Note that by default graphics-exposures is
+<symbol>True</symbol>
+in new GCs.
+</para>
+<para>
+<!-- .LP -->
+This function uses these GC components: function, plane-mask, 
+subwindow-mode, graphics-exposures, clip-x-origin,
+clip-y-origin, and clip-mask.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCopyArea' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+<!-- .sp -->
+</para>
+<para>
+<!-- .LP -->
+To copy a single bit plane of a given drawable, use
+<xref linkend='XCopyPlane' xrefstyle='select: title'/>.
+</para>
+<indexterm><primary>Plane</primary><secondary>copying</secondary></indexterm>
+<indexterm><primary>Copying</primary><secondary>planes</secondary></indexterm>
+<indexterm significance="preferred"><primary>XCopyPlane</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XCopyPlane'>
+<funcprototype>
+  <funcdef><function>XCopyPlane</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>src</parameter></paramdef>
+  <paramdef>Drawable <parameter>dest</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>src_x</parameter></paramdef>
+  <paramdef>int <parameter>src_y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>int <parameter>dest_x</parameter></paramdef>
+  <paramdef>int <parameter>dest_y</parameter></paramdef>
+  <paramdef>unsigned long <parameter>plane</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the source and destination rectangles to be combined. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, 
+which are relative to the origin of the source rectangle
+and specify its upper-left corner.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the dimensions of both the source
+and destination rectangles.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+destination rectangle and specify its upper-left corner.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>plane</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the bit plane.
+You must set exactly one bit to 1.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XCopyPlane' xrefstyle='select: title'/>
+function uses a single bit plane of the specified source rectangle
+combined with the specified GC to modify the specified rectangle of dest.
+The drawables must have the same root but need not have the same depth.
+If the drawables do not have the same root, a
+<errorname>BadMatch</errorname>
+error results.
+If plane does not have exactly one bit set to 1 and the value of plane
+is not less than %2 sup n%, where <emphasis remap='I'>n</emphasis> is the depth of src, a
+<errorname>BadValue</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+Effectively, 
+<xref linkend='XCopyPlane' xrefstyle='select: title'/>
+forms a pixmap of the same depth as the rectangle of dest and with a
+size specified by the source region. 
+It uses the foreground/background pixels in the GC (foreground
+everywhere the bit plane in src contains a bit set to 1,
+background everywhere the bit plane in src contains a bit set to 0)
+and the equivalent of a 
+<systemitem>CopyArea</systemitem>
+protocol request is performed with all the same exposure semantics.
+This can also be thought of as using the specified region of the source 
+bit plane as a stipple with a fill-style of
+<symbol>FillOpaqueStippled</symbol>
+for filling a rectangular area of the destination.
+</para>
+<para>
+<!-- .LP -->
+This function uses these GC components: function, plane-mask, foreground,
+background, subwindow-mode, graphics-exposures, clip-x-origin, clip-y-origin,
+and clip-mask.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XCopyPlane' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+<errorname>BadMatch</errorname>,
+and 
+<errorname>BadValue</errorname>
+errors.
+</para>
+</sect1>
+<sect1 id="Drawing_Points_Lines_Rectangles_and_Arcs">
+<title>Drawing Points, Lines, Rectangles, and Arcs</title>
+<!-- .XS -->
+<!-- (SN Drawing Points, Lines, Rectangles, and Arcs  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to draw:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+A single point or multiple points
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A single line or multiple lines
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A single rectangle or multiple rectangles
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A single arc or multiple arcs
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+Some of the functions described in the following sections
+use these structures:
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XSegment</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i -->
+<!-- .ta .5i -->
+typedef struct {
+     short x1, y1, x2, y2;
+} XSegment;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>XPoint</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i -->
+<!-- .ta .5i -->
+typedef struct {
+     short x, y;
+} XPoint;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>XRectangle</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i -->
+<!-- .ta .5i -->
+typedef struct {
+     short x, y;
+     unsigned short width, height;
+} XRectangle;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<indexterm significance="preferred"><primary>XArc</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {
+     short x, y;
+     unsigned short width, height;
+     short angle1, angle2;             /* Degrees * 64 */
+} XArc;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+All x and y members are signed integers.
+The width and height members are 16-bit unsigned integers.
+You should be careful not to generate coordinates and sizes
+out of the 16-bit ranges, because the protocol only has 16-bit fields
+for these values.
+</para>
+<sect2 id="Drawing_Single_and_Multiple_Points">
+<title>Drawing Single and Multiple Points</title>
+<!-- .XS -->
+<!-- (SN Drawing Single and Multiple Points  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Points</primary><secondary>drawing</secondary></indexterm>
+<indexterm><primary>Drawing</primary><secondary>points</secondary></indexterm>
+<indexterm><primary>XDrawPoints</primary></indexterm>
+<indexterm><primary>XDrawPoint</primary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+To draw a single point in a given drawable, use
+<xref linkend='XDrawPoint' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawPoint</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawPoint'>
+<funcprototype>
+  <funcdef><function>XDrawPoint</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates where you want the point drawn.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To draw multiple points in a given drawable, use
+<xref linkend='XDrawPoints' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawPoints</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawPoints'>
+<funcprototype>
+  <funcdef><function>XDrawPoints</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XPoint *<parameter>points</parameter></paramdef>
+  <paramdef>int <parameter>npoints</parameter></paramdef>
+  <paramdef>int <parameter>mode</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>points</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of points.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>npoints</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of points in the array.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>mode</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the coordinate mode. 
+You can pass
+<symbol>CoordModeOrigin</symbol>
+or
+<symbol>CoordModePrevious</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDrawPoint' xrefstyle='select: title'/>
+function uses the foreground pixel and function components of the
+GC to draw a single point into the specified drawable; 
+<xref linkend='XDrawPoints' xrefstyle='select: title'/>
+draws multiple points this way.
+<symbol>CoordModeOrigin</symbol>
+treats all coordinates as relative to the origin,
+and
+<symbol>CoordModePrevious</symbol>
+treats all coordinates after the first as relative to the previous point.
+<xref linkend='XDrawPoints' xrefstyle='select: title'/>
+draws the points in the order listed in the array.
+</para>
+<para>
+<!-- .LP -->
+Both functions use these GC components: function, plane-mask,
+foreground, subwindow-mode, clip-x-origin, clip-y-origin, and clip-mask.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDrawPoint' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and 
+<errorname>BadMatch</errorname>
+errors.
+<xref linkend='XDrawPoints' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+<errorname>BadMatch</errorname>,
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Drawing_Single_and_Multiple_Lines">
+<title>Drawing Single and Multiple Lines</title>
+<!-- .XS -->
+<!-- (SN Drawing Single and Multiple Lines -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Lines</primary><secondary>drawing</secondary></indexterm>
+<indexterm><primary>Drawing</primary><secondary>lines</secondary></indexterm>
+<indexterm><primary>XDrawLine</primary></indexterm>
+<indexterm><primary>XDrawLines</primary></indexterm>
+<indexterm><primary>Polygons</primary><secondary>drawing</secondary></indexterm>
+<indexterm><primary>Drawing</primary><secondary>polygons</secondary></indexterm>
+<indexterm><primary>XDrawSegments</primary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+To draw a single line between two points in a given drawable, use
+<xref linkend='XDrawLine' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawLine</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawLine'>
+<funcprototype>
+  <funcdef><function>XDrawLine</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x1</parameter></paramdef>
+  <paramdef>int <parameter>y1</parameter></paramdef>
+  <paramdef>int <parameter>x2</parameter></paramdef>
+  <paramdef>int <parameter>y2</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x1</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y1</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x2</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y2</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the points (x1, y1) and (x2, y2) to be connected.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To draw multiple lines in a given drawable, use
+<xref linkend='XDrawLines' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawLines</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawLines'>
+<funcprototype>
+  <funcdef><function>XDrawLines</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XPoint *<parameter>points</parameter></paramdef>
+  <paramdef>int <parameter>npoints</parameter></paramdef>
+  <paramdef>int <parameter>mode</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>points</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of points.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>npoints</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of points in the array.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>mode</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the coordinate mode. 
+You can pass
+<symbol>CoordModeOrigin</symbol>
+or
+<symbol>CoordModePrevious</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To draw multiple, unconnected lines in a given drawable,
+use
+<xref linkend='XDrawSegments' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawSegments</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawSegments'>
+<funcprototype>
+  <funcdef><function>XDrawSegments</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XSegment *<parameter>segments</parameter></paramdef>
+  <paramdef>int <parameter>nsegments</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>segments</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of segments.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nsegments</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of segments in the array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDrawLine' xrefstyle='select: title'/>
+function uses the components of the specified GC to
+draw a line between the specified set of points (x1, y1) and (x2, y2).
+It does not perform joining at coincident endpoints.
+For any given line, 
+<xref linkend='XDrawLine' xrefstyle='select: title'/>
+does not draw a pixel more than once.
+If lines intersect, the intersecting pixels are drawn multiple times.  
+</para>
+<para>
+<!-- .LP -->
+The
+<xref linkend='XDrawLines' xrefstyle='select: title'/>
+function uses the components of the specified GC to draw 
+npoints-1 lines between each pair of points (point[i], point[i+1]) 
+in the array of
+<structname>XPoint</structname>
+structures.
+It draws the lines in the order listed in the array.
+The lines join correctly at all intermediate points, and if the first and last
+points coincide, the first and last lines also join correctly.
+For any given line, 
+<xref linkend='XDrawLines' xrefstyle='select: title'/>
+does not draw a pixel more than once.
+If thin (zero line-width) lines intersect, 
+the intersecting pixels are drawn multiple times.
+If wide lines intersect, the intersecting pixels are drawn only once, as though
+the entire 
+<systemitem>PolyLine</systemitem>
+protocol request were a single, filled shape.
+<symbol>CoordModeOrigin</symbol>
+treats all coordinates as relative to the origin,
+and
+<symbol>CoordModePrevious</symbol>
+treats all coordinates after the first as relative to the previous point.
+</para>
+<para>
+<!-- .LP -->
+The
+<xref linkend='XDrawSegments' xrefstyle='select: title'/>
+function draws multiple, unconnected lines. 
+For each segment, 
+<xref linkend='XDrawSegments' xrefstyle='select: title'/>
+draws a
+line between (x1, y1) and (x2, y2).
+It draws the lines in the order listed in the array of
+<structname>XSegment</structname>
+structures and does not perform joining at coincident endpoints.
+For any given line, 
+<xref linkend='XDrawSegments' xrefstyle='select: title'/>
+does not draw a pixel more than once.  
+If lines intersect, the intersecting pixels are drawn multiple times.  
+</para>
+<para>
+<!-- .LP -->
+All three functions use these GC components:
+function, plane-mask, line-width,
+line-style, cap-style, fill-style, subwindow-mode,
+clip-x-origin, clip-y-origin, and clip-mask.
+The
+<xref linkend='XDrawLines' xrefstyle='select: title'/>
+function also uses the join-style GC component.
+All three functions also use these GC mode-dependent components:
+foreground, background, tile, stipple, tile-stipple-x-origin, 
+tile-stipple-y-origin, dash-offset, and dash-list.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDrawLine' xrefstyle='select: title'/>,
+<xref linkend='XDrawLines' xrefstyle='select: title'/>,
+and
+<xref linkend='XDrawSegments' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+<xref linkend='XDrawLines' xrefstyle='select: title'/>
+also can generate
+<errorname>BadValue</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id='Drawing_Single_and_Multiple_Rectangles'>
+<title>Drawing Single and Multiple Rectangles</title>
+<!-- .XS -->
+<!-- (SN Drawing Single and Multiple Rectangles  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Rectangles</primary><secondary>drawing</secondary></indexterm>
+<indexterm><primary>Drawing</primary><secondary>rectangles</secondary></indexterm>
+<indexterm><primary>XDrawRectangle</primary></indexterm>
+<indexterm><primary>XDrawRectangles</primary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+To draw the outline of a single rectangle in a given drawable, use
+<xref linkend='XDrawRectangle' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawRectangle</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawRectangle'>
+<funcprototype>
+  <funcdef><function>XDrawRectangle</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which specify the upper-left corner of the
+rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which specify the dimensions of the
+rectangle.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To draw the outline of multiple rectangles
+in a given drawable, use
+<xref linkend='XDrawRectangles' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawRectangles</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawRectangles'>
+<funcprototype>
+  <funcdef><function>XDrawRectangles</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XRectangle <parameter>rectangles[]</parameter></paramdef>
+  <paramdef>int <parameter>nrectangles</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rectangles</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of rectangles.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nrectangles</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of rectangles in the array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDrawRectangle' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawRectangles' xrefstyle='select: title'/>
+functions draw the outlines of the specified rectangle or rectangles as
+if a five-point 
+<systemitem>PolyLine</systemitem>
+protocol request were specified for each rectangle:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+[x,y] [x+width,y] [x+width,y+height] [x,y+height] [x,y]
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP  -->
+For the specified rectangle or rectangles, 
+these functions do not draw a pixel more than once.
+<xref linkend='XDrawRectangles' xrefstyle='select: title'/>
+draws the rectangles in the order listed in the array.
+If rectangles intersect,
+the intersecting pixels are drawn multiple times.
+</para>
+<para>
+<!-- .LP -->
+Both functions use these GC components: 
+function, plane-mask, line-width,
+line-style, cap-style, join-style, fill-style, 
+subwindow-mode, clip-x-origin, clip-y-origin, and clip-mask.
+They also use these GC mode-dependent components: 
+foreground, background, tile, stipple, tile-stipple-x-origin, 
+tile-stipple-y-origin, dash-offset, and dash-list.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDrawRectangle' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawRectangles' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Drawing_Single_and_Multiple_Arcs">
+<title>Drawing Single and Multiple Arcs</title>
+<!-- .XS -->
+<!-- (SN Drawing Single and Multiple Arcs  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Drawing</primary><secondary>arcs</secondary></indexterm>
+<indexterm><primary>XDrawArc</primary></indexterm>
+<indexterm><primary>Arcs</primary><secondary>drawing</secondary></indexterm>
+<indexterm><primary>XDrawArcs</primary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To draw a single arc in a given drawable, use
+<xref linkend='XDrawArc' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawArc</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawArc'>
+<funcprototype>
+  <funcdef><function>XDrawArc</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>int <parameter>angle1</parameter></paramdef>
+  <paramdef>int <parameter>angle2</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+drawable and specify the upper-left corner of the bounding rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the major and minor axes of the
+arc.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>angle1</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the start of the arc relative to the three-o'clock position
+from the center, in units of degrees * 64.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>angle2</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the path and extent of the arc relative to the start of the
+arc, in units of degrees * 64.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To draw multiple arcs in a given drawable, use
+<xref linkend='XDrawArcs' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawArcs</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawArcs'>
+<funcprototype>
+  <funcdef><function>XDrawArcs</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XArc *<parameter>arcs</parameter></paramdef>
+  <paramdef>int <parameter>narcs</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>arcs</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of arcs.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>narcs</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of arcs in the array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .EQ -->
+delim %%
+<!-- .EN -->
+<xref linkend='XDrawArc' xrefstyle='select: title'/>
+draws a single circular or elliptical arc, and 
+<xref linkend='XDrawArcs' xrefstyle='select: title'/>
+draws multiple circular or elliptical arcs.
+Each arc is specified by a rectangle and two angles.  
+The center of the circle or ellipse is the center of the
+rectangle, and the major and minor axes are specified by the width and height.
+Positive angles indicate counterclockwise motion, 
+and negative angles indicate clockwise motion.  
+If the magnitude of angle2 is greater than 360 degrees, 
+<xref linkend='XDrawArc' xrefstyle='select: title'/>
+or 
+<xref linkend='XDrawArcs' xrefstyle='select: title'/>
+truncates it to 360 degrees.
+</para>
+<para>
+<!-- .LP -->
+For an arc specified as %[ ~x, ~y, ~width , ~height, ~angle1, ~angle2 ]%, 
+the origin of the major and minor axes is at 
+% [ x +^ {width over 2} , ~y +^ {height over 2}  ]%, 
+and the infinitely thin path describing the entire circle or ellipse 
+intersects the horizontal axis at % [ x, ~y +^ {height over 2}  ]% and 
+% [ x +^ width , ~y +^ { height over 2 }] %
+and intersects the vertical axis at % [ x +^ { width over 2 } , ~y ]% and 
+% [ x +^ { width over 2 }, ~y +^ height ]%.
+These coordinates can be fractional
+and so are not truncated to discrete coordinates.
+The path should be defined by the ideal mathematical path.  
+For a wide line with line-width lw, 
+the bounding outlines for filling are given        
+by the two infinitely thin paths consisting of all points whose perpendicular
+distance from the path of the circle/ellipse is equal to lw/2
+(which may be a fractional value).
+The cap-style and join-style are applied the same as for a line
+corresponding to the tangent of the circle/ellipse at the endpoint.
+</para>
+<para>
+<!-- .LP -->
+For an arc specified as % [ ~x, ~y, ~width, ~height, ~angle1, ~angle2  ]%,
+the angles must be specified
+in the effectively skewed coordinate system of the ellipse (for a
+circle, the angles and coordinate systems are identical).  The
+relationship between these angles and angles expressed in the normal
+coordinate system of the screen (as measured with a protractor) is as
+follows:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+% roman "skewed-angle" ~ = ~ atan left ( tan ( roman "normal-angle" )
+ * width over height right ) +^ adjust%
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+The skewed-angle and normal-angle are expressed in radians (rather
+than in degrees scaled by 64) in the range % [ 0 , ~2 pi  ]% and where atan
+returns a value in the range % [ - pi over 2 , ~pi over 2  ] %
+and adjust is:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+<!-- .TA 1i 2i -->
+<!-- .ta 1i 2i -->
+%0%     for normal-angle in the range % [ 0 , ~pi over 2  ]%
+%pi%     for normal-angle in the range % [ pi over 2 , ~{3 pi} over 2  ]%
+%2 pi%     for normal-angle in the range % [ {3 pi} over 2 , ~2 pi  ]%
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+For any given arc, 
+<xref linkend='XDrawArc' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawArcs' xrefstyle='select: title'/>
+do not draw a pixel more than once.  
+If two arcs join correctly and if the line-width is greater than zero 
+and the arcs intersect, 
+<xref linkend='XDrawArc' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawArcs' xrefstyle='select: title'/>
+do not draw a pixel more than once.
+Otherwise, 
+the intersecting pixels of intersecting arcs are drawn multiple times.
+Specifying an arc with one endpoint and a clockwise extent draws the same pixels
+as specifying the other endpoint and an equivalent counterclockwise extent,
+except as it affects joins.
+</para>
+<para>
+<!-- .LP -->
+If the last point in one arc coincides with the first point in the following 
+arc, the two arcs will join correctly.  
+If the first point in the first arc coincides with the last point in the last 
+arc, the two arcs will join correctly.
+By specifying one axis to be zero, a horizontal or vertical line can be
+drawn.
+Angles are computed based solely on the coordinate system and ignore the
+aspect ratio.
+</para>
+<para>
+<!-- .LP -->
+Both functions use these GC components: 
+function, plane-mask, line-width, line-style, cap-style, join-style, 
+fill-style, subwindow-mode, clip-x-origin, clip-y-origin, and clip-mask.
+They also use these GC mode-dependent components: 
+foreground, background, tile, stipple, tile-stipple-x-origin, 
+tile-stipple-y-origin, dash-offset, and dash-list.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDrawArc' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawArcs' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+</sect2>
+</sect1>
+<sect1 id="Filling_Areas">
+<title>Filling Areas</title>
+<!-- .XS -->
+<!-- (SN Filling Areas  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to fill:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+A single rectangle or multiple rectangles
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A single polygon
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+A single arc or multiple arcs
+    </para>
+  </listitem>
+</itemizedlist>
+<sect2 id="Filling_Single_and_Multiple_Rectangles">
+<title>Filling Single and Multiple Rectangles</title>
+<!-- .XS -->
+<!-- (SN Filling Single and Multiple Rectangles  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Filling</primary><secondary>rectangles</secondary></indexterm>
+<indexterm><primary>XFillRectangle</primary></indexterm>
+<indexterm><primary>Rectangle</primary><secondary>filling</secondary></indexterm>
+<indexterm><primary>XFillRectangles</primary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To fill a single rectangular area in a given drawable, use
+<xref linkend='XFillRectangle' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFillRectangle</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFillRectangle'>
+<funcprototype>
+  <funcdef><function>XFillRectangle</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+drawable and specify the upper-left corner of the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the dimensions of the rectangle to
+be filled.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To fill multiple rectangular areas in a given drawable, use
+<xref linkend='XFillRectangles' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFillRectangles</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFillRectangles'>
+<funcprototype>
+  <funcdef><function>XFillRectangles</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XRectangle *<parameter>rectangles</parameter></paramdef>
+  <paramdef>int <parameter>nrectangles</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>rectangles</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of rectangles.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nrectangles</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of rectangles in the array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XFillRectangle' xrefstyle='select: title'/>
+and
+<xref linkend='XFillRectangles' xrefstyle='select: title'/>
+functions fill the specified rectangle or rectangles
+as if a four-point 
+<systemitem>FillPolygon</systemitem>
+protocol request were specified for each rectangle:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+[x,y] [x+width,y] [x+width,y+height] [x,y+height]
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+Each function uses the x and y coordinates,
+width and height dimensions, and GC you specify.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XFillRectangles' xrefstyle='select: title'/>
+fills the rectangles in the order listed in the array.  
+For any given rectangle,
+<xref linkend='XFillRectangle' xrefstyle='select: title'/>
+and
+<xref linkend='XFillRectangles' xrefstyle='select: title'/>
+do not draw a pixel more than once.  
+If rectangles intersect, the intersecting pixels are
+drawn multiple times.
+</para>
+<para>
+<!-- .LP -->
+Both functions use these GC components: 
+function, plane-mask, fill-style, subwindow-mode, 
+clip-x-origin, clip-y-origin, and clip-mask.
+They also use these GC mode-dependent components: 
+foreground, background, tile, stipple, tile-stipple-x-origin, 
+and tile-stipple-y-origin.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XFillRectangle' xrefstyle='select: title'/>
+and
+<xref linkend='XFillRectangles' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Filling_a_Single_Polygon">
+<title>Filling a Single Polygon</title>
+<!-- .XS -->
+<!-- (SN Filling a Single Polygon  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To fill a polygon area in a given drawable, use
+<xref linkend='XFillPolygon' xrefstyle='select: title'/>.
+<indexterm><primary>Polygons</primary><secondary>filling</secondary></indexterm>
+<indexterm><primary>Filling</primary><secondary>polygon</secondary></indexterm>
+</para>
+<indexterm significance="preferred"><primary>XFillPolygon</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFillPolygon'>
+<funcprototype>
+  <funcdef><function>XFillPolygon</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XPoint *<parameter>points</parameter></paramdef>
+  <paramdef>int <parameter>npoints</parameter></paramdef>
+  <paramdef>int <parameter>shape</parameter></paramdef>
+  <paramdef>int <parameter>mode</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>points</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of points.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>npoints</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of points in the array.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>shape</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies a shape that helps the server to improve performance.
+You can pass 
+<symbol>Complex</symbol>,
+<symbol>Convex</symbol>,
+or 
+<symbol>Nonconvex</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>mode</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the coordinate mode. 
+You can pass
+<symbol>CoordModeOrigin</symbol>
+or
+<symbol>CoordModePrevious</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<xref linkend='XFillPolygon' xrefstyle='select: title'/>
+fills the region closed by the specified path.
+The path is closed
+automatically if the last point in the list does not coincide with the
+first point.
+<xref linkend='XFillPolygon' xrefstyle='select: title'/>
+does not draw a pixel of the region more than once.
+<symbol>CoordModeOrigin</symbol>
+treats all coordinates as relative to the origin,
+and
+<symbol>CoordModePrevious</symbol>
+treats all coordinates after the first as relative to the previous point.
+</para>
+<para>
+<!-- .LP -->
+Depending on the specified shape, the following occurs: 
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+If shape is
+<symbol>Complex</symbol>,
+the path may self-intersect. 
+Note that contiguous coincident points in the path are not treated 
+as self-intersection.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If shape is
+<symbol>Convex</symbol>,
+for every pair of points inside the polygon,
+the line segment connecting them does not intersect the path.
+If known by the client,
+specifying 
+<symbol>Convex</symbol>
+can improve performance.  
+If you specify
+<symbol>Convex</symbol>
+for a path that is not convex, 
+the graphics results are undefined.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If shape is
+<symbol>Nonconvex</symbol>,
+the path does not self-intersect, but the shape is not
+wholly convex. 
+If known by the client, 
+specifying 
+<symbol>Nonconvex</symbol>
+instead of
+<symbol>Complex</symbol>
+may improve performance.  
+If you specify
+<symbol>Nonconvex</symbol>
+for a self-intersecting path, the graphics results are undefined.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+The fill-rule of the GC controls the filling behavior of 
+self-intersecting polygons.
+</para>
+<para>
+<!-- .LP -->
+This function uses these GC components: 
+function, plane-mask, fill-style, fill-rule, subwindow-mode, clip-x-origin, 
+clip-y-origin, and clip-mask.
+It also uses these GC mode-dependent components: 
+foreground, background, tile, stipple, tile-stipple-x-origin, 
+and tile-stipple-y-origin.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XFillPolygon' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+<errorname>BadMatch</errorname>,
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Filling_Single_and_Multiple_Arcs">
+<title>Filling Single and Multiple Arcs</title>
+<!-- .XS -->
+<!-- (SN Filling Single and Multiple Arcs  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>XFillArc</primary></indexterm>
+<indexterm><primary>Arcs</primary><secondary>filling</secondary></indexterm>
+<indexterm><primary>Filling</primary><secondary>arcs</secondary></indexterm>
+To fill a single arc in a given drawable, use
+<xref linkend='XFillArc' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFillArc</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFillArc'>
+<funcprototype>
+  <funcdef><function>XFillArc</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>int <parameter>angle1</parameter></paramdef>
+  <paramdef>int <parameter>angle2</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+drawable and specify the upper-left corner of the bounding rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height, which are the major and minor axes of the
+arc.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>angle1</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the start of the arc relative to the three-o'clock position
+from the center, in units of degrees * 64.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>angle2</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the path and extent of the arc relative to the start of the
+arc, in units of degrees * 64.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To fill multiple arcs in a given drawable, use
+<xref linkend='XFillArcs' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFillArcs</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFillArcs'>
+<funcprototype>
+  <funcdef><function>XFillArcs</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XArc *<parameter>arcs</parameter></paramdef>
+  <paramdef>int <parameter>narcs</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>arcs</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of arcs.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>narcs</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of arcs in the array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+For each arc, 
+<xref linkend='XFillArc' xrefstyle='select: title'/>
+or
+<xref linkend='XFillArcs' xrefstyle='select: title'/>
+fills the region closed by the infinitely thin path
+described by the specified arc and, depending on the 
+arc-mode specified in the GC, one or two line segments. 
+For 
+<symbol>ArcChord</symbol>,
+the single line segment joining the endpoints of the arc is used.  
+For 
+<symbol>ArcPieSlice</symbol>,
+the two line segments joining the endpoints of the arc with the center
+point are used.  
+<xref linkend='XFillArcs' xrefstyle='select: title'/>
+fills the arcs in the order listed in the array.  
+For any given arc,  
+<xref linkend='XFillArc' xrefstyle='select: title'/>
+and
+<xref linkend='XFillArcs' xrefstyle='select: title'/>
+do not draw a pixel more than once.  
+If regions intersect, 
+the intersecting pixels are drawn multiple times.
+</para>
+<para>
+<!-- .LP -->
+Both functions use these GC components: 
+function, plane-mask, fill-style, arc-mode, subwindow-mode, clip-x-origin, 
+clip-y-origin, and clip-mask.
+They also use these GC mode-dependent components: 
+foreground, background, tile, stipple, tile-stipple-x-origin, 
+and tile-stipple-y-origin.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XFillArc' xrefstyle='select: title'/>
+and
+<xref linkend='XFillArcs' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+</sect2>
+</sect1>
+<sect1 id="Font_Metrics">
+<title>Font Metrics</title>
+<!-- .XS -->
+<!-- (SN Font Metrics  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Font</primary></indexterm>
+A font is a graphical description of a set of characters that are used to 
+increase efficiency whenever a set of small, similar sized patterns are 
+repeatedly used.
+</para>
+<para>
+<!-- .LP -->
+This section discusses how to:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+Load and free fonts
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Obtain and free font names
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Compute character string sizes
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Compute logical extents
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Query character string sizes
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+The X server loads fonts whenever a program requests a new font.
+The server can cache fonts for quick lookup.
+Fonts are global across all screens in a server.
+Several levels are possible when dealing with fonts.
+Most applications simply use 
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>
+to load a font and query the font metrics.
+</para>
+<para>
+<!-- .LP -->
+Characters in fonts are regarded as masks.
+Except for image text requests,
+the only pixels modified are those in which bits are set to 1 in the character.
+This means that it makes sense to draw text using stipples or tiles
+(for example, many menus gray-out unusable entries).
+</para>
+<para>
+<!-- .LP -->
+<!-- .sM -->
+The
+<structname>XFontStruct</structname>
+structure contains all of the information for the font
+and consists of the font-specific information as well as
+a pointer to an array of
+<structname>XCharStruct</structname>
+structures for the
+characters contained in the font.
+The
+<structname>XFontStruct</structname>,
+<structname>XFontProp</structname>,
+and
+<structname>XCharStruct</structname>
+structures contain:
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XCharStruct</primary></indexterm>
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {
+     short lbearing;               /* origin to left edge of raster */
+     short rbearing;               /* origin to right edge of raster */
+     short width;                  /* advance to next char's origin */
+     short ascent;                 /* baseline to top edge of raster */
+     short descent;                /* baseline to bottom edge of raster */
+     unsigned short attributes;    /* per char flags (not predefined) */
+} XCharStruct;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XFontProp</primary></indexterm>
+<literallayout class="monospaced">
+<!-- .TA .5i 1i 3i -->
+<!-- .ta .5i 1i 3i -->
+typedef struct {
+     Atom     name;
+     unsigned long card32;
+} XFontProp;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XChar2b</primary></indexterm>
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {     /* normal 16 bit characters are two bytes */
+    unsigned char byte1;
+    unsigned char byte2;
+} XChar2b;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XFontStruct</primary></indexterm>
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {
+     XExtData *ext_data;               /* hook for extension to hang data */
+     Font fid;                         /* Font id for this font */
+     unsigned direction;               /* hint about the direction font is painted */
+     unsigned min_char_or_byte2;       /* first character */
+     unsigned max_char_or_byte2;       /* last character */
+     unsigned min_byte1;               /* first row that exists */
+     unsigned max_byte1;               /* last row that exists */
+     Bool all_chars_exist;             /* flag if all characters have nonzero size */
+     unsigned default_char;            /* char to print for undefined character */
+     int n_properties;                 /* how many properties there are */
+     XFontProp *properties;            /* pointer to array of additional properties */
+     XCharStruct min_bounds;           /* minimum bounds over all existing char */
+     XCharStruct max_bounds;           /* maximum bounds over all existing char */
+     XCharStruct *per_char;            /* first_char to last_char information */
+     int ascent;                       /* logical extent above baseline for spacing */
+     int descent;                      /* logical descent below baseline for spacing */
+} XFontStruct;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+X supports single byte/character, two bytes/character matrix,
+and 16-bit character text operations.
+Note that any of these forms can be used with a font, but a
+single byte/character text request can only specify a single byte
+(that is, the first row of a 2-byte font).
+You should view 2-byte fonts as a two-dimensional matrix of defined
+characters: byte1 specifies the range of defined rows and
+byte2 defines the range of defined columns of the font.
+Single byte/character fonts have one row defined, and the byte2 range
+specified in the structure defines a range of characters.
+</para>
+<para>
+<!-- .LP -->
+The bounding box of a character is defined by the 
+<structname>XCharStruct</structname>
+of that character.
+When characters are absent from a font,
+the default_char is used.
+When fonts have all characters of the same size,
+only the information in the
+<structname>XFontStruct</structname>
+min and max bounds are used.
+</para>
+<para>
+<!-- .LP -->
+The members of the 
+<structname>XFontStruct</structname>
+have the following semantics:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+The direction member can be either 
+<symbol>FontLeftToRight</symbol>
+or 
+<symbol>FontRightToLeft</symbol>.
+It is just a hint as to whether most 
+<structname>XCharStruct</structname>
+elements 
+have a positive 
+(<symbol>FontLeftToRight</symbol>)
+or a negative 
+(<symbol>FontRightToLeft</symbol>)
+character width 
+metric.
+The core protocol defines no support for vertical text.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If the min_byte1 and max_byte1 members are both zero, min_char_or_byte2
+specifies the linear character index corresponding to the first element
+of the per_char array, and max_char_or_byte2 specifies the linear character
+index of the last element.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If either min_byte1 or max_byte1 are nonzero, both
+min_char_or_byte2 and max_char_or_byte2 are less than 256, 
+and the 2-byte character index values corresponding to the
+per_char array element N (counting from 0) are:
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<!-- .nf -->
+     byte1 = N/D + min_byte1
+<!-- .br -->
+     byte2 = N\\D + min_char_or_byte2
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<!-- .fi -->
+where:
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+<!-- .nf -->
+        D = max_char_or_byte2 - min_char_or_byte2 + 1
+        / = integer division
+        \\ = integer modulus
+<!-- .fi -->
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If the per_char pointer is NULL, 
+all glyphs between the first and last character indexes
+inclusive have the same information,
+as given by both min_bounds and max_bounds.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If all_chars_exist is 
+<symbol>True</symbol>,
+all characters in the per_char array have nonzero bounding boxes.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The default_char member specifies the character that will be used when an
+undefined or nonexistent character is printed.  
+The default_char is a 16-bit character (not a 2-byte character).
+For a font using 2-byte matrix format, 
+the default_char has byte1 in the most-significant byte
+and byte2 in the least significant byte.
+If the default_char itself specifies an undefined or nonexistent character, 
+no printing is performed for an undefined or nonexistent character.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The min_bounds and max_bounds members contain the most extreme values of
+each individual 
+<structname>XCharStruct</structname>
+component over all elements of this array
+(and ignore nonexistent characters).
+The bounding box of the font (the smallest
+rectangle enclosing the shape obtained by superimposing all of the
+characters at the same origin [x,y]) has its upper-left coordinate at:
+<literallayout class="monospaced">
+     [x + min_bounds.lbearing, y - max_bounds.ascent]
+</literallayout>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Its width is:
+<literallayout class="monospaced">
+     max_bounds.rbearing - min_bounds.lbearing
+</literallayout>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Its height is:
+<literallayout class="monospaced">
+     max_bounds.ascent + max_bounds.descent
+</literallayout>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The ascent member is the logical extent of the font above the baseline that is
+used for determining line spacing.
+Specific characters may extend beyond
+this.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The descent member is the logical extent of the font at or below the
+baseline that is used for determining line spacing.
+Specific characters may extend beyond this.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If the baseline is at Y-coordinate y,
+the logical extent of the font is inclusive between the Y-coordinate 
+values (y - font.ascent) and (y + font.descent - 1).
+Typically,
+the minimum interline spacing between rows of text is given
+by ascent + descent.
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+For a character origin at [x,y],
+the bounding box of a character (that is, 
+the smallest rectangle that encloses the character's shape)
+described in terms of 
+<structname>XCharStruct</structname>
+components is a rectangle with its upper-left corner at:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+[x + lbearing, y - ascent]
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+Its width is:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+rbearing - lbearing
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+Its height is:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+ascent + descent
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+The origin for the next character is defined to be:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+[x + width, y]
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+The lbearing member defines the extent of the left edge of the character ink
+from the origin.
+The rbearing member defines the extent of the right edge of the character ink
+from the origin.
+The ascent member defines the extent of the top edge of the character ink
+from the origin.
+The descent member defines the extent of the bottom edge of the character ink
+from the origin.
+The width member defines the logical width of the character.
+</para>
+<para>
+<!-- .LP -->
+Note that the baseline (the y position of the character origin) 
+is logically viewed as being the scanline just below nondescending characters. 
+When descent is zero,
+only pixels with Y-coordinates less than y are drawn,
+and the origin is logically viewed as being coincident with the left edge of
+a nonkerned character. 
+When lbearing is zero,
+no pixels with X-coordinate less than x are drawn.
+Any of the
+<structname>XCharStruct</structname>
+metric members could be negative.
+If the width is negative,
+the next character will be placed to the left of the current origin.
+</para>
+<para>
+<!-- .LP -->
+The X protocol does not define the interpretation of the attributes member 
+in the
+<structname>XCharStruct</structname>
+structure.
+A nonexistent character is represented with all members of its
+<structname>XCharStruct</structname>
+set to zero.
+</para>
+<para>
+<!-- .LP -->
+A font is not guaranteed to have any properties.
+The interpretation of the property value (for example, long or unsigned long)
+must be derived from <emphasis remap='I'>a priori</emphasis> knowledge of the property. 
+A basic set of font properties is specified in the X Consortium standard
+<olink targetdoc='xlfd' targetptr='xlfd'><citetitle>X Logical Font Description Conventions</citetitle></olink>.
+</para>
+<sect2 id="Loading_and_Freeing_Fonts">
+<title>Loading and Freeing Fonts</title>
+<!-- .XS -->
+<!-- (SN Loading and Freeing Fonts  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to load fonts, get font information,
+unload fonts, and free font information.
+<indexterm><primary>Fonts</primary><secondary>getting information</secondary></indexterm>
+<indexterm><primary>Fonts</primary><secondary>unloading</secondary></indexterm>
+<indexterm><primary>Fonts</primary><secondary>freeing font information</secondary></indexterm>
+A few font functions use a 
+<type>GContext</type>
+resource ID or a font ID interchangeably.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To load a given font, use
+<xref linkend='XLoadFont' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XLoadFont</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XLoadFont'>
+<funcprototype>
+  <funcdef>Font <function>XLoadFont</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>name</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>name</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the name of the font,
+which is a null-terminated string.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XLoadFont' xrefstyle='select: title'/>
+function loads the specified font and returns its associated font ID.
+If the font name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+When the characters ``?'' and ``*'' are used in a font name, a
+pattern match is performed and any matching font is used.
+In the pattern, 
+the ``?'' character will match any single character, 
+and the ``*'' character will match any number of characters.
+A structured format for font names is specified in the X Consortium standard 
+<olink targetdoc='xlfd' targetptr='xlfd'><citetitle>X Logical Font Description Conventions</citetitle></olink>.
+If 
+<xref linkend='XLoadFont' xrefstyle='select: title'/>
+was unsuccessful at loading the specified font, 
+a 
+<errorname>BadName</errorname>
+error results.
+Fonts are not associated with a particular screen 
+and can be stored as a component
+of any GC.
+When the font is no longer needed, call 
+<xref linkend='XUnloadFont' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XLoadFont' xrefstyle='select: title'/>
+can generate
+<errorname>BadAlloc</errorname>
+and
+<errorname>BadName</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return information about an available font, use
+<xref linkend='XQueryFont' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XQueryFont</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XQueryFont'>
+<funcprototype>
+  <funcdef>XFontStruct *<function>XQueryFont</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XID <parameter>font_ID</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_ID</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the font ID or the 
+<type>GContext</type>
+ID.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XQueryFont' xrefstyle='select: title'/>
+function returns a pointer to the
+<structname>XFontStruct</structname>
+structure, which contains information associated with the font.
+You can query a font or the font stored in a GC.
+The font ID stored in the 
+<structname>XFontStruct</structname>
+structure will be the 
+<type>GContext</type>
+ID, and you need to be careful when using this ID in other functions
+(see
+<xref linkend='XGContextFromGC' xrefstyle='select: title'/>).
+If the font does not exist,
+<xref linkend='XQueryFont' xrefstyle='select: title'/>
+returns NULL.
+To free this data, use
+<xref linkend='XFreeFontInfo' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To perform a
+<xref linkend='XLoadFont' xrefstyle='select: title'/>
+and
+<xref linkend='XQueryFont' xrefstyle='select: title'/>
+in a single operation, use
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XLoadQueryFont</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XLoadQueryFont'>
+<funcprototype>
+  <funcdef>XFontStruct *<function>XLoadQueryFont</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>name</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>name</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the name of the font,
+which is a null-terminated string.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>
+function provides the most common way for accessing a font.
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>
+both opens (loads) the specified font and returns a pointer to the
+appropriate
+<structname>XFontStruct</structname>
+structure.
+If the font name is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+If the font does not exist,
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>
+returns NULL.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>
+can generate a
+<errorname>BadAlloc</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To unload the font and free the storage used by the font structure
+that was allocated by
+<xref linkend='XQueryFont' xrefstyle='select: title'/>
+or
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>,
+use
+<xref linkend='XFreeFont' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFreeFont</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFreeFont'>
+<funcprototype>
+  <funcdef><function>XFreeFont</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XFontStruct *<parameter>font_struct</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_struct</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the storage associated with the font.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM  -->
+The
+<xref linkend='XFreeFont' xrefstyle='select: title'/>
+function deletes the association between the font resource ID and the specified 
+font and frees the
+<structname>XFontStruct</structname>
+structure.
+The font itself will be freed when no other resource references it.
+The data and the font should not be referenced again.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XFreeFont' xrefstyle='select: title'/>
+can generate a
+<errorname>BadFont</errorname>
+error.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return a given font property, use
+<xref linkend='XGetFontProperty' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetFontProperty</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetFontProperty'>
+<funcprototype>
+  <funcdef>Bool <function>XGetFontProperty</function></funcdef>
+  <paramdef>XFontStruct *<parameter>font_struct</parameter></paramdef>
+  <paramdef>Atom <parameter>atom</parameter></paramdef>
+  <paramdef>unsigned long *<parameter>value_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_struct</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the storage associated with the font.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>atom</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the atom for the property name you want returned.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>value_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the value of the font property.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Given the atom for that property,
+the
+<xref linkend='XGetFontProperty' xrefstyle='select: title'/>
+function returns the value of the specified font property. 
+<xref linkend='XGetFontProperty' xrefstyle='select: title'/>
+also returns 
+<symbol>False</symbol>
+if the property was not defined or 
+<symbol>True</symbol>
+if it was defined.
+A set of predefined atoms exists for font properties,
+which can be found in
+<filename class="headerfile">&lt;X11/Xatom.h&gt;</filename>.
+<indexterm type="file"><primary><filename class="headerfile">X11/Xatom.h</filename></primary></indexterm>
+<indexterm><primary>Files</primary><secondary><filename class="headerfile">&lt;X11/Xatom.h&gt;</filename></secondary></indexterm>
+<indexterm><primary>Headers</primary><secondary><filename class="headerfile">&lt;X11/Xatom.h&gt;</filename></secondary></indexterm>
+This set contains the standard properties associated with
+a font.
+Although it is not guaranteed,
+it is likely that the predefined font properties will be present.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To unload a font that was loaded by
+<xref linkend='XLoadFont' xrefstyle='select: title'/>,
+use
+<xref linkend='XUnloadFont' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XUnloadFont</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XUnloadFont'>
+<funcprototype>
+  <funcdef><function>XUnloadFont</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Font <parameter>font</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the font.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XUnloadFont' xrefstyle='select: title'/>
+function deletes the association between the font resource ID and the specified font.
+The font itself will be freed when no other resource references it.
+The font should not be referenced again.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XUnloadFont' xrefstyle='select: title'/>
+can generate a
+<errorname>BadFont</errorname>
+error.
+</para>
+</sect2>
+<sect2 id="Obtaining_and_Freeing_Font_Names_and_Information">
+<title>Obtaining and Freeing Font Names and Information</title>
+<!-- .XS -->
+<!-- (SN Obtaining and Freeing Font Names and Information -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+You obtain font names and information by matching a wildcard specification
+when querying a font type for a list of available sizes and so on.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return a list of the available font names, use
+<xref linkend='XListFonts' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XListFonts</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XListFonts'>
+<funcprototype>
+  <funcdef>char **<function>XListFonts</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>pattern</parameter></paramdef>
+  <paramdef>int <parameter>maxnames</parameter></paramdef>
+  <paramdef>int *<parameter>actual_count_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>pattern</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the null-terminated pattern string that can contain wildcard 
+characters.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>maxnames</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the maximum number of names to be returned.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>actual_count_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the actual number of font names.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XListFonts' xrefstyle='select: title'/>
+function returns an array of available font names 
+(as controlled by the font search path; see
+<xref linkend='XSetFontPath' xrefstyle='select: title'/>)
+that match the string you passed to the pattern argument.
+The pattern string can contain any characters,
+but each asterisk (*) is a wildcard for any number of characters,
+and each question mark (?) is a wildcard for a single character.
+If the pattern string is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+Each returned string is null-terminated.
+If the data returned by the server is in the Latin Portable Character Encoding,
+then the returned strings are in the Host Portable Character Encoding.
+Otherwise, the result is implementation-dependent.
+If there are no matching font names,
+<xref linkend='XListFonts' xrefstyle='select: title'/>
+returns NULL.
+The client should call
+<xref linkend='XFreeFontNames' xrefstyle='select: title'/>
+when finished with the result to free the memory.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To free a font name array, use
+<xref linkend='XFreeFontNames' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFreeFontNames</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFreeFontNames'>
+<funcprototype>
+  <funcdef><function>XFreeFontNames</function></funcdef>
+  <paramdef>char *<parameter>list[]</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>list</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the array of strings you want to free.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XFreeFontNames' xrefstyle='select: title'/>
+function frees the array and strings returned by
+<xref linkend='XListFonts' xrefstyle='select: title'/>
+or
+<xref linkend='XListFontsWithInfo' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To obtain the names and information about available fonts, use
+<xref linkend='XListFontsWithInfo' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XListFontsWithInfo</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XListFontsWithInfo'>
+<funcprototype>
+  <funcdef>char **<function>XListFontsWithInfo</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>char *<parameter>pattern</parameter></paramdef>
+  <paramdef>int <parameter>maxnames</parameter></paramdef>
+  <paramdef>int *<parameter>count_return</parameter></paramdef>
+  <paramdef>XFontStruct **<parameter>info_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>pattern</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the null-terminated pattern string that can contain wildcard 
+characters.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>maxnames</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the maximum number of names to be returned.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>count_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the actual number of matched font names.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>info_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font information.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XListFontsWithInfo' xrefstyle='select: title'/>
+function returns a list of font names that match the specified pattern and their
+associated font information.
+The list of names is limited to size specified by maxnames.
+The information returned for each font is identical to what
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>
+would return except that the per-character metrics are not returned.
+The pattern string can contain any characters,
+but each asterisk (*) is a wildcard for any number of characters,
+and each question mark (?) is a wildcard for a single character.
+If the pattern string is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+Use of uppercase or lowercase does not matter.
+Each returned string is null-terminated.
+If the data returned by the server is in the Latin Portable Character Encoding,
+then the returned strings are in the Host Portable Character Encoding.
+Otherwise, the result is implementation-dependent.
+If there are no matching font names,
+<xref linkend='XListFontsWithInfo' xrefstyle='select: title'/>
+returns NULL.
+</para>
+<para>
+<!-- .LP -->
+To free only the allocated name array,
+the client should call
+<xref linkend='XFreeFontNames' xrefstyle='select: title'/>.
+To free both the name array and the font information array
+or to free just the font information array,
+the client should call
+<xref linkend='XFreeFontInfo' xrefstyle='select: title'/>.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To free font structures and font names, use
+<xref linkend='XFreeFontInfo' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XFreeFontInfo</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XFreeFontInfo'>
+<funcprototype>
+  <funcdef><function>XFreeFontInfo</function></funcdef>
+  <paramdef>char **<parameter>names</parameter></paramdef>
+  <paramdef>XFontStruct *<parameter>free_info</parameter></paramdef>
+  <paramdef>int <parameter>actual_count</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>names</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the list of font names.
+
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>free_info</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the font information.
+
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>actual_count</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the actual number of font names.
+
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XFreeFontInfo' xrefstyle='select: title'/>
+function frees a font structure or an array of font structures
+and optionally an array of font names.
+If NULL is passed for names, no font names are freed.
+If a font structure for an open font (returned by
+<xref linkend='XLoadQueryFont' xrefstyle='select: title'/>)
+is passed, the structure is freed,
+but the font is not closed; use
+<xref linkend='XUnloadFont' xrefstyle='select: title'/>
+to close the font.
+</para>
+</sect2>
+<sect2 id="Computing_Character_String_Sizes">
+<title>Computing Character String Sizes</title>
+<!-- .XS -->
+<!-- (SN Computing Character String Sizes  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to compute the width,
+the logical extents, 
+and the server information about 8-bit and 2-byte text strings.
+<indexterm><primary>XTextWidth</primary></indexterm>
+<indexterm><primary>XTextWidth16</primary></indexterm>
+The width is computed by adding the character widths of all the characters.
+It does not matter if the font is an 8-bit or 2-byte font.
+These functions return the sum of the character metrics in pixels.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To determine the width of an 8-bit character string, use
+<xref linkend='XTextWidth' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XTextWidth</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XTextWidth'>
+<funcprototype>
+  <funcdef>int <function>XTextWidth</function></funcdef>
+  <paramdef>XFontStruct *<parameter>font_struct</parameter></paramdef>
+  <paramdef>char *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>count</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_struct</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the font used for the width computation.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>count</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character count in the specified string.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To determine the width of a 2-byte character string, use
+<xref linkend='XTextWidth16' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XTextWidth16</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XTextWidth16'>
+<funcprototype>
+  <funcdef>int <function>XTextWidth16</function></funcdef>
+  <paramdef>XFontStruct *<parameter>font_struct</parameter></paramdef>
+  <paramdef>XChar2b *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>count</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_struct</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the font used for the width computation.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>count</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character count in the specified string.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+</para>
+</sect2>
+<sect2 id="Computing_Logical_Extents">
+<title>Computing Logical Extents</title>
+<!-- .XS -->
+<!-- (SN Computing Logical Extents  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To compute the bounding box of an 8-bit character string in a given font, use
+<xref linkend='XTextExtents' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XTextExtents</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XTextExtents'>
+<funcprototype>
+  <funcdef><function>XTextExtents</function></funcdef>
+  <paramdef>XFontStruct *<parameter>font_struct</parameter></paramdef>
+  <paramdef>char *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>nchars</parameter></paramdef>
+  <paramdef>int *<parameter>direction_return</parameter></paramdef>
+  <paramdef>int *<parameter>font_ascent_return</parameter></paramdef>
+  <paramdef>int *<parameter>font_descent_return</parameter></paramdef>
+  <paramdef>XCharStruct *<parameter>overall_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_struct</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the 
+<structname>XFontStruct</structname>
+structure.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nchars</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of characters in the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>direction_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the value of the direction hint
+(<symbol>FontLeftToRight</symbol>
+or
+<symbol>FontRightToLeft</symbol>).
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_ascent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font ascent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_descent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font descent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>overall_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the overall size in the specified
+<structname>XCharStruct</structname>
+structure.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To compute the bounding box of a 2-byte character string in a given font, use
+<xref linkend='XTextExtents16' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XTextExtents16</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XTextExtents16'>
+<funcprototype>
+  <funcdef><function>XTextExtents16</function></funcdef>
+  <paramdef>XFontStruct *<parameter>font_struct</parameter></paramdef>
+  <paramdef>XChar2b *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>nchars</parameter></paramdef>
+  <paramdef>int *<parameter>direction_return</parameter></paramdef>
+  <paramdef>int *<parameter>font_ascent_return</parameter></paramdef>
+  <paramdef>int *<parameter>font_descent_return</parameter></paramdef>
+  <paramdef>XCharStruct *<parameter>overall_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_struct</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the 
+<structname>XFontStruct</structname>
+structure.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nchars</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of characters in the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>direction_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the value of the direction hint
+(<symbol>FontLeftToRight</symbol>
+or
+<symbol>FontRightToLeft</symbol>).
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_ascent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font ascent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_descent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font descent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>overall_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the overall size in the specified
+<structname>XCharStruct</structname>
+structure.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XTextExtents' xrefstyle='select: title'/>
+and
+<xref linkend='XTextExtents16' xrefstyle='select: title'/>
+functions 
+perform the size computation locally and, thereby,
+avoid the round-trip overhead of
+<xref linkend='XQueryTextExtents' xrefstyle='select: title'/>
+and
+<xref linkend='XQueryTextExtents16' xrefstyle='select: title'/>.
+Both functions return an
+<structname>XCharStruct</structname>
+structure, whose members are set to the values as follows.
+</para>
+<para>
+<!-- .LP -->
+The ascent member is set to the maximum of the ascent metrics of all
+characters in the string.
+The descent member is set to the maximum of the descent metrics.
+The width member is set to the sum of the character-width metrics of all
+characters in the string.
+For each character in the string,
+let W be the sum of the character-width metrics of all characters preceding 
+it in the string.
+Let L be the left-side-bearing metric of the character plus W.
+Let R be the right-side-bearing metric of the character plus W.
+The lbearing member is set to the minimum L of all characters in the string.
+The rbearing member is set to the maximum R.
+</para>
+<para>
+<!-- .LP -->
+For fonts defined with linear indexing rather than 2-byte matrix indexing,
+each 
+<structname>XChar2b</structname>
+structure is interpreted as a 16-bit number with byte1 as the 
+most significant byte.
+If the font has no defined default character,
+undefined characters in the string are taken to have all zero metrics.
+</para>
+</sect2>
+<sect2 id="Querying_Character_String_Sizes">
+<title>Querying Character String Sizes</title>
+<!-- .XS -->
+<!-- (SN Querying Character String Sizes  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+To query the server for the bounding box of an 8-bit character string in a 
+given font, use 
+<xref linkend='XQueryTextExtents' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XQueryTextExtents</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XQueryTextExtents'>
+<funcprototype>
+  <funcdef><function>XQueryTextExtents</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XID <parameter>font_ID</parameter></paramdef>
+  <paramdef>char *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>nchars</parameter></paramdef>
+  <paramdef>int *<parameter>direction_return</parameter></paramdef>
+  <paramdef>int *<parameter>font_ascent_return</parameter></paramdef>
+  <paramdef>int *<parameter>font_descent_return</parameter></paramdef>
+  <paramdef>XCharStruct *<parameter>overall_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_ID</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies either the font ID or the 
+<type>GContext</type>
+ID that contains the font.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nchars</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of characters in the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>direction_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the value of the direction hint
+(<symbol>FontLeftToRight</symbol>
+or
+<symbol>FontRightToLeft</symbol>).
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_ascent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font ascent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_descent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font descent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>overall_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the overall size in the specified
+<structname>XCharStruct</structname>
+structure.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To query the server for the bounding box of a 2-byte character string
+in a given font, use
+<xref linkend='XQueryTextExtents16' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XQueryTextExtents16</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XQueryTextExtents16'>
+<funcprototype>
+  <funcdef><function>XQueryTextExtents16</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>XID <parameter>font_ID</parameter></paramdef>
+  <paramdef>XChar2b *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>nchars</parameter></paramdef>
+  <paramdef>int *<parameter>direction_return</parameter></paramdef>
+  <paramdef>int *<parameter>font_ascent_return</parameter></paramdef>
+  <paramdef>int *<parameter>font_descent_return</parameter></paramdef>
+  <paramdef>XCharStruct *<parameter>overall_return</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_ID</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies either the font ID or the 
+<type>GContext</type>
+ID that contains the font.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nchars</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of characters in the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>direction_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the value of the direction hint
+(<symbol>FontLeftToRight</symbol>
+or
+<symbol>FontRightToLeft</symbol>).
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_ascent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font ascent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>font_descent_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the font descent.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>overall_return</emphasis>
+    </term>
+    <listitem>
+      <para>
+Returns the overall size in the specified
+<structname>XCharStruct</structname>
+structure.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XQueryTextExtents' xrefstyle='select: title'/>
+and
+<xref linkend='XQueryTextExtents16' xrefstyle='select: title'/>
+functions return the bounding box of the specified 8-bit and 16-bit
+character string in the specified font or the font contained in the
+specified GC.
+These functions query the X server and, therefore, suffer the round-trip
+overhead that is avoided by
+<xref linkend='XTextExtents' xrefstyle='select: title'/>
+and 
+<xref linkend='XTextExtents16' xrefstyle='select: title'/>.
+Both functions return a
+<structname>XCharStruct</structname>
+structure, whose members are set to the values as follows.
+</para>
+<para>
+<!-- .LP -->
+The ascent member is set to the maximum of the ascent metrics 
+of all characters in the string.
+The descent member is set to the maximum of the descent metrics.
+The width member is set to the sum of the character-width metrics 
+of all characters in the string.
+For each character in the string,
+let W be the sum of the character-width metrics of all characters preceding
+it in the string.
+Let L be the left-side-bearing metric of the character plus W.
+Let R be the right-side-bearing metric of the character plus W.
+The lbearing member is set to the minimum L of all characters in the string.
+The rbearing member is set to the maximum R.
+</para>
+<para>
+<!-- .LP -->
+For fonts defined with linear indexing rather than 2-byte matrix indexing,
+each 
+<structname>XChar2b</structname>
+structure is interpreted as a 16-bit number with byte1 as the 
+most significant byte.
+If the font has no defined default character,
+undefined characters in the string are taken to have all zero metrics.
+</para>
+<para>
+<!-- .LP -->
+Characters with all zero metrics are ignored.
+If the font has no defined default_char,
+the undefined characters in the string are also ignored.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XQueryTextExtents' xrefstyle='select: title'/>
+and
+<xref linkend='XQueryTextExtents16' xrefstyle='select: title'/>
+can generate
+<errorname>BadFont</errorname>
+and
+<errorname>BadGC</errorname>
+errors.
+</para>
+</sect2>
+</sect1>
+<sect1 id="Drawing_Text">
+<title>Drawing Text</title>
+<!-- .XS -->
+<!-- (SN Drawing Text -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+This section discusses how to draw:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+Complex text 
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Text characters
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Image text characters
+    </para>
+  </listitem>
+</itemizedlist>
+<para>
+<!-- .LP -->
+The fundamental text functions
+<xref linkend='XDrawText' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawText16' xrefstyle='select: title'/>
+use the following structures:
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XTextItem</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {
+     char *chars;     /* pointer to string */
+     int nchars;      /* number of characters */
+     int delta;       /* delta between strings */
+     Font font;       /* Font to print it in, None don't change */
+} XTextItem;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XTextItem16</primary></indexterm>
+<literallayout class="monospaced">
+<!-- .TA .5i 3i -->
+<!-- .ta .5i 3i -->
+typedef struct {
+     XChar2b *chars;     /* pointer to two-byte characters */
+     int nchars;         /* number of characters */
+     int delta;         /* delta between strings */
+     Font font;         /* font to print it in, None don't change */
+} XTextItem16;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+If the font member is not
+<symbol>None</symbol>,
+the font is changed before printing and also is stored in the GC.
+If an error was generated during text drawing,
+the previous items may have been drawn.
+The baseline of the characters are drawn starting at the x and y
+coordinates that you pass in the text drawing functions.
+</para>
+<para>
+<!-- .LP -->
+For example, consider the background rectangle drawn by
+<xref linkend='XDrawImageString' xrefstyle='select: title'/>.
+If you want the upper-left corner of the background rectangle
+to be at pixel coordinate (x,y), pass the (x,y + ascent)
+as the baseline origin coordinates to the text functions.
+The ascent is the font ascent, as given in the
+<structname>XFontStruct</structname>
+structure.
+If you want the lower-left corner of the background rectangle
+to be at pixel coordinate (x,y), pass the (x,y - descent + 1)
+as the baseline origin coordinates to the text functions.
+The descent is the font descent, as given in the
+<structname>XFontStruct</structname>
+structure.
+</para>
+<sect2 id="Drawing_Complex_Text">
+<title>Drawing Complex Text</title>
+<!-- .XS -->
+<!-- (SN Drawing Complex Text  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Text</primary><secondary>drawing</secondary></indexterm>
+<indexterm><primary>Drawing</primary><secondary>text items</secondary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+To draw 8-bit characters in a given drawable, use
+<xref linkend='XDrawText' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawText</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawText'>
+<funcprototype>
+  <funcdef><function>XDrawText</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>XTextItem *<parameter>items</parameter></paramdef>
+  <paramdef>int <parameter>nitems</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+specified drawable and define the origin of the first character.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>items</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of text items.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nitems</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of text items in the array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To draw 2-byte characters in a given drawable, use
+<xref linkend='XDrawText16' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawText16</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawText16'>
+<funcprototype>
+  <funcdef><function>XDrawText16</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>XTextItem16 *<parameter>items</parameter></paramdef>
+  <paramdef>int <parameter>nitems</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+specified drawable and define the origin of the first character.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>items</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies an array of text items.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>nitems</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of text items in the array.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDrawText16' xrefstyle='select: title'/>
+function is similar to
+<xref linkend='XDrawText' xrefstyle='select: title'/>
+except that it uses 2-byte or 16-bit characters.
+Both functions allow complex spacing and font shifts between counted strings.
+</para>
+<para>
+<!-- .LP -->
+Each text item is processed in turn.
+A font member other than 
+<symbol>None</symbol>
+in an item causes the font to be stored in the GC
+and used for subsequent text.  
+A text element delta specifies an additional change
+in the position along the x axis before the string is drawn. 
+The delta is always added to the character origin
+and is not dependent on any characteristics of the font.
+Each character image, as defined by the font in the GC, is treated as an
+additional mask for a fill operation on the drawable.
+The drawable is modified only where the font character has a bit set to 1.
+If a text item generates a
+<errorname>BadFont</errorname>
+error, the previous text items may have been drawn.
+</para>
+<para>
+<!-- .LP -->
+For fonts defined with linear indexing rather than 2-byte matrix indexing,
+each 
+<structname>XChar2b</structname>
+structure is interpreted as a 16-bit number with byte1 as the 
+most significant byte.
+</para>
+<para>
+<!-- .LP -->
+Both functions use these GC components:
+function, plane-mask, fill-style, font, subwindow-mode, 
+clip-x-origin, clip-y-origin, and clip-mask.
+They also use these GC mode-dependent components: 
+foreground, background, tile, stipple, tile-stipple-x-origin, 
+and tile-stipple-y-origin.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDrawText' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawText16' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadFont</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Drawing_Text_Characters">
+<title>Drawing Text Characters</title>
+<!-- .XS -->
+<!-- (SN Drawing Text Characters  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Strings</primary><secondary>drawing</secondary></indexterm>
+<indexterm><primary>Drawing</primary><secondary>strings</secondary></indexterm>
+To draw 8-bit characters in a given drawable, use
+<xref linkend='XDrawString' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawString</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawString'>
+<funcprototype>
+  <funcdef><function>XDrawString</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>char *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>length</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+specified drawable and define the origin of the first character.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>length</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of characters in the string argument.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To draw 2-byte characters in a given drawable, use
+<xref linkend='XDrawString16' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawString16</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawString16'>
+<funcprototype>
+  <funcdef><function>XDrawString16</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>XChar2b *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>length</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+specified drawable and define the origin of the first character.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>length</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of characters in the string argument.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+Each character image, as defined by the font in the GC, is treated as an
+additional mask for a fill operation on the drawable.
+The drawable is modified only where the font character has a bit set to 1.
+For fonts defined with 2-byte matrix indexing
+and used with
+<xref linkend='XDrawString16' xrefstyle='select: title'/>,
+each byte is used as a byte2 with a byte1 of zero.
+</para>
+<para>
+<!-- .LP -->
+Both functions use these GC components: 
+function, plane-mask, fill-style, font, subwindow-mode, clip-x-origin, 
+clip-y-origin, and clip-mask.
+They also use these GC mode-dependent components: 
+foreground, background, tile, stipple, tile-stipple-x-origin, 
+and tile-stipple-y-origin.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDrawString' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawString16' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+</sect2>
+<sect2 id="Drawing_Image_Text_Characters">
+<title>Drawing Image Text Characters</title>
+<!-- .XS -->
+<!-- (SN Drawing Image Text Characters  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+<indexterm><primary>Image text</primary><secondary>drawing</secondary></indexterm>
+<indexterm><primary>Drawing</primary><secondary>image text</secondary></indexterm>
+Some applications, in particular terminal emulators, need to
+print image text in which both the foreground and background bits of
+each character are painted.
+This prevents annoying flicker on many displays.
+<indexterm><primary>XDrawImageString</primary></indexterm>
+<indexterm><primary>XDrawImageString16</primary></indexterm>
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To draw 8-bit image text characters in a given drawable, use
+<xref linkend='XDrawImageString' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawImageString</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawImageString'>
+<funcprototype>
+  <funcdef><function>XDrawImageString</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>char *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>length</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+specified drawable and define the origin of the first character.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>length</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of characters in the string argument.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To draw 2-byte image text characters in a given drawable, use
+<xref linkend='XDrawImageString16' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XDrawImageString16</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XDrawImageString16'>
+<funcprototype>
+  <funcdef><function>XDrawImageString16</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>XChar2b *<parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>length</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+specified drawable and define the origin of the first character.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>string</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the character string.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>length</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the number of characters in the string argument.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XDrawImageString16' xrefstyle='select: title'/>
+function is similar to
+<xref linkend='XDrawImageString' xrefstyle='select: title'/>
+except that it uses 2-byte or 16-bit characters.
+Both functions also use both the foreground and background pixels 
+of the GC in the destination.
+</para>
+<para>
+<!-- .LP -->
+The effect is first to fill a
+destination rectangle with the background pixel defined in the GC and then
+to paint the text with the foreground pixel.
+The upper-left corner of the filled rectangle is at:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+[x, y - font-ascent]
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+The width is:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+overall-width
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+The height is:
+</para>
+<para>
+<!-- .LP -->
+<literallayout class="monospaced">
+font-ascent + font-descent
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+The overall-width, font-ascent, and font-descent
+are as would be returned by 
+<xref linkend='XQueryTextExtents' xrefstyle='select: title'/>
+using gc and string.
+The function and fill-style defined in the GC are ignored for these functions. 
+The effective function is 
+<symbol>GXcopy</symbol>,
+and the effective fill-style is
+<symbol>FillSolid</symbol>.
+</para>
+<para>
+<!-- .LP -->
+For fonts defined with 2-byte matrix indexing
+and used with
+<xref linkend='XDrawImageString' xrefstyle='select: title'/>,
+each byte is used as a byte2 with a byte1 of zero.
+</para>
+<para>
+<!-- .LP -->
+Both functions use these GC components: 
+plane-mask, foreground, background, font, subwindow-mode, clip-x-origin, 
+clip-y-origin, and clip-mask.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XDrawImageString' xrefstyle='select: title'/>
+and
+<xref linkend='XDrawImageString16' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+and
+<errorname>BadMatch</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+</para>
+</sect2>
+</sect1>
+<sect1 id="Transferring_Images_between_Client_and_Server">
+<title>Transferring Images between Client and Server</title>
+<!-- .XS -->
+<!-- (SN Transferring Images between Client and Server  -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+Xlib provides functions that you can use to transfer images between a client 
+and the server.
+Because the server may require diverse data formats, 
+Xlib provides an image object that fully describes the data in memory 
+and that provides for basic operations on that data.  
+You should reference the data 
+through the image object rather than referencing the data directly.
+However, some implementations of the Xlib library may efficiently deal with 
+frequently used data formats by replacing
+functions in the procedure vector with special case functions.
+Supported operations include destroying the image, getting a pixel,
+storing a pixel, extracting a subimage of an image, and adding a constant
+to an image (see <link linkend="Manipulating_Images">section 16.8</link>).
+</para>
+<para>
+<!-- .LP -->
+All the image manipulation functions discussed in this section make use of 
+the 
+<structname>XImage</structname>
+structure,
+which describes an image as it exists in the client's memory.
+</para>
+<para>
+<!-- .LP -->
+<indexterm significance="preferred"><primary>XImage</primary></indexterm>
+<!-- .sM -->
+<literallayout class="monospaced">
+<!-- .TA .5i 1i 3i -->
+<!-- .ta .5i 1i 3i -->
+typedef struct _XImage {
+     int width, height;         /* size of image */
+     int xoffset;               /* number of pixels offset in X direction */
+     int format;                /* XYBitmap, XYPixmap, ZPixmap */
+     char *data;                /* pointer to image data */
+     int byte_order;            /* data byte order, LSBFirst, MSBFirst */
+     int bitmap_unit;           /* quant. of scanline 8, 16, 32 */
+     int bitmap_bit_order;      /* LSBFirst, MSBFirst */
+     int bitmap_pad;            /* 8, 16, 32 either XY or ZPixmap */
+     int depth;                 /* depth of image */
+     int bytes_per_line;        /* accelerator to next scanline */
+     int bits_per_pixel;        /* bits per pixel (ZPixmap) */
+     unsigned long red_mask;    /* bits in z arrangement */
+     unsigned long green_mask;
+     unsigned long blue_mask;
+     XPointer obdata;           /* hook for the object routines to hang on */
+     struct funcs {             /* image manipulation routines */
+          struct _XImage *(*create_image)();
+          int             (*destroy_image)();
+          unsigned long   (*get_pixel)();
+          int             (*put_pixel)();
+          struct _XImage  *(*sub_image)();
+          int            (*add_pixel)();
+     } f;
+} XImage;
+</literallayout>
+</para>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+<!-- .sp -->
+To initialize the image manipulation routines of an image structure, use
+<xref linkend='XInitImage' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XInitImage</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XInitImage'>
+<funcprototype>
+  <funcdef>Status <function>XInitImage</function></funcdef>
+  <paramdef>XImage *<parameter>image</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>ximage</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the image.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XInitImage' xrefstyle='select: title'/>
+function initializes the internal image manipulation routines of an
+image structure, based on the values of the various structure members.
+All fields other than the manipulation routines must already be initialized.
+If the bytes_per_line member is zero,
+<xref linkend='XInitImage' xrefstyle='select: title'/>
+will assume the image data is contiguous in memory and set the
+bytes_per_line member to an appropriate value based on the other
+members; otherwise, the value of bytes_per_line is not changed.
+All of the manipulation routines are initialized to functions
+that other Xlib image manipulation functions need to operate on the
+type of image specified by the rest of the structure.
+</para>
+<para>
+<!-- .LP -->
+This function must be called for any image constructed by the client
+before passing it to any other Xlib function.
+Image structures created or returned by Xlib do not need to be
+initialized in this fashion.
+</para>
+<para>
+<!-- .LP -->
+This function returns a nonzero status if initialization of the
+structure is successful.  It returns zero if it detected some error
+or inconsistency in the structure, in which case the image is not changed.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To combine an image with a rectangle of a drawable on the display,
+use
+<xref linkend='XPutImage' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XPutImage</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XPutImage'>
+<funcprototype>
+  <funcdef><function>XPutImage</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>GC <parameter>gc</parameter></paramdef>
+  <paramdef>XImage *<parameter>image</parameter></paramdef>
+  <paramdef>int <parameter>src_x</parameter></paramdef>
+  <paramdef>int <parameter>src_y</parameter></paramdef>
+  <paramdef>int <parameter>dest_x</parameter></paramdef>
+  <paramdef>int <parameter>dest_y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>gc</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the GC.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>image</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the image you want combined with the rectangle. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_x</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the offset in X from the left edge of the image defined
+by the 
+<structname>XImage</structname>
+structure.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>src_y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the offset in Y from the top edge of the image defined
+by the 
+<structname>XImage</structname>
+structure.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+drawable and are the coordinates of the subimage.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height of the subimage, which define the dimensions
+of the rectangle.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XPutImage' xrefstyle='select: title'/>
+function
+combines an image with a rectangle of the specified drawable.
+The section of the image defined by the src_x, src_y, width, and height 
+arguments is drawn on the specified part of the drawable.
+If 
+<symbol>XYBitmap</symbol>
+format is used, the depth of the image must be one,
+or a
+<errorname>BadMatch</errorname>
+error results.
+The foreground pixel in the GC defines the source for the one bits in the image,
+and the background pixel defines the source for the zero bits.
+For 
+<symbol>XYPixmap</symbol>
+and 
+<symbol>ZPixmap</symbol>,
+the depth of the image must match the depth of the drawable,
+or a
+<errorname>BadMatch</errorname>
+error results.
+</para>
+<para>
+<!-- .LP -->
+If the characteristics of the image (for example, byte_order and bitmap_unit)
+differ from what the server requires,
+<xref linkend='XPutImage' xrefstyle='select: title'/>
+automatically makes the appropriate
+conversions.
+</para>
+<para>
+<!-- .LP -->
+This function uses these GC components: 
+function, plane-mask, subwindow-mode, clip-x-origin, clip-y-origin, 
+and clip-mask.
+It also uses these GC mode-dependent components:
+foreground and background.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XPutImage' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+<errorname>BadMatch</errorname>,
+and
+<errorname>BadValue</errorname>
+errors.
+</para>
+<para>
+<!-- .LP -->
+<!-- .sp -->
+To return the contents of a rectangle in a given drawable on the display,
+use
+<xref linkend='XGetImage' xrefstyle='select: title'/>.
+This function specifically supports rudimentary screen dumps.
+</para>
+<indexterm significance="preferred"><primary>XGetImage</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetImage'>
+<funcprototype>
+  <funcdef>XImage *<function>XGetImage</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>unsigned long <parameter>plane_mask</parameter></paramdef>
+  <paramdef>int <parameter>format</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+drawable and define the upper-left corner of the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height of the subimage, which define the dimensions
+of the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>plane_mask</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the plane mask.
+<!-- .\" *** JIM: NEED MORE INFO FOR THIS. *** -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>format</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the format for the image.
+You can pass
+<symbol>XYPixmap</symbol>
+or 
+<symbol>ZPixmap</symbol>.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The
+<xref linkend='XGetImage' xrefstyle='select: title'/>
+function returns a pointer to an
+<structname>XImage</structname>
+structure.
+This structure provides you with the contents of the specified rectangle of
+the drawable in the format you specify.
+If the format argument is 
+<symbol>XYPixmap</symbol>,
+the image contains only the bit planes you passed to the plane_mask argument.
+If the plane_mask argument only requests a subset of the planes of the
+display, the depth of the returned image will be the number of planes
+requested.
+If the format argument is 
+<symbol>ZPixmap</symbol>,
+<xref linkend='XGetImage' xrefstyle='select: title'/>
+returns as zero the bits in all planes not 
+specified in the plane_mask argument.
+The function performs no range checking on the values in plane_mask and ignores
+extraneous bits.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetImage' xrefstyle='select: title'/>
+returns the depth of the image to the depth member of the
+<structname>XImage</structname>
+structure.
+The depth of the image is as specified when the drawable was created,
+except when getting a subset of the planes in 
+<symbol>XYPixmap</symbol>
+format, when the depth is given by the number of bits set to 1 in plane_mask.
+</para>
+<para>
+<!-- .LP -->
+If the drawable is a pixmap, 
+the given rectangle must be wholly contained within the pixmap, 
+or a
+<errorname>BadMatch</errorname>
+error results.
+If the drawable is a window, 
+the window must be viewable, 
+and it must be the case that if there were no inferiors or overlapping windows,
+the specified rectangle of the window would be fully visible on the screen
+and wholly contained within the outside edges of the window,
+or a
+<errorname>BadMatch</errorname>
+error results.
+Note that the borders of the window can be included and read with
+this request.
+If the window has backing-store, the backing-store contents are
+returned for regions of the window that are obscured by noninferior
+windows. 
+If the window does not have backing-store,
+the returned contents of such obscured regions are undefined.
+The returned contents of visible regions of inferiors
+of a different depth than the specified window's depth are also undefined.
+The pointer cursor image is not included in the returned contents.
+If a problem occurs,
+<xref linkend='XGetImage' xrefstyle='select: title'/>
+returns NULL.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetImage' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadMatch</errorname>,
+and
+<errorname>BadValue</errorname>
+errors.
+<!-- .sp -->
+</para>
+<para>
+<!-- .LP -->
+To copy the contents of a rectangle on the display
+to a location within a preexisting image structure, use
+<xref linkend='XGetSubImage' xrefstyle='select: title'/>.
+</para>
+<indexterm significance="preferred"><primary>XGetSubImage</primary></indexterm>
+<!-- .sM -->
+<funcsynopsis id='XGetSubImage'>
+<funcprototype>
+  <funcdef>XImage *<function>XGetSubImage</function></funcdef>
+  <paramdef>Display *<parameter>display</parameter></paramdef>
+  <paramdef>Drawable <parameter>d</parameter></paramdef>
+  <paramdef>int <parameter>x</parameter></paramdef>
+  <paramdef>int <parameter>y</parameter></paramdef>
+  <paramdef>unsigned int <parameter>width</parameter></paramdef>
+  <paramdef>unsigned int <parameter>height</parameter></paramdef>
+  <paramdef>unsigned long <parameter>plane_mask</parameter></paramdef>
+  <paramdef>int <parameter>format</parameter></paramdef>
+  <paramdef>XImage *<parameter>dest_image</parameter></paramdef>
+  <paramdef>int <parameter>dest_x</parameter></paramdef>
+  <paramdef>int <parameter>dest_y</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<!-- .FN -->
+<variablelist>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>display</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the connection to the X server.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>d</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the drawable. 
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+drawable and define the upper-left corner of the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>width</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>height</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the width and height of the subimage, which define the dimensions
+of the rectangle.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>plane_mask</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the plane mask.
+<!-- .\" *** JIM: NEED MORE INFO FOR THIS. *** -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>format</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the format for the image.
+You can pass
+<symbol>XYPixmap</symbol>
+or 
+<symbol>ZPixmap</symbol>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_image</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specifies the destination image.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_x</emphasis>
+    </term>
+    <listitem>
+      <para>
+<!-- .br -->
+<!-- .ns -->
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <emphasis remap='I'>dest_y</emphasis>
+    </term>
+    <listitem>
+      <para>
+Specify the x and y coordinates, which are relative to the origin of the
+destination rectangle, specify its upper-left corner, and determine where
+the subimage is placed in the destination image.
+    </para>
+  </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+<!-- .LP -->
+<!-- .eM -->
+The 
+<xref linkend='XGetSubImage' xrefstyle='select: title'/>
+function updates dest_image with the specified subimage in the same manner as 
+<xref linkend='XGetImage' xrefstyle='select: title'/>.
+If the format argument is 
+<symbol>XYPixmap</symbol>,
+the image contains only the bit planes you passed to the plane_mask argument.
+If the format argument is 
+<symbol>ZPixmap</symbol>,
+<xref linkend='XGetSubImage' xrefstyle='select: title'/>
+returns as zero the bits in all planes not 
+specified in the plane_mask argument.
+The function performs no range checking on the values in plane_mask and ignores
+extraneous bits.
+As a convenience,
+<xref linkend='XGetSubImage' xrefstyle='select: title'/>
+returns a pointer to the same
+<structname>XImage</structname>
+structure specified by dest_image.
+</para>
+<para>
+<!-- .LP -->
+The depth of the destination
+<structname>XImage</structname>
+structure must be the same as that of the drawable.
+If the specified subimage does not fit at the specified location
+on the destination image, the right and bottom edges are clipped.
+If the drawable is a pixmap,
+the given rectangle must be wholly contained within the pixmap,
+or a
+<errorname>BadMatch</errorname>
+error results.
+If the drawable is a window, 
+the window must be viewable, 
+and it must be the case that if there were no inferiors or overlapping windows,
+the specified rectangle of the window would be fully visible on the screen
+and wholly contained within the outside edges of the window,
+or a
+<errorname>BadMatch</errorname>
+error results.
+If the window has backing-store, 
+then the backing-store contents are returned for regions of the window 
+that are obscured by noninferior windows. 
+If the window does not have backing-store, 
+the returned contents of such obscured regions are undefined.
+The returned contents of visible regions of inferiors
+of a different depth than the specified window's depth are also undefined.
+If a problem occurs,
+<xref linkend='XGetSubImage' xrefstyle='select: title'/>
+returns NULL.
+</para>
+<para>
+<!-- .LP -->
+<xref linkend='XGetSubImage' xrefstyle='select: title'/>
+can generate
+<errorname>BadDrawable</errorname>,
+<errorname>BadGC</errorname>,
+<errorname>BadMatch</errorname>,
+and
+<errorname>BadValue</errorname>
+errors.
+<!-- .bp -->
+
+
+</para>
+</sect1>
+</chapter>

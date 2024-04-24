@@ -1,0 +1,141 @@
+'\" t
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+'\" t
+.TH XrmEnumerateDatabase __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XrmEnumerateDatabase \- enumerate resource database entries
+.SH SYNTAX
+.HP
+#include <X11/Xresource.h>
+.TS
+lw(.5i) lw(2i) lw(2.5i).
+T{
+\&#define
+T}	T{
+.B XrmEnumAllLevels
+T}	T{
+0
+T}
+T{
+\&#define
+T}	T{
+.B XrmEnumOneLevel
+T}	T{
+1
+T}
+.TE
+.HP
+Bool XrmEnumerateDatabase\^(\^XrmDatabase \fIdatabase\fP\^, XrmNameList
+\fIname_prefix\fP\^, XrmClassList \fIclass_prefix\fP\^, int \fImode\fP\^, Bool
+(\^*\fIproc\fP\^)\^(\^)\^, XPointer \fIarg\fP\^);
+.SH ARGUMENTS
+.IP \fIdatabase\fP 1i
+Specifies the resource database.
+.IP \fIname_prefix\fP 1i
+Specifies the resource name prefix.
+.IP \fIclass_prefix\fP 1i
+Specifies the resource class prefix.
+.IP \fImode\fP 1i
+Specifies the number of levels to enumerate.
+.IP \fIproc\fP 1i
+Specifies the procedure that is to be called for each matching entry.
+.IP \fIarg\fP 1i
+Specifies the user-supplied argument that will be passed to the procedure.
+.SH DESCRIPTION
+The
+.B XrmEnumerateDatabase
+function calls the specified procedure for each resource in the database
+that would match some completion of the given name/class resource prefix.
+The order in which resources are found is implementation-dependent.
+If mode is
+.BR XrmEnumOneLevel ,
+a resource must match the given name/class prefix with
+just a single name and class appended.
+If mode is
+.BR XrmEnumAllLevels ,
+the resource must match the given name/class prefix with one or more names and
+classes appended.
+If the procedure returns
+.BR True ,
+the enumeration terminates and the function returns
+.BR True .
+If the procedure always returns
+.BR False ,
+all matching resources are enumerated and the function returns
+.BR False .
+.LP
+The procedure is called with the following arguments:
+.LP
+.\" Start marker code here
+.EX
+(*\fIproc\fP\^)(\^\fIdatabase\fP, \fIbindings\fP, \fIquarks\fP, \fItype\fP, \fIvalue\fP, \fIarg\fP\^)
+        XrmDatabase *\fIdatabase\fP\^;
+        XrmBindingList \fIbindings\fP\^;
+        XrmQuarkList \fIquarks\fP\^;
+        XrmRepresentation *\fItype\fP\^;
+        XrmValue *\fIvalue\fP\^;
+        XPointer \fIarg\fP\^;
+.EE
+.\" End marker code here
+.LP
+The bindings and quarks lists are terminated by
+.BR NULLQUARK .
+Note that pointers
+to the database and type are passed, but these values should not be modified.
+.LP
+The procedure must not modify the database.
+If Xlib has been initialized for threads, the procedure is called with
+the database locked and the result of a call by the procedure to any
+Xlib function using the same database is not defined.
+.SH "SEE ALSO"
+XrmGetResource(__libmansuffix__),
+XrmInitialize(__libmansuffix__),
+XrmPutResource(__libmansuffix__)
+.br
+\fI\*(xL\fP

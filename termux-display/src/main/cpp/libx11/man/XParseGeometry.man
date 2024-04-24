@@ -1,0 +1,189 @@
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+.TH XParseGeometry __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XParseGeometry, XWMGeometry \- parse window geometry
+.SH SYNTAX
+.HP
+int XParseGeometry\^(\^_Xconst char *\fIparsestring\fP\^, int *\fIx_return\fP\^, int
+*\fIy_return\fP\^, unsigned int *\fIwidth_return\fP\^, unsigned int
+*\fIheight_return\fP\^);
+.HP
+int XWMGeometry\^(\^Display *\fIdisplay\fP\^, int \fIscreen\fP\^, _Xconst char
+*\fIuser_geom\fP\^, _Xconst char *\fIdef_geom\fP\^, unsigned int \fIbwidth\fP\^,
+XSizeHints *\fIhints\fP\^, int *\fIx_return\fP, int *\fIy_return\fP\^, int
+*\fIwidth_return\fP\^, int *\fIheight_return\fP\^, int
+*\fIgravity_return\fP\^);
+.SH ARGUMENTS
+.IP \fIposition\fP 1i
+.br
+.ns
+.IP \fIdefault_position\fP 1i
+Specify the geometry specifications.
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIfheight\fP 1i
+.br
+.ns
+.IP \fIfwidth\fP 1i
+Specify the font height and width in pixels (increment size).
+.IP \fIparsestring\fP 1i
+Specifies the string you want to parse.
+.IP \fIscreen\fP 1i
+Specifies the screen.
+.IP \fIwidth_return\fP 1i
+.br
+.ns
+.IP \fIheight_return\fP 1i
+Return the width and height determined.
+.IP \fIxadder\fP 1i
+.br
+.ns
+.IP \fIyadder\fP 1i
+Specify additional interior padding needed in the window.
+.IP \fIx_return\fP 1i
+.br
+.ns
+.IP \fIy_return\fP 1i
+Return the x and y offsets.
+.IP \fIbwidth\fP 1i
+Specifies the border width.
+.IP \fIhints\fP 1i
+Specifies the size hints for the window in its normal state.
+.IP \fIdef_geom\fP 1i
+Specifies the application's default geometry or NULL.
+.IP \fIgravity_return\fP 1i
+Returns the window gravity.
+.IP \fIuser_geom\fP 1i
+Specifies the user-specified geometry or NULL.
+.SH DESCRIPTION
+By convention,
+X applications use a standard string to indicate window size and placement.
+.B XParseGeometry
+makes it easier to conform to this standard because it allows you
+to parse the standard window geometry.
+Specifically, this function lets you parse strings of the form:
+.LP
+.\" Start marker code here
+.EX
+[=][<\fIwidth\fP>{xX}<\fIheight\fP>][{+-}<\fIxoffset\fP>{+-}<\fIyoffset\fP>]
+.EE
+.\" End marker code here
+.LP
+The fields map into the arguments associated with this function.
+(Items enclosed in <\^> are integers, items in [\^] are optional, and
+items enclosed in {\^} indicate \*(lqchoose one of.\*(rq
+Note that the brackets should not appear in the actual string.)
+If the string is not in the Host Portable Character Encoding,
+the result is implementation-dependent.
+.LP
+The
+.B XParseGeometry
+function returns a bitmask that indicates which of the four values (width,
+height, xoffset, and yoffset) were actually found in the string
+and whether the x and y values are negative.
+By convention, \-0 is not equal to +0, because the user needs to
+be able to say \*(lqposition the window relative to the right or bottom edge.\*(rq
+For each value found, the corresponding argument is updated.
+For each value not found, the argument is left unchanged.
+The bits are represented by
+.BR XValue ,
+.BR YValue ,
+.BR WidthValue ,
+.BR HeightValue ,
+.BR XNegative ,
+or
+.B YNegative
+and are defined in
+.BR X11/Xutil.h .
+They will be set whenever one of the values is defined
+or one of the signs is set.
+.LP
+If the function returns either the
+.B XValue
+or
+.B YValue
+flag,
+you should place the window at the requested position.
+.LP
+The
+.B XWMGeometry
+function combines any geometry information (given in the format used by
+.BR XParseGeometry )
+specified by the user and by the calling program with size hints
+(usually the ones to be stored in WM_NORMAL_HINTS) and returns the position,
+size, and gravity
+.RB ( NorthWestGravity ,
+.BR NorthEastGravity ,
+.BR SouthEastGravity ,
+or
+.BR SouthWestGravity )
+that describe the window.
+If the base size is not set in the
+.B XSizeHints
+structure,
+the minimum size is used if set.
+Otherwise, a base size of zero is assumed.
+If no minimum size is set in the hints structure,
+the base size is used.
+A mask (in the form returned by
+.BR XParseGeometry )
+that describes which values came from the user specification
+and whether or not the position coordinates are relative
+to the right and bottom edges is returned.
+Note that these coordinates will have already been accounted for
+in the x_return and y_return values.
+.LP
+Note that invalid geometry specifications can cause a width or height
+of zero to be returned.
+The caller may pass the address of the hints win_gravity field
+as gravity_return to update the hints directly.
+.SH "SEE ALSO"
+XSetWMProperties(__libmansuffix__)
+.br
+\fI\*(xL\fP

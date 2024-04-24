@@ -1,0 +1,89 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbAddGeomShape __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbAddGeomShape \- Add a shape to a keyboard geometry
+.SH SYNOPSIS
+.HP
+.B XkbShapePtr XkbAddGeomShape
+.BI "(\^XkbGeometryPtr " "geom" "\^,"
+.BI "Atom " "name" "\^,"
+.BI "int " "sz_outlines" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I geom
+geometry to be updated
+.TP
+.I name
+name of the new shape
+.TP
+.I sz_outlines
+number of outlines to be reserved
+.SH DESCRIPTION
+.LP
+Xkb provides functions to add a single new element to the top-level keyboard geometry. In each case the 
+.I num_ * 
+fields of the corresponding structure is incremented by 1. These functions do not change 
+.I sz_* 
+unless there is no more room in the array. Some of these functions fill in the values of the element's structure from the 
+arguments. For other functions, you must explicitly write code to fill the structure's elements.
+
+The top-level geometry description includes a list of 
+.I geometry properties. 
+A geometry property associates an arbitrary string with an equally arbitrary name. Programs that display images of 
+keyboards can use geometry properties as hints, but they are not interpreted by Xkb. No other geometry structures refer to 
+geometry properties.
+
+A geometry contains an arbitrary number of shapes, each of which is made up of an arbitrary number of outlines.
+.I XkbAddGeomShape 
+adds a shape to a geometry 
+.I geom 
+by allocating space for 
+.I sz_outlines 
+outlines for it and giving it the name specified by 
+.I name. 
+If a shape with name 
+.I name 
+already exists in the geometry, a pointer to the existing shape is returned. 
+.I XkbAddGeomShape 
+returns NULL if any of the parameters is empty or if it was not able to allocate space. To allocate space for an arbitrary 
+number of geometry shapes, use 
+.I XkbAllocGeomShapes.
+.SH STRUCTURES
+.LP
+.nf
+
+    typedef struct _XkbShape {
+        Atom              name;           /\&* shape's name */
+        unsigned short    num_outlines;   /\&* number of outlines for the shape */
+        unsigned short    sz_outlines;    /\&* size of the outlines array */
+        XkbOutlinePtr     outlines;       /\&* array of outlines for the shape */
+        XkbOutlinePtr     approx;         /\&* pointer into the array to the approximating outline */
+        XkbOutlinePtr     primary;        /\&* pointer into the array to the primary outline */
+        XkbBoundsRec      bounds;         /\&* bounding box for the shape; encompasses all outlines */
+    } XkbShapeRec, *XkbShapePtr;
+    
+.fi
+.SH "SEE ALSO"
+.BR XkbAllocGeomShapes (__libmansuffix__)

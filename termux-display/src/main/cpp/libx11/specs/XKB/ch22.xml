@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<chapter id='Debugging_Aids'>
+<title>Debugging Aids</title>
+
+<para>
+The debugging aids are intended for use primarily by Xkb implementors and are
+optional in any implementation.
+</para>
+
+
+<para>
+There are two bitmasks that may be used to control debugging. One bitmask
+controls the output of debugging information, and the other controls behavior.
+Both bitmasks are initially all zeros.
+</para>
+
+
+<para>
+To change the values of any of the debug controls, use
+<function>XkbSetDebuggingFlags</function>.
+</para>
+
+<indexterm significance="preferred" zone="XkbSetDebuggingFlags"><primary><function>XkbSetDebuggingFlags</function></primary></indexterm>
+<funcsynopsis id="XkbSetDebuggingFlags">
+  <funcprototype>
+    <funcdef>Bool <function>XkbSetDebuggingFlags</function></funcdef>
+<!-- (
+<parameter>display, mask, flags, msg, ctrls_mask, ctrls, ret_flags, ret_ctrls</parameter>
+) -->
+
+    <paramdef>Display *<parameter>display</parameter></paramdef>
+    <paramdef>unsigned int <parameter>mask</parameter></paramdef>
+    <paramdef>unsigned int <parameter>flags</parameter></paramdef>
+    <paramdef>char *<parameter>msg</parameter></paramdef>
+    <paramdef>unsigned int <parameter>ctrls_mask</parameter></paramdef>
+    <paramdef>unsigned int <parameter>ctrls</parameter></paramdef>
+    <paramdef>unsigned int *<parameter>ret_flags</parameter></paramdef>
+    <paramdef>unsigned int *<parameter>ret_ctrls</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<variablelist>
+  <varlistentry>
+    <term>
+      <parameter>display</parameter>
+    </term>
+    <listitem>
+      <para>
+        connection to X server
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>mask</parameter>
+    </term>
+    <listitem>
+      <para>
+        mask selecting debug output flags to change
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>flags</parameter>
+    </term>
+    <listitem>
+      <para>
+        values for debug output flags selected by <parameter>mask</parameter>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>msg</parameter>
+    </term>
+    <listitem>
+      <para>
+        message to print right now
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>ctrls_mask</parameter>
+    </term>
+    <listitem>
+      <para>
+        mask selecting debug controls to change
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>ctrls</parameter>
+    </term>
+    <listitem>
+      <para>
+        values for debug controls selected by <parameter>ctrls_mask</parameter>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>ret_flags</parameter>
+    </term>
+    <listitem>
+      <para>
+        resulting state of all debug output flags
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>
+      <parameter>ret_ctrls</parameter>
+    </term>
+    <listitem>
+      <para>
+        resulting state of all debug controls
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+<function>XkbSetDebuggingFlags</function>
+modifies the debug output flags as specified by
+<parameter>mask</parameter>
+and
+<parameter>flags</parameter>,
+modifies the debug controls flags as specified by
+<parameter>ctrls_mask</parameter>
+and
+<parameter>ctrls</parameter>,
+prints the message
+<parameter>msg</parameter>,
+and backfills
+<parameter>ret_flags</parameter>
+and
+<parameter>ret_ctrls</parameter>
+with the resulting debug output and debug controls flags.
+</para>
+
+
+<para>
+When bits are set in the debug output masks,
+<parameter>mask</parameter>
+and
+<parameter>flags</parameter>,
+Xkb prints debug information corresponding to each bit at appropriate points
+during its processing. The device to which the output is written is
+implementation-dependent, but is normally the same device to which X server
+error messages are directed; thus the bits that can be set in
+<parameter>mask</parameter>
+and
+<parameter>flags</parameter>
+is implementation-specific. To turn on a debug output selection, set the bit
+for the output in the
+<parameter>mask</parameter>
+parameter and set the corresponding bit in the
+<parameter>flags</parameter>
+parameter. To turn off event selection for an event, set the bit for the
+output in the
+<parameter>mask</parameter>
+parameter and do not set the corresponding bit in the
+<parameter>flags</parameter>
+parameter.
+</para>
+
+
+<para>
+When bits are set in the debug controls masks,
+<parameter>ctrls_mask</parameter>
+and
+<parameter>ctrls</parameter>,
+Xkb modifies its behavior according to each controls bit.
+<parameter>ctrls_mask</parameter>
+and
+<parameter>ctrls</parameter>
+are related in the same way that
+<parameter>mask</parameter>
+and
+<parameter>flags</parameter>
+are. The valid controls bits are defined in
+<link linkend="table22.1">Table 22.1</link>.
+</para>
+
+<table id='table22.1' frame='topbot'>
+<title>Debug Control Masks</title>
+<?dbfo keep-together="always" ?>
+<tgroup cols='3' align='left' colsep='0' rowsep='0'>
+<colspec colname='c1' colwidth='1.5*'/>
+<colspec colname='c2' colwidth='1.0*'/>
+<colspec colname='c3' colwidth='2.0*'/>
+<thead>
+<row rowsep='1'>
+  <entry>Debug Control Mask</entry>
+  <entry>Value</entry>
+  <entry>Meaning</entry>
+</row>
+</thead>
+<tbody>
+<row>
+    <entry><symbol>XkbDF_DisableLocks</symbol></entry>
+    <entry>(1 &lt;&lt; 0)</entry>
+    <entry>Disable actions that lock modifiers</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+<function>XkbSetDebuggingFlags</function>
+returns
+<symbol>True</symbol>
+if successful and
+<symbol>False</symbol>
+otherwise. The only protocol error it may generate is
+<errorname>BadAlloc</errorname>,
+if for some reason it is unable to allocate storage.
+</para>
+
+
+<para>
+<function>XkbSetDebuggingFlags</function>
+is intended for developer use and may be disabled in production X servers. If
+it is disabled,
+<function>XkbSetDebuggingFlags</function>
+has no effect and does not generate any protocol errors.
+</para>
+
+
+<para>
+The message in
+<parameter>msg</parameter>
+is written immediately. The device to which it is written is implementation
+dependent but is normally the same device where X server error messages are
+directed.
+</para>
+</chapter>

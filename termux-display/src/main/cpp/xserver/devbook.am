@@ -1,0 +1,57 @@
+#
+# Generate output formats for a single DocBook/XML with/without chapters
+#
+# Variables set by the calling Makefile:
+# noinst_DATA: developers docs are not installed
+# docbook:  the main DocBook/XML file, no chapters, appendix or image files
+# chapters: all files pulled in by an XInclude statement and images.
+#
+
+#
+# This makefile is intended for Developers Documentation and is not installed.
+# Do not use for Users docs or Specs which need to be installed and require olink support
+# Refer to http://www.x.org/releases/X11R7.6/doc/xorg-docs/ReleaseNotes.html#id2584393
+# for an explanation on documents classification.
+#
+
+# Developers documnetation is not installed
+noinst_DATA =
+
+# DocBook/XML file with chapters, appendix and images it includes
+dist_noinst_DATA = $(docbook) $(chapters)
+
+FILTER_XMLTO=$(SHELL) $(top_srcdir)/doc/filter-xmlto.sh $(XMLTO)
+
+if HAVE_STYLESHEETS
+
+XMLTO_HTML_FLAGS = 					\
+	--searchpath "$(XORG_SGML_PATH)/X11" 		\
+	--searchpath "$(abs_top_builddir)"		\
+	-x $(STYLESHEET_SRCDIR)/xorg-xhtml.xsl
+
+noinst_DATA += $(docbook:.xml=.html)
+%.html: %.xml  $(chapters)
+	$(AM_V_GEN)$(FILTER_XMLTO) $(XMLTO_HTML_FLAGS) xhtml-nochunks $<
+
+if HAVE_XMLTO_TEXT
+noinst_DATA += $(docbook:.xml=.txt)
+%.txt: %.xml $(chapters)
+	$(AM_V_GEN)$(FILTER_XMLTO) $(XMLTO_HTML_FLAGS) txt $<
+endif HAVE_XMLTO_TEXT
+
+if HAVE_FOP
+XMLTO_FO_FLAGS = 					\
+	--searchpath "$(XORG_SGML_PATH)/X11" 		\
+	--searchpath "$(abs_top_builddir)"		\
+	--stringparam img.src.path=$(abs_builddir)/	\
+	-x $(STYLESHEET_SRCDIR)/xorg-fo.xsl
+
+noinst_DATA += $(docbook:.xml=.pdf) $(docbook:.xml=.ps)
+%.pdf: %.xml $(chapters)
+	$(AM_V_GEN)$(FILTER_XMLTO) $(XMLTO_FO_FLAGS) --with-fop pdf $<
+%.ps: %.xml $(chapters)
+	$(AM_V_GEN)$(FILTER_XMLTO) $(XMLTO_FO_FLAGS) --with-fop ps $<
+endif HAVE_FOP
+endif HAVE_STYLESHEETS
+
+CLEANFILES = $(noinst_DATA)

@@ -1,0 +1,112 @@
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH INPUTTEST @drivermansuffix@ @vendorversion@
+.SH NAME
+inputtest \- An X.Org input driver for testing
+.SH SYNOPSIS
+.nf
+.B "Section \*qInputDevice\*q"
+.BI "  Identifier \*q" devname \*q
+.B  "  Driver \*qinputtest\*q"
+.BI "  Option \*qSocketPath\*q   \*q" path \*q
+\ \ ...
+.B EndSection
+.fi
+
+.SH DESCRIPTION
+.B inputtest
+is an Xorg input driver that passes events received over a socket on to the
+server as input events. It supports the full set of the xf86 driver APIs
+exposed by Xorg. The primary use cases of this input driver are various
+integration tests that need to interface with the input subsystem.
+
+.SH CONFIGURATION DETAILS
+Please refer to @xconfigfile@(@filemansuffix@) for general configuration
+details and for options that can be used with all input drivers.  This
+section only covers configuration details specific to this driver.
+.PP
+External process can communicate with the input driver via a named socket that
+is created after the driver is initialized. The paths to the socket is passed
+via input driver options.
+.PP
+The following driver
+.B Options
+are supported:
+.TP 7
+.BI "Option \*qSocketPath\*q \*q" string \*q
+Sets the path where the driver will create a named socket. Any existing file
+at that location will be removed.
+.TP 7
+.BI "Option \*qDeviceType\*q \*q" string \*q
+Sets the type of the device to be emulated.
+.IP
+.BI Keyboard
+Initializes a keyboard device.
+.IP
+.BI Pointer
+Initializes a relative-mode pointer device. It will have four valuators -
+a "Rel X" valuator at axis 0 and a "Rel Y" valuator at axis 1.
+A horizontal scroll valuator will be set up at axis 2.
+A vertical scroll valuator will be set up at axis 3.
+.IP
+.BI PointerAbsolute
+Initializes an absolute-mode pointer device. It will have four valuators -
+an "Abs X" valuator at axis 0 and an "Abs Y" valuator at axis 1.
+A horizontal scroll valuator will be set up at axis 2.
+A vertical scroll valuator will be set up at axis 3.
+.IP
+.BI PointerAbsoluteProximity
+Initializes an absolute-mode pointer device with proximity support.
+The valuators are initialized in the same way as for \fBPointerAbsolute\fR type.
+.IP
+.BI Touch
+Initializes a touch device.
+It will have 5 valuators: an "Abs MT Position X" at axis 0,
+an "Abs MT Position Y" valuator at axis 1,
+a horizontal scroll valuator on axis 2,
+a vertical scroll valuator on axis 3 and an "Abs MT Pressure" valuator
+at axis 4.
+.TP 7
+.BI "Option \*qTouchCount\*q \*q" int \*q
+Sets the maximum number of simultaneous touches for touch devices.
+.TP 7
+.BI "Option \*qPointerButtonCount\*q \*q" int \*q
+Sets the maximum number of buttons in pointer devices.
+.TP 7
+.BI "Option \*qPointerHasPressure\*q \*q" bool \*q
+Selects whether "Abs Pressure" is available at the axis 4 in pointer devices.
+
+.SH INTERFACE WITH THE DRIVER
+The communication with the driver is a binary protocol defined in
+include/xf86-input-inputtest-protocol.h
+.PP
+At the beginning, the client process that communicates with the driver must
+connect to the socket that is created by the driver at SocketPath.
+Once the connection is established, it must write a xf86ITEventClientVersion
+event and read a xf86ITResponseServerVersion response where the driver
+specifies the protocol version supported by it. If this version is lower than
+requested by the client, then the driver will disconnect.
+.PP
+After receiving xf86ITResponseServerVersion message the client may send events
+to the driver. Each event is an instance of one of the
+.BI xf86ITEvent*
+structs. The length field defines the full length of the struct in bytes and
+the event field defines the type of the struct.
+.PP
+The responses from the server follow the same structure. Each response is an
+instance of one of the
+.BI xf86ITResponse*
+structs. The length field defines the full length of the struct in bytes and
+the event field defines the type of the struct.
+.PP
+The synchronization with Xorg is performed via
+.BI xf86ITEventWaitForSync
+event. After sending such event, the client must read of a
+.BI xf86ITResponseSyncFinished event from the socket without sending additional
+events. The completion of the read operation indicates that Xorg has fully
+processed all input events sent to it so far.
+
+.SH AUTHORS
+Povilas Kanapickas <povilas@radix.lt>
+.SH "SEE ALSO"
+@xservername@(@appmansuffix@), @xconfigfile@(@filemansuffix@), Xserver(@appmansuffix@), X(@miscmansuffix@)

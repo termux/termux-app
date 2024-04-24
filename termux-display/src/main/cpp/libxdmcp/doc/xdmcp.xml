@@ -1,0 +1,3909 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd" [
+<!--
+   variable names used in equation markup in the authentication chapter
+   FIXME: Replace with mathml?
+  -->
+<!ENTITY variable.D	"<emphasis role='italic'>D</emphasis>">
+<!ENTITY variable.N	"<emphasis role='italic'>N</emphasis>">
+<!ENTITY variable.T	"<emphasis role='italic'>T</emphasis>">
+<!ENTITY variable.Delta	"<emphasis role='italic'>&Delta;</emphasis>">
+<!ENTITY variable.alpha	"<emphasis role='italic'>&alpha;</emphasis>">
+<!ENTITY variable.beta	"<emphasis role='italic'>&beta;</emphasis>">
+<!ENTITY variable.kappa "<emphasis role='italic'>&kappa;</emphasis>">
+<!ENTITY variable.rho	"<emphasis role='italic'>&rho;</emphasis>">
+<!ENTITY variable.sigma	"<emphasis role='italic'>&sigma;</emphasis>">
+<!ENTITY variable.tau	"<emphasis role='italic'>&tau;</emphasis>">
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
+<book id="xdmcp">
+
+<bookinfo>
+   <title>X Display Manager Control Protocol</title>
+   <subtitle>X.Org Standard</subtitle>
+   <releaseinfo>X Version 11</releaseinfo>
+   <releaseinfo>Version 1.1</releaseinfo>
+   <authorgroup>
+   <author>
+      <firstname>Keith</firstname><surname>Packard</surname>
+      <affiliation>
+        <orgname>Massachusetts Institute of Technology</orgname>
+        <orgdiv>Laboratory for Computer Science</orgdiv>
+        <orgdiv>X Consortium</orgdiv>
+      </affiliation>
+   </author>
+   </authorgroup>
+
+   <copyright><year>1989</year><year>2004</year>
+     <holder>The Open Group</holder></copyright>
+
+<legalnotice>
+
+
+
+<para>
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+</para>
+<para>
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+</para>
+<para>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</para>
+<para>
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+</para>
+
+<para>
+<emphasis remap='I'>X Window System</emphasis> is a trademark of The Open Group.
+</para>
+</legalnotice>
+</bookinfo>
+
+<chapter id="Purpose_and_Goals">
+<title>Purpose and Goals</title>
+<!-- .XS -->
+<!-- (SN Purpose and Goals -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The purpose of the X Display Manager Control Protocol (XDMCP)
+is to provide a uniform mechanism for an autonomous
+display to request login service from a remote host.
+By autonomous, we mean
+the display consists of hardware and processes that are independent of any
+particular host where login service is desired.  (For example, the server
+cannot simply be started by a
+<function>fork/exec</function>
+sequence on the host.)
+An X terminal (screen, keyboard, mouse, processor, network interface)
+is a prime example of an autonomous display.
+</para>
+
+<para>
+From the point of view of the end user, it is very important to make
+autonomous displays as easy to use as traditional hardwired character
+terminals.  Specifically, you can typically just power on a hardwired
+terminal and be greeted with a login prompt.  The same should be possible
+with autonomous displays.  However, in a network environment with multiple
+hosts, the end user may want to choose which host(s) to connect to.  In an
+environment with many displays and many hosts, a site administrator may want
+to associate particular collections of hosts with particular displays.  We
+would like to support the following options:
+</para>
+
+<itemizedlist>
+  <listitem>
+    <para>
+The display has a single, fixed host to which it should connect.  It should be
+possible to power on the display and receive a login prompt, without user
+intervention.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Any one of several hosts on a network or subnetwork may be acceptable
+for accepting login from the display.
+(For example, the user's file systems can be mounted onto
+any such host, providing comparable environments.)  It should be possible
+for the display to broadcast to find such hosts and to have the display
+either automatically choose a host or present the possible hosts to the
+user for selection.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The display has a fixed set of hosts that it can connect to.  It should be
+possible for the display to have that set stored in RAM, but it should also be
+possible for a site administrator to be able to maintain host sets for a
+large number of displays using a centralized facility, without having to
+interact (physically or electronically) with each individual display.
+Particular hosts should be allowed to refuse login service, based on
+whatever local criteria are desired.
+    </para>
+  </listitem>
+</itemizedlist>
+
+<para>
+The control protocol should be designed in such a way that it can be used over
+a reasonable variety of communication transport layers.  In fact, it is quite
+desirable if every major network protocol family that supports the standard X
+protocol is also capable of supporting XDMCP, because the end result of XDMCP
+negotiation will be standard X protocol connections to the display.
+However, because the number of displays per host may be large,
+a connection-based protocol appears less desirable
+than a connection-less protocol.  For this reason the protocol is designed
+to use datagram services with the display responsible for sequencing and
+retransmission.
+</para>
+<para>
+<!-- .LP -->
+To keep the burden on displays at a minimum (because display cost is not
+a factor that can be ignored), it is desirable that displays not be required
+to maintain permanent state (across power cycles) for the purposes
+of the control protocol,
+and it is desirable to keep required state at a minimum while the
+display is powered on.
+</para>
+<para>
+<!-- .LP -->
+Security is an important consideration and must be an integral part of the
+design.  The important security goals in the context of XDMCP are:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+It should be possible for the display to verify that it is communicating
+with a legitimate host login service.  Because the user will present
+credentials (for example, password) to this service,
+it is important to avoid spoof attacks.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+It should be possible for the display and the login service to negotiate the
+authorization mechanism to be used for the standard X protocol.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+It should be possible to provide the same level of security in verifying the
+login service as is provided by the negotiated authorization mechanism.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Because there are no firm standards yet in the area of security,
+XDMCP must be flexible enough to accommodate a variety of security mechanisms.
+    </para>
+  </listitem>
+</itemizedlist>
+</chapter>
+
+<chapter id="Overview_of_the_Protocol">
+<title>Overview of the Protocol</title>
+<!-- .XS -->
+<!-- (SN Overview of the Protocol -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+XDMCP is designed to provide authenticated access to display management
+services for remote displays.  A new network server, called a \fIDisplay
+Manager\fP, will use XDMCP to communicate with displays to negotiate the
+startup of X sessions.  The protocol allows the display to authenticate the
+manager.  It also allows most of the configuration information to be
+centralized with the manager and to ease the burden of system administration
+in a large network of displays.
+The essential goal is to provide plug-and-play
+services similar to those provided in the familiar mainframe/terminal world.
+</para>
+<para>
+<!-- .LP -->
+Displays may be turned off by the user at any time.  Any existing session
+running on a display that has been turned off must be identifiable.  This
+is made possible by requiring a three-way handshake to start a session.  If
+the handshake succeeds, any existing session is terminated immediately and a
+new session started.  There is the problem (at least with TCP) that
+connections may not be closed when the display is turned off.  In most
+environments, the manager should reduce this problem by periodically XSync'ing
+on its own connection, perhaps every five to ten minutes, and terminating the
+session if its own connection ever closes.
+</para>
+<para>
+<!-- .LP -->
+Displays should not be required to retain permanent state for purposes of
+the control protocol.  One solution to packets received out of sequence
+would be to use monotonically increasing message identifiers in each message
+to allow both sides to ignore messages that arrive out-of-sequence.  For
+this to work, displays would at a minimum have to increment a stable crash
+count each time they are powered on and use that number as part of a
+larger sequence number.  But if displays cannot retain permanent state this
+cannot work.  Instead, the manager assumes the responsibility for permanent
+state by generating unique numbers that identify a particular session and
+the protocol simply ignores packets that correspond to an invalid session.
+</para>
+<para>
+<!-- .LP -->
+The Manager must not be responsible for packet reception.  To prevent the
+Manager from becoming stuck because of a hostile display, no portion of the
+protocol requires the Manager to retransmit a packet.  Part of this means
+that any valid packet that the Manager does receive must be
+acknowledged in some way to prevent the display from continuously resending
+packets.  The display can keep the protocol running as it will always know
+when the Manager has received (at least one copy of) a packet.  On the
+Manager side, this means that any packet may be received more than once (if
+the response was lost) and duplicates must be ignored.
+</para>
+</chapter>
+
+<chapter id="Data_Types">
+<title>Data Types</title>
+<!-- .XS -->
+<!-- (SN Data Types -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+XDMCP packets contain several types of data.  Integer values are always
+stored most significant byte first in the packet ("Big Endian" order).
+As XDMCP will not be used to transport large quantities of data, this
+restriction will not substantially hamper the efficiency of any
+implementation.  Also, no padding of any sort will occur within the packets.
+</para>
+
+<informaltable frame="topbot">
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='3' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth="1.0*"/>
+  <colspec colname='c2' colwidth="1.0*"/>
+  <colspec colname='c3' colwidth="2.0*"/>
+  <thead>
+    <row rowsep='1'>
+      <entry>Type Name</entry>
+      <entry>Length (Bytes)</entry>
+      <entry>Description</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>CARD8</entry>
+      <entry>1</entry>
+      <entry>A single byte unsigned integer</entry>
+    </row>
+    <row>
+      <entry>CARD16</entry>
+      <entry>2</entry>
+      <entry>Two byte unsigned integer</entry>
+    </row>
+    <row>
+      <entry>CARD32</entry>
+      <entry>4</entry>
+      <entry>Four byte unsigned integer</entry>
+    </row>
+    <row>
+      <entry>ARRAY8</entry>
+      <entry>n+2</entry>
+      <entry>
+This is actually a CARD16 followed by
+a collection of CARD8.  The value of the CARD16
+field (n) specifies the number of CARD8 values to follow
+      </entry>
+    </row>
+    <row>
+      <entry>ARRAY16</entry>
+      <entry>2*m+1</entry>
+      <entry>
+This is a CARD8 (m) which specifies the
+number of CARD16 values to follow
+      </entry>
+    </row>
+    <row>
+      <entry>ARRAY32</entry>
+      <entry>4*l+1</entry>
+      <entry>
+This is a CARD8 (l) which specifies the
+number of CARD32 values to follow
+      </entry>
+    </row>
+    <row>
+      <entry>ARRAYofARRAY8</entry>
+      <entry>?</entry>
+      <entry>
+This is a CARD8 which specifies the
+number of ARRAY8 values to follow.
+      </entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+</chapter>
+
+<chapter id="Packet_Format">
+<title>Packet Format</title>
+<!-- .XS -->
+<!-- (SN Packet Format -->
+<!-- .XE -->
+<para>
+All XDMCP packets have the following information:
+</para>
+
+<informaltable frame="topbot">
+  <?dbfo keep-together="always" ?>
+  <tgroup cols='3' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth="1.0*" />
+  <colspec colname='c2' colwidth="1.0*" />
+  <colspec colname='c3' colwidth="2.0*" />
+  <thead>
+    <row rowsep='1'>
+      <entry>Length (Bytes)</entry>
+      <entry>Field Type</entry>
+      <entry>Description</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>2</entry>
+      <entry>CARD16</entry>
+      <entry>version number</entry>
+    </row>
+    <row>
+      <entry>2</entry>
+      <entry>CARD16</entry>
+      <entry>opcode packet header</entry>
+    </row>
+    <row>
+      <entry>2</entry>
+      <entry>CARD16</entry>
+      <entry>n = length of remaining data in bytes</entry>
+    </row>
+    <row>
+      <entry>n</entry>
+      <entry>???</entry>
+      <entry>packet-specific data</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+<para>
+<!-- .LP -->
+The fields are as follows:
+</para>
+
+<variablelist>
+  <varlistentry>
+    <term>Version number</term>
+    <listitem>
+      <para>
+This specifies the version of XDMCP that generated this packet in
+case changes in this protocol are required.  Displays and
+managers may choose to support older versions for compatibility.
+This field will initially be one (1).
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>Opcode</term>
+    <listitem>
+      <para>
+This specifies what step of the protocol this packet represents and should
+contain one of the following values (encoding provided in section below):
+<emphasis role="bold">BroadcastQuery</emphasis>,
+<emphasis role="bold">Query</emphasis>,
+<emphasis role="bold">IndirectQuery</emphasis>,
+<emphasis role="bold">ForwardQuery</emphasis>,
+<emphasis role="bold">Willing</emphasis>,
+<emphasis role="bold">Unwilling</emphasis>,
+<emphasis role="bold">Request</emphasis>,
+<emphasis role="bold">Accept</emphasis>,
+<emphasis role="bold">Decline</emphasis>,
+<emphasis role="bold">Manage</emphasis>,
+<emphasis role="bold">Refuse</emphasis>,
+<emphasis role="bold">Failed</emphasis>,
+<emphasis role="bold">KeepAlive</emphasis>
+or
+<emphasis role="bold">Alive</emphasis>.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>Length of data in bytes</term>
+    <listitem>
+      <para>
+This specifies the length of the information following the first 6 bytes.
+Each packet-type has a different format and will need to be separately
+length-checked against this value.  Because every data item has either an
+explicit or implicit length, this can be easily accomplished.
+Packets that have too little or too much data should be ignored.
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+<para>
+Packets should be checked to make sure that they satisfy the following
+conditions:
+</para>
+
+<orderedlist>
+  <listitem>
+    <para>
+They must contain valid opcodes.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The length of the remaining data should correspond to the sum of the
+lengths of the individual remaining data items.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The opcode should be expected (a finite state diagram is given
+in a later section).
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+If the packet is of type
+<emphasis role="bold">Manage</emphasis> or
+<emphasis role="bold">Refuse</emphasis>,
+the Session ID should match the value sent in the preceding
+<emphasis role="bold">Accept</emphasis> packet.
+    </para>
+  </listitem>
+</orderedlist>
+</chapter>
+
+<chapter id="Protocol">
+<title>Protocol</title>
+<!-- .XS -->
+<!-- (SN Protocol -->
+<!-- .XE -->
+<para>
+Each of the opcodes is described below.  Because a given packet type is only
+ever sent one way, each packet description below indicates the direction.
+Most of the packets have additional information included beyond the
+description above.  The additional information is appended to the packet
+header in the order described without padding, and the length field is
+computed accordingly.
+</para>
+
+<informaltable frame="none" colsep='0' rowsep='0'>
+  <tgroup cols='10' align='left'>
+  <colspec colname='col1' colwidth="1.0*"/>
+  <colspec colname='col2' colwidth="1.0*"/>
+  <colspec colname='col3' colwidth="1.0*"/>
+  <colspec colname='col4' colwidth="1.0*"/>
+  <colspec colname='col5' colwidth="1.0*"/>
+  <colspec colname='col6' colwidth="1.0*"/>
+  <colspec colname='col7' colwidth="1.0*"/>
+  <colspec colname='col8' colwidth="1.0*"/>
+  <colspec colname='col9' colwidth="1.0*"/>
+  <colspec colname='col10' colwidth="1.0*"/>
+  <spanspec namest="col1" nameend="col10" spanname="col1_on" align="left"/>
+  <spanspec namest="col2" nameend="col10" spanname="col2_on" align="left"/>
+  <spanspec namest="col3" nameend="col10" spanname="col3_on" align="left"/>
+  <spanspec namest="col4" nameend="col10" spanname="col4_on" align="left"/>
+  <spanspec namest="col5" nameend="col10" spanname="col5_on" align="left"/>
+  <tbody>
+    <row>
+      <entry spanname="col1_on"><emphasis role="bold">Query</emphasis></entry>
+    </row>
+    <row>
+      <entry spanname="col1_on"><emphasis role="bold">BroadcastQuery</emphasis></entry>
+    </row>
+    <row>
+      <entry spanname="col1_on"><emphasis role="bold">IndirectQuery</emphasis></entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">Display -> Manager</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">Additional Fields:</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis>Authentication Names</emphasis>: ARRAYofARRAY8
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies a list of authentication names that the display supports.  The
+manager will choose one of these and return it in the
+<emphasis role="bold">Willing</emphasis> packet.
+      </entry>
+    </row>
+<!-- AAAAAAAAAAAAA -->
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">Semantics</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+<para>
+A <function>Query</function>
+packet is sent from the display to a specific host to ask if
+that host is willing to provide management services to this display.  The
+host should respond with
+<function>Willing</function>
+if it is willing to service the display or
+<function>Unwilling</function>
+if it is not.
+</para>
+
+<para>
+A
+<function>BroadcastQuery</function>
+packet is similar to the
+<function>Query</function>
+packet except that it is intended to be received by all hosts on the network
+(or subnetwork).  However, unlike
+<function>Query</function>
+requests, hosts that are not willing to service the display
+should simply ignore
+<function>BroadcastQuery</function>
+requests.
+</para>
+
+<para>
+An
+<function>IndirectQuery</function>
+packet is sent to a well known manager that forwards
+the request to a larger collection of secondary managers using
+<function>ForwardQuery</function>
+packets.
+In this way, the collection of managers that respond can be grouped
+on other than network boundaries; the use of a central manager reduces
+system administrative overhead.
+The primary manager may also send a
+<function>Willing</function>
+packet in response to this packet.
+</para>
+
+<para>
+Each packet type has slightly different semantics:
+</para>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+<para>
+The
+<function>Query</function>
+packet is destined only for a single host.
+If the display is instructed to
+<function>Query</function>
+multiple managers, it will send multiple
+<function>Query</function>
+packets.  The
+<function>Query</function>
+packet also demands a response from the manager, either
+<function>Willing</function>
+or
+<function>Unwilling</function>.
+    </para>
+    <para>
+The
+<function>BroadcastQuery</function>
+packet is sent to many hosts.
+Each manager that receives this packet will not respond with an
+<function>Unwilling</function>
+packet.
+    </para>
+    <para>
+The
+<function>IndirectQuery</function>
+packet is sent to only one manager with the request
+that the request be forwarded to a larger list of managers using
+<function>ForwardQuery</function>
+packets.  This list is expected to be maintained at one
+central site to reduce administrative overhead.
+The function of this packet type is similar to
+<function>BroadcastQuery except that</function>
+<function>BroadcastQuery</function>
+is not forwarded.
+    </para>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">Valid Responses:</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<function>Willing</function>,
+<function>Unwilling</function>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">Problems/Solutions:</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">Problem:</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+<para>Not all managers receive the query packet.</para>
+<para>Indication:</para>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+None if
+<function>BroadcastQuery</function>
+or
+<function>IndirectQuery</function>
+was sent, else failure to receive
+<function>Willing</function>.
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">Solution:</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Repeatedly send the packet while waiting for user to choose a manager.
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+An exponential backoff algorithm should be used here to reduce network load
+for long-standing idle displays.  Start at 2 seconds, back off by factors of
+2 to 32 seconds, and discontinue retransmit after 126 seconds.  The display
+should reset the timeout when user-input is detected.  In this way, the
+display will wakeup when touched by the user.
+      </entry>
+    </row>
+    <row>
+      <entry spanname="col1_on">
+<function>ForwardQuery</function>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+<para>Primary Manager -&gt; Secondary Manager</para>
+<para>Additional Fields:</para>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Client Address</emphasis>: ARRAY8
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies the network address of the client display.
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Client Port</emphasis>: ARRAY8
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies an identification of the client task on the client display.
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Authentication Names</emphasis>: ARRAYofARRAY8
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Is a duplicate of Authentication Names array that was received
+in the
+<function>IndirectQuery</function>
+packet.
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+        <para>
+When primary manager receives a
+<function>IndirectQuery</function>
+packet, it is responsible for sending
+<function>ForwardQuery</function>
+packets to an appropriate list of
+managers that can provide service to the display using the same network
+type as the one the original
+<function>IndirectQuery</function>
+packet was received from.
+The Client Address and Client Port fields must contain an
+address that the secondary manager can use to reach the display also using
+this same network.  Each secondary manager sends a
+<function>Willing</function>
+packet to the display if it is willing to provide service.
+        </para>
+
+        <para>
+<function>ForwardQuery</function>
+packets are similar to
+<function>BroadcastQuery</function>
+packets in that managers that are not willing to service
+particular displays should not send a
+<function>Unwilling</function>
+packet.
+        </para>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Valid Responses:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<function>Willing</function>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Identical to
+<function>BroadcastQuery</function>
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Like all packets sent from a manager, this packet should never be
+retransmitted.
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>Willing</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Manager -&gt; Display
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Authentication Name</emphasis>: ARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+<para>
+Specifies the authentication method, selected from the list offered in the
+<function>Query ,</function>
+<function>BroadcastQuery ,</function>
+or
+<function>IndirectQuery</function>
+packet that the manager expects the display to use in the subsequent
+<function>Request</function>
+packet.
+This choice should remain as constant as feasible so that displays that
+send multiple
+<function>Query</function>
+packets can use the Authentication Name from any
+<function>Willing</function>
+packet that arrives.
+</para>
+<para>
+The display is free to ignore managers that request an insufficient level
+of authentication.
+</para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Hostname</emphasis>: ARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Is a human readable string describing the host from which the packet was sent.
+The protocol specifies no interpretation of the data in this field.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Status</emphasis>: ARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Is a human readable string describing the status of the host.  This could
+include load average/number of users connected or other information.  The
+protocol specifies no interpretation of the data in this field.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+A
+<function>Willing</function>
+packet is sent by managers that may service connections from
+this display.  It is sent in response to either a
+<function>Query ,</function>
+<function>BroadcastQuery ,</function>
+or
+<function>ForwardQuery</function>
+but does not imply a commitment to provide service
+(for example, it may later decide that it has accepted enough
+connections already).
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+<para>
+<function>Willing</function>
+not received by the display.
+</para>
+<para>
+Indication:
+</para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+None if
+<function>BroadcastQuery</function>
+or
+<function>IndirectQuery</function>
+was sent, else failure to receive
+<function>Willing .</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+The display should continue to send the query until a response is received.
+      </entry>
+    </row>
+
+
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Like all packets sent from the manager to the display, this packet should
+never be retransmitted.
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>Unwilling</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Manager -&gt; Display
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+The Hostname and Status fields as in the
+<function>Willing</function>
+packet.
+The Status field should indicate to the user a reason
+for the refusal of service.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+An
+<function>Unwilling</function>
+packet is sent by managers in response to direct
+<function>Query</function>
+requests (as opposed to
+<function>BroadcastQuery</function>
+or
+<function>IndirectQuery</function>
+requests) if the manager will not accept requests for management.
+This is typically sent by managers that wish to only service
+particular displays or that handle a limited number of displays at once.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+<para>
+<function>Unwilling</function>
+not received by the display.
+</para>
+<para>
+Indication:
+</para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display fails to receive
+<function>Unwilling .</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+The display should continue to send
+<function>Query</function>
+messages until a response is received.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Like all packets sent from the manager to the display, this packet should
+never be retransmitted.
+      </entry>
+    </row>
+    <row>
+      <entry spanname="col1_on">
+<function>Request</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Display -&gt; Manager
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Display Number</emphasis>: CARD16
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies the index of this particular server for the host
+on which the display is resident.
+This value will be zero for most autonomous displays.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Connection Types</emphasis>: ARRAY16
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies an array indicating the stream services accepted by the display.
+If the high-order byte in a particular entry is zero, the low-order byte
+corresponds to an X-protocol host family type.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Connection Addresses</emphasis>: ARRAYofARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+For each connection type in the previous array, the corresponding entry in
+this array indicates the network address of the display device.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+        <para>
+<emphasis remap='I'>Authentication Name</emphasis>: ARRAY8
+        </para>
+        <para>
+<emphasis remap='I'>Authentication Data</emphasis>: ARRAY8
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies the authentication protocol that the display expects
+the manager to validate itself with.  The Authentication Data is
+expected to contain data that the manager will interpret, modify
+and use to authenticate itself.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Authorization Names</emphasis>: ARRAYofARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies which types of authorization the display supports.  The
+manager may decide to reject displays with which it cannot perform
+authorization.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Manufacturer Display ID</emphasis>: ARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Can be used by the manager to determine how to decrypt the
+Authentication Data field in this packet.  See the section below on
+Manufacturer Display ID Format.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+A
+<function>Request</function>
+packet is sent by a display to a specific host to request a
+session ID in preparation for a establishing a connection.  If the manager
+is willing to service a connection to this display, it should return an
+<function>Accept</function>
+packet with a valid session ID and should be ready for a subsequent
+<function>Manage</function>
+request.  Otherwise, it should return a
+<function>Decline</function>
+packet.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Valid Responses:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<function>Accept ,</function>
+<function>Decline</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Request not received by manager.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display timeout waiting for response.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display resends
+<function>Request</function>
+message.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Message received out of order by manager.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+None.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Each time a
+<function>Request</function>
+is sent, the manager sends the Session ID
+associated with the next session in the
+<function>Accept .</function>
+If that next session is not yet started,
+the manager will simply resend with the same Session ID.
+If the session is in progress, the manager will reply
+with a new Session ID; in which case, the
+<function>Accept</function>
+will be discarded by the display.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Timeout after 2 seconds, exponential backoff to 32 seconds.
+After no more than 126 seconds, give up and report an error to the user.
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>Accept</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Manager -&gt; Display
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Session ID</emphasis>: CARD32
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Identifies the session that can be started by the manager.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+        <para>
+<emphasis remap='I'>Authentication Name</emphasis>: ARRAY8
+        </para>
+        <para>
+<emphasis remap='I'>Authentication Data</emphasis>: ARRAY8
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Is the data sent back to the display to authenticate the manager.
+If the Authentication Data is not the value expected by the display, it
+should terminate the protocol at this point and display an error to the user.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+        <para>
+<emphasis remap='I'>Authorization Name</emphasis>: ARRAY8
+        </para>
+        <para>
+<emphasis remap='I'>Authorization Data</emphasis>: ARRAY8
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Is the data sent to the display to indicate the type of authorization the
+manager will be using in the first call to
+<olink targetdoc='libX11' targetptr='XOpenDisplay'><function>XOpenDisplay</function></olink>
+after the
+<function>Manage</function>
+packet is received.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<para>
+An
+<function>Accept</function>
+packet is sent by a manager in response to a
+<function>Request</function>
+packet if the manager is willing to establish a connection for the display.
+The Session ID is used to identify this connection from any preceding
+ones and will be used by the display in its subsequent
+<function>Manage</function>
+packet.
+The Session ID is a 32-bit number that is incremented each time an
+<function>Accept</function>
+packet is sent as it must be unique over a reasonably long period of time.
+</para>
+<para>
+If the authentication information is invalid, a
+<function>Decline</function>
+packet will be returned with an appropriate
+<function>Status</function>
+message.
+</para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+<function>Accept</function>
+or
+<function>Decline</function>
+not received by display.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display timeout waiting for response to
+<function>Request .</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display resends
+<function>Request</function>
+message.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Message received out of order by display.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display receives
+<function>Accept</function>
+after
+<function>Manage</function>
+has been sent.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display discards
+<function>Accept</function>
+messages after it has sent a
+<function>Manage</function>
+message.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Like all packets sent from the manager to the display, this packet should
+never be retransmitted.
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>Decline</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Manager -&gt; Display
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Status</emphasis>: ARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Is a human readable string indicating the reason for refusal of
+service.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+        <para>
+<emphasis remap='I'>Authentication Name</emphasis>:
+ARRAY8
+        </para>
+        <para>
+<emphasis remap='I'>Authentication Data</emphasis>:
+ARRAY8
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Is the data sent back to the display to authenticate the manager.  If the
+Authentication Data is not the value expected by the display, it
+should terminate the protocol at this point and display an error to the user.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+A
+<function>Decline</function>
+packet is sent by a manager in response to a
+<function>Request</function>
+packet if the manager is unwilling to establish a connection for the
+display.
+This is allowed even if the manager had responded
+<function>Willing</function>
+to a previous query.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Same as for
+<function>Accept .</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Like all packets sent from a manager to a display, this packet should never
+be retransmitted.
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>Manage</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Display -&gt; Manager
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Session ID</emphasis>: CARD32
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Should contain the nonzero session ID returned in the
+<function>Accept</function>
+packet.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Display Number</emphasis>: CARD16
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Must match the value sent in the previous
+<function>Request</function>
+packet.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Display Class</emphasis>: ARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies the class of the display.
+See the Display Class Format section,
+which discusses the format of this field.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+A
+<function>Manage</function>
+packet is sent by a display to ask the manager to begin a
+session on the display.  If the Session ID is correct the manager
+should open a connection; otherwise, it should respond with a
+<function>Refuse</function>
+or
+<function>Failed</function>
+packet, unless the Session ID matches a currently
+running session or a session that has not yet successfully opened the
+display but has not given up the attempt.  In this latter case, the
+<function>Manage</function>
+packet should be ignored.
+This will work as stream connections give positive success indication
+to both halves of the stream, and positive failure indication
+to the connection initiator (which will eventually generate a
+<function>Failed</function>
+packet).
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Valid Responses:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+X connection with correct auth info,
+<function>Refuse ,</function>
+<function>Failed .</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+<function>Manage</function>
+not received by manager.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display timeout waiting for response.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display resends
+<function>Manage</function>
+message.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+<function>Manage</function>
+received out of order by manager.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Session already in progress with matching Session ID.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+<function>Manage</function>
+packet ignored.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Session ID does not match next Session ID.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+<function>Refuse</function>
+message is sent.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Display cannot be opened on selected stream.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display connection setup fails.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+<function>Failed</function>
+message is sent including a human readable reason.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Display open does not succeed before a second manage packet is received
+because of a timeout occurring in the display.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+<function>Manage</function>
+packet received with Session ID matching the session
+attempting to connect to the display.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+<function>Manage</function>
+packet is ignored.  As the stream connection will either
+succeed, which will result in an active session, or the stream will
+eventually give up hope of connecting and send a
+<function>Failed</function>
+packet; no response to this
+<function>Manage</function>
+packet is necessary.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Timeout after 2 seconds, exponential backoff to 32 seconds.  After no more
+than 126 seconds, give up and report an error to the user.
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>Refuse</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Manager -&gt; Display
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Session ID</emphasis>: CARD32
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Should be set to the Session ID received in the
+<function>Manage</function>
+packet.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+A
+<function>Refuse</function>
+packet is sent by a manager when the Session ID received in the
+<function>Manage</function>
+packet does not match the current Session ID.
+The display should assume that it received an old
+<function>Accept</function>
+packet and should resend its
+<function>Request</function>
+packet.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Error message is lost.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display times out waiting for
+new connection,
+<function>Refuse</function>
+or
+<function>Failed .</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Display resends
+<function>Manage</function>
+message.
+      </entry>
+    </row>
+
+
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Timeout/Retransmission policy:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Like all packets sent from a manager to a display, this packet should never be
+retransmitted.
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>Failed</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Manager -&gt; Display
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Session ID</emphasis>: CARD32
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Should be set to the Session ID received in the
+<function>Manage</function>
+packet.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Status</emphasis>: ARRAY8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Is a human readable string indicating the reason for failure.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+A
+<function>Failed</function>
+packet is sent by a manager when it has problems establishing
+the initial X connection in response to the
+<function>Manage</function>
+packet.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Same as for
+<function>Refuse .</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>KeepAlive</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Display -&gt; Manager
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Display Number</emphasis>: CARD16
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Set to the display index for the display host.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Session ID</emphasis>: CARD32
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Should be set to the Session ID received in the
+<function>Manage</function>
+packet during the negotiation for the current session.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+        <para>
+A
+<function>KeepAlive</function>
+packet can be sent at any time during the session by a
+display to discover if the manager is running.
+The manager should respond with
+<function>Alive</function>
+whenever it receives this type of packet.
+        </para>
+        <para>
+This allows the display to discover when the manager host
+is no longer running.
+A display is not required to send
+<function>KeepAlive</function>
+packets and, upon lack of receipt of
+<function>Alive</function>
+packets, is not required to perform any specific action.
+        </para>
+        <para>
+The expected use of this packet is to terminate an active session when the
+manager host or network link fails.  The display should keep track of the
+time since any packet has been received from the manager host and use
+<function>KeepAlive</function>
+packets when a substantial time has elapsed since the
+most recent packet.
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Valid Responses:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<function>Alive</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Problems/Solutions:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+Problem:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Manager does not receive the packet or display does not receive the response.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indication:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+No
+<function>Alive</function>
+packet is returned.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Solution:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col5_on">
+Retransmit the packet with an exponential backoff; start at 2 seconds and
+assume the host is not up after no less than 30 seconds.
+      </entry>
+    </row>
+
+    <row>
+      <entry spanname="col1_on">
+<function>Alive</function>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+        <para>
+Manager -&gt; Display
+        </para>
+        <para>
+Additional Fields:
+        </para>
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Session Running</emphasis>: CARD8
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Indicates that the session identified by Session ID is
+currently active.  The value is zero if no session is active
+or one if a session
+is active.
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+<emphasis remap='I'>Session ID</emphasis>: CARD32
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col4_on">
+Specifies the ID of the currently running session; if any.
+When no session is active this field should be zero.
+      </entry>
+    </row>
+
+
+    <row>
+      <entry></entry>
+      <entry spanname="col2_on">
+Semantics:
+      </entry>
+    </row>
+
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry spanname="col3_on">
+An
+<function>Alive</function>
+packet is sent in response to a
+<function>KeepAlive</function>
+request.
+If a session is currently active on the display, the manager includes the
+Session ID in the packet.  The display can use this information to
+determine the status of the manager.
+      </entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+</chapter>
+
+<chapter id="Session_Termination">
+<title>Session Termination</title>
+<para>
+When the session is over, the initial connection with the display (the one
+that acknowledges the
+<function>Manage</function>
+packet) will be closed by the manager.
+If only a single session was active on the display,
+all other connections should be closed by the display
+and the display should be reset.  If multiple sessions
+are active simultaneously and the display can identify which connections
+belong to the terminated session, those connections should be closed.
+Otherwise, all connections should be closed and the display reset only when
+all sessions have been terminated (that is, all initial connections closed).
+</para>
+
+<para>
+The session may also be terminated at any time by the display if the
+managing host no longer responds to
+<function>KeepAlive</function>
+packets.
+The exact time-outs for sending
+<function>KeepAlive</function>
+packets is not specified in this protocol as the trade off
+should not be fixed between loading an otherwise idle system with spurious
+<function>KeepAlive</function>
+packets and not noticing that the manager host is down for a long time.
+</para>
+</chapter>
+
+<chapter id="State_Diagrams">
+<title>State Diagrams</title>
+<!-- .XS -->
+<!-- (SN State Diagrams -->
+<!-- .XE -->
+<para>
+<!-- .LP -->
+The following state diagrams are designed to cover all actions of both
+the display and the manager.  Any packet that is received out-of-sequence
+will be ignored.
+</para>
+<para>
+<!-- .LP -->
+Display:
+</para>
+
+<variablelist>
+  <varlistentry>
+    <term><emphasis remap='I'>start</emphasis>:</term>
+    <listitem>
+      <para>
+User-requested connect to one host -&gt; <emphasis remap='I'>query</emphasis>
+      </para>
+      <para>
+User-requested connect to some host -&gt; <emphasis remap='I'>broadcast</emphasis>
+      </para>
+      <para>
+User-requested connect to site host-list -&gt; <emphasis remap='I'>indirect</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>query</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>Query</function> packet
+-&gt; <emphasis remap='I'>collect-query</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>collect-query</emphasis>:</term>
+    <listitem>
+      <para>
+Receive <function>Willing</function> -&gt;
+<emphasis remap='I'>start-connection</emphasis>
+      </para>
+      <para>
+Receive <function>Unwilling</function> -&gt;
+<emphasis remap='I'>stop-connection</emphasis>
+      </para>
+      <para>
+Timeout -&gt; <emphasis remap='I'>query</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term><emphasis remap='I'>broadcast</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>BroadcastQuery</function> packet
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>collect-broadcast-query</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>collect-broadcast-query</emphasis>:</term>
+    <listitem>
+      <para>
+Receive <function>Willing</function> -&gt;
+<emphasis remap='I'>update-broadcast-willing</emphasis>
+      </para>
+      <para>
+User-requested connect to one host -&gt;
+<emphasis remap='I'>start-connection</emphasis>
+      </para>
+      <para>
+Timeout -&gt; <emphasis remap='I'>broadcast</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>update-broadcast-willing</emphasis>:</term>
+    <listitem>
+      <para>
+Add new host to the host list presented to the user
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>collect-broadcast-query</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>indirect</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>IndirectQuery</function> packet
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>collect-indirect-query</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>collect-indirect-query</emphasis>:</term>
+    <listitem>
+      <para>
+Receive <function>Willing</function> -&gt;
+<emphasis remap='I'>update-indirect-willing</emphasis>
+      </para>
+      <para>
+User-requested connect to one host -&gt;
+<emphasis remap='I'>start-connection</emphasis>
+      </para>
+      <para>
+Timeout -&gt; <emphasis remap='I'>indirect</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>update-indirect-willing</emphasis>:</term>
+    <listitem>
+      <para>
+Add new host to the host list presented to the user
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>collect-indirect-query</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term><emphasis remap='I'>start-connection</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>Request</function> packet
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>await-request-response</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>await-request-response</emphasis>:</term>
+    <listitem>
+      <para>
+Receive <function>Accept</function> -&gt;
+<emphasis remap='I'>manage</emphasis>
+      </para>
+      <para>
+Receive <function>Decline</function> -&gt;
+<emphasis remap='I'>stop-connection</emphasis>
+      </para>
+      <para>
+Timeout -&gt; <emphasis remap='I'>start-connection</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>manage</emphasis>:</term>
+    <listitem>
+      <para>
+Save Session ID
+      </para>
+      <para>
+Send <function>Manage</function> packet with Session ID
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>await-manage-response</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>await-manage-response</emphasis>:</term>
+    <listitem>
+      <para>
+Receive <function>XOpenDisplay :</function> -&gt;
+<emphasis remap='I'>run-session</emphasis>
+      </para>
+      <para>
+Receive <function>Refuse</function> with matching Session ID
+-&gt; <emphasis remap='I'>start-connection</emphasis>
+      </para>
+      <para>
+Receive <function>Failed</function> with matching Session ID
+-&gt; <emphasis remap='I'>stop-connection</emphasis>
+      </para>
+      <para>
+Timeout -&gt; <emphasis remap='I'>manage</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>stop-connection</emphasis>:</term>
+    <listitem>
+      <para>
+Display cause of termination to user
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>start</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>run-session</emphasis>:</term>
+    <listitem>
+      <para>
+Decide to send <function>KeepAlive</function> packet -&gt;
+<emphasis remap='I'>keep-alive</emphasis>
+      </para>
+      <para>
+wait close of first display connection
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>reset-display</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>keep-alive</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>KeepAlive</function> packet with current Session ID
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>await-alive</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>await-alive</emphasis>:</term>
+    <listitem>
+      <para>
+Receive <function>Alive</function> with matching Session ID -&gt;
+<emphasis remap='I'>run-session</emphasis>
+      </para>
+      <para>
+Receive <function>Alive</function> with nonmatching Session ID
+or FALSE Session Running -&gt; <emphasis remap='I'>reset-display</emphasis>
+      </para>
+      <para>
+Final timeout without receiving <function>Alive</function>
+packet -&gt; <emphasis remap='I'>reset-display</emphasis>
+      </para>
+      <para>
+Timeout -&gt; <emphasis remap='I'>keep-alive</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>reset-display</emphasis>:</term>
+    <listitem>
+      <para>
+(if possible) -&gt; close all display connections associated with this session
+      </para>
+      <para>
+Last session -&gt; close all display connections
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>start</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+
+<para>
+Manager:
+</para>
+
+<variablelist>
+  <varlistentry>
+    <term><emphasis remap='I'>idle</emphasis>:</term>
+    <listitem>
+      <para>
+Receive <function>Query</function> -&gt;
+<emphasis remap='I'>query-respond</emphasis>
+      </para>
+      <para>
+Receive
+<function>BroadcastQuery</function>
+-&gt; <emphasis remap='I'>broadcast-respond</emphasis>
+      </para>
+      <para>
+Receive
+<function>IndirectQuery</function>
+-&gt; <emphasis remap='I'>indirect-respond</emphasis>
+      </para>
+      <para>
+Receive
+<function>ForwardQuery</function>
+-&gt; <emphasis remap='I'>forward-respond</emphasis>
+Receive
+      </para>
+      <para>
+<function>Request</function>
+-&gt; <emphasis remap='I'>request-respond</emphasis>
+      </para>
+      <para>
+Receive
+<function>Manage</function>
+-&gt; <emphasis remap='I'>manage</emphasis>
+      </para>
+      <para>
+An active session terminates
+-&gt; <emphasis remap='I'>finish-session</emphasis>
+      </para>
+      <para>
+Receive <function>KeepAlive</function>
+-&gt; <emphasis remap='I'>send-alive</emphasis>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>query-respond</emphasis>:</term>
+    <listitem>
+      <para>
+If willing to manage -&gt; <emphasis remap='I'>send-willing</emphasis>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>send-unwilling</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>broadcast-respond</emphasis>:</term>
+    <listitem>
+      <para>
+If willing to manage -&gt; <emphasis remap='I'>send-willing</emphasis>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>indirect-respond</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>ForwardQuery</function>
+packets to all managers on redirect list
+      </para>
+      <para>
+If willing to manage -&gt; <emphasis remap='I'>send-willing</emphasis>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>forward-respond</emphasis>:</term>
+    <listitem>
+      <para>
+Decode destination address, if willing to manage -&gt;
+<emphasis remap='I'>send-willing</emphasis>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>send-willing</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>Willing</function> packet
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>send-unwilling</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>Unwilling</function> packet
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>request-respond</emphasis>:</term>
+    <listitem>
+      <para>
+If manager is willing to allow a session on display
+-&gt; <emphasis remap='I'>accept-session</emphasis>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>decline-session</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>accept-session</emphasis>:</term>
+    <listitem>
+      <para>
+Generate Session ID and save Session ID, display address, and
+display number somewhere
+      </para>
+      <para>
+Send <function>Accept</function> packet
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>decline-session</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>Decline</function> packet
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>manage</emphasis>:</term>
+    <listitem>
+      <para>
+If Session ID matches saved Session ID -&gt;
+<emphasis remap='I'>run-session</emphasis>
+      </para>
+      <para>
+If Session ID matches Session ID of session in process of
+starting up, or currently active session -&gt;
+<emphasis remap='I'>idle</emphasis>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>refuse</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>refuse</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>Refuse</function> packet
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>run-session</emphasis>:</term>
+    <listitem>
+      <para>
+Terminate any session in progress
+      </para>
+      <para>
+<olink targetdoc='libX11' targetptr='XOpenDisplay'><function>XOpenDisplay</function></olink>
+      </para>
+      <para>
+Open display succeeds -&gt;
+<emphasis remap='I'>start-session</emphasis>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>failed</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>failed</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>Failed</function> packet
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>start-session</emphasis>:</term>
+    <listitem>
+      <para>
+Start a new session
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>finish-session</emphasis>:</term>
+    <listitem>
+      <para>
+<function>XCloseDisplay</function>
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><emphasis remap='I'>send-alive</emphasis>:</term>
+    <listitem>
+      <para>
+Send <function>Alive</function> packet containing current status
+      </para>
+      <para>
+-&gt; <emphasis remap='I'>idle</emphasis>
+      </para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+</chapter>
+
+<chapter id="Protocol_Encoding">
+<title>Protocol Encoding</title>
+<para>
+When XDMCP is implemented on top of the Internet User Datagram Protocol (UDP),
+port number 177 is to be used. When using UDP over IPv4, Broadcast Query
+packets are sent via UDP broadcast.  When using UDP over IPv6, Broadcast Query
+packets are sent via multicast, either to an address in the IANA registered
+XDMCP multicast address range of
+FF0<emphasis remap='I'>X</emphasis>:0:0:0:0:0:0:12B
+(where the <emphasis remap='I'>X</emphasis> is replaced by a valid scope id)
+or to a locally assigned
+multicast address. The version number in all packets will be 1.
+Packet opcodes are 16-bit integers.
+</para>
+
+<informaltable frame="topbot">
+  <tgroup cols='2' align='left' colsep='0' rowsep='0'>
+  <colspec colname='c1' colwidth="1.0*"/>
+  <colspec colname='c2' colwidth="3.0*"/>
+  <thead>
+    <row rowsep='1'>
+      <entry>Packet Name</entry>
+      <entry>Encoding</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>BroadcastQuery</entry>
+      <entry>1</entry>
+    </row>
+    <row>
+      <entry>Query</entry>
+      <entry>2</entry>
+    </row>
+    <row>
+      <entry>IndirectQuery</entry>
+      <entry>3</entry>
+    </row>
+    <row>
+      <entry>ForwardQuery</entry>
+      <entry>4</entry>
+    </row>
+    <row>
+      <entry>Willing</entry>
+      <entry>5</entry>
+    </row>
+    <row>
+      <entry>Unwilling</entry>
+      <entry>6</entry>
+    </row>
+    <row>
+      <entry>Request</entry>
+      <entry>7</entry>
+    </row>
+    <row>
+      <entry>Accept</entry>
+      <entry>8</entry>
+    </row>
+    <row>
+      <entry>Decline</entry>
+      <entry>9</entry>
+    </row>
+    <row>
+      <entry>Manage</entry>
+      <entry>10</entry>
+    </row>
+    <row>
+      <entry>Refuse</entry>
+      <entry>11</entry>
+    </row>
+    <row>
+      <entry>Failed</entry>
+      <entry>12</entry>
+    </row>
+    <row>
+      <entry>KeepAlive</entry>
+      <entry>13
+<footnote><para>
+A previous version of this document incorrectly reversed the opcodes of
+<emphasis role="bold">Alive</emphasis> and
+<emphasis role="bold">KeepAlive</emphasis>.
+</para></footnote>
+      </entry>
+    </row>
+    <row>
+      <entry>Alive</entry>
+      <entry>14
+<footnote><para>
+A previous version of this document incorrectly reversed the opcodes of
+<emphasis role="bold">Alive</emphasis> and
+<emphasis role="bold">KeepAlive</emphasis>.
+</para></footnote>
+      </entry>
+    </row>
+  </tbody>
+  </tgroup>
+</informaltable>
+
+<para>
+Per packet information follows:
+</para>
+
+<para>
+<function>Query</function>,
+<function>BroadcastQuery</function>,
+<function>IndirectQuery</function>
+</para>
+
+<literallayout class="monospaced">
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Query, BroadcastQuery or IndirectQuery)
+     2     CARD16     length
+     1     CARD8      number of Authentication Names sent (m)
+     2     CARD16     length of first Authentication Name (m<emphasis role="subscript">1</emphasis>)
+     m<emphasis role="subscript">1</emphasis>   CARD8     first Authentication Name
+     ...          Other Authentication Names
+</literallayout>
+
+<para>
+Note that these three packets are identical except for the opcode field.
+</para>
+
+<literallayout class="monospaced">
+<function>ForwardQuery</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always ForwardQuery)
+     2     CARD16     length
+     2     CARD16     length of Client Address (m)
+     m     CARD8     Client Address
+     2     CARD16     length of Client Port (n)
+     n     CARD8     Client Port
+     1     CARD8     number of Authentication Names sent (o)
+     2     CARD16     length of first Authentication Name (o<emphasis role="subscript">1</emphasis>)
+     o<emphasis role="subscript">1</emphasis>     CARD8     first Authentication Name
+     ...          Other Authentication Names
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Willing</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Willing)
+     2     CARD16     length (6 + m + n + o)
+     2     CARD16     Length of Authentication Name (m)
+     m     CARD8      Authentication Name
+     2     CARD16     Hostname length (n)
+     n     CARD8      Hostname
+     2     CARD16     Status length (o)
+     o     CARD8      Status
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Unwilling</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Unwilling)
+     2     CARD16     length (4 + m + n)
+     2     CARD16     Hostname length (m)
+     m     CARD8      Hostname
+     2     CARD16     Status length (n)
+     n     CARD8      Status
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Request</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Request)
+     2     CARD16     length
+     2     CARD16     Display Number
+     1     CARD8      Count of Connection Types (m)
+     2xm   CARD16     Connection Types
+     1     CARD8      Count of Connection Addresses (n)
+     2     CARD16     Length of first Connection Address (n<emphasis role="subscript">1</emphasis>)
+     n<emphasis role="subscript">1</emphasis>     CARD8      First Connection Address
+     ...              Other connection addresses
+     2     CARD16     Length of Authentication Name (o)
+     o     CARD8      Authentication Name
+     2     CARD16     Length of Authentication Data (p)
+     p     CARD8      Authentication Data
+     1     CARD8      Count of Authorization Names (q)
+     2     CARD16     Length of first Authorization Name (q<emphasis role="subscript">1</emphasis>)
+     q<emphasis role="subscript">1</emphasis>     CARD8      First Authorization Name
+     ...              Other authorization names
+     2     CARD16     Length of Manufacturer Display ID (r)
+     r     CARD8      Manufacturer Display ID
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Accept</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Accept)
+     2     CARD16     length (12 + n + m + o + p)
+     4     CARD32     Session ID
+     2     CARD16     Length of Authentication Name (n)
+     n     CARD8      Authentication Name
+     2     CARD16     Length of Authentication Data (m)
+     m     CARD8      Authentication Data
+     2     CARD16     Length of Authorization Name (o)
+     o     CARD8      Authorization Name
+     2     CARD16     Length of Authorization Data (p)
+     p     CARD8      Authorization Data
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Decline</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Decline)
+     2     CARD16     length (6 + m + n + o)
+     2     CARD16     Length of Status (m)
+     m     CARD8      Status
+     2     CARD16     Length of Authentication Name (n)
+     n     CARD8      Authentication Name
+     2     CARD16     Length of Authentication Data (o)
+     o     CARD8      Authentication Data
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Manage</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Manage)
+     2     CARD16     length (8 + m)
+     4     CARD32     Session ID
+     2     CARD16     Display Number
+     2     CARD16     Length of Display Class (m)
+     m     CARD8      Display Class
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Refuse</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Refuse)
+     2     CARD16     length (4)
+     4     CARD32     Session ID
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Failed</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Failed)
+     2     CARD16     length (6 + m)
+     4     CARD32     Session ID
+     2     CARD16     Length of Status (m)
+     m     CARD8      Status
+</literallayout>
+
+<literallayout class="monospaced">
+<function>KeepAlive</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always KeepAlive)
+     2     CARD16     length (6)
+     2     CARD16     Display Number
+     4     CARD32     Session ID
+</literallayout>
+
+<literallayout class="monospaced">
+<function>Alive</function>
+     2     CARD16     version number (always 1)
+     2     CARD16     opcode (always Alive)
+     2     CARD16     length (5)
+     1     CARD8      Session Running (0: not running 1: running)
+     4     CARD32     Session ID (0: not running)
+</literallayout>
+</chapter>
+
+<chapter id="Display_Class_Format">
+<title>Display Class Format</title>
+<!-- .XS -->
+<!-- (SN Display Class Format -->
+<!-- .XE -->
+<para>
+The Display Class field of the
+<function>Manage</function>
+packet is used by the display manager to collect common sorts of
+displays into manageable groups.  This field is a string encoded of
+ISO-LATIN-1 characters in the following format:
+</para>
+
+<literallayout class="monospaced">
+<emphasis remap='I'>ManufacturerID</emphasis>-<emphasis remap='I'>ModelNumber</emphasis>
+</literallayout>
+
+<para>
+Both elements of this string must exclude characters of the set
+{ <function>-</function>,
+<function>.</function>,
+<function>:</function>,
+<function>*</function>,
+<function>?</function>,
+<emphasis remap='I'>&lt;space&gt;</emphasis> }.
+The ManufacturerID is a string that should be registered
+with the X Consortium.
+The ModelNumber is designed to identify characteristics of the display
+within the manufacturer's product line.
+This string should be documented in the users manual for the
+particular device and  should probably not be specifiable by the
+display user to avoid unexpected configuration errors.
+</para>
+</chapter>
+
+<chapter id="Manufacturer_Display_ID_Format">
+<title>Manufacturer Display ID Format</title>
+<!-- .XS -->
+<!-- (SN Manufacturer Display ID Format -->
+<!-- .XE -->
+<para>
+To authenticate the manager, the display and manager will share a private
+key.
+The manager, then, must be able to discover which key to use for a
+particular device.
+The Manufacturer Display ID field of the
+<function>Request</function>
+packet is intended for this purpose.  Typically, the manager host will
+contain a map between this number and the key.  This field is intended to be
+unique per display, possibly the ethernet address of the display in the form:
+</para>
+
+<literallayout class="monospaced">
+-Ethernet-8:0:2b:a:f:d2
+</literallayout>
+
+<para>
+It can also be a string of the form:
+</para>
+
+<literallayout class="monospaced">
+<emphasis remap='I'>ManufacturerID</emphasis>-<emphasis remap='I'>ModelNumber</emphasis>-<emphasis remap='I'>SerialNumber</emphasis>
+</literallayout>
+
+<para>
+The ManufacturerID, ModelNumber and SerialNumber are encoded using
+ISO-LATIN-1 characters, excluding {
+<function>-</function>,
+<function>.</function>,
+<function>*</function>,
+<function>?</function>,
+<emphasis remap='I'>&lt;space&gt;</emphasis> }
+</para>
+
+<para>
+When the display is shipped to a customer, it should include both the
+Manufacturer Display ID and the private key in the documentation set.
+This information should not be modifiable by the display user.
+</para>
+
+</chapter>
+
+<chapter id="Authentication">
+<title>Authentication</title>
+<!-- .XS -->
+<!-- (SN Authentication -->
+<!-- .XE -->
+<para>
+In an environment where authentication is not needed, XDMCP can disable
+authentication by having the display send empty Authentication Name
+and Authentication Data fields in the
+<function>Request</function>
+packet.
+In this case, the manager will not attempt to authenticate itself.
+Other authentication protocols may be developed, depending on local needs.
+</para>
+
+<para>
+In an unsecure environment, the display must be able to verify that the
+source of the various packets is a trusted manager.  These packets will
+contain authentication information.  As an example of such a system, the
+following discussion describes the "XDM-AUTHENTICATION-1" authentication
+system.  This system uses a 56-bit shared private key, and 64 bits of
+authentication data.  An associated example X authorization protocol
+"XDM-AUTHORIZATION-1" will also be discussed.  The 56-bit key is represented
+as a 64-bit number in network order (big endian).  This means that the first
+octet in the representation will be zero.  When incrementing a 64-bit value,
+the 8 octets of data will be interpreted in network order (big endian).
+That is, the last octet will be incremented, subsequent carries propagate
+towards the first octet.
+</para>
+
+<para>
+Assumptions:
+</para>
+
+<orderedlist>
+  <listitem>
+    <para>
+The display and manager share a private key.  This key could be programmed
+into the display by the manufacturer and shipped with the unit.  It must not
+be available from the display itself, but should allow the value to be
+modified in some way.  The system administrator would be responsible for
+managing a database of terminal keys.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+The display can generate random authentication numbers.
+    </para>
+  </listitem>
+</orderedlist>
+
+<para>
+Some definitions first:
+</para>
+
+<!-- FIXME: -->
+<!-- double chk math symbols, use mathml to display them? -->
+<itemizedlist>
+  <listitem>
+    <para>
+{&variable.D;}<superscript>&variable.kappa;</superscript> = encryption of plain text D by key &variable.kappa;
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+{&variable.Delta;}*<superscript>&variable.kappa;</superscript> = decryption of crypto text &variable.Delta; with key &variable.kappa;
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+&variable.tau; = private key shared by display and manager
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+&variable.rho; = 64 bit random number generated by display
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+&variable.alpha; = authentication data in XDMCP packets
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+&variable.sigma; = per-session private key, generated by manager
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+&variable.beta; = authorization data
+    </para>
+  </listitem>
+</itemizedlist>
+
+<para>
+Encryption will use the Data Encryption Standard (DES, FIPS 46-3); blocks
+shorter than 64 bits will be zero-filled
+on the right to 64 bits.  Blocks longer than 64 bits will use block chaining:
+</para>
+<para>
+{&variable.D;}<superscript>&variable.kappa;</superscript> = {&variable.D;<subscript>1</subscript>}<superscript>&variable.kappa;</superscript> {&variable.D;<subscript>2</subscript> xor {&variable.D;<subscript>1</subscript>}<superscript>&variable.kappa;</superscript>}<superscript>&variable.kappa;</superscript>
+</para>
+
+<para>
+The display generates the first authentication data in the
+<function>Request</function>
+packet:
+</para>
+
+<para>
+&variable.alpha;<subscript>Request</subscript> = {&variable.rho;}<superscript>&variable.tau;</superscript>
+</para>
+
+<para>
+For the <function>Accept</function>
+packet, the manager decrypts the initial message and returns
+&variable.alpha;<subscript>Accept</subscript>:
+
+</para>
+
+<para>
+&variable.rho; = {&variable.alpha;<subscript>Request</subscript>}*<superscript>&variable.tau;</superscript>
+</para>
+
+<para>
+&variable.alpha;<subscript>Accept</subscript> = { &variable.rho; + 1}<superscript>&variable.tau;</superscript>
+</para>
+
+<para>
+The <function>Accept</function>
+packet also contains the authorization intended for use by
+the X server.  A description of authorization type "XDM-AUTHORIZATION-1"
+follows.
+</para>
+
+<para>
+The <function>Accept</function>
+packet contains the authorization name
+"XDM-AUTHORIZATION-1".  The authorization data is the string:
+</para>
+<para>
+&variable.beta;<subscript>Accept</subscript> = {&variable.sigma;}<superscript>&variable.tau;</superscript>
+</para>
+
+<para>
+To create authorization information for connection setup with the X server
+using the XDM-AUTHORIZATION-1 authorization protocol, the client computes the
+following:
+</para>
+<para>
+&variable.N; = X client identifier
+</para>
+<para>
+&variable.T; = Current time in seconds on client host (32 bits)
+</para>
+<para>
+&variable.beta; = {&variable.rho;&variable.N;&variable.T;}<superscript>&variable.sigma;</superscript>
+</para>
+
+<para>
+For TCP connections &variable.N; is 48 bits long and contains the 32-bit IPv4 address of
+the client host followed by the 16-bit port number of the client socket.
+Formats for other connections must be registered.
+The resulting value, &variable.beta;, is 192 bits of authorization data that is sent
+in the connection setup to the server.  The server receives the packet,
+decrypts the contents.  To accept the connection, the following must hold:
+</para>
+
+<itemizedlist>
+  <listitem>
+    <para>
+&variable.rho; must match the value generated for the most recent XDMCP negotiation.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+&variable.T; must be within 1200 seconds of the internally stored time.  If no time
+been received before, the current time is set to &variable.T;.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+No packet containing the same pair (&variable.N;, &variable.T;) can have been received
+in the last 1200 seconds (20 minutes).
+    </para>
+  </listitem>
+</itemizedlist>
+</chapter>
+</book>

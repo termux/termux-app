@@ -1,0 +1,113 @@
+.\" Copyright (c) 1999, Oracle and/or its affiliates.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice (including the next
+.\" paragraph) shall be included in all copies or substantial portions of the
+.\" Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\" THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\" DEALINGS IN THE SOFTWARE.
+.\"
+.TH XkbSARedirectVModsMask __libmansuffix__ __xorgversion__ "XKB FUNCTIONS"
+.SH NAME
+XkbSARedirectVModsMask \- Returns the vmods_mask0 and vmods_mask1 fields of act 
+converted to an unsigned int
+.SH SYNOPSIS
+.HP
+.B unsigned int XkbSARedirectVModsMask
+.BI "(\^XkbRedirectKeyAction " "act" "\^);"
+.if n .ti +5n
+.if t .ti +.5i
+.SH ARGUMENTS
+.TP
+.I act
+action from which to extract vmods
+.SH DESCRIPTION
+.LP
+Actions associated with the XkbRedirectKeyAction structure generate KeyPress and 
+KeyRelease events 
+containing a keycode different from the key that was pressed or released.
+
+The 
+.I type 
+field for the XkbRedirectKeyAction structure should always be XkbSA_RedirectKey.
+Key presses cause a KeyPress event for the key specified by the 
+.I new_key 
+field instead of the actual key. The state reported in this event reports the 
+current effective 
+modifiers changed as follows: any real modifiers selected by the 
+.I mods_mask 
+field are set to corresponding values from the 
+.I mods 
+field. Any real modifiers bound to the virtual modifiers specified by the
+.I vmods_mask0 
+and 
+.I vmods_mask1 
+fields are either set or cleared, depending on the corresponding values in the
+.I vmods0 
+and 
+.I vmods1 
+fields. If the real and virtual modifier definitions specify conflicting values 
+for a single modifier, 
+the real modifier definition has priority.
+
+Key releases cause a KeyRelease event for the key specified by the 
+.I new_key 
+field instead of the actual key. The state for this event consists of the 
+effective keyboard modifiers 
+at the time of the release, changed as described previously.
+
+The XkbSA_RedirectKey action normally redirects to another key on the same 
+device as the key that 
+caused the event, unless that device does not belong to the input extension 
+KeyClass, in which case 
+this action causes an event on the core keyboard device. (The input extension 
+categorizes devices by 
+breaking them into classes. Keyboards, and other input devices with keys, are 
+classified as KeyClass 
+devices by the input extension.)
+
+The 
+.I vmods_mask0 
+and 
+.I vmods_mask1 
+fields actually represent one 
+.I vmods_mask 
+value. Xkb provides macros to convert between the two formats.
+
+.I XkbSARedirectVModsMask 
+returns the 
+.I vmods_mask0 
+and 
+.I vmods_mask1 
+fields of 
+.I act 
+converted to an unsigned int. 
+.bp
+.SH STRUCTURES
+.LP
+.nf
+
+    typedef struct_XkbRedirectKeyAction {
+        unsigned char   type;        /\&* XkbSA_RedirectKey */
+        unsigned char   new_key;     /\&* keycode to be put in event */
+        unsigned char   mods_mask;   /\&* mask of real mods to be reset */
+        unsigned char   mods;        /\&* mask of real mods to take values from */
+        unsigned char   vmods_mask0; /\&* first half of mask of virtual mods to be reset */
+        unsigned char   vmods_mask1; /\&* other half of mask of virtual mods to be reset */
+        unsigned char   vmods0;      /\&* first half of mask of virtual mods to take values from */
+        unsigned char   vmods1;      /\&* other half of mask of virtual mods to take values from */
+    } XkbRedirectKeyAction;
+    
+.fi

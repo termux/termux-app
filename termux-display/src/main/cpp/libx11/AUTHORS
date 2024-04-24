@@ -1,0 +1,29 @@
+Once upon a midnight hour, long ago, in a galaxy, far, far, away, Xlib
+was originally developed by Jim Gettys, of Digital Equipment
+Corporation (now part of HP).
+
+Warren Turkal did the autotooling in October, 2003.
+
+Josh Triplett, Jamey Sharp, and the XCB team (xcb@lists.freedesktop.org)
+maintain the XCB support.
+
+Individual developers include (in no particular order): Sebastien
+Marineau, Holger Veit, Bruno Haible, Keith Packard, Bob Scheifler,
+Takashi Fujiwara, Kazunori Nishihara, Hideki Hiura, Hiroyuki Miyamoto,
+Katsuhisi Yano, Shigeru Yamada, Stephen Gildea, Li Yuhong, Seiji Kuwari.
+
+The specifications and documentation contain extensive credits.
+Conversion of those documents from troff to DocBook/XML was performed
+by Matt Dew, with assistance in editing & formatting tool setup from
+Gaetan Nadon and Alan Coopersmith.
+
+This work was supported by many organizations (in no particular
+order), including the X Consortium, Digital Equipment Corporation,
+Tektronix, The Open Group, OMRON, Wyse Technology, Fujitsu Limited,
+Sun Microsystems, Fuji Xerox, Sony Corporation, Toshiba Corporation,
+Massachusetts Institute of Technology, Silicon Graphics, the XFree86
+Project, among others.  Patches/fixes came from all over.
+
+No doubt we've missed credits.  Please let us know who should be credited.
+
+

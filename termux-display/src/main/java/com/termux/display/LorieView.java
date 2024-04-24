@@ -3,6 +3,7 @@ package com.termux.display;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -19,16 +20,18 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.termux.display.input.InputStub;
 
+import java.nio.charset.StandardCharsets;
 import java.util.regex.PatternSyntaxException;
 
-@SuppressLint("WrongConstant")
+@Keep @SuppressLint("WrongConstant")
 @SuppressWarnings("deprecation")
 public class LorieView extends SurfaceView implements InputStub {
-    interface Callback {
+    public interface Callback {
         void changed(Surface sfc, int surfaceWidth, int surfaceHeight, int screenWidth, int screenHeight);
     }
 
@@ -36,6 +39,9 @@ public class LorieView extends SurfaceView implements InputStub {
         int BGRA_8888 = 5; // Stands for HAL_PIXEL_FORMAT_BGRA_8888
     }
 
+    private ClipboardManager clipboard;
+    private long lastClipboardTimestamp = System.currentTimeMillis();
+    private static boolean clipboardSyncEnabled = false;
     private Callback mCallback;
     private final Point p = new Point();
     private final SurfaceHolder.Callback mSurfaceCallback = new SurfaceHolder.Callback() {
@@ -69,6 +75,7 @@ public class LorieView extends SurfaceView implements InputStub {
 
     private void init() {
         getHolder().addCallback(mSurfaceCallback);
+        clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
     }
 
     public void setCallback(Callback callback) {
@@ -159,8 +166,8 @@ public class LorieView extends SurfaceView implements InputStub {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         if (preferences.getBoolean("displayStretch", false)
-              || "native".equals(preferences.getString("displayResolutionMode", "native"))
-              || "scaled".equals(preferences.getString("displayResolutionMode", "native"))) {
+            || "native".equals(preferences.getString("displayResolutionMode", "native"))
+            || "scaled".equals(preferences.getString("displayResolutionMode", "native"))) {
             getHolder().setSizeFromLayout();
             return;
         }
@@ -184,6 +191,10 @@ public class LorieView extends SurfaceView implements InputStub {
 
         getHolder().setFixedSize(p.x, p.y);
         setMeasuredDimension(width, height);
+
+        // In the case if old fixed surface size equals new fixed surface size surfaceChanged will not be called.
+        // We should force it.
+        regenerate();
     }
 
     @Override
@@ -197,16 +208,75 @@ public class LorieView extends SurfaceView implements InputStub {
         return (a instanceof MainActivity) && ((MainActivity) a).handleKey(event);
     }
 
+    ClipboardManager.OnPrimaryClipChangedListener clipboardListener = this::handleClipboardChange;
+
+    static void setClipboardSyncEnabled(boolean enabled) {
+        clipboardSyncEnabled = enabled;
+        setClipboardSyncEnabled(enabled, enabled);
+    }
+
     // It is used in native code
     void setClipboardText(String text) {
-        ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
         clipboard.setPrimaryClip(ClipData.newPlainText("X11 clipboard", text));
+
+        // Android does not send PrimaryClipChanged event to the window which posted event
+        // But in the case we are owning focus and clipboard is unchanged it will be replaced by the same value on X server side.
+        // Not cool in the case if user installed some clipboard manager, clipboard content will be doubled.
+        lastClipboardTimestamp = System.currentTimeMillis() + 150;
+    }
+
+    // It is used in native code
+    void requestClipboard() {
+        if (!clipboardSyncEnabled) {
+            sendClipboardEvent("".getBytes(StandardCharsets.UTF_8));
+            return;
+        }
+
+        CharSequence clip = clipboard.getText();
+        if (clip != null) {
+            String text = String.valueOf(clipboard.getText());
+            sendClipboardEvent(text.getBytes(StandardCharsets.UTF_8));
+            Log.d("CLIP", "sending clipboard contents: " + text);
+        }
+    }
+
+    public void handleClipboardChange() {
+        checkForClipboardChange();
+    }
+
+    public void checkForClipboardChange() {
+        ClipDescription desc = clipboard.getPrimaryClipDescription();
+        if (clipboardSyncEnabled && desc != null &&
+            lastClipboardTimestamp < desc.getTimestamp() &&
+            desc.getMimeTypeCount() == 1 &&
+            desc.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+            lastClipboardTimestamp = desc.getTimestamp();
+            sendClipboardAnnounce();
+            Log.d("CLIP", "sending clipboard announce");
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus)
+            regenerate();
+
+        requestFocus();
+
+        if (clipboardSyncEnabled && hasFocus) {
+            clipboard.addPrimaryClipChangedListener(clipboardListener);
+            checkForClipboardChange();
+        } else
+            clipboard.removePrimaryClipChangedListener(clipboardListener);
     }
 
     static native void connect(int fd);
     native void handleXEvents();
     static native void startLogcat(int fd);
-    static native void setClipboardSyncEnabled(boolean enabled);
+    static native void setClipboardSyncEnabled(boolean enabled, boolean ignored);
+    public native void sendClipboardAnnounce();
+    public native void sendClipboardEvent(byte[] text);
     static native void sendWindowChange(int width, int height, int framerate);
     public native void sendMouseEvent(float x, float y, int whichButton, boolean buttonDown, boolean relative);
     public native void sendTouchEvent(int action, int id, int x, int y);

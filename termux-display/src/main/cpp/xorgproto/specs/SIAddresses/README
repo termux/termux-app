@@ -1,0 +1,4 @@
+This directory contains the specifications of address types for the
+ServerInterpreted address family used in the ChangeHost and ListHosts
+requests in the X11 Protocol.  See Chapter 9 of the X11 Protocol spec
+for more information.

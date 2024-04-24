@@ -1,0 +1,77 @@
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc
+.\"
+.\" Rewritten for X.org by Chris Lee <clee@freedesktop.org>
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this documentation
+.\" for any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\" Chris Lee makes no representations about the suitability for any purpose
+.\" of the information in this document.  It is provided \`\`as-is\*(rq without
+.\" express or implied warranty.
+.\"
+.ds xL Programming with Xlib
+.TH XQueryExtension __libmansuffix__ __xorgversion__ "X FUNCTIONS"
+.SH NAME
+XQueryExtension, XListExtensions, XFreeExtensionList \- list available extensions
+.SH SYNTAX
+.HP
+Bool XQueryExtension(\^\fIdisplay, \fIname\fP, \fImajor_opcode_return\fP, \fIfirst_event_return\fP, \fIfirst_error_return\fP\^)
+.HP
+char **XListExtensions(\^\fIdisplay\fP, \fInextensions_return\fP\^)
+.HP
+XFreeExtensionList(\^\fIlist\fP\^)
+.SH ARGUMENTS
+.IP \fIdisplay\fP 1i
+Specifies the connection to the X server.
+.IP \fIname\fP 1i
+Specifies the extension name.
+.IP \fImajor_opcode_return\fP 1i
+Returns the major opcode.
+.IP \fIfirst_event_return\fP 1i
+Returns the first event code, if any.
+.IP \fIfirst_error_return\fP 1i
+Returns the first error code, if any.
+.IP \fInextensions_return\fP 1i
+Returns the number of extensions listed.
+.IP \fIlist\fP 1i
+Specifies the list of extension names.
+.SH DESCRIPTION
+.LP
+The \fIXQueryExtension\fP function determines if the named extension is
+present.
+If the extension is not present, \fIXQueryExtension\fP returns
+\fIFalse\fP; otherwise, it returns \fITrue\fP.  If the extension is present,
+\fIXQueryExtension\fP returns the major opcode for the extension to
+major_opcode_return; otherwise, it returns zero.
+Any minor opcode and the
+request formats are specific to the extension.
+If the extension involves
+additional event types, \fIXQueryExtension\fP returns the base event type code
+to first_event_return; otherwise, it returns zero.
+The format of the events is
+specific to the extension.
+If the extension involves additional error codes,
+\fIXQueryExtension\fP returns the base error code to first_error_return;
+otherwise, it returns zero.
+The format of additional data in the errors is
+specific to the extension.
+If the extension name is not in the Host Portable
+Character Encoding the result is implementation-dependent.
+Uppercase and
+lowercase matter; the strings \*(lqthing\*(rq, \*(lqThing\*(rq, and \*(lqthinG\*(rq are all
+considered different names.
+.LP
+The \fIXListExtensions\fP function returns a list of all extensions supported
+by the server.
+If the data returned by the server is in the Latin Portable
+Character Encoding, then the returned strings are in the Host Portable
+Character Encoding.
+Otherwise, the result is implementation-dependent.
+.LP
+The \fIXFreeExtensionList\fP function frees the memory allocated by
+\fIXListExtensions\fP.

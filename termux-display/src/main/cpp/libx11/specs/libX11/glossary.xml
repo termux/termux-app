@@ -1,0 +1,1754 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE glossary PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<glossary id='glossary'>
+<title>Glossary</title>
+<glossentry id="glossary:Access_control_list">
+  <glossterm>Access control list</glossterm>
+<indexterm significance="preferred"><primary>Access control list</primary></indexterm>
+  <glossdef>
+    <para>
+X maintains a list of hosts from which client programs can be run.  
+By default, 
+only programs on the local host and hosts specified in an initial list read
+by the server can use the display.
+This access control list can be changed by clients on the local host.  
+Some server implementations can also implement other authorization mechanisms
+in addition to or in place of this mechanism.
+The action of this mechanism can be conditional based on the authorization 
+protocol name and data received by the server at connection setup. 
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Active_grab">
+  <glossterm>Active grab</glossterm>
+<indexterm significance="preferred"><primary>Active grab</primary></indexterm>
+  <glossdef>
+    <para>
+A grab is active when the pointer or keyboard is actually owned by the 
+single grabbing client.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Ancestors">
+  <glossterm>Ancestors</glossterm>
+<indexterm significance="preferred"><primary>Ancestors</primary></indexterm>
+  <glossdef>
+    <para>
+If W is an inferior of A, then A is an ancestor of W.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Atom">
+  <glossterm>Atom</glossterm>
+<indexterm significance="preferred"><primary>Atom</primary></indexterm>
+  <glossdef>
+    <para>
+An atom is a unique ID corresponding to a string name.
+Atoms are used to identify properties, types, and selections.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Background">
+  <glossterm>Background</glossterm>
+<indexterm significance="preferred"><primary>Background</primary></indexterm>
+  <glossdef>
+    <para>
+An
+<symbol>InputOutput</symbol>
+window can have a background, which is defined as a pixmap.
+When regions of the window have their contents lost 
+or invalidated,
+the server automatically tiles those regions with the background.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Backing_store">
+  <glossterm>Backing store</glossterm>
+<indexterm significance="preferred"><primary>Backing store</primary></indexterm>
+  <glossdef>
+    <para>
+When a server maintains the contents of a window, 
+the pixels saved off-screen are known as a backing store.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Base_font_name">
+  <glossterm>Base font name</glossterm>
+<indexterm significance="preferred"><primary>Base font name</primary></indexterm>
+  <glossdef>
+    <para>
+A font name used to select a family of fonts whose members may be encoded 
+in various charsets.
+The
+<structfield>CharSetRegistry</structfield>
+and 
+<structfield>CharSetEncoding</structfield>
+fields of an <acronym>XLFD</acronym> name identify the charset of the font.
+A base font name may be a full <acronym>XLFD</acronym> name, with all fourteen '-' delimiters, 
+or an abbreviated <acronym>XLFD</acronym> name containing only the first 12 fields of an <acronym>XLFD</acronym> name,
+up to but not including 
+<structfield>CharSetRegistry</structfield>,
+with or without the thirteenth '-', or a non-<acronym>XLFD</acronym> name.
+Any <acronym>XLFD</acronym> fields may contain wild cards.
+</para>
+    <para>
+When creating an 
+<type>XFontSet</type>,
+Xlib accepts from the client a list of one or more base font names 
+which select one or more font families.
+They are combined with charset names obtained from the encoding of the locale
+to load the fonts required to render text.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Bit_gravity">
+  <glossterm>Bit gravity</glossterm>
+<indexterm significance="preferred"><primary>Bit</primary><secondary>gravity</secondary></indexterm>
+  <glossdef>
+    <para>
+When a window is resized, 
+the contents of the window are not necessarily discarded.  
+It is possible to request that the server relocate the previous contents 
+to some region of the window (though no guarantees are made).
+This attraction of window contents for some location of
+a window is known as bit gravity.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Bit_plane">
+  <glossterm>Bit plane</glossterm>
+<indexterm significance="preferred"><primary>Bit</primary><secondary>plane</secondary></indexterm>
+  <glossdef>
+    <para>
+When a pixmap or window is thought of as a stack of bitmaps,
+each bitmap is called a bit plane or plane.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Bitmap">
+  <glossterm>Bitmap</glossterm>
+<indexterm significance="preferred"><primary>Bitmap</primary></indexterm>
+  <glossdef>
+    <para>
+A bitmap is a <glossterm linkend="glossary:Pixmap">pixmap</glossterm> of depth one.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Border">
+  <glossterm>Border</glossterm>
+<indexterm significance="preferred"><primary>Border</primary></indexterm>
+  <glossdef>
+    <para>
+An
+<symbol>InputOutput</symbol>
+window can have a border of equal thickness on all four sides of the window.
+The contents of the border are defined by a pixmap,
+and the server automatically maintains the contents of the border.
+Exposure events are never generated for border regions.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Button_grabbing">
+  <glossterm>Button grabbing</glossterm>
+<indexterm significance="preferred"><primary>Button</primary><secondary>grabbing</secondary></indexterm>
+  <glossdef>
+    <para>
+Buttons on the pointer can be passively grabbed by a client.
+When the button is pressed, 
+the pointer is then actively grabbed by the client.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Byte_order">
+  <glossterm>Byte order</glossterm>
+<indexterm significance="preferred"><primary>Byte</primary><secondary>order</secondary></indexterm>
+  <glossdef>
+    <para>
+For image (pixmap/bitmap) data, 
+the server defines the byte order,
+and clients with different native byte ordering must swap bytes as
+necessary.  
+For all other parts of the protocol, 
+the client defines the byte order,
+and the server swaps bytes as necessary.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Character">
+  <glossterm>Character</glossterm>
+<indexterm significance="preferred"><primary>Character</primary></indexterm>
+  <glossdef>
+    <para>
+A member of a set of elements used for the organization,
+control, or representation of text (ISO2022, as adapted by XPG3).
+Note that in ISO2022 terms, a character is not bound to a coded value 
+until it is identified as part of a coded character set.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Character_glyph">
+  <glossterm>Character glyph</glossterm>
+<indexterm significance="preferred"><primary>Character glyph</primary></indexterm>
+  <glossdef>
+    <para>
+The abstract graphical symbol for a character.
+Character glyphs may or may not map one-to-one to font glyphs,
+and may be context-dependent, varying with the adjacent characters.
+Multiple characters may map to a single character glyph.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Character_set">
+  <glossterm>Character set</glossterm>
+<indexterm significance="preferred"><primary>Character set</primary></indexterm>
+  <glossdef>
+    <para>
+A collection of characters.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Charset">
+  <glossterm>Charset</glossterm>
+<indexterm significance="preferred"><primary>Charset</primary></indexterm>
+  <glossdef>
+    <para>
+An encoding with a uniform, state-independent mapping from characters 
+to codepoints.
+A coded character set.
+</para>
+    <para>
+For display in X,
+there can be a direct mapping from a charset to one font,
+if the width of all characters in the charset is either one or two bytes.
+A text string encoded in an encoding such as Shift-JIS cannot be passed
+directly to the X server, because the text imaging requests accept only
+single-width charsets (either 8 or 16 bits).
+Charsets which meet these restrictions can serve as ``font charsets''.
+Font charsets strictly speaking map font indices to font glyphs,
+not characters to character glyphs.
+</para>
+    <para>
+Note that a single font charset is sometimes used as the encoding of a locale,
+for example, ISO8859-1.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Children">
+  <glossterm>Children</glossterm>
+<indexterm significance="preferred"><primary>Children</primary></indexterm>
+  <glossdef>
+    <para>
+The children of a window are its first-level subwindows.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Class">
+  <glossterm>Class</glossterm>
+<indexterm significance="preferred"><primary>Class</primary></indexterm>
+  <glossdef>
+    <para>
+Windows can be of different classes or types.
+See the entries for
+<glossterm linkend="glossary:InputOnly_window">InputOnly</glossterm>
+and
+<glossterm linkend="glossary:InputOutput_window">InputOutput</glossterm>
+windows for further information about valid window types.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Client">
+  <glossterm>Client</glossterm>
+<indexterm significance="preferred"><primary>Client</primary></indexterm>
+  <glossdef>
+    <para>
+An application program connects to the window system server by some
+interprocess communication (<acronym>IPC</acronym>) path, such as a <acronym>TCP</acronym> connection or a
+shared memory buffer.  
+This program is referred to as a client of the window system server.  
+More precisely, 
+the client is the <acronym>IPC</acronym> path itself. 
+A program with multiple paths open to the server is viewed as
+multiple clients by the protocol.  
+Resource lifetimes are controlled by
+connection lifetimes, not by program lifetimes.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Clipping_region">
+  <glossterm>Clipping region</glossterm>
+<indexterm significance="preferred"><primary>Clipping region</primary></indexterm>
+  <glossdef>
+    <para>
+In a graphics context, 
+a bitmap or list of rectangles can be specified
+to restrict output to a particular region of the window.  
+The image defined by the bitmap or rectangles is called a clipping region.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Coded_character">
+  <glossterm>Coded character</glossterm>
+<indexterm significance="preferred"><primary>Coded character</primary></indexterm>
+  <glossdef>
+    <para>
+A character bound to a codepoint.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Coded_character_set">
+  <glossterm>Coded character set</glossterm>
+<indexterm significance="preferred"><primary>Coded character set</primary></indexterm>
+  <glossdef>
+    <para>
+A set of unambiguous rules that establishes a character set 
+and the one-to-one relationship between each character of the set 
+and its bit representation.
+(ISO2022, as adapted by XPG3)
+A definition of a one-to-one mapping of a set of characters to a set of
+codepoints.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Codepoint">
+  <glossterm>Codepoint</glossterm>
+<indexterm significance="preferred"><primary>Codepoint</primary></indexterm>
+  <glossdef>
+    <para>
+The coded representation of a single character in a coded character set.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Colormap">
+  <glossterm>Colormap</glossterm>
+<indexterm significance="preferred"><primary>Colormap</primary></indexterm>
+  <glossdef>
+    <para>
+A colormap consists of a set of entries defining color values.
+The colormap associated with a window is used to display the contents of
+the window; each pixel value indexes the colormap to produce an <acronym>RGB</acronym> value
+that drives the guns of a monitor.
+Depending on hardware limitations, 
+one or more colormaps can be installed at one time so
+that windows associated with those maps display with true colors.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Connection">
+  <glossterm>Connection</glossterm>
+<indexterm significance="preferred"><primary>Connection</primary></indexterm>
+  <glossdef>
+    <para>
+The <acronym>IPC</acronym> path between the server and client program is known as a connection.
+A client program typically (but not necessarily) has one
+connection to the server over which requests and events are sent.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Containment">
+  <glossterm>Containment</glossterm>
+<indexterm significance="preferred"><primary>Containment</primary></indexterm>
+  <glossdef>
+    <para>
+A window contains the pointer if the window is viewable and the
+hotspot of the cursor is within a visible region of the window or a
+visible region of one of its inferiors.  
+The border of the window is included as part of the window for containment.  
+The pointer is in a window if the window contains the pointer
+but no inferior contains the pointer.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Coordinate_system">
+  <glossterm>Coordinate system</glossterm>
+<indexterm significance="preferred"><primary>Coordinate system</primary></indexterm>
+  <glossdef>
+    <para>
+The coordinate system has X horizontal and Y vertical, 
+with the origin [0, 0] at the upper left.  
+Coordinates are integral and coincide with pixel centers.
+Each window and pixmap has its own coordinate system.  
+For a window, 
+the origin is inside the border at the inside upper-left corner.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Cursor">
+  <glossterm>Cursor</glossterm>
+<indexterm significance="preferred"><primary>Cursor</primary></indexterm>
+  <glossdef>
+    <para>
+A cursor is the visible shape of the pointer on a screen.  
+It consists of a hotspot, a source bitmap, a shape bitmap, 
+and a pair of colors.  
+The cursor defined for a window controls the visible
+appearance when the pointer is in that window.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Depth">
+  <glossterm>Depth</glossterm>
+<indexterm significance="preferred"><primary>Depth</primary></indexterm>
+  <glossdef>
+    <para>
+The depth of a window or pixmap is the number of bits per pixel it has.
+The depth of a graphics context is the depth of the drawables it can be
+used in conjunction with graphics output.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Device">
+  <glossterm>Device</glossterm>
+<indexterm significance="preferred"><primary>Device</primary></indexterm>
+  <glossdef>
+    <para>
+Keyboards, mice, tablets, track-balls, button boxes, and so on are all
+collectively known as input devices.
+Pointers can have one or more buttons 
+(the most common number is three).
+The core protocol only deals with two devices: the keyboard 
+and the pointer.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:DirectColor">
+  <glossterm>DirectColor</glossterm>
+<indexterm significance="preferred"><primary>DirectColor</primary></indexterm>
+  <glossdef>
+    <para>
+<symbol>DirectColor</symbol>
+is a class of colormap in which a pixel value is decomposed into three
+separate subfields for indexing.
+The first subfield indexes an array to produce red intensity values. 
+The second subfield indexes a second array to produce blue intensity values.
+The third subfield indexes a third array to produce green intensity values.
+The <acronym>RGB</acronym> (red, green, and blue) values in the colormap entry can be 
+changed dynamically.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Display">
+  <glossterm>Display</glossterm>
+<indexterm significance="preferred"><primary>Display</primary></indexterm>
+<indexterm><primary>Display</primary><secondary>structure</secondary></indexterm>
+  <glossdef>
+    <para>
+A server, together with its screens and input devices, is called a display.
+The Xlib
+<type>Display</type>
+structure contains all information about the particular display and its screens
+as well as the state that Xlib needs to communicate with the display over a
+particular connection.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Drawable">
+  <glossterm>Drawable</glossterm>
+<indexterm significance="preferred"><primary>Drawable</primary></indexterm>
+  <glossdef>
+    <para>
+Both windows and pixmaps can be used as sources and destinations 
+in graphics operations.  
+These windows and pixmaps are collectively known as drawables.
+However, an 
+<symbol>InputOnly</symbol>
+window cannot be used as a source or destination in a
+graphics operation.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Encoding">
+  <glossterm>Encoding</glossterm>
+<indexterm significance="preferred"><primary>Encoding</primary></indexterm>
+  <glossdef>
+    <para>
+A set of unambiguous rules that establishes a character set 
+and a relationship between the characters and their representations.
+The character set does not have to be fixed to a finite pre-defined set of
+characters.
+The representations do not have to be of uniform length.
+Examples are an ISO2022 graphic set, a state-independent 
+or state-dependent combination of graphic sets, possibly including control
+sets, and the X Compound Text encoding.
+</para>
+    <para>
+In X, encodings are identified by a string
+which appears as: the
+<structfield>CharSetRegistry</structfield>
+and
+<structfield>CharSetEncoding</structfield>
+components of an <acronym>XLFD</acronym>
+name; the name of a charset of the locale for which a font could not be
+found; or an atom which identifies the encoding of a text property or
+which names an encoding for a text selection target type.
+Encoding names should be composed of characters from the X Portable 
+Character Set.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Escapement">
+  <glossterm>Escapement</glossterm>
+<indexterm significance="preferred"><primary>Escapement</primary></indexterm>
+  <glossdef>
+    <para>
+The escapement of a string is the distance in pixels in the
+primary draw direction from the drawing origin to the origin of the next
+character (that is, the one following the given string) to be drawn.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Event">
+  <glossterm>Event</glossterm>
+<indexterm significance="preferred"><primary>Event</primary></indexterm>
+  <glossdef>
+    <para>
+Clients are informed of information asynchronously by means of events.
+These events can be either asynchronously generated from devices or
+generated as side effects of client requests.  
+Events are grouped into types. 
+The server never sends an event to a client unless the
+client has specifically asked to be informed of that type of event.
+However, clients can force events to be sent to other clients.  
+Events are typically reported relative to a window.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Event_mask">
+  <glossterm>Event mask</glossterm>
+<indexterm significance="preferred"><primary>Event</primary><secondary>mask</secondary></indexterm>
+  <glossdef>
+    <para>
+Events are requested relative to a window.  
+The set of event types a client requests relative to a window is described 
+by using an event mask.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Event_propagation">
+  <glossterm>Event propagation</glossterm>
+<indexterm significance="preferred"><primary>Event</primary><secondary>propagation</secondary></indexterm>
+  <glossdef>
+    <para>
+Device-related events propagate from the source window to ancestor
+windows until some client has expressed interest in handling that type
+of event or until the event is discarded explicitly.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Event_source">
+  <glossterm>Event source</glossterm>
+<indexterm significance="preferred"><primary>Event</primary><secondary>source</secondary></indexterm>
+  <glossdef>
+    <para>
+The deepest viewable window that the pointer is in is called
+the source of a device-related event.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Event_synchronization">
+  <glossterm>Event synchronization</glossterm>
+<indexterm significance="preferred"><primary>Event</primary><secondary>synchronization</secondary></indexterm>
+  <glossdef>
+    <para>
+There are certain race conditions possible when demultiplexing device
+events to clients (in particular, deciding where pointer and keyboard
+events should be sent when in the middle of window management
+operations).  
+The event synchronization mechanism allows synchronous processing of 
+device events.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Exposure_event">
+  <glossterm>Exposure event</glossterm>
+<indexterm significance="preferred"><primary>Event</primary><secondary>Exposure</secondary></indexterm>
+  <glossdef>
+    <para>
+Servers do not guarantee to preserve the contents of windows when
+windows are obscured or reconfigured.  
+Exposure events are sent to clients to inform them when contents of regions
+of windows have been lost.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Extension">
+  <glossterm>Extension</glossterm>
+<indexterm significance="preferred"><primary>Extension</primary></indexterm>
+  <glossdef>
+    <para>
+Named extensions to the core protocol can be defined to extend the system.  
+Extensions to output requests, resources, and event types are all possible
+and expected.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Font">
+  <glossterm>Font</glossterm>
+<indexterm significance="preferred"><primary>Font</primary></indexterm>
+  <glossdef>
+    <para>
+A font is an array of glyphs (typically characters).  
+The protocol does no translation or interpretation of character sets.  
+The client simply indicates values used to index the glyph array.  
+A font contains additional metric information to determine interglyph 
+and interline spacing.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Font_glyph">
+  <glossterm>Font glyph</glossterm>
+<indexterm significance="preferred"><primary>Font glyph</primary></indexterm>
+  <glossdef>
+    <para>
+The abstract graphical symbol for an index into a font.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Frozen_events">
+  <glossterm>Frozen events</glossterm>
+<indexterm significance="preferred"><primary>Frozen events</primary></indexterm>
+  <glossdef>
+    <para>
+Clients can freeze event processing during keyboard and pointer grabs.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:GC">
+  <glossterm>GC</glossterm>
+<indexterm significance="preferred"><primary>GC</primary></indexterm>
+  <glossdef>
+    <para>
+GC is an abbreviation for graphics context.
+See <glossterm linkend="glossary:Graphics_context">Graphics context</glossterm>.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Glyph">
+  <glossterm>Glyph</glossterm>
+<indexterm significance="preferred"><primary>Glyph</primary></indexterm>
+  <glossdef>
+    <para>
+An identified abstract graphical symbol independent of any actual image.
+(ISO/IEC/DIS 9541-1)
+An abstract visual representation of a graphic character,
+not bound to a codepoint.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Glyph_image">
+  <glossterm>Glyph image</glossterm>
+<indexterm significance="preferred"><primary>Glyph image</primary></indexterm>
+  <glossdef>
+    <para>
+An image of a glyph, as obtained from a glyph representation displayed 
+on a presentation surface.
+(ISO/IEC/DIS 9541-1)
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Grab">
+  <glossterm>Grab</glossterm>
+<indexterm significance="preferred"><primary>Grab</primary></indexterm>
+  <glossdef>
+    <para>
+Keyboard keys, the keyboard, pointer buttons, the pointer, 
+and the server can be grabbed for exclusive use by a client.  
+In general, 
+these facilities are not intended to be used by normal applications
+but are intended for various input and window managers to implement various
+styles of user interfaces.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Graphics_context">
+  <glossterm>Graphics context</glossterm>
+<indexterm significance="preferred"><primary>Graphics context</primary></indexterm>
+  <glossdef>
+    <para>
+Various information for graphics output is stored in a graphics
+context (<acronym>GC</acronym>), such as foreground pixel, background
+pixel, line width, clipping region, and so on.
+A graphics context can only
+be used with drawables that have the same root and the same depth as
+the graphics context. 
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Gravity">
+  <glossterm>Gravity</glossterm>
+<indexterm significance="preferred"><primary>Gravity</primary></indexterm>
+  <glossdef>
+    <para>
+The contents of windows and windows themselves have a gravity,
+which determines how the contents move when a window is resized.
+See <glossterm linkend="glossary:Bit_gravity">Bit gravity</glossterm> and
+<glossterm linkend="glossary:Window_gravity">Window gravity</glossterm>.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:GrayScale">
+  <glossterm>GrayScale</glossterm>
+<indexterm significance="preferred"><primary>GrayScale</primary></indexterm>
+  <glossdef>
+    <para>
+<symbol>GrayScale</symbol>
+can be viewed as a degenerate case of 
+<glossterm linkend="glossary:PseudoColor"><symbol>PseudoColor</symbol></glossterm>,
+in which the red, green, and blue values in any given colormap entry 
+are equal and thus, produce shades of gray.
+The gray values can be changed dynamically.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Host_Portable_Character_Encoding">
+  <glossterm>Host Portable Character Encoding</glossterm>
+<indexterm significance="preferred"><primary>Host Portable Character Encoding</primary></indexterm>
+  <glossdef>
+    <para>
+The encoding of the <glossterm linkend="glossary:X_Portable_Character_Set">X Portable Character Set</glossterm> on the host.
+The encoding itself is not defined by this standard,
+but the encoding must be the same in all locales supported by Xlib on the host.
+If a string is said to be in the Host Portable Character Encoding,
+then it only contains characters from the X Portable Character Set,
+in the host encoding.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Hotspot">
+  <glossterm>Hotspot</glossterm>
+<indexterm significance="preferred"><primary>Hotspot</primary></indexterm>
+  <glossdef>
+    <para>
+A cursor has an associated hotspot, which defines the point in the
+cursor corresponding to the coordinates reported for the pointer.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Identifier">
+  <glossterm>Identifier</glossterm>
+<indexterm significance="preferred"><primary>Identifier</primary></indexterm>
+  <glossdef>
+    <para>
+An identifier is a unique value associated with a resource
+that clients use to name that resource.  
+The identifier can be used over any connection to name the resource.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Inferiors">
+  <glossterm>Inferiors</glossterm>
+<indexterm significance="preferred"><primary>Inferiors</primary></indexterm>
+  <glossdef>
+    <para>
+The inferiors of a window are all of the subwindows nested below it:
+the children, the children's children, and so on.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Input_focus">
+  <glossterm>Input focus</glossterm>
+<indexterm significance="preferred"><primary>Input</primary><secondary>focus</secondary></indexterm>
+  <glossdef>
+    <para>
+The input focus is usually a window defining the scope for processing
+of keyboard input.
+If a generated keyboard event usually would be reported to this window 
+or one of its inferiors,
+the event is reported as usual.
+Otherwise, the event is reported with respect to the focus window.
+The input focus also can be set such that all keyboard events are discarded
+and such that the focus window is dynamically taken to be the root window
+of whatever screen the pointer is on at each keyboard event.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Input_manager">
+  <glossterm>Input manager</glossterm>
+<indexterm significance="preferred"><primary>Input</primary><secondary>manager</secondary></indexterm>
+  <glossdef>
+    <para>
+Control over keyboard input is typically provided by an input manager 
+client, which usually is part of a window manager.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:InputOnly_window">
+  <glossterm>InputOnly window</glossterm>
+<indexterm significance="preferred"><primary>Window</primary><secondary>InputOnly</secondary></indexterm>
+  <glossdef>
+    <para>
+An
+<symbol>InputOnly</symbol>
+window is a window that cannot be used for graphics requests.  
+<symbol>InputOnly</symbol>
+windows are invisible and are used to control such things as cursors,
+input event generation, and grabbing.
+<symbol>InputOnly</symbol>
+windows cannot have 
+<symbol>InputOutput</symbol>
+windows as inferiors.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:InputOutput_window">
+  <glossterm>InputOutput window</glossterm>
+<indexterm significance="preferred"><primary>Window</primary><secondary>InputOutput</secondary></indexterm>
+  <glossdef>
+    <para>
+An
+<symbol>InputOutput</symbol>
+window is the normal kind of window that is used for both input and output.
+<symbol>InputOutput</symbol>
+windows can have both 
+<symbol>InputOutput</symbol>
+and 
+<symbol>InputOnly</symbol>
+windows as inferiors.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Internationalization">
+  <glossterm>Internationalization</glossterm>
+<indexterm significance="preferred"><primary>Internationalization</primary></indexterm>
+  <glossdef>
+    <para>
+The process of making software adaptable to the requirements
+of different native languages, local customs, and character string encodings.
+Making a computer program adaptable to different locales 
+without program source modifications or recompilation.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:ISO2022">
+  <glossterm>ISO2022</glossterm>
+<indexterm significance="preferred"><primary>ISO2022</primary></indexterm>
+  <glossdef>
+    <para>
+ISO standard for code extension techniques for 7-bit and 8-bit coded 
+character sets.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Key_grabbing">
+  <glossterm>Key grabbing</glossterm>
+<indexterm significance="preferred"><primary>Key</primary><secondary>grabbing</secondary></indexterm>
+  <glossdef>
+    <para>
+Keys on the keyboard can be passively grabbed by a client.  
+When the key is pressed, 
+the keyboard is then actively grabbed by the client.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Keyboard_grabbing">
+  <glossterm>Keyboard grabbing</glossterm>
+<indexterm significance="preferred"><primary>Keyboard</primary><secondary>grabbing</secondary></indexterm>
+  <glossdef>
+    <para>
+A client can actively grab control of the keyboard, and key events
+will be sent to that client rather than the client the events would
+normally have been sent to.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Keysym">
+  <glossterm>Keysym</glossterm>
+<indexterm significance="preferred"><primary>Keysym</primary></indexterm>
+  <glossdef>
+    <para>
+An encoding of a symbol on a keycap on a keyboard.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Latin-1">
+  <glossterm>Latin-1</glossterm>
+<indexterm significance="preferred"><primary>Latin-1</primary></indexterm>
+  <glossdef>
+    <para>
+The coded character set defined by the ISO8859-1 standard.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Latin_Portable_Character_Encoding">
+  <glossterm>Latin Portable Character Encoding</glossterm>
+<indexterm significance="preferred"><primary>Latin Portable Character Encoding</primary></indexterm>
+  <glossdef>
+    <para>
+The encoding of the X Portable Character Set using the Latin-1 codepoints
+plus ASCII control characters.
+If a string is said to be in the Latin Portable Character Encoding,
+then it only contains characters from the X Portable Character Set,
+not all of Latin-1.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Locale">
+  <glossterm>Locale</glossterm>
+<indexterm significance="preferred"><primary>Locale</primary></indexterm>
+  <glossdef>
+    <para>
+The international environment of a computer program defining the ``localized''
+behavior of that program at run-time.
+This information can be established from one or more sets of localization data.
+ANSI C defines locale-specific processing by C system library calls.
+See ANSI C and the X/Open Portability Guide specifications for more details.
+In this specification, on implementations that conform to the ANSI C library,
+the ``current locale'' is the current setting of the LC_CTYPE
+<function>setlocale</function>
+category.
+Associated with each locale is a text encoding.  When text is processed
+in the context of a locale, the text must be in the encoding of the locale.
+The current locale affects Xlib in its:
+    <itemizedlist>
+      <listitem><para>
+Encoding and processing of input method text
+      </para></listitem>
+      <listitem><para>
+Encoding of resource files and values
+      </para></listitem>
+      <listitem><para>
+Encoding and imaging of text strings
+      </para></listitem>
+      <listitem><para>
+Encoding and decoding for inter-client text communication
+      </para></listitem>
+    </itemizedlist></para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Locale_name">
+  <glossterm>Locale name</glossterm>
+<indexterm significance="preferred"><primary>Locale name</primary></indexterm>
+  <glossdef>
+    <para>
+The identifier used to select the desired locale for the host C library 
+and X library functions.
+On ANSI C library compliant systems,
+the locale argument to the
+<function>setlocale</function>
+function.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Localization">
+  <glossterm>Localization</glossterm>
+<indexterm significance="preferred"><primary>Localization</primary></indexterm>
+  <glossdef>
+    <para>
+The process of establishing information within a computer system specific 
+to the operation of particular native languages, local customs 
+and coded character sets.
+(XPG3)
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Mapped">
+  <glossterm>Mapped</glossterm>
+<indexterm significance="preferred"><primary>Mapped window</primary></indexterm>
+  <glossdef>
+    <para>
+A window is said to be mapped if a map call has been performed on it.
+Unmapped windows and their inferiors are never viewable or visible.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Modifier_keys">
+  <glossterm>Modifier keys</glossterm>
+<indexterm significance="preferred"><primary>Modifier keys</primary></indexterm>
+  <glossdef>
+    <para>
+Shift, Control, Meta, Super, Hyper, Alt, Compose, Apple, CapsLock,
+ShiftLock, and similar keys are called modifier keys.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Monochrome">
+  <glossterm>Monochrome</glossterm>
+<indexterm significance="preferred"><primary>Monochrome</primary></indexterm>
+  <glossdef>
+    <para>
+Monochrome is a special case of 
+<glossterm linkend="glossary:StaticGray"><symbol>StaticGray</symbol></glossterm>
+in which there are only two colormap entries.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Multibyte">
+  <glossterm>Multibyte</glossterm>
+<indexterm significance="preferred"><primary>Multibyte</primary></indexterm>
+  <glossdef>
+    <para>
+A character whose codepoint is stored in more than one byte;
+any encoding which can contain multibyte characters;
+text in a multibyte encoding.
+The ``<type>char *</type>'' null-terminated string datatype in ANSI C.
+Note that references in this document to multibyte strings
+imply only that the strings <emphasis remap='I'>may</emphasis> contain multibyte characters.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Obscure">
+  <glossterm>Obscure</glossterm>
+<indexterm significance="preferred"><primary>Obscure</primary></indexterm>
+  <glossdef>
+    <para>
+A window is obscured if some other window obscures it.
+A window can be partially obscured and so still have visible regions.
+Window A obscures window B if both are viewable 
+<symbol>InputOutput</symbol>
+windows, if A is higher in the global stacking order, 
+and if the rectangle defined by the outside
+edges of A intersects the rectangle defined by the outside edges of B.
+Note the distinction between obscures and occludes.
+Also note that window borders are included in the calculation.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Occlude">
+  <glossterm>Occlude</glossterm>
+<indexterm significance="preferred"><primary>Occlude</primary></indexterm>
+  <glossdef>
+    <para>
+A window is occluded if some other window occludes it.
+Window A occludes window B if both are mapped, 
+if A is higher in the global stacking order, 
+and if the rectangle defined by the outside edges of A intersects the rectangle defined 
+by the outside edges of B.  
+Note the distinction between occludes and obscures.
+Also note that window borders are included in the calculation
+and that
+<symbol>InputOnly</symbol>
+windows never obscure other windows but can occlude other windows.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Padding">
+  <glossterm>Padding</glossterm>
+<indexterm significance="preferred"><primary>Padding</primary></indexterm>
+  <glossdef>
+    <para>
+Some padding bytes are inserted in the data stream to maintain
+alignment of the protocol requests on natural boundaries.  
+This increases ease of portability to some machine architectures.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Parent_window">
+  <glossterm>Parent window</glossterm>
+<indexterm significance="preferred"><primary>Window</primary><secondary>parent</secondary></indexterm>
+  <glossdef>
+    <para>
+If C is a child of P, then P is the parent of C.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Passive_grab">
+  <glossterm>Passive grab</glossterm>
+<indexterm significance="preferred"><primary>Passive grab</primary></indexterm>
+  <glossdef>
+    <para>
+Grabbing a key or button is a passive grab.  
+The grab activates when the key or button is actually pressed.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Pixel_value">
+  <glossterm>Pixel value</glossterm>
+<indexterm significance="preferred"><primary>Pixel value</primary></indexterm>
+  <glossdef>
+    <para>
+A pixel is an N-bit value,
+where N is the number of bit planes used in a particular window or pixmap
+(that is, is the depth of the window or pixmap).  
+A pixel in a window indexes a colormap to derive an actual color to be 
+displayed.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Pixmap">
+  <glossterm>Pixmap</glossterm>
+<indexterm significance="preferred"><primary>Pixmap</primary></indexterm>
+  <glossdef>
+    <para>
+A pixmap is a three-dimensional array of bits.  
+A pixmap is normally thought of as a two-dimensional array of pixels, 
+where each pixel can be a value from 0 to 2<superscript>N</superscript>-1,
+and where N is the depth (z axis) of the pixmap.  
+A pixmap can also be thought of as a stack of N bitmaps.
+A pixmap can only be used on the screen that it was created in.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Plane">
+  <glossterm>Plane</glossterm>
+<indexterm significance="preferred"><primary>Plane</primary></indexterm>
+  <glossdef>
+    <para>
+When a pixmap or window is thought of as a stack of bitmaps, each
+bitmap is called a plane or bit plane.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Plane_mask">
+  <glossterm>Plane mask</glossterm>
+<indexterm significance="preferred"><primary>Plane</primary><secondary>mask</secondary></indexterm>
+  <glossdef>
+    <para>
+Graphics operations can be restricted to only affect a subset of bit
+planes of a destination.  
+A plane mask is a bit mask describing which planes are to be modified.
+The plane mask is stored in a graphics context.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Pointer">
+  <glossterm>Pointer</glossterm>
+<indexterm significance="preferred"><primary>Pointer</primary></indexterm>
+  <glossdef>
+    <para>
+The pointer is the pointing device currently attached to the cursor
+and tracked on the screens.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Pointer_grabbing">
+  <glossterm>Pointer grabbing</glossterm>
+<indexterm significance="preferred"><primary>Pointer</primary><secondary>grabbing</secondary></indexterm>
+  <glossdef>
+    <para>
+A client can actively grab control of the pointer. 
+Then button and motion events will be sent to that client 
+rather than the client the events would normally have been sent to.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Pointing_device">
+  <glossterm>Pointing device</glossterm>
+<indexterm significance="preferred"><primary>Pointing device</primary></indexterm>
+  <glossdef>
+    <para>
+A pointing device is typically a mouse, tablet, or some other
+device with effective dimensional motion.  
+The core protocol defines only one visible cursor,
+which tracks whatever pointing device is attached as the pointer.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:POSIX">
+  <glossterm><acronym>POSIX</acronym></glossterm>
+<indexterm significance="preferred"><primary><acronym>POSIX</acronym></primary></indexterm>
+  <glossdef>
+    <para>
+Portable Operating System Interface, ISO/IEC 9945-1 (IEEE Std 1003.1).
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:POSIX_Portable_Filename_Character_Set">
+  <glossterm><acronym>POSIX</acronym> Portable Filename Character Set</glossterm>
+<indexterm significance="preferred"><primary><acronym>POSIX</acronym> Portable Filename Character Set</primary></indexterm>
+  <glossdef>
+    <para>
+The set of 65 characters which can be used in naming files on a <acronym>POSIX</acronym>-compliant
+host that are correctly processed in all locales.
+The set is:
+</para>
+    <para>
+<!-- .Ds 0 -->
+a..z A..Z 0..9 ._-
+<!-- .De -->
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Property">
+  <glossterm>Property</glossterm>
+<indexterm significance="preferred"><primary>Property</primary></indexterm>
+  <glossdef>
+    <para>
+Windows can have associated properties that consist of a name, a type,
+a data format, and some data. 
+The protocol places no interpretation on properties. 
+They are intended as a general-purpose naming mechanism for clients.  
+For example, clients might use properties to share information such as resize
+hints, program names, and icon formats with a window manager.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Property_list">
+  <glossterm>Property list</glossterm>
+<indexterm significance="preferred"><primary>Property list</primary></indexterm>
+  <glossdef>
+    <para>
+The property list of a window is the list of properties that have
+been defined for the window.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:PseudoColor">
+  <glossterm>PseudoColor</glossterm>
+<indexterm significance="preferred"><primary>PseudoColor</primary></indexterm>
+  <glossdef>
+    <para>
+<symbol>PseudoColor</symbol>
+is a class of colormap in which a pixel value indexes the colormap entry to
+produce an independent <acronym>RGB</acronym> value;
+that is, the colormap is viewed as an array of triples (<acronym>RGB</acronym> values).
+The <acronym>RGB</acronym> values can be changed dynamically.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Rectangle">
+  <glossterm>Rectangle</glossterm>
+<indexterm significance="preferred"><primary>Rectangle</primary></indexterm>
+  <glossdef>
+    <para>
+A rectangle specified by [x,y,w,h] has an infinitely thin
+outline path with corners at [x,y], [x+w,y], [x+w,y+h], and [x, y+h].
+When a rectangle is filled,
+the lower-right edges are not drawn.
+For example,
+if w=h=0,
+nothing would be drawn.
+For w=h=1,
+a single pixel would be drawn.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Redirecting_control">
+  <glossterm>Redirecting control</glossterm>
+<indexterm significance="preferred"><primary>Redirecting control</primary></indexterm>
+  <glossdef>
+    <para>
+Window managers (or client programs) may enforce window layout
+policy in various ways.  
+When a client attempts to change the size or position of a window, 
+the operation may be redirected to a specified client
+rather than the operation actually being performed.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Reply">
+  <glossterm>Reply</glossterm>
+<indexterm significance="preferred"><primary>Reply</primary></indexterm>
+  <glossdef>
+    <para>
+Information requested by a client program using the X protocol 
+is sent back to the client with a reply.
+Both events and replies are multiplexed on the same connection.  
+Most requests do not generate replies,
+but some requests generate multiple replies.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Request">
+  <glossterm>Request</glossterm>
+<indexterm significance="preferred"><primary>Request</primary></indexterm>
+  <glossdef>
+    <para>
+A command to the server is called a request.
+It is a single block of data sent over a connection.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Resource">
+  <glossterm>Resource</glossterm>
+<indexterm significance="preferred"><primary>Resource</primary></indexterm>
+  <glossdef>
+    <para>
+Windows, pixmaps, cursors, fonts, graphics contexts, and colormaps are
+known as resources.  
+They all have unique identifiers associated with them for naming purposes.  
+The lifetime of a resource usually is bounded by the lifetime of the 
+connection over which the resource was created.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:RGB_values">
+  <glossterm><acronym>RGB</acronym> values</glossterm>
+<indexterm significance="preferred"><primary><acronym>RGB</acronym> values</primary></indexterm>
+  <glossdef>
+    <para>
+<acronym>RGB</acronym> values are the red, green, and blue intensity values that are used
+to define a color.
+These values are always represented as 16-bit, unsigned numbers, with 0
+the minimum intensity and 65535 the maximum intensity.
+The X server scales these values to match the display hardware.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Root">
+  <glossterm>Root</glossterm>
+<indexterm significance="preferred"><primary>Root</primary></indexterm>
+  <glossdef>
+    <para>
+The root of a pixmap or graphics context is the same as the root 
+of whatever drawable was used when the pixmap or GC was created.  
+The root of a window is the root window under which the window was created.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Root_window">
+  <glossterm>Root window</glossterm>
+<indexterm significance="preferred"><primary>Window</primary><secondary>root</secondary></indexterm>
+  <glossdef>
+    <para>
+Each screen has a root window covering it.
+The root window cannot be reconfigured or unmapped, 
+but otherwise it acts as a full-fledged window.
+A root window has no parent.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Save_set">
+  <glossterm>Save set</glossterm>
+<indexterm significance="preferred"><primary>Save set</primary></indexterm>
+  <glossdef>
+    <para>
+The save set of a client is a list of other clients' windows that,
+if they are inferiors of one of the client's windows at connection
+close, should not be destroyed and that should be remapped 
+if currently unmapped.
+Save sets are typically used by window managers to avoid
+lost windows if the manager should terminate abnormally.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Scanline">
+  <glossterm>Scanline</glossterm>
+<indexterm significance="preferred"><primary>Scanline</primary></indexterm>
+  <glossdef>
+    <para>
+A scanline is a list of pixel or bit values viewed as a horizontal
+row (all values having the same y coordinate) of an image, with the
+values ordered by increasing the x coordinate.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Scanline_order">
+  <glossterm>Scanline order</glossterm>
+<indexterm significance="preferred"><primary>Scanline</primary><secondary>order</secondary></indexterm>
+  <glossdef>
+    <para>
+An image represented in scanline order contains scanlines ordered by
+increasing the y coordinate.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Screen">
+  <glossterm>Screen</glossterm>
+<indexterm significance="preferred"><primary>Screen</primary></indexterm>
+<indexterm><primary>Screen</primary><secondary>structure</secondary></indexterm>
+<indexterm><primary>Display</primary><secondary>structure</secondary></indexterm>
+  <glossdef>
+    <para>
+A server can provide several independent screens, 
+which typically have physically independent monitors.  
+This would be the expected configuration when there is only a single keyboard 
+and pointer shared among the screens.
+A 
+<type>Screen</type>
+structure contains the information about that screen
+and is linked to the 
+<type>Display</type>
+structure.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Selection">
+  <glossterm>Selection</glossterm>
+<indexterm significance="preferred"><primary>Selection</primary></indexterm>
+  <glossdef>
+    <para>
+A selection can be thought of as an indirect property with dynamic
+type.
+That is, rather than having the property stored in the X server,
+it is maintained by some client (the owner).
+A selection is global and is thought of as belonging to the user 
+and being maintained by clients, 
+rather than being private to a particular window subhierarchy
+or a particular set of clients.
+When a client asks for the contents of
+a selection, it specifies a selection target type,
+which can be used to control the transmitted representation of the contents.
+For example, if the selection is ``the last thing the user clicked on,''
+and that is currently an image, then the target type might specify
+whether the contents of the image should be sent in XY format or
+Z format.
+</para>
+    <para>
+The target type can also be used to control the class of
+contents transmitted; for example, 
+asking for the ``looks'' (fonts, line
+spacing, indentation, and so forth) of a paragraph selection, rather than the
+text of the paragraph.
+The target type can also be used for other
+purposes.
+The protocol does not constrain the semantics.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Server">
+  <glossterm>Server</glossterm>
+<indexterm significance="preferred"><primary>Server</primary></indexterm>
+  <glossdef>
+    <para>
+The server, which is also referred to as the X server, 
+provides the basic windowing mechanism.  
+It handles <acronym>IPC</acronym> connections from clients, 
+multiplexes graphics requests onto the screens, 
+and demultiplexes input back to the appropriate clients.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Server_grabbing">
+  <glossterm>Server grabbing</glossterm>
+<indexterm significance="preferred"><primary>Server</primary><secondary>grabbing</secondary></indexterm>
+  <glossdef>
+    <para>
+The server can be grabbed by a single client for exclusive use.  
+This prevents processing of any requests from other client connections until
+the grab is completed.
+This is typically only a transient state for such things as rubber-banding,
+pop-up menus, or executing requests indivisibly.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Shift_sequence">
+  <glossterm>Shift sequence</glossterm>
+<indexterm significance="preferred"><primary>Shift sequence</primary></indexterm>
+  <glossdef>
+    <para>
+ISO2022 defines control characters and escape sequences 
+which temporarily (single shift) or permanently (locking shift) cause a
+different character set to be in effect (``invoking'' a character set).
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Sibling">
+  <glossterm>Sibling</glossterm>
+<indexterm significance="preferred"><primary>Sibling</primary></indexterm>
+  <glossdef>
+    <para>
+Children of the same parent window are known as sibling windows.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Stacking_order">
+  <glossterm>Stacking order</glossterm>
+<indexterm significance="preferred"><primary>Stacking order</primary></indexterm>
+  <glossdef>
+    <para>
+Sibling windows, similar to sheets of paper on a desk,
+can stack on top of each other.  
+Windows above both obscure and occlude lower windows.  
+The relationship between sibling windows is known as the stacking order.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:State-dependent_encoding">
+  <glossterm>State-dependent encoding</glossterm>
+<indexterm significance="preferred"><primary>State-dependent encoding</primary></indexterm>
+  <glossdef>
+    <para>
+An encoding in which an invocation of a charset can apply to multiple
+characters in sequence.
+A state-dependent encoding begins in an ``initial state'' 
+and enters other ``shift states'' when specific ``shift sequences'' 
+are encountered in the byte sequence.
+In ISO2022 terms,
+this means use of locking shifts, not single shifts.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:State-independent_encoding">
+  <glossterm>State-independent encoding</glossterm>
+<indexterm significance="preferred"><primary>State-independent encoding</primary></indexterm>
+  <glossdef>
+    <para>
+Any encoding in which the invocations of the charsets are fixed,
+or span only a single character.
+In ISO2022 terms,
+this means use of at most single shifts, not locking shifts.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:StaticColor">
+  <glossterm>StaticColor</glossterm>
+<indexterm significance="preferred"><primary>StaticColor</primary></indexterm>
+  <glossdef>
+    <para>
+<symbol>StaticColor</symbol>
+can be viewed as a degenerate case of 
+<glossterm linkend="glossary:PseudoColor"><symbol>PseudoColor</symbol></glossterm>
+in which the <acronym>RGB</acronym> values are predefined and read-only.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:StaticGray">
+  <glossterm>StaticGray</glossterm>
+<indexterm significance="preferred"><primary>StaticGray</primary></indexterm>
+  <glossdef>
+    <para>
+<symbol>StaticGray</symbol>
+can be viewed as a degenerate case of 
+<glossterm linkend="glossary:GrayScale"><symbol>GrayScale</symbol></glossterm>
+in which the gray values are predefined and read-only.
+The values are typically linear or near-linear increasing ramps.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Status">
+  <glossterm>Status</glossterm>
+<indexterm significance="preferred"><primary>Status</primary></indexterm>
+  <glossdef>
+    <para>
+Many Xlib functions return a success status.
+If the function does not succeed,
+however, its arguments are not disturbed.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Stipple">
+  <glossterm>Stipple</glossterm>
+<indexterm significance="preferred"><primary>Stipple</primary></indexterm>
+  <glossdef>
+    <para>
+A stipple pattern is a bitmap that is used to tile a region to serve
+as an additional clip mask for a fill operation with the foreground
+color.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:STRING_encoding">
+  <glossterm>STRING encoding</glossterm>
+  <glossdef>
+    <para>
+<glossterm linkend="glossary:Latin-1">Latin-1</glossterm>, plus tab and newline.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:String_Equivalence">
+  <glossterm>String Equivalence</glossterm>
+<indexterm significance="preferred"><primary>String Equivalence</primary></indexterm>
+  <glossdef>
+    <para>
+Two ISO Latin-1 STRING8 values are considered equal if they are the same
+length and if corresponding bytes are either equal or are equivalent as
+follows:  decimal values 65 to 90 inclusive (characters ``A'' to ``Z'') are
+pairwise equivalent to decimal values 97 to 122 inclusive
+(characters ``a'' to ``z''), decimal values 192 to 214 inclusive
+(characters ``A grave'' to ``O diaeresis'') are pairwise equivalent to decimal
+values 224 to 246 inclusive (characters ``a grave'' to ``o diaeresis''),
+and decimal values 216 to 222 inclusive (characters ``O oblique'' to ``THORN'')
+are pairwise equivalent to decimal values 246 to 254 inclusive
+(characters ``o oblique'' to ``thorn'').
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Tile">
+  <glossterm>Tile</glossterm>
+<indexterm significance="preferred"><primary>Tile</primary></indexterm>
+  <glossdef>
+    <para>
+A pixmap can be replicated in two dimensions to tile a region.  
+The pixmap itself is also known as a tile.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Timestamp">
+  <glossterm>Timestamp</glossterm>
+<indexterm significance="preferred"><primary>Timestamp</primary></indexterm>
+  <glossdef>
+    <para>
+A timestamp is a time value expressed in milliseconds. 
+It is typically the time since the last server reset.
+Timestamp values wrap around (after about 49.7 days).
+The server, given its current time is represented by timestamp T, 
+always interprets timestamps from clients by treating half 
+of the timestamp space as being earlier in time than T 
+and half of the timestamp space as being later in time than T.
+One timestamp value, represented by the constant 
+<symbol>CurrentTime</symbol>,
+is never generated by the server. 
+This value is reserved for use in requests to represent the current server time.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:TrueColor">
+  <glossterm>TrueColor</glossterm>
+<indexterm significance="preferred"><primary>TrueColor</primary></indexterm>
+  <glossdef>
+    <para>
+<symbol>TrueColor</symbol>
+can be viewed as a degenerate case of 
+<glossterm linkend="glossary:DirectColor"><symbol>DirectColor</symbol></glossterm>
+in which the subfields in the pixel value directly encode the corresponding <acronym>RGB</acronym>
+values.
+That is, the colormap has predefined read-only <acronym>RGB</acronym> values.
+The values are typically linear or near-linear increasing ramps.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Type">
+  <glossterm>Type</glossterm>
+<indexterm significance="preferred"><primary>Type</primary></indexterm>
+  <glossdef>
+    <para>
+A type is an arbitrary atom used to identify the interpretation of property 
+data.  
+Types are completely uninterpreted by the server. 
+They are solely for the benefit of clients.
+X predefines type atoms for many frequently used types,
+and clients also can define new types.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Viewable">
+  <glossterm>Viewable</glossterm>
+<indexterm significance="preferred"><primary>Viewable</primary></indexterm>
+  <glossdef>
+    <para>
+A window is viewable if it and all of its ancestors are mapped.  
+This does not imply that any portion of the window is actually visible.
+Graphics requests can be performed on a window when it is not
+viewable, but output will not be retained unless the server is maintaining
+backing store. 
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Visible">
+  <glossterm>Visible</glossterm>
+<indexterm significance="preferred"><primary>Visible</primary></indexterm>
+  <glossdef>
+    <para>
+A region of a window is visible if someone looking at the screen can
+actually see it; that is, the window is viewable and the region is not occluded
+by any other window.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Whitespace">
+  <glossterm>Whitespace</glossterm>
+<indexterm significance="preferred"><primary>Whitespace</primary></indexterm>
+  <glossdef>
+    <para>
+Any spacing character.
+On implementations that conform to the ANSI C library,
+whitespace is any character for which
+<function>isspace</function>
+returns true.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Window_gravity">
+  <glossterm>Window gravity</glossterm>
+<indexterm significance="preferred"><primary>Window</primary><secondary>gravity</secondary></indexterm>
+  <glossdef>
+    <para>
+When windows are resized, 
+subwindows may be repositioned automatically relative to some position in the 
+window.
+This attraction of a subwindow to some part of its parent is known 
+as window gravity.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Window_manager">
+  <glossterm>Window manager</glossterm>
+<indexterm significance="preferred"><primary>Window</primary><secondary>manager</secondary></indexterm>
+  <glossdef>
+    <para>
+Manipulation of windows on the screen and much of the user interface
+(policy) is typically provided by a window manager client.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:X_Portable_Character_Set">
+  <glossterm>X Portable Character Set</glossterm>
+<indexterm significance="preferred"><primary>X Portable Character Set</primary></indexterm>
+  <glossdef>
+    <para>
+A basic set of 97 characters which are assumed to exist in all
+locales supported by Xlib.  This set contains the following characters:
+      <literallayout>
+a..z A..Z 0..9
+!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~
+&lt;space&gt;, &lt;tab&gt;, and &lt;newline&gt;
+      </literallayout>
+    </para>
+    <para>
+This is the left/lower half (also called the G0 set)
+of the graphic character set of ISO8859-1 plus &lt;space&gt;, &lt;tab&gt;, and &lt;newline&gt;.
+It is also the set of graphic characters in 7-bit ASCII plus the same
+three control characters.
+The actual encoding of these characters on the host is system dependent;
+see the <glossterm linkend="glossary:Host_Portable_Character_Encoding">Host Portable Character Encoding</glossterm>.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:XLFD">
+  <glossterm><acronym>XLFD</acronym></glossterm>
+<indexterm significance="preferred"><primary><acronym>XLFD</acronym></primary></indexterm>
+  <glossdef>
+    <para>
+The <olink targetdoc='xlfd' targetptr='xlfd'><citetitle>X Logical Font Description Conventions</citetitle></olink>
+that define a standard syntax for structured font names.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:XY_format">
+  <glossterm>XY format</glossterm>
+<indexterm significance="preferred"><primary>XY format</primary></indexterm>
+  <glossdef>
+    <para>
+The data for a pixmap is said to be in XY format if it is organized as
+a set of bitmaps representing individual bit planes with the planes
+appearing from most-significant to least-significant bit order.
+    </para>
+  </glossdef>
+</glossentry>
+<glossentry id="glossary:Z_format">
+  <glossterm>Z format</glossterm>
+<indexterm significance="preferred"><primary>Z format</primary></indexterm>
+  <glossdef>
+    <para>
+The data for a pixmap is said to be in Z format if it is organized as
+a set of pixel values in scanline order.
+    </para>
+  </glossdef>
+</glossentry>
+
+<bibliography>
+<title>References</title>
+<biblioentry>
+<title>Draft Proposed Multibyte Extension of ANSI C, Draft 1.1</title>
+<date>November 30, 1989 SC22/C WG/SWG IPSJ/ITSCJ Japan</date>
+</biblioentry>
+
+<biblioentry>
+<title>ISO2022: Information processing - ISO 7-bit and 8-bit coded character
+sets - Code extension techniques.</title>
+</biblioentry>
+
+<biblioentry>
+<title>ISO8859-1: Information processing - 8-bit single-byte coded graphic
+character sets - Part 1: Latin alphabet No. 1.</title>
+</biblioentry>
+
+<biblioentry>
+<title><acronym>POSIX</acronym>: Information Technology - Portable Operating System Interface (<acronym>POSIX</acronym>) -
+Part 1: System Application Program Interface (API) [C Language],
+ISO/IEC 9945-1.</title>
+</biblioentry>
+
+<biblioentry>
+<title>Text of ISO/IEC/DIS 9541-1, Information Processing - Font Information
+Interchange - Part 1:  Architecture.</title>
+</biblioentry>
+
+<biblioentry>
+<title>X/Open Portability Guide, Issue 3, December 1988 (XPG3), X/Open Company,
+Ltd, Prentice-Hall, Inc. 1989. ISBN 0-13-685835-8.
+(See especially Volume 3:  XSI Supplementary Definitions.)</title>
+</biblioentry>
+</bibliography>
+
+</glossary>

@@ -1,0 +1,13 @@
+if ENABLE_UNIT_TESTS
+
+check_PROGRAMS = Array
+
+TESTS=$(check_PROGRAMS)
+
+AM_CFLAGS = $(CWARNFLAGS) $(XDMCP_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/include
+LDADD= $(top_builddir)/libXdmcp.la $(XDMCP_LIBS)
+
+AM_TESTS_ENVIRONMENT = $(XORG_MALLOC_DEBUG_ENV)
+
+endif ENABLE_UNIT_TESTS

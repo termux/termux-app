@@ -1,0 +1,91 @@
+# FDO_DISTRIBUTION_TAG is the tag of the docker image used for the build jobs.
+# If the image doesn't exist yet, the docker-image stage generates it.
+#
+# In order to generate a new image, one should generally change the tag.
+# While removing the image from the registry would also work, that's not
+# recommended except for ephemeral images during development: Replacing an
+# image after a significant amount of time might pull in newer versions of
+# gcc/clang or other packages, which might break the build with older commits
+# using the same tag.
+variables:
+    FDO_UPSTREAM_REPO: xorg/xserver
+    FDO_DISTRIBUTION_VERSION: buster-slim
+    FDO_DISTRIBUTION_EXEC: 'env FDO_CI_CONCURRENT=${FDO_CI_CONCURRENT} bash .gitlab-ci/debian-install.sh'
+    FDO_DISTRIBUTION_TAG: "2021-07-09"
+
+include:
+  - project: 'freedesktop/ci-templates'
+    ref: 4f06663cd1507136a0f8440925a2521098adb298
+    file: '/templates/debian.yml'
+
+stages:
+    - docker-image
+    - build-and-test
+
+.ci-run-policy:
+  # Retry jobs after runner system failures
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+  # Cancel CI run if a newer commit is pushed to the same branch
+  interruptible: true
+
+debian-buster:
+  extends:
+    - .fdo.container-build@debian
+    - .ci-run-policy
+  stage: docker-image
+  variables:
+    GIT_STRATEGY: none
+
+.common-build-and-test:
+    extends:
+        - .fdo.distribution-image@debian
+        - .ci-run-policy
+    stage: build-and-test
+    artifacts:
+        when: on_failure
+        paths:
+            - build/test/piglit-results/
+    variables:
+        CCACHE_COMPILERCHECK: content
+        CCACHE_DIR: /cache/xserver/cache
+        LC_ALL: C.UTF-8
+    before_script:
+        - export CCACHE_BASEDIR="$PWD"
+        - export PATH="/usr/lib/ccache:$PATH"
+        - ccache --show-stats
+    after_script:
+        - ccache --show-stats
+
+autotools:
+    extends: .common-build-and-test
+    script:
+        - mkdir build/
+        - cd build/
+        - ../autogen.sh --prefix=/usr CFLAGS="-fno-common"
+        - make -j${FDO_CI_CONCURRENT:-4} distcheck
+        - PIGLIT_DIR=/root/piglit XTEST_DIR=/root/xts make -j${FDO_CI_CONCURRENT:-4} check
+        - cd ..
+        - .gitlab-ci/manpages-check
+
+meson:
+    extends: .common-build-and-test
+    script:
+        - meson -Dc_args="-fno-common" -Dprefix=/usr -Dxephyr=true -Dwerror=true $MESON_EXTRA_OPTIONS build/
+        - ninja -j${FDO_CI_CONCURRENT:-4} -C build/ dist
+        - PIGLIT_DIR=/root/piglit XTEST_DIR=/root/xts ninja -j${FDO_CI_CONCURRENT:-4} -C build/ test
+        - .gitlab-ci/manpages-check
+
+meson-noglamor:
+    extends: meson
+    variables:
+        MESON_EXTRA_OPTIONS: >
+          -Dglamor=false
+
+mingw-cross-build:
+    extends: .common-build-and-test
+    script:
+        - meson --cross-file=.gitlab-ci/cross-i686-w64-mingw32.txt -Dglx=false -Dsecure-rpc=false -Dlisten_tcp=true build/
+        - ninja -j${FDO_CI_CONCURRENT:-4} -C build/ install

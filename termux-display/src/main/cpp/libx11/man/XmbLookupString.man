@@ -1,0 +1,216 @@
+'\" t
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\" Copyright \(co 2000  The XFree86 Project, Inc.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
+.\" Digital Equipment Corporation
+.\"
+.\" Portions Copyright \(co 1990, 1991 by
+.\" Tektronix, Inc.
+.\"
+.\" Permission to use, copy, modify and distribute this documentation for
+.\" any purpose and without fee is hereby granted, provided that the above
+.\" copyright notice appears in all copies and that both that copyright notice
+.\" and this permission notice appear in all copies, and that the names of
+.\" Digital and Tektronix not be used in in advertising or publicity pertaining
+.\" to this documentation without specific, written prior permission.
+.\" Digital and Tektronix makes no representations about the suitability
+.\" of this documentation for any purpose.
+.\" It is provided "as is" without express or implied warranty.
+.\"
+.\"
+.ds xT X Toolkit Intrinsics \- C Language Interface
+.ds xW Athena X Widgets \- C Language X Toolkit Interface
+.ds xL Xlib \- C Language X Interface
+.ds xC Inter-Client Communication Conventions Manual
+'\" t
+.TH XmbLookupString __libmansuffix__ __xorgversion__ "XLIB FUNCTIONS"
+.SH NAME
+XmbLookupString, XwcLookupString, Xutf8LookupString \- obtain composed input from an input method
+.SH SYNTAX
+.HP
+int XmbLookupString\^(\^XIC \fIic\fP\^, XKeyPressedEvent *\fIevent\fP, char
+*\fIbuffer_return\fP\^, int \fIbytes_buffer\fP\^, KeySym
+*\fIkeysym_return\fP\^, Status *\fIstatus_return\fP\^);
+.HP
+int XwcLookupString\^(\^XIC \fIic\fP\^, XKeyPressedEvent *\fIevent\fP\^,
+wchar_t *\fIbuffer_return\fP\^, int \fIwchars_buffer\fP\^, KeySym
+*\fIkeysym_return\fP\^, Status *\fIstatus_return\fP\^);
+.HP
+int Xutf8LookupString\^(\^XIC \fIic\fP\^, XKeyPressedEvent *\fIevent\fP, char
+*\fIbuffer_return\fP\^, int \fIbytes_buffer\fP\^, KeySym
+*\fIkeysym_return\fP\^, Status *\fIstatus_return\fP\^);
+.SH ARGUMENTS
+.IP \fIbuffer_return\fP 1i
+Returns a multibyte string or wide character string (if any)
+from the input method.
+.IP \fIbytes_buffer\fP 1i
+.br
+.ns
+.IP \fIwchars_buffer\fP 1i
+Specifies space available in the return buffer.
+.IP \fIevent\fP 1i
+Specifies the key event to be used.
+.IP \fIic\fP 1i
+Specifies the input context.
+.IP \fIkeysym_return\fP 1i
+Returns the KeySym computed from the event if this argument is not NULL.
+.IP \fIstatus_return\fP 1i
+Returns a value indicating what kind of data is returned.
+.SH DESCRIPTION
+The
+.BR XmbLookupString ,
+.B XwcLookupString
+and
+.B Xutf8LookupString
+functions return the string from the input method specified
+in the buffer_return argument.
+If no string is returned,
+the buffer_return argument is unchanged.
+.LP
+The KeySym into which the KeyCode from the event was mapped is returned
+in the keysym_return argument if it is non-NULL and the status_return
+argument indicates that a KeySym was returned.
+If both a string and a KeySym are returned,
+the KeySym value does not necessarily correspond to the string returned.
+.LP
+.B XmbLookupString
+and
+.B Xutf8LookupString
+return the length of the string in bytes, and
+.B XwcLookupString
+returns the length of the string in characters.
+Both
+.B XmbLookupString
+and
+.B XwcLookupString
+return text in the encoding of the locale bound to the input method
+of the specified input context, and
+.B Xutf8LookupString
+returns text in UTF-8 encoding.
+.LP
+Each string returned by
+.B XmbLookupString
+and
+.B XwcLookupString
+begins in the initial state of the encoding of the locale
+(if the encoding of the locale is state-dependent).
+.LP
+Note: To ensure proper input processing,
+it is essential that the client pass only
+.B KeyPress
+events to
+.BR XmbLookupString ,
+.B XwcLookupString
+and
+.BR Xutf8LookupString .
+Their behavior when a client passes a
+.B KeyRelease
+event is undefined.
+.LP
+Clients should check the status_return argument before
+using the other returned values.
+These three functions each return a value to status_return
+that indicates what has been returned in the other arguments.
+The possible values returned are:
+.TS
+lw(1.3i) lw(4.3i).
+T{
+.B XBufferOverflow
+T}	T{
+The input string to be returned is too large for the supplied buffer_return.
+The required size (for
+.BR XmbLookupString ,
+.B Xutf8LookupString
+in bytes; for
+.B XwcLookupString
+in characters) is returned as the value of the function,
+and the contents of buffer_return and keysym_return are not modified.
+The client should recall the function with the same event
+and a buffer of adequate size to obtain the string.
+T}
+T{
+.B XLookupNone
+T}	T{
+No consistent input has been composed so far.
+The contents of buffer_return and keysym_return are not modified,
+and the function returns zero.
+T}
+T{
+.B XLookupChars
+T}	T{
+Some input characters have been composed.
+They are placed in the buffer_return argument, using the encoding
+described above,
+and the string length is returned as the value of the function.
+The content of the keysym_return argument is not modified.
+T}
+T{
+.B XLookupKeySym
+T}	T{
+A KeySym has been returned instead of a string
+and is returned in keysym_return.
+The content of the buffer_return argument is not modified,
+and the function returns zero.
+T}
+T{
+.B XLookupBoth
+T}	T{
+Both a KeySym and a string are returned;
+.B XLookupChars
+and
+.B XLookupKeySym
+occur simultaneously.
+T}
+.TE
+.LP
+It does not make any difference if the input context passed as an argument to
+.BR XmbLookupString ,
+.B XwcLookupString
+and
+.B Xutf8LookupString
+is the one currently in possession of the focus or not.
+Input may have been composed within an input context before it lost the focus,
+and that input may be returned on subsequent calls to
+.BR XmbLookupString ,
+.B XwcLookupString
+or
+.B Xutf8LookupString
+even though it does not have any more keyboard focus.
+.LP
+The function
+.B Xutf8LookupString
+is an extension introduced by The XFree86 Project, Inc., in their 4.0.2
+release.
+Its presence is
+indicated by the macro
+.BR X_HAVE_UTF8_STRING .
+.SH "SEE ALSO"
+XLookupKeysym(__libmansuffix__),
+Compose(__filemansuffix__)
+.br
+\fI\*(xL\fP
