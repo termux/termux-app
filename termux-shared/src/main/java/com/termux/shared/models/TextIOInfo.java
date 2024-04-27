@@ -46,8 +46,8 @@ public class TextIOInfo implements Serializable {
     private int mLabelSize = 14;
     /** The text color of label. Defaults to {@link Color#BLACK}. */
     private int mLabelColor = Color.BLACK;
-    /** The {@link Typeface} family  of label. Defaults to "sans-serif". */
-    private String mLabelTypeFaceFamily = "sans-serif";
+    /** The {@link Typeface} family  of label. Defaults to "sec". */
+    private String mLabelTypeFaceFamily = "sec";
     /** The {@link Typeface} style  of label. Defaults to {@link Typeface#BOLD}. */
     private int mLabelTypeFaceStyle = Typeface.BOLD;
 
@@ -63,8 +63,8 @@ public class TextIOInfo implements Serializable {
     private int mTextLengthLimit = TEXT_SIZE_LIMIT_IN_BYTES;
     /** The text color of text. Defaults to {@link Color#BLACK}. */
     private int mTextColor = Color.BLACK;
-    /** The {@link Typeface} family for text. Defaults to "sans-serif". */
-    private String mTextTypeFaceFamily = "sans-serif";
+    /** The {@link Typeface} family for text. Defaults to "sec". */
+    private String mTextTypeFaceFamily = "sec";
     /** The {@link Typeface} style for text. Defaults to {@link Typeface#NORMAL}. */
     private int mTextTypeFaceStyle = Typeface.NORMAL;
     /** If horizontal scrolling should be enabled for text. */
