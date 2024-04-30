@@ -56,7 +56,10 @@ public class FileReceiverActivity extends AppCompatActivity {
 
     static boolean isSharedTextAnUrl(String sharedText) {
         return Patterns.WEB_URL.matcher(sharedText).matches()
-            || Pattern.matches("magnet:\\?xt=urn:btih:.*?", sharedText);
+            || Pattern.matches("magnet:\\?xt=urn:btih:.*?", sharedText)
+            || Pattern.matches("nzblnk:\\?((t|h|g|p)=(.*)&?)+", sharedText)
+            || Pattern.matches("(jabber|mailto|xmpp):.+", sharedText)
+            || Pattern.matches("(gopher|irc(6|s)?|nfs|rtmp|sftp|smb)://.+", sharedText);
     }
 
     @Override
