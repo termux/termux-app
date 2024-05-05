@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="horizontal"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginRight="8dp">
+
+        <TextView
+            android:id="@+id/TVTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Spinner
+                style="@style/ComboBox"
+                android:id="@+id/SBindingType"
+                android:layout_width="140dp"
+                android:entries="@array/binding_type_entries" />
+
+            <Spinner
+                style="@style/ComboBox"
+                android:id="@+id/SBinding"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageButton
+        style="@style/ListMenuButton"
+        android:id="@+id/BTRemove"
+        android:src="@drawable/icon_remove" />
+</LinearLayout>

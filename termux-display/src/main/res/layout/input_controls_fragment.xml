@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/profile" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Spinner
+                style="@style/ComboBox"
+                android:id="@+id/SProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <ImageButton
+                style="@style/ListMenuButton"
+                android:id="@+id/BTAddProfile"
+                android:src="@drawable/icon_add" />
+
+            <ImageButton
+                style="@style/ListMenuButton"
+                android:id="@+id/BTEditProfile"
+                android:src="@drawable/icon_edit" />
+
+            <ImageButton
+                style="@style/ListMenuButton"
+                android:id="@+id/BTDuplicateProfile"
+                android:src="@drawable/icon_duplicate" />
+
+            <ImageButton
+                style="@style/ListMenuButton"
+                android:id="@+id/BTRemoveProfile"
+                android:layout_marginRight="0dp"
+                android:src="@drawable/icon_remove" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/cursor_speed"/>
+
+            <TextView
+                android:id="@+id/TVCursorSpeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/SBCursorSpeed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:min="10"
+            android:max="200" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/overlay_opacity"/>
+
+            <TextView
+                android:id="@+id/TVUiOpacity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/SBOverlayOpacity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:min="10"
+            android:max="100" />
+
+        <View
+            style="@style/HorizontalLine"
+            android:layout_marginTop="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                style="@style/ButtonNeutral"
+                android:id="@+id/BTImportProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/import_profile" />
+
+            <Button
+                style="@style/ButtonNeutral"
+                android:id="@+id/BTExportProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/export_profile" />
+        </LinearLayout>
+
+        <View style="@style/HorizontalLine" />
+
+        <Button
+            style="@style/ButtonPositive"
+            android:id="@+id/BTControlsEditor"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/controls_editor" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/external_controllers"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginTop="8dp" />
+
+        <View style="@style/HorizontalLine" />
+
+        <LinearLayout
+            android:id="@+id/LLExternalControllers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <TextView
+            android:id="@+id/TVEmptyText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/no_items_to_display"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>

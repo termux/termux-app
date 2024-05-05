@@ -23,14 +23,30 @@ import android.view.SurfaceView;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
+import com.termux.display.controller.core.CursorLocker;
+import com.termux.display.controller.winhandler.WinHandler;
+import com.termux.display.controller.xserver.Pointer;
+import com.termux.display.controller.xserver.XKeycode;
 import com.termux.display.input.InputStub;
 
 import java.nio.charset.StandardCharsets;
 import java.util.regex.PatternSyntaxException;
 
-@Keep @SuppressLint("WrongConstant")
+@Keep
+@SuppressLint("WrongConstant")
 @SuppressWarnings("deprecation")
 public class LorieView extends SurfaceView implements InputStub {
+    public ScreenInfo screenInfo;
+    public CursorLocker cursorLocker;
+
+    public WinHandler getWinHandler() {
+        return null;
+    }
+
+    public boolean isFullscreen() {
+        return true;
+    }
+
     public interface Callback {
         void changed(Surface sfc, int surfaceWidth, int surfaceHeight, int screenWidth, int screenHeight);
     }
@@ -45,11 +61,13 @@ public class LorieView extends SurfaceView implements InputStub {
     private Callback mCallback;
     private final Point p = new Point();
     private final SurfaceHolder.Callback mSurfaceCallback = new SurfaceHolder.Callback() {
-        @Override public void surfaceCreated(@NonNull SurfaceHolder holder) {
+        @Override
+        public void surfaceCreated(@NonNull SurfaceHolder holder) {
             holder.setFormat(PixelFormat.BGRA_8888);
         }
 
-        @Override public void surfaceChanged(@NonNull SurfaceHolder holder, int f, int width, int height) {
+        @Override
+        public void surfaceChanged(@NonNull SurfaceHolder holder, int f, int width, int height) {
             width = getMeasuredWidth();
             height = getMeasuredHeight();
 
@@ -61,21 +79,39 @@ public class LorieView extends SurfaceView implements InputStub {
             mCallback.changed(holder.getSurface(), width, height, p.x, p.y);
         }
 
-        @Override public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+        @Override
+        public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
             if (mCallback != null)
                 mCallback.changed(holder.getSurface(), 0, 0, 0, 0);
         }
     };
 
-    public LorieView(Context context) { super(context); init(); }
-    public LorieView(Context context, AttributeSet attrs) { super(context, attrs); init(); }
-    public LorieView(Context context, AttributeSet attrs, int defStyleAttr) { super(context, attrs, defStyleAttr); init(); }
+    public LorieView(Context context) {
+        super(context);
+        init();
+    }
+
+    public LorieView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public LorieView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
     @SuppressWarnings("unused")
-    public LorieView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) { super(context, attrs, defStyleAttr, defStyleRes); init(); }
+    public LorieView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init();
+    }
 
     private void init() {
         getHolder().addCallback(mSurfaceCallback);
         clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        screenInfo = new ScreenInfo("1024x768");
+        cursorLocker = new CursorLocker(this);
     }
 
     public void setCallback(Callback callback) {
@@ -101,6 +137,7 @@ public class LorieView extends SurfaceView implements InputStub {
             public boolean isStateful() {
                 return true;
             }
+
             public boolean hasFocusStateSpecified() {
                 return true;
             }
@@ -128,7 +165,7 @@ public class LorieView extends SurfaceView implements InputStub {
         int height = getMeasuredHeight();
         int w = width;
         int h = height;
-        switch(preferences.getString("displayResolutionMode", "native")) {
+        switch (preferences.getString("displayResolutionMode", "native")) {
             case "scaled": {
                 int scale = preferences.getInt("displayScale", 100);
                 w = width * 100 / scale;
@@ -154,10 +191,15 @@ public class LorieView extends SurfaceView implements InputStub {
             }
         }
 
-        if ((width < height && w > h) || (width > height && w < h))
+        if ((width < height && w > h) || (width > height && w < h)) {
             p.set(h, w);
-        else
+            screenInfo.width = (short) h;
+            screenInfo.height = (short) w;
+        } else {
             p.set(w, h);
+            screenInfo.width = (short) w;
+            screenInfo.height = (short) h;
+        }
     }
 
     @Override
@@ -271,17 +313,68 @@ public class LorieView extends SurfaceView implements InputStub {
             clipboard.removePrimaryClipChangedListener(clipboardListener);
     }
 
+    public void injectPointerMove(int x, int y) {
+//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+//            pointer.moveTo(x, y);
+//        }
+    }
+
+    public void injectPointerMoveDelta(int dx, int dy) {
+//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+//            pointer.moveTo(pointer.getX() + dx, pointer.getY() + dy);
+//        }
+    }
+
+    public void injectPointerButtonPress(Pointer.Button buttonCode) {
+//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+//            pointer.setButton(buttonCode, true);
+//        }
+    }
+
+    public void injectPointerButtonRelease(Pointer.Button buttonCode) {
+//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+//            pointer.setButton(buttonCode, false);
+//        }
+    }
+
+    public void injectKeyPress(XKeycode xKeycode) {
+        injectKeyPress(xKeycode, 0);
+    }
+
+    public void injectKeyPress(XKeycode xKeycode, int keysym) {
+//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+//            keyboard.setKeyPress(xKeycode.id, keysym);
+//        }
+    }
+
+    public void injectKeyRelease(XKeycode xKeycode) {
+//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+//            keyboard.setKeyRelease(xKeycode.id);
+//        }
+    }
+
     static native void connect(int fd);
+
     native void handleXEvents();
+
     static native void startLogcat(int fd);
+
     static native void setClipboardSyncEnabled(boolean enabled, boolean ignored);
+
     public native void sendClipboardAnnounce();
+
     public native void sendClipboardEvent(byte[] text);
+
     static native void sendWindowChange(int width, int height, int framerate);
+
     public native void sendMouseEvent(float x, float y, int whichButton, boolean buttonDown, boolean relative);
+
     public native void sendTouchEvent(int action, int id, int x, int y);
+
     public native boolean sendKeyEvent(int scanCode, int keyCode, boolean keyDown);
+
     public native void sendTextEvent(byte[] text);
+
     public native void sendUnicodeEvent(int code);
 
     static {

@@ -37,9 +37,12 @@
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
+
 
     <application
         android:name=".app.TermuxApplication"
@@ -54,43 +57,15 @@
         android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar"
         tools:targetApi="m">
         <!--termux-x11-->
-        <activity
-            android:name=".display.MainActivity"
-            android:configChanges="fontScale|orientation|screenSize|keyboard|keyboardHidden|layoutDirection|locale|mcc|mnc|navigation|screenLayout|touchscreen|uiMode|smallestScreenSize|density"
-            android:exported="true"
-            android:launchMode="singleInstance"
-            android:resizeableActivity="true"
-            android:supportsPictureInPicture="true"
-            android:taskAffinity=".display.MainActivity"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
-            android:windowSoftInputMode="stateHidden">
-            <!--            <intent-filter>-->
-            <!--                <action android:name="android.intent.action.MAIN" />-->
+        <activity android:name="com.termux.display.controller.ControlsEditorActivity"
+            android:exported="false"
+            android:theme="@style/AppThemeFullscreen"
+            android:screenOrientation="sensorLandscape" />
 
-            <!--                <category android:name="android.intent.category.LAUNCHER" />-->
-            <!--            </intent-filter>-->
-            <!--            <intent-filter>-->
-            <!--                <action android:name="android.intent.action.MAIN" />-->
-
-            <!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
-            <!--            </intent-filter>-->
-            <meta-data
-                android:name="android.app.shortcuts"
-                android:resource="@xml/shortcuts" />
-        </activity>
-        <activity
-            android:name=".display.LoriePreferences"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:resizeableActivity="true"
-            android:supportsPictureInPicture="false"
-            android:taskAffinity=".display.LoriePreferences"
-            android:theme="@style/Theme.AppCompat.DayNight">
-            <intent-filter>
-                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
-                <!--                <action android:name="android.intent.action.MAIN" />-->
-            </intent-filter>
-        </activity>
+        <activity android:name="com.termux.display.controller.ExternalControllerBindingsActivity"
+            android:theme="@style/AppThemeLight"
+            android:exported="false"
+            android:screenOrientation="sensor" />
 
         <meta-data
             android:name="android.allow_multiple_resumed_activities"

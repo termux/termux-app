@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/container_run" android:title="@string/run" android:icon="@drawable/icon_popup_menu_run" android:iconTint="@color/colorAccent" />
+    <item android:id="@+id/container_edit" android:title="@string/edit" android:icon="@drawable/icon_popup_menu_edit" android:iconTint="@color/colorAccent" />
+    <item android:id="@+id/container_duplicate" android:title="@string/duplicate" android:icon="@drawable/icon_popup_menu_duplicate" android:iconTint="@color/colorAccent" />
+    <item android:id="@+id/container_remove" android:title="@string/remove" android:icon="@drawable/icon_popup_menu_remove" android:iconTint="@color/colorAccent" />
+    <item android:id="@+id/container_info" android:title="@string/storage_info" android:icon="@drawable/icon_popup_menu_info" android:iconTint="@color/colorAccent" />
+</menu>

@@ -4,8 +4,21 @@ import static android.Manifest.permission.WRITE_SECURE_SETTINGS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.view.InputDevice.KEYBOARD_TYPE_ALPHABETIC;
-import static android.view.KeyEvent.*;
-import static android.view.WindowManager.LayoutParams.*;
+import static android.view.KeyEvent.ACTION_UP;
+import static android.view.KeyEvent.KEYCODE_BACK;
+import static android.view.KeyEvent.KEYCODE_META_LEFT;
+import static android.view.KeyEvent.KEYCODE_META_RIGHT;
+import static android.view.KeyEvent.KEYCODE_VOLUME_DOWN;
+import static android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
+import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
+import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+import static android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN;
 import static com.termux.display.CmdEntryPoint.ACTION_START;
 
 import android.Manifest;
@@ -26,6 +39,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -47,10 +61,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -58,37 +75,40 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.math.MathUtils;
 import androidx.viewpager.widget.ViewPager;
 
+import com.termux.display.controller.container.Container;
+import com.termux.display.controller.container.Shortcut;
+import com.termux.display.controller.contentdialog.ContentDialog;
+import com.termux.display.controller.core.DownloadProgressDialog;
+import com.termux.display.controller.inputcontrols.ControlsProfile;
+import com.termux.display.controller.inputcontrols.InputControlsManager;
+import com.termux.display.controller.widget.InputControlsView;
+import com.termux.display.controller.widget.TouchpadView;
+import com.termux.display.controller.winhandler.WinHandler;
 import com.termux.display.input.InputEventSender;
 import com.termux.display.input.InputStub;
-import com.termux.display.input.TouchInputHandler.RenderStub;
 import com.termux.display.input.TouchInputHandler;
+import com.termux.display.input.TouchInputHandler.RenderStub;
 import com.termux.display.utils.FullscreenWorkaround;
 import com.termux.display.utils.KeyInterceptor;
 import com.termux.display.utils.SamsungDexUtils;
-//import com.termux.display.utils.TermuxX11ExtraKeys;
-//import com.termux.display.utils.X11ToolbarViewPager;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
+import com.termux.display.controller.core.Callback;
 
 @SuppressLint("ApplySharedPref")
 @SuppressWarnings({"deprecation", "unused"})
 public class MainActivity extends LoriePreferences implements View.OnApplyWindowInsetsListener {
     static final String ACTION_STOP = "com.termux.display.ACTION_STOP";
     static final String REQUEST_LAUNCH_EXTERNAL_DISPLAY = "request_launch_external_display";
-
-    //    public static Handler handler = new Handler();
-    FrameLayout frm;
+    protected FrameLayout frm;
     protected View lorieContentView;
     protected TouchInputHandler mInputHandler;
     private ICmdEntryInterface service = null;
-    //    public TermuxX11ExtraKeys mExtraKeys;
-    //    private Notification mNotification;
-    //    private final int mNotificationId = 7892;
     private final int mNotificationId = 7893;
-    //    NotificationManager mNotificationManager;
     private boolean mClientConnected = false;
-    //    private boolean mClientStartedFromShell = false;
     private View.OnKeyListener mLorieKeyListener;
     private boolean filterOutWinKey = false;
     private static final int KEY_BACK = 158;
@@ -128,6 +148,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity instance;
+
 
     public MainActivity() {
         instance = this;
@@ -290,6 +311,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         initStylusAuxButtons();
         initMouseAuxButtons();
+        setupInputController();
 
         if (SDK_INT >= VERSION_CODES.TIRAMISU
             && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PERMISSION_GRANTED
@@ -303,7 +325,27 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         unregisterReceiver(receiver);
         super.onDestroy();
     }
+    private void setupInputController(){
+        container = new Container(0);
+        touchpadView = new TouchpadView(this, getLorieContentView());
+        touchpadView.setSensitivity(globalCursorSpeed);
+        touchpadView.setFourFingersTapCallback(() -> {
+//            if (!drawerLayout.isDrawerOpen(GravityCompat.START)) drawerLayout.openDrawer(GravityCompat.START);
+        });
+        frm.addView(touchpadView,0);
 
+        inputControlsView = new InputControlsView(this);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        inputControlsView.setOverlayOpacity(preferences.getFloat("overlay_opacity", InputControlsView.DEFAULT_OVERLAY_OPACITY));
+        inputControlsView.setTouchpadView(touchpadView);
+        inputControlsView.setXServer(getLorieContentView());
+        inputControlsView.setVisibility(View.GONE);
+
+        frm.addView(inputControlsView,0);
+        inputControlsManager = new InputControlsManager(this);
+        String shortcutPath = getIntent().getStringExtra("shortcut_path");
+        if (shortcutPath != null && !shortcutPath.isEmpty()) shortcut = new Shortcut(container, new File(shortcutPath));
+    }
     //Register the needed events to handle stylus as left, middle and right click
     @SuppressLint("ClickableViewAccessibility")
     private void initStylusAuxButtons() {
@@ -664,85 +706,11 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 //        }, 200);
     }
 
-    public void toggleExtraKeys(boolean visible, boolean saveState) {
-        runOnUiThread(() -> {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            boolean enabled = preferences.getBoolean("showAdditionalKbd", true);
-            ViewPager pager = getTerminalToolbarViewPager();
-            ViewGroup parent = (ViewGroup) pager.getParent();
-            boolean show = enabled && mClientConnected && visible;
-
-            if (show) {
-                setTerminalToolbarView();
-                getTerminalToolbarViewPager().bringToFront();
-            } else {
-                parent.removeView(pager);
-                parent.addView(pager, 0);
-            }
-
-            if (enabled && saveState) {
-                SharedPreferences.Editor edit = preferences.edit();
-                edit.putBoolean("additionalKbdVisible", show);
-                edit.commit();
-            }
-
-            pager.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
-
-            getLorieContentView().requestFocus();
-        });
-    }
-
-    public void toggleExtraKeys() {
-        int visibility = getTerminalToolbarViewPager().getVisibility();
-//        toggleExtraKeys(visibility != View.VISIBLE, true);
-        getLorieContentView().requestFocus();
-    }
-
     public boolean handleKey(KeyEvent e) {
         if (filterOutWinKey && (e.getKeyCode() == KEYCODE_META_LEFT || e.getKeyCode() == KEYCODE_META_RIGHT || e.isMetaPressed()))
             return false;
         mLorieKeyListener.onKey(getLorieContentView(), e.getKeyCode(), e);
         return true;
-    }
-
-    @SuppressLint("ObsoleteSdkInt")
-    Notification buildNotification() {
-        Intent preferencesIntent = new Intent(this, LoriePreferences.class);
-        preferencesIntent.putExtra("key", "value");
-        preferencesIntent.setAction(Intent.ACTION_MAIN);
-
-        Intent exitIntent = new Intent(ACTION_STOP);
-        exitIntent.setPackage(getPackageName());
-
-        PendingIntent pIntent = PendingIntent.getActivity(this, 0, preferencesIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        PendingIntent pExitIntent = PendingIntent.getBroadcast(this, 0, exitIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        return new NotificationCompat.Builder(this, getNotificationChannel(notificationManager))
-            .setContentTitle("Termux:X11")
-            .setSmallIcon(R.drawable.ic_x11_icon)
-            .setContentText("Pull down to show options")
-            .setContentIntent(pIntent)
-            .setOngoing(false)
-            .setPriority(Notification.PRIORITY_MAX)
-            .setSilent(true)
-            .setShowWhen(false)
-            .setColor(0xFF607D8B)
-            .addAction(0, "Exit", pExitIntent)
-            .addAction(0, "Preferences", pIntent)
-            .build();
-    }
-
-    private String getNotificationChannel(NotificationManager notificationManager) {
-        String channelId = getResources().getString(R.string.app_name);
-        String channelName = getResources().getString(R.string.app_name);
-        NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT);
-        channel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
-        channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-        if (SDK_INT >= VERSION_CODES.Q)
-            channel.setAllowBubbles(false);
-        notificationManager.createNotificationChannel(channel);
-        return channelId;
     }
 
     int orientation;
@@ -856,11 +824,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         getLorieContentView().requestFocus();
 
-    }
-
-    @Override
-    public void onBackPressed() {
-        
     }
 
     public static boolean hasPipPermission(@NonNull Context context) {

@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout style="@style/FieldSet">
+                    <LinearLayout
+                        android:id="@+id/LLInstalledWineList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                    <View style="@style/HorizontalLine" />
+
+                    <Button
+                        style="@style/ButtonPositive"
+                        android:id="@+id/BTSelectWineFile"
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="@string/install_wine" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/FieldSetLabel"
+                    android:text="@string/installed_wine" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout style="@style/FieldSet">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/box86_version" />
+
+                    <Spinner
+                        style="@style/ComboBox"
+                        android:id="@+id/SBox86Version"
+                        android:layout_width="match_parent"
+                        android:entries="@array/box86_version_entries" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/box64_version" />
+
+                    <Spinner
+                        style="@style/ComboBox"
+                        android:id="@+id/SBox64Version"
+                        android:layout_width="match_parent"
+                        android:entries="@array/box64_version_entries" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/box86_preset" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <Spinner
+                            style="@style/ComboBox"
+                            android:id="@+id/SBox86Preset"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+
+                        <ImageButton
+                            style="@style/ListMenuButton"
+                            android:id="@+id/BTAddBox86Preset"
+                            android:src="@drawable/icon_add" />
+
+                        <ImageButton
+                            style="@style/ListMenuButton"
+                            android:id="@+id/BTEditBox86Preset"
+                            android:src="@drawable/icon_edit" />
+
+                        <ImageButton
+                            style="@style/ListMenuButton"
+                            android:id="@+id/BTDuplicateBox86Preset"
+                            android:src="@drawable/icon_duplicate" />
+
+                        <ImageButton
+                            style="@style/ListMenuButton"
+                            android:id="@+id/BTRemoveBox86Preset"
+                            android:layout_marginRight="0dp"
+                            android:src="@drawable/icon_remove" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/box64_preset" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <Spinner
+                            style="@style/ComboBox"
+                            android:id="@+id/SBox64Preset"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+
+                        <ImageButton
+                            style="@style/ListMenuButton"
+                            android:id="@+id/BTAddBox64Preset"
+                            android:src="@drawable/icon_add" />
+
+                        <ImageButton
+                            style="@style/ListMenuButton"
+                            android:id="@+id/BTEditBox64Preset"
+                            android:src="@drawable/icon_edit" />
+
+                        <ImageButton
+                            style="@style/ListMenuButton"
+                            android:id="@+id/BTDuplicateBox64Preset"
+                            android:src="@drawable/icon_duplicate" />
+
+                        <ImageButton
+                            style="@style/ListMenuButton"
+                            android:id="@+id/BTRemoveBox64Preset"
+                            android:layout_marginRight="0dp"
+                            android:src="@drawable/icon_remove" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    style="@style/FieldSetLabel"
+                    android:text="@string/box86_box64" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout style="@style/FieldSet">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/cursor_speed"/>
+
+                        <TextView
+                            android:id="@+id/TVCursorSpeed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <SeekBar
+                        android:id="@+id/SBCursorSpeed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:min="10"
+                        android:max="200" />
+
+                    <CheckBox
+                        android:id="@+id/CBUseDRI3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/use_dri3_extension"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/FieldSetLabel"
+                    android:text="@string/xserver" />
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/BTConfirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right|bottom"
+        android:tint="#ffffff"
+        android:src="@drawable/icon_confirm"
+        android:layout_margin="16dp" />
+</FrameLayout>

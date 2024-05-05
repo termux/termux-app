@@ -71,6 +71,11 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'com.github.luben:zstd-jni:1.5.2-3@aar'
+    implementation 'org.tukaani:xz:1.7'
+    implementation 'org.apache.commons:commons-compress:1.20'
+
 }
 def isWindows() {
     return System.properties['os.name'].contains('windows');

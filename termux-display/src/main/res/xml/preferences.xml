@@ -26,19 +26,25 @@
             android:key="displayResolutionCustom"
             android:defaultValue="1280x1024"
             android:summary="Example: 1280x1024" />
+        <SwitchPreferenceCompat
+            android:title="Switch Slide Menu"
+            android:defaultValue="false"
+            android:key="switchSlider" />
         <Preference
             android:title="Open keyboard"
             android:key="open_keyboard" />
+        <Preference
+            android:title="Open inputcontroller"
+            android:key="open_inputcontroller" />
+        <Preference
+            android:title="Create inputcontroller profile"
+            android:key="create_inputcontroller_profile" />
         <Preference
             android:title="Install x11 server bridge"
             android:key="install_x11_server_bridge" />
         <Preference
             android:title="Stop desktop"
             android:key="stop_desktop" />
-        <SwitchPreferenceCompat
-            android:title="Switch Slide Menu"
-            android:defaultValue="false"
-            android:key="switchSlider" />
         <SwitchPreferenceCompat
             android:title="Stretch to fit display"
             android:defaultValue="false"

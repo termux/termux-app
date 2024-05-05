@@ -98,7 +98,7 @@ import java.util.Arrays;
  * about memory leaks.
  */
 public class TermuxActivity extends com.termux.display.MainActivity implements ServiceConnection {
-    private static final int FILE_REQUEST_CODE = 10;
+    private static final int FILE_REQUEST_CODE = 101;
     private DisplaySlidingWindow slideWindowLayout;
 
     /**
@@ -375,6 +375,18 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public void openSoftwareKeyboard() {
                 switchSoftKeyboard(false);
+            }
+
+            @Override
+            public void showInputController() {
+//                frm.addView(touchpadView);
+//                frm.addView(inputControlsView);
+            }
+
+            @Override
+            public void hideInputController() {
+                frm.removeView(touchpadView);
+                frm.removeView(inputControlsView);
             }
         };
     }

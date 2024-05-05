@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/name" />
+
+    <EditText
+        style="@style/EditText"
+        android:layout_width="300dp"
+        android:id="@+id/ETName" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/value"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        style="@style/EditText"
+        android:layout_width="300dp"
+        android:id="@+id/ETValue" />
+</LinearLayout>

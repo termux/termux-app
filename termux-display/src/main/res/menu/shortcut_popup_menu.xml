@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/shortcut_settings" android:title="@string/settings" android:icon="@drawable/icon_popup_menu_settings" android:iconTint="@color/colorAccent" />
+    <item android:id="@+id/shortcut_remove" android:title="@string/remove" android:icon="@drawable/icon_popup_menu_remove" android:iconTint="@color/colorAccent" />
+</menu>

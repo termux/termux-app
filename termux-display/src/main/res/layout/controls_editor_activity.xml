@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/FLContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/input_controls_toolbar"
+        android:gravity="center_vertical"
+        android:padding="4dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#ffffff"
+                android:text="@string/profile" />
+
+            <TextView
+                android:id="@+id/TVProfileName"
+                android:layout_width="wrap_content"
+                android:textColor="@color/colorAccent"
+                android:textSize="14sp"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <View style="@style/VerticalLine" />
+
+        <ImageButton
+            android:id="@+id/BTAddElement"
+            style="@style/ToolButton"
+            android:src="@drawable/icon_add"  />
+
+        <ImageButton
+            android:id="@+id/BTRemoveElement"
+            style="@style/ToolButton"
+            android:src="@drawable/icon_remove"  />
+
+        <ImageButton
+            android:id="@+id/BTElementSettings"
+            style="@style/ToolButton"
+            android:src="@drawable/icon_settings"  />
+    </LinearLayout>
+</FrameLayout>

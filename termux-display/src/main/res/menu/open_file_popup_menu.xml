@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/open_file" android:title="@string/open_file" android:icon="@drawable/icon_popup_menu_open" android:iconTint="@color/colorAccent" />
+    <item android:id="@+id/download_file" android:title="@string/download_file" android:icon="@drawable/icon_popup_menu_download" android:iconTint="@color/colorAccent" />
+</menu>

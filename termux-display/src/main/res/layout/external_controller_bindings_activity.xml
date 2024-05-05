@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:id="@+id/Toolbar"
+        android:background="@color/colorPrimary"
+        app:layout_scrollFlags="enterAlways|scroll"
+        app:titleTextColor="#ffffff"
+        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/RecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            app:layoutManager="LinearLayoutManager" />
+
+        <TextView
+            android:id="@+id/TVEmptyText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/press_any_button_on_your_controller"
+            android:textSize="24sp"
+            android:visibility="gone" />
+    </FrameLayout>
+</LinearLayout>

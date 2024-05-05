@@ -15,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.XmlResourceParser;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -42,10 +43,23 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.termux.display.controller.container.Container;
+import com.termux.display.controller.container.Shortcut;
+import com.termux.display.controller.contentdialog.ContentDialog;
+import com.termux.display.controller.core.Callback;
+import com.termux.display.controller.core.DownloadProgressDialog;
+import com.termux.display.controller.inputcontrols.ControlsProfile;
+import com.termux.display.controller.inputcontrols.InputControlsManager;
+import com.termux.display.controller.widget.InputControlsView;
+import com.termux.display.controller.widget.TouchpadView;
+import com.termux.display.controller.winhandler.WinHandler;
 import com.termux.display.utils.KeyInterceptor;
 import com.termux.display.utils.SamsungDexUtils;
 
@@ -56,6 +70,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -63,17 +78,27 @@ import java.util.regex.PatternSyntaxException;
 
 @SuppressWarnings("deprecation")
 public class LoriePreferences extends AppCompatActivity {
+    public static final int EDIT_INPUT_CONTROLS_REQUEST_CODE = 103;
+    public static int OPEN_FILE_REQUEST_CODE = 102;
     static final String ACTION_PREFERENCES_CHANGED = "com.termux.display.ACTION_PREFERENCES_CHANGED";
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
     protected LoriePreferenceFragment loriePreferenceFragment;
     protected interface TermuxActivityListener {
         void onX11PreferenceSwitchChange(boolean isOpen);
+
         void onSwitchSliderChange();
-        void  onChangeOrientation(int landscape);
+
+        void onChangeOrientation(int landscape);
+
         void reInstallX11StartScript(Activity activity);
+
         void stopDesktop(Activity activity);
+
         void openSoftwareKeyboard();
+        void showInputController();
+        void hideInputController();
     }
+
     protected TermuxActivityListener termuxActivityListener;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -88,6 +113,19 @@ public class LoriePreferences extends AppCompatActivity {
             }
         }
     };
+
+    //input controller
+    protected InputControlsManager inputControlsManager;
+    protected InputControlsView inputControlsView;
+    protected TouchpadView touchpadView;
+    protected Runnable editInputControlsCallback;
+    protected Shortcut shortcut;
+    protected DownloadProgressDialog preloaderDialog;
+    protected Callback<Uri> openFileCallback;
+    protected float globalCursorSpeed = 1.0f;
+    protected ControlsProfile profile;
+    protected String controlsProfile;
+    protected Container container;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,19 +167,22 @@ public class LoriePreferences extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-    public void installX11ServerBridge(){
-        if (termuxActivityListener!=null){
+
+    public void installX11ServerBridge() {
+        if (termuxActivityListener != null) {
             termuxActivityListener.reInstallX11StartScript(this);
         }
     }
-    public void stopDesktop(){
-        if (termuxActivityListener!=null){
+
+    public void stopDesktop() {
+        if (termuxActivityListener != null) {
             termuxActivityListener.stopDesktop(this);
         }
     }
 
     public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
         private LoriePreferences activity;
+
         public void setActivity(LoriePreferences activity) {
             this.activity = activity;
         }
@@ -211,7 +252,7 @@ public class LoriePreferences extends AppCompatActivity {
             findPreference("showMouseHelper").setEnabled("1".equals(p.getString("touchMode", "1")));
 
             boolean requestNotificationPermissionVisible =
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                     && ContextCompat.checkSelfPermission(requireContext(), POST_NOTIFICATIONS) == PERMISSION_DENIED;
             findPreference("requestNotificationPermission").setVisible(requestNotificationPermissionVisible);
         }
@@ -232,7 +273,7 @@ public class LoriePreferences extends AppCompatActivity {
         }
 
         void setListeners(PreferenceGroup g) {
-            for (int i=0; i < g.getPreferenceCount(); i++) {
+            for (int i = 0; i < g.getPreferenceCount(); i++) {
                 g.getPreference(i).setOnPreferenceChangeListener(this);
                 g.getPreference(i).setOnPreferenceClickListener(this);
                 g.getPreference(i).setSingleLineTitle(false);
@@ -260,18 +301,18 @@ public class LoriePreferences extends AppCompatActivity {
                 desc.setText(R.string.extra_keys_config_desc);
                 desc.setMovementMethod(LinkMovementMethod.getInstance());
                 new android.app.AlertDialog.Builder(getActivity())
-                        .setView(view)
-                        .setTitle("Extra keys config")
-                        .setPositiveButton("OK",
-                                (dialog, whichButton) -> {
+                    .setView(view)
+                    .setTitle("Extra keys config")
+                    .setPositiveButton("OK",
+                        (dialog, whichButton) -> {
 
-                                }
-                        )
-                        .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
-                        .create()
-                        .show();
+                        }
+                    )
+                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
+                    .create()
+                    .show();
             }
-            if("install_x11_server_bridge".contentEquals(preference.getKey())){
+            if ("install_x11_server_bridge".contentEquals(preference.getKey())) {
                 View view = getLayoutInflater().inflate(R.layout.x11_server_bridge_config, null, false);
                 @SuppressLint({"MissingInflatedId", "LocalSuppress"})
                 TextView desc = view.findViewById(R.id.x11_server_bridge_config_description);
@@ -282,7 +323,7 @@ public class LoriePreferences extends AppCompatActivity {
                     .setTitle("X11 server bridge installer")
                     .setPositiveButton("OK",
                         (dialog, whichButton) -> {
-                            if (activity!= null){
+                            if (activity != null) {
                                 activity.installX11ServerBridge();
                             }
                         }
@@ -291,12 +332,12 @@ public class LoriePreferences extends AppCompatActivity {
                     .create()
                     .show();
             }
-            if ("stop_desktop".contentEquals(preference.getKey())){
+            if ("stop_desktop".contentEquals(preference.getKey())) {
                 new android.app.AlertDialog.Builder(getActivity())
                     .setTitle("Stop Desktop")
                     .setPositiveButton("OK",
                         (dialog, whichButton) -> {
-                            if (activity!= null){
+                            if (activity != null) {
                                 activity.stopDesktop();
                             }
                         }
@@ -305,11 +346,23 @@ public class LoriePreferences extends AppCompatActivity {
                     .create()
                     .show();
             }
-            if("open_keyboard".contentEquals(preference.getKey())){
+            if ("open_keyboard".contentEquals(preference.getKey())) {
                 activity.openSoftKeyboar();
             }
+            if ("open_inputcontroller".contentEquals(preference.getKey())) {
+                activity.showInputControlsDialog();
+            }
+            if ("create_inputcontroller_profile".contentEquals(preference.getKey())) {
+                if (activity.getShortcut() != null) {
+                    String controlsProfile = activity.getShortcut().getExtra("controlsProfile");
+                    if (!controlsProfile.isEmpty()) {
+                        ControlsProfile profile = activity.getInputControlsManager().getProfile(Integer.parseInt(activity.getControlsProfile()));
+                        if (profile != null) activity.showInputControls(profile);
+                    }
+                }
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(preference.getKey()))
-                ActivityCompat.requestPermissions(requireActivity(), new String[]{ POST_NOTIFICATIONS }, 101);
+                ActivityCompat.requestPermissions(requireActivity(), new String[]{POST_NOTIFICATIONS}, 101);
 
             updatePreferencesLayout();
             return false;
@@ -329,13 +382,13 @@ public class LoriePreferences extends AppCompatActivity {
                 } catch (Exception e) {
                     if (e instanceof SecurityException) {
                         new AlertDialog.Builder(requireActivity())
-                                .setTitle("Permission denied")
-                                .setMessage("Android requires WRITE_SECURE_SETTINGS permission to change this setting.\n" +
-                                            "Please, launch this command using ADB:\n" +
-                                            "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS")
-                                .setNegativeButton("OK", null)
-                                .create()
-                                .show();
+                            .setTitle("Permission denied")
+                            .setMessage("Android requires WRITE_SECURE_SETTINGS permission to change this setting.\n" +
+                                "Please, launch this command using ADB:\n" +
+                                "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS")
+                            .setNegativeButton("OK", null)
+                            .create()
+                            .show();
                     } else e.printStackTrace();
                     return false;
                 }
@@ -344,7 +397,7 @@ public class LoriePreferences extends AppCompatActivity {
             if ("displayScale".contentEquals(key)) {
                 int scale = (Integer) newValue;
                 if (scale % 10 != 0) {
-                    scale = Math.round( ( (float) scale ) / 10 ) * 10;
+                    scale = Math.round(((float) scale) / 10) * 10;
                     ((SeekBarPreference) preference).setValue(scale);
                     return false;
                 }
@@ -386,13 +439,13 @@ public class LoriePreferences extends AppCompatActivity {
                     KeyInterceptor.shutdown();
                 if (requireContext().checkSelfPermission(WRITE_SECURE_SETTINGS) != PERMISSION_GRANTED) {
                     new AlertDialog.Builder(requireContext())
-                            .setTitle("Permission denied")
-                            .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
-                                    "Please, launch this command using ADB:\n" +
-                                    "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS")
-                            .setNegativeButton("OK", null)
-                            .create()
-                            .show();
+                        .setTitle("Permission denied")
+                        .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
+                            "Please, launch this command using ADB:\n" +
+                            "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS")
+                        .setNegativeButton("OK", null)
+                        .create()
+                        .show();
                     return false;
                 }
             }
@@ -442,13 +495,13 @@ public class LoriePreferences extends AppCompatActivity {
                                         String key = parser.getAttributeValue(namespace, "key");
                                         String value = p.containsKey(key) ? Objects.requireNonNull(p.get(key)).toString() : parser.getAttributeValue(namespace, "defaultValue");
                                         if (key.equals("extra_keys_config") && !p.containsKey(key))
-                                        if (key.equals("touchMode")) {
-                                            String[] options0 = context.getResources().getStringArray(R.array.touchscreenInputModesEntries);
-                                            String[] options1 = context.getResources().getStringArray(R.array.touchscreenInputModesValues);
-                                            for (int i=0; i<options0.length; i++)
-                                                if (value.contentEquals(options1[i]))
-                                                    value = options0[i];
-                                        }
+                                            if (key.equals("touchMode")) {
+                                                String[] options0 = context.getResources().getStringArray(R.array.touchscreenInputModesEntries);
+                                                String[] options1 = context.getResources().getStringArray(R.array.touchscreenInputModesValues);
+                                                for (int i = 0; i < options0.length; i++)
+                                                    if (value.contentEquals(options1[i]))
+                                                        value = options0[i];
+                                            }
 
                                         //noinspection StringConcatenationInLoop
                                         result += "\"" + key + "\"=\"" + value + "\"\n";
@@ -480,9 +533,9 @@ public class LoriePreferences extends AppCompatActivity {
                                     if (e instanceof SecurityException) {
                                         setResultCode(1);
                                         setResultData("Permission denied.\n" +
-                                                "Android requires WRITE_SECURE_SETTINGS permission to change `show_ime_with_hard_keyboard` setting.\n" +
-                                                "Please, launch this command using ADB:\n" +
-                                                "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS");
+                                            "Android requires WRITE_SECURE_SETTINGS permission to change `show_ime_with_hard_keyboard` setting.\n" +
+                                            "Please, launch this command using ADB:\n" +
+                                            "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS");
                                         return;
                                     } else e.printStackTrace();
                                 }
@@ -540,9 +593,9 @@ public class LoriePreferences extends AppCompatActivity {
                                 else if (context.checkSelfPermission(WRITE_SECURE_SETTINGS) != PERMISSION_GRANTED) {
                                     setResultCode(1);
                                     setResultData("Permission denied.\n" +
-                                            "Android requires WRITE_SECURE_SETTINGS permission to change `show_ime_with_hard_keyboard` setting.\n" +
-                                            "Please, launch this command using ADB:\n" +
-                                            "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS");
+                                        "Android requires WRITE_SECURE_SETTINGS permission to change `show_ime_with_hard_keyboard` setting.\n" +
+                                        "Please, launch this command using ADB:\n" +
+                                        "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS");
                                     return;
                                 }
 
@@ -555,7 +608,7 @@ public class LoriePreferences extends AppCompatActivity {
                             }
 
                             case "displayResolutionMode":
-                            case "displayResolutionExact":{
+                            case "displayResolutionExact": {
                                 int array = 0;
                                 switch (key) {
                                     case "displayResolutionMode":
@@ -578,7 +631,7 @@ public class LoriePreferences extends AppCompatActivity {
                                 String[] options0 = context.getResources().getStringArray(R.array.touchscreenInputModesEntries);
                                 String[] options1 = context.getResources().getStringArray(R.array.touchscreenInputModesValues);
                                 boolean found = false;
-                                for (int i=0; i<options0.length; i++) {
+                                for (int i = 0; i < options0.length; i++) {
                                     if (newValue.contentEquals(options0[i])) {
                                         found = true;
                                         edit.putString(key, options1[i]);
@@ -642,4 +695,113 @@ public class LoriePreferences extends AppCompatActivity {
     }
 
     static Handler handler = new Handler();
+
+    //inout control
+    public InputControlsView getInputControlsView() {
+        return inputControlsView;
+    }
+
+    public WinHandler getWinHandler() {
+        return null;
+    }
+
+    public InputControlsManager getInputControlsManager() {
+        return inputControlsManager;
+    }
+
+    public void setOpenFileCallback(Callback<Uri> openFileCallback) {
+        this.openFileCallback = openFileCallback;
+    }
+
+    public String getControlsProfile() {
+        return controlsProfile;
+    }
+
+    public Shortcut getShortcut() {
+        return shortcut;
+    }
+
+    public DownloadProgressDialog getPreloaderDialog() {
+        return preloaderDialog;
+    }
+
+    public void showInputControlsDialog() {
+        final ContentDialog dialog = new ContentDialog(this, R.layout.input_controls_dialog);
+        dialog.setTitle(R.string.input_controls);
+        dialog.setIcon(R.drawable.icon_input_controls);
+
+        final Spinner sProfile = dialog.findViewById(R.id.SProfile);
+        Runnable loadProfileSpinner = () -> {
+            ArrayList<ControlsProfile> profiles = inputControlsManager.getProfiles();
+            ArrayList<String> profileItems = new ArrayList<>();
+            int selectedPosition = 0;
+            profileItems.add("-- " + getString(R.string.disabled) + " --");
+            for (int i = 0; i < profiles.size(); i++) {
+                ControlsProfile profile = profiles.get(i);
+                if (profile == inputControlsView.getProfile()) selectedPosition = i + 1;
+                profileItems.add(profile.getName());
+            }
+
+            sProfile.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, profileItems));
+            sProfile.setSelection(selectedPosition);
+        };
+        loadProfileSpinner.run();
+
+        final CheckBox cbLockCursor = dialog.findViewById(R.id.CBLockCursor);
+//        cbLockCursor.setChecked(xServer.cursorLocker.getState() == CursorLocker.State.LOCKED);
+
+        final CheckBox cbShowTouchscreenControls = dialog.findViewById(R.id.CBShowTouchscreenControls);
+        cbShowTouchscreenControls.setChecked(inputControlsView.isShowTouchscreenControls());
+
+        dialog.findViewById(R.id.BTSettings).setOnClickListener((v) -> {
+            int position = sProfile.getSelectedItemPosition();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("edit_input_controls", true);
+            intent.putExtra("selected_profile_id", position > 0 ? inputControlsManager.getProfiles().get(position - 1).id : 0);
+            editInputControlsCallback = () -> {
+                hideInputControls();
+                inputControlsManager.loadProfiles();
+                loadProfileSpinner.run();
+            };
+            startActivityForResult(intent, MainActivity.EDIT_INPUT_CONTROLS_REQUEST_CODE);
+        });
+
+        dialog.setOnConfirmCallback(() -> {
+            if(termuxActivityListener==null){
+                return;
+            }
+            termuxActivityListener.showInputController();
+//            xServer.cursorLocker.setState(cbLockCursor.isChecked() ? CursorLocker.State.LOCKED : CursorLocker.State.CONFINED);
+            inputControlsView.setShowTouchscreenControls(cbShowTouchscreenControls.isChecked());
+            int position = sProfile.getSelectedItemPosition();
+            if (position > 0) {
+                showInputControls(inputControlsManager.getProfiles().get(position - 1));
+            } else hideInputControls();
+        });
+
+        dialog.show();
+    }
+
+    private void showInputControls(ControlsProfile controlsProfile) {
+        inputControlsView.setVisibility(View.VISIBLE);
+        inputControlsView.requestFocus();
+        inputControlsView.setProfile(profile);
+
+        touchpadView.setSensitivity(profile.getCursorSpeed() * globalCursorSpeed);
+        touchpadView.setPointerButtonRightEnabled(false);
+
+        inputControlsView.invalidate();
+    }
+
+    private void hideInputControls() {
+        inputControlsView.setShowTouchscreenControls(true);
+        inputControlsView.setVisibility(View.GONE);
+        inputControlsView.setProfile(null);
+
+        touchpadView.setSensitivity(globalCursorSpeed);
+        touchpadView.setPointerButtonLeftEnabled(true);
+        touchpadView.setPointerButtonRightEnabled(true);
+
+        inputControlsView.invalidate();
+    }
 }

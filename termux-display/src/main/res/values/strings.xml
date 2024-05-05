@@ -1,11 +1,8 @@
-<!DOCTYPE resources [
-    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
-    <!ENTITY TERMUX_APP_NAME "Termux">
-    <!ENTITY TERMUX_DISPLAY_APP_NAME "Termux:X11">
-    ]>
+<!DOCTYPE resources [<!ENTITY TERMUX_PACKAGE_NAME "com.termux"><!ENTITY TERMUX_APP_NAME "Termux"><!ENTITY TERMUX_DISPLAY_APP_NAME "Termux:X11">]>
 <resources>
     <string name="app_name">&TERMUX_DISPLAY_APP_NAME;</string>
-    <string name="plugin_info">&TERMUX_DISPLAY_APP_NAME; is a plugin app for the &TERMUX_APP_NAME; app.
+    <string name="plugin_info">&TERMUX_DISPLAY_APP_NAME; is a plugin app for the &TERMUX_APP_NAME;
+        app.
         \n\nCheck &TERMUX_APP_NAME; app github %1$s and &TERMUX_DISPLAY_APP_NAME; app github %2$s for more info.</string>
 
     <!-- TermuxX11Activity -->
@@ -49,4 +46,218 @@
     <string name="log_level_value">Logcat log level set to \"%1$s\"</string>
     <string name="help_button_start_x11">start x11 server</string>
     <string name="x11_server_bridge_config">Reinstall the bridge that the x11 server uses to communicate with termux. The installation will cause the current graphical interface to stop running and require a restart. If any file is not saved, save it and retry.</string>
+
+    <!--inpt controller-->
+    <string name="run">Run</string>
+    <string name="edit">Edit</string>
+    <string name="remove">Remove</string>
+    <string name="add">Add</string>
+    <string name="shortcuts">Shortcuts</string>
+    <string name="containers">Containers</string>
+    <string name="input_controls">Input Controls</string>
+    <string name="no_items_to_display">No items to display</string>
+    <string name="new_container">New Container</string>
+    <string name="edit_container">Edit Container</string>
+    <string name="creating_container">Creating Container...</string>
+    <string name="removing_container">Removing Container...</string>
+    <string name="duplicating_container">Duplicating Container...</string>
+    <string name="installing_system_files">Installing System Files...</string>
+    <string name="starting_up">Starting up...</string>
+    <string name="unable_to_install_system_files">Unable to install system files</string>
+    <string name="keyboard">Keyboard</string>
+    <string name="toggle_fullscreen">Toggle Fullscreen</string>
+    <string name="exit">Exit</string>
+    <string name="no_control_element_selected">No control element selected</string>
+    <string name="scale">Scale</string>
+    <string name="shape">Shape</string>
+    <string name="type">Type</string>
+    <string name="binding">Binding</string>
+    <string name="binding_up">Binding Up</string>
+    <string name="binding_right">Binding Right</string>
+    <string name="binding_down">Binding Down</string>
+    <string name="binding_left">Binding Left</string>
+    <string name="overlay_opacity">Overlay Opacity</string>
+    <string name="profile">Profile</string>
+    <string name="select_profile">Select Profile</string>
+    <string name="profile_name">Profile Name</string>
+    <string name="name">Name</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="untitled">Untitled</string>
+    <string name="no_profile_selected">No profile selected</string>
+    <string name="no_profile_found">No profile found</string>
+    <string name="do_you_want_to_remove_this_profile">Do you want to remove this profile?</string>
+    <string name="do_you_want_to_duplicate_this_profile">Do you want to duplicate this profile?</string>
+    <string name="do_you_want_to_duplicate_this_preset">Do you want to duplicate this preset?</string>
+    <string name="do_you_want_to_remove_this_container">Do you want to remove this container?</string>
+    <string name="do_you_want_to_duplicate_this_container">Do you want to duplicate this container?</string>
+    <string name="do_you_want_to_remove_this_shortcut">Do you want to remove this shortcut?</string>
+    <string name="do_you_want_to_remove_this_controller">Do you want to remove this controller?</string>
+    <string name="do_you_want_to_remove_this_wine_version">Do you want to remove this wine version?</string>
+    <string name="do_you_want_to_remove_this_preset">Do you want to remove this preset?</string>
+    <string name="do_you_want_to_end_this_process">Do you want to end this process?</string>
+    <string name="controls_editor">Controls Editor</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="container">Container</string>
+    <string name="screen_size">Screen Size</string>
+    <string name="new_environment_variable">New Environment Variable</string>
+    <string name="environment_variables">Environment Variables</string>
+    <string name="value">Value</string>
+    <string name="processor_affinity">Processor Affinity</string>
+    <string name="cursor_speed">Cursor Speed</string>
+    <string name="lock_cursor">Lock Cursor</string>
+    <string name="toggle_switch">Toggle Switch</string>
+    <string name="profile_exported_to">Profile exported to</string>
+    <string name="unable_to_import_profile">Unable to import profile</string>
+    <string name="wine_configuration">Wine Configuration</string>
+    <string name="registry_keys">Registry Keys</string>
+    <string name="csmt">CSMT (Command Stream Multi-Thread)</string>
+    <string name="gpu_name">GPU Name</string>
+    <string name="offscreen_rendering_mode">Offscreen Rendering Mode</string>
+    <string name="strict_shader_math">Strict Shader Math</string>
+    <string name="video_memory_size">Video Memory Size</string>
+    <string name="show_fps">Show FPS</string>
+    <string name="none">None</string>
+    <string name="custom_text">Custom Text</string>
+    <string name="icon">Icon</string>
+    <string name="import_profile">Import Profile</string>
+    <string name="export_profile">Export Profile</string>
+    <string name="touchpad_help">Touchpad Help</string>
+    <string name="touchpad_help_mouse_left_click_title">Mouse Left-Click</string>
+    <string name="touchpad_help_mouse_left_click_description">Short tap with one finger</string>
+    <string name="touchpad_help_mouse_right_click_title">Mouse Right-Click</string>
+    <string name="touchpad_help_mouse_right_click_description">Tap with one finger and short tap with another finger</string>
+    <string name="touchpad_help_mouse_scroll_wheel_title">Mouse Scroll Wheel</string>
+    <string name="touchpad_help_mouse_scroll_wheel_description">Two fingers tap and move</string>
+    <string name="touchpad_help_main_menu_title">Main Menu</string>
+    <string name="touchpad_help_main_menu_description">Four fingers tap</string>
+    <string name="duplicate">Duplicate</string>
+    <string name="about">About</string>
+    <string name="credits_and_third_party_apps">Credits and Third-party apps</string>
+    <string name="external_controllers">External Controllers</string>
+    <string name="graphics_driver">Graphics Driver</string>
+    <string name="audio_driver">Audio Driver</string>
+    <string name="loading">Loading...</string>
+    <string name="press_any_button_on_your_controller">Press any button on your controller</string>
+    <string name="bindings">bindings</string>
+    <string name="show_touchscreen_controls">Show Touchscreen Controls</string>
+    <string name="dxwrapper">DX Wrapper</string>
+    <string name="mouse_warp_override">Mouse Warp Override</string>
+    <string name="direct3d">Direct3D</string>
+    <string name="directsound">DirectSound</string>
+    <string name="directmusic">DirectMusic</string>
+    <string name="directplay">DirectPlay</string>
+    <string name="directshow">DirectShow</string>
+    <string name="vcrun2010">Visual C++ 2010</string>
+    <string name="settings">Settings</string>
+    <string name="exec_arguments">Exec Arguments</string>
+    <string name="win_components">Win Components</string>
+    <string name="drives">Drives</string>
+    <string name="force_fullscreen">Force Fullscreen</string>
+    <string name="range">Range</string>
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
+    <string name="force">Force</string>
+    <string name="installed_wine">Installed Wine</string>
+    <string name="install_wine">Install Wine</string>
+    <string name="arch">Arch</string>
+    <string name="version">Version</string>
+    <string name="unable_to_install_wine">Unable to install Wine</string>
+    <string name="unable_to_remove_this_wine_version">Unable to remove this wine version</string>
+    <string name="wine_version">Wine Version</string>
+    <string name="removing_wine">Removing Wine...</string>
+    <string name="preparing_installation">Preparing installation...</string>
+    <string name="finishing_installation">Finishing installation...</string>
+    <string name="storage_info">Storage Info</string>
+    <string name="drive_c">Drive C:</string>
+    <string name="cache">Cache</string>
+    <string name="total">Total</string>
+    <string name="clear_cache">Clear Cache</string>
+    <string name="estimated_used_space">Estimated Used Space</string>
+    <string name="advanced">Advanced</string>
+    <string name="box86_box64">Box86/Box64</string>
+    <string name="stop_services_on_startup">Stop services on startup</string>
+    <string name="system">System</string>
+    <string name="box86_preset">Box86 Preset</string>
+    <string name="box64_preset">Box64 Preset</string>
+    <string name="box86_version">Box86 Version</string>
+    <string name="box64_version">Box64 Version</string>
+    <string name="letter">Letter</string>
+    <string name="target_path">Target Path</string>
+    <string name="xserver">XServer</string>
+    <string name="use_dri3_extension">Use DRI3 extension</string>
+    <string name="width">Width</string>
+    <string name="height">Height</string>
+    <string name="old">old</string>
+    <string name="_new">new</string>
+    <string name="task_manager">Task Manager</string>
+    <string name="process_name">Process Name</string>
+    <string name="pid">PID</string>
+    <string name="memory">Memory</string>
+    <string name="end_process">End Process</string>
+    <string name="new_task">New Task</string>
+    <string name="processes">Processes</string>
+    <string name="orientation">Orientation</string>
+    <string name="horizontal">Horizontal</string>
+    <string name="vertical">Vertical</string>
+    <string name="open_file">Open File</string>
+    <string name="download_file">Download File</string>
+    <string name="do_you_want_to_download_the_selected_profiles">Do you want to download the selected profiles?</string>
+    <string name="downloading_file">Downloading File...</string>
+    <string name="unable_to_load_profile_list">Unable to load profile list</string>
+    <string name="copy">Copy</string>
+    <string name="installed_version">Installed Version</string>
+    <string name="unable_to_download_file">Unable to download file</string>
+    <string name="stability">Stability</string>
+    <string name="compatibility">Compatibility</string>
+    <string name="intermediate">Intermediate</string>
+    <string name="performance">Performance</string>
+    <string name="preset">Preset</string>
+    <string name="you_cannot_remove_this_preset">You cannot remove this preset</string>
+    <string name="dxwrapper_help_content"><![CDATA[
+        <i><b>WineD3D</b></i> is a translation layer for DirectX 1-11 to OpenGL.<br /><br />
+        <i><b>DXVK</b></i> is a translation layer for Direct3D 9-11 to Vulkan.<br /><br />
+        <i><b>D8VK</b></i> is a translation layer for Direct3D 8 to Vulkan.<br /><br />
+        <i><b>CNC DDraw</b></i> is an implementation of DirectDraw for better compatibility with classic games.
+    ]]></string>
+    <string name="box86_64_env_var_help__dynarec_safeflags"><![CDATA[
+        Handling of flags on CALL/RET opcodes<br /><br />
+        <b>0</b> : Treats CALL/RET as if it never needed flags (faster, unstable)<br />
+        <b>1</b> : Most RET will need flags, most CALLS will not<br />
+        <b>2</b> : All CALL/RET will need flags (slower)
+    ]]></string>
+    <string name="box86_64_env_var_help__dynarec_fastnan">Generation of -NAN like on x86</string>
+    <string name="box86_64_env_var_help__dynarec_fastround">Generation of precise x86 rounding</string>
+    <string name="box86_64_env_var_help__dynarec_x87double">Use of Float/Double for x87 emulation</string>
+    <string name="box86_64_env_var_help__dynarec_bigblock"><![CDATA[
+        Dynarec building BigBlock<br /><br />
+        <b>0</b> : Don\'t try to build block as big as possible<br />
+        <b>1</b> : Build Dynarec block as big as possible<br />
+        <b>2</b> : Build Dynarec block bigger (continue when block overlaps, but only for blocks in elf memory)<br />
+        <b>3</b> : Build Dynarec block bigger (continue when block overlaps, for all types of memory)
+    ]]></string>
+    <string name="box86_64_env_var_help__dynarec_strongmem"><![CDATA[
+        Simulation of Strong Memory model<br /><br />
+        <b>0</b> : Don\'t try anything special<br />
+        <b>1</b> : Enable some Memory Barrier when writing to memory (on some MOV opcode)<br />
+        <b>2</b> : All 1 plus a Memory Barrier on every write to memory using MOV<br />
+        <b>2</b> : All 2 plus Memory Barrier when reading from memory and on some SSE/SSE2 opcodes
+    ]]></string>
+    <string name="box86_64_env_var_help__dynarec_forward">Defines the max allowed forward value when building Block</string>
+    <string name="box86_64_env_var_help__dynarec_callret">Optimization of CALL/RET opcodes</string>
+    <string name="box86_64_env_var_help__dynarec_wait">Defines whether or not Dynarec will wait for the FillBlock to be ready</string>
+    <string name="columns">Columns</string>
+    <string name="directinput_mapper_type">DirectInput Mapper Type</string>
+    <string name="desktop">Desktop</string>
+    <string name="theme">Theme</string>
+    <string name="background">Background</string>
+    <string name="max_device_memory">Max Device Memory</string>
+    <string name="frame_rate">Frame Rate</string>
+    <string name="configuration">Configuration</string>
+    <string name="browse">Browse</string>
+    <string name="magnifier">Magnifier</string>
+    <string name="bring_to_front">Bring to Front</string>
+    <string name="options">Options</string>
+
 </resources>

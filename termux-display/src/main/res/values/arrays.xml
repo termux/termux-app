@@ -42,4 +42,95 @@
         <item>3840x2160</item>
         <item>7680x4320</item>
     </string-array>
+    <string-array name="screen_size_entries">
+        <item>Custom</item>
+        <item>640x480 (4:3)</item>
+        <item>800x600 (4:3)</item>
+        <item>854x480 (16:9)</item>
+        <item>960x544 (16:9)</item>
+        <item>1024x768 (4:3)</item>
+        <item>1280x720 (16:9)</item>
+        <item>1280x800 (16:10)</item>
+        <item>1280x1024 (5:4)</item>
+        <item>1366x768 (16:9)</item>
+        <item>1440x900 (16:10)</item>
+        <item>1600x900 (16:9)</item>
+        <item>1920x1080 (16:9)</item>
+    </string-array>
+    <string-array name="graphics_driver_entries">
+        <item>Turnip (Adreno)</item>
+        <item>VirGL (Universal)</item>
+    </string-array>
+    <string-array name="audio_driver_entries">
+        <item>ALSA</item>
+        <item>PulseAudio</item>
+    </string-array>
+    <string-array name="binding_type_entries">
+        <item>Keyboard</item>
+        <item>Mouse</item>
+        <item>Gamepad</item>
+    </string-array>
+    <string-array name="dxwrapper_entries">
+        <item>WineD3D</item>
+        <item>DXVK</item>
+        <item>CNC DDraw</item>
+        <item>D8VK</item>
+    </string-array>
+    <string-array name="dxvk_version_entries">
+        <item>0.96</item>
+        <item>1.5.5</item>
+        <item>1.10.3 (Default)</item>
+        <item>2.3.1</item>
+    </string-array>
+    <string-array name="turnip_version_entries">
+        <item>23.0.0</item>
+        <item>24.1.0</item>
+    </string-array>
+    <string-array name="dxvk_max_device_memory_entries">
+        <item>0 (Default)</item>
+        <item>512 MB</item>
+        <item>1024 MB</item>
+        <item>2048 MB</item>
+        <item>4096 MB</item>
+    </string-array>
+    <string-array name="video_memory_size_entries">
+        <item>32 MB</item>
+        <item>64 MB</item>
+        <item>128 MB</item>
+        <item>256 MB</item>
+        <item>512 MB</item>
+        <item>1024 MB</item>
+        <item>2048 MB</item>
+        <item>4096 MB</item>
+    </string-array>
+    <string-array name="dxvk_framerate_entries">
+        <item>0 (Default)</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+    </string-array>
+    <string-array name="wincomponent_entries">
+        <item>Builtin (Wine)</item>
+        <item>Native (Windows)</item>
+    </string-array>
+    <string-array name="box86_version_entries">
+        <item>0.3.0 (Default)</item>
+        <item>0.3.5</item>
+    </string-array>
+    <string-array name="box64_version_entries">
+        <item>0.2.6 (Default)</item>
+        <item>0.2.7</item>
+    </string-array>
+    <string-array name="dinput_mapper_type_entries">
+        <item>Standard (Old Gamepads)</item>
+        <item>XInput</item>
+    </string-array>
+    <string-array name="desktop_theme_entries">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="desktop_background_type_entries">
+        <item>Image</item>
+        <item>Solid Color</item>
+    </string-array>
 </resources>

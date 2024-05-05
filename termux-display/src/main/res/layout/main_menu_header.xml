@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="124dp"
+    android:background="@color/colorPrimaryDark"
+    android:paddingLeft="16dp"
+    android:paddingBottom="24dp">
+
+    <ImageView
+        android:layout_width="153dp"
+        android:layout_height="52dp"
+        android:layout_gravity="left|bottom"
+        android:src="@drawable/logo" />
+</FrameLayout>
