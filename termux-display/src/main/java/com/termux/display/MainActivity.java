@@ -25,10 +25,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AppOpsManager;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.Context;
@@ -39,7 +35,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -61,29 +56,23 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.NotificationCompat;
 import androidx.core.math.MathUtils;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import com.termux.display.controller.InputControlsFragment;
 import com.termux.display.controller.container.Container;
 import com.termux.display.controller.container.Shortcut;
-import com.termux.display.controller.contentdialog.ContentDialog;
-import com.termux.display.controller.core.DownloadProgressDialog;
-import com.termux.display.controller.inputcontrols.ControlsProfile;
 import com.termux.display.controller.inputcontrols.InputControlsManager;
 import com.termux.display.controller.widget.InputControlsView;
 import com.termux.display.controller.widget.TouchpadView;
-import com.termux.display.controller.winhandler.WinHandler;
 import com.termux.display.input.InputEventSender;
 import com.termux.display.input.InputStub;
 import com.termux.display.input.TouchInputHandler;
@@ -93,10 +82,8 @@ import com.termux.display.utils.KeyInterceptor;
 import com.termux.display.utils.SamsungDexUtils;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
-import com.termux.display.controller.core.Callback;
 
 @SuppressLint("ApplySharedPref")
 @SuppressWarnings({"deprecation", "unused"})
@@ -332,7 +319,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         touchpadView.setFourFingersTapCallback(() -> {
 //            if (!drawerLayout.isDrawerOpen(GravityCompat.START)) drawerLayout.openDrawer(GravityCompat.START);
         });
-        frm.addView(touchpadView,0);
+        touchpadView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+        touchpadView.setVisibility(View.GONE);
+
 
         inputControlsView = new InputControlsView(this);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
@@ -340,11 +329,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         inputControlsView.setTouchpadView(touchpadView);
         inputControlsView.setXServer(getLorieContentView());
         inputControlsView.setVisibility(View.GONE);
-
-        frm.addView(inputControlsView,0);
+        frm.addView(touchpadView);
+        frm.addView(inputControlsView);
         inputControlsManager = new InputControlsManager(this);
         String shortcutPath = getIntent().getStringExtra("shortcut_path");
         if (shortcutPath != null && !shortcutPath.isEmpty()) shortcut = new Shortcut(container, new File(shortcutPath));
+        xServer=getLorieContentView();
     }
     //Register the needed events to handle stylus as left, middle and right click
     @SuppressLint("ClickableViewAccessibility")
@@ -656,7 +646,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             buttons.setVisibility(View.GONE);
         }
     }
-
     @Override
     public void onResume() {
         super.onResume();

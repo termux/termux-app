@@ -4,6 +4,10 @@ import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 
+import com.termux.display.controller.xserver.events.Event;
+import com.termux.display.controller.xserver.events.InputDeviceEvent;
+import com.termux.display.controller.xserver.events.MappingNotify;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +20,17 @@ public class Window extends XResource {
     public static final int FLAG_BORDER_WIDTH = 1<<4;
     public static final int FLAG_SIBLING = 1<<5;
     public static final int FLAG_STACK_MODE = 1<<6;
+
+    public void sendEvent(Bitmask eventMask, Event event) {
+    }
+    public void sendEvent(int eventId, Event event) {
+    }
+    public void sendEvent(int eventId, InputDeviceEvent event) {
+    }
+
+    public void sendEvent(Event event) {
+    }
+
     public enum StackMode {ABOVE, BELOW, TOP_IF, BOTTOM_IF, OPPOSITE}
     public enum MapState {UNMAPPED, UNVIEWABLE, VIEWABLE}
     private Drawable content;

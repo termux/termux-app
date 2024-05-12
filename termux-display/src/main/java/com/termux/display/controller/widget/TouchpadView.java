@@ -1,12 +1,15 @@
 package com.termux.display.controller.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.termux.display.R;
 import com.termux.display.controller.core.AppUtils;
 import com.termux.display.controller.core.CursorLocker;
 import com.termux.display.controller.math.XForm;
@@ -33,6 +36,7 @@ public class TouchpadView extends View {
     private Runnable fourFingersTapCallback;
     private final float[] xform = XForm.getInstance();
 
+    @SuppressLint("ResourceAsColor")
     public TouchpadView(Context context, LorieView xServer ) {
         super(context);
         this.xServer = xServer;
@@ -106,6 +110,7 @@ public class TouchpadView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+//        Log.d("onTouchEvent.TouchPadView","<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>");
         int actionIndex = event.getActionIndex();
         int pointerId = event.getPointerId(actionIndex);
         int actionMasked = event.getActionMasked();
@@ -220,10 +225,12 @@ public class TouchpadView extends View {
             int dy = finger1.deltaY(sensitivity);
 
             if (xServer.cursorLocker.getState() == CursorLocker.State.LOCKED) {
-                WinHandler winHandler = xServer.getWinHandler();
-                winHandler.mouseEvent(MouseEventFlags.MOVE, dx, dy, 0);
+                xServer.sendMouseWheelEvent(dx,dy);
+//                WinHandler winHandler = xServer.getWinHandler();
+//                winHandler.mouseEvent(MouseEventFlags.MOVE, dx, dy, 0);
+            }else {
+                xServer.injectPointerMoveDelta(dx, dy);
             }
-            else xServer.injectPointerMoveDelta(dx, dy);
         }
     }
 
@@ -291,6 +298,8 @@ public class TouchpadView extends View {
     }
 
     public boolean onExternalMouseEvent(MotionEvent event) {
+        int actionIndex = event.getActionIndex();
+        int pointerId = event.getPointerId(actionIndex);
         boolean handled = false;
         if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
             int actionButton = event.getActionButton();

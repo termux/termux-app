@@ -25,22 +25,48 @@ import androidx.annotation.NonNull;
 
 import com.termux.display.controller.core.CursorLocker;
 import com.termux.display.controller.winhandler.WinHandler;
+import com.termux.display.controller.xserver.InputDeviceManager;
+import com.termux.display.controller.xserver.Keyboard;
 import com.termux.display.controller.xserver.Pointer;
+import com.termux.display.controller.xserver.Window;
 import com.termux.display.controller.xserver.XKeycode;
+import com.termux.display.controller.xserver.XLock;
 import com.termux.display.input.InputStub;
 
 import java.nio.charset.StandardCharsets;
+import java.util.EnumMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.PatternSyntaxException;
 
 @Keep
 @SuppressLint("WrongConstant")
 @SuppressWarnings("deprecation")
 public class LorieView extends SurfaceView implements InputStub {
+    public enum Lockable {WINDOW_MANAGER, PIXMAP_MANAGER, DRAWABLE_MANAGER, GRAPHIC_CONTEXT_MANAGER, INPUT_DEVICE, CURSOR_MANAGER, SHMSEGMENT_MANAGER}
+
+    public final Keyboard keyboard = Keyboard.createKeyboard(this);
+    public final Pointer pointer = new Pointer(this);
+    final public InputDeviceManager inputDeviceManager = new InputDeviceManager(this);
+    private final EnumMap<Lockable, ReentrantLock> locks = new EnumMap<>(Lockable.class);
     public ScreenInfo screenInfo;
     public CursorLocker cursorLocker;
+    public Window pointWindow;
+    public WinHandler winHandler;
+
+    public void setWinHandler(WinHandler handler) {
+        this.winHandler = handler;
+    }
 
     public WinHandler getWinHandler() {
-        return null;
+        return winHandler;
+    }
+
+    public void setWindow(Window wd) {
+        this.pointWindow = wd;
+    }
+
+    public Window getPointWindow() {
+        return pointWindow;
     }
 
     public boolean isFullscreen() {
@@ -112,6 +138,7 @@ public class LorieView extends SurfaceView implements InputStub {
         clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
         screenInfo = new ScreenInfo("1024x768");
         cursorLocker = new CursorLocker(this);
+        for (Lockable lockable : Lockable.values()) locks.put(lockable, new ReentrantLock());
     }
 
     public void setCallback(Callback callback) {
@@ -313,28 +340,71 @@ public class LorieView extends SurfaceView implements InputStub {
             clipboard.removePrimaryClipChangedListener(clipboardListener);
     }
 
+    private class SingleXLock implements XLock {
+        private final ReentrantLock lock;
+
+        private SingleXLock(Lockable lockable) {
+            this.lock = locks.get(lockable);
+            lock.lock();
+        }
+
+        @Override
+        public void close() {
+            lock.unlock();
+        }
+    }
+
+    private class MultiXLock implements XLock {
+        private final Lockable[] lockables;
+
+        private MultiXLock(Lockable[] lockables) {
+            this.lockables = lockables;
+            for (Lockable lockable : lockables) locks.get(lockable).lock();
+        }
+
+        @Override
+        public void close() {
+            for (int i = lockables.length - 1; i >= 0; i--) {
+                locks.get(lockables[i]).unlock();
+            }
+        }
+    }
+
+    public XLock lock(Lockable lockable) {
+        return new SingleXLock(lockable);
+    }
+
+    public XLock lock(Lockable... lockables) {
+        return new MultiXLock(lockables);
+    }
+
+    public XLock lockAll() {
+        return new MultiXLock(Lockable.values());
+    }
+
+
     public void injectPointerMove(int x, int y) {
-//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
-//            pointer.moveTo(x, y);
-//        }
+        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+            pointer.moveTo(x, y);
+        }
     }
 
     public void injectPointerMoveDelta(int dx, int dy) {
-//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
-//            pointer.moveTo(pointer.getX() + dx, pointer.getY() + dy);
-//        }
+        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+            pointer.moveTo(pointer.getX() + dx, pointer.getY() + dy);
+        }
     }
 
     public void injectPointerButtonPress(Pointer.Button buttonCode) {
-//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
-//            pointer.setButton(buttonCode, true);
-//        }
+        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+            pointer.setButton(buttonCode, true);
+        }
     }
 
     public void injectPointerButtonRelease(Pointer.Button buttonCode) {
-//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
-//            pointer.setButton(buttonCode, false);
-//        }
+        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+            pointer.setButton(buttonCode, false);
+        }
     }
 
     public void injectKeyPress(XKeycode xKeycode) {
@@ -342,15 +412,15 @@ public class LorieView extends SurfaceView implements InputStub {
     }
 
     public void injectKeyPress(XKeycode xKeycode, int keysym) {
-//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
-//            keyboard.setKeyPress(xKeycode.id, keysym);
-//        }
+        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+            keyboard.setKeyPress(xKeycode.id, keysym);
+        }
     }
 
     public void injectKeyRelease(XKeycode xKeycode) {
-//        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
-//            keyboard.setKeyRelease(xKeycode.id);
-//        }
+        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+            keyboard.setKeyRelease(xKeycode.id);
+        }
     }
 
     static native void connect(int fd);

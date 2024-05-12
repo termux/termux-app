@@ -22,7 +22,7 @@
     </style>
     <style name="AppThemeFullscreen" parent="@style/AppTheme">
         <item name="android:windowFullscreen">true</item>
-        <item name="android:windowBackground">@color/colorWhite</item>
+        <item name="android:windowBackground">@color/colorblack</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>

@@ -42,6 +42,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.termux.R;
@@ -375,18 +376,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public void openSoftwareKeyboard() {
                 switchSoftKeyboard(false);
-            }
-
-            @Override
-            public void showInputController() {
-//                frm.addView(touchpadView);
-//                frm.addView(inputControlsView);
-            }
-
-            @Override
-            public void hideInputController() {
-                frm.removeView(touchpadView);
-                frm.removeView(inputControlsView);
             }
         };
     }

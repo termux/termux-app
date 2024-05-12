@@ -34,11 +34,8 @@
             android:title="Open keyboard"
             android:key="open_keyboard" />
         <Preference
-            android:title="Open inputcontroller"
+            android:title="Toggle inputcontroller"
             android:key="open_inputcontroller" />
-        <Preference
-            android:title="Create inputcontroller profile"
-            android:key="create_inputcontroller_profile" />
         <Preference
             android:title="Install x11 server bridge"
             android:key="install_x11_server_bridge" />

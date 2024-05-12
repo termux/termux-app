@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.util.Log;
 
 import androidx.core.graphics.ColorUtils;
 
@@ -542,6 +543,7 @@ public class ControlElement {
     }
 
     public boolean handleTouchDown(int pointerId, float x, float y) {
+//        Log.d("ControlElement.handleTouchDown",getDisplayText());
         if (currentPointerId == -1 && containsPoint(x, y)) {
             currentPointerId = pointerId;
             if (type == Type.BUTTON) {

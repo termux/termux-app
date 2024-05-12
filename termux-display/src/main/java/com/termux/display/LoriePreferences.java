@@ -22,6 +22,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 
 import android.os.Handler;
@@ -46,14 +48,17 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.termux.display.controller.InputControllerActivity;
 import com.termux.display.controller.container.Container;
 import com.termux.display.controller.container.Shortcut;
 import com.termux.display.controller.contentdialog.ContentDialog;
 import com.termux.display.controller.core.Callback;
+import com.termux.display.controller.core.CursorLocker;
 import com.termux.display.controller.core.DownloadProgressDialog;
 import com.termux.display.controller.inputcontrols.ControlsProfile;
 import com.termux.display.controller.inputcontrols.InputControlsManager;
@@ -78,11 +83,13 @@ import java.util.regex.PatternSyntaxException;
 
 @SuppressWarnings("deprecation")
 public class LoriePreferences extends AppCompatActivity {
-    public static final int EDIT_INPUT_CONTROLS_REQUEST_CODE = 103;
     public static int OPEN_FILE_REQUEST_CODE = 102;
     static final String ACTION_PREFERENCES_CHANGED = "com.termux.display.ACTION_PREFERENCES_CHANGED";
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
     protected LoriePreferenceFragment loriePreferenceFragment;
+    protected LorieView xServer;
+    protected boolean touchShow = false;
+
     protected interface TermuxActivityListener {
         void onX11PreferenceSwitchChange(boolean isOpen);
 
@@ -95,8 +102,6 @@ public class LoriePreferences extends AppCompatActivity {
         void stopDesktop(Activity activity);
 
         void openSoftwareKeyboard();
-        void showInputController();
-        void hideInputController();
     }
 
     protected TermuxActivityListener termuxActivityListener;
@@ -350,15 +355,12 @@ public class LoriePreferences extends AppCompatActivity {
                 activity.openSoftKeyboar();
             }
             if ("open_inputcontroller".contentEquals(preference.getKey())) {
-                activity.showInputControlsDialog();
-            }
-            if ("create_inputcontroller_profile".contentEquals(preference.getKey())) {
-                if (activity.getShortcut() != null) {
-                    String controlsProfile = activity.getShortcut().getExtra("controlsProfile");
-                    if (!controlsProfile.isEmpty()) {
-                        ControlsProfile profile = activity.getInputControlsManager().getProfile(Integer.parseInt(activity.getControlsProfile()));
-                        if (profile != null) activity.showInputControls(profile);
-                    }
+                if (!activity.touchShow){
+                    activity.showInputControlsDialog();
+                    activity.touchShow = true;
+                }else{
+                    activity.hideInputControls();
+                    activity.touchShow=false;
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(preference.getKey()))
@@ -748,14 +750,14 @@ public class LoriePreferences extends AppCompatActivity {
         loadProfileSpinner.run();
 
         final CheckBox cbLockCursor = dialog.findViewById(R.id.CBLockCursor);
-//        cbLockCursor.setChecked(xServer.cursorLocker.getState() == CursorLocker.State.LOCKED);
+        cbLockCursor.setChecked(xServer.cursorLocker.getState() == CursorLocker.State.LOCKED);
 
         final CheckBox cbShowTouchscreenControls = dialog.findViewById(R.id.CBShowTouchscreenControls);
         cbShowTouchscreenControls.setChecked(inputControlsView.isShowTouchscreenControls());
 
         dialog.findViewById(R.id.BTSettings).setOnClickListener((v) -> {
             int position = sProfile.getSelectedItemPosition();
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(this, InputControllerActivity.class);
             intent.putExtra("edit_input_controls", true);
             intent.putExtra("selected_profile_id", position > 0 ? inputControlsManager.getProfiles().get(position - 1).id : 0);
             editInputControlsCallback = () -> {
@@ -763,15 +765,14 @@ public class LoriePreferences extends AppCompatActivity {
                 inputControlsManager.loadProfiles();
                 loadProfileSpinner.run();
             };
-            startActivityForResult(intent, MainActivity.EDIT_INPUT_CONTROLS_REQUEST_CODE);
+            startActivityForResult(intent, InputControllerActivity.EDIT_INPUT_CONTROLS_REQUEST_CODE);
         });
 
         dialog.setOnConfirmCallback(() -> {
             if(termuxActivityListener==null){
                 return;
             }
-            termuxActivityListener.showInputController();
-//            xServer.cursorLocker.setState(cbLockCursor.isChecked() ? CursorLocker.State.LOCKED : CursorLocker.State.CONFINED);
+            xServer.cursorLocker.setState(cbLockCursor.isChecked() ? CursorLocker.State.LOCKED : CursorLocker.State.CONFINED);
             inputControlsView.setShowTouchscreenControls(cbShowTouchscreenControls.isChecked());
             int position = sProfile.getSelectedItemPosition();
             if (position > 0) {
@@ -785,9 +786,8 @@ public class LoriePreferences extends AppCompatActivity {
     private void showInputControls(ControlsProfile controlsProfile) {
         inputControlsView.setVisibility(View.VISIBLE);
         inputControlsView.requestFocus();
-        inputControlsView.setProfile(profile);
-
-        touchpadView.setSensitivity(profile.getCursorSpeed() * globalCursorSpeed);
+        inputControlsView.setProfile(controlsProfile);
+        touchpadView.setSensitivity(controlsProfile.getCursorSpeed() * globalCursorSpeed);
         touchpadView.setPointerButtonRightEnabled(false);
 
         inputControlsView.invalidate();

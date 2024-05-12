@@ -66,6 +66,11 @@
             android:theme="@style/AppThemeLight"
             android:exported="false"
             android:screenOrientation="sensor" />
+        <activity
+            android:name="com.termux.display.controller.InputControllerActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            android:screenOrientation="sensor"/>
 
         <meta-data
             android:name="android.allow_multiple_resumed_activities"

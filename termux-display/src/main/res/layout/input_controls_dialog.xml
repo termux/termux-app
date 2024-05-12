@@ -15,7 +15,7 @@
         <Spinner
             style="@style/ComboBox"
             android:id="@+id/SProfile"
-            android:layout_width="330dp" />
+            android:layout_width="300dp" />
 
         <ImageView
             android:id="@+id/BTSettings"
