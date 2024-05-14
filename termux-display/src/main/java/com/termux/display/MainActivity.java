@@ -64,15 +64,12 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.math.MathUtils;
-import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
-import com.termux.display.controller.InputControlsFragment;
 import com.termux.display.controller.container.Container;
 import com.termux.display.controller.container.Shortcut;
 import com.termux.display.controller.inputcontrols.InputControlsManager;
 import com.termux.display.controller.widget.InputControlsView;
-import com.termux.display.controller.widget.TouchpadView;
 import com.termux.display.input.InputEventSender;
 import com.termux.display.input.InputStub;
 import com.termux.display.input.TouchInputHandler;
@@ -80,6 +77,8 @@ import com.termux.display.input.TouchInputHandler.RenderStub;
 import com.termux.display.utils.FullscreenWorkaround;
 import com.termux.display.utils.KeyInterceptor;
 import com.termux.display.utils.SamsungDexUtils;
+import com.termux.display.utils.TermuxX11ExtraKeys;
+import com.termux.display.utils.X11ToolbarViewPager;
 
 import java.io.File;
 import java.util.Map;
@@ -90,6 +89,7 @@ import java.util.Objects;
 public class MainActivity extends LoriePreferences implements View.OnApplyWindowInsetsListener {
     static final String ACTION_STOP = "com.termux.display.ACTION_STOP";
     static final String REQUEST_LAUNCH_EXTERNAL_DISPLAY = "request_launch_external_display";
+    public TermuxX11ExtraKeys mExtraKeys;
     protected FrameLayout frm;
     protected View lorieContentView;
     protected TouchInputHandler mInputHandler;
@@ -185,7 +185,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         mLorieKeyListener = (v, k, e) -> {
             if (k == KEYCODE_VOLUME_DOWN && preferences.getBoolean("hideEKOnVolDown", false)) {
                 if (e.getAction() == ACTION_UP)
-//                    toggleExtraKeys();
+                    toggleExtraKeys();
                     return true;
             }
 
@@ -293,7 +293,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         CmdEntryPoint.requestConnection();
         onPreferencesChanged("");
 
-//        toggleExtraKeys(false, false);
+        toggleExtraKeys(false, false);
         checkXEvents();
 
         initStylusAuxButtons();
@@ -314,27 +314,29 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
     private void setupInputController(){
         container = new Container(0);
-        touchpadView = new TouchpadView(this, getLorieContentView());
-        touchpadView.setSensitivity(globalCursorSpeed);
-        touchpadView.setFourFingersTapCallback(() -> {
-//            if (!drawerLayout.isDrawerOpen(GravityCompat.START)) drawerLayout.openDrawer(GravityCompat.START);
-        });
-        touchpadView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-        touchpadView.setVisibility(View.GONE);
+//        touchpadView = new TouchpadView(this, getLorieContentView());
+//        touchpadView.setSensitivity(globalCursorSpeed);
+//        touchpadView.setFourFingersTapCallback(() -> {
+////            if (!drawerLayout.isDrawerOpen(GravityCompat.START)) drawerLayout.openDrawer(GravityCompat.START);
+//        });
+//        touchpadView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+//        touchpadView.setVisibility(View.GONE);
 
 
         inputControlsView = new InputControlsView(this);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         inputControlsView.setOverlayOpacity(preferences.getFloat("overlay_opacity", InputControlsView.DEFAULT_OVERLAY_OPACITY));
-        inputControlsView.setTouchpadView(touchpadView);
-        inputControlsView.setXServer(getLorieContentView());
+//        inputControlsView.setTouchpadView(touchpadView);
+        inputControlsView.setXServer(getLorieView());
         inputControlsView.setVisibility(View.GONE);
-        frm.addView(touchpadView);
+        LorieView lorieView = findViewById(R.id.lorieView);
+        inputControlsView.setInputHandler(mInputHandler);
+//        frm.addView(touchpadView);
         frm.addView(inputControlsView);
         inputControlsManager = new InputControlsManager(this);
         String shortcutPath = getIntent().getStringExtra("shortcut_path");
         if (shortcutPath != null && !shortcutPath.isEmpty()) shortcut = new Shortcut(container, new File(shortcutPath));
-        xServer=getLorieContentView();
+        xServer= getLorieView();
     }
     //Register the needed events to handle stylus as left, middle and right click
     @SuppressLint("ClickableViewAccessibility")
@@ -472,12 +474,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 switch (e.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        getLorieContentView().sendMouseEvent(0, 0, b, true, true);
+                        getLorieView().sendMouseEvent(0, 0, b, true, true);
                         v.setPressed(true);
                         break;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_POINTER_UP:
-                        getLorieContentView().sendMouseEvent(0, 0, b, false, true);
+                        getLorieView().sendMouseEvent(0, 0, b, false, true);
                         v.setPressed(false);
                         break;
                 }
@@ -553,7 +555,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             if (fd != null) {
                 LorieView.connect(fd.detachFd());
 //                LorieView.connect(fd.getFd());
-                getLorieContentView().triggerCallback();
+                getLorieView().triggerCallback();
                 clientConnectedStateChanged(true);
                 LorieView.setClipboardSyncEnabled(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("clipboardSync", false));
             } else {
@@ -565,7 +567,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             service = null;
 
             // We should reset the View for the case if we have sent it's surface to the client.
-            getLorieContentView().regenerate();
+            getLorieView().regenerate();
         }
     }
 
@@ -574,7 +576,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             return;
 
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        LorieView lorieView = getLorieContentView();
+        LorieView lorieView = getLorieView();
 
         int mode = Integer.parseInt(p.getString("touchMode", "1"));
         mInputHandler.setInputMode(mode);
@@ -621,8 +623,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             setRequestedOrientation(requestedOrientation);
             if (null != termuxActivityListener) {
                 termuxActivityListener.onChangeOrientation(requestedOrientation);
-                getLorieContentView().triggerCallback();
-                getLorieContentView().regenerate();
+                getLorieView().triggerCallback();
+                getLorieView().regenerate();
             }
         }
         boolean switchSlideMenu = p.getBoolean("switchSlider", false);
@@ -653,7 +655,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 //        mNotificationManager.notify(mNotificationId, mNotification);
 
         setTerminalToolbarView();
-        getLorieContentView().requestFocus();
+        getLorieView().requestFocus();
     }
 
     @Override
@@ -664,41 +666,74 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         super.onPause();
     }
 
-    public LorieView getLorieContentView() {
+    public LorieView getLorieView() {
         return findViewById(R.id.lorieView);
     }
 
-    public ViewPager getTerminalToolbarViewPager() {
-        return findViewById(R.id.terminal_toolbar_view_pager);
+    public ViewPager getDisplayTerminalToolbarViewPager() {
+        return findViewById(R.id.display_terminal_toolbar_view_pager);
     }
 
     private void setTerminalToolbarView() {
-//        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-//
-//        terminalToolbarViewPager.setAdapter(new X11ToolbarViewPager.PageAdapter(this, (v, k, e) -> mInputHandler.sendKeyEvent(getLorieView(), e)));
-//        terminalToolbarViewPager.addOnPageChangeListener(new X11ToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
-//
-//        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        boolean enabled = preferences.getBoolean("showAdditionalKbd", true);
-//        boolean showNow = enabled && preferences.getBoolean("additionalKbdVisible", true);
-//
-//        terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
-//        findViewById(com.termux.display.R.id.terminal_toolbar_view_pager).requestFocus();
-//
-//        handler.postDelayed(() -> {
-//            if (mExtraKeys != null) {
-//                ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
-//                layoutParams.height = Math.round(37.5f * getResources().getDisplayMetrics().density *
-//                    (mExtraKeys.getExtraKeysInfo() == null ? 0 : mExtraKeys.getExtraKeysInfo().getMatrix().length));
-//                terminalToolbarViewPager.setLayoutParams(layoutParams);
-//            }
-//        }, 200);
+        final ViewPager terminalToolbarViewPager = getDisplayTerminalToolbarViewPager();
+
+        terminalToolbarViewPager.setAdapter(new X11ToolbarViewPager.PageAdapter(this, (v, k, e) -> mInputHandler.sendKeyEvent(getLorieView(), e)));
+        terminalToolbarViewPager.addOnPageChangeListener(new X11ToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean enabled = preferences.getBoolean("showAdditionalKbd", true);
+        boolean showNow = enabled && preferences.getBoolean("additionalKbdVisible", true);
+
+        terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
+        findViewById(com.termux.display.R.id.display_terminal_toolbar_view_pager).requestFocus();
+
+        handler.postDelayed(() -> {
+            if (mExtraKeys != null) {
+                ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
+                layoutParams.height = Math.round(37.5f * getResources().getDisplayMetrics().density *
+                    (mExtraKeys.getExtraKeysInfo() == null ? 0 : mExtraKeys.getExtraKeysInfo().getMatrix().length));
+                terminalToolbarViewPager.setLayoutParams(layoutParams);
+            }
+        }, 200);
+    }
+    public void toggleExtraKeys(boolean visible, boolean saveState) {
+        runOnUiThread(() -> {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            boolean enabled = preferences.getBoolean("showAdditionalKbd", true);
+            ViewPager pager = getDisplayTerminalToolbarViewPager();
+            ViewGroup parent = (ViewGroup) pager.getParent();
+            boolean show = enabled && mClientConnected && visible;
+
+            if (show) {
+                setTerminalToolbarView();
+                getDisplayTerminalToolbarViewPager().bringToFront();
+            } else {
+                parent.removeView(pager);
+                parent.addView(pager, 0);
+            }
+
+            if (enabled && saveState) {
+                SharedPreferences.Editor edit = preferences.edit();
+                edit.putBoolean("additionalKbdVisible", show);
+                edit.commit();
+            }
+
+            pager.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+
+            getLorieView().requestFocus();
+        });
+    }
+
+    public void toggleExtraKeys() {
+        int visibility = getDisplayTerminalToolbarViewPager().getVisibility();
+        toggleExtraKeys(visibility != View.VISIBLE, true);
+        getLorieView().requestFocus();
     }
 
     public boolean handleKey(KeyEvent e) {
         if (filterOutWinKey && (e.getKeyCode() == KEYCODE_META_LEFT || e.getKeyCode() == KEYCODE_META_RIGHT || e.isMetaPressed()))
             return false;
-        mLorieKeyListener.onKey(getLorieContentView(), e.getKeyCode(), e);
+        mLorieKeyListener.onKey(getLorieView(), e.getKeyCode(), e);
         return true;
     }
 
@@ -721,7 +756,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         View view = getCurrentFocus();
         if (view == null) {
-            view = getLorieContentView();
+            view = getLorieView();
             view.requestFocus();
         }
         if(hide){
@@ -809,9 +844,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         SamsungDexUtils.dexMetaKeyCapture(this, hasFocus && p.getBoolean("dexMetaKeyCapture", false));
 
         if (hasFocus)
-            getLorieContentView().regenerate();
+            getLorieView().regenerate();
 
-        getLorieContentView().requestFocus();
+        getLorieView().requestFocus();
 
     }
 
@@ -835,7 +870,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, @NonNull Configuration newConfig) {
-//        toggleExtraKeys(!isInPictureInPictureMode, false);
+        toggleExtraKeys(!isInPictureInPictureMode, false);
 
         frm.setPadding(0, 0, 0, 0);
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
@@ -847,7 +882,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     @SuppressLint("WrongConstant")
     @Override
     public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-        handler.postDelayed(() -> getLorieContentView().triggerCallback(), 100);
+        handler.postDelayed(() -> getLorieView().triggerCallback(), 100);
         return insets;
     }
 
@@ -868,25 +903,25 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         runOnUiThread(() -> {
             SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
             mClientConnected = connected;
-//            toggleExtraKeys(connected && p.getBoolean("additionalKbdVisible", true), true);
+            toggleExtraKeys(connected && p.getBoolean("additionalKbdVisible", true), true);
             findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
             findViewById(R.id.stub).setVisibility(connected ? View.INVISIBLE : View.VISIBLE);
-            getLorieContentView().setVisibility(connected ? View.VISIBLE : View.INVISIBLE);
-            getLorieContentView().regenerate();
+            getLorieView().setVisibility(connected ? View.VISIBLE : View.INVISIBLE);
+            getLorieView().regenerate();
 
             // We should recover connection in the case if file descriptor for some reason was broken...
             if (!connected)
                 tryConnect();
 
             if (connected)
-                getLorieContentView().setPointerIcon(PointerIcon.getSystemIcon(this, PointerIcon.TYPE_NULL));
+                getLorieView().setPointerIcon(PointerIcon.getSystemIcon(this, PointerIcon.TYPE_NULL));
         });
     }
 
     private void checkXEvents() {
 //        Log.d("checkXEvents","try to read from server");
         if (!mClientConnected) {
-            getLorieContentView().handleXEvents();
+            getLorieView().handleXEvents();
         }
 //        Log.d("checkXEvents","read from server finish");
         handler.postDelayed(this::checkXEvents, 100);

@@ -36,8 +36,8 @@ public class KeyInterceptor extends AccessibilityService {
             return false;
 
         boolean intercept = instance.hasWindowFocus()
-                && (instance.findViewById(R.id.terminal_toolbar_text_input) == null
-                || !instance.findViewById(R.id.terminal_toolbar_text_input).isFocused());
+                && (instance.findViewById(R.id.display_terminal_toolbar_text_input) == null
+                || !instance.findViewById(R.id.display_terminal_toolbar_text_input).isFocused());
 
         if (intercept || (event.getAction() == KeyEvent.ACTION_UP && pressedKeys.contains(event.getKeyCode())))
             ret = instance.handleKey(event);

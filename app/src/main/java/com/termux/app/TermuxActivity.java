@@ -19,7 +19,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -40,9 +39,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.termux.R;
@@ -247,7 +244,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
                 if (null != mInputHandler) {
-                    mInputHandler.handleTouchEvent(slideWindowLayout, getLorieContentView(), ev);
+                    mInputHandler.handleTouchEvent(slideWindowLayout, getLorieView(), ev);
                 }
                 return true;
             }

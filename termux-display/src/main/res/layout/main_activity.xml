@@ -258,7 +258,7 @@
     </LinearLayout>
 
     <androidx.viewpager.widget.ViewPager
-        android:id="@+id/terminal_toolbar_view_pager"
+        android:id="@+id/display_terminal_toolbar_view_pager"
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="37.5dp"

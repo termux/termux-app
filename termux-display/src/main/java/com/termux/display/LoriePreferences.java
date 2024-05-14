@@ -122,7 +122,7 @@ public class LoriePreferences extends AppCompatActivity {
     //input controller
     protected InputControlsManager inputControlsManager;
     protected InputControlsView inputControlsView;
-    protected TouchpadView touchpadView;
+//    protected TouchpadView touchpadView;
     protected Runnable editInputControlsCallback;
     protected Shortcut shortcut;
     protected DownloadProgressDialog preloaderDialog;
@@ -696,7 +696,7 @@ public class LoriePreferences extends AppCompatActivity {
         }
     }
 
-    static Handler handler = new Handler();
+    public static Handler handler = new Handler();
 
     //inout control
     public InputControlsView getInputControlsView() {
@@ -787,8 +787,8 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.setVisibility(View.VISIBLE);
         inputControlsView.requestFocus();
         inputControlsView.setProfile(controlsProfile);
-        touchpadView.setSensitivity(controlsProfile.getCursorSpeed() * globalCursorSpeed);
-        touchpadView.setPointerButtonRightEnabled(false);
+//        touchpadView.setSensitivity(controlsProfile.getCursorSpeed() * globalCursorSpeed);
+//        touchpadView.setPointerButtonRightEnabled(false);
 
         inputControlsView.invalidate();
     }
@@ -798,9 +798,9 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.setVisibility(View.GONE);
         inputControlsView.setProfile(null);
 
-        touchpadView.setSensitivity(globalCursorSpeed);
-        touchpadView.setPointerButtonLeftEnabled(true);
-        touchpadView.setPointerButtonRightEnabled(true);
+//        touchpadView.setSensitivity(globalCursorSpeed);
+//        touchpadView.setPointerButtonLeftEnabled(true);
+//        touchpadView.setPointerButtonRightEnabled(true);
 
         inputControlsView.invalidate();
     }
