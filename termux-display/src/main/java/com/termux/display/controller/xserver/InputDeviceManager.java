@@ -1,29 +1,34 @@
 package com.termux.display.controller.xserver;
 
+import static com.termux.display.controller.xserver.Keyboard.createKeycodeMap;
+
 import com.termux.display.LorieView;
 import com.termux.display.controller.core.CursorLocker;
-import com.termux.display.controller.winhandler.MouseEventFlags;
-import com.termux.display.controller.winhandler.WinHandler;
-import com.termux.display.controller.xserver.events.ButtonPress;
-import com.termux.display.controller.xserver.events.ButtonRelease;
 import com.termux.display.controller.xserver.events.Event;
-import com.termux.display.controller.xserver.events.KeyPress;
-import com.termux.display.controller.xserver.events.KeyRelease;
-import com.termux.display.controller.xserver.events.MappingNotify;
-import com.termux.display.controller.xserver.events.MotionNotify;
-import com.termux.display.controller.xserver.events.PointerWindowEvent;
+
+import java.util.HashMap;
 
 public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyboard.OnKeyboardListener,  XResourceManager.OnResourceLifecycleListener {
     private static final byte MOUSE_WHEEL_DELTA = 120;
     private Window pointWindow;
     private final LorieView xServer;
-
+    final private HashMap<Byte, Integer> eventKeyCodeMap = createKeyMap();
     public InputDeviceManager(LorieView xServer) {
         this.xServer = xServer;
         xServer.pointer.addOnPointerMotionListener(this);
         xServer.keyboard.addOnKeyboardListener(this);
     }
-
+    private static HashMap<Byte,Integer> createKeyMap() {
+        XKeycode[] keycodeMap = createKeycodeMap();
+        HashMap<Byte,Integer> keyMap = new HashMap<>();
+        for (int i=0;i<keycodeMap.length;i++){
+            XKeycode xKeycode = keycodeMap[i];
+            if (xKeycode!=null){
+                keyMap.put(xKeycode.id,i);
+            }
+        }
+        return keyMap;
+    }
     @Override
     public void onCreateResource(XResource resource) {
         updatePointWindow();
@@ -37,66 +42,62 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
         Window pointWindow = xServer.getPointWindow();
         this.pointWindow = pointWindow;
     }
-
-    public Window getPointWindow() {
-        return pointWindow;
-    }
-
-    private void sendEvent(Window window, int eventId, Event event) {
-        window.sendEvent(eventId, event);
-    }
-
-    private void sendEvent(Window window, Bitmask eventMask, Event event) {
-        window.sendEvent(eventMask, event);
-    }
     @Override
     public void onPointerButtonPress(Pointer.Button button) {
         if (xServer.cursorLocker.getState() == CursorLocker.State.LOCKED) {
+//            Log.d("onPointerButtonPress LOCKED",button.code()+","+ button.flag());
             int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
-            xServer.sendMouseWheelEvent(0,wheelDelta);
+            xServer.sendMouseWheelEvent(wheelDelta,wheelDelta);
         }
         else {
-            Bitmask eventMask = createPointerEventMask();
-            eventMask.unset(button.flag());
-
-            short x = xServer.pointer.getX();
-            short y = xServer.pointer.getY();
-            xServer.sendMouseEvent(x,y,button.code(),true,true);
+            xServer.sendMouseEvent(0,0,button.code(),true,true);
+//            Log.d("onPointerButtonPress UnLOCKED",button.code()+","+ button.flag());
         }
     }
 
     @Override
     public void onPointerButtonRelease(Pointer.Button button) {
         if (xServer.cursorLocker.getState() == CursorLocker.State.LOCKED) {
-            xServer.sendMouseWheelEvent(0,0);
+//            xServer.sendMouseEvent(-1,-1,button.code(),false,true);
+//            Log.d("onPointerButtonRelease LOCKED",button.code()+","+ button.flag());
         }
         else {
             short x = xServer.pointer.getX();
             short y = xServer.pointer.getY();
-            xServer.sendMouseEvent(x,y,button.code(),false,true);
+            xServer.sendMouseEvent(-1,-1,button.code(),false,true);
+//            Log.d("onPointerButtonRelease UnLOCKED",button.code()+","+ button.flag());
         }
     }
 
     @Override
     public void onPointerMove(short x, short y) {
-        xServer.sendMouseEvent(x,y,Pointer.Button.BUTTON_LEFT.code(),false,true);
+//        xServer.sendMouseEvent(x,y,Pointer.Button.BUTTON_LEFT.code(),false,true);
+//        Log.d("onPointerMove",x+","+ y);
     }
 
     @Override
     public void onKeyPress(byte keycode, int keysym) {
-        Bitmask keyButMask = getKeyButMask();
-        short x = xServer.pointer.getX();
-        short y = xServer.pointer.getY();
-        short[] localPoint = {0,0};
-        if (keysym != 0 && !xServer.keyboard.hasKeysym(keycode, keysym)) {
-            xServer.sendKeyEvent(keysym,keycode,true);
+        int realKeyCode = (int)keycode;
+        Integer mkeyCode = eventKeyCodeMap.get(keycode);
+        if (mkeyCode!=null){
+            realKeyCode = mkeyCode;
         }
-        xServer.sendKeyEvent(0,keycode,true);
+//        Log.d("onKeyPress",realKeyCode+"");
+        if (keysym != 0 && !xServer.keyboard.hasKeysym(keycode, keysym)) {
+            xServer.sendKeyEvent(keysym,realKeyCode,true);
+        }
+        xServer.sendKeyEvent(0,realKeyCode,true);
     }
 
     @Override
     public void onKeyRelease(byte keycode) {
-
+        int realKeyCode = (int)keycode;
+        Integer mkeyCode = eventKeyCodeMap.get(keycode);
+        if (mkeyCode!=null){
+            realKeyCode = mkeyCode;
+        }
+//        Log.d("onKeyRelease",realKeyCode+"");
+        xServer.sendKeyEvent(0,realKeyCode,false);
     }
 
     private Bitmask createPointerEventMask() {

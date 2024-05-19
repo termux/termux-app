@@ -19,9 +19,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -58,6 +60,7 @@ import com.termux.app.terminal.utils.FilePathUtils;
 import com.termux.app.terminal.utils.FileUtils;
 import com.termux.app.terminal.utils.CommandUtils;
 import com.termux.app.terminal.utils.ScreenUtils;
+import com.termux.display.controller.inputcontrols.ExternalController;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
@@ -98,7 +101,6 @@ import java.util.Arrays;
 public class TermuxActivity extends com.termux.display.MainActivity implements ServiceConnection {
     private static final int FILE_REQUEST_CODE = 101;
     private DisplaySlidingWindow slideWindowLayout;
-
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
      * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
@@ -212,7 +214,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
 
     private static final String LOG_TAG = "TermuxActivity";
-
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        return (!inputControlsView.onKeyEvent(event) && xServer.keyboard.onKeyEvent(event)) ||
+            (!ExternalController.isGameController(event.getDevice()) && super.dispatchKeyEvent(event));
+    }
 
     @SuppressLint("ResourceType")
     @Override
@@ -236,7 +242,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 //        setRequestedOrientation( SCREEN_ORIENTATION_LANDSCAPE);
         slideWindowLayout = findViewById(R.id.id_termux_layout);
         slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
-            private boolean drawerOpened = false;
             @Override
             public void onMenuOpen(boolean isOpen, int flag) {
             }
@@ -252,6 +257,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public void onEdgeReached() {
                 getDrawer().openDrawer(Gravity.START);
+            }
+
+            @Override
+            public void setSlideOrientation(int orientation) {
+                slideOrientation = orientation;
             }
         });
 
@@ -339,12 +349,16 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         termuxActivityListener = new TermuxActivityListener() {
             @Override
             public void onX11PreferenceSwitchChange(boolean isOpen) {
-                slideWindowLayout.setX11PreferenceSwitchSlider(isOpen);
-            }
-
-            @Override
-            public void onSwitchSliderChange() {
-                slideWindowLayout.switchSlider();
+                switch (slideOrientation){
+                    case 'r':{
+                        slideWindowLayout.setTerminalViewSwitchSlider(isOpen);
+                        break;
+                    }
+                    case 'l':{
+                        slideWindowLayout.setX11PreferenceSwitchSlider(isOpen);
+                        break;
+                    }
+                }
             }
 
             @Override
@@ -600,7 +614,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                     command= "termux-setup-storage;sleep 5s;tar -zcf /sdcard/termux-backup.tar.gz -C /data/data/com.termux/files ./home ./usr \n";
                 }
                 mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
-                slideWindowLayout.setTerminalVIewSwitchSlider(true);
+                slideWindowLayout.setTerminalViewSwitchSlider(true);
                 closeTerminalSessionListView();
             }
         });
@@ -960,7 +974,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                     mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
                 }
             });
-            slideWindowLayout.setTerminalVIewSwitchSlider(true);
+            slideWindowLayout.setTerminalViewSwitchSlider(true);
         }
     }
 

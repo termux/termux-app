@@ -126,8 +126,10 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 finishAffinity();
             } else if (ACTION_PREFERENCES_CHANGED.equals(intent.getAction())) {
                 Log.d("MainActivity", "preference: " + intent.getStringExtra("key"));
-                if (!"additionalKbdVisible".equals(intent.getStringExtra("key"))) {
+                if (!"showAdditionalKbd".equals(intent.getStringExtra("key"))) {
                     onPreferencesChanged("");
+                }else {
+                    toggleExtraKeys(true,false);
                 }
             }
         }
@@ -184,23 +186,24 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }, new InputEventSender(lorieView));
         mLorieKeyListener = (v, k, e) -> {
             if (k == KEYCODE_VOLUME_DOWN && preferences.getBoolean("hideEKOnVolDown", false)) {
-                if (e.getAction() == ACTION_UP)
+                if (e.getAction() == ACTION_UP) {
                     toggleExtraKeys();
-                    return true;
+                }
+                return true;
             }
 
             if (k == KEYCODE_BACK) {
                 if (null != termuxActivityListener) {
                     termuxActivityListener.onX11PreferenceSwitchChange(true);
 
-                    SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
-                    boolean isOpend = p.getBoolean("switchSlider", true);
-                    SharedPreferences.Editor edit = p.edit();
-                    edit.putBoolean("switchSlider", true);
-                    edit.commit();
-                    if (!isOpend) {
-                        loriePreferenceFragment.findPreference("switchSlider").performClick();
-                    }
+//                    SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
+//                    boolean isOpend = p.getBoolean("switchSlider", true);
+//                    SharedPreferences.Editor edit = p.edit();
+//                    edit.putBoolean("switchSlider", true);
+//                    edit.commit();
+//                    if (!isOpend) {
+//                        loriePreferenceFragment.findPreference("switchSlider").performClick();
+//                    }
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -312,7 +315,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         unregisterReceiver(receiver);
         super.onDestroy();
     }
-    private void setupInputController(){
+
+    private void setupInputController() {
         container = new Container(0);
 //        touchpadView = new TouchpadView(this, getLorieContentView());
 //        touchpadView.setSensitivity(globalCursorSpeed);
@@ -330,14 +334,15 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         inputControlsView.setXServer(getLorieView());
         inputControlsView.setVisibility(View.GONE);
         LorieView lorieView = findViewById(R.id.lorieView);
-        inputControlsView.setInputHandler(mInputHandler);
 //        frm.addView(touchpadView);
         frm.addView(inputControlsView);
         inputControlsManager = new InputControlsManager(this);
         String shortcutPath = getIntent().getStringExtra("shortcut_path");
-        if (shortcutPath != null && !shortcutPath.isEmpty()) shortcut = new Shortcut(container, new File(shortcutPath));
-        xServer= getLorieView();
+        if (shortcutPath != null && !shortcutPath.isEmpty())
+            shortcut = new Shortcut(container, new File(shortcutPath));
+        xServer = getLorieView();
     }
+
     //Register the needed events to handle stylus as left, middle and right click
     @SuppressLint("ClickableViewAccessibility")
     private void initStylusAuxButtons() {
@@ -627,10 +632,10 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 getLorieView().regenerate();
             }
         }
-        boolean switchSlideMenu = p.getBoolean("switchSlider", false);
-        if (null != termuxActivityListener) {
-            termuxActivityListener.onX11PreferenceSwitchChange(switchSlideMenu);
-        }
+//        boolean switchSlideMenu = p.getBoolean("switchSlider", false);
+//        if (null != termuxActivityListener) {
+//            termuxActivityListener.onX11PreferenceSwitchChange(switchSlideMenu);
+//        }
 
         findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
         LinearLayout buttons = findViewById(R.id.mouse_helper_visibility);
@@ -648,6 +653,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             buttons.setVisibility(View.GONE);
         }
     }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -696,6 +702,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             }
         }, 200);
     }
+
     public void toggleExtraKeys(boolean visible, boolean saveState) {
         runOnUiThread(() -> {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -759,18 +766,18 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             view = getLorieView();
             view.requestFocus();
         }
-        if(hide){
+        if (hide) {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }else {
+        } else {
             if (null != termuxActivityListener) {
-                SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
-                boolean isOpend = p.getBoolean("switchSlider", true);
-                SharedPreferences.Editor edit = p.edit();
-                edit.putBoolean("switchSlider", false);
-                edit.commit();
-                if (isOpend) {
-                    loriePreferenceFragment.findPreference("switchSlider").performClick();
-                }
+//                SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
+//                boolean isOpend = p.getBoolean("switchSlider", true);
+//                SharedPreferences.Editor edit = p.edit();
+//                edit.putBoolean("switchSlider", false);
+//                edit.commit();
+//                if (isOpend) {
+//                    loriePreferenceFragment.findPreference("switchSlider").performClick();
+//                }
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {

@@ -51,16 +51,12 @@ public class InputControlsView extends View {
     private ControlElement selectedElement;
     private ControlsProfile profile;
     private float overlayOpacity = DEFAULT_OVERLAY_OPACITY;
-    private TouchInputHandler inputHandler;
     private LorieView xServer;
     private final Bitmap[] icons = new Bitmap[17];
     private Timer mouseMoveTimer;
     private final PointF mouseMoveOffset = new PointF();
     private boolean showTouchscreenControls = true;
-
-    public void setInputHandler(TouchInputHandler inputHandler) {
-        this.inputHandler = inputHandler;
-    }
+    private boolean isMoveLeftButton = false;
 
     public InputControlsView(Context context) {
         super(context);
@@ -266,12 +262,12 @@ public class InputControlsView extends View {
         if (profile != null && mouseMoveTimer == null) {
             final float cursorSpeed = profile.getCursorSpeed();
             mouseMoveTimer = new Timer();
-            mouseMoveTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    xServer.injectPointerMoveDelta((int) (mouseMoveOffset.x * 10 * cursorSpeed), (int) (mouseMoveOffset.y * 10 * cursorSpeed));
-                }
-            }, 0, 1000 / 60);
+//            mouseMoveTimer.schedule(new TimerTask() {
+//                @Override
+//                public void run() {
+//                    xServer.injectPointerMoveDelta((int) (mouseMoveOffset.x * 10 * cursorSpeed), (int) (mouseMoveOffset.y * 10 * cursorSpeed));
+//                }
+//            }, 0, 1000 / 60);
         }
     }
 
@@ -368,19 +364,18 @@ public class InputControlsView extends View {
                 case MotionEvent.ACTION_POINTER_DOWN: {
                     float x = event.getX(actionIndex);
                     float y = event.getY(actionIndex);
-
 //                    touchpadView.setPointerButtonLeftEnabled(true);
                     for (ControlElement element : profile.getElements()) {
                         if (element.handleTouchDown(pointerId, x, y)) {
 //                            Log.d("handleTouchDown",element.toString());
                             handled = true;
                         }
-//                        if (element.getBindingAt(0) == Binding.MOUSE_LEFT_BUTTON) {
-//                            touchpadView.setPointerButtonLeftEnabled(false);
-//                        }
+                        if (element.getBindingAt(0) == Binding.MOUSE_LEFT_BUTTON) {
+
+                        }
                     }
                     if (!handled) {
-//                        inputHandler.handleTouchEvent(touchPadView,xServer,event);
+//                        xServer.sendMouseEvent(0,0,Pointer.Button.BUTTON_LEFT.code(), true,true);
                     }
                     break;
                 }
@@ -396,17 +391,25 @@ public class InputControlsView extends View {
                             }
                         }
                         if (!handled) {
-//                            inputHandler.handleTouchEvent(touchPadView,xServer,event);
                         }
                     }
+                    isMoveLeftButton=true;
                     break;
                 }
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_POINTER_UP:
                 case MotionEvent.ACTION_CANCEL:
                     for (ControlElement element : profile.getElements())
-                        if (element.handleTouchUp(pointerId)) handled = true;
-//                    if (!handled) inputHandler.handleTouchEvent(touchPadView,xServer,event);
+                        if (element.handleTouchUp(pointerId)) {
+                            handled = true;
+                        }
+                    if (!handled) {
+                        if (!isMoveLeftButton ) {
+                            xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), true, true);
+                            xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), false, true);
+                        }
+                    }
+                    isMoveLeftButton = false;
                     break;
             }
         }
@@ -465,24 +468,24 @@ public class InputControlsView extends View {
             }
         } else {
             if (binding == Binding.MOUSE_MOVE_LEFT || binding == Binding.MOUSE_MOVE_RIGHT) {
-                Log.d("handleInputEvent","<binding == Binding.MOUSE_MOVE_LEFT || binding == Binding.MOUSE_MOVE_RIGHT>:"+binding.toString());
+//                Log.d("handleInputEvent","<binding == Binding.MOUSE_MOVE_LEFT || binding == Binding.MOUSE_MOVE_RIGHT>:"+binding.toString());
                 mouseMoveOffset.x = isActionDown ? (offset != 0 ? offset : (binding == Binding.MOUSE_MOVE_LEFT ? -1 : 1)) : 0;
                 if (isActionDown) createMouseMoveTimer();
             } else if (binding == Binding.MOUSE_MOVE_DOWN || binding == Binding.MOUSE_MOVE_UP) {
-                Log.d("handleInputEvent","<binding == Binding.MOUSE_MOVE_DOWN || binding == Binding.MOUSE_MOVE_UP> "+binding.toString());
+//                Log.d("handleInputEvent","<binding == Binding.MOUSE_MOVE_DOWN || binding == Binding.MOUSE_MOVE_UP> "+binding.toString());
                 mouseMoveOffset.y = isActionDown ? (offset != 0 ? offset : (binding == Binding.MOUSE_MOVE_UP ? -1 : 1)) : 0;
                 if (isActionDown) createMouseMoveTimer();
             } else {
                 Pointer.Button pointerButton = binding.getPointerButton();
                 if (isActionDown) {
-                    Log.d("handleInputEvent","<isActionDown> "+binding.toString());
+//                    Log.d("handleInputEvent","<isActionDown> "+binding.toString());
                     if (pointerButton != null) {
                         xServer.injectPointerButtonPress(pointerButton);
                     } else {
                         xServer.injectKeyPress(binding.keycode);
                     }
                 } else {
-                    Log.d("handleInputEvent","<isActionUp> "+binding.toString());
+//                    Log.d("handleInputEvent","<isActionUp> "+binding.toString());
                     if (pointerButton != null) {
                         xServer.injectPointerButtonRelease(pointerButton);
                     } else {
@@ -492,8 +495,6 @@ public class InputControlsView extends View {
             }
         }
     }
-
-//    这里需要解决pointid绑定和按钮释放的问题，以及按键释放问题（长按短按问题）
 
     public Bitmap getIcon(byte id) {
         if (icons[id] == null) {

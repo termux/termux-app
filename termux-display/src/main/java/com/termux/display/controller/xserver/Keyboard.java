@@ -7,6 +7,7 @@ import androidx.collection.ArraySet;
 import com.termux.display.controller.inputcontrols.ExternalController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.termux.display.LorieView;
 
@@ -114,7 +115,7 @@ public class Keyboard {
         return true;
     }
 
-    private static XKeycode[] createKeycodeMap() {
+    static XKeycode[] createKeycodeMap() {
         XKeycode[] keycodeMap = new XKeycode[(KeyEvent.getMaxKeyCode() + 1)];
         keycodeMap[KeyEvent.KEYCODE_ENTER] = XKeycode.KEY_ENTER;
         keycodeMap[KeyEvent.KEYCODE_DPAD_LEFT] = XKeycode.KEY_LEFT;
@@ -218,6 +219,7 @@ public class Keyboard {
         keycodeMap[KeyEvent.KEYCODE_CAPS_LOCK] = XKeycode.KEY_CAPS_LOCK;
         return keycodeMap;
     }
+
 
     public static Keyboard createKeyboard(LorieView xServer) {
         Keyboard keyboard = new Keyboard(xServer);

@@ -22,8 +22,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 
 import android.os.Handler;
@@ -48,7 +46,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,7 +60,6 @@ import com.termux.display.controller.core.DownloadProgressDialog;
 import com.termux.display.controller.inputcontrols.ControlsProfile;
 import com.termux.display.controller.inputcontrols.InputControlsManager;
 import com.termux.display.controller.widget.InputControlsView;
-import com.termux.display.controller.widget.TouchpadView;
 import com.termux.display.controller.winhandler.WinHandler;
 import com.termux.display.utils.KeyInterceptor;
 import com.termux.display.utils.SamsungDexUtils;
@@ -89,11 +85,9 @@ public class LoriePreferences extends AppCompatActivity {
     protected LoriePreferenceFragment loriePreferenceFragment;
     protected LorieView xServer;
     protected boolean touchShow = false;
-
+    protected int slideOrientation = 'r';
     protected interface TermuxActivityListener {
         void onX11PreferenceSwitchChange(boolean isOpen);
-
-        void onSwitchSliderChange();
 
         void onChangeOrientation(int landscape);
 
@@ -648,7 +642,6 @@ public class LoriePreferences extends AppCompatActivity {
                                 }
                                 break;
                             }
-                            case "switchSlider":
                             case "displayStretch":
                             case "Reseed":
                             case "PIP":

@@ -28,11 +28,19 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private ViewGroup mWrapper;
     private boolean isLeftMenuOpen;
     private boolean isRightMenuOpen;
+    private boolean moving = false;
+    private float downX, downY;
+
+    private int getOrientation(float dx, float dy) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+            return dx > 0 ? 'r' : 'l';
+        } else {
+            return dy > 0 ? 'b' : 't';
+        }
+    }
 
     /**
      * listener for menu changed
-     *
-     *
      */
     public interface OnMenuChangeListener {
         /**
@@ -44,6 +52,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         boolean sendTouchEvent(MotionEvent ev);
 
         void onEdgeReached();
+        void setSlideOrientation(int orientation);
     }
 
     public OnMenuChangeListener mOnMenuChangeListener;
@@ -111,10 +120,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
          */
         if (!once) {
             if (landscape) {
-                mContentWidth = mScreenHeight>mScreenWidth?mScreenHeight:mScreenWidth;
+                mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
                 mMenuRightPadding = mContentWidth * 3 / 5;
             } else {
-                mContentWidth = mScreenWidth<mScreenHeight?mScreenWidth:mScreenHeight;
+                mContentWidth = mScreenWidth < mScreenHeight ? mScreenWidth : mScreenHeight;
                 mMenuRightPadding = verticalPadding;
             }
             mWrapper = (LinearLayout) getChildAt(0);
@@ -128,7 +137,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             mContent.getLayoutParams().width = mContentWidth;
             mRightMenu.getLayoutParams().width = mMenuWidth;
 
-            Log.d("changeLayoutOrientation", "landscape:"+String.valueOf(landscape)+", mContentWidth" + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
+            Log.d("changeLayoutOrientation", "landscape:" + String.valueOf(landscape) + ", mContentWidth" + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
@@ -147,27 +156,65 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getAction();
         switch (action) {
+            case MotionEvent.ACTION_MOVE: {
+                if (!moving) {
+                    downX = ev.getRawX();
+                    downY = ev.getRawY();
+                    moving = true;
+//                    Log.d("onTouchEvent", "ACTION_MOVE downX:" + downX+", downY:"+downY);
+                }
+                break;
+            }
+            case MotionEvent.ACTION_UP: {
+                moving = false;
+                float dx = ev.getRawX() - downX;
+                float dy = ev.getRawY() - downY;
+                if (Math.abs(dx) > 8 && Math.abs(dy) > 8) {
+                    int orientation = getOrientation(dx, dy);
+//                    switch (orientation) {
+//                        case 'r':
+//                            Log.d("onTouchEvent", "ACTION_UP orientation:r");
+//                            break;
+//                        case 'l':
+//                            Log.d("onTouchEvent", "ACTION_UP orientation:l");
+//                            break;
+//                        case 't':
+//                            Log.d("onTouchEvent", "ACTION_UP orientation:t");
+//                            ;
+//                            break;
+//                        case 'b':
+//                            Log.d("onTouchEvent", "ACTION_UP orientation:b");
+//                            ;
+//                            break;
+//                    }
+                    mOnMenuChangeListener.setSlideOrientation(orientation);
+                }
+                break;
+            }
+        }
+        switch (action) {
             // open menu if scroll to distance that more than half menu width
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
-                if (scrollX <= 0&&null != mOnMenuChangeListener) {
+                if (scrollX <= 0) {
                     mOnMenuChangeListener.onEdgeReached();
                 }
-//                Log.d("onTouchEvent", "scrollX:" + scrollX);
+//                Log.d("onTouchEvent", "ACTION_UP scrollX:" + scrollX);
                 //operate left
                 if (isOperateLeft) {
                     // area hidden more than half of menu width close it
                     if (scrollX > mHalfMenuWidth) {
                         this.smoothScrollTo(mMenuWidth, 0);
                         //notify listener that left meun opened
-                        if (isLeftMenuOpen && mOnMenuChangeListener != null) {
+                        if (isLeftMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(false, 0);
                         }
                         isLeftMenuOpen = false;
+                        switchSlider = false;
                     } else//open left menu
                     {
                         this.smoothScrollTo(0, 0);
-                        if (!isLeftMenuOpen && mOnMenuChangeListener != null) {
+                        if (!isLeftMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 0);
                         }
                         isLeftMenuOpen = true;
@@ -177,7 +224,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 if (isOperateRight) {
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
                         this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
-                        if (!isRightMenuOpen && mOnMenuChangeListener != null) {
+                        if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
                         isRightMenuOpen = true;
@@ -185,10 +232,11 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                     } else//cloae right menu
                     {
                         this.smoothScrollTo(mMenuWidth, 0);
-                        if (isRightMenuOpen && mOnMenuChangeListener != null) {
+                        if (isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(false, 1);
                         }
                         isRightMenuOpen = false;
+                        switchSlider = false;
                     }
                 }
                 return false;
@@ -196,9 +244,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (switchSlider) {
             super.onTouchEvent(ev);
         } else {
-            if (null != mOnMenuChangeListener) {
-                mOnMenuChangeListener.sendTouchEvent(ev);
-            }
+            mOnMenuChangeListener.sendTouchEvent(ev);
         }
         return false;
     }
@@ -226,16 +272,14 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
         }
     }
-    public void setTerminalVIewSwitchSlider(boolean openSlider){
+
+    public void setTerminalViewSwitchSlider(boolean openSlider) {
         this.switchSlider = openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
         } else {
             this.smoothScrollTo(0, 0);
         }
-    }
-    public void switchSlider() {
-        this.switchSlider = !this.switchSlider;
     }
 
     public void changeLayoutOrientation(int landscapeOriention) {

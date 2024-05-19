@@ -26,10 +26,6 @@
             android:key="displayResolutionCustom"
             android:defaultValue="1280x1024"
             android:summary="Example: 1280x1024" />
-        <SwitchPreferenceCompat
-            android:title="Switch Slide Menu"
-            android:defaultValue="false"
-            android:key="switchSlider" />
         <Preference
             android:title="Open keyboard"
             android:key="open_keyboard" />
