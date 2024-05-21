@@ -98,7 +98,6 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
     public boolean isElementsLoaded() {
         return elementsLoaded;
     }
-
     public void save() {
         File file = getProfileFile(context, id);
 

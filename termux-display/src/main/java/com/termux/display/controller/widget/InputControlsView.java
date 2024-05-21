@@ -1,5 +1,8 @@
 package com.termux.display.controller.widget;
 
+import static com.termux.display.utils.TouchScreenUtils.getOrientation;
+
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.termux.display.MainActivity;
 import com.termux.display.controller.inputcontrols.Binding;
 import com.termux.display.controller.inputcontrols.ControlElement;
 import com.termux.display.controller.inputcontrols.ControlsProfile;
@@ -30,6 +34,7 @@ import com.termux.display.controller.winhandler.WinHandler;
 import com.termux.display.controller.xserver.Pointer;
 import com.termux.display.LorieView;
 import com.termux.display.input.TouchInputHandler;
+import com.termux.display.utils.ScreenUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +62,11 @@ public class InputControlsView extends View {
     private final PointF mouseMoveOffset = new PointF();
     private boolean showTouchscreenControls = true;
     private boolean isMoveLeftButton = false;
-
+    private float downX, downY;
+    private Activity activity;
+    public void setActivity(Activity activity){
+        this.activity = activity;
+    }
     public InputControlsView(Context context) {
         super(context);
         setClickable(true);
@@ -88,17 +97,18 @@ public class InputControlsView extends View {
             readyToDraw = false;
             return;
         }
+        snappingSize = Math.max(width,height) / 100;
 
-        snappingSize = width / 100;
         readyToDraw = true;
 
         if (editMode) {
             drawGrid(canvas);
             drawCursor(canvas);
         }
-
         if (profile != null) {
-            if (!profile.isElementsLoaded()) profile.loadElements(this);
+            if (!profile.isElementsLoaded()) {
+                profile.loadElements(this);
+            }
             if (showTouchscreenControls)
                 for (ControlElement element : profile.getElements()) element.draw(canvas);
         }
@@ -329,7 +339,6 @@ public class InputControlsView extends View {
                         offsetY = y - element.getY();
                         moveCursor = false;
                     }
-
                     selectElement(element);
                     break;
                 }
@@ -393,7 +402,11 @@ public class InputControlsView extends View {
                         if (!handled) {
                         }
                     }
-                    isMoveLeftButton=true;
+                    if (!isMoveLeftButton) {
+                        downX = event.getRawX();
+                        downY = event.getRawY();
+                    }
+                    isMoveLeftButton = true;
                     break;
                 }
                 case MotionEvent.ACTION_UP:
@@ -404,7 +417,9 @@ public class InputControlsView extends View {
                             handled = true;
                         }
                     if (!handled) {
-                        if (!isMoveLeftButton ) {
+                        float dx = event.getRawX() - downX;
+                        float dy = event.getRawY() - downY;
+                        if (Math.abs(dx) > 8 && Math.abs(dy) > 8) {
                             xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), true, true);
                             xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), false, true);
                         }

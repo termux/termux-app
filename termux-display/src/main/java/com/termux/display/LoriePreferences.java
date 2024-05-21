@@ -776,7 +776,7 @@ public class LoriePreferences extends AppCompatActivity {
         dialog.show();
     }
 
-    private void showInputControls(ControlsProfile controlsProfile) {
+    protected void showInputControls(ControlsProfile controlsProfile) {
         inputControlsView.setVisibility(View.VISIBLE);
         inputControlsView.requestFocus();
         inputControlsView.setProfile(controlsProfile);
@@ -786,7 +786,7 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.invalidate();
     }
 
-    private void hideInputControls() {
+    protected void hideInputControls() {
         inputControlsView.setShowTouchscreenControls(true);
         inputControlsView.setVisibility(View.GONE);
         inputControlsView.setProfile(null);

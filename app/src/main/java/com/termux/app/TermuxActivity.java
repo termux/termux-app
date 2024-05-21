@@ -19,7 +19,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -59,7 +58,7 @@ import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
 import com.termux.app.terminal.utils.FilePathUtils;
 import com.termux.app.terminal.utils.FileUtils;
 import com.termux.app.terminal.utils.CommandUtils;
-import com.termux.app.terminal.utils.ScreenUtils;
+import com.termux.display.utils.ScreenUtils;
 import com.termux.display.controller.inputcontrols.ExternalController;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
@@ -324,6 +323,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         setRecoverView();
         setX11Server();
         setBackupView();
+        inputControlsView.setActivity(this);
         try {
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
             Intent serviceIntent = new Intent(this, TermuxService.class);
@@ -364,6 +364,8 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public void onChangeOrientation(int landscape) {
                 slideWindowLayout.changeLayoutOrientation(landscape);
+                hideInputControls();
+                inputControlsManager.loadProfiles();
             }
 
             @Override

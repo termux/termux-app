@@ -2,6 +2,8 @@ package com.termux.app.terminal;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 
+import static com.termux.display.utils.TouchScreenUtils.getOrientation;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
@@ -13,7 +15,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import com.nineoldandroids.view.ViewHelper;
-import com.termux.app.terminal.utils.ScreenUtils;
+import com.termux.display.utils.ScreenUtils;
 import com.termux.R;
 
 public class DisplaySlidingWindow extends HorizontalScrollView {
@@ -30,14 +32,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean isRightMenuOpen;
     private boolean moving = false;
     private float downX, downY;
-
-    private int getOrientation(float dx, float dy) {
-        if (Math.abs(dx) > Math.abs(dy)) {
-            return dx > 0 ? 'r' : 'l';
-        } else {
-            return dy > 0 ? 'b' : 't';
-        }
-    }
 
     /**
      * listener for menu changed
@@ -163,6 +157,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                     moving = true;
 //                    Log.d("onTouchEvent", "ACTION_MOVE downX:" + downX+", downY:"+downY);
                 }
+                moving=true;
                 break;
             }
             case MotionEvent.ACTION_UP: {
