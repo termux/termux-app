@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -359,6 +360,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public void onChangeOrientation(int landscape) {
                 slideWindowLayout.changeLayoutOrientation(landscape);
+                orientation = landscape;
                 hideInputControls();
                 inputControlsManager.loadProfiles();
             }

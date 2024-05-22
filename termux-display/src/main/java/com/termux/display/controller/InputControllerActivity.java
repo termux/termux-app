@@ -1,6 +1,7 @@
 package com.termux.display.controller;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -22,11 +23,13 @@ public class InputControllerActivity extends AppCompatActivity {
     private boolean editInputControls = false;
     private int selectedProfileId;
     private Callback<Uri> openFileCallback;
+    private int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_input_controller);
         Intent intent = getIntent();
+        orientation = intent.getIntExtra("set_orientation", ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         editInputControls = intent.getBooleanExtra("edit_input_controls", false);
         if (editInputControls) {
             selectedProfileId = intent.getIntExtra("selected_profile_id", 0);
@@ -50,5 +53,11 @@ public class InputControllerActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.container, fragment)
             .commitNow();
+    }
+
+    @Override
+    protected void onResume() {
+        setRequestedOrientation(orientation);
+        super.onResume();
     }
 }

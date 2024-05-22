@@ -66,13 +66,13 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
     @Override
     public void onPointerButtonRelease(Pointer.Button button) {
         if (xServer.cursorLocker.getState() == CursorLocker.State.LOCKED) {
-//            xServer.sendMouseEvent(-1,-1,button.code(),false,true);
+            xServer.sendMouseEvent(0,0,button.code(),false,true);
 //            Log.d("onPointerButtonRelease LOCKED",button.code()+","+ button.flag());
         }
         else {
             short x = xServer.pointer.getX();
             short y = xServer.pointer.getY();
-            xServer.sendMouseEvent(-1,-1,button.code(),false,true);
+            xServer.sendMouseEvent(0,0,button.code(),false,true);
 //            Log.d("onPointerButtonRelease UnLOCKED",button.code()+","+ button.flag());
         }
     }

@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.XmlResourceParser;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -86,6 +87,8 @@ public class LoriePreferences extends AppCompatActivity {
     protected LorieView xServer;
     protected boolean touchShow = false;
     protected int slideOrientation = 'r';
+    protected int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
     protected interface TermuxActivityListener {
         void onX11PreferenceSwitchChange(boolean isOpen);
 
@@ -758,6 +761,7 @@ public class LoriePreferences extends AppCompatActivity {
                 inputControlsManager.loadProfiles();
                 loadProfileSpinner.run();
             };
+            intent.putExtra("set_orientation",orientation);
             startActivityForResult(intent, InputControllerActivity.EDIT_INPUT_CONTROLS_REQUEST_CODE);
         });
 

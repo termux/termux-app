@@ -60,6 +60,9 @@ public class InputControlsFragment extends Fragment {
     public InputControlsFragment(int selectedProfileId) {
         this.selectedProfileId = selectedProfileId;
     }
+    public InputControlsFragment() {
+        selectedProfileId =0;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

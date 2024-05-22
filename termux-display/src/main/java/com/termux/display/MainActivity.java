@@ -744,7 +744,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         return true;
     }
 
-    int orientation;
+//    int orientation;
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
