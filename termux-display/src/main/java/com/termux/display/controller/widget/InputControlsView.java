@@ -247,10 +247,6 @@ public class InputControlsView extends View {
         return colorFilter;
     }
 
-//    public void setTouchpadView(TouchpadView touchpadView) {
-//        this.touchpadView = touchpadView;
-//    }
-
     public LorieView getXServer() {
         return xServer;
     }
@@ -272,12 +268,12 @@ public class InputControlsView extends View {
         if (profile != null && mouseMoveTimer == null) {
             final float cursorSpeed = profile.getCursorSpeed();
             mouseMoveTimer = new Timer();
-//            mouseMoveTimer.schedule(new TimerTask() {
-//                @Override
-//                public void run() {
-//                    xServer.injectPointerMoveDelta((int) (mouseMoveOffset.x * 10 * cursorSpeed), (int) (mouseMoveOffset.y * 10 * cursorSpeed));
-//                }
-//            }, 0, 1000 / 60);
+            mouseMoveTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    xServer.injectPointerMoveDelta((int) (mouseMoveOffset.x * 10 * cursorSpeed), (int) (mouseMoveOffset.y * 10 * cursorSpeed));
+                }
+            }, 0, 1000 / 60);
         }
     }
 
@@ -429,26 +425,6 @@ public class InputControlsView extends View {
             }
         }
         return true;
-    }
-
-    public boolean onKeyEvent(KeyEvent event) {
-        if (profile != null && event.getRepeatCount() == 0) {
-            ExternalController controller = profile.getController(event.getDeviceId());
-            if (controller != null) {
-                ExternalControllerBinding controllerBinding = controller.getControllerBinding(event.getKeyCode());
-                if (controllerBinding != null) {
-                    int action = event.getAction();
-
-                    if (action == KeyEvent.ACTION_DOWN) {
-                        handleInputEvent(controllerBinding.getBinding(), true);
-                    } else if (action == KeyEvent.ACTION_UP) {
-                        handleInputEvent(controllerBinding.getBinding(), false);
-                    }
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public void handleInputEvent(Binding binding, boolean isActionDown) {

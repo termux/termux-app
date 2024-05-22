@@ -2,6 +2,9 @@ package com.termux.display.controller.xserver;
 
 import static com.termux.display.controller.xserver.Keyboard.createKeycodeMap;
 
+import android.util.Log;
+import android.view.KeyEvent;
+
 import com.termux.display.LorieView;
 import com.termux.display.controller.core.CursorLocker;
 import com.termux.display.controller.xserver.events.Event;
@@ -21,10 +24,15 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
     private static HashMap<Byte,Integer> createKeyMap() {
         XKeycode[] keycodeMap = createKeycodeMap();
         HashMap<Byte,Integer> keyMap = new HashMap<>();
+//        Log.d("createKeyMap","xKeycode");
         for (int i=0;i<keycodeMap.length;i++){
             XKeycode xKeycode = keycodeMap[i];
             if (xKeycode!=null){
-                keyMap.put(xKeycode.id,i);
+                if(keyMap.get(xKeycode.id)!=null){
+                }else{
+                    keyMap.put(xKeycode.id,i);
+                }
+//                Log.d("createKeyMap","xKeycode:"+xKeycode.toString()+", i:"+i);
             }
         }
         return keyMap;

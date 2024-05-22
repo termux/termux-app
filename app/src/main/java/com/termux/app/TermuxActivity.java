@@ -213,11 +213,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
 
     private static final String LOG_TAG = "TermuxActivity";
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        return (!inputControlsView.onKeyEvent(event) && xServer.keyboard.onKeyEvent(event)) ||
-            (!ExternalController.isGameController(event.getDevice()) && super.dispatchKeyEvent(event));
-    }
 
     @SuppressLint("ResourceType")
     @Override
