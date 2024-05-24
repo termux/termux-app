@@ -86,11 +86,12 @@ public class LoriePreferences extends AppCompatActivity {
     protected LoriePreferenceFragment loriePreferenceFragment;
     protected LorieView xServer;
     protected boolean touchShow = false;
-    protected int slideOrientation = 'r';
     protected int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
     protected interface TermuxActivityListener {
         void onX11PreferenceSwitchChange(boolean isOpen);
+
+        void releaseSlider(boolean open);
 
         void onChangeOrientation(int landscape);
 
@@ -119,7 +120,7 @@ public class LoriePreferences extends AppCompatActivity {
     //input controller
     protected InputControlsManager inputControlsManager;
     protected InputControlsView inputControlsView;
-//    protected TouchpadView touchpadView;
+    //    protected TouchpadView touchpadView;
     protected Runnable editInputControlsCallback;
     protected Shortcut shortcut;
     protected DownloadProgressDialog preloaderDialog;
@@ -352,12 +353,12 @@ public class LoriePreferences extends AppCompatActivity {
                 activity.openSoftKeyboar();
             }
             if ("open_inputcontroller".contentEquals(preference.getKey())) {
-                if (!activity.touchShow){
+                if (!activity.touchShow) {
                     activity.showInputControlsDialog();
                     activity.touchShow = true;
-                }else{
+                } else {
                     activity.hideInputControls();
-                    activity.touchShow=false;
+                    activity.touchShow = false;
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(preference.getKey()))
@@ -371,7 +372,7 @@ public class LoriePreferences extends AppCompatActivity {
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             String key = preference.getKey();
-            Log.d("Preferences", "changed preference: " + key);
+//            Log.d("Preferences", "changed preference: " + key+":"+newValue);
             handler.postDelayed(this::updatePreferencesLayout, 100);
 
             if ("showIMEWhileExternalConnected".contentEquals(key)) {
@@ -425,7 +426,18 @@ public class LoriePreferences extends AppCompatActivity {
                     return false;
                 }
             }
-
+            if ("touch_sensitivity".contentEquals(key)) {
+                int v;
+                try {
+                    v = (int) newValue;
+                } catch (NumberFormatException | PatternSyntaxException ignored) {
+                    Toast.makeText(getActivity(), "Wrong touch sensitivity", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                if (v<1||v>20){
+                    return false;
+                }
+            }
             if ("showAdditionalKbd".contentEquals(key) && (Boolean) newValue) {
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
                 SharedPreferences.Editor edit = preferences.edit();
@@ -645,6 +657,7 @@ public class LoriePreferences extends AppCompatActivity {
                                 }
                                 break;
                             }
+                            case "touch_sensitivity":
                             case "displayStretch":
                             case "Reseed":
                             case "PIP":
@@ -761,12 +774,12 @@ public class LoriePreferences extends AppCompatActivity {
                 inputControlsManager.loadProfiles();
                 loadProfileSpinner.run();
             };
-            intent.putExtra("set_orientation",orientation);
+            intent.putExtra("set_orientation", orientation);
             startActivityForResult(intent, InputControllerActivity.EDIT_INPUT_CONTROLS_REQUEST_CODE);
         });
 
         dialog.setOnConfirmCallback(() -> {
-            if(termuxActivityListener==null){
+            if (termuxActivityListener == null) {
                 return;
             }
             xServer.cursorLocker.setState(cbLockCursor.isChecked() ? CursorLocker.State.LOCKED : CursorLocker.State.CONFINED);

@@ -55,9 +55,14 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
         if (xServer.cursorLocker.getState() == CursorLocker.State.LOCKED) {
 //            Log.d("onPointerButtonPress LOCKED",button.code()+","+ button.flag());
             int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
-            xServer.sendMouseWheelEvent(wheelDelta,wheelDelta);
+            xServer.sendMouseWheelEvent(0,wheelDelta);
         }
         else {
+            if(button== Pointer.Button.BUTTON_SCROLL_UP||button== Pointer.Button.BUTTON_SCROLL_DOWN){
+                int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
+                xServer.sendMouseWheelEvent(0,wheelDelta);
+                return;
+            }
             xServer.sendMouseEvent(0,0,button.code(),true,true);
 //            Log.d("onPointerButtonPress UnLOCKED",button.code()+","+ button.flag());
         }
@@ -70,8 +75,6 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
 //            Log.d("onPointerButtonRelease LOCKED",button.code()+","+ button.flag());
         }
         else {
-            short x = xServer.pointer.getX();
-            short y = xServer.pointer.getY();
             xServer.sendMouseEvent(0,0,button.code(),false,true);
 //            Log.d("onPointerButtonRelease UnLOCKED",button.code()+","+ button.flag());
         }

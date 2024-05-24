@@ -253,11 +253,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             public void onEdgeReached() {
                 getDrawer().openDrawer(Gravity.START);
             }
-
-            @Override
-            public void setSlideOrientation(int orientation) {
-                slideOrientation = orientation;
-            }
         });
 
         ViewGroup vGroup = findViewById(R.id.id_termux_layout);
@@ -345,16 +340,12 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         termuxActivityListener = new TermuxActivityListener() {
             @Override
             public void onX11PreferenceSwitchChange(boolean isOpen) {
-                switch (slideOrientation){
-                    case 'r':{
-                        slideWindowLayout.setTerminalViewSwitchSlider(isOpen);
-                        break;
-                    }
-                    case 'l':{
-                        slideWindowLayout.setX11PreferenceSwitchSlider(isOpen);
-                        break;
-                    }
-                }
+                slideWindowLayout.setX11PreferenceSwitchSlider(isOpen);
+            }
+
+            @Override
+            public void releaseSlider(boolean open) {
+                slideWindowLayout.releaseSlider(open);
             }
 
             @Override
@@ -415,7 +406,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     @Override
     public void onResume() {
         super.onResume();
-
+        inputControlsManager.loadProfiles();
         Logger.logVerbose(LOG_TAG, "onResume");
 
         if (mIsInvalidState) return;

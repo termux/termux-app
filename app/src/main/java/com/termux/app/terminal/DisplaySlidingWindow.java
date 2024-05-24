@@ -30,8 +30,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private ViewGroup mWrapper;
     private boolean isLeftMenuOpen;
     private boolean isRightMenuOpen;
-    private boolean moving = false;
-    private float downX, downY;
 
     /**
      * listener for menu changed
@@ -46,7 +44,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         boolean sendTouchEvent(MotionEvent ev);
 
         void onEdgeReached();
-        void setSlideOrientation(int orientation);
     }
 
     public OnMenuChangeListener mOnMenuChangeListener;
@@ -150,44 +147,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getAction();
         switch (action) {
-            case MotionEvent.ACTION_MOVE: {
-                if (!moving) {
-                    downX = ev.getRawX();
-                    downY = ev.getRawY();
-                    moving = true;
-//                    Log.d("onTouchEvent", "ACTION_MOVE downX:" + downX+", downY:"+downY);
-                }
-                moving=true;
-                break;
-            }
-            case MotionEvent.ACTION_UP: {
-                moving = false;
-                float dx = ev.getRawX() - downX;
-                float dy = ev.getRawY() - downY;
-                if (Math.abs(dx) > 8 && Math.abs(dy) > 8) {
-                    int orientation = getOrientation(dx, dy);
-//                    switch (orientation) {
-//                        case 'r':
-//                            Log.d("onTouchEvent", "ACTION_UP orientation:r");
-//                            break;
-//                        case 'l':
-//                            Log.d("onTouchEvent", "ACTION_UP orientation:l");
-//                            break;
-//                        case 't':
-//                            Log.d("onTouchEvent", "ACTION_UP orientation:t");
-//                            ;
-//                            break;
-//                        case 'b':
-//                            Log.d("onTouchEvent", "ACTION_UP orientation:b");
-//                            ;
-//                            break;
-//                    }
-                    mOnMenuChangeListener.setSlideOrientation(orientation);
-                }
-                break;
-            }
-        }
-        switch (action) {
             // open menu if scroll to distance that more than half menu width
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
@@ -280,6 +239,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public void changeLayoutOrientation(int landscapeOriention) {
         once = false;
         landscape = landscapeOriention == SCREEN_ORIENTATION_LANDSCAPE;
+    }
+    public void releaseSlider(boolean open){
+        this.switchSlider=open;
     }
 
 }

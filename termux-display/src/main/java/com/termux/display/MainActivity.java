@@ -184,6 +184,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             public void swipeDown() {
             }
         }, new InputEventSender(lorieView));
+        int touch_sensitivity = preferences.getInt("touch_sensitivity",1);
+        mInputHandler.setLongPressedDelay(touch_sensitivity);
+//        Log.d("MainActivity","touch_sensitivity:"+touch_sensitivity);
         mLorieKeyListener = (v, k, e) -> {
             if (k == KEYCODE_VOLUME_DOWN && preferences.getBoolean("hideEKOnVolDown", false)) {
                 if (e.getAction() == ACTION_UP) {
@@ -194,16 +197,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
             if (k == KEYCODE_BACK) {
                 if (null != termuxActivityListener) {
-                    termuxActivityListener.onX11PreferenceSwitchChange(true);
-
-//                    SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
-//                    boolean isOpend = p.getBoolean("switchSlider", true);
-//                    SharedPreferences.Editor edit = p.edit();
-//                    edit.putBoolean("switchSlider", true);
-//                    edit.commit();
-//                    if (!isOpend) {
-//                        loriePreferenceFragment.findPreference("switchSlider").performClick();
-//                    }
+                    termuxActivityListener.releaseSlider(true);
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -589,6 +583,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         mInputHandler.setPreferScancodes(p.getBoolean("preferScancodes", false));
         mInputHandler.setPointerCaptureEnabled(p.getBoolean("pointerCapture", false));
         mInputHandler.setApplyDisplayScaleFactorToTouchpad(p.getBoolean("scaleTouchpad", true));
+        mInputHandler.setLongPressedDelay(p.getInt("touch_sensitivity",1));
         if (!p.getBoolean("pointerCapture", false) && lorieView.hasPointerCapture())
             lorieView.releasePointerCapture();
 
