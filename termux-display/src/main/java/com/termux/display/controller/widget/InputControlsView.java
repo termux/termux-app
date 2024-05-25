@@ -63,10 +63,6 @@ public class InputControlsView extends View {
     private boolean showTouchscreenControls = true;
     private boolean isMoveLeftButton = false;
     private float downX, downY;
-    private Activity activity;
-    public void setActivity(Activity activity){
-        this.activity = activity;
-    }
     public InputControlsView(Context context) {
         super(context);
         setClickable(true);

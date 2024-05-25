@@ -69,6 +69,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private int mMenuRightPadding;
     private int verticalPadding;
     private boolean switchSlider;
+    private float downX,downY;
+    private boolean moving;
 
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -146,12 +148,27 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getAction();
+        switch(action){
+            case MotionEvent.ACTION_MOVE:{
+                if (!moving){
+                    downX = ev.getRawX();
+                    downY = ev.getRawY();
+                    moving=true;
+                }
+                break;
+            }
+        }
         switch (action) {
             // open menu if scroll to distance that more than half menu width
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
+                moving=false;
+                float dx= ev.getRawX()-downX;
+                float dy = ev.getRawY()-downY;
                 if (scrollX <= 0) {
-                    mOnMenuChangeListener.onEdgeReached();
+                    if (dx>mMenuWidth*0.6&&Math.abs(dx)>Math.abs(dy)){
+                        mOnMenuChangeListener.onEdgeReached();
+                    }
                 }
 //                Log.d("onTouchEvent", "ACTION_UP scrollX:" + scrollX);
                 //operate left
@@ -198,7 +215,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (switchSlider) {
             super.onTouchEvent(ev);
         } else {
-            mOnMenuChangeListener.sendTouchEvent(ev);
+           return mOnMenuChangeListener.sendTouchEvent(ev);
         }
         return false;
     }

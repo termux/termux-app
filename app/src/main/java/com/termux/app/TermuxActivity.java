@@ -314,7 +314,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         setRecoverView();
         setX11Server();
         setBackupView();
-        inputControlsView.setActivity(this);
         try {
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
             Intent serviceIntent = new Intent(this, TermuxService.class);
