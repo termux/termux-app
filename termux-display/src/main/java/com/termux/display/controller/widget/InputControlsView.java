@@ -61,7 +61,6 @@ public class InputControlsView extends View {
     private Timer mouseMoveTimer;
     private final PointF mouseMoveOffset = new PointF();
     private boolean showTouchscreenControls = true;
-    private boolean isMoveLeftButton = false;
     private float downX, downY;
     public InputControlsView(Context context) {
         super(context);
@@ -376,8 +375,10 @@ public class InputControlsView extends View {
                         }
                     }
                     if (!handled) {
-//                        xServer.sendMouseEvent(0,0,Pointer.Button.BUTTON_LEFT.code(), true,true);
+//                        xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), true, true);
                     }
+                    downX = event.getRawX();
+                    downY = event.getRawY();
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
@@ -394,11 +395,6 @@ public class InputControlsView extends View {
                         if (!handled) {
                         }
                     }
-                    if (!isMoveLeftButton) {
-                        downX = event.getRawX();
-                        downY = event.getRawY();
-                    }
-                    isMoveLeftButton = true;
                     break;
                 }
                 case MotionEvent.ACTION_UP:
@@ -411,12 +407,11 @@ public class InputControlsView extends View {
                     if (!handled) {
                         float dx = event.getRawX() - downX;
                         float dy = event.getRawY() - downY;
-                        if (Math.abs(dx) > 8 && Math.abs(dy) > 8) {
+                        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) {
                             xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), true, true);
                             xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), false, true);
                         }
                     }
-                    isMoveLeftButton = false;
                     break;
             }
         }

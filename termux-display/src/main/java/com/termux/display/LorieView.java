@@ -263,7 +263,7 @@ public class LorieView extends SurfaceView implements InputStub {
 
         // In the case if old fixed surface size equals new fixed surface size surfaceChanged will not be called.
         // We should force it.
-        regenerate();
+//        regenerate();
     }
 
     @Override
