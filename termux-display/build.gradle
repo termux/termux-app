@@ -81,11 +81,11 @@ dependencies {
 }
 
 static def isWindows() {
-    print(System.properties['os.name']);
+    println(System.properties['os.name']);
     return System.properties['os.name'].contains('windows');
 }
 
 static def isMacOS() {
-    print(System.properties['os.name']);
+    println(System.properties['os.name']);
     return System.properties['os.name'].contains('Mac OS X');
 }
