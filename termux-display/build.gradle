@@ -79,9 +79,13 @@ dependencies {
     implementation 'org.apache.commons:commons-compress:1.20'
 
 }
-def isWindows() {
+
+static def isWindows() {
+    print(System.properties['os.name']);
     return System.properties['os.name'].contains('windows');
 }
-def isMacOS() {
-    return System.properties['os.name'].contains('darwin');
+
+static def isMacOS() {
+    print(System.properties['os.name']);
+    return System.properties['os.name'].contains('Mac OS X');
 }
