@@ -1,5 +1,5 @@
 package com.termux.shared.termux;
-
+package com.termux.shared.termux.
 import android.annotation.SuppressLint;
 
 import com.termux.shared.shell.command.ExecutionCommand;
@@ -257,7 +257,16 @@ import java.util.List;
  *          `TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_SESSION_NAME` to `*.EXTRA_SHELL_NAME`,
  *          `TERMUX_APP.TERMUX_SERVICE.EXTRA_SESSION_CREATE_MODE` to `*.EXTRA_SHELL_CREATE_MODE` and
  *          `TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_SESSION_CREATE_MODE` to `*.EXTRA_SHELL_CREATE_MODE`.
+ *`TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME*`,
+ *          `TERMUX_DEFAULT_PREFERENCES_FILE`.
+ *      - Renamed `DATA_HOME_PATH` to `TERMUX_DATA_HOME_DIR_PATH`.
+ *      - Renamed `CONFIG_HOME_PATH` to `TERMUX_CONFIG_HOME_DIR_PATH`.
+ *      - Updated javadocs and spacing.
  *
+ * - 0.3.0 (2021-03-12)
+ *      - Remove `TERMUX_CACHE_DIR_PATH*`, `TERMUX_DATABASES_DIR_PATH*`,
+ *          `TERMUX_SHARED_PREFERENCES_DIR_PATH*` since they may not be consistent on all devices.
+ *      - Renamed `
  * - 0.47.0 (2022-06-04)
  *      - Added `TERMUX_SITE` and `TERMUX_SITE_URL`.
  *      - Changed `TERMUX_DONATE_URL`.
