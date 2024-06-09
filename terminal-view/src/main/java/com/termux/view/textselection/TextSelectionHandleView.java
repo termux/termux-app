@@ -47,6 +47,7 @@ public class TextSelectionHandleView extends View {
 
     private final int mInitialOrientation;
     private int mOrientation;
+    private float mAdjHotspotOffsetX = 0;
 
     public static final int LEFT = 0;
     public static final int RIGHT = 2;
@@ -149,7 +150,7 @@ public class TextSelectionHandleView extends View {
 
     public void removeFromParent() {
         if (!isParentNull()) {
-            ((ViewGroup)this.getParent()).removeView(this);
+            ((ViewGroup) this.getParent()).removeView(this);
         }
     }
 
@@ -160,10 +161,9 @@ public class TextSelectionHandleView extends View {
     }
 
     private void moveTo(int x, int y, boolean forceOrientationCheck) {
-        float oldHotspotX = mHotspotX;
-        checkChangedOrientation(x, forceOrientationCheck);
-        mPointX = (int) (x - (isShowing() ? oldHotspotX : mHotspotX));
+        mPointX = (int) (x - mHotspotX);
         mPointY = y;
+        checkChangedOrientation(forceOrientationCheck);
 
         if (isPositionVisible()) {
             int[] coords = null;
@@ -198,11 +198,14 @@ public class TextSelectionHandleView extends View {
 
     public void changeOrientation(int orientation) {
         if (mOrientation != orientation) {
+            final float hotspotX = mHotspotX;
             setOrientation(orientation);
+            mAdjHotspotOffsetX = (mHotspotX - hotspotX);
+            mTouchToWindowOffsetX += mAdjHotspotOffsetX;
         }
     }
 
-    private void checkChangedOrientation(int posX, boolean force) {
+    private void checkChangedOrientation(boolean force) {
         if (!mIsDragging && !force) {
             return;
         }
@@ -231,6 +234,7 @@ public class TextSelectionHandleView extends View {
         if (parent == null || !parent.getChildVisibleRect(hostView, clip, null)) {
             return;
         }
+        final int posX = (int) (mPointX + mAdjHotspotOffsetX);
 
         if (posX - mHandleWidth < clip.left) {
             changeOrientation(RIGHT);
@@ -315,6 +319,7 @@ public class TextSelectionHandleView extends View {
 
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                mAdjHotspotOffsetX = 0;
                 mIsDragging = false;
         }
         return true;
