@@ -29,7 +29,9 @@ static int create_subprocess(JNIEnv* env,
         char** envp,
         int* pProcessId,
         jint rows,
-        jint columns)
+        jint columns,
+        jint cell_width,
+        jint cell_height)
 {
     int ptm = open("/dev/ptmx", O_RDWR | O_CLOEXEC);
     if (ptm < 0) return throw_runtime_exception(env, "Cannot open /dev/ptmx");
@@ -57,7 +59,7 @@ static int create_subprocess(JNIEnv* env,
     tcsetattr(ptm, TCSANOW, &tios);
 
     /** Set initial winsize. */
-    struct winsize sz = { .ws_row = (unsigned short) rows, .ws_col = (unsigned short) columns };
+    struct winsize sz = { .ws_row = (unsigned short) rows, .ws_col = (unsigned short) columns, .ws_xpixel = (unsigned short) (columns * cell_width), .ws_ypixel = (unsigned short) (rows * cell_height)};
     ioctl(ptm, TIOCSWINSZ, &sz);
 
     pid_t pid = fork();
@@ -121,7 +123,9 @@ JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(
         jobjectArray envVars,
         jintArray processIdArray,
         jint rows,
-        jint columns)
+        jint columns,
+        jint cell_width,
+        jint cell_height)
 {
     jsize size = args ? (*env)->GetArrayLength(env, args) : 0;
     char** argv = NULL;
@@ -156,7 +160,7 @@ JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(
     int procId = 0;
     char const* cmd_cwd = (*env)->GetStringUTFChars(env, cwd, NULL);
     char const* cmd_utf8 = (*env)->GetStringUTFChars(env, cmd, NULL);
-    int ptm = create_subprocess(env, cmd_utf8, cmd_cwd, argv, envp, &procId, rows, columns);
+    int ptm = create_subprocess(env, cmd_utf8, cmd_cwd, argv, envp, &procId, rows, columns, cell_width, cell_height);
     (*env)->ReleaseStringUTFChars(env, cmd, cmd_utf8);
     (*env)->ReleaseStringUTFChars(env, cmd, cmd_cwd);
 
@@ -178,9 +182,9 @@ JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(
     return ptm;
 }
 
-JNIEXPORT void JNICALL Java_com_termux_terminal_JNI_setPtyWindowSize(JNIEnv* TERMUX_UNUSED(env), jclass TERMUX_UNUSED(clazz), jint fd, jint rows, jint cols)
+JNIEXPORT void JNICALL Java_com_termux_terminal_JNI_setPtyWindowSize(JNIEnv* TERMUX_UNUSED(env), jclass TERMUX_UNUSED(clazz), jint fd, jint rows, jint cols, jint cell_width, jint cell_height)
 {
-    struct winsize sz = { .ws_row = (unsigned short) rows, .ws_col = (unsigned short) cols };
+    struct winsize sz = { .ws_row = (unsigned short) rows, .ws_col = (unsigned short) cols, .ws_xpixel = (unsigned short) (cols * cell_width), .ws_ypixel = (unsigned short) (rows * cell_height) };
     ioctl(fd, TIOCSWINSZ, &sz);
 }
 
