@@ -120,6 +120,7 @@ public class TermuxAppShellEnvironment {
 
         Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
         if (termuxPackageContext != null) {
+            /*
             // An app that does not have the same sharedUserId as termux app will not be able to get
             // get termux context's classloader to get BuildConfig.TERMUX_PACKAGE_VARIANT via reflection.
             // Check TermuxBootstrap.setTermuxPackageManagerAndVariantFromTermuxApp()
@@ -127,6 +128,7 @@ public class TermuxAppShellEnvironment {
                 environment.put(ENV_TERMUX_APP__PACKAGE_MANAGER, TermuxBootstrap.TERMUX_APP_PACKAGE_MANAGER.getName());
             if (TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT != null)
                 environment.put(ENV_TERMUX_APP__PACKAGE_VARIANT, TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT.getName());
+             */
 
             /*
             // Will not be set for plugins
