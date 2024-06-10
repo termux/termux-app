@@ -71,14 +71,13 @@ jobs:
           fi
 
           echo "Attaching APKs to github release"
-          if ! hub release edit \
-          -m "" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_universal.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86_64.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_sha256sums" \
-          "$RELEASE_VERSION_NAME"; then
+          if ! gh release upload "$RELEASE_VERSION_NAME" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_universal.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86_64.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_sha256sums" \
+          ; then
             exit_on_error "Attach APKs to release failed for '$APK_VERSION_TAG' release."
           fi
