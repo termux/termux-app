@@ -128,9 +128,11 @@ public class TermuxAppShellEnvironment {
             if (TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT != null)
                 environment.put(ENV_TERMUX_APP__PACKAGE_VARIANT, TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT.getName());
 
+            /*
             // Will not be set for plugins
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__AM_SOCKET_SERVER_ENABLED,
                 TermuxAmSocketServer.getTermuxAppAMSocketServerEnabled(currentPackageContext));
+             */
 
             String filesDirPath = currentPackageContext.getFilesDir().getAbsolutePath();
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__FILES_DIR, filesDirPath);
