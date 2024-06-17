@@ -195,11 +195,11 @@ clean {
 
 task downloadBootstraps() {
     doLast {
-        def version = "2022.01.07-r1"
-        downloadBootstrap("aarch64", "0fe6d0159d12fcb8baf7750ce9072b9b36f742662b02ad4da145ab85873614cd", version)
-        downloadBootstrap("arm",     "0a6014e2ec3b7079524fee3caabd02be05bcb4add3c6cd9e5ad98408b428c717", version)
-        downloadBootstrap("i686",    "c55369a9af1316dc3d99457aa23cce64b29c1e60e375159352c0d4b9cfed4ac6", version)
-        downloadBootstrap("x86_64",  "e93a7c66d15edb7d1b5ceca906255c85ead35a8b6a52f93524e117cfb07e6778", version)
+        def version = "2024.06.17-r1+apt-android-7"
+        downloadBootstrap("aarch64", "91a90661597fe14bb3c3563f5f65b243c0baaec42f2bc3d2243ff459e3942fb6", version)
+        downloadBootstrap("arm",     "d54b5eb2a305d72f267f9704deaca721b2bebbd3d4cca134aec31da719707997", version)
+        downloadBootstrap("i686",    "06a51ac1c679d68d52045509f1a705622c8f41748ef753660e31e3b6a846eba2", version)
+        downloadBootstrap("x86_64",  "4c8e43474c8d9543e01d4cbf3c4d7f59bbe4d696c38f6dece2b6ab3ba8881f2e", version)
     }
 }
 
