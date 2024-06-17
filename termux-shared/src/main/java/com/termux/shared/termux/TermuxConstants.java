@@ -485,6 +485,12 @@ public final class TermuxConstants {
      * Termux miscellaneous urls.
      */
 
+    /** Termux Site */
+    public static final String TERMUX_SITE = TERMUX_APP_NAME + " Site"; // Default: "Termux Site"
+
+    /** Termux Site url */
+    public static final String TERMUX_SITE_URL = "https://termux.dev"; // Default: "https://termux.dev"
+
     /** Termux Wiki */
     public static final String TERMUX_WIKI = TERMUX_APP_NAME + " Wiki"; // Default: "Termux Wiki"
 
@@ -499,10 +505,10 @@ public final class TermuxConstants {
 
 
     /** Termux support email url */
-    public static final String TERMUX_SUPPORT_EMAIL_URL = "termuxreports@groups.io"; // Default: "termuxreports@groups.io"
+    public static final String TERMUX_SUPPORT_EMAIL_URL = "support@termux.dev"; // Default: "support@termux.dev"
 
     /** Termux support email mailto url */
-    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:termuxreports@groups.io"
+    public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:support@termux.dev"
 
 
     /** Termux Reddit subreddit */
@@ -513,7 +519,7 @@ public final class TermuxConstants {
 
 
     /** Termux donate url */
-    public static final String TERMUX_DONATE_URL = TERMUX_PACKAGES_GITHUB_REPO_URL + "/wiki/Donate"; // Default: "https://github.com/termux/termux-packages/wiki/Donate"
+    public static final String TERMUX_DONATE_URL = TERMUX_SITE_URL + "/donate"; // Default: "https://termux.dev/donate"
 
 
 

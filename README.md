@@ -145,7 +145,7 @@ The main ones are the following.
 - [Termux Matrix Channel](https://matrix.to/#termux_termux:gitter.im)
 - [Termux Dev Matrix Channel](https://matrix.to/#termux_dev:gitter.im)
 - [Termux Twitter](https://twitter.com/termux/)
-- [Termux Reports Email](mailto:termuxreports@groups.io)
+- [Termux Reports Email](mailto:support@termux.dev)
 
 ### Wikis
 
