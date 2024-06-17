@@ -16,8 +16,11 @@ import com.termux.shared.file.TermuxFileUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
+import com.termux.shared.models.ExecutionCommand;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.packages.PackageUtils;
+import com.termux.shared.shell.TermuxShellEnvironmentClient;
+import com.termux.shared.shell.TermuxTask;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 
@@ -187,7 +190,8 @@ final class TermuxInstaller {
                                             outStream.write(buffer, 0, readBytes);
                                     }
                                     if (zipEntryName.startsWith("bin/") || zipEntryName.startsWith("libexec") ||
-                                        zipEntryName.startsWith("lib/apt/apt-helper") || zipEntryName.startsWith("lib/apt/methods")) {
+                                        zipEntryName.startsWith("lib/apt/apt-helper") || zipEntryName.startsWith("lib/apt/methods") ||
+                                        zipEntryName.equals("etc/termux/bootstrap/termux-bootstrap-second-stage.sh")) {
                                         //noinspection OctalInteger
                                         Os.chmod(targetFile.getAbsolutePath(), 0700);
                                     }
@@ -206,6 +210,28 @@ final class TermuxInstaller {
 
                     if (!TERMUX_STAGING_PREFIX_DIR.renameTo(TERMUX_PREFIX_DIR)) {
                         throw new RuntimeException("Moving termux prefix staging to prefix directory failed");
+                    }
+
+                    // Run Termux bootstrap second stage
+                    Logger.logInfo(LOG_TAG, "Running Termux bootstrap second stage.");
+                    String termuxBootstrapSecondStageFile = TERMUX_PREFIX_DIR_PATH + "/etc/termux/bootstrap/termux-bootstrap-second-stage.sh";
+                    if (FileUtils.fileExists(termuxBootstrapSecondStageFile, false)) {
+                        ExecutionCommand executionCommand = new ExecutionCommand(-1,
+                            termuxBootstrapSecondStageFile, null, null,
+                            null, true, false);
+                        executionCommand.commandLabel = "Termux Bootstrap Second Stage Command";
+                        executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_NORMAL;
+                        TermuxTask termuxTask = TermuxTask.execute(activity, executionCommand, null, new TermuxShellEnvironmentClient(), true);
+                        boolean stderrSet = !executionCommand.resultData.stderr.toString().isEmpty();
+                        if (termuxTask == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0 || stderrSet) {
+                            // Delete prefix directory as otherwise when app is restarted, the broken prefix directory would be used and logged into
+                            error = FileUtils.deleteFile("termux prefix directory", TERMUX_PREFIX_DIR_PATH, true);
+                            if (error != null)
+                                Logger.logErrorExtended(LOG_TAG, error.toString());
+
+                            showBootstrapErrorDialog(activity, whenDone, MarkdownUtils.getMarkdownCodeForString(executionCommand.toString(), true));
+                            return;
+                        }
                     }
 
                     Logger.logInfo(LOG_TAG, "Bootstrap packages installed successfully.");
