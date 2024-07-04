@@ -90,6 +90,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     static final String ACTION_STOP = "com.termux.display.ACTION_STOP";
     static final String REQUEST_LAUNCH_EXTERNAL_DISPLAY = "request_launch_external_display";
     public TermuxX11ExtraKeys mExtraKeys;
+    protected boolean inputControllerViewHandled = false;
     protected FrameLayout frm;
     protected View lorieContentView;
     protected TouchInputHandler mInputHandler;
@@ -224,6 +225,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         lorieParent.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                if(inputControllerViewHandled){
+                    return true;
+                }
                 mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
                 return true;
             }
@@ -231,6 +235,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         lorieParent.setOnHoverListener(new View.OnHoverListener() {
             @Override
             public boolean onHover(View v, MotionEvent event) {
+                if(inputControllerViewHandled){
+                    return true;
+                }
                 mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
                 return true;
             }
@@ -238,6 +245,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         lorieParent.setOnGenericMotionListener(new View.OnGenericMotionListener() {
             @Override
             public boolean onGenericMotion(View v, MotionEvent event) {
+                if(inputControllerViewHandled){
+                    return true;
+                }
                 mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
                 return true;
             }
@@ -245,6 +255,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         lorieView.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
             @Override
             public boolean onCapturedPointer(View view, MotionEvent event) {
+                if(inputControllerViewHandled){
+                    return true;
+                }
                 mInputHandler.handleTouchEvent(lorieView, lorieView, event);
                 return true;
             }
@@ -252,6 +265,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         lorieParent.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
             @Override
             public boolean onCapturedPointer(View view, MotionEvent event) {
+                if(inputControllerViewHandled){
+                    return true;
+                }
                 mInputHandler.handleTouchEvent(lorieView, lorieView, event);
                 return true;
             }

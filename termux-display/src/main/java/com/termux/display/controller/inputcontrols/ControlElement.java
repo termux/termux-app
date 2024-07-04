@@ -23,6 +23,7 @@ public class ControlElement {
     public static final float STICK_DEAD_ZONE = 0.15f;
     public static final float DPAD_DEAD_ZONE = 0.3f;
     public static final float STICK_SENSITIVITY = 3.0f;
+
     public enum Type {
         BUTTON, D_PAD, RANGE_BUTTON, STICK;
 
@@ -33,6 +34,7 @@ public class ControlElement {
             return names;
         }
     }
+
     public enum Shape {
         CIRCLE, RECT, ROUND_RECT, SQUARE;
 
@@ -43,12 +45,13 @@ public class ControlElement {
             return names;
         }
     }
+
     public enum Range {
         FROM_A_TO_Z(26), FROM_0_TO_9(10), FROM_F1_TO_F12(12), FROM_NP0_TO_NP9(10);
         public final byte max;
 
         Range(int max) {
-            this.max = (byte)max;
+            this.max = (byte) max;
         }
 
         public static String[] names() {
@@ -58,6 +61,7 @@ public class ControlElement {
             return names;
         }
     }
+
     private final InputControlsView inputControlsView;
     private Type type = Type.BUTTON;
     private Shape shape = Shape.CIRCLE;
@@ -159,8 +163,8 @@ public class ControlElement {
     public void setBindingAt(int index, Binding binding) {
         if (index >= bindings.length) {
             int oldLength = bindings.length;
-            bindings = Arrays.copyOf(bindings, index+1);
-            Arrays.fill(bindings, oldLength-1, bindings.length, Binding.NONE);
+            bindings = Arrays.copyOf(bindings, index + 1);
+            Arrays.fill(bindings, oldLength - 1, bindings.length, Binding.NONE);
             states = new boolean[bindings.length];
             boundingBoxNeedsUpdate = true;
         }
@@ -181,7 +185,7 @@ public class ControlElement {
     }
 
     public void setX(int x) {
-        this.x = (short)x;
+        this.x = (short) x;
         boundingBoxNeedsUpdate = true;
     }
 
@@ -190,7 +194,7 @@ public class ControlElement {
     }
 
     public void setY(int y) {
-        this.y = (short)y;
+        this.y = (short) y;
         boundingBoxNeedsUpdate = true;
     }
 
@@ -215,7 +219,7 @@ public class ControlElement {
     }
 
     public void setIconId(int iconId) {
-        this.iconId = (byte)iconId;
+        this.iconId = (byte) iconId;
     }
 
     public Rect getBoundingBox() {
@@ -237,8 +241,8 @@ public class ControlElement {
                         halfHeight = snappingSize * 2;
                         break;
                     case SQUARE:
-                        halfWidth = (int)(snappingSize * 2.5f);
-                        halfHeight = (int)(snappingSize * 2.5f);
+                        halfWidth = (int) (snappingSize * 2.5f);
+                        halfHeight = (int) (snappingSize * 2.5f);
                         break;
                     case CIRCLE:
                         halfWidth = snappingSize * 3;
@@ -279,17 +283,15 @@ public class ControlElement {
     private String getDisplayText() {
         if (text != null && !text.isEmpty()) {
             return text;
-        }
-        else {
+        } else {
             Binding binding = getBindingAt(0);
             String text = binding.toString().replace("NUMPAD ", "NP").replace("BUTTON ", "");
             if (text.length() > 7) {
                 String[] parts = text.split(" ");
                 StringBuilder sb = new StringBuilder();
                 for (String part : parts) sb.append(part.charAt(0));
-                return (binding.isMouse() ? "M" : "")+ sb;
-            }
-            else return text;
+                return (binding.isMouse() ? "M" : "") + sb;
+            } else return text;
         }
     }
 
@@ -303,16 +305,16 @@ public class ControlElement {
         String text = "";
         switch (range) {
             case FROM_A_TO_Z:
-                text = String.valueOf((char)(65 + index));
+                text = String.valueOf((char) (65 + index));
                 break;
             case FROM_0_TO_9:
                 text = String.valueOf((index + 1) % 10);
                 break;
             case FROM_F1_TO_F12:
-                text = "F"+(index + 1);
+                text = "F" + (index + 1);
                 break;
             case FROM_NP0_TO_NP9:
-                text = "NP"+((index + 1) % 10);
+                text = "NP" + ((index + 1) % 10);
                 break;
         }
         return text;
@@ -355,8 +357,7 @@ public class ControlElement {
 
                 if (iconId > 0) {
                     drawIcon(canvas, cx, cy, boundingBox.width(), boundingBox.height(), iconId);
-                }
-                else {
+                } else {
                     String text = getDisplayText();
                     paint.setTextSize(Math.min(getTextSizeForWidth(paint, text, boundingBox.width() - strokeWidth * 2), snappingSize * 2 * scale));
                     paint.setTextAlign(Paint.Align.CENTER);
@@ -411,7 +412,7 @@ public class ControlElement {
                 int oldColor = paint.getColor();
                 float minSize = Math.min(boundingBox.width(), boundingBox.height());
                 float radius = minSize * 0.5f;
-                float elementSize = (float)Math.max(boundingBox.width(), boundingBox.height()) / (bindings.length + 2);
+                float elementSize = (float) Math.max(boundingBox.width(), boundingBox.height()) / (bindings.length + 2);
                 float minTextSize = snappingSize * 2 * scale;
 
                 if (orientation == 0) {
@@ -443,8 +444,7 @@ public class ControlElement {
                     paint.setColor(oldColor);
                     canvas.drawLine(startX, lineTop, startX, lineBottom, paint);
                     drawIcon(canvas, startX + elementSize * 0.5f, cy, minSize, minSize, 10);
-                }
-                else {
+                } else {
                     float lineLeft = boundingBox.left + strokeWidth * 0.5f;
                     float lineRight = boundingBox.right - strokeWidth * 0.5f;
                     float cx = boundingBox.left + boundingBox.width() * 0.5f;
@@ -484,8 +484,8 @@ public class ControlElement {
 
                 float thumbstickX = thumbstickPosition != null ? thumbstickPosition.x : cx;
                 float thumbstickY = thumbstickPosition != null ? thumbstickPosition.y : cy;
-
-                short thumbRadius = (short)(snappingSize * 3.5f * scale);
+//                Log.d("draw stick","thumbstickX:"+thumbstickX+", thumbstickY:"+thumbstickY);
+                short thumbRadius = (short) (snappingSize * 3.5f * scale);
                 paint.setStyle(Paint.Style.FILL);
                 paint.setColor(ColorUtils.setAlphaComponent(primaryColor, 50));
                 canvas.drawCircle(thumbstickX, thumbstickY, thumbRadius, paint);
@@ -499,13 +499,13 @@ public class ControlElement {
 
     private void drawIcon(Canvas canvas, float cx, float cy, float width, float height, int iconId) {
         Paint paint = inputControlsView.getPaint();
-        Bitmap icon = inputControlsView.getIcon((byte)iconId);
+        Bitmap icon = inputControlsView.getIcon((byte) iconId);
         paint.setColorFilter(inputControlsView.getColorFilter());
-        int margin = (int)(inputControlsView.getSnappingSize() * (shape == Shape.CIRCLE || shape == Shape.SQUARE ? 2.0f : 1.0f) * scale);
-        int halfSize = (int)((Math.min(width, height) - margin) * 0.5f);
+        int margin = (int) (inputControlsView.getSnappingSize() * (shape == Shape.CIRCLE || shape == Shape.SQUARE ? 2.0f : 1.0f) * scale);
+        int halfSize = (int) ((Math.min(width, height) - margin) * 0.5f);
 
         Rect srcRect = new Rect(0, 0, icon.getWidth(), icon.getHeight());
-        Rect dstRect = new Rect((int)(cx - halfSize), (int)(cy - halfSize), (int)(cx + halfSize), (int)(cy + halfSize));
+        Rect dstRect = new Rect((int) (cx - halfSize), (int) (cy - halfSize), (int) (cx + halfSize), (int) (cy + halfSize));
         canvas.drawBitmap(icon, srcRect, dstRect, paint);
         paint.setColorFilter(null);
     }
@@ -521,8 +521,8 @@ public class ControlElement {
 
             elementJSONObject.put("bindings", bindingsJSONArray);
             elementJSONObject.put("scale", Float.valueOf(scale));
-            elementJSONObject.put("x", (float)x / inputControlsView.getMaxWidth());
-            elementJSONObject.put("y", (float)y / inputControlsView.getMaxHeight());
+            elementJSONObject.put("x", (float) x / inputControlsView.getMaxWidth());
+            elementJSONObject.put("y", (float) y / inputControlsView.getMaxHeight());
             elementJSONObject.put("toggleSwitch", toggleSwitch);
             elementJSONObject.put("text", text);
             elementJSONObject.put("iconId", iconId);
@@ -532,25 +532,24 @@ public class ControlElement {
                 if (orientation != 0) elementJSONObject.put("orientation", orientation);
             }
             return elementJSONObject;
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             return null;
         }
     }
 
     public boolean containsPoint(float x, float y) {
-        return getBoundingBox().contains((int)(x + 0.5f), (int)(y + 0.5f));
+        return getBoundingBox().contains((int) (x + 0.5f), (int) (y + 0.5f));
     }
 
     public boolean handleTouchDown(int pointerId, float x, float y) {
-//        Log.d("ControlElement.handleTouchDown",getDisplayText());
+//        Log.d("ControlElement.handleTouchDown",getDisplayText()+","+String.valueOf(type));
         if (currentPointerId == -1 && containsPoint(x, y)) {
             currentPointerId = pointerId;
             if (type == Type.BUTTON) {
-                if (!toggleSwitch || !selected) inputControlsView.handleInputEvent(getBindingAt(0), true);
+                if (!toggleSwitch || !selected)
+                    inputControlsView.handleInputEvent(getBindingAt(0), true);
                 return true;
-            }
-            else if (type == Type.RANGE_BUTTON) {
+            } else if (type == Type.RANGE_BUTTON) {
                 Range range = getRange();
                 currentElementIndex = getElementIndexAt(x, y);
                 if (currentElementIndex > 0 && currentElementIndex < bindings.length + 1) {
@@ -558,29 +557,27 @@ public class ControlElement {
                     Binding binding = Binding.NONE;
                     switch (range) {
                         case FROM_A_TO_Z:
-                            binding = Binding.valueOf("KEY_"+((char)(65 + index)));
+                            binding = Binding.valueOf("KEY_" + ((char) (65 + index)));
                             break;
                         case FROM_0_TO_9:
-                            binding = Binding.valueOf("KEY_"+((index + 1) % 10));
+                            binding = Binding.valueOf("KEY_" + ((index + 1) % 10));
                             break;
                         case FROM_F1_TO_F12:
-                            binding = Binding.valueOf("KEY_F"+(index + 1));
+                            binding = Binding.valueOf("KEY_F" + (index + 1));
                             break;
                         case FROM_NP0_TO_NP9:
-                            binding = Binding.valueOf("KEY_KP_"+((index + 1) % 10));
+                            binding = Binding.valueOf("KEY_KP_" + ((index + 1) % 10));
                             break;
                     }
 
                     Arrays.fill(bindings, Binding.NONE);
-                    bindings[currentElementIndex-1] = binding;
-                    states[currentElementIndex-1] = true;
+                    bindings[currentElementIndex - 1] = binding;
+                    states[currentElementIndex - 1] = true;
                     inputControlsView.handleInputEvent(binding, true);
                 }
                 return true;
-            }
-            else return handleTouchMove(pointerId, x, y);
-        }
-        else return false;
+            } else return handleTouchMove(pointerId, x, y);
+        } else return containsPoint(x, y);
     }
 
     public boolean handleTouchMove(int pointerId, float x, float y) {
@@ -594,14 +591,14 @@ public class ControlElement {
 
             float distance = Mathf.lengthSq(radius - localX, radius - localY);
             if (distance > radius * radius) {
-                float angle = (float)Math.atan2(offsetY, offsetX);
-                offsetX = (float)(Math.cos(angle) * radius);
-                offsetY = (float)(Math.sin(angle) * radius);
+                float angle = (float) Math.atan2(offsetY, offsetX);
+                offsetX = (float) (Math.cos(angle) * radius);
+                offsetY = (float) (Math.sin(angle) * radius);
             }
 
             float deltaX = Mathf.clamp(offsetX / radius, -1, 1);
             float deltaY = Mathf.clamp(offsetY / radius, -1, 1);
-
+//            Log.d("handleTouchMove","offsetX:"+String.valueOf(offsetX)+",offsetY:"+String.valueOf(offsetY)+",distance:"+String.valueOf(distance)+",radius*radius:"+String.valueOf(radius*radius)+",deltaX:"+deltaX+",deltaY"+deltaY);
             if (type == Type.STICK) {
                 if (thumbstickPosition == null) thumbstickPosition = new PointF();
                 thumbstickPosition.x = boundingBox.left + deltaX * radius + radius;
@@ -615,43 +612,42 @@ public class ControlElement {
                         value = Mathf.clamp(Math.max(0, Math.abs(value) - STICK_DEAD_ZONE) * Mathf.sign(value) * STICK_SENSITIVITY, -1, 1);
                         inputControlsView.handleInputEvent(binding, true, value);
                         this.states[i] = true;
-                    }
-                    else {
-                        boolean state = binding.isMouseMove() ? (states[i] || states[(i+2)%4]) : states[i];
+//                        Log.d("handleTouchMove","i:"+String.valueOf(i)+",value:"+String.valueOf(value));
+                    } else {
+                        boolean state = binding.isMouseMove() ? (states[i] || states[(i + 2) % 4]) : states[i];
                         inputControlsView.handleInputEvent(binding, state, value);
                         this.states[i] = state;
                     }
                 }
 
                 inputControlsView.invalidate();
-            }
-            else {
+            } else {
                 final boolean[] states = {deltaY <= -DPAD_DEAD_ZONE, deltaX >= DPAD_DEAD_ZONE, deltaY >= DPAD_DEAD_ZONE, deltaX <= -DPAD_DEAD_ZONE};
 
                 for (byte i = 0; i < 4; i++) {
                     float value = i == 1 || i == 3 ? deltaX : deltaY;
                     Binding binding = getBindingAt(i);
-                    boolean state = binding.isMouseMove() ? (states[i] || states[(i+2)%4]) : states[i];
+                    boolean state = binding.isMouseMove() ? (states[i] || states[(i + 2) % 4]) : states[i];
                     inputControlsView.handleInputEvent(binding, state, value);
                     this.states[i] = state;
                 }
             }
 
             return true;
-        }
-        else return false;
+        } else return containsPoint(x, y);
     }
 
-    public boolean handleTouchUp(int pointerId) {
+    public boolean handleTouchUp(int pointerId, float x, float y) {
+//        Log.d("handleTouchUp",String.valueOf(type));
         if (pointerId == currentPointerId) {
             if (type == Type.BUTTON) {
-                if (!toggleSwitch || selected) inputControlsView.handleInputEvent(getBindingAt(0), false);
+                if (!toggleSwitch || selected)
+                    inputControlsView.handleInputEvent(getBindingAt(0), false);
                 if (toggleSwitch) {
                     selected = !selected;
                     inputControlsView.invalidate();
                 }
-            }
-            else if (type == Type.RANGE_BUTTON || type == Type.D_PAD || type == Type.STICK) {
+            } else if (type == Type.RANGE_BUTTON || type == Type.D_PAD || type == Type.STICK) {
                 for (byte i = 0; i < states.length; i++) {
                     if (states[i]) inputControlsView.handleInputEvent(getBindingAt(i), false);
                     states[i] = false;
@@ -660,18 +656,16 @@ public class ControlElement {
                 if (type == Type.RANGE_BUTTON) {
                     Range range = getRange();
                     float invLength = 1.0f / bindings.length;
-                    byte totalPage = (byte)((Math.ceil(range.max * invLength) * bindings.length) * invLength);
+                    byte totalPage = (byte) ((Math.ceil(range.max * invLength) * bindings.length) * invLength);
                     if (currentElementIndex == 0) {
                         currentPage--;
-                        if (currentPage < 0) currentPage = (byte)(totalPage - 1);
+                        if (currentPage < 0) currentPage = (byte) (totalPage - 1);
+                        inputControlsView.invalidate();
+                    } else if (currentElementIndex == (bindings.length + 1)) {
+                        currentPage = (byte) ((currentPage + 1) % totalPage);
                         inputControlsView.invalidate();
                     }
-                    else if (currentElementIndex == (bindings.length+1)) {
-                        currentPage = (byte)((currentPage + 1) % totalPage);
-                        inputControlsView.invalidate();
-                    }
-                }
-                else if (type == Type.STICK) {
+                } else if (type == Type.STICK) {
                     if (thumbstickPosition != null) thumbstickPosition = null;
                     inputControlsView.invalidate();
                 }
@@ -679,13 +673,13 @@ public class ControlElement {
             currentPointerId = -1;
             return true;
         }
-        return false;
+        return containsPoint(x,y);
     }
 
     private byte getElementIndexAt(float x, float y) {
         Rect boundingBox = getBoundingBox();
-        float elementSize = (float)Math.max(boundingBox.width(), boundingBox.height()) / (bindings.length + 2);
+        float elementSize = (float) Math.max(boundingBox.width(), boundingBox.height()) / (bindings.length + 2);
         float offset = orientation == 0 ? x - boundingBox.left : y - boundingBox.top;
-        return (byte)Mathf.clamp((int)Math.floor(offset / elementSize), 0, bindings.length + 1);
+        return (byte) Mathf.clamp((int) Math.floor(offset / elementSize), 0, bindings.length + 1);
     }
 }

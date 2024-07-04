@@ -146,7 +146,18 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+//        Log.d("onInterceptTouchEvent",String.valueOf(ev.getAction()));
+        if(!switchSlider){
+           mOnMenuChangeListener.sendTouchEvent(ev);
+           return false;
+        }
+        return super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent ev) {
+//        Log.d("onTouchEvent",String.valueOf(ev.getAction()));
         int action = ev.getAction();
         switch(action){
             case MotionEvent.ACTION_MOVE:{
@@ -170,7 +181,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         mOnMenuChangeListener.onEdgeReached();
                     }
                 }
-//                Log.d("onTouchEvent", "ACTION_UP scrollX:" + scrollX);
                 //operate left
                 if (isOperateLeft) {
                     // area hidden more than half of menu width close it
@@ -215,7 +225,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (switchSlider) {
             super.onTouchEvent(ev);
         } else {
-           return mOnMenuChangeListener.sendTouchEvent(ev);
+//           return mOnMenuChangeListener.sendTouchEvent(ev);
+            return true;
         }
         return false;
     }

@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -20,10 +19,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -60,7 +59,6 @@ import com.termux.app.terminal.utils.FilePathUtils;
 import com.termux.app.terminal.utils.FileUtils;
 import com.termux.app.terminal.utils.CommandUtils;
 import com.termux.display.utils.ScreenUtils;
-import com.termux.display.controller.inputcontrols.ExternalController;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
@@ -236,6 +234,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         setContentView(R.layout.activity_termux_main);
 //        setRequestedOrientation( SCREEN_ORIENTATION_LANDSCAPE);
         slideWindowLayout = findViewById(R.id.id_termux_layout);
+        inputControlsView.setRootNodeView(slideWindowLayout);
         slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
             @Override
             public void onMenuOpen(boolean isOpen, int flag) {
@@ -243,8 +242,14 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
+                if(inputControlsView!=null){
+                    inputControllerViewHandled =inputControlsView.handleTouchEvent(slideWindowLayout,ev);
+                }
+//                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
                 if (null != mInputHandler) {
-                    mInputHandler.handleTouchEvent(slideWindowLayout, getLorieView(), ev);
+                    if(!inputControllerViewHandled){
+                        mInputHandler.handleTouchEvent(slideWindowLayout, getLorieView(), ev);
+                    }
                 }
                 return true;
             }

@@ -135,7 +135,7 @@ public class TapGestureDetector {
 
             case MotionEvent.ACTION_UP:
                 cancelLongTouchNotification();
-                if (!mTapCancelled)
+                if (!mTapCancelled&&mInitialPoint!=null)
                     mListener.onTap(mPointerCount, mInitialPoint.x, mInitialPoint.y);
                 mInitialPoint = null;
                 break;

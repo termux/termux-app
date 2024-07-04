@@ -150,7 +150,7 @@ public class TouchInputHandler {
             int offsetX = viewLocation[0] - view0Location[0];
             int offsetY = viewLocation[1] - view0Location[1];
 
-            event.offsetLocation(-offsetX, -offsetY);
+//            event.offsetLocation(-offsetX, -offsetY);
 //            Log.d("TouchInputHandler","offsetx:"+offsetX+" offsety:"+offsetY);
         }
 
