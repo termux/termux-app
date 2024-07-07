@@ -129,8 +129,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 Log.d("MainActivity", "preference: " + intent.getStringExtra("key"));
                 if (!"showAdditionalKbd".equals(intent.getStringExtra("key"))) {
                     onPreferencesChanged("");
-                }else {
-                    toggleExtraKeys(true,false);
+                } else {
+                    toggleExtraKeys(true, false);
                 }
             }
         }
@@ -163,7 +163,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         preferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> onPreferencesChanged(key));
 
-        getWindow().setFlags(FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS | FLAG_KEEP_SCREEN_ON | FLAG_TRANSLUCENT_STATUS, 0);
+//        getWindow().setFlags(FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS | FLAG_KEEP_SCREEN_ON | FLAG_TRANSLUCENT_STATUS, 0);
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main_activity);
         lorieContentView = findViewById(R.id.id_display_window);
@@ -185,7 +185,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             public void swipeDown() {
             }
         }, new InputEventSender(lorieView));
-        int touch_sensitivity = preferences.getInt("touch_sensitivity",1);
+        int touch_sensitivity = preferences.getInt("touch_sensitivity", 1);
         mInputHandler.setLongPressedDelay(touch_sensitivity);
 //        Log.d("MainActivity","touch_sensitivity:"+touch_sensitivity);
         mLorieKeyListener = (v, k, e) -> {
@@ -225,53 +225,53 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         lorieParent.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(inputControllerViewHandled){
-                    return true;
-                }
-                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
+//                if(inputControllerViewHandled){
+//                    return true;
+//                }
+//                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
                 return true;
             }
         });
-        lorieParent.setOnHoverListener(new View.OnHoverListener() {
-            @Override
-            public boolean onHover(View v, MotionEvent event) {
-                if(inputControllerViewHandled){
-                    return true;
-                }
-                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
-                return true;
-            }
-        });
-        lorieParent.setOnGenericMotionListener(new View.OnGenericMotionListener() {
-            @Override
-            public boolean onGenericMotion(View v, MotionEvent event) {
-                if(inputControllerViewHandled){
-                    return true;
-                }
-                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
-                return true;
-            }
-        });
-        lorieView.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
-            @Override
-            public boolean onCapturedPointer(View view, MotionEvent event) {
-                if(inputControllerViewHandled){
-                    return true;
-                }
-                mInputHandler.handleTouchEvent(lorieView, lorieView, event);
-                return true;
-            }
-        });
-        lorieParent.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
-            @Override
-            public boolean onCapturedPointer(View view, MotionEvent event) {
-                if(inputControllerViewHandled){
-                    return true;
-                }
-                mInputHandler.handleTouchEvent(lorieView, lorieView, event);
-                return true;
-            }
-        });
+//        lorieParent.setOnHoverListener(new View.OnHoverListener() {
+//            @Override
+//            public boolean onHover(View v, MotionEvent event) {
+//                if(inputControllerViewHandled){
+//                    return true;
+//                }
+//                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
+//                return true;
+//            }
+//        });
+//        lorieParent.setOnGenericMotionListener(new View.OnGenericMotionListener() {
+//            @Override
+//            public boolean onGenericMotion(View v, MotionEvent event) {
+//                if(inputControllerViewHandled){
+//                    return true;
+//                }
+//                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
+//                return true;
+//            }
+//        });
+//        lorieView.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
+//            @Override
+//            public boolean onCapturedPointer(View view, MotionEvent event) {
+//                if(inputControllerViewHandled){
+//                    return true;
+//                }
+//                mInputHandler.handleTouchEvent(lorieView, lorieView, event);
+//                return true;
+//            }
+//        });
+//        lorieParent.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
+//            @Override
+//            public boolean onCapturedPointer(View view, MotionEvent event) {
+//                if(inputControllerViewHandled){
+//                    return true;
+//                }
+//                mInputHandler.handleTouchEvent(lorieView, lorieView, event);
+//                return true;
+//            }
+//        });
 
         lorieView.setOnKeyListener(mLorieKeyListener);
 
@@ -586,6 +586,13 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }
     }
 
+    protected void setX11FocusedPreferencesChanged(boolean value) {
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor edit = p.edit();
+        edit.putBoolean("X11Focused", value);
+        edit.commit();
+    }
+
     void onPreferencesChanged(String key) {
         if ("additionalKbdVisible".equals(key))
             return;
@@ -599,7 +606,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         mInputHandler.setPreferScancodes(p.getBoolean("preferScancodes", false));
         mInputHandler.setPointerCaptureEnabled(p.getBoolean("pointerCapture", false));
         mInputHandler.setApplyDisplayScaleFactorToTouchpad(p.getBoolean("scaleTouchpad", true));
-        mInputHandler.setLongPressedDelay(p.getInt("touch_sensitivity",1));
+        mInputHandler.setLongPressedDelay(p.getInt("touch_sensitivity", 1));
         if (!p.getBoolean("pointerCapture", false) && lorieView.hasPointerCapture())
             lorieView.releasePointerCapture();
 
@@ -855,9 +862,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             window.addFlags(FLAG_KEEP_SCREEN_ON);
         else
             window.clearFlags(FLAG_KEEP_SCREEN_ON);
-
         window.setSoftInputMode((reseed ? SOFT_INPUT_ADJUST_RESIZE : SOFT_INPUT_ADJUST_PAN) | SOFT_INPUT_STATE_HIDDEN);
-
         ((FrameLayout) findViewById(R.id.id_display_window)).getChildAt(0).setFitsSystemWindows(!fullscreen);
         SamsungDexUtils.dexMetaKeyCapture(this, hasFocus && p.getBoolean("dexMetaKeyCapture", false));
 
@@ -865,7 +870,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             getLorieView().regenerate();
 
         getLorieView().requestFocus();
-
     }
 
     public static boolean hasPipPermission(@NonNull Context context) {

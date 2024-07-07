@@ -4,6 +4,8 @@
 
 package com.termux.display.input;
 
+import static com.termux.display.input.InputStub.BUTTON_LEFT;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PointF;
@@ -149,6 +151,8 @@ public class TouchInputHandler {
 
             int offsetX = viewLocation[0] - view0Location[0];
             int offsetY = viewLocation[1] - view0Location[1];
+            mRenderData.offsetX = offsetX;
+            mRenderData.offsetY = offsetY;
 
 //            event.offsetLocation(-offsetX, -offsetY);
 //            Log.d("TouchInputHandler","offsetx:"+offsetX+" offsety:"+offsetY);
@@ -323,8 +327,8 @@ public class TouchInputHandler {
     private class GestureListener extends GestureDetector.SimpleOnGestureListener
         implements TapGestureDetector.OnTapListener {
         private final Handler mGestureListenerHandler = new Handler(msg -> {
-            if (msg.what == InputStub.BUTTON_LEFT)
-                mInputStrategy.onTap(InputStub.BUTTON_LEFT);
+            if (msg.what == BUTTON_LEFT)
+                mInputStrategy.onTap(BUTTON_LEFT);
             return true;
         });
 
@@ -398,10 +402,10 @@ public class TouchInputHandler {
                 moveCursorToScreenPoint(x, y);
             }
 
-            if (button != InputStub.BUTTON_LEFT || !(mInjector.tapToMove && mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy))
+            if (button != BUTTON_LEFT || !(mInjector.tapToMove && mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy))
                 mInputStrategy.onTap(button);
             else
-                mGestureListenerHandler.sendEmptyMessageDelayed(InputStub.BUTTON_LEFT, ViewConfiguration.getDoubleTapTimeout());
+                mGestureListenerHandler.sendEmptyMessageDelayed(BUTTON_LEFT, ViewConfiguration.getDoubleTapTimeout());
         }
 
 
@@ -414,7 +418,7 @@ public class TouchInputHandler {
                 switch (e.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
                         if (mInjector.tapToMove && mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy) {
-                            mGestureListenerHandler.removeMessages(InputStub.BUTTON_LEFT);
+                            mGestureListenerHandler.removeMessages(BUTTON_LEFT);
                             onLongPress(1, e.getX(), e.getY());
                         }
                         break;
@@ -456,7 +460,7 @@ public class TouchInputHandler {
         private int mouseButtonFromPointerCount(int pointerCount) {
             switch (pointerCount) {
                 case 1:
-                    return InputStub.BUTTON_LEFT;
+                    return BUTTON_LEFT;
                 case 2:
                     return InputStub.BUTTON_RIGHT;
                 case 3:
@@ -496,7 +500,7 @@ public class TouchInputHandler {
         }
 
         private final int[][] buttons = {
-            {MotionEvent.BUTTON_PRIMARY, InputStub.BUTTON_LEFT},
+            {MotionEvent.BUTTON_PRIMARY, BUTTON_LEFT},
             {MotionEvent.BUTTON_TERTIARY, InputStub.BUTTON_MIDDLE},
             {MotionEvent.BUTTON_SECONDARY, InputStub.BUTTON_RIGHT}
         };
@@ -585,7 +589,7 @@ public class TouchInputHandler {
         }
 
         private final Handler handler = new Handler();
-        private final Runnable mouseDownRunnable = () -> mInjector.sendMouseEvent(mRenderData.getCursorPosition(), InputStub.BUTTON_LEFT, true, false);
+        private final Runnable mouseDownRunnable = () -> mInjector.sendMouseEvent(mRenderData.getCursorPosition(), BUTTON_LEFT, true, false);
 
         boolean isMouseButtonChanged(int mask) {
             return (savedBS & mask) != (currentBS & mask);
@@ -598,7 +602,7 @@ public class TouchInputHandler {
         void checkButtons(MotionEvent e) {
             currentBS = e.getButtonState();
             if (isMouseButtonChanged(MotionEvent.BUTTON_PRIMARY))
-                mInjector.sendMouseEvent(mRenderData.getCursorPosition(), InputStub.BUTTON_LEFT, mouseButtonDown(MotionEvent.BUTTON_PRIMARY), false);
+                mInjector.sendMouseEvent(mRenderData.getCursorPosition(), BUTTON_LEFT, mouseButtonDown(MotionEvent.BUTTON_PRIMARY), false);
             if (isMouseButtonChanged(MotionEvent.BUTTON_TERTIARY))
                 mInjector.sendMouseEvent(mRenderData.getCursorPosition(), InputStub.BUTTON_MIDDLE, mouseButtonDown(MotionEvent.BUTTON_TERTIARY), false);
             if (isMouseButtonChanged(MotionEvent.BUTTON_SECONDARY))
@@ -641,7 +645,7 @@ public class TouchInputHandler {
                         mScroller.onTouchEvent(e);
                         mIsScrolling = false;
                     } else if (hasFlags(e, 0x4000000)) {
-                        mInjector.sendMouseEvent(mRenderData.getCursorPosition(), InputStub.BUTTON_LEFT, false, false);
+                        mInjector.sendMouseEvent(mRenderData.getCursorPosition(), BUTTON_LEFT, false, false);
                         mIsDragging = false;
                     }
 
@@ -675,8 +679,8 @@ public class TouchInputHandler {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
-            mInjector.sendMouseEvent(mRenderData.getCursorPosition(), InputStub.BUTTON_LEFT, true, false);
-            mInjector.sendMouseEvent(mRenderData.getCursorPosition(), InputStub.BUTTON_LEFT, false, false);
+            mInjector.sendMouseEvent(mRenderData.getCursorPosition(), BUTTON_LEFT, true, false);
+            mInjector.sendMouseEvent(mRenderData.getCursorPosition(), BUTTON_LEFT, false, false);
             return true;
         }
     }

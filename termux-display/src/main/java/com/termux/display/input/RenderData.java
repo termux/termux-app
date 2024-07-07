@@ -17,6 +17,8 @@ public class RenderData {
     public int screenHeight;
     public int imageWidth;
     public int imageHeight;
+    public int offsetX;
+    public int offsetY;
 
     /**
      * Specifies the position, in image coordinates, at which the cursor image will be drawn.
@@ -42,13 +44,17 @@ public class RenderData {
      */
     public boolean setCursorPosition(float newX, float newY) {
         boolean cursorMoved = false;
-        if (newX != mCursorPosition.x) {
-            mCursorPosition.x = newX;
-            cursorMoved = true;
+        if ((newX-offsetX) != mCursorPosition.x) {
+            mCursorPosition.x = newX-offsetX;
+            if (Math.abs((newX-offsetX)-mCursorPosition.x)>15){
+//                cursorMoved = true;
+            }
         }
-        if (newY != mCursorPosition.y) {
-            mCursorPosition.y = newY;
-            cursorMoved = true;
+        if ((newY-offsetY) != mCursorPosition.y) {
+            mCursorPosition.y = newY-offsetY;
+            if(Math.abs((newY-offsetY)-mCursorPosition.y)>15){
+//                cursorMoved = true;
+            }
         }
 
         return cursorMoved;

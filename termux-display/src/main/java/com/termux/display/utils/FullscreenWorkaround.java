@@ -5,6 +5,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.graphics.Rect;
+import android.util.Log;
 import android.widget.FrameLayout;
 import android.view.View;
 import android.app.Activity;
@@ -19,6 +20,13 @@ public class FullscreenWorkaround {
     }
 
     private final Activity mActivity;
+
+    public static void setShouldRelayout(boolean shouldRelayout) {
+        FullscreenWorkaround.shouldRelayout = shouldRelayout;
+    }
+
+    private static boolean shouldRelayout = true;
+
     private int usableHeightPrevious;
 
     private FullscreenWorkaround(Activity activity) {
@@ -30,22 +38,22 @@ public class FullscreenWorkaround {
     private void possiblyResizeChildOfContent() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
         if (
-                !mActivity.hasWindowFocus() ||
+            !mActivity.hasWindowFocus() ||
                 !((mActivity.getWindow().getAttributes().flags & FLAG_FULLSCREEN) == FLAG_FULLSCREEN) ||
                 !preferences.getBoolean("Reseed", true) ||
+                !preferences.getBoolean("X11Focused", true) ||
                 !preferences.getBoolean("fullscreen", false) ||
                 SamsungDexUtils.checkDeXEnabled(mActivity)
         )
             return;
-
-        FrameLayout content = (FrameLayout)  ((FrameLayout) mActivity.findViewById(android.R.id.content)).getChildAt(0);
+        FrameLayout content = (FrameLayout) ((FrameLayout) mActivity.findViewById(android.R.id.content)).getChildAt(0);
         FrameLayout.LayoutParams frameLayoutParams = (FrameLayout.LayoutParams) content.getLayoutParams();
 
         int usableHeightNow = computeUsableHeight(content);
         if (usableHeightNow != usableHeightPrevious) {
             int usableHeightSansKeyboard = content.getRootView().getHeight();
             int heightDifference = usableHeightSansKeyboard - usableHeightNow;
-            if (heightDifference > (usableHeightSansKeyboard/4)) {
+            if (heightDifference > (usableHeightSansKeyboard / 4)) {
                 // keyboard probably just became visible
                 frameLayoutParams.height = usableHeightSansKeyboard - heightDifference;
             } else {

@@ -426,23 +426,6 @@ public class InputControlsView extends View {
 
     public boolean handleTouchEvent(View view, MotionEvent event) {
         if (!editMode && profile != null) {
-            if (view != this) {
-                int[] view0Location = new int[2];
-                int[] viewLocation = new int[2];
-
-                view.getLocationOnScreen(view0Location);
-                this.getLocationOnScreen(viewLocation);
-
-                int offsetX = viewLocation[0] - view0Location[0];
-                int offsetY = viewLocation[1] - view0Location[1];
-
-                event.offsetLocation(-offsetX, -offsetY);
-                if (!view.isFocused() && event.getAction() == MotionEvent.ACTION_DOWN)
-                    view.requestFocus();
-
-                if (event.getAction() == MotionEvent.ACTION_UP)
-                    view.requestPointerCapture();
-            }
             int actionIndex = event.getActionIndex();
             int pointerId = event.getPointerId(actionIndex);
             int actionMasked = event.getActionMasked();

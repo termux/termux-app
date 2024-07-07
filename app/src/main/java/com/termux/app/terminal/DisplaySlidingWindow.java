@@ -68,6 +68,11 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
      */
     private int mMenuRightPadding;
     private int verticalPadding;
+
+    public boolean isSwitchSlider() {
+        return switchSlider;
+    }
+
     private boolean switchSlider;
     private float downX,downY;
     private boolean moving;

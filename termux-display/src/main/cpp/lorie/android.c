@@ -321,7 +321,7 @@ void handleLorieEvents(int fd, __unused int ready, __unused void *ignored) {
                 if (e.touch.type == XI_TouchEnd && (!touch || !touch->active))
                     break;
 
-                __android_log_print(ANDROID_LOG_ERROR, "termux-display-request", "touch event: %d %d %d %d", e.touch.type, e.touch.id, e.touch.x, e.touch.y);
+//                __android_log_print(ANDROID_LOG_ERROR, "termux-display-request", "touch event: %d %d %d %d", e.touch.type, e.touch.id, e.touch.x, e.touch.y);
                 valuator_mask_set_double(&mask, 0, x);
                 valuator_mask_set_double(&mask, 1, y);
                 QueueTouchEvents(lorieTouch, e.touch.type, e.touch.id, 0, &mask);

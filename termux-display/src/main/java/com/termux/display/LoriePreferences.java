@@ -102,7 +102,12 @@ public class LoriePreferences extends AppCompatActivity {
         void openSoftwareKeyboard();
     }
 
+    public TermuxActivityListener getTermuxActivityListener() {
+        return termuxActivityListener;
+    }
+
     protected TermuxActivityListener termuxActivityListener;
+
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")

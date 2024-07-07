@@ -11,6 +11,7 @@ import static com.termux.display.input.InputStub.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.graphics.PointF;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,7 +37,37 @@ public final class InputEventSender {
 
     /** Set of pressed keys for which we've sent TextEvent. */
     private final TreeSet<Integer> mPressedTextKeys;
+    private long previousTouchTime =0L;
+    private int previousTouchX,previousTouchY;
+    private int touchCouter =0;
+    private boolean isDoubleClick(MotionEvent event,int currentTouchX,int currentTouchY){
+        boolean doubleClick = false;
+        long currentTouchTime = System.currentTimeMillis();
+        if (event.getAction()==MotionEvent.ACTION_DOWN||event.getAction()== ACTION_POINTER_DOWN){
+            if (touchCouter==0){
+                previousTouchTime = currentTouchTime;
+                previousTouchX = currentTouchX;
+                previousTouchY = currentTouchY;
+            }
+            touchCouter++;
+        }
 
+        if (touchCouter>=2){
+            if (event.getAction()==MotionEvent.ACTION_UP||event.getAction()== ACTION_POINTER_UP){
+                doubleClick = (currentTouchTime-previousTouchTime>101)&&(currentTouchTime-previousTouchTime<1001)&&(Math.abs(currentTouchX-previousTouchX)<15)&&(Math.abs(currentTouchY-previousTouchY)<15);
+                if(doubleClick){
+                    touchCouter =0;
+                    return true;
+                }else{
+                    touchCouter=1;
+                    previousTouchTime = currentTouchTime;
+                    previousTouchX = currentTouchX;
+                    previousTouchY = currentTouchY;
+                }
+            }
+        }
+        return false;
+    }
     public InputEventSender(InputStub injector) {
         if (injector == null)
             throw new NullPointerException();
@@ -88,6 +119,13 @@ public final class InputEventSender {
      *              function.
      */
     public void sendTouchEvent(MotionEvent event, RenderData renderData) {
+        int xx = clamp((int) ((event.getX()-renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
+        int yy = clamp((int) ((event.getY()-renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
+        if (isDoubleClick(event,xx,yy)){
+            sendMouseClick(BUTTON_LEFT,true);
+            sendMouseClick(BUTTON_LEFT,true);
+            return;
+        }
         int action = event.getActionMasked();
 
         if (action == ACTION_MOVE || action == ACTION_HOVER_MOVE || action == ACTION_HOVER_ENTER || action == ACTION_HOVER_EXIT) {
@@ -100,8 +138,8 @@ public final class InputEventSender {
                 pointers[event.getPointerId(p)] = false;
 
             for (int p = 0; p < pointerCount; p++) {
-                int x = clamp((int) (event.getX(p) * renderData.scale.x), 0, renderData.screenWidth);
-                int y = clamp((int) (event.getY(p) * renderData.scale.y), 0, renderData.screenHeight);
+                int x = clamp((int) ((event.getX(p)-renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
+                int y = clamp((int) ((event.getY(p)-renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
                 pointers[event.getPointerId(p)] = true;
                 mInjector.sendTouchEvent(XI_TouchUpdate, event.getPointerId(p), x, y);
             }
@@ -117,11 +155,12 @@ public final class InputEventSender {
             // cause confusion on the remote OS side and result in broken touch gestures.
             int activePointerIndex = event.getActionIndex();
             int id = event.getPointerId(activePointerIndex);
-            int x =  clamp((int) (event.getX(activePointerIndex) * renderData.scale.x), 0, renderData.screenWidth);
-            int y =  clamp((int) (event.getY(activePointerIndex) * renderData.scale.y), 0, renderData.screenHeight);
+            int x =  clamp((int) ((event.getX(activePointerIndex)-renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
+            int y =  clamp((int) ((event.getY(activePointerIndex)-renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
             int a = (action == MotionEvent.ACTION_DOWN || action == ACTION_POINTER_DOWN) ? XI_TouchBegin : XI_TouchEnd;
-            if (a == XI_TouchEnd)
+            if (a == XI_TouchEnd){
                 mInjector.sendTouchEvent(XI_TouchUpdate, id, x, y);
+            }
             mInjector.sendTouchEvent(a, id, x, y);
         }
     }
