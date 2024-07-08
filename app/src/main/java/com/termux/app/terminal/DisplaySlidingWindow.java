@@ -84,20 +84,20 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         mScreenWidth = ScreenUtils.getScreenWidth(context);
         mScreenHeight = ScreenUtils.getScreenHeight(context);
 
-        TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
-            R.styleable.BinarySlidingMenu, defStyle, 0);
-        int n = a.getIndexCount();
-        for (int i = 0; i < n; i++) {
-            int attr = a.getIndex(i);
-            if (attr == R.styleable.BinarySlidingMenu_rightPadding) {
-                mMenuRightPadding = a.getDimensionPixelSize(attr,
-                    (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP, 50f,
-                        getResources().getDisplayMetrics()));// 默认为10DP
-                break;
-            }
-        }
-        a.recycle();
+//        TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
+//            R.styleable.BinarySlidingMenu, defStyle, 0);
+//        int n = a.getIndexCount();
+//        for (int i = 0; i < n; i++) {
+//            int attr = a.getIndex(i);
+//            if (attr == R.styleable.BinarySlidingMenu_rightPadding) {
+//                mMenuRightPadding = a.getDimensionPixelSize(attr,
+//                    (int) TypedValue.applyDimension(
+//                        TypedValue.COMPLEX_UNIT_DIP, 50f,
+//                        getResources().getDisplayMetrics()));// 默认为10DP
+//                break;
+//            }
+//        }
+//        a.recycle();
         if (landscape) {
             mContentWidth = mScreenHeight;
             mMenuRightPadding = mContentWidth * 3 / 5;
@@ -117,13 +117,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
          * measure width of content and menu
          */
         if (!once) {
-            if (landscape) {
-                mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
-                mMenuRightPadding = mContentWidth * 3 / 5;
-            } else {
-                mContentWidth = mScreenWidth < mScreenHeight ? mScreenWidth : mScreenHeight;
-                mMenuRightPadding = verticalPadding;
-            }
+            remeasure();
             mWrapper = (LinearLayout) getChildAt(0);
             mLeftMenu = (ViewGroup) mWrapper.getChildAt(0);
             mContent = (ViewGroup) mWrapper.getChildAt(1);
@@ -138,6 +132,16 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             Log.d("changeLayoutOrientation", "landscape:" + String.valueOf(landscape) + ", mContentWidth" + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    private void remeasure() {
+        if (landscape) {
+            mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
+            mMenuRightPadding = mContentWidth * 3 / 5;
+        } else {
+            mContentWidth = mScreenWidth < mScreenHeight ? mScreenWidth : mScreenHeight;
+            mMenuRightPadding = verticalPadding;
+        }
     }
 
     @Override
@@ -161,6 +165,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     @Override
+
     public boolean onTouchEvent(MotionEvent ev) {
 //        Log.d("onTouchEvent",String.valueOf(ev.getAction()));
         int action = ev.getAction();
@@ -231,7 +236,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             super.onTouchEvent(ev);
         } else {
 //           return mOnMenuChangeListener.sendTouchEvent(ev);
-            return true;
+            return false;
         }
         return false;
     }

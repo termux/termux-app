@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -47,7 +48,7 @@ public class ScreenUtils {
             .getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(outMetrics);
-        return outMetrics.heightPixels + getNavigationBarHeight(context);
+        return outMetrics.heightPixels + getNavigationBarHeight(context)+getStatusHeight(context);
     }
 
     /**

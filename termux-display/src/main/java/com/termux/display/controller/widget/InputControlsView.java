@@ -56,16 +56,6 @@ public class InputControlsView extends View {
     private final PointF mouseMoveOffset = new PointF();
     private boolean showTouchscreenControls = true;
 
-    public View getRootNodeView() {
-        return rootNodeView;
-    }
-
-    public void setRootNodeView(View rootNodeView) {
-        this.rootNodeView = rootNodeView;
-    }
-
-    private View rootNodeView;
-
     public InputControlsView(Context context) {
         super(context);
         setClickable(true);
@@ -321,7 +311,7 @@ public class InputControlsView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (editMode && readyToDraw) {
-//            Log.d("onTouchEvent.inputControllerview.editmode", "<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>");
+            Log.d("onTouchEvent.inputControllerview.editmode", "<<<<<<<<<<<<<"+event.getAction()+">>>>>>>>>>>>>>>>>>>");
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     float x = event.getX();
@@ -354,77 +344,10 @@ public class InputControlsView extends View {
                 }
             }
         }
-
-//        if (!editMode && profile != null) {
-////            Log.d("onTouchEvent.inputControllerview.interactivemode", "<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>");
-////            inputHandler.handleTouchEvent(this,xServer,event);
-//            int actionIndex = event.getActionIndex();
-//            int pointerId = event.getPointerId(actionIndex);
-//            int actionMasked = event.getActionMasked();
-//            boolean handled = false;
-//
-//            switch (actionMasked) {
-//                case MotionEvent.ACTION_DOWN:
-//                case MotionEvent.ACTION_POINTER_DOWN: {
-//                    float x = event.getX(actionIndex);
-//                    float y = event.getY(actionIndex);
-////                    touchpadView.setPointerButtonLeftEnabled(true);
-//                    for (ControlElement element : profile.getElements()) {
-//                        if (element.handleTouchDown(pointerId, x, y)) {
-////                            Log.d("handleTouchDown",String.valueOf(element.getType()));
-//                            handled = true;
-//                        }
-//                        if (element.getBindingAt(0) == Binding.MOUSE_LEFT_BUTTON) {
-//
-//                        }
-//                    }
-//                    if (!handled) {
-////                        xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), true, true);
-//                    }
-//                    downX = event.getRawX();
-//                    downY = event.getRawY();
-//                    break;
-//                }
-//                case MotionEvent.ACTION_MOVE: {
-//                    for (byte i = 0, count = (byte) event.getPointerCount(); i < count; i++) {
-//                        float x = event.getX(i);
-//                        float y = event.getY(i);
-////                        Log.d("handleTouchMove","x:"+x+",y:"+y);
-//                        handled = false;
-//                        for (ControlElement element : profile.getElements()) {
-//                            if (element.handleTouchMove(i, event.getRawX() ,event.getRawY())) {
-////                                Log.d("handleTouchMove",String.valueOf(element.getType()));
-//                                handled = true;
-//                            }
-//                        }
-//                        if (!handled) {
-//                        }
-//                    }
-//                    break;
-//                }
-//                case MotionEvent.ACTION_UP:
-//                case MotionEvent.ACTION_POINTER_UP:
-//                case MotionEvent.ACTION_CANCEL:
-//                    for (ControlElement element : profile.getElements())
-//                        if (element.handleTouchUp(pointerId)) {
-////                            Log.d("handleTouchUp",String.valueOf(element.getType()));
-//                            handled = true;
-//                        }
-//                    if (!handled) {
-//                        float dx = event.getRawX() - downX;
-//                        float dy = event.getRawY() - downY;
-//                        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) {
-//                            xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), true, true);
-//                            xServer.sendMouseEvent(0, 0, Pointer.Button.BUTTON_LEFT.code(), false, true);
-//                        }
-//                    }
-//                    break;
-//            }
-//        }
-        return false;
+        return true;
     }
 
-    public boolean handleTouchEvent(View view, MotionEvent event) {
+    public boolean handleTouchEvent(MotionEvent event) {
         if (!editMode && profile != null) {
             int actionIndex = event.getActionIndex();
             int pointerId = event.getPointerId(actionIndex);
@@ -436,7 +359,6 @@ public class InputControlsView extends View {
                 case MotionEvent.ACTION_POINTER_DOWN: {
                     float x = event.getX(actionIndex);
                     float y = event.getY(actionIndex);
-//                    touchpadView.setPointerButtonLeftEnabled(true);
                     for (ControlElement element : profile.getElements()) {
                         if (element.handleTouchDown(pointerId, x, y)) {
                             handled = true;

@@ -232,7 +232,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_termux_main);
         slideWindowLayout = findViewById(R.id.id_termux_layout);
-        inputControlsView.setRootNodeView(slideWindowLayout);
         slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
             @Override
             public void onMenuOpen(boolean isOpen, int flag) {
@@ -246,7 +245,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
                 if (inputControlsView != null) {
-                    inputControllerViewHandled = inputControlsView.handleTouchEvent(slideWindowLayout, ev);
+                    inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);
                 }
 //                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
                 if (null != mInputHandler) {

@@ -21,12 +21,6 @@ public class FullscreenWorkaround {
 
     private final Activity mActivity;
 
-    public static void setShouldRelayout(boolean shouldRelayout) {
-        FullscreenWorkaround.shouldRelayout = shouldRelayout;
-    }
-
-    private static boolean shouldRelayout = true;
-
     private int usableHeightPrevious;
 
     private FullscreenWorkaround(Activity activity) {
