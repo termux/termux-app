@@ -162,9 +162,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }
 
         preferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> onPreferencesChanged(key));
-
-//        getWindow().setFlags(FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS | FLAG_KEEP_SCREEN_ON | FLAG_TRANSLUCENT_STATUS, 0);
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main_activity);
         lorieContentView = findViewById(R.id.id_display_window);
 
@@ -174,8 +171,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 termuxActivityListener.onX11PreferenceSwitchChange(true);
             }
         });
-//        findViewById(R.id.help_button).setOnClickListener((l) -> {
-//        });
         LorieView lorieView = findViewById(R.id.lorieView);
         View lorieParent = (View) lorieView.getParent();
 //        Log.d("Mainactivity","frm==lorieParent:"+String.valueOf(frm==lorieParent));
@@ -327,27 +322,15 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
 
     private void setupInputController() {
-        container = new Container(0);
-//        touchpadView = new TouchpadView(this, getLorieContentView());
-//        touchpadView.setSensitivity(globalCursorSpeed);
-//        touchpadView.setFourFingersTapCallback(() -> {
-////            if (!drawerLayout.isDrawerOpen(GravityCompat.START)) drawerLayout.openDrawer(GravityCompat.START);
-//        });
-//        touchpadView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-//        touchpadView.setVisibility(View.GONE);
-
-
         inputControlsView = new InputControlsView(this);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         inputControlsView.setOverlayOpacity(preferences.getFloat("overlay_opacity", InputControlsView.DEFAULT_OVERLAY_OPACITY));
-//        inputControlsView.setTouchpadView(touchpadView);
         inputControlsView.setXServer(getLorieView());
         inputControlsView.setVisibility(View.GONE);
-        LorieView lorieView = findViewById(R.id.lorieView);
-//        frm.addView(touchpadView);
         frm.addView(inputControlsView);
         inputControlsManager = new InputControlsManager(this);
         String shortcutPath = getIntent().getStringExtra("shortcut_path");
+        container = new Container(0);
         if (shortcutPath != null && !shortcutPath.isEmpty())
             shortcut = new Shortcut(container, new File(shortcutPath));
         xServer = getLorieView();

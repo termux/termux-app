@@ -2,8 +2,6 @@ package com.termux.app.terminal;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 
-import static com.termux.display.utils.TouchScreenUtils.getOrientation;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
@@ -15,8 +13,8 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import com.nineoldandroids.view.ViewHelper;
-import com.termux.display.utils.ScreenUtils;
 import com.termux.R;
+import com.termux.display.utils.ScreenUtils;
 
 public class DisplaySlidingWindow extends HorizontalScrollView {
     private int mMenuWidth;

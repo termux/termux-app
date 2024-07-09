@@ -741,6 +741,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             getDrawer().closeDrawers();
         } else {
 //            finishActivityIfNotFinishing();
+            slideWindowLayout.releaseSlider(true);
         }
     }
 
