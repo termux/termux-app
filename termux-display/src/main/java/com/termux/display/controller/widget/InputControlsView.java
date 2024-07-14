@@ -26,6 +26,7 @@ import com.termux.display.controller.inputcontrols.ExternalController;
 import com.termux.display.controller.inputcontrols.ExternalControllerBinding;
 import com.termux.display.controller.inputcontrols.GamepadState;
 import com.termux.display.controller.math.Mathf;
+import com.termux.display.controller.math.XForm;
 import com.termux.display.controller.winhandler.WinHandler;
 import com.termux.display.controller.xserver.Pointer;
 import com.termux.display.LorieView;
@@ -37,6 +38,10 @@ import java.util.TimerTask;
 
 public class InputControlsView extends View {
     public static final float DEFAULT_OVERLAY_OPACITY = 0.4f;
+    public static final long MAX_TAP_MILLISECONDS = 60;
+    public static final float MAX_TAP_TRAVEL_DISTANCE = 15;
+    public static final float CURSOR_ACCELERATION_THRESHOLD = 10;
+    public static final float CURSOR_ACCELERATION = 10;
     private boolean editMode = false;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
@@ -55,6 +60,7 @@ public class InputControlsView extends View {
     private Timer mouseMoveTimer;
     private final PointF mouseMoveOffset = new PointF();
     private boolean showTouchscreenControls = true;
+    private final float[] xform = XForm.getInstance();
 
     public InputControlsView(Context context) {
         super(context);
@@ -418,7 +424,7 @@ public class InputControlsView extends View {
             int buttonIdx = binding.ordinal() - Binding.GAMEPAD_BUTTON_A.ordinal();
             if (buttonIdx <= 11) {
                 state.setPressed(buttonIdx, isActionDown);
-                if (winHandler != null) winHandler.saveGamepadState(state);
+//                if (winHandler != null) winHandler.saveGamepadState(state);
             } else if (binding == Binding.GAMEPAD_LEFT_THUMB_UP || binding == Binding.GAMEPAD_LEFT_THUMB_DOWN) {
                 state.thumbLY = isActionDown ? offset : 0;
             } else if (binding == Binding.GAMEPAD_LEFT_THUMB_LEFT || binding == Binding.GAMEPAD_LEFT_THUMB_RIGHT) {
@@ -434,7 +440,10 @@ public class InputControlsView extends View {
 
             if (winHandler != null) {
                 ExternalController controller = winHandler.getCurrentController();
-                if (controller != null) controller.state.copy(state);
+                if (controller != null) {
+                    controller.state.copy(state);
+                    winHandler.sendGamepadState();
+                }
             }
         } else {
             if (binding == Binding.MOUSE_MOVE_LEFT || binding == Binding.MOUSE_MOVE_RIGHT) {
@@ -475,5 +484,20 @@ public class InputControlsView extends View {
             }
         }
         return icons[id];
+    }
+    public float[] computeDeltaPoint(float lastX, float lastY, float x, float y) {
+        final float[] result = {0, 0};
+
+        XForm.transformPoint(xform, lastX, lastY, result);
+        lastX = result[0];
+        lastY = result[1];
+
+        XForm.transformPoint(xform, x, y, result);
+        x = result[0];
+        y = result[1];
+
+        result[0] = x - lastX;
+        result[1] = y - lastY;
+        return result;
     }
 }

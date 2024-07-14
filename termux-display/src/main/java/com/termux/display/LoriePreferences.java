@@ -41,7 +41,6 @@ import androidx.preference.Preference.OnPreferenceChangeListener;
 import androidx.preference.SeekBarPreference;
 
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -100,6 +99,8 @@ public class LoriePreferences extends AppCompatActivity {
         void stopDesktop(Activity activity);
 
         void openSoftwareKeyboard();
+
+        void showProgressManager();
     }
 
     public TermuxActivityListener getTermuxActivityListener() {
@@ -366,6 +367,9 @@ public class LoriePreferences extends AppCompatActivity {
                     activity.touchShow = false;
                 }
             }
+            if("open_progress_manager".contentEquals(preference.getKey())){
+                activity.callProgressManager();
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(preference.getKey()))
                 ActivityCompat.requestPermissions(requireActivity(), new String[]{POST_NOTIFICATIONS}, 101);
 
@@ -473,6 +477,12 @@ public class LoriePreferences extends AppCompatActivity {
 
             handler.postAtTime(this::updatePreferencesLayout, 100);
             return true;
+        }
+    }
+
+    private void callProgressManager() {
+        if(termuxActivityListener!=null){
+            termuxActivityListener.showProgressManager();
         }
     }
 
@@ -716,9 +726,12 @@ public class LoriePreferences extends AppCompatActivity {
     public InputControlsView getInputControlsView() {
         return inputControlsView;
     }
-
+    protected WinHandler winHandler;
     public WinHandler getWinHandler() {
-        return null;
+        return winHandler;
+    }
+    public void setWinHandler(WinHandler handler){
+        this.winHandler = handler;
     }
 
     public InputControlsManager getInputControlsManager() {
@@ -764,7 +777,7 @@ public class LoriePreferences extends AppCompatActivity {
         loadProfileSpinner.run();
 
         final CheckBox cbLockCursor = dialog.findViewById(R.id.CBLockCursor);
-        cbLockCursor.setChecked(xServer.cursorLocker.getState() == CursorLocker.State.LOCKED);
+        cbLockCursor.setChecked(xServer.cursorLocker.isEnabled());
 
         final CheckBox cbShowTouchscreenControls = dialog.findViewById(R.id.CBShowTouchscreenControls);
         cbShowTouchscreenControls.setChecked(inputControlsView.isShowTouchscreenControls());
@@ -776,7 +789,7 @@ public class LoriePreferences extends AppCompatActivity {
             intent.putExtra("selected_profile_id", position > 0 ? inputControlsManager.getProfiles().get(position - 1).id : 0);
             editInputControlsCallback = () -> {
                 hideInputControls();
-                inputControlsManager.loadProfiles();
+                inputControlsManager.loadProfiles(true);
                 loadProfileSpinner.run();
             };
             intent.putExtra("set_orientation", orientation);
@@ -787,7 +800,7 @@ public class LoriePreferences extends AppCompatActivity {
             if (termuxActivityListener == null) {
                 return;
             }
-            xServer.cursorLocker.setState(cbLockCursor.isChecked() ? CursorLocker.State.LOCKED : CursorLocker.State.CONFINED);
+            xServer.cursorLocker.setEnabled(cbLockCursor.isChecked() ?true: false);
             inputControlsView.setShowTouchscreenControls(cbShowTouchscreenControls.isChecked());
             int position = sProfile.getSelectedItemPosition();
             if (position > 0) {

@@ -7,12 +7,13 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.termux.display.R;
 import com.termux.display.MainActivity;
+import com.termux.display.R;
 import com.termux.display.controller.contentdialog.ContentDialog;
 import com.termux.display.controller.core.CPUStatus;
 import com.termux.display.controller.core.ProcessHelper;
@@ -50,7 +51,6 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
 
             activity.getWinHandler().setOnGetProcessInfoListener(null);
         });
-
         inflater = LayoutInflater.from(activity);
     }
 
@@ -59,7 +59,8 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
             activity.getWinHandler().listProcesses();
 
             final LinearLayout container = findViewById(R.id.LLProcessList);
-            if (container.getChildCount() == 0) findViewById(R.id.TVEmptyText).setVisibility(View.VISIBLE);
+            if (container.getChildCount() == 0)
+                findViewById(R.id.TVEmptyText).setVisibility(View.VISIBLE);
         }
 
         updateCPUInfoView();
@@ -76,12 +77,10 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
             final WinHandler winHandler = activity.getWinHandler();
             if (itemId == R.id.process_affinity) {
                 showProcessorAffinityDialog(processInfo);
-            }
-            else if (itemId == R.id.bring_to_front) {
+            } else if (itemId == R.id.bring_to_front) {
                 winHandler.bringToFront(processInfo.name);
                 dismiss();
-            }
-            else if (itemId == R.id.process_end) {
+            } else if (itemId == R.id.process_end) {
                 ContentDialog.confirm(activity, R.string.do_you_want_to_end_this_process, () -> {
                     winHandler.killProcess(processInfo.name);
                 });
@@ -125,7 +124,7 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
         activity.runOnUiThread(() -> {
             synchronized (lock) {
                 final LinearLayout container = findViewById(R.id.LLProcessList);
-                setBottomBarText(activity.getString(R.string.processes)+": " + numProcesses);
+                setBottomBarText(activity.getString(R.string.processes) + ": " + numProcesses);
 
                 if (numProcesses == 0) {
                     container.removeAllViews();
@@ -137,14 +136,19 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
 
                 int childCount = container.getChildCount();
                 View itemView = index < childCount ? container.getChildAt(index) : inflater.inflate(R.layout.process_info_list_item, container, false);
-                ((TextView)itemView.findViewById(R.id.TVName)).setText(processInfo.name);
-                ((TextView)itemView.findViewById(R.id.TVPID)).setText(String.valueOf(processInfo.pid));
-                ((TextView)itemView.findViewById(R.id.TVMemoryUsage)).setText(processInfo.getFormattedMemoryUsage());
+                ((TextView) itemView.findViewById(R.id.TVName)).setText(processInfo.name + (processInfo.wow64Process ? " *32" : ""));
+                ((TextView) itemView.findViewById(R.id.TVPID)).setText(String.valueOf(processInfo.pid));
+                ((TextView) itemView.findViewById(R.id.TVMemoryUsage)).setText(processInfo.getFormattedMemoryUsage());
                 itemView.findViewById(R.id.BTMenu).setOnClickListener((v) -> showListItemMenu(v, processInfo));
+
+                ImageView ivIcon = itemView.findViewById(R.id.IVIcon);
+                if (ivIcon != null)
+                    ivIcon.setImageResource(R.drawable.taskmgr_process);
+
                 if (index >= childCount) container.addView(itemView);
 
-                if (index == numProcesses-1 && childCount > numProcesses) {
-                    for (int i = childCount-1; i >= numProcesses; i--) container.removeViewAt(i);
+                if (index == numProcesses - 1 && childCount > numProcesses) {
+                    for (int i = childCount - 1; i >= numProcesses; i--) container.removeViewAt(i);
                 }
             }
         });
@@ -161,29 +165,29 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
             TextView textView = new TextView(activity);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             short clockSpeed = CPUStatus.getMaxClockSpeed(i);
-            textView.setText(clockSpeeds[i]+"/"+clockSpeed+" MHz");
+            textView.setText(clockSpeeds[i] + "/" + clockSpeed + " MHz");
             llCPUInfo.addView(textView);
             totalClockSpeed += clockSpeeds[i];
-            maxClockSpeed = (short)Math.max(maxClockSpeed, clockSpeed);
+            maxClockSpeed = (short) Math.max(maxClockSpeed, clockSpeed);
         }
 
         int avgClockSpeed = totalClockSpeed / clockSpeeds.length;
         TextView tvCPUTitle = findViewById(R.id.TVCPUTitle);
-        byte cpuUsagePercent = (byte)(((float)avgClockSpeed / maxClockSpeed) * 100.0f);
-        tvCPUTitle.setText("CPU ("+cpuUsagePercent+"%)");
+        byte cpuUsagePercent = (byte) (((float) avgClockSpeed / maxClockSpeed) * 100.0f);
+        tvCPUTitle.setText("CPU (" + cpuUsagePercent + "%)");
     }
 
     private void updateMemoryInfoView() {
-        ActivityManager activityManager = (ActivityManager)activity.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager activityManager = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
         activityManager.getMemoryInfo(memoryInfo);
         long usedMem = memoryInfo.totalMem - memoryInfo.availMem;
-        byte memUsagePercent = (byte)(((double)usedMem / memoryInfo.totalMem) * 100.0f);
+        byte memUsagePercent = (byte) (((double) usedMem / memoryInfo.totalMem) * 100.0f);
 
         TextView tvMemoryTitle = findViewById(R.id.TVMemoryTitle);
-        tvMemoryTitle.setText(activity.getString(R.string.memory)+" ("+memUsagePercent+"%)");
+        tvMemoryTitle.setText(activity.getString(R.string.memory) + " (" + memUsagePercent + "%)");
 
         TextView tvMemoryInfo = findViewById(R.id.TVMemoryInfo);
-        tvMemoryInfo.setText(StringUtils.formatBytes(usedMem, false)+"/"+StringUtils.formatBytes(memoryInfo.totalMem));
+        tvMemoryInfo.setText(StringUtils.formatBytes(usedMem, false) + "/" + StringUtils.formatBytes(memoryInfo.totalMem));
     }
 }

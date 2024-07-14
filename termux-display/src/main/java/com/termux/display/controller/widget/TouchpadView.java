@@ -2,20 +2,16 @@ package com.termux.display.controller.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.termux.display.R;
 import com.termux.display.controller.core.AppUtils;
 import com.termux.display.controller.core.CursorLocker;
 import com.termux.display.controller.math.XForm;
 import com.termux.display.controller.xserver.Viewport;
-import com.termux.display.controller.winhandler.MouseEventFlags;
-import com.termux.display.controller.winhandler.WinHandler;
 import com.termux.display.controller.xserver.Pointer;
 import com.termux.display.LorieView;
 
@@ -224,7 +220,7 @@ public class TouchpadView extends View {
             int dx = finger1.deltaX(sensitivity);
             int dy = finger1.deltaY(sensitivity);
 
-            if (xServer.cursorLocker.getState() == CursorLocker.State.LOCKED) {
+            if (xServer.cursorLocker.isEnabled()) {
                 xServer.sendMouseWheelEvent(dx,dy);
 //                WinHandler winHandler = xServer.getWinHandler();
 //                winHandler.mouseEvent(MouseEventFlags.MOVE, dx, dy, 0);

@@ -3,9 +3,9 @@ package com.termux.display.controller.core;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.opengl.EGL14;
-import android.preference.PreferenceManager;
 
 import androidx.collection.ArrayMap;
+import androidx.preference.PreferenceManager;
 
 import java.util.Locale;
 import java.util.Objects;

@@ -33,6 +33,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.termux.display.R;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 public abstract class AppUtils {
     private static WeakReference<Toast> globalToastReference = null;
@@ -51,6 +52,13 @@ public abstract class AppUtils {
             }
         }
         return "armhf";
+    }
+
+    public static void restartActivity(AppCompatActivity activity) {
+        Intent intent = activity.getIntent();
+        activity.finish();
+        activity.startActivity(intent);
+        activity.overridePendingTransition(0, 0);
     }
 
     public static void restartApplication(Context context) {
@@ -115,7 +123,7 @@ public abstract class AppUtils {
     public static int getPreferredDialogWidth(Context context) {
         int orientation = context.getResources().getConfiguration().orientation;
         float scale = orientation == Configuration.ORIENTATION_PORTRAIT ? 0.8f : 0.5f;
-        return (int) UnitUtils.dpToPx(UnitUtils.pxToDp(AppUtils.getScreenWidth()) * scale);
+        return (int)UnitUtils.dpToPx(UnitUtils.pxToDp(AppUtils.getScreenWidth()) * scale);
     }
 
     public static Toast showToast(Context context, int textResId) {
@@ -295,5 +303,18 @@ public abstract class AppUtils {
             }
         });
         tabLayout.getTabAt(0).select();
+    }
+
+    public static void findViewsWithClass(ViewGroup parent, Class viewClass, ArrayList<View> outViews) {
+        for (int i = 0, childCount = parent.getChildCount(); i < childCount; i++) {
+            View child = parent.getChildAt(i);
+            Class _class = child.getClass();
+            if (_class == viewClass || _class.getSuperclass() == viewClass) {
+                outViews.add(child);
+            }
+            else if (child instanceof ViewGroup) {
+                findViewsWithClass((ViewGroup)child, viewClass, outViews);
+            }
+        }
     }
 }

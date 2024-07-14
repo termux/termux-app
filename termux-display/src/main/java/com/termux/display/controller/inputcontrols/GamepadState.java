@@ -2,6 +2,7 @@ package com.termux.display.controller.inputcontrols;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 public class GamepadState {
     public float thumbLX = 0;
@@ -33,12 +34,6 @@ public class GamepadState {
         buffer.putShort((short)(thumbRY * Short.MAX_VALUE));
     }
 
-    public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer.allocate(11).order(ByteOrder.LITTLE_ENDIAN);
-        writeTo(buffer);
-        return buffer.array();
-    }
-
     public void setPressed(int buttonIdx, boolean pressed) {
         int flag = 1<<buttonIdx;
         if (pressed) {
@@ -66,5 +61,10 @@ public class GamepadState {
         this.thumbRY = other.thumbRY;
         this.buttons = other.buttons;
         System.arraycopy(other.dpad, 0, this.dpad, 0, 4);
+    }
+    public byte[] toByteArray() {
+        ByteBuffer buffer = ByteBuffer.allocate(11).order(ByteOrder.LITTLE_ENDIAN);
+        writeTo(buffer);
+        return buffer.array();
     }
 }

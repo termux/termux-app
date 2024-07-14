@@ -38,7 +38,10 @@
             android:title="Open keyboard" />
         <Preference
             android:key="open_inputcontroller"
-            android:title="Toggle inputcontroller" />
+            android:title="Inputcontroller" />
+        <Preference
+            android:key="open_progress_manager"
+            android:title="Progress manager" />
         <Preference
             android:key="install_x11_server_bridge"
             android:title="Install x11 server bridge" />

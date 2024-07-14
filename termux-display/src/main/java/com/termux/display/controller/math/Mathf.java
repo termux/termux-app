@@ -13,6 +13,10 @@ public abstract class Mathf {
         return (float)(Math.floor(x / step) * step);
     }
 
+    public static int roundPoint(float x) {
+        return (int)(x <= 0 ? Math.floor(x) : Math.ceil(x));
+    }
+
     public static byte sign(float x) {
         return (byte)(x < 0 ? -1 : (x > 0 ? 1 : 0));
     }

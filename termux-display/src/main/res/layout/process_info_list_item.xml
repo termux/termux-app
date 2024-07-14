@@ -5,6 +5,12 @@
     android:layout_height="38dp"
     android:gravity="center_vertical">
 
+    <ImageView
+        android:id="@+id/IVIcon"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:paddingLeft="4dp" />
+
     <TextView
         android:id="@+id/TVName"
         android:layout_width="0dp"
@@ -12,7 +18,7 @@
         android:layout_weight="1"
         android:maxLines="1"
         android:ellipsize="end"
-        android:paddingLeft="4dp" />
+        android:paddingLeft="6dp" />
 
     <TextView
         android:id="@+id/TVPID"

@@ -1,5 +1,6 @@
 package com.termux.display.controller.winhandler;
 
+
 import com.termux.display.controller.xserver.Pointer;
 
 public abstract class MouseEventFlags {

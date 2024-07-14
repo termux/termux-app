@@ -1,11 +1,16 @@
 package com.termux.display.controller.inputcontrols;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.util.JsonReader;
 
-import com.termux.display.MainActivity;
+import androidx.preference.PreferenceManager;
+
+
+import com.termux.display.controller.core.AppUtils;
 import com.termux.display.controller.core.FileUtils;
 
 import org.json.JSONException;
@@ -13,7 +18,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -40,18 +47,58 @@ public class InputControlsManager {
     }
 
     public ArrayList<ControlsProfile> getProfiles(boolean ignoreTemplates) {
-        if (!profilesLoaded) loadProfiles();
+        if (!profilesLoaded) loadProfiles(ignoreTemplates);
         return profiles;
     }
 
-    public void loadProfiles() {
+    private void copyAssetProfilesIfNeeded() {
         File profilesDir = InputControlsManager.getProfilesDir(context);
-        if (FileUtils.isEmpty(profilesDir)) FileUtils.copy(context, "inputcontrols/profiles", profilesDir);
+        if (FileUtils.isEmpty(profilesDir)) {
+            FileUtils.copy(context, "inputcontrols/profiles", profilesDir);
+            return;
+        }
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+        int newVersion = AppUtils.getVersionCode(context);
+        int oldVersion = preferences.getInt("inputcontrols_app_version", 0);
+        if (oldVersion == newVersion) return;
+        preferences.edit().putInt("inputcontrols_app_version", newVersion).apply();
+
+        File[] files = profilesDir.listFiles();
+        if (files == null) return;
+
+        try {
+            AssetManager assetManager = context.getAssets();
+            String[] assetFiles = assetManager.list("inputcontrols/profiles");
+            for (String assetFile : assetFiles) {
+                String assetPath = "inputcontrols/profiles/"+assetFile;
+                ControlsProfile originProfile = loadProfile(context, assetManager.open(assetPath));
+
+                File targetFile = null;
+                for (File file : files) {
+                    ControlsProfile targetProfile = loadProfile(context, file);
+                    if (originProfile.id == targetProfile.id && originProfile.getName().equals(targetProfile.getName())) {
+                        targetFile = file;
+                        break;
+                    }
+                }
+
+                if (targetFile != null) {
+                    FileUtils.copy(context, assetPath, targetFile);
+                }
+            }
+        }
+        catch (IOException e) {}
+    }
+
+    public void loadProfiles(boolean ignoreTemplates) {
+        File profilesDir = InputControlsManager.getProfilesDir(context);
+        copyAssetProfilesIfNeeded();
 
         ArrayList<ControlsProfile> profiles = new ArrayList<>();
         File[] files = profilesDir.listFiles();
         if (files != null) {
-            boolean ignoreTemplates = context instanceof MainActivity;
             for (File file : files) {
                 ControlsProfile profile = loadProfile(context, file);
                 if (!(ignoreTemplates && profile.isTemplate())) profiles.add(profile);
@@ -146,11 +193,16 @@ public class InputControlsManager {
     }
 
     public static ControlsProfile loadProfile(Context context, File file) {
-        JsonReader reader = null;
         try {
-            FileInputStream fis = new FileInputStream(file);
-            reader = new JsonReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
+            return loadProfile(context, new FileInputStream(file));
+        }
+        catch (FileNotFoundException e) {
+            return null;
+        }
+    }
 
+    public static ControlsProfile loadProfile(Context context, InputStream inStream) {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(inStream, StandardCharsets.UTF_8))) {
             int profileId = 0;
             String profileName = null;
             float cursorSpeed = Float.NaN;
@@ -169,7 +221,7 @@ public class InputControlsManager {
                     fieldsRead++;
                 }
                 else if (name.equals("cursorSpeed")) {
-                    cursorSpeed = (float)reader.nextDouble();
+                    cursorSpeed = (float) reader.nextDouble();
                     fieldsRead++;
                 }
                 else {
@@ -185,12 +237,6 @@ public class InputControlsManager {
         }
         catch (IOException e) {
             return null;
-        }
-        finally {
-            try {
-                if (reader != null) reader.close();
-            }
-            catch (IOException e) {}
         }
     }
 

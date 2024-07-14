@@ -11,6 +11,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.termux.display.R;
 import com.termux.display.controller.math.Mathf;
 
+
 public class DownloadProgressDialog {
     private final Activity activity;
     private Dialog dialog;

@@ -1,5 +1,6 @@
 package com.termux.display.controller.core;
 
+
 import com.termux.display.controller.math.Mathf;
 
 import java.io.BufferedReader;
@@ -17,19 +18,22 @@ public class WineRegistryEditor implements Closeable {
     private final File file;
     private final File cloneFile;
     private boolean modified = false;
+    private boolean createKeyIfNotExist = true;
+    private int lastParentKeyPosition = 0;
+    private String lastParentKey = "";
 
-    private static class Location {
-        private final int offset;
-        private final int start;
-        private final int end;
+    public static class Location {
+        public final int offset;
+        public final int start;
+        public final int end;
 
-        private Location(int offset, int start, int end) {
+        public Location(int offset, int start, int end) {
             this.offset = offset;
             this.start = start;
             this.end = end;
         }
 
-        private int length() {
+        public int length() {
             return end - start;
         }
     }
@@ -69,7 +73,25 @@ public class WineRegistryEditor implements Closeable {
         else cloneFile.delete();
     }
 
+    private void resetLastParentKeyPositionIfNeed(String newKey) {
+        int lastIndex = newKey.lastIndexOf("\\");
+        if (lastIndex == -1) {
+            lastParentKeyPosition = 0;
+            lastParentKey = "";
+            return;
+        }
+
+        String parentKey = newKey.substring(0, lastIndex);
+        if (!parentKey.equals(lastParentKey)) lastParentKeyPosition = 0;
+        lastParentKey = parentKey;
+    }
+
+    public void setCreateKeyIfNotExist(boolean createKeyIfNotExist) {
+        this.createKeyIfNotExist = createKeyIfNotExist;
+    }
+
     private Location createKey(String key) {
+        lastParentKeyPosition = 0;
         Location location = getParentKeyLocation(key);
         boolean success = false;
         int offset = 0;
@@ -140,7 +162,7 @@ public class WineRegistryEditor implements Closeable {
     }
 
     public void setHexValue(String key, String name, String value) {
-        int start = (int)Mathf.roundTo(name.length(), 2) + 7;
+        int start = (int) Mathf.roundTo(name.length(), 2) + 7;
         StringBuilder lines = new StringBuilder();
         for (int i = 0, j = start; i < value.length(); i++) {
             if (i > 0 && (i % 2) == 0) lines.append(",");
@@ -153,7 +175,14 @@ public class WineRegistryEditor implements Closeable {
         setRawValue(key, name, "hex:"+lines);
     }
 
+    public void setHexValue(String key, String name, byte[] bytes) {
+        StringBuilder data = new StringBuilder();
+        for (byte b : bytes) data.append(String.format(Locale.ENGLISH, "%02x", Byte.toUnsignedInt(b)));
+        setHexValue(key, name, data.toString());
+    }
+
     private String getRawValue(String key, String name) {
+        lastParentKeyPosition = 0;
         Location keyLocation = getKeyLocation(key);
         if (keyLocation == null) return null;
 
@@ -171,8 +200,16 @@ public class WineRegistryEditor implements Closeable {
     }
 
     private void setRawValue(String key, String name, String value) {
+        resetLastParentKeyPositionIfNeed(key);
+
         Location keyLocation = getKeyLocation(key);
-        if (keyLocation == null) keyLocation = createKey(key);
+        if (keyLocation == null) {
+            if (createKeyIfNotExist) {
+                keyLocation = createKey(key);
+            }
+            else return;
+        }
+
         Location valueLocation = getValueLocation(keyLocation, name);
         char[] buffer = new char[StreamUtils.BUFFER_SIZE];
         boolean success = false;
@@ -210,6 +247,7 @@ public class WineRegistryEditor implements Closeable {
     }
 
     public void removeValue(String key, String name) {
+        lastParentKeyPosition = 0;
         Location keyLocation = getKeyLocation(key);
         if (keyLocation == null) return;
 
@@ -223,6 +261,7 @@ public class WineRegistryEditor implements Closeable {
     }
 
     public boolean removeKey(String key, boolean removeTree) {
+        lastParentKeyPosition = 0;
         boolean removed = false;
         if (removeTree) {
             Location location;
@@ -274,8 +313,12 @@ public class WineRegistryEditor implements Closeable {
 
     private Location getKeyLocation(String key, boolean keyAsPrefix) {
         try (BufferedReader reader = new BufferedReader(new FileReader(cloneFile), StreamUtils.BUFFER_SIZE)) {
+            int lastIndex = key.lastIndexOf("\\");
+            String parentKey = lastParentKeyPosition == 0 && lastIndex != -1 ? "["+escape(key.substring(0, lastIndex)) : null;
+
+            if (lastParentKeyPosition > 0) reader.skip(lastParentKeyPosition);
             key = "["+escape(key)+(!keyAsPrefix ? "]" : "");
-            int totalLength = 0;
+            int totalLength = lastParentKeyPosition;
             int start = -1;
             int end = -1;
             int emptyLines = 0;
@@ -284,7 +327,12 @@ public class WineRegistryEditor implements Closeable {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (start == -1) {
-                    if (line.startsWith(key)) {
+                    if (parentKey != null && line.startsWith(parentKey)) {
+                        lastParentKeyPosition = totalLength;
+                        parentKey = null;
+                    }
+
+                    if (parentKey == null && line.startsWith(key)) {
                         offset = totalLength - 1;
                         start = totalLength + line.length() + 1;
                     }

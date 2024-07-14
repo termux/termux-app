@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.termux.display.R;
 
+
 public class PreloaderDialog {
     private final Activity activity;
     private Dialog dialog;

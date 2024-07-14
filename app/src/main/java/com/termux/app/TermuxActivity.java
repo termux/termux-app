@@ -57,6 +57,7 @@ import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
 import com.termux.app.terminal.utils.FilePathUtils;
 import com.termux.app.terminal.utils.FileUtils;
 import com.termux.app.terminal.utils.CommandUtils;
+import com.termux.display.CmdEntryPoint;
 import com.termux.display.utils.ScreenUtils;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
@@ -359,7 +360,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                 slideWindowLayout.changeLayoutOrientation(landscape);
                 orientation = landscape;
                 hideInputControls();
-                inputControlsManager.loadProfiles();
+                inputControlsManager.loadProfiles(true);
             }
 
             @Override
@@ -371,6 +372,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                     args.add(TERMUX_FILES_DIR_PATH + "/home/install");
                     CommandUtils.exec(activity, "chmod", args);
                     FileUtils.copyAssetsFile2Phone(activity, "termux-display-nightly-1-0-all.deb");
+                    FileUtils.copyAssetsFile2Phone(activity,"winhandler.exe");
                     CommandUtils.execInPath(activity, "install", null, "/home/");
                 });
             }
@@ -383,6 +385,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public void openSoftwareKeyboard() {
                 switchSoftKeyboard(false);
+            }
+
+            @Override
+            public void showProgressManager() {
+                showProgressManagerDialog();
             }
 
         };
@@ -413,7 +420,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     @Override
     public void onResume() {
         super.onResume();
-        inputControlsManager.loadProfiles();
+        inputControlsManager.loadProfiles(true);
         Logger.logVerbose(LOG_TAG, "onResume");
 
         if (mIsInvalidState) return;

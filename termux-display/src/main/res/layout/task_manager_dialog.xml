@@ -5,7 +5,7 @@
     android:orientation="horizontal">
 
     <LinearLayout
-        android:layout_width="410dp"
+        android:layout_width="430dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@drawable/bordered_panel"

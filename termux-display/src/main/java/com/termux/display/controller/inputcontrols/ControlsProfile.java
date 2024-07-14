@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+
 import com.termux.display.controller.core.FileUtils;
 import com.termux.display.controller.widget.InputControlsView;
 
@@ -98,6 +99,7 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
     public boolean isElementsLoaded() {
         return elementsLoaded;
     }
+
     public void save() {
         File file = getProfileFile(context, id);
 

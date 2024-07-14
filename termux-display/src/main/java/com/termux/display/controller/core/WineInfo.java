@@ -6,12 +6,13 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class WineInfo implements Parcelable {
-    public static final WineInfo MAIN_WINE_VERSION = new WineInfo("8.0.2", "x86_64");
+    public static final WineInfo MAIN_WINE_VERSION = new WineInfo("9.2", "x86_64");
     private static final Pattern pattern = Pattern.compile("^wine\\-([0-9\\.]+)\\-?([0-9\\.]+)?\\-(x86|x86_64)$");
     public final String version;
     public final String subversion;
@@ -51,22 +52,32 @@ public class WineInfo implements Parcelable {
         return arch.equals("x86_64");
     }
 
-    public String binName() {
-        return isWin64() ? "wine64" : "wine";
+    public String getExecutable(Context context, boolean wow64Mode) {
+        if (this == MAIN_WINE_VERSION) {
+//            File wineBinDir = new File(ImageFs.find(context).getRootDir(), "/opt/wine/bin");
+            File wineBinDir = new File("/data/data/com.termux/files/usr/glibc/", "opt/wine/bin");
+            File wineBinFile = new File(wineBinDir, "wine");
+            File winePreloaderBinFile = new File(wineBinDir, "wine-preloader");
+            FileUtils.copy(new File(wineBinDir, wow64Mode ? "wine-wow64" : "wine32"), wineBinFile);
+            FileUtils.copy(new File(wineBinDir, wow64Mode ? "wine-preloader-wow64" : "wine32-preloader"), winePreloaderBinFile);
+            FileUtils.chmod(wineBinFile, 0771);
+            FileUtils.chmod(winePreloaderBinFile, 0771);
+            return wow64Mode ? "wine" : "wine64";
+        } else return (new File(path, "/bin/wine64")).isFile() ? "wine64" : "wine";
     }
 
     public String identifier() {
-        return "wine-"+fullVersion()+"-"+arch;
+        return "wine-" + fullVersion() + "-" + (this == MAIN_WINE_VERSION ? "custom" : arch);
     }
 
     public String fullVersion() {
-        return version+(subversion != null ? "-"+subversion : "");
+        return version + (subversion != null ? "-" + subversion : "");
     }
 
     @NonNull
     @Override
     public String toString() {
-        return "Wine "+fullVersion()+" ("+arch+")";
+        return "Wine " + fullVersion() + (this == MAIN_WINE_VERSION ? " (Custom)" : "");
     }
 
     @Override
@@ -97,8 +108,13 @@ public class WineInfo implements Parcelable {
         if (identifier.equals(MAIN_WINE_VERSION.identifier())) return MAIN_WINE_VERSION;
         Matcher matcher = pattern.matcher(identifier);
         if (matcher.find()) {
-            return new WineInfo("wine-9.6-stage","x86");
-        }
-        else return MAIN_WINE_VERSION;
+            File installedWineDir = new File("/data/data/com.termux/files/usr/glibc/", "opt");
+            String path = (new File(installedWineDir, identifier)).getPath();
+            return new WineInfo(matcher.group(1), matcher.group(2), matcher.group(3), path);
+        } else return MAIN_WINE_VERSION;
+    }
+
+    public static boolean isMainWineVersion(String wineVersion) {
+        return wineVersion == null || wineVersion.equals(MAIN_WINE_VERSION.identifier());
     }
 }

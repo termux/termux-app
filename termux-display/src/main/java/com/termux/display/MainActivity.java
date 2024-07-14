@@ -70,6 +70,8 @@ import com.termux.display.controller.container.Container;
 import com.termux.display.controller.container.Shortcut;
 import com.termux.display.controller.inputcontrols.InputControlsManager;
 import com.termux.display.controller.widget.InputControlsView;
+import com.termux.display.controller.winhandler.TaskManagerDialog;
+import com.termux.display.controller.winhandler.WinHandler;
 import com.termux.display.input.InputEventSender;
 import com.termux.display.input.InputStub;
 import com.termux.display.input.TouchInputHandler;
@@ -83,6 +85,7 @@ import com.termux.display.utils.X11ToolbarViewPager;
 import java.io.File;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executors;
 
 @SuppressLint("ApplySharedPref")
 @SuppressWarnings({"deprecation", "unused"})
@@ -313,10 +316,15 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 0);
         }
+        winHandler = new WinHandler(this);
+        Executors.newSingleThreadExecutor().execute(() -> {
+            winHandler.start();
+        });
     }
 
     @Override
     protected void onDestroy() {
+        winHandler.stop();
         unregisterReceiver(receiver);
         super.onDestroy();
     }
@@ -930,5 +938,19 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }
 //        Log.d("checkXEvents","read from server finish");
         handler.postDelayed(this::checkXEvents, 100);
+    }
+    protected void showProgressManagerDialog() {
+        (new TaskManagerDialog(this)).show();
+    }
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        winHandler.onGenericMotionEvent(event);
+        return super.dispatchGenericMotionEvent(event);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        winHandler.onKeyEvent(event);
+        return super.dispatchKeyEvent(event);
     }
 }

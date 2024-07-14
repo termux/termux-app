@@ -14,4 +14,5 @@ abstract class RequestCodes {
     public static final byte RELEASE_GAMEPAD = 10;
     public static final byte KEYBOARD_EVENT = 11;
     public static final byte BRING_TO_FRONT = 12;
+    public static final byte CURSOR_POS_FEEDBACK = 13;
 }

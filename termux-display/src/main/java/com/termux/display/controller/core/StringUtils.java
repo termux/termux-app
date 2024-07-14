@@ -36,16 +36,14 @@ public class StringUtils {
     }
 
     public static String getString(Context context, String resName) {
-        String string = null;
         try {
             resName = resName.toLowerCase(Locale.ENGLISH);
             int resID = context.getResources().getIdentifier(resName, "string", context.getPackageName());
-            string = context.getString(resID);
+            return context.getString(resID);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
-        return string != null && !string.isEmpty() ? string : resName;
     }
 
     public static String formatBytes(long bytes) {

@@ -1,12 +1,9 @@
 package com.termux.display.controller.core;
 
-import android.os.Environment;
 import android.os.Process;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,9 +12,8 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 
 public abstract class ProcessHelper {
-    public static boolean debugMode = false;
-    public static Callback<String> debugCallback;
-    public static boolean generateDebugFile = false;
+    public static final boolean PRINT_DEBUG = false; // FIXME change to false
+    private static final ArrayList<Callback<String>> debugCallbacks = new ArrayList<>();
     private static final byte SIGCONT = 18;
     private static final byte SIGSTOP = 19;
 
@@ -50,10 +46,9 @@ public abstract class ProcessHelper {
             pid = pidField.getInt(process);
             pidField.setAccessible(false);
 
-            Callback<String> debugCallback = ProcessHelper.debugCallback;
-            if (debugMode || debugCallback != null) {
-                createDebugThread(false, process.getInputStream(), debugCallback);
-                createDebugThread(true, process.getErrorStream(), debugCallback);
+            if (!debugCallbacks.isEmpty()) {
+                createDebugThread(process.getInputStream());
+                createDebugThread(process.getErrorStream());
             }
 
             if (terminationCallback != null) createWaitForThread(process, terminationCallback);
@@ -62,25 +57,16 @@ public abstract class ProcessHelper {
         return pid;
     }
 
-    private static void createDebugThread(boolean isError, final InputStream inputStream, final Callback<String> debugCallback) {
+    private static void createDebugThread(final InputStream inputStream) {
         Executors.newSingleThreadExecutor().execute(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
                 String line;
-                if (debugMode && generateDebugFile) {
-                    File winlatorDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Winlator");
-                    winlatorDir.mkdirs();
-                    final File debugFile = new File(winlatorDir, isError ? "debug-err.txt" : "debug-out.txt");
-                    if (debugFile.isFile()) debugFile.delete();
-                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(debugFile))) {
-                        while ((line = reader.readLine()) != null) writer.write(line+"\n");
-                    }
-                }
-                else {
-                    while ((line = reader.readLine()) != null) {
-                        if (debugCallback != null) {
-                            debugCallback.call(line);
+                while ((line = reader.readLine()) != null) {
+                    if (PRINT_DEBUG) System.out.println(line);
+                    synchronized (debugCallbacks) {
+                        if (!debugCallbacks.isEmpty()) {
+                            for (Callback<String> callback : debugCallbacks) callback.call(line);
                         }
-                        else System.out.println(line);
                     }
                 }
             }
@@ -96,6 +82,24 @@ public abstract class ProcessHelper {
             }
             catch (InterruptedException e) {}
         });
+    }
+
+    public static void removeAllDebugCallbacks() {
+        synchronized (debugCallbacks) {
+            debugCallbacks.clear();
+        }
+    }
+
+    public static void addDebugCallback(Callback<String> callback) {
+        synchronized (debugCallbacks) {
+            if (!debugCallbacks.contains(callback)) debugCallbacks.add(callback);
+        }
+    }
+
+    public static void removeDebugCallback(Callback<String> callback) {
+        synchronized (debugCallbacks) {
+            debugCallbacks.remove(callback);
+        }
     }
 
     public static String[] splitCommand(String command) {
@@ -146,7 +150,7 @@ public abstract class ProcessHelper {
         return result.toArray(new String[0]);
     }
 
-    public static String getAffinityMask(String cpuList) {
+    public static String getAffinityMaskAsHexString(String cpuList) {
         String[] values = cpuList.split(",");
         int affinityMask = 0;
         for (String value : values) {
@@ -156,11 +160,28 @@ public abstract class ProcessHelper {
         return Integer.toHexString(affinityMask);
     }
 
+    public static int getAffinityMask(String cpuList) {
+        if (cpuList == null || cpuList.isEmpty()) return 0;
+        String[] values = cpuList.split(",");
+        int affinityMask = 0;
+        for (String value : values) {
+            byte index = Byte.parseByte(value);
+            affinityMask |= (int)Math.pow(2, index);
+        }
+        return affinityMask;
+    }
+
     public static int getAffinityMask(boolean[] cpuList) {
         int affinityMask = 0;
         for (int i = 0; i < cpuList.length; i++) {
             if (cpuList[i]) affinityMask |= (int)Math.pow(2, i);
         }
+        return affinityMask;
+    }
+
+    public static int getAffinityMask(int from, int to) {
+        int affinityMask = 0;
+        for (int i = from; i < to; i++) affinityMask |= (int)Math.pow(2, i);
         return affinityMask;
     }
 }

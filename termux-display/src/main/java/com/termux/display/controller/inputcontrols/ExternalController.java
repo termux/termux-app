@@ -178,9 +178,10 @@ public class ExternalController {
     }
 
     public static ArrayList<ExternalController> getControllers() {
+        int[] deviceIds = InputDevice.getDeviceIds();
         ArrayList<ExternalController> controllers = new ArrayList<>();
-        for (int deviceId : InputDevice.getDeviceIds()) {
-            InputDevice device = InputDevice.getDevice(deviceId);
+        for (int i = deviceIds.length-1; i >= 0; i--) {
+            InputDevice device = InputDevice.getDevice(deviceIds[i]);
             if (isGameController(device)) {
                 ExternalController controller = new ExternalController();
                 controller.setId(device.getDescriptor());
@@ -197,14 +198,15 @@ public class ExternalController {
     }
 
     public static ExternalController getController(int deviceId) {
-        for (int deviceId2 : InputDevice.getDeviceIds()) {
-            if (deviceId2 == deviceId || deviceId == 0) {
-                InputDevice device = InputDevice.getDevice(deviceId2);
+        int[] deviceIds = InputDevice.getDeviceIds();
+        for (int i = deviceIds.length-1; i >= 0; i--) {
+            if (deviceIds[i] == deviceId || deviceId == 0) {
+                InputDevice device = InputDevice.getDevice(deviceIds[i]);
                 if (isGameController(device)) {
                     ExternalController controller = new ExternalController();
                     controller.setId(device.getDescriptor());
                     controller.setName(device.getName());
-                    controller.deviceId = deviceId2;
+                    controller.deviceId = deviceIds[i];
                     return controller;
                 }
             }

@@ -29,6 +29,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.concurrent.Executors;
 
 @Keep @SuppressLint({"StaticFieldLeak", "UnsafeDynamicallyLoadedCode"})
 public class CmdEntryPoint extends ICmdEntryInterface.Stub {
@@ -67,17 +68,20 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
         spawnListeningThread();
         sendBroadcastDelayed();
     }
-    CmdEntryPoint() {
+    public CmdEntryPoint() {
         if (initFlag){
             return;
         }
-        String args[] = {":1"};
-        Log.i("CmdEntryPoint", "display port: " + Arrays.toString(args));
-        if (!start(args))
-            System.exit(1);
-        initFlag=true;
-        spawnListeningThread();
-        sendBroadcastDelayed();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            String args[] = {":1"};
+            Log.i("CmdEntryPoint", "display port: " + Arrays.toString(args));
+            if (!start(args))
+                System.exit(1);
+            initFlag=true;
+            spawnListeningThread();
+            sendBroadcastDelayed();
+        });
+
     }
 
     @SuppressLint({"WrongConstant", "PrivateApi"})
