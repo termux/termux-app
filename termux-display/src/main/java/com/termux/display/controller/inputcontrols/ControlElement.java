@@ -609,7 +609,7 @@ public class ControlElement {
                 return handleTouchMove(pointerId, x, y);
             }
         }
-        else return false;
+        else return containsPoint(x,y);
     }
 
     public boolean handleTouchMove(int pointerId, float x, float y) {
@@ -716,7 +716,7 @@ public class ControlElement {
             scroller.handleTouchMove(x, y);
             return true;
         }
-        else return false;
+        else return containsPoint(x,y);
     }
 
     public boolean handleTouchUp(int pointerId, float x, float y) {
