@@ -317,6 +317,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 0);
         }
         winHandler = new WinHandler(this);
+        lorieView.setWinHandler(winHandler);
         Executors.newSingleThreadExecutor().execute(() -> {
             winHandler.start();
         });
@@ -941,16 +942,5 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
     protected void showProgressManagerDialog() {
         (new TaskManagerDialog(this)).show();
-    }
-    @Override
-    public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        winHandler.onGenericMotionEvent(event);
-        return super.dispatchGenericMotionEvent(event);
-    }
-
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        winHandler.onKeyEvent(event);
-        return super.dispatchKeyEvent(event);
     }
 }

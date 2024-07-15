@@ -38,10 +38,12 @@ import java.util.TimerTask;
 
 public class InputControlsView extends View {
     public static final float DEFAULT_OVERLAY_OPACITY = 0.4f;
-    public static final long MAX_TAP_MILLISECONDS = 60;
-    public static final float MAX_TAP_TRAVEL_DISTANCE = 15;
-    public static final float CURSOR_ACCELERATION_THRESHOLD = 10;
-    public static final float CURSOR_ACCELERATION = 10;
+    private static final byte MAX_FINGERS = 4;
+    private static final short MAX_TWO_FINGERS_SCROLL_DISTANCE = 350;
+    public static final byte MAX_TAP_TRAVEL_DISTANCE = 10;
+    public static final short MAX_TAP_MILLISECONDS = 200;
+    public static final float CURSOR_ACCELERATION = 1.25f;
+    public static final byte CURSOR_ACCELERATION_THRESHOLD = 6;
     private boolean editMode = false;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
@@ -317,7 +319,7 @@ public class InputControlsView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (editMode && readyToDraw) {
-            Log.d("onTouchEvent.inputControllerview.editmode", "<<<<<<<<<<<<<"+event.getAction()+">>>>>>>>>>>>>>>>>>>");
+            Log.d("onTouchEvent.inputControllerview.editmode", "<<<<<<<<<<<<<" + event.getAction() + ">>>>>>>>>>>>>>>>>>>");
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     float x = event.getX();
@@ -420,7 +422,6 @@ public class InputControlsView extends View {
         if (binding.isGamepad()) {
             WinHandler winHandler = xServer != null ? xServer.getWinHandler() : null;
             GamepadState state = profile.getGamepadState();
-
             int buttonIdx = binding.ordinal() - Binding.GAMEPAD_BUTTON_A.ordinal();
             if (buttonIdx <= 11) {
                 state.setPressed(buttonIdx, isActionDown);
@@ -434,7 +435,7 @@ public class InputControlsView extends View {
             } else if (binding == Binding.GAMEPAD_RIGHT_THUMB_LEFT || binding == Binding.GAMEPAD_RIGHT_THUMB_RIGHT) {
                 state.thumbRX = isActionDown ? offset : 0;
             } else if (binding == Binding.GAMEPAD_DPAD_UP || binding == Binding.GAMEPAD_DPAD_RIGHT ||
-                binding == Binding.GAMEPAD_DPAD_DOWN || binding == Binding.GAMEPAD_DPAD_LEFT) {
+                    binding == Binding.GAMEPAD_DPAD_DOWN || binding == Binding.GAMEPAD_DPAD_LEFT) {
                 state.dpad[binding.ordinal() - Binding.GAMEPAD_DPAD_UP.ordinal()] = isActionDown;
             }
 
@@ -442,8 +443,8 @@ public class InputControlsView extends View {
                 ExternalController controller = winHandler.getCurrentController();
                 if (controller != null) {
                     controller.state.copy(state);
-                    winHandler.sendGamepadState();
                 }
+                winHandler.sendGamepadState();
             }
         } else {
             if (binding == Binding.MOUSE_MOVE_LEFT || binding == Binding.MOUSE_MOVE_RIGHT) {
@@ -485,6 +486,7 @@ public class InputControlsView extends View {
         }
         return icons[id];
     }
+
     public float[] computeDeltaPoint(float lastX, float lastY, float x, float y) {
         final float[] result = {0, 0};
 

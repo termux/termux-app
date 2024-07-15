@@ -95,7 +95,6 @@ public class WinHandler {
             sendPacket(CLIENT_PORT);
         });
     }
-
     public void listProcesses() {
         addAction(() -> {
             sendData.rewind();
@@ -221,6 +220,7 @@ public class WinHandler {
     }
 
     private void handleRequest(byte requestCode, final int port) {
+        Log.d("handleRequest","RequestCodes:"+requestCode);
         switch (requestCode) {
             case RequestCodes.INIT: {
                 initReceived = true;
@@ -356,6 +356,7 @@ public class WinHandler {
     }
 
     public void sendGamepadState() {
+        Log.d("sendGamepadState","port:"+initReceived);
         if (!initReceived || gamepadClients.isEmpty()) return;
         final ControlsProfile profile = activity.getInputControlsView().getProfile();
         final boolean useVirtualGamepad = profile != null && profile.isVirtualGamepad();
