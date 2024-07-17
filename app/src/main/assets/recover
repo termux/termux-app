@@ -1,0 +1,2 @@
+#!/data/data/com.termux/files/usr/bin/sh
+tar -zxf "$@" -C /data/data/com.termux/files --recursive-unlink --preserve-permissions

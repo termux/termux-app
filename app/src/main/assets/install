@@ -1,0 +1,3 @@
+#!/data/data/com.termux/files/usr/bin/sh
+pkg remove termux-x11-nightly -y
+dpkg -i /data/data/com.termux/files/home/termux-display-nightly-1-0-all.deb
