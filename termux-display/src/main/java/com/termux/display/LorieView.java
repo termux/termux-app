@@ -235,8 +235,8 @@ public class LorieView extends SurfaceView implements InputStub {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         if (preferences.getBoolean("displayStretch", false)
-            || "native".equals(preferences.getString("displayResolutionMode", "native"))
-            || "scaled".equals(preferences.getString("displayResolutionMode", "native"))) {
+                || "native".equals(preferences.getString("displayResolutionMode", "native"))
+                || "scaled".equals(preferences.getString("displayResolutionMode", "native"))) {
             getHolder().setSizeFromLayout();
             return;
         }
@@ -316,9 +316,9 @@ public class LorieView extends SurfaceView implements InputStub {
     public void checkForClipboardChange() {
         ClipDescription desc = clipboard.getPrimaryClipDescription();
         if (clipboardSyncEnabled && desc != null &&
-            lastClipboardTimestamp < desc.getTimestamp() &&
-            desc.getMimeTypeCount() == 1 &&
-            desc.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+                lastClipboardTimestamp < desc.getTimestamp() &&
+                desc.getMimeTypeCount() == 1 &&
+                desc.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
             lastClipboardTimestamp = desc.getTimestamp();
             sendClipboardAnnounce();
             Log.d("CLIP", "sending clipboard announce");
@@ -440,6 +440,10 @@ public class LorieView extends SurfaceView implements InputStub {
     public native void sendMouseEvent(float x, float y, int whichButton, boolean buttonDown, boolean relative);
 
     public native void sendTouchEvent(int action, int id, int x, int y);
+
+    public native void sendStylusEvent(float x, float y, int pressure, int tiltX, int tiltY, int orientation, int buttons, boolean eraser, boolean mouseMode);
+
+    static public native void requestStylusEnabled(boolean enabled);
 
     public native boolean sendKeyEvent(int scanCode, int keyCode, boolean keyDown);
 

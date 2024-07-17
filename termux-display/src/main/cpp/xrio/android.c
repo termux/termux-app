@@ -32,7 +32,7 @@ void OXRCheckErrors(XrResult result, const char* file, int line) {
 }
 #endif
 
-JNIEXPORT void JNICALL Java_com_termux_x11_XrActivity_init(JNIEnv *env, jobject obj) {
+JNIEXPORT void JNICALL Java_com_termux_display_XrActivity_init(JNIEnv *env, jobject obj) {
 
     // Do not allow second initialization
     if (xr_initialized) {
@@ -62,7 +62,7 @@ JNIEXPORT void JNICALL Java_com_termux_x11_XrActivity_init(JNIEnv *env, jobject 
     ALOGV("Init called");
 }
 
-JNIEXPORT void JNICALL Java_com_termux_x11_XrActivity_teardown(JNIEnv *env, jobject obj) {
+JNIEXPORT void JNICALL Java_com_termux_display_XrActivity_teardown(JNIEnv *env, jobject obj) {
     if (!xr_initialized) {
         return;
     }
@@ -77,7 +77,7 @@ JNIEXPORT void JNICALL Java_com_termux_x11_XrActivity_teardown(JNIEnv *env, jobj
     xr_initialized = false;
 }
 
-JNIEXPORT jboolean JNICALL Java_com_termux_x11_XrActivity_beginFrame(JNIEnv *env, jobject obj) {
+JNIEXPORT jboolean JNICALL Java_com_termux_display_XrActivity_beginFrame(JNIEnv *env, jobject obj) {
     if (XrRendererInitFrame(&xr_engine, &xr_renderer)) {
 
         // Set renderer
@@ -105,12 +105,12 @@ JNIEXPORT jboolean JNICALL Java_com_termux_x11_XrActivity_beginFrame(JNIEnv *env
     return false;
 }
 
-JNIEXPORT void JNICALL Java_com_termux_x11_XrActivity_finishFrame(JNIEnv *env, jobject obj) {
+JNIEXPORT void JNICALL Java_com_termux_display_XrActivity_finishFrame(JNIEnv *env, jobject obj) {
     XrRendererEndFrame(&xr_renderer);
     XrRendererFinishFrame(&xr_engine, &xr_renderer);
 }
 
-JNIEXPORT jfloatArray JNICALL Java_com_termux_x11_XrActivity_getAxes(JNIEnv *env, jobject obj) {
+JNIEXPORT jfloatArray JNICALL Java_com_termux_display_XrActivity_getAxes(JNIEnv *env, jobject obj) {
     XrPosef lPose = XrInputGetPose(&xr_input, 0);
     XrPosef rPose = XrInputGetPose(&xr_input, 1);
     XrVector2f lThumbstick = XrInputGetJoystickState(&xr_input, 0);
@@ -152,7 +152,7 @@ JNIEXPORT jfloatArray JNICALL Java_com_termux_x11_XrActivity_getAxes(JNIEnv *env
     return output;
 }
 
-JNIEXPORT jbooleanArray JNICALL Java_com_termux_x11_XrActivity_getButtons(JNIEnv *env, jobject obj) {
+JNIEXPORT jbooleanArray JNICALL Java_com_termux_display_XrActivity_getButtons(JNIEnv *env, jobject obj) {
     uint32_t l = XrInputGetButtonState(&xr_input, 0);
     uint32_t r = XrInputGetButtonState(&xr_input, 1);
 
@@ -186,10 +186,10 @@ JNIEXPORT jbooleanArray JNICALL Java_com_termux_x11_XrActivity_getButtons(JNIEnv
 }
 
 
-JNIEXPORT jint JNICALL Java_com_termux_x11_XrActivity_getRenderParam(JNIEnv *env, jobject obj, jint param) {
+JNIEXPORT jint JNICALL Java_com_termux_display_XrActivity_getRenderParam(JNIEnv *env, jobject obj, jint param) {
     return xr_params[param];
 }
 
-JNIEXPORT void JNICALL Java_com_termux_x11_XrActivity_setRenderParam(JNIEnv *env, jobject obj, jint param, jint value) {
+JNIEXPORT void JNICALL Java_com_termux_display_XrActivity_setRenderParam(JNIEnv *env, jobject obj, jint param, jint value) {
     xr_params[param] = value;
 }

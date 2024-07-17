@@ -45,6 +45,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Display;
 import android.view.DragEvent;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -97,7 +98,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     protected FrameLayout frm;
     protected View lorieContentView;
     protected TouchInputHandler mInputHandler;
-    private ICmdEntryInterface service = null;
+    protected ICmdEntryInterface service = null;
     private final int mNotificationId = 7893;
     private boolean mClientConnected = false;
     private View.OnKeyListener mLorieKeyListener;
@@ -282,7 +283,14 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
             if (service != null) {
                 try {
-                    service.windowChanged(sfc);
+                    String name;
+                    if (lorieView.getDisplay() == null || lorieView.getDisplay().getDisplayId() == Display.DEFAULT_DISPLAY)
+                        name = "Builtin Display";
+                    else if (SamsungDexUtils.checkDeXEnabled(this))
+                        name = "Dex Display";
+                    else
+                        name = "External Display";
+                    service.windowChanged(sfc, name);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
