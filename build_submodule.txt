@@ -1,0 +1,42 @@
+cd /home/jiaxinchen/StudioProjects/termux-app/termux-display/src/main/cpp
+mkdir OpenXR-SDK
+cd OpenXR-SDK
+git init
+git remote add origin https://github.com/KhronosGroup/OpenXR-SDK.git
+git fetch origin f90488c4fb1537f4256d09d4a4d3ad5543ebaf24:local
+cd /home/jiaxinchen/StudioProjects/termux-app
+git submodule add https://github.com/KhronosGroup/OpenXR-SDK.git termux-display/src/main/cpp/OpenXR-SDK
+
+Submodule path 'termux-display/src/main/cpp/OpenXR-SDK': checked out 'f90488c4fb1537f4256d09d4a4d3ad5543ebaf24'
+
+Submodule path 'termux-display/src/main/cpp/bzip2': checked out '6a8690fc8d26c815e798c588f796eabe9d684cf0'
+
+Submodule path 'termux-display/src/main/cpp/libepoxy': checked out 'c84bc9459357a40e46e2fec0408d04fbdde2c973'
+
+Submodule path 'termux-display/src/main/cpp/libfontenc': checked out '92a85fda2acb4e14ec0b2f6d8fe3eaf2b687218c'
+
+Submodule path 'termux-display/src/main/cpp/libtirpc': checked out '5ca4ca92f629d9d83e83544b9239abaaacf0a527'
+
+Submodule path 'termux-display/src/main/cpp/libx11': checked out 'a465588218c1643eedc35b3c24409cb775454eee'
+
+Submodule path 'termux-display/src/main/cpp/libxau': checked out '14fdf25db9f21c8f3ad37f0d32a5b8e726efdc0d'
+
+Submodule path 'termux-display/src/main/cpp/libxcvt': checked out 'd9ca87eea9eecddaccc3a77227bcb3acf84e89df'
+
+Submodule path 'termux-display/src/main/cpp/libxdmcp': checked out '1192d3bc407348ff316bd3bffc791b3ac73f591b'
+
+Submodule path 'termux-display/src/main/cpp/libxfont': checked out 'd54aaf2483df6a1f98fadc09004157e657b7f73e'
+
+Submodule path 'termux-display/src/main/cpp/libxkbfile': checked out '39a5f8e67615f443e76146769d5f5f9abc5ebd2f'
+
+Submodule path 'termux-display/src/main/cpp/libxshmfence': checked out 'edbb7d9e5f3912fe521f0cfe5ae416bb9ca83633'
+
+Submodule path 'termux-display/src/main/cpp/libxtrans': checked out '3b3a3bd75d86aec78f6ef893b198c3efc378bc64'
+
+Submodule path 'termux-display/src/main/cpp/pixman': checked out '54cad71674ec485cbbbf49876feaa8a69b97c828'
+
+Submodule path 'termux-display/src/main/cpp/xkbcomp': checked out 'e26102f28f08e5432b1ad44bbaef7f32aff199f6'
+
+Submodule path 'termux-display/src/main/cpp/xorgproto': checked out '67469711055522b8adb2d795b01e7ba98cb8816c'
+
+Submodule path 'termux-display/src/main/cpp/xserver': checked out 'be2767845d6ed3c6dbd25a151051294d0908a995'
