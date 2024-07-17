@@ -1,7 +1,0 @@
-prefix=@prefix@
-includedir=@includedir@
-
-Name: XCalibrate
-Description: XCalibrate extension headers
-Version: 0.1.0
-Cflags: -I${includedir}

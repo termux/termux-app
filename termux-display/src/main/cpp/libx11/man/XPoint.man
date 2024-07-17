@@ -1,1 +1,0 @@
-.so man__libmansuffix__/XDrawPoint.__libmansuffix__

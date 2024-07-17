@@ -3,9 +3,9 @@
 #include <X11/keysymdef.h>
 #include <jni.h>
 #include "linux/input-event-codes.h"
-#define unused __attribute__((unused))
 
 void lorieSetVM(JavaVM* vm);
+Bool lorieChangeScreenName(ClientPtr pClient, void *closure);
 Bool lorieChangeWindow(ClientPtr pClient, void *closure);
 void lorieConfigureNotify(int width, int height, int framerate);
 void lorieEnableClipboardSync(Bool enable);
@@ -15,6 +15,7 @@ void lorieRequestClipboard(void);
 void lorieHandleClipboardAnnounce(void);
 void lorieHandleClipboardData(const char* data);
 Bool lorieInitDri3(ScreenPtr pScreen);
+void lorieSetStylusEnabled(Bool enabled);
 
 static int android_to_linux_keycode[304] = {
         [ 4   /* ANDROID_KEYCODE_BACK */] = KEY_ESC,

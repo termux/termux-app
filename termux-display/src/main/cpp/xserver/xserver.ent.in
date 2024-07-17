@@ -1,3 +1,0 @@
-<!-- shared -*-xml-*- entity definitions for the X server documentation -->
-<!ENTITY xserver.version "@PACKAGE_VERSION@">
-<!ENTITY xserver.reldate "@RELEASE_DATE@">

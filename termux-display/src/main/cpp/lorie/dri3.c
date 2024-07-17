@@ -408,7 +408,7 @@ lorieDestroyPixmap(PixmapPtr pPixmap) {
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
     lorieScrPriv(pScreen);
 
-    if (pPixmap->refcnt == 1 && !pPixmap->drawable.width && !pPixmap->drawable.height) {
+    if (pPixmap->refcnt == 1 && pPixmap->drawable.width && pPixmap->drawable.height) {
         ptr = dixLookupPrivate(&pPixmap->devPrivates, &lorieMmappedPixPrivateKey);
         pPixPriv = dixLookupPrivate(&pPixmap->devPrivates, &lorieAHBPixPrivateKey);
         size = pPixmap->devKind * pPixmap->drawable.height;
@@ -431,7 +431,7 @@ lorieDestroyPixmap(PixmapPtr pPixmap) {
 }
 
 static PixmapPtr loriePixmapFromFds(ScreenPtr screen, CARD8 num_fds, const int *fds, CARD16 width, CARD16 height,
-                                    const CARD32 *strides, const CARD32 *offsets, CARD8 depth, unused CARD8 bpp, CARD64 modifier) {
+                                    const CARD32 *strides, const CARD32 *offsets, CARD8 depth, __unused CARD8 bpp, CARD64 modifier) {
     const CARD64 AHARDWAREBUFFER_SOCKET_FD = 1255;
     const CARD64 RAW_MMAPPABLE_FD = 1274;
     PixmapPtr pixmap = NullPixmap;
@@ -535,13 +535,13 @@ static PixmapPtr loriePixmapFromFds(ScreenPtr screen, CARD8 num_fds, const int *
     return NULL;
 }
 
-static int lorieGetFormats(unused ScreenPtr screen, CARD32 *num_formats, CARD32 **formats) {
+static int lorieGetFormats(__unused ScreenPtr screen, CARD32 *num_formats, CARD32 **formats) {
     *num_formats = 0;
     *formats = NULL;
     return TRUE;
 }
 
-static int lorieGetModifiers(unused ScreenPtr screen, unused uint32_t format, uint32_t *num_modifiers, uint64_t **modifiers) {
+static int lorieGetModifiers(__unused ScreenPtr screen, __unused uint32_t format, uint32_t *num_modifiers, uint64_t **modifiers) {
     *num_modifiers = 0;
     *modifiers = NULL;
     return TRUE;

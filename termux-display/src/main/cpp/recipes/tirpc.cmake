@@ -47,4 +47,4 @@ target_compile_options(tirpc PRIVATE "-DPORTMAP" "-DINET6=1" "-DHAVE_FEATURES_H=
         "-DHAVE_GETRPCBYNAME=1" "-DHAVE_GETRPCBYNUMBER=1" "-DHAVE_SETRPCENT=1" "-DHAVE_ENDRPCENT=1"
         "-DHAVE_GETRPCENT=1" "-UHAVE_GSSAPI_GSSAPI_EXT_H" "-UAUTHDES_SUPPORT" "-Dquad_t=long long"
         "-Du_quad_t=unsigned long long" "-Dgetdtablesize()=sysconf(_SC_OPEN_MAX)" "-D_GNU_SOURCE"
-        "-Wall" "-pipe" "-fPIC" "-DPIC")
+        "-Wall" "-pipe" "-fPIC" "-DPIC" "-Wno-deprecated-non-prototype" "-Wno-macro-redefined")

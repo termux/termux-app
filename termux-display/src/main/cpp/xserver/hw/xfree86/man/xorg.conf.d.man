@@ -1,1 +1,0 @@
-.so man@filemansuffix@/xorg.conf.@filemansuffix@

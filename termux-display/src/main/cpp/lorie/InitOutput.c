@@ -108,10 +108,11 @@ typedef struct {
 
     JavaVM* vm;
     JNIEnv* env;
+    Bool dri3;
 } lorieScreenInfo, *lorieScreenInfoPtr;
 
 ScreenPtr pScreenPtr;
-static lorieScreenInfo lorieScreen = { .root.width = 1280, .root.height = 1024 };
+static lorieScreenInfo lorieScreen = { .root.width = 1280, .root.height = 1024, .dri3 = TRUE };
 static lorieScreenInfoPtr pvfb = &lorieScreen;
 static char *xstartup = NULL;
 
@@ -135,6 +136,8 @@ static void* ddxReadyThread(unused void* cookie) {
             char DISPLAY[16] = "";
             sprintf(DISPLAY, ":%s", display);
             setenv("DISPLAY", DISPLAY, 1);
+            unsetenv("CLASSPATH");
+            execlp(xstartup, xstartup, NULL);
             execlp("sh", "sh", "-c", xstartup, NULL);
             dprintf(2, "Failed to start command `sh -c \"%s\"`: %s\n", xstartup, strerror(errno));
             abort();
@@ -166,6 +169,11 @@ static void* ddxReadyThread(unused void* cookie) {
 
 void
 ddxReady(void) {
+    if (!xstartup)
+        xstartup = getenv("TERMUX_X11_XSTARTUP");
+    if (!xstartup)
+        return;
+
     pthread_t t;
     pthread_create(&t, NULL, ddxReadyThread, NULL);
 }
@@ -197,6 +205,7 @@ void ddxUseMsg(void) {
     ErrorF("-xstartup \"command\"    start `command` after server startup\n");
     ErrorF("-legacy-drawing        use legacy drawing, without using AHardwareBuffers\n");
     ErrorF("-force-bgra            force flipping colours (RGBA->BGRA)\n");
+    ErrorF("-disable-dri3          disabling DRI3 support (to let lavapipe work)\n");
 }
 
 int ddxProcessArgument(unused int argc, unused char *argv[], unused int i) {
@@ -213,6 +222,11 @@ int ddxProcessArgument(unused int argc, unused char *argv[], unused int i) {
 
     if (strcmp(argv[i], "-force-bgra") == 0) {
         pvfb->root.flip = TRUE;
+        return 1;
+    }
+
+    if (strcmp(argv[i], "-disable-dri3") == 0) {
+        pvfb->dri3 = FALSE;
         return 1;
     }
 
@@ -509,6 +523,8 @@ lorieRandRInit(ScreenPtr pScreen) {
     RRCrtcPtr crtc;
     RRModePtr mode;
 
+    char screenName[1024] = "screen";
+
     if (!RRScreenInit(pScreen))
        return FALSE;
 
@@ -523,7 +539,8 @@ lorieRandRInit(ScreenPtr pScreen) {
         || !(mode = lorieCvt(pScreen->width, pScreen->height, 30))
         || !(crtc = RRCrtcCreate(pScreen, NULL))
         || !RRCrtcGammaSetSize(crtc, 256)
-        || !(output = RROutputCreate(pScreen, "screen", 6, NULL))
+        || !(output = RROutputCreate(pScreen, screenName, sizeof(screenName), NULL))
+        || (output->nameLength = strlen(output->name), FalseNoop())
         || !RROutputSetClones(output, NULL, 0)
         || !RROutputSetModes(output, &mode, 1, 0)
         || !RROutputSetCrtcs(output, &crtc, 1)
@@ -562,7 +579,7 @@ lorieScreenInit(ScreenPtr pScreen, unused int argc, unused char **argv) {
           || !miSetVisualTypesAndMasks(24, ((1 << TrueColor) | (1 << DirectColor)), 8, TrueColor, 0xFF0000, 0x00FF00, 0x0000FF)
           || !miSetPixmapDepths()
           || !fbScreenInit(pScreen, NULL, pvfb->root.width, pvfb->root.height, monitorResolution, monitorResolution, 0, 32)
-          || !lorieInitDri3(pScreen)
+          || !(!pvfb->dri3 || lorieInitDri3(pScreen))
           || !fbPictureInit(pScreen, 0, 0)
           || !lorieRandRInit(pScreen)
           || !miPointerInitialize(pScreen, &loriePointerSpriteFuncs, &loriePointerCursorFuncs, TRUE)
@@ -591,6 +608,16 @@ CursorForDevice(DeviceIntPtr pDev) {
     }
 
     return NULL;
+}
+
+Bool lorieChangeScreenName(unused ClientPtr pClient, void *closure) {
+    RROutputPtr output = RRFirstOutput(pScreenPtr);
+    memset(output->name, 0, 1024);
+    strncpy(output->name, closure, 1024);
+    output->name[1023] = '\0';
+    output->nameLength = strlen(output->name);
+    free(closure);
+    return TRUE;
 }
 
 Bool lorieChangeWindow(unused ClientPtr pClient, void *closure) {

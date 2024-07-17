@@ -60,7 +60,8 @@ set(PIXMAN_CFLAGS
         "-DPACKAGE=\"pixman\""
         "-DTLS=__thread"
         "-DSIZEOF_LONG=${SIZEOF_LONG}"
-        "-DUSE_OPENMP=1")
+        "-DUSE_OPENMP=1"
+        "-Wno-unknown-attributes")
 
 if("${CMAKE_ANDROID_ARCH_ABI}" STREQUAL "arm64-v8a")
     set(PIXMAN_SRC ${PIXMAN_SRC}

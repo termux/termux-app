@@ -1,1 +1,0 @@
-.so man__libmansuffix__/XkbSetNamedIndicator.__libmansuffix__

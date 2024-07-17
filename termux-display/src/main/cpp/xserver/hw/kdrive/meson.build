@@ -1,2 +1,0 @@
-subdir('src')
-subdir('ephyr')
