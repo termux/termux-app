@@ -59,8 +59,12 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
     public void onPointerButtonPress(Pointer.Button button) {
         if (xServer.isEnabled()) {
 //            Log.d("onPointerButtonPress LOCKED",button.code()+","+ button.flag());
-            int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
-            xServer.sendMouseWheelEvent(0, wheelDelta);
+            if (button == Pointer.Button.BUTTON_SCROLL_UP || button == Pointer.Button.BUTTON_SCROLL_DOWN){
+                int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
+                xServer.sendMouseWheelEvent(0, wheelDelta);
+                return;
+            }
+            xServer.sendMouseEvent(0, 0, button.code(), true, true);
         } else {
             if (button == Pointer.Button.BUTTON_SCROLL_UP || button == Pointer.Button.BUTTON_SCROLL_DOWN) {
                 int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
