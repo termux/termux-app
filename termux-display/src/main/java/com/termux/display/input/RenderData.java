@@ -4,7 +4,6 @@
 
 package com.termux.display.input;
 
-import android.graphics.Matrix;
 import android.graphics.PointF;
 
 /**
@@ -46,17 +45,12 @@ public class RenderData {
         boolean cursorMoved = false;
         if ((newX-offsetX) != mCursorPosition.x) {
             mCursorPosition.x = newX-offsetX;
-            if (Math.abs((newX-offsetX)-mCursorPosition.x)>15){
-//                cursorMoved = true;
-            }
+            cursorMoved = true;
         }
         if ((newY-offsetY) != mCursorPosition.y) {
             mCursorPosition.y = newY-offsetY;
-            if(Math.abs((newY-offsetY)-mCursorPosition.y)>15){
-//                cursorMoved = true;
-            }
+            cursorMoved = true;
         }
-
         return cursorMoved;
     }
 }

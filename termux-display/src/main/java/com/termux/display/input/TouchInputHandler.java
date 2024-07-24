@@ -128,17 +128,20 @@ public class TouchInputHandler {
         mDexListener = new DexListener(ctx);
         mTouchpadHandler = isTouchpad ? null : new TouchInputHandler(ctx, mRenderData, renderStub, injector, true);
     }
+
     public TouchInputHandler(Context ctx, RenderStub renderStub, final InputEventSender injector) {
         this(ctx, null, renderStub, injector, false);
     }
-    public void setLongPressedDelay(int delay){
+
+    public void setLongPressedDelay(int delay) {
         mTapDetector.setLongPressedDelay(delay);
     }
+
     boolean isDexEvent(MotionEvent event) {
         int SOURCE_DEX = InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_TOUCHSCREEN;
         return ((event.getSource() & SOURCE_DEX) == SOURCE_DEX)
-            && ((event.getSource() & InputDevice.SOURCE_TOUCHPAD) != InputDevice.SOURCE_TOUCHPAD)
-            && (event.getToolType(event.getActionIndex()) == MotionEvent.TOOL_TYPE_FINGER);
+                && ((event.getSource() & InputDevice.SOURCE_TOUCHPAD) != InputDevice.SOURCE_TOUCHPAD)
+                && (event.getToolType(event.getActionIndex()) == MotionEvent.TOOL_TYPE_FINGER);
     }
 
     public boolean handleTouchEvent(View view0, View view, MotionEvent event) {
@@ -151,9 +154,11 @@ public class TouchInputHandler {
 
             int offsetX = viewLocation[0] - view0Location[0];
             int offsetY = viewLocation[1] - view0Location[1];
+            if (mInputStrategy instanceof InputStrategyInterface.NullInputStrategy) {
+
+            }
             mRenderData.offsetX = offsetX;
             mRenderData.offsetY = offsetY;
-
 //            event.offsetLocation(-offsetX, -offsetY);
 //            Log.d("TouchInputHandler","offsetx:"+offsetX+" offsety:"+offsetY);
         }
@@ -168,10 +173,10 @@ public class TouchInputHandler {
             return mStylusListener.onTouch(event);
 
         if (!isDexEvent(event) && (event.getToolType(event.getActionIndex()) == MotionEvent.TOOL_TYPE_MOUSE
-            || (event.getSource() & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE)
-            || (event.getSource() & InputDevice.SOURCE_MOUSE_RELATIVE) == InputDevice.SOURCE_MOUSE_RELATIVE
-            || (event.getPointerCount() == 1 && mTouchpadHandler == null
-            && (event.getSource() & InputDevice.SOURCE_TOUCHPAD) == InputDevice.SOURCE_TOUCHPAD))
+                || (event.getSource() & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE)
+                || (event.getSource() & InputDevice.SOURCE_MOUSE_RELATIVE) == InputDevice.SOURCE_MOUSE_RELATIVE
+                || (event.getPointerCount() == 1 && mTouchpadHandler == null
+                && (event.getSource() & InputDevice.SOURCE_TOUCHPAD) == InputDevice.SOURCE_TOUCHPAD))
             return mHMListener.onTouch(view, event);
 
         if (event.getToolType(event.getActionIndex()) == MotionEvent.TOOL_TYPE_FINGER) {
@@ -297,7 +302,7 @@ public class TouchInputHandler {
      */
     private void moveCursorToScreenPoint(float screenX, float screenY) {
         if (mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy || mInputStrategy instanceof InputStrategyInterface.SimulatedTouchInputStrategy) {
-            float[] imagePoint = {screenX * mRenderData.scale.x, screenY * mRenderData.scale.y};
+            float[] imagePoint = {(screenX - mRenderData.offsetX) * mRenderData.scale.x, (screenY - mRenderData.offsetY) * mRenderData.scale.y};
             if (mRenderData.setCursorPosition(imagePoint[0], imagePoint[1]))
                 mInjector.sendCursorMove((int) imagePoint[0], imagePoint[1], false);
         }
@@ -325,7 +330,7 @@ public class TouchInputHandler {
      * @noinspection NullableProblems
      */
     private class GestureListener extends GestureDetector.SimpleOnGestureListener
-        implements TapGestureDetector.OnTapListener {
+            implements TapGestureDetector.OnTapListener {
         private final Handler mGestureListenerHandler = new Handler(msg -> {
             if (msg.what == BUTTON_LEFT)
                 mInputStrategy.onTap(BUTTON_LEFT);
@@ -398,7 +403,6 @@ public class TouchInputHandler {
             if (!(mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy)) {
                 if (screenPointLiesOutsideImageBoundary(x, y))
                     return;
-
                 moveCursorToScreenPoint(x, y);
             }
 
@@ -500,9 +504,9 @@ public class TouchInputHandler {
         }
 
         private final int[][] buttons = {
-            {MotionEvent.BUTTON_PRIMARY, BUTTON_LEFT},
-            {MotionEvent.BUTTON_TERTIARY, InputStub.BUTTON_MIDDLE},
-            {MotionEvent.BUTTON_SECONDARY, InputStub.BUTTON_RIGHT}
+                {MotionEvent.BUTTON_PRIMARY, BUTTON_LEFT},
+                {MotionEvent.BUTTON_TERTIARY, InputStub.BUTTON_MIDDLE},
+                {MotionEvent.BUTTON_SECONDARY, InputStub.BUTTON_RIGHT}
         };
 
         @SuppressLint("ClickableViewAccessibility")

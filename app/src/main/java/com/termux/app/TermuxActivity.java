@@ -245,8 +245,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
-                if (inputControlsView != null) {
+                if (inputControlsView.getProfile()!=null) {
                     inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);
+                    if(xServer.cursorLocker.isEnabled()){
+                        return true;
+                    }
                 }
 //                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
                 if (null != mInputHandler) {

@@ -35,31 +35,37 @@ public final class InputEventSender {
     public boolean pointerCapture = false;
     public boolean scaleTouchpad = false;
 
-    /** Set of pressed keys for which we've sent TextEvent. */
+    /**
+     * Set of pressed keys for which we've sent TextEvent.
+     */
     private final TreeSet<Integer> mPressedTextKeys;
-    private long previousTouchTime =0L;
-    private int previousTouchX,previousTouchY;
-    private int touchCouter =0;
-    private boolean isDoubleClick(MotionEvent event,int currentTouchX,int currentTouchY){
+    private long previousTouchTime = 0L;
+    private int previousTouchX, previousTouchY;
+    private int touchCounter = 0;
+    private long MAX_DOUBLE_CLICK_TIMEOUT = 501;
+    private int MINIMUM_DISTANCE = 15;
+    private long MINIMUN_DOUBLE_CLICK_TIMEOUT = 101;
+
+    private boolean isDoubleClick(MotionEvent event, int currentTouchX, int currentTouchY) {
         boolean doubleClick = false;
         long currentTouchTime = System.currentTimeMillis();
-        if (event.getAction()==MotionEvent.ACTION_DOWN||event.getAction()== ACTION_POINTER_DOWN){
-            if (touchCouter==0){
+        if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == ACTION_POINTER_DOWN) {
+            if (touchCounter == 0) {
                 previousTouchTime = currentTouchTime;
                 previousTouchX = currentTouchX;
                 previousTouchY = currentTouchY;
             }
-            touchCouter++;
+            touchCounter++;
         }
 
-        if (touchCouter>=2){
-            if (event.getAction()==MotionEvent.ACTION_UP||event.getAction()== ACTION_POINTER_UP){
-                doubleClick = (currentTouchTime-previousTouchTime>101)&&(currentTouchTime-previousTouchTime<1001)&&(Math.abs(currentTouchX-previousTouchX)<15)&&(Math.abs(currentTouchY-previousTouchY)<15);
-                if(doubleClick){
-                    touchCouter =0;
+        if (touchCounter >= 2) {
+            if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == ACTION_POINTER_UP) {
+                doubleClick = (currentTouchTime - previousTouchTime > MINIMUN_DOUBLE_CLICK_TIMEOUT) && (currentTouchTime - previousTouchTime < MAX_DOUBLE_CLICK_TIMEOUT) && (Math.abs(currentTouchX - previousTouchX) < MINIMUM_DISTANCE) && (Math.abs(currentTouchY - previousTouchY) < MINIMUM_DISTANCE);
+                if (doubleClick) {
+                    touchCounter = 0;
                     return true;
-                }else{
-                    touchCouter=1;
+                } else {
+                    touchCounter = 1;
                     previousTouchTime = currentTouchTime;
                     previousTouchX = currentTouchX;
                     previousTouchY = currentTouchY;
@@ -68,6 +74,7 @@ public final class InputEventSender {
         }
         return false;
     }
+
     public InputEventSender(InputStub injector) {
         if (injector == null)
             throw new NullPointerException();
@@ -76,6 +83,7 @@ public final class InputEventSender {
     }
 
     private static final List<Integer> buttons = List.of(BUTTON_UNDEFINED, BUTTON_LEFT, BUTTON_MIDDLE, BUTTON_RIGHT);
+
     public void sendMouseEvent(PointF pos, int button, boolean down, boolean relative) {
         if (!buttons.contains(button))
             return;
@@ -83,7 +91,7 @@ public final class InputEventSender {
     }
 
     public void sendMouseDown(int button, boolean relative) {
-        if (!buttons.contains(button)) 
+        if (!buttons.contains(button))
             return;
         mInjector.sendMouseEvent(0, 0, button, true, relative);
     }
@@ -110,6 +118,7 @@ public final class InputEventSender {
     }
 
     final boolean[] pointers = new boolean[10];
+
     /**
      * Extracts the touch point data from a MotionEvent, converts each point into a marshallable
      * object and passes the set of points to the JNI layer to be transmitted to the remote host.
@@ -119,11 +128,11 @@ public final class InputEventSender {
      *              function.
      */
     public void sendTouchEvent(MotionEvent event, RenderData renderData) {
-        int xx = clamp((int) ((event.getX()-renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
-        int yy = clamp((int) ((event.getY()-renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
-        if (isDoubleClick(event,xx,yy)){
-            sendMouseClick(BUTTON_LEFT,true);
-            sendMouseClick(BUTTON_LEFT,true);
+        int xx = clamp((int) ((event.getX() - renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
+        int yy = clamp((int) ((event.getY() - renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
+        if (isDoubleClick(event, xx, yy)) {
+            sendMouseClick(BUTTON_LEFT, true);
+            sendMouseClick(BUTTON_LEFT, true);
             return;
         }
         int action = event.getActionMasked();
@@ -138,8 +147,8 @@ public final class InputEventSender {
                 pointers[event.getPointerId(p)] = false;
 
             for (int p = 0; p < pointerCount; p++) {
-                int x = clamp((int) ((event.getX(p)-renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
-                int y = clamp((int) ((event.getY(p)-renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
+                int x = clamp((int) ((event.getX(p) - renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
+                int y = clamp((int) ((event.getY(p) - renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
                 pointers[event.getPointerId(p)] = true;
                 mInjector.sendTouchEvent(XI_TouchUpdate, event.getPointerId(p), x, y);
             }
@@ -155,15 +164,16 @@ public final class InputEventSender {
             // cause confusion on the remote OS side and result in broken touch gestures.
             int activePointerIndex = event.getActionIndex();
             int id = event.getPointerId(activePointerIndex);
-            int x =  clamp((int) ((event.getX(activePointerIndex)-renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
-            int y =  clamp((int) ((event.getY(activePointerIndex)-renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
+            int x = clamp((int) ((event.getX(activePointerIndex) - renderData.offsetX) * renderData.scale.x), 0, renderData.screenWidth);
+            int y = clamp((int) ((event.getY(activePointerIndex) - renderData.offsetY) * renderData.scale.y), 0, renderData.screenHeight);
             int a = (action == MotionEvent.ACTION_DOWN || action == ACTION_POINTER_DOWN) ? XI_TouchBegin : XI_TouchEnd;
-            if (a == XI_TouchEnd){
+            if (a == XI_TouchEnd) {
                 mInjector.sendTouchEvent(XI_TouchUpdate, id, x, y);
             }
             mInjector.sendTouchEvent(a, id, x, y);
         }
     }
+
 
     /**
      * Converts the {@link KeyEvent} into low-level events and sends them to the host as either
@@ -185,7 +195,7 @@ public final class InputEventSender {
             if (e.getCharacters() != null)
                 mInjector.sendTextEvent(e.getCharacters().getBytes(UTF_8));
             else if (e.getUnicodeChar() != 0)
-                mInjector.sendTextEvent(String.valueOf((char)e.getUnicodeChar()).getBytes(UTF_8));
+                mInjector.sendTextEvent(String.valueOf((char) e.getUnicodeChar()).getBytes(UTF_8));
             return true;
         }
 
@@ -194,7 +204,7 @@ public final class InputEventSender {
         // For Enter getUnicodeChar() returns 10 (line feed), but we still
         // want to send it as KeyEvent.
         char unicode = keyCode != KEYCODE_ENTER ? (char) e.getUnicodeChar() : 0;
-        int scancode = (preferScancodes || !no_modifiers) ? e.getScanCode(): 0;
+        int scancode = (preferScancodes || !no_modifiers) ? e.getScanCode() : 0;
 
         if (!preferScancodes) {
             if (pressed && unicode != 0 && no_modifiers) {
@@ -220,13 +230,13 @@ public final class InputEventSender {
         // third-party keyboards that may still generate these events. See
         // https://source.android.com/devices/input/keyboard-devices.html#legacy-unsupported-keys
         char[][] chars = {
-                { KEYCODE_AT, '@', KEYCODE_2 },
-                { KEYCODE_POUND, '#', KEYCODE_3 },
-                { KEYCODE_STAR, '*', KEYCODE_8 },
-                { KEYCODE_PLUS, '+', KEYCODE_EQUALS }
+                {KEYCODE_AT, '@', KEYCODE_2},
+                {KEYCODE_POUND, '#', KEYCODE_3},
+                {KEYCODE_STAR, '*', KEYCODE_8},
+                {KEYCODE_PLUS, '+', KEYCODE_EQUALS}
         };
 
-        for (char[] i: chars) {
+        for (char[] i : chars) {
             if (e.getKeyCode() != i[0])
                 continue;
 
