@@ -617,10 +617,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     /** Show a toast and dismiss the last one if still visible. */
-    public void showToast(String text, boolean longDuration) {
+    public void showToast(String text, boolean isLongDuration) {
         if (text == null || text.isEmpty()) return;
         if (mLastToast != null) mLastToast.cancel();
-        mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
+        mLastToast = Toast.makeText(TermuxActivity.this, text, isLongDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
         mLastToast.setGravity(Gravity.TOP, 0, 0);
         mLastToast.show();
     }

@@ -63,7 +63,7 @@ class TerminalViewPreferencesDataStore extends PreferenceDataStore {
     }
 
     @Override
-    public boolean getBoolean(String key, boolean defValue) {
+    public boolean getBoolean(String key, boolean defaultValue) {
         if (mPreferences == null) return false;
 
         switch (key) {
