@@ -2,10 +2,12 @@ package com.termux.display.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -14,8 +16,6 @@ import android.view.WindowManager;
 
 /**
  * utils of screen metric info
- *
- *
  */
 public class ScreenUtils {
     private ScreenUtils() {
@@ -31,7 +31,7 @@ public class ScreenUtils {
      */
     public static int getScreenWidth(Context context) {
         WindowManager wm = (WindowManager) context
-            .getSystemService(Context.WINDOW_SERVICE);
+                .getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(outMetrics);
         return outMetrics.widthPixels;
@@ -45,23 +45,25 @@ public class ScreenUtils {
      */
     public static int getScreenHeight(Context context) {
         WindowManager wm = (WindowManager) context
-            .getSystemService(Context.WINDOW_SERVICE);
+                .getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(outMetrics);
-        return outMetrics.heightPixels + getNavigationBarHeight(context);
+        int height = outMetrics.heightPixels;
+        return height+getNavigationBarHeight(context)+getStatusHeight(context);
     }
 
     /**
      * get navigation bar height
+     *
      * @param context
      * @return
      */
     private static int getNavigationBarHeight(Context context) {
         int rid =
-            context.getResources().getIdentifier("config_showNavigationBar", "bool", "android");
+                context.getResources().getIdentifier("config_showNavigationBar", "bool", "android");
         if (rid != 0) {
             int resourceId =
-                context.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+                    context.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
             return context.getResources().getDimensionPixelSize(resourceId);
         } else {
             return 0;
@@ -70,6 +72,7 @@ public class ScreenUtils {
 
     /**
      * test is it full screen mobile
+     *
      * @param context
      * @return
      */
@@ -81,8 +84,8 @@ public class ScreenUtils {
             Display display;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 display = context.getDisplay();
-            }else{
-                display=windowManager.getDefaultDisplay();
+            } else {
+                display = windowManager.getDefaultDisplay();
             }
             Point point = new Point();
             display.getRealSize(point);
@@ -101,6 +104,7 @@ public class ScreenUtils {
             return false;
         }
     }
+
     /**
      * get height of status bar
      *
@@ -114,7 +118,7 @@ public class ScreenUtils {
             Class<?> clazz = Class.forName("com.android.internal.R$dimen");
             Object object = clazz.newInstance();
             int height = Integer.parseInt(clazz.getField("status_bar_height")
-                .get(object).toString());
+                    .get(object).toString());
             statusHeight = context.getResources().getDimensionPixelSize(height);
         } catch (Exception e) {
             e.printStackTrace();
@@ -161,7 +165,7 @@ public class ScreenUtils {
         int height = getScreenHeight(activity);
         Bitmap bp = null;
         bp = Bitmap.createBitmap(bmp, 0, statusBarHeight, width, height
-            - statusBarHeight);
+                - statusBarHeight);
         view.destroyDrawingCache();
         return bp;
 

@@ -10,7 +10,7 @@ public class CursorLocker extends TimerTask {
     private final LorieView xServer;
     private float damping = 0.25f;
     private short maxDistance;
-    private boolean enabled = true;
+    private boolean enabled = false;
     private final Object pauseLock = new Object();
 
     public CursorLocker(LorieView xServer) {

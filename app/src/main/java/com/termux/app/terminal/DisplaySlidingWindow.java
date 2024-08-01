@@ -74,13 +74,16 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean switchSlider;
     private float downX,downY;
     private boolean moving;
+    private int status_height;
 
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+
         setClickable(true);
         switchSlider = true;
         mScreenWidth = ScreenUtils.getScreenWidth(context);
         mScreenHeight = ScreenUtils.getScreenHeight(context);
+        status_height=ScreenUtils.getStatusHeight(context);
 
 //        TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
 //            R.styleable.BinarySlidingMenu, defStyle, 0);
@@ -127,7 +130,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             mContent.getLayoutParams().width = mContentWidth;
             mRightMenu.getLayoutParams().width = mMenuWidth;
 
-            Log.d("changeLayoutOrientation", "landscape:" + String.valueOf(landscape) + ", mContentWidth" + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
+//            Log.d("changeLayoutOrientation", "landscape:" + String.valueOf(landscape) + ", mContentWidth" + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
@@ -212,13 +215,13 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 //operate right
                 if (isOperateRight) {
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth+status_height, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
                         isRightMenuOpen = true;
 //					mRightMenu.bringToFront();
-                    } else//cloae right menu
+                    } else//close right menu
                     {
                         this.smoothScrollTo(mMenuWidth, 0);
                         if (isRightMenuOpen) {
@@ -271,7 +274,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             this.smoothScrollTo(0, 0);
         }
     }
-
     public void changeLayoutOrientation(int landscapeOriention) {
         once = false;
         landscape = landscapeOriention == SCREEN_ORIENTATION_LANDSCAPE;

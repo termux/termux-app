@@ -815,8 +815,6 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.setVisibility(View.VISIBLE);
         inputControlsView.requestFocus();
         inputControlsView.setProfile(controlsProfile);
-//        touchpadView.setSensitivity(controlsProfile.getCursorSpeed() * globalCursorSpeed);
-//        touchpadView.setPointerButtonRightEnabled(false);
 
         inputControlsView.invalidate();
     }
@@ -825,10 +823,7 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.setShowTouchscreenControls(true);
         inputControlsView.setVisibility(View.GONE);
         inputControlsView.setProfile(null);
-
-//        touchpadView.setSensitivity(globalCursorSpeed);
-//        touchpadView.setPointerButtonLeftEnabled(true);
-//        touchpadView.setPointerButtonRightEnabled(true);
+        xServer.cursorLocker.setEnabled(false);
 
         inputControlsView.invalidate();
     }

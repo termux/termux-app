@@ -394,7 +394,6 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             public void showProgressManager() {
                 showProgressManagerDialog();
             }
-
         };
     }
 

@@ -224,53 +224,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         lorieParent.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-//                if(inputControllerViewHandled){
-//                    return true;
-//                }
-//                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
                 return true;
             }
         });
-//        lorieParent.setOnHoverListener(new View.OnHoverListener() {
-//            @Override
-//            public boolean onHover(View v, MotionEvent event) {
-//                if(inputControllerViewHandled){
-//                    return true;
-//                }
-//                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
-//                return true;
-//            }
-//        });
-//        lorieParent.setOnGenericMotionListener(new View.OnGenericMotionListener() {
-//            @Override
-//            public boolean onGenericMotion(View v, MotionEvent event) {
-//                if(inputControllerViewHandled){
-//                    return true;
-//                }
-//                mInputHandler.handleTouchEvent(lorieParent, lorieView, event);
-//                return true;
-//            }
-//        });
-//        lorieView.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
-//            @Override
-//            public boolean onCapturedPointer(View view, MotionEvent event) {
-//                if(inputControllerViewHandled){
-//                    return true;
-//                }
-//                mInputHandler.handleTouchEvent(lorieView, lorieView, event);
-//                return true;
-//            }
-//        });
-//        lorieParent.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
-//            @Override
-//            public boolean onCapturedPointer(View view, MotionEvent event) {
-//                if(inputControllerViewHandled){
-//                    return true;
-//                }
-//                mInputHandler.handleTouchEvent(lorieView, lorieView, event);
-//                return true;
-//            }
-//        });
 
         lorieView.setOnKeyListener(mLorieKeyListener);
 
@@ -304,10 +260,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         // Taken from Stackoverflow answer https://stackoverflow.com/questions/7417123/android-how-to-adjust-layout-in-full-screen-mode-when-softkeyboard-is-visible/7509285#
         FullscreenWorkaround.assistActivity(this);
-//        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//        mNotification = buildNotification();
-//        mNotificationManager.notify(mNotificationId, mNotification);
-//        mNotificationManager.cancel(mNotificationId);
 
         CmdEntryPoint.requestConnection();
         onPreferencesChanged("");
@@ -320,8 +272,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         setupInputController();
 
         if (SDK_INT >= VERSION_CODES.TIRAMISU
-            && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PERMISSION_GRANTED
-            && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PERMISSION_GRANTED
+                && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 0);
         }
         winHandler = new WinHandler(this);
@@ -485,21 +437,21 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         });
 
         Map.of(left, InputStub.BUTTON_LEFT, middle, InputStub.BUTTON_MIDDLE, right, InputStub.BUTTON_RIGHT)
-            .forEach((v, b) -> v.setOnTouchListener((__, e) -> {
-                switch (e.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                    case MotionEvent.ACTION_POINTER_DOWN:
-                        getLorieView().sendMouseEvent(0, 0, b, true, true);
-                        v.setPressed(true);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_POINTER_UP:
-                        getLorieView().sendMouseEvent(0, 0, b, false, true);
-                        v.setPressed(false);
-                        break;
-                }
-                return true;
-            }));
+                .forEach((v, b) -> v.setOnTouchListener((__, e) -> {
+                    switch (e.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                        case MotionEvent.ACTION_POINTER_DOWN:
+                            getLorieView().sendMouseEvent(0, 0, b, true, true);
+                            v.setPressed(true);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_POINTER_UP:
+                            getLorieView().sendMouseEvent(0, 0, b, false, true);
+                            v.setPressed(false);
+                            break;
+                    }
+                    return true;
+                }));
 
         pos.setOnTouchListener(new View.OnTouchListener() {
             final int touchSlop = (int) Math.pow(ViewConfiguration.get(MainActivity.this).getScaledTouchSlop(), 2);
@@ -569,7 +521,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             ParcelFileDescriptor fd = service == null ? null : service.getXConnection();
             if (fd != null) {
                 LorieView.connect(fd.detachFd());
-//                LorieView.connect(fd.getFd());
                 getLorieView().triggerCallback();
                 clientConnectedStateChanged(true);
                 LorieView.setClipboardSyncEnabled(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("clipboardSync", false));
@@ -625,13 +576,13 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 Settings.Secure.putString(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, "1");
             } catch (SecurityException e) {
                 new AlertDialog.Builder(this)
-                    .setTitle("Permission denied")
-                    .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
-                        "Please, launch this command using ADB:\n" +
-                        "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS")
-                    .setNegativeButton("OK", null)
-                    .create()
-                    .show();
+                        .setTitle("Permission denied")
+                        .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
+                                "Please, launch this command using ADB:\n" +
+                                "adb shell pm grant com.termux.display android.permission.WRITE_SECURE_SETTINGS")
+                        .setNegativeButton("OK", null)
+                        .create()
+                        .show();
 
                 SharedPreferences.Editor edit = p.edit();
                 edit.putBoolean("enableAccessibilityServiceAutomatically", false);
@@ -641,7 +592,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             KeyInterceptor.shutdown();
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         if (getRequestedOrientation() != requestedOrientation) {
             setRequestedOrientation(requestedOrientation);
             if (null != termuxActivityListener) {
@@ -650,10 +601,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 getLorieView().regenerate();
             }
         }
-//        boolean switchSlideMenu = p.getBoolean("switchSlider", false);
-//        if (null != termuxActivityListener) {
-//            termuxActivityListener.onX11PreferenceSwitchChange(switchSlideMenu);
-//        }
 
         findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
         LinearLayout buttons = findViewById(R.id.mouse_helper_visibility);
@@ -676,17 +623,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     public void onResume() {
         super.onResume();
 
-//        mNotificationManager.notify(mNotificationId, mNotification);
-
         setTerminalToolbarView();
         getLorieView().requestFocus();
     }
 
     @Override
     public void onPause() {
-//        for (StatusBarNotification notification : mNotificationManager.getActiveNotifications())
-//            if (notification.getId() == mNotificationId)
-//                mNotificationManager.cancel(mNotificationId);
         super.onPause();
     }
 
@@ -715,7 +657,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             if (mExtraKeys != null) {
                 ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
                 layoutParams.height = Math.round(37.5f * getResources().getDisplayMetrics().density *
-                    (mExtraKeys.getExtraKeysInfo() == null ? 0 : mExtraKeys.getExtraKeysInfo().getMatrix().length));
+                        (mExtraKeys.getExtraKeysInfo() == null ? 0 : mExtraKeys.getExtraKeysInfo().getMatrix().length));
                 terminalToolbarViewPager.setLayoutParams(layoutParams);
             }
         }, 200);
@@ -788,14 +730,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         } else {
             if (null != termuxActivityListener) {
-//                SharedPreferences p = loriePreferenceFragment.getPreferenceManager().getSharedPreferences();
-//                boolean isOpend = p.getBoolean("switchSlider", true);
-//                SharedPreferences.Editor edit = p.edit();
-//                edit.putBoolean("switchSlider", false);
-//                edit.commit();
-//                if (isOpend) {
-//                    loriePreferenceFragment.findPreference("switchSlider").performClick();
-//                }
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -823,7 +757,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         fullscreen = fullscreen || (null != intent && intent.getBooleanExtra(REQUEST_LAUNCH_EXTERNAL_DISPLAY, false));
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+                ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         if (getRequestedOrientation() != requestedOrientation)
             setRequestedOrientation(requestedOrientation);
 
@@ -831,8 +765,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             if (SDK_INT >= VERSION_CODES.P) {
                 if (p.getBoolean("hideCutout", false))
                     getWindow().getAttributes().layoutInDisplayCutoutMode = (SDK_INT >= VERSION_CODES.R) ?
-                        LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS :
-                        LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                            LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS :
+                            LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
                 else
                     getWindow().getAttributes().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
             }
@@ -846,12 +780,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             if (fullscreen) {
                 window.addFlags(FLAG_FULLSCREEN);
                 decorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
             } else {
                 window.clearFlags(FLAG_FULLSCREEN);
                 decorView.setSystemUiVisibility(0);
@@ -941,13 +875,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
 
     private void checkXEvents() {
-//        Log.d("checkXEvents","try to read from server");
         if (!mClientConnected) {
             getLorieView().handleXEvents();
         }
-//        Log.d("checkXEvents","read from server finish");
         handler.postDelayed(this::checkXEvents, 100);
     }
+
     protected void showProgressManagerDialog() {
         (new TaskManagerDialog(this)).show();
     }
