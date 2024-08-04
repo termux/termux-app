@@ -568,7 +568,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         LorieView.setClipboardSyncEnabled(p.getBoolean("clipboardSync", false));
 
         lorieView.triggerCallback();
-
         filterOutWinKey = p.getBoolean("filterOutWinkey", false);
         if (p.getBoolean("enableAccessibilityServiceAutomatically", false)) {
             try {
@@ -763,12 +762,19 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         if (hasFocus) {
             if (SDK_INT >= VERSION_CODES.P) {
-                if (p.getBoolean("hideCutout", false))
+                if (p.getBoolean("hideCutout", false)) {
                     getWindow().getAttributes().layoutInDisplayCutoutMode = (SDK_INT >= VERSION_CODES.R) ?
                             LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS :
                             LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-                else
+                    if (termuxActivityListener!=null){
+                        termuxActivityListener.hideCutout(true);
+                    }
+                } else {
                     getWindow().getAttributes().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+                    if (termuxActivityListener!=null){
+                        termuxActivityListener.hideCutout(false);
+                    }
+                }
             }
 
             window.setStatusBarColor(Color.BLACK);
@@ -804,6 +810,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             getLorieView().regenerate();
 
         getLorieView().requestFocus();
+        getLorieView().requestLayout();
     }
 
     public static boolean hasPipPermission(@NonNull Context context) {

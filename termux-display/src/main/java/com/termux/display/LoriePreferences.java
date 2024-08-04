@@ -101,6 +101,7 @@ public class LoriePreferences extends AppCompatActivity {
         void openSoftwareKeyboard();
 
         void showProgressManager();
+        void hideCutout(boolean hide);
     }
 
     public TermuxActivityListener getTermuxActivityListener() {
@@ -420,7 +421,6 @@ public class LoriePreferences extends AppCompatActivity {
                     Toast.makeText(getActivity(), "This field accepts only numerics between 96 and 800", Toast.LENGTH_SHORT).show();
                     return false;
                 }
-
                 return (v > 96 && v < 800);
             }
 

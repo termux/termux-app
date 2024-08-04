@@ -49,7 +49,7 @@ public class ScreenUtils {
         DisplayMetrics outMetrics = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(outMetrics);
         int height = outMetrics.heightPixels;
-        return height+getNavigationBarHeight(context)+getStatusHeight(context);
+        return height+getNavigationBarHeight(context);
     }
 
     /**

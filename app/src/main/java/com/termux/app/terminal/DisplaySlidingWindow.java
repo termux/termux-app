@@ -3,17 +3,13 @@ package com.termux.app.terminal;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import com.nineoldandroids.view.ViewHelper;
-import com.termux.R;
 import com.termux.display.utils.ScreenUtils;
 
 public class DisplaySlidingWindow extends HorizontalScrollView {
@@ -74,7 +70,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean switchSlider;
     private float downX,downY;
     private boolean moving;
-    private int status_height;
+    private int statusHeight;
+    public boolean hideCuntout = false;
 
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -83,7 +80,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         switchSlider = true;
         mScreenWidth = ScreenUtils.getScreenWidth(context);
         mScreenHeight = ScreenUtils.getScreenHeight(context);
-        status_height=ScreenUtils.getStatusHeight(context);
+        statusHeight =ScreenUtils.getStatusHeight(context);
+
 
 //        TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
 //            R.styleable.BinarySlidingMenu, defStyle, 0);
@@ -139,6 +137,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (landscape) {
             mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
             mMenuRightPadding = mContentWidth * 3 / 5;
+            if(hideCuntout){
+                mContentWidth+= statusHeight;
+            }
         } else {
             mContentWidth = mScreenWidth < mScreenHeight ? mScreenWidth : mScreenHeight;
             mMenuRightPadding = verticalPadding;
@@ -214,8 +215,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 }
                 //operate right
                 if (isOperateRight) {
+                    int offset = hideCuntout ? statusHeight :0;
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth+status_height, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth+offset, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
@@ -281,5 +283,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public void releaseSlider(boolean open){
         this.switchSlider=open;
     }
-
+    public void setHideCuntout(boolean hide){
+        hideCuntout =hide;
+        requestLayout();
+        requestFocus();
+        smoothScrollTo(mMenuWidth, 0);
+    }
 }

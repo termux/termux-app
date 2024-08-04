@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -19,6 +20,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -394,6 +396,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             public void showProgressManager() {
                 showProgressManagerDialog();
             }
+
+            @Override
+            public void hideCutout(boolean hide) {
+                slideWindowLayout.setHideCuntout(hide);
+            }
         };
     }
 
@@ -417,6 +424,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             addTermuxActivityRootViewGlobalLayoutListener();
 
         registerTermuxActivityBroadcastReceiver();
+        setSlideWindowLayout();
     }
 
     @Override
@@ -626,7 +634,10 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             }
         });
     }
-
+    private void setSlideWindowLayout() {
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+        slideWindowLayout.setHideCuntout(p.getBoolean("hideCutout", false));
+    }
     private void closeTerminalSessionListView() {
         getDrawer().closeDrawers();
     }
