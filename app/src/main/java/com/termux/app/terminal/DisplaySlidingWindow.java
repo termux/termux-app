@@ -10,7 +10,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import com.nineoldandroids.view.ViewHelper;
-import com.termux.display.utils.ScreenUtils;
+import com.termux.app.terminal.utils.ScreenUtils;
 
 public class DisplaySlidingWindow extends HorizontalScrollView {
     private int mMenuWidth;

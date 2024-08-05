@@ -1,4 +1,4 @@
-package com.termux.display.utils;
+package com.termux.app.terminal.utils;
 
 import android.app.Activity;
 import android.content.Context;

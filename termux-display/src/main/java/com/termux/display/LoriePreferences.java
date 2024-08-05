@@ -55,7 +55,6 @@ import com.termux.display.controller.container.Container;
 import com.termux.display.controller.container.Shortcut;
 import com.termux.display.controller.contentdialog.ContentDialog;
 import com.termux.display.controller.core.Callback;
-import com.termux.display.controller.core.CursorLocker;
 import com.termux.display.controller.core.DownloadProgressDialog;
 import com.termux.display.controller.inputcontrols.ControlsProfile;
 import com.termux.display.controller.inputcontrols.InputControlsManager;
@@ -127,7 +126,6 @@ public class LoriePreferences extends AppCompatActivity {
     //input controller
     protected InputControlsManager inputControlsManager;
     protected InputControlsView inputControlsView;
-    //    protected TouchpadView touchpadView;
     protected Runnable editInputControlsCallback;
     protected Shortcut shortcut;
     protected DownloadProgressDialog preloaderDialog;
@@ -149,7 +147,7 @@ public class LoriePreferences extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setTitle("Preferences");
         }
-        loriePreferenceFragment.setActivity(this);
+        loriePreferenceFragment.setPreferenceActivity(this);
     }
 
     @SuppressLint("WrongConstant")
@@ -191,10 +189,10 @@ public class LoriePreferences extends AppCompatActivity {
     }
 
     public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
-        private LoriePreferences activity;
+        private LoriePreferences preferenceActivity;
 
-        public void setActivity(LoriePreferences activity) {
-            this.activity = activity;
+        public void setPreferenceActivity(LoriePreferences preferenceActivity) {
+            this.preferenceActivity = preferenceActivity;
         }
 
         @Override
@@ -333,8 +331,8 @@ public class LoriePreferences extends AppCompatActivity {
                     .setTitle("X11 server bridge installer")
                     .setPositiveButton("OK",
                         (dialog, whichButton) -> {
-                            if (activity != null) {
-                                activity.installX11ServerBridge();
+                            if (preferenceActivity != null) {
+                                preferenceActivity.installX11ServerBridge();
                             }
                         }
                     )
@@ -347,8 +345,8 @@ public class LoriePreferences extends AppCompatActivity {
                     .setTitle("Stop Desktop")
                     .setPositiveButton("OK",
                         (dialog, whichButton) -> {
-                            if (activity != null) {
-                                activity.stopDesktop();
+                            if (preferenceActivity != null) {
+                                preferenceActivity.stopDesktop();
                             }
                         }
                     )
@@ -357,19 +355,19 @@ public class LoriePreferences extends AppCompatActivity {
                     .show();
             }
             if ("open_keyboard".contentEquals(preference.getKey())) {
-                activity.openSoftKeyboar();
+                preferenceActivity.openSoftKeyboar();
             }
             if ("open_inputcontroller".contentEquals(preference.getKey())) {
-                if (!activity.touchShow) {
-                    activity.showInputControlsDialog();
-                    activity.touchShow = true;
+                if (!preferenceActivity.touchShow) {
+                    preferenceActivity.showInputControlsDialog();
+                    preferenceActivity.touchShow = true;
                 } else {
-                    activity.hideInputControls();
-                    activity.touchShow = false;
+                    preferenceActivity.hideInputControls();
+                    preferenceActivity.touchShow = false;
                 }
             }
             if("open_progress_manager".contentEquals(preference.getKey())){
-                activity.callProgressManager();
+                preferenceActivity.callProgressManager();
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(preference.getKey()))
                 ActivityCompat.requestPermissions(requireActivity(), new String[]{POST_NOTIFICATIONS}, 101);
