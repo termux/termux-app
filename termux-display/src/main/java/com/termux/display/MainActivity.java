@@ -547,7 +547,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     void onPreferencesChanged(String key) {
         if ("additionalKbdVisible".equals(key))
             return;
-
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         LorieView lorieView = getLorieView();
 
@@ -806,11 +805,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         ((FrameLayout) findViewById(R.id.id_display_window)).getChildAt(0).setFitsSystemWindows(!fullscreen);
         SamsungDexUtils.dexMetaKeyCapture(this, hasFocus && p.getBoolean("dexMetaKeyCapture", false));
 
-        if (hasFocus)
+        if (hasFocus){
             getLorieView().regenerate();
-
+            getLorieView().requestLayout();
+        }
         getLorieView().requestFocus();
-        getLorieView().requestLayout();
+
     }
 
     public static boolean hasPipPermission(@NonNull Context context) {
