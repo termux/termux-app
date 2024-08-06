@@ -1,8 +1,11 @@
 package com.termux.app.terminal;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+import static android.os.Build.VERSION.SDK_INT;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -68,10 +71,14 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     private boolean switchSlider;
-    private float downX,downY;
+    private float downX, downY;
     private boolean moving;
     private int statusHeight;
-    public boolean hideCuntout = false;
+    public boolean hideCutout = false;
+
+    public static void setLandscape(boolean isLandscape) {
+        DisplaySlidingWindow.landscape = isLandscape;
+    }
 
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -80,7 +87,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         switchSlider = true;
         mScreenWidth = ScreenUtils.getScreenWidth(context);
         mScreenHeight = ScreenUtils.getScreenHeight(context);
-        statusHeight =ScreenUtils.getStatusHeight(context);
+        statusHeight = ScreenUtils.getStatusHeight(context);
 
 
 //        TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
@@ -122,6 +129,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             mContent = (ViewGroup) mWrapper.getChildAt(1);
             mRightMenu = (ViewGroup) mWrapper.getChildAt(2);
 
+            if (SDK_INT == Build.VERSION_CODES.S && landscape && hideCutout) {
+//                ViewHelper.setTranslationX(mWrapper, -statusHeight);
+                mContentWidth -= statusHeight;
+            }
             mMenuWidth = mContentWidth - mMenuRightPadding;
             mHalfMenuWidth = mMenuWidth / 2;
             mLeftMenu.getLayoutParams().width = mMenuWidth;
@@ -137,8 +148,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (landscape) {
             mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
             mMenuRightPadding = mContentWidth * 3 / 5;
-            if(hideCuntout){
-                mContentWidth+= statusHeight;
+            if (hideCutout) {
+                mContentWidth += statusHeight;
             }
         } else {
             mContentWidth = mScreenWidth < mScreenHeight ? mScreenWidth : mScreenHeight;
@@ -159,9 +170,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 //        Log.d("onInterceptTouchEvent",String.valueOf(ev.getAction()));
-        if(!switchSlider){
-           mOnMenuChangeListener.sendTouchEvent(ev);
-           return false;
+        if (!switchSlider) {
+            mOnMenuChangeListener.sendTouchEvent(ev);
+            return false;
         }
         return super.onInterceptTouchEvent(ev);
     }
@@ -171,12 +182,12 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public boolean onTouchEvent(MotionEvent ev) {
 //        Log.d("onTouchEvent",String.valueOf(ev.getAction()));
         int action = ev.getAction();
-        switch(action){
-            case MotionEvent.ACTION_MOVE:{
-                if (!moving){
+        switch (action) {
+            case MotionEvent.ACTION_MOVE: {
+                if (!moving) {
                     downX = ev.getRawX();
                     downY = ev.getRawY();
-                    moving=true;
+                    moving = true;
                 }
                 break;
             }
@@ -185,11 +196,11 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             // open menu if scroll to distance that more than half menu width
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
-                moving=false;
-                float dx= ev.getRawX()-downX;
-                float dy = ev.getRawY()-downY;
+                moving = false;
+                float dx = ev.getRawX() - downX;
+                float dy = ev.getRawY() - downY;
                 if (scrollX <= 0) {
-                    if (dx>mMenuWidth*0.6&&Math.abs(dx)>Math.abs(dy)){
+                    if (dx > mMenuWidth * 0.6 && Math.abs(dx) > Math.abs(dy)) {
                         mOnMenuChangeListener.onEdgeReached();
                     }
                 }
@@ -215,9 +226,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 }
                 //operate right
                 if (isOperateRight) {
-                    int offset = hideCuntout ? statusHeight :0;
+                    int offset = hideCutout ? statusHeight : 0;
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth+offset, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth + offset, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
@@ -276,15 +287,19 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             this.smoothScrollTo(0, 0);
         }
     }
+
     public void changeLayoutOrientation(int landscapeOriention) {
         once = false;
         landscape = landscapeOriention == SCREEN_ORIENTATION_LANDSCAPE;
+        this.scrollTo(mMenuWidth, 0);
     }
-    public void releaseSlider(boolean open){
-        this.switchSlider=open;
+
+    public void releaseSlider(boolean open) {
+        this.switchSlider = open;
     }
-    public void setHideCuntout(boolean hide){
-        hideCuntout =hide;
+
+    public void setHideCutout(boolean hide) {
+        hideCutout = hide;
         requestLayout();
         requestFocus();
         smoothScrollTo(mMenuWidth, 0);

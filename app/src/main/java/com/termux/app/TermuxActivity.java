@@ -398,7 +398,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 
             @Override
             public void hideCutout(boolean hide) {
-                slideWindowLayout.setHideCuntout(hide);
+                slideWindowLayout.setHideCutout(hide);
             }
         };
     }
@@ -635,7 +635,8 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
     private void setSlideWindowLayout() {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        slideWindowLayout.setHideCuntout(p.getBoolean("hideCutout", false));
+        slideWindowLayout.setHideCutout(p.getBoolean("hideCutout", false));
+        DisplaySlidingWindow.setLandscape(p.getBoolean("forceLandscape",false));
     }
     private void closeTerminalSessionListView() {
         getDrawer().closeDrawers();

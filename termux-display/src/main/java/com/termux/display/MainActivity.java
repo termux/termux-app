@@ -591,7 +591,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        if (getRequestedOrientation() != requestedOrientation) {
+        if (/*getRequestedOrientation()*/getResources().getConfiguration().orientation != requestedOrientation) {
             setRequestedOrientation(requestedOrientation);
             if (null != termuxActivityListener) {
                 termuxActivityListener.onChangeOrientation(requestedOrientation);
