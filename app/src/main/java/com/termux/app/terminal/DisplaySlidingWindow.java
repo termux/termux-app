@@ -131,7 +131,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
             if (SDK_INT == Build.VERSION_CODES.S && landscape && hideCutout) {
 //                ViewHelper.setTranslationX(mWrapper, -statusHeight);
-                mContentWidth -= statusHeight;
+                mContentWidth -= statusHeight*2;
             }
             mMenuWidth = mContentWidth - mMenuRightPadding;
             mHalfMenuWidth = mMenuWidth / 2;
@@ -291,6 +291,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public void changeLayoutOrientation(int landscapeOriention) {
         once = false;
         landscape = landscapeOriention == SCREEN_ORIENTATION_LANDSCAPE;
+        requestLayout();
         this.scrollTo(mMenuWidth, 0);
     }
 
