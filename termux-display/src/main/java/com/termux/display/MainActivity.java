@@ -810,7 +810,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             getLorieView().requestLayout();
         }
         getLorieView().requestFocus();
-
     }
 
     public static boolean hasPipPermission(@NonNull Context context) {

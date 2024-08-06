@@ -399,6 +399,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             @Override
             public void hideCutout(boolean hide) {
                 slideWindowLayout.setHideCutout(hide);
+                handler.postDelayed(() -> slideWindowLayout.showContent(), 1500);
             }
         };
     }

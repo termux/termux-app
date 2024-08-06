@@ -292,7 +292,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         once = false;
         landscape = landscapeOriention == SCREEN_ORIENTATION_LANDSCAPE;
         requestLayout();
-        this.scrollTo(mMenuWidth, 0);
+        requestFocus();
+        showContent();
     }
 
     public void releaseSlider(boolean open) {
@@ -303,6 +304,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         hideCutout = hide;
         requestLayout();
         requestFocus();
-        smoothScrollTo(mMenuWidth, 0);
+    }
+    public void showContent(){
+        this.scrollTo(mMenuWidth, 0);
     }
 }
