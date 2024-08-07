@@ -129,9 +129,23 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             mContent = (ViewGroup) mWrapper.getChildAt(1);
             mRightMenu = (ViewGroup) mWrapper.getChildAt(2);
 
-            if (SDK_INT == Build.VERSION_CODES.S && landscape && hideCutout) {
-//                ViewHelper.setTranslationX(mWrapper, -statusHeight);
-                mContentWidth -= statusHeight*2;
+            if (SDK_INT == Build.VERSION_CODES.S && landscape) {
+                if(hideCutout){
+                    ViewHelper.setTranslationX(mWrapper, statusHeight);
+                    ViewHelper.setTranslationX(mLeftMenu, -statusHeight);
+                    ViewHelper.setTranslationX(mRightMenu, -statusHeight);
+                    mContentWidth -= statusHeight*2;
+                }else{
+                    if(mWrapper.getTranslationX()>0){
+                        ViewHelper.setTranslationX(mWrapper, 0);
+                    }
+                    if(mLeftMenu.getTranslationX()<0){
+                        ViewHelper.setTranslationX(mLeftMenu, 0);
+                    }
+                    if(mRightMenu.getTranslationX()<0){
+                        ViewHelper.setTranslationX(mRightMenu, 0);
+                    }
+                }
             }
             mMenuWidth = mContentWidth - mMenuRightPadding;
             mHalfMenuWidth = mMenuWidth / 2;
@@ -204,11 +218,15 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         mOnMenuChangeListener.onEdgeReached();
                     }
                 }
+                int offset = hideCutout ? statusHeight : 0;
                 //operate left
                 if (isOperateLeft) {
                     // area hidden more than half of menu width close it
                     if (scrollX > mHalfMenuWidth) {
                         this.smoothScrollTo(mMenuWidth, 0);
+                        if (SDK_INT == Build.VERSION_CODES.S && landscape && hideCutout){
+                            ViewHelper.setTranslationX(mLeftMenu,-offset);
+                        }
                         //notify listener that left meun opened
                         if (isLeftMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(false, 0);
@@ -218,6 +236,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                     } else//open left menu
                     {
                         this.smoothScrollTo(0, 0);
+                        if (SDK_INT == Build.VERSION_CODES.S && landscape && hideCutout){
+                            ViewHelper.setTranslationX(mLeftMenu,0);
+                        }
                         if (!isLeftMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 0);
                         }
@@ -226,9 +247,11 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 }
                 //operate right
                 if (isOperateRight) {
-                    int offset = hideCutout ? statusHeight : 0;
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
                         this.smoothScrollTo(mMenuWidth + mMenuWidth + offset, 0);
+                        if (SDK_INT == Build.VERSION_CODES.S && landscape && hideCutout){
+                            ViewHelper.setTranslationX(mRightMenu,-offset);
+                        }
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
@@ -237,6 +260,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                     } else//close right menu
                     {
                         this.smoothScrollTo(mMenuWidth, 0);
+                        if (SDK_INT == Build.VERSION_CODES.S && landscape && hideCutout){
+                            ViewHelper.setTranslationX(mRightMenu,0);
+                        }
                         if (isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(false, 1);
                         }
