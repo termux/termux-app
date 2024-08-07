@@ -110,6 +110,14 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE, value, false);
     }
 
+    public boolean isAdvancedMouse() {
+        return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_ADVANCED_MOUSE, TERMUX_APP.DEFAULT_VALUE_KEY_ADVANCED_MOUSE);
+    }
+
+    public void setAdvancedMouse(boolean value) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_ADVANCED_MOUSE, value, false);
+    }
+
 
 
     public boolean shouldKeepScreenOn() {
