@@ -19,18 +19,18 @@
 
 
     <!-- Termux运行命令权限 -->
-    <string name="permission_run_command_label">Run commands in &TERMUX_APP_NAME; environment</string>
-    <string name="permission_run_command_description">execute arbitrary commands within &TERMUX_APP_NAME;
-        environment and access files</string>
+    <string name="permission_run_command_label">运行命令在&TERMUX_APP_NAME;环境</string>
+    <string name="permission_run_command_description">执行任意的命令于&TERMUX_APP_NAME;
+        环境和访问文件</string>
 
 
 
     <!-- Termux引导程序包安装 -->
-    <string name="bootstrap_installer_body">Installing bootstrap packages…</string>
-    <string name="bootstrap_error_title">Unable to install bootstrap</string>
-    <string name="bootstrap_error_body">&TERMUX_APP_NAME; was unable to install the bootstrap packages.</string>
-    <string name="bootstrap_error_abort">Abort</string>
-    <string name="bootstrap_error_try_again">Try again</string>
+    <string name="bootstrap_installer_body">正在安装引导程序包…</string>
+    <string name="bootstrap_error_title">无法安装引导程序</string>
+    <string name="bootstrap_error_body">&TERMUX_APP_NAME; 无法安装引导程序包</string>
+    <string name="bootstrap_error_abort">中止</string>
+    <string name="bootstrap_error_try_again">请重试</string>
     <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; can only be run as the primary user.
         \nBootstrap binaries compiled for &TERMUX_APP_NAME; have hardcoded $PREFIX path and cannot be installed
         under any path other than:\n%1$s.</string>
