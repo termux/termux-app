@@ -178,6 +178,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             // hide menu at start up
             this.scrollTo(mMenuWidth, 0);
         }
+        if (SDK_INT == Build.VERSION_CODES.S && landscape && hideCutout){
+            ViewHelper.setTranslationX(mRightMenu,0);
+        }
         once = true;
     }
 
