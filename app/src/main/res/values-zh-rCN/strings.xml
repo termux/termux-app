@@ -32,10 +32,10 @@
     <string name="bootstrap_error_abort">中止</string>
     <string name="bootstrap_error_try_again">请重试</string>
     <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; 只能以主用户身份运行
-        \n为&TERMUXAPPNAME;编译的引导程序二进制文件具有硬编码的$PREFIX路径，无法安装
+        \n为&TERMUX_APP_NAME;编译的引导程序二进制文件具有硬编码的$PREFIX路径，无法安装
         在任何其他路径下都无法安装：\n%1$s</string>
-    <string name="bootstrap_error_installed_on_portable_sd">&TERMUXAPPNAME; 无法安装在您设备上的便携式/外部/可移动SD卡上
-        \n为&TERMUXAPPNAME;编译的引导程序二进制文件具有硬编码的$PREFIX路径，无法安装
+    <string name="bootstrap_error_installed_on_portable_sd">&TERMUX_APP_NAME; 无法安装在您设备上的便携式/外部/可移动SD卡上
+        \n为&TERMUX_APP_NAME;编译的引导程序二进制文件具有硬编码的$PREFIX路径，无法安装
         在任何其他路径下都无法安装：\n%1$s</string>
 
 
@@ -104,7 +104,7 @@
     <!-- Termux服务 -->
     <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">&TERMUX_APP_NAME;需要
         从后台启动终端会话需要“在其他应用上层显示”权限，适用于安卓10及以上版本
-        从“设置 -> 应用 -> &TERMUXAPPNAME; -> 高级”中授予权限</string>
+        从“设置 -> 应用 -> &TERMUX_APP_NAME; -> 高级”中授予权限</string>
     <string name="error_termux_service_invalid_execution_command_runner">TermuxService的命令运行程序无效：`%1$s`</string>
     <string name="error_termux_service_unsupported_execution_command_runner">TermuxService的命令运行程序不受支持：`%1$s`</string>
     <string name="error_termux_service_unsupported_execution_command_shell_create_mode">TermuxService的执行命令shell创建模式不受支持：`%1$s`</string>
@@ -138,7 +138,7 @@
 
     <!-- Termux应用偏好设置 -->
     <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
-    <string name="termux_preferences_summary">&TERMUXAPPNAME;应用偏好设置</string>
+    <string name="termux_preferences_summary">&TERMUX_APP_NAME;应用偏好设置</string>
 
         <!-- 调试偏好设置 -->
         <string name="termux_debugging_preferences_title">调试</string>
