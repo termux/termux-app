@@ -796,13 +796,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         }
 
         final boolean wakeLockHeld = mWakeLock != null;
-        if (wakeLockHeld) {
-            if (Locale.getDefault().getLanguage().equals("zh")) {
-                notificationText += "（保持唤醒）";
-            } else {
-                notificationText += " (wake lock held)";
-            }
-        }
+        if (wakeLockHeld) notificationText += " (wake lock held)";
 
 
         // Set notification priority

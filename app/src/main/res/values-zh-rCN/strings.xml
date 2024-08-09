@@ -86,7 +86,7 @@
     <string name="action_open_settings">设置</string>
 
     <string name="action_report_issue">报告问题</string>
-    <string name="msg_generating_report">生成报告t</string>
+    <string name="msg_generating_report">生成报告</string>
     <string name="msg_add_termux_debug_info">是否将termux调试信息添加到报告中？</string>
 
     <string name="error_styling_not_installed">&TERMUX_STYLING_APP_NAME;插件应用未安装</string>
