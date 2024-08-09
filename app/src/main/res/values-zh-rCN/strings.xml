@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
+    <!ENTITY TERMUX_APP_NAME "Termux">
+    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "Termux:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
+    ]>
+
+<resources>
+
+    <string name="application_name">&TERMUX_APP_NAME;</string>
+    <string name="shared_user_label">&TERMUX_APP_NAME; user</string>
+
+
+
+    <!-- Termux运行命令权限 -->
+    <string name="permission_run_command_label">运行命令在&TERMUX_APP_NAME;环境</string>
+    <string name="permission_run_command_description">执行任意的命令于&TERMUX_APP_NAME;
+        环境和访问文件</string>
+
+
+
+    <!-- Termux引导程序包安装 -->
+    <string name="bootstrap_installer_body">正在安装引导程序包…</string>
+    <string name="bootstrap_error_title">无法安装引导程序</string>
+    <string name="bootstrap_error_body">&TERMUX_APP_NAME; 无法安装引导程序包</string>
+    <string name="bootstrap_error_abort">中止</string>
+    <string name="bootstrap_error_try_again">请重试</string>
+    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; 只能以主用户身份运行
+        \n为&TERMUX_APP_NAME;编译的引导程序二进制文件具有硬编码的$PREFIX路径，无法安装
+        在任何其他路径下都无法安装：\n%1$s</string>
+    <string name="bootstrap_error_installed_on_portable_sd">&TERMUX_APP_NAME; 无法安装在您设备上的便携式/外部/可移动SD卡上
+        \n为&TERMUX_APP_NAME;编译的引导程序二进制文件具有硬编码的$PREFIX路径，无法安装
+        在任何其他路径下都无法安装：\n%1$s</string>
+
+
+
+    <!-- 终端侧边栏和快捷方式 -->
+    <string name="action_new_session">新会话</string>
+    <string name="action_new_session_failsafe">故障保护</string>
+    <string name="title_max_terminals_reached">已达到最大终端数</string>
+    <string name="msg_max_terminals_reached">在创建新的之前关闭现有的</string>
+
+    <string name="title_rename_session">设置会话名称</string>
+    <string name="action_rename_session_confirm">设置</string>
+    <string name="title_create_named_session">新建命名会话</string>
+    <string name="action_create_named_session_confirm">创建</string>
+
+    <string name="action_toggle_soft_keyboard">键盘</string>
+
+    <string name="msg_enabling_terminal_toolbar">启用终端工具栏</string>
+    <string name="msg_disabling_terminal_toolbar">禁用终端工具栏</string>
+
+
+
+    <!-- 终端弹出菜单 -->
+    <string name="action_select_url">选择URL</string>
+    <string name="title_select_url_dialog">点击URL以复制或长按以打开</string>
+    <string name="title_select_url_none_found">在终端中未找到URL</string>
+    <string name="msg_select_url_copied_to_clipboard">URL已复制到剪贴板</string>
+
+    <string name="action_share_transcript">分享记录</string>
+    <string name="title_share_transcript">终端记录</string>
+    <string name="title_share_transcript_with">将记录发送到：</string>
+
+    <string name="action_share_selected_text">分享所选文本</string>
+    <string name="title_share_selected_text">终端文本</string>
+    <string name="title_share_selected_text_with">将所选文本发送到：</string>
+
+    <string name="action_autofill_password">自动填充密码</string>
+
+    <string name="action_reset_terminal">重置</string>
+    <string name="msg_terminal_reset">终端重置</string>
+
+    <string name="action_kill_process">终止进程（%d）</string>
+    <string name="title_confirm_kill_process">确定要终止此会话吗？</string>
+
+    <string name="action_style_terminal">样式</string>
+    <string name="action_toggle_keep_screen_on">保持屏幕常亮</string>
+    <string name="action_open_help">帮助</string>
+    <string name="action_open_settings">设置</string>
+
+    <string name="action_report_issue">报告问题</string>
+    <string name="msg_generating_report">生成报告</string>
+    <string name="msg_add_termux_debug_info">是否将termux调试信息添加到报告中？</string>
+
+    <string name="error_styling_not_installed">&TERMUX_STYLING_APP_NAME;插件应用未安装</string>
+    <string name="action_styling_install">Install</string>
+
+
+
+    <!-- Termux通知 -->
+    <string name="notification_action_exit">退出</string>
+    <string name="notification_action_wake_lock">获取唤醒锁</string>
+    <string name="notification_action_wake_unlock">释放唤醒锁</string>
+
+
+
+    <!-- Termux服务 -->
+    <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">&TERMUX_APP_NAME;需要
+        从后台启动终端会话需要“在其他应用上层显示”权限，适用于安卓10及以上版本
+        从“设置 -> 应用 -> &TERMUX_APP_NAME; -> 高级”中授予权限</string>
+    <string name="error_termux_service_invalid_execution_command_runner">TermuxService的命令运行程序无效：`%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_runner">TermuxService的命令运行程序不受支持：`%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_shell_create_mode">TermuxService的执行命令shell创建模式不受支持：`%1$s`</string>
+    <string name="error_termux_service_execution_command_shell_name_unset">未设置Shell名称，但传递了`%1$s`shell创建模式</string>
+
+
+
+    <!-- Termux运行命令服务 -->
+    <string name="error_run_command_service_invalid_intent_action">对RunCommandService的意图操作无效：`%1$s`</string>
+    <string name="error_run_command_service_invalid_execution_command_runner">RunCommandService的命令运行程序无效：`%1$s`</string>
+    <string name="error_run_command_service_mandatory_extra_missing">RunCommandService缺少必需的额外参数： \"%1$s\"</string>
+    <string name="error_run_command_service_api_help">访问%1$s了解有关RUNCOMMAND意图使用的更多信息</string>
+
+
+
+    <!-- Termux文件接收器 -->
+    <string name="title_file_received">将文件保存在 ~/downloads/</string>
+    <string name="action_file_received_edit">编辑</string>
+    <string name="action_file_received_open_directory">打开目录</string>
+
+
+
+    <!-- 其他 -->
+    <string name="error_termux_service_start_failed_general">无法启动TermuxService，请查看logcat以获取异常消息</string>
+    <string name="error_termux_service_start_failed_bg">由于安卓后台限制，应用在后台时无法启动TermuxService</string>
+
+
+
+    <!-- Termux设置 -->
+    <string name="title_activity_termux_settings">&TERMUX_APP_NAME;设置</string>
+
+    <!-- Termux应用偏好设置 -->
+    <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
+    <string name="termux_preferences_summary">&TERMUX_APP_NAME;应用偏好设置</string>
+
+        <!-- 调试偏好设置 -->
+        <string name="termux_debugging_preferences_title">调试</string>
+        <string name="termux_debugging_preferences_summary">调试偏好设置</string>
+
+            <!-- 日志类别 -->
+            <string name="termux_logging_header">日志</string>
+
+                <!-- 日志级别 -->
+                <string name="termux_log_level_title">日志级别</string>
+
+                <!-- 终端视图按键记录 -->
+                <string name="termux_terminal_view_key_logging_enabled_title">终端视图按键记录</string>
+                <string name="termux_terminal_view_key_logging_enabled_off">日志中将不包含终端视图按键的条目（默认）</string>
+                <string name="termux_terminal_view_key_logging_enabled_on">logcat日志将包含终端视图按键的条目
+                    这些非常详细，在正常情况下应该禁用，否则会导致性能问题</string>
+
+                <!-- 插件错误通知 -->
+                <string name="termux_plugin_error_notifications_enabled_title">插件错误通知</string>
+                <string name="termux_plugin_error_notifications_enabled_off">禁用插件错误的闪烁和通知</string>
+                <string name="termux_plugin_error_notifications_enabled_on">显示插件错误的闪烁和通知（默认）</string>
+
+                <!-- 崩溃报告通知 -->
+                <string name="termux_crash_report_notifications_enabled_title">崩溃报告通知</string>
+                <string name="termux_crash_report_notifications_enabled_off">禁用崩溃报告的通知</string>
+                <string name="termux_crash_report_notifications_enabled_on">显示崩溃报告的通知（默认）</string>
+
+
+        <!-- 终端IO偏好设置 -->
+        <string name="termux_terminal_io_preferences_title">终端I/O</string>
+        <string name="termux_terminal_io_preferences_summary">终端I/O偏好设置</string>
+
+            <!-- 键盘类别 -->
+            <string name="termux_keyboard_header">键盘</string>
+
+                <!-- 软键盘 -->
+                <string name="termux_soft_keyboard_enabled_title">启用软键盘</string>
+                <string name="termux_soft_keyboard_enabled_off">软键盘将被禁用</string>
+                <string name="termux_soft_keyboard_enabled_on">软键盘将被启用（默认）</string>
+
+                <!-- 仅在无硬件时启用软键盘 -->
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">仅在无硬件时启用软键盘</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">即使连接了硬件键盘，软键盘也将被启用（默认）</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">只有在未连接硬件键盘时，软键盘才会被启用</string>
+
+
+        <!-- 终端视图偏好设置 -->
+        <string name="termux_terminal_view_preferences_title">终端视图</string>
+        <string name="termux_terminal_view_preferences_summary">终端视图偏好设置</string>
+
+            <!-- 视图类别 -->
+            <string name="termux_terminal_view_view_header">视图</string>
+
+                <!-- 终端视图边距调整 -->
+                <string name="termux_terminal_view_terminal_margin_adjustment_title">终端边距调整</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_off">终端边距调整将被禁用</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_on">终端边距调整将被启用，应该启用它以尝试解决软键盘覆盖部分额外按键/终端视图的问题
+，如果它导致您的设备屏幕闪烁，那么请禁用它（默认）</string>
+
+
+
+    <!-- Termux:API应用偏好设置 -->
+    <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;</string>
+    <string name="termux_api_preferences_summary">&TERMUX_API_APP_NAME;应用偏好设置</string>
+
+
+
+    <!-- Termux:Float应用偏好设置 -->
+    <string name="termux_float_preferences_title">&TERMUX_FLOAT_APP_NAME;</string>
+    <string name="termux_float_preferences_summary">&TERMUX_FLOAT_APP_NAME;应用偏好设置</string>
+
+
+
+    <!-- Termux:Tasker应用偏好设置 -->
+    <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;</string>
+    <string name="termux_tasker_preferences_summary">&TERMUX_TASKER_APP_NAME; 应用偏好设置</string>
+
+
+
+    <!-- Termux:Widget应用偏好设置 -->
+    <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;</string>
+    <string name="termux_widget_preferences_summary">&TERMUX_WIDGET_APP_NAME;应用偏好设置</string>
+
+
+
+    <!-- 关于偏好设置 -->
+    <string name="about_preference_title">关于</string>
+
+    <!-- 捐赠偏好设置 -->
+    <string name="donate_preference_title">捐赠</string>
+
+</resources>
