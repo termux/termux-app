@@ -38,7 +38,7 @@
     <string name="msg_requires_dump_and_package_usage_stats_permissions">需要`DUMP`和`PACKAGE_USAGE_STATS`权限</string>
     <string name="error_display_over_other_apps_permission_not_granted">%1$s需要
         从后台启动活动和服务需要“在其他应用上层显示”权限，适用于安卓10及以上版本
-        从“设置 -> 应用 -> &TERMUXAPPNAME; -> 高级”中授予权限
+        从“设置 -> 应用 -> %1$s -> 高级”中授予权限
         权限名称在不同的设备上可能不同，例如在小米上，它被称为
         “在后台运行时显示弹出窗口”，请检查 https://dontkillmyapp.com
         针对特定设备的问题</string>
@@ -88,11 +88,11 @@
         \n\n我们不提供对任何与黑客相关的工具/脚本的支持。
         通过电子邮件、GitHub 或其他官方 Termux 社区论坛提出的任何关于它们的问题 可能会自动关闭/删除，甚至可能导致临时或永久禁用。请检查%1$s/wiki/Hacking了解详情</string>
 
-    <string name="msg_termux_app_required_by_app">%1$s应用需要&TERMUXAPPNAME;来运行termux命令</string>
-    <string name="error_termux_app_package_context_not_accessible">无法访问&TERMUXAPPNAME;应用（包上下文）</string>
-    <string name="error_termux_prefix_dir_path_not_accessible">%1$s应用无法访问&TERMUXAPPNAME;应用的 $PREFIX目录。
-        这可能是因为您没有安装或设置 &TERMUXAPPNAME; 应用，或者 &TERMUXAPPNAME; 应用和 %1$s 应用都有不同的 APK 签名，因为您设法从不同来源安装了两个应用。
-        这可能是因为您没有安装或设置 &TERMUXAPPNAME;应用，或者 &TERMUXAPPNAME;应用和%1$s应用都有不同的 APK 签名，因为您设法从不同来源安装了两个应用</string>
+    <string name="msg_termux_app_required_by_app">%1$s应用需要&TERMUX_APP_NAME;来运行termux命令</string>
+    <string name="error_termux_app_package_context_not_accessible">无法访问&TERMUX_APP_NAME;应用（包上下文）</string>
+    <string name="error_termux_prefix_dir_path_not_accessible">%1$s应用无法访问&TERMUX_APP_NAME;应用的 $PREFIX目录。
+        这可能是因为您没有安装或设置 &TERMUX_APP_NAME; 应用，或者 &TERMUX_APP_NAME; 应用和 %1$s 应用都有不同的 APK 签名，因为您设法从不同来源安装了两个应用。
+        这可能是因为您没有安装或设置 &TERMUX_APP_NAME;应用，或者 &TERMUX_APP_NAME;应用和%1$s应用都有不同的 APK 签名，因为您设法从不同来源安装了两个应用</string>
 
 
 
