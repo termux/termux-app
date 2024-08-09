@@ -195,9 +195,8 @@
                 <!-- 终端视图边距调整 -->
                 <string name="termux_terminal_view_terminal_margin_adjustment_title">终端边距调整</string>
                 <string name="termux_terminal_view_terminal_margin_adjustment_off">终端边距调整将被禁用</string>
-                <string name="termux_terminal_view_terminal_margin_adjustment_on">终端边距调整将被启用
-                    应该启用它以尝试解决软键盘覆盖部分额外按键/终端视图的问题
-                    如果它导致您的设备屏幕闪烁，那么请禁用它（默认）</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_on">终端边距调整将被启用，应该启用它以尝试解决软键盘覆盖部分额外按键/终端视图的问题
+，如果它导致您的设备屏幕闪烁，那么请禁用它（默认）</string>
 
 
 
