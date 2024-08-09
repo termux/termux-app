@@ -203,25 +203,25 @@
 
     <!-- Termux:API应用偏好设置 -->
     <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;</string>
-    <string name="termux_api_preferences_summary">&TERMUXAPIAPPNAME;应用偏好设置</string>
+    <string name="termux_api_preferences_summary">&TERMUX_API_APP_NAME;应用偏好设置</string>
 
 
 
     <!-- Termux:Float应用偏好设置 -->
     <string name="termux_float_preferences_title">&TERMUX_FLOAT_APP_NAME;</string>
-    <string name="termux_float_preferences_summary">&TERMUXFLOATAPPNAME;应用偏好设置</string>
+    <string name="termux_float_preferences_summary">&TERMUX_FLOAT_APP_NAME;应用偏好设置</string>
 
 
 
     <!-- Termux:Tasker应用偏好设置 -->
     <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;</string>
-    <string name="termux_tasker_preferences_summary">&TERMUXTASKERAPPNAME; 应用偏好设置</string>
+    <string name="termux_tasker_preferences_summary">&TERMUX_TASKER_APP_NAME; 应用偏好设置</string>
 
 
 
     <!-- Termux:Widget应用偏好设置 -->
     <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;</string>
-    <string name="termux_widget_preferences_summary">&TERMUXWIDGETAPPNAME;应用偏好设置</string>
+    <string name="termux_widget_preferences_summary">&TERMUX_WIDGET_APP_NAME;应用偏好设置</string>
 
 
 
