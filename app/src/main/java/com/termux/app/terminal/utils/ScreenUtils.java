@@ -1,8 +1,12 @@
 package com.termux.app.terminal.utils;
 
+import static android.content.Context.WINDOW_SERVICE;
+import static android.provider.Settings.System.getConfiguration;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -11,6 +15,7 @@ import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -31,7 +36,7 @@ public class ScreenUtils {
      */
     public static int getScreenWidth(Context context) {
         WindowManager wm = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
+                .getSystemService(WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(outMetrics);
         return outMetrics.widthPixels;
@@ -45,7 +50,7 @@ public class ScreenUtils {
      */
     public static int getScreenHeight(Context context) {
         WindowManager wm = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
+                .getSystemService(WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(outMetrics);
         int height = outMetrics.heightPixels;
@@ -80,7 +85,7 @@ public class ScreenUtils {
         if (Build.VERSION.SDK_INT < 21) {
             return false;
         } else {
-            WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            WindowManager windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
             Display display;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 display = context.getDisplay();
@@ -170,5 +175,37 @@ public class ScreenUtils {
         return bp;
 
     }
+    public static boolean isLandScape(Activity activity) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){
+            WindowManager windowManager = (WindowManager) activity.getApplication().getSystemService(WINDOW_SERVICE);
+            int rotation = windowManager.getDefaultDisplay().getRotation();
+//            int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
+            boolean isLandscape;
+
+            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+                if (rotation == Surface.ROTATION_0) {
+//                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    isLandscape = false;
+                } else {
+//                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    isLandscape = true;
+                }
+            } else {
+                if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+//                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    isLandscape = true;
+                } else {
+//                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    isLandscape = false;
+                }
+            }
+            return isLandscape;
+        }else{
+            return activity.getResources().getConfiguration().orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        }
+
+    }
+
 
 }

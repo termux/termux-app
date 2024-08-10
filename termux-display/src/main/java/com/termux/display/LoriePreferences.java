@@ -102,6 +102,8 @@ public class LoriePreferences extends AppCompatActivity {
         void showProgressManager();
 
         void hideCutout(boolean hide);
+
+        void changePreference(String key);
     }
 
     public TermuxActivityListener getTermuxActivityListener() {
@@ -381,8 +383,6 @@ public class LoriePreferences extends AppCompatActivity {
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             String key = preference.getKey();
-//            Log.d("Preferences", "changed preference: " + key+":"+newValue);
-            handler.postDelayed(this::updatePreferencesLayout, 100);
 
             if ("showIMEWhileExternalConnected".contentEquals(key)) {
                 boolean enabled = newValue.toString().contentEquals("true");
@@ -469,12 +469,20 @@ public class LoriePreferences extends AppCompatActivity {
                 }
             }
 
-            Intent intent = new Intent(ACTION_PREFERENCES_CHANGED);
-            intent.putExtra("key", key);
-            intent.setPackage("com.termux");
-            requireContext().sendBroadcast(intent);
-
-            handler.postAtTime(this::updatePreferencesLayout, 100);
+//            Intent intent = new Intent(ACTION_PREFERENCES_CHANGED);
+//            intent.putExtra("key", key);
+//            intent.setPackage("com.termux");
+//            requireContext().sendBroadcast(intent);
+            handler.postAtTime(new Runnable() {
+                @Override
+                public void run() {
+                    if (preferenceActivity.termuxActivityListener != null) {
+                        updatePreferencesLayout();
+                        preferenceActivity.termuxActivityListener.changePreference(key);
+                    }
+                }
+            }, 1000);
+//            handler.postAtTime(this::updatePreferencesLayout, 100);
             return true;
         }
     }

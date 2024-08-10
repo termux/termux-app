@@ -26,7 +26,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private ViewGroup mWrapper;
     private boolean isLeftMenuOpen;
     private boolean isRightMenuOpen;
-    private int mRemeasureContentWidthOffset;
+    private int mReMeasureContentWidthOffset;
+    private int mRightMenuOpenOffset;
 
     /**
      * listener for menu changed
@@ -76,61 +77,48 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private int statusHeight;
     public boolean hideCutout = false;
     private static boolean isAndroid12 =
-        SDK_INT == Build.VERSION_CODES.S  || SDK_INT == Build.VERSION_CODES.S_V2|| SDK_INT== Build.VERSION_CODES.TIRAMISU;
+            SDK_INT == Build.VERSION_CODES.S || SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU;
 
     public static void setLandscape(boolean isLandscape) {
         DisplaySlidingWindow.landscape = isLandscape;
     }
-    private void init(){
-        switch (SDK_INT){
+
+    private void init() {
+        switchSlider = true;
+        switch (SDK_INT) {
             case Build.VERSION_CODES.P:
             case Build.VERSION_CODES.Q:
-            case Build.VERSION_CODES.R:
-            {
-                mRemeasureContentWidthOffset =statusHeight;
+            case Build.VERSION_CODES.R: {
+                mReMeasureContentWidthOffset = statusHeight;
                 break;
             }
             case Build.VERSION_CODES.S:
             case Build.VERSION_CODES.S_V2:
-            case Build.VERSION_CODES.TIRAMISU:{
-                mRemeasureContentWidthOffset =0;
+            case Build.VERSION_CODES.TIRAMISU: {
+                mReMeasureContentWidthOffset = 0;
                 break;
             }
             default:
-                mRemeasureContentWidthOffset =statusHeight;
+                mReMeasureContentWidthOffset = statusHeight;
+        }
+        mRightMenuOpenOffset = (hideCutout && landscape) ? statusHeight : 0;
+        if (SDK_INT <= Build.VERSION_CODES.R ||
+                SDK_INT == Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+                SDK_INT == 35) {
+            mRightMenuOpenOffset = 0;
         }
     }
+
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
         setClickable(true);
-        switchSlider = true;
+
         mScreenWidth = ScreenUtils.getScreenWidth(context);
         mScreenHeight = ScreenUtils.getScreenHeight(context);
         statusHeight = ScreenUtils.getStatusHeight(context);
         init();
-
-//        TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
-//            R.styleable.BinarySlidingMenu, defStyle, 0);
-//        int n = a.getIndexCount();
-//        for (int i = 0; i < n; i++) {
-//            int attr = a.getIndex(i);
-//            if (attr == R.styleable.BinarySlidingMenu_rightPadding) {
-//                mMenuRightPadding = a.getDimensionPixelSize(attr,
-//                    (int) TypedValue.applyDimension(
-//                        TypedValue.COMPLEX_UNIT_DIP, 50f,
-//                        getResources().getDisplayMetrics()));// 默认为10DP
-//                break;
-//            }
-//        }
-//        a.recycle();
-        if (landscape) {
-            mContentWidth = mScreenHeight;
-            mMenuRightPadding = mContentWidth * 3 / 5;
-        } else {
-            verticalPadding = mMenuRightPadding;
-            mContentWidth = mScreenWidth;
-        }
+        remeasure();
     }
 
     public DisplaySlidingWindow(Context context) {
@@ -144,10 +132,14 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
          */
         if (!refreshEnd) {
             remeasure();
-            mWrapper = (LinearLayout) getChildAt(0);
-            mLeftMenu = (ViewGroup) mWrapper.getChildAt(0);
-            mContent = (ViewGroup) mWrapper.getChildAt(1);
-            mRightMenu = (ViewGroup) mWrapper.getChildAt(2);
+            if (mWrapper == null)
+                mWrapper = (LinearLayout) getChildAt(0);
+            if (mLeftMenu == null)
+                mLeftMenu = (ViewGroup) mWrapper.getChildAt(0);
+            if (mContent == null)
+                mContent = (ViewGroup) mWrapper.getChildAt(1);
+            if (mRightMenu == null)
+                mRightMenu = (ViewGroup) mWrapper.getChildAt(2);
 
             if (DisplaySlidingWindow.isAndroid12 && landscape) {
                 if (hideCutout) {
@@ -172,7 +164,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             mLeftMenu.getLayoutParams().width = mMenuWidth;
             mContent.getLayoutParams().width = mContentWidth;
             mRightMenu.getLayoutParams().width = mMenuWidth;
-            mLeftMenu.requestLayout();
 //            Log.d("changeLayoutOrientation", "landscape:" + String.valueOf(landscape) + ", mContentWidth" + ":" + String.valueOf(mContentWidth) + ",mScreenHeight:" + String.valueOf(mScreenHeight) + ",mScreenWidth:" + String.valueOf(mScreenWidth));
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -182,8 +173,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (landscape) {
             mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
             mMenuRightPadding = mContentWidth * 3 / 5;
-            if (hideCutout&&landscape) {
-                mContentWidth += mRemeasureContentWidthOffset;
+            if (hideCutout) {
+                mContentWidth += mReMeasureContentWidthOffset;
             }
         } else {
             mContentWidth = mScreenWidth < mScreenHeight ? mScreenWidth : mScreenHeight;
@@ -200,9 +191,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         }
 
         if (landscape && hideCutout) {
-            if(SDK_INT==Build.VERSION_CODES.S||
-                SDK_INT==Build.VERSION_CODES.S_V2||
-                SDK_INT==Build.VERSION_CODES.TIRAMISU){
+            if (SDK_INT == Build.VERSION_CODES.S ||
+                    SDK_INT == Build.VERSION_CODES.S_V2 ||
+                    SDK_INT == Build.VERSION_CODES.TIRAMISU) {
                 ViewHelper.setTranslationX(mRightMenu, 0);
             }
         }
@@ -246,10 +237,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         mOnMenuChangeListener.onEdgeReached();
                     }
                 }
-                int offset = (hideCutout&&landscape) ? statusHeight : 0;
-                if(SDK_INT==Build.VERSION_CODES.UPSIDE_DOWN_CAKE||SDK_INT==35){
-                    offset=0;
-                }
                 //operate left
                 if (isOperateLeft) {
                     // area hidden more than half of menu width close it
@@ -260,14 +247,13 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                             mOnMenuChangeListener.onMenuOpen(false, 0);
                         }
                         if (DisplaySlidingWindow.isAndroid12 && landscape && hideCutout) {
-                            ViewHelper.setTranslationX(mLeftMenu, -offset);
+                            ViewHelper.setTranslationX(mLeftMenu, -mRightMenuOpenOffset);
                         }
                         isLeftMenuOpen = false;
                         switchSlider = false;
                     } else//open left menu
                     {
                         this.smoothScrollTo(0, 0);
-
                         if (!isLeftMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 0);
                         }
@@ -280,14 +266,14 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 //operate right
                 if (isOperateRight) {
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth - offset, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth - mRightMenuOpenOffset, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
                         if (landscape && hideCutout) {
-                            if (SDK_INT==Build.VERSION_CODES.S){
-                                ViewHelper.setTranslationX(mRightMenu, -offset);
-                            }else if(SDK_INT==Build.VERSION_CODES.S_V2||SDK_INT==Build.VERSION_CODES.TIRAMISU){
+                            if (SDK_INT == Build.VERSION_CODES.S) {
+                                ViewHelper.setTranslationX(mRightMenu, -mRightMenuOpenOffset);
+                            } else if (SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU) {
                                 ViewHelper.setTranslationX(mWrapper, 0);
                             }
 
@@ -301,10 +287,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                             mOnMenuChangeListener.onMenuOpen(false, 1);
                         }
                         if (landscape && hideCutout) {
-                            if(SDK_INT==Build.VERSION_CODES.S){
+                            if (SDK_INT == Build.VERSION_CODES.S) {
                                 ViewHelper.setTranslationX(mRightMenu, 0);
-                            }else if(SDK_INT==Build.VERSION_CODES.S_V2||SDK_INT==Build.VERSION_CODES.TIRAMISU){
-                                ViewHelper.setTranslationX(mWrapper, offset);
+                            } else if (SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU) {
+                                ViewHelper.setTranslationX(mWrapper, mRightMenuOpenOffset);
                             }
 
                         }

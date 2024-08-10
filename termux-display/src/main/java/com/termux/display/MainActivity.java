@@ -51,11 +51,13 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -130,12 +132,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             } else if (ACTION_STOP.equals(intent.getAction())) {
                 finishAffinity();
             } else if (ACTION_PREFERENCES_CHANGED.equals(intent.getAction())) {
-                Log.d("MainActivity", "preference: " + intent.getStringExtra("key"));
-                if (!"showAdditionalKbd".equals(intent.getStringExtra("key"))) {
-                    onPreferencesChanged("");
-                } else {
-                    toggleExtraKeys(true, false);
-                }
+//                Log.d("MainActivity", "preference: " + intent.getStringExtra("key"));
+//                if (!"showAdditionalKbd".equals(intent.getStringExtra("key"))) {
+//                    onPreferencesChanged("");
+//                } else {
+//                    toggleExtraKeys(true, false);
+//                }
             }
         }
     };
@@ -165,7 +167,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             e.apply();
         }
 
-        preferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> onPreferencesChanged(key));
+//        preferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> onPreferencesChanged(key));
         setContentView(R.layout.main_activity);
         lorieContentView = findViewById(R.id.id_display_window);
 
@@ -544,9 +546,20 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         edit.commit();
     }
 
-    void onPreferencesChanged(String key) {
-        if ("additionalKbdVisible".equals(key))
-            return;
+    protected void onPreferencesChanged(String key) {
+        boolean startFresh = false;
+        if ("additionalKbdVisible".equals(key) ||
+                "showAdditionalKbd".contentEquals(key)) {
+            toggleExtraKeys(true, false);
+        }
+        if ("showMouseHelper".contentEquals(key)||
+        "showMouseHelper".contentEquals(key)||
+        "forceLandscape".contentEquals(key)||
+        "fullscreen".contentEquals(key)||
+        "hideCutout".contentEquals(key)) {
+            startFresh = true;
+        }
+
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         LorieView lorieView = getLorieView();
 
@@ -563,7 +576,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         SamsungDexUtils.dexMetaKeyCapture(this, p.getBoolean("dexMetaKeyCapture", false));
 
         setTerminalToolbarView();
-        onWindowFocusChanged(true);
+        if(startFresh){
+            onWindowFocusChanged(true);
+        }
         LorieView.setClipboardSyncEnabled(p.getBoolean("clipboardSync", false));
 
         lorieView.triggerCallback();
@@ -591,8 +606,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        //getResources().getConfiguration().orientation != requestedOrientation
-        if (getRequestedOrientation()!= requestedOrientation) {
+
+        if (getRequestedOrientation() != requestedOrientation) {
             setRequestedOrientation(requestedOrientation);
             if (null != termuxActivityListener) {
                 termuxActivityListener.onChangeOrientation(requestedOrientation);
@@ -766,12 +781,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                     getWindow().getAttributes().layoutInDisplayCutoutMode = (SDK_INT >= VERSION_CODES.R) ?
                             LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS :
                             LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-                    if (termuxActivityListener!=null){
+                    if (termuxActivityListener != null) {
                         termuxActivityListener.hideCutout(true);
                     }
                 } else {
                     getWindow().getAttributes().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-                    if (termuxActivityListener!=null){
+                    if (termuxActivityListener != null) {
                         termuxActivityListener.hideCutout(false);
                     }
                 }
@@ -806,7 +821,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         ((FrameLayout) findViewById(R.id.id_display_window)).getChildAt(0).setFitsSystemWindows(!fullscreen);
         SamsungDexUtils.dexMetaKeyCapture(this, hasFocus && p.getBoolean("dexMetaKeyCapture", false));
 
-        if (hasFocus){
+        if (hasFocus) {
             getLorieView().regenerate();
             getLorieView().requestLayout();
         }

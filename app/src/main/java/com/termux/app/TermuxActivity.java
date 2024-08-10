@@ -292,7 +292,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
         mTermuxActivityRootView.setOnApplyWindowInsetsListener(new TermuxActivityRootView.WindowInsetsListener());
         Bitmap bitmap = null;
         int width = ScreenUtils.getScreenWidth(this);
-        int height = ScreenUtils.getStatusHeight(this);
+        int height = ScreenUtils.getScreenHeight(this);
         bitmap = Bitmap.createBitmap(width, height,
             Bitmap.Config.ARGB_8888);
         bitmap.eraseColor(Color.parseColor("#CC000000"));
@@ -400,6 +400,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             public void hideCutout(boolean hide) {
                 slideWindowLayout.setHideCutout(hide);
                 handler.postDelayed(() -> slideWindowLayout.showContent(), 500);
+            }
+
+            @Override
+            public void changePreference(String key) {
+                onPreferencesChanged(key);
             }
         };
     }
