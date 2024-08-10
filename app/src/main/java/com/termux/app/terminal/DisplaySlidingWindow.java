@@ -6,6 +6,7 @@ import static android.os.Build.VERSION.SDK_INT;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
@@ -28,6 +29,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean isRightMenuOpen;
     private int mReMeasureContentWidthOffset;
     private int mRightMenuOpenOffset;
+    private Context ctx;
 
     /**
      * listener for menu changed
@@ -77,14 +79,13 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private int statusHeight;
     public boolean hideCutout = false;
     private static boolean isAndroid12 =
-            SDK_INT == Build.VERSION_CODES.S || SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU;
+        SDK_INT == Build.VERSION_CODES.S || SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU;
 
     public static void setLandscape(boolean isLandscape) {
         DisplaySlidingWindow.landscape = isLandscape;
     }
 
-    private void init() {
-        switchSlider = true;
+    private void reInit() {
         switch (SDK_INT) {
             case Build.VERSION_CODES.P:
             case Build.VERSION_CODES.Q:
@@ -103,8 +104,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         }
         mRightMenuOpenOffset = (hideCutout && landscape) ? statusHeight : 0;
         if (SDK_INT <= Build.VERSION_CODES.R ||
-                SDK_INT == Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
-                SDK_INT == 35) {
+            SDK_INT == Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+            SDK_INT == 35) {
             mRightMenuOpenOffset = 0;
         }
     }
@@ -113,11 +114,12 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         super(context, attrs, defStyle);
 
         setClickable(true);
-
-        mScreenWidth = ScreenUtils.getScreenWidth(context);
-        mScreenHeight = ScreenUtils.getScreenHeight(context);
-        statusHeight = ScreenUtils.getStatusHeight(context);
-        init();
+        this.ctx = context;
+        switchSlider = true;
+        mScreenWidth = ScreenUtils.getScreenWidth(ctx);
+        mScreenHeight = ScreenUtils.getScreenHeight(ctx);
+        statusHeight = ScreenUtils.getStatusHeight(ctx);
+        reInit();
         remeasure();
     }
 
@@ -170,6 +172,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     private void remeasure() {
+        reInit();
         if (landscape) {
             mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
             mMenuRightPadding = mContentWidth * 3 / 5;
@@ -187,13 +190,13 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         super.onLayout(changed, l, t, r, b);
         if (changed) {
             // hide menu at start up
-            this.scrollTo(mMenuWidth, 0);
+            showContent();
         }
 
         if (landscape && hideCutout) {
             if (SDK_INT == Build.VERSION_CODES.S ||
-                    SDK_INT == Build.VERSION_CODES.S_V2 ||
-                    SDK_INT == Build.VERSION_CODES.TIRAMISU) {
+                SDK_INT == Build.VERSION_CODES.S_V2 ||
+                SDK_INT == Build.VERSION_CODES.TIRAMISU) {
                 ViewHelper.setTranslationX(mRightMenu, 0);
             }
         }
@@ -266,7 +269,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 //operate right
                 if (isOperateRight) {
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth - mRightMenuOpenOffset, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth -mRightMenuOpenOffset, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }

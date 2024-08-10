@@ -547,13 +547,15 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
 
     protected void onPreferencesChanged(String key) {
+        if("X11Focused".contentEquals(key)){
+            return;
+        }
         boolean startFresh = false;
         if ("additionalKbdVisible".equals(key) ||
                 "showAdditionalKbd".contentEquals(key)) {
             toggleExtraKeys(true, false);
         }
         if ("showMouseHelper".contentEquals(key)||
-        "showMouseHelper".contentEquals(key)||
         "forceLandscape".contentEquals(key)||
         "fullscreen".contentEquals(key)||
         "hideCutout".contentEquals(key)) {
