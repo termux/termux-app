@@ -127,4 +127,31 @@ public class ScrollRegionTest extends TerminalTestCase {
 				"   xxx"
 			);
 	}
+
+	/**
+	 * See <a href="https://github.com/termux/termux-packages/issues/12556">reported issue</a>.
+	 */
+	public void testClearingWhenScrollingWithMargins() {
+		int newForeground = 2;
+		int newBackground = 3;
+		int size = 3;
+		TerminalTestCase terminal = withTerminalSized(size, size)
+			// Enable horizontal margin and set left margin to 1:
+			.enterString("\033[?69h\033[2s")
+			// Set foreground and background color:
+			.enterString("\033[" + (30 + newForeground) + ";" + (40 + newBackground) + "m")
+			// Enter newlines to scroll down:
+			.enterString("\r\n\r\n\r\n\r\n\r\n");
+		for (int row = 0; row < size; row++) {
+			for (int col = 0; col < size; col++) {
+				// The first column (outside of the scrolling area, due to us setting a left scroll
+				// margin of 1) should be unmodified, the others should use the current style:
+				int expectedForeground = col == 0 ? TextStyle.COLOR_INDEX_FOREGROUND : newForeground;
+				int expectedBackground = col == 0 ? TextStyle.COLOR_INDEX_BACKGROUND : newBackground;
+				terminal.assertForegroundColorAt(row, col, expectedForeground);
+				terminal.assertBackgroundColorAt(row, col, expectedBackground);
+			}
+		}
+	}
+
 }
