@@ -2092,13 +2092,14 @@ public final class TerminalEmulator {
 
     private void scrollDownOneLine() {
         mScrollCounter++;
+        long currentStyle = getStyle();
         if (mLeftMargin != 0 || mRightMargin != mColumns) {
             // Horizontal margin: Do not put anything into scroll history, just non-margin part of screen up.
             mScreen.blockCopy(mLeftMargin, mTopMargin + 1, mRightMargin - mLeftMargin, mBottomMargin - mTopMargin - 1, mLeftMargin, mTopMargin);
             // .. and blank bottom row between margins:
-            mScreen.blockSet(mLeftMargin, mBottomMargin - 1, mRightMargin - mLeftMargin, 1, ' ', mEffect);
+            mScreen.blockSet(mLeftMargin, mBottomMargin - 1, mRightMargin - mLeftMargin, 1, ' ', currentStyle);
         } else {
-            mScreen.scrollDownOneLine(mTopMargin, mBottomMargin, getStyle());
+            mScreen.scrollDownOneLine(mTopMargin, mBottomMargin, currentStyle);
         }
     }
 
