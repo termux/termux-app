@@ -2,4 +2,7 @@
   <string name="paste_text">Paste</string>
   <string name="copy_text">Copy</string>
   <string name="text_selection_more">More…</string>
+  <string name="termux_menu_text">Termux Menu</string>
+  <string name="copy_screen_text">Copy Screen</string>
+  <string name="copied_to_clipboard_text">Screen copied to clipboard</string>
 </resources>
