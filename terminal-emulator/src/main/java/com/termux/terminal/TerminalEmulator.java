@@ -126,11 +126,6 @@ public final class TerminalEmulator {
     private String mTitle;
     private final Stack<String> mTitleStack = new Stack<>();
 
-    /** If processing first character of first parameter of {@link #ESC_CSI}. */
-    private boolean mIsCSIStart;
-    /** The last character processed of a parameter of {@link #ESC_CSI}. */
-    private Integer mLastCSIArg;
-
     /** The cursor position. Between (0,0) and (mRows-1, mColumns-1). */
     private int mCursorRow, mCursorCol;
 
@@ -1393,8 +1388,6 @@ public final class TerminalEmulator {
                 break;
             case '[':
                 continueSequence(ESC_CSI);
-                mIsCSIStart = true;
-                mLastCSIArg = null;
                 break;
             case '=': // DECKPAM
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, true);
@@ -1765,7 +1758,7 @@ public final class TerminalEmulator {
     private void selectGraphicRendition() {
         if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
         for (int i = 0; i <= mArgIndex; i++) {
-            int code = mArgs[i];
+            int code = getArg(i, 0, false);
             if (code < 0) {
                 if (mArgIndex > 0) {
                     continue;
@@ -1823,7 +1816,10 @@ public final class TerminalEmulator {
                     if (i + 4 > mArgIndex) {
                         Logger.logWarn(mClient, LOG_TAG, "Too few CSI" + code + ";2 RGB arguments");
                     } else {
-                        int red = mArgs[i + 2], green = mArgs[i + 3], blue = mArgs[i + 4];
+                        int red = getArg(i + 2, 0, false);
+                        int green = getArg(i + 3, 0, false);
+                        int blue = getArg(i + 4, 0, false);
+
                         if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
                             finishSequenceAndLogError("Invalid RGB: " + red + "," + green + "," + blue);
                         } else {
@@ -1837,7 +1833,7 @@ public final class TerminalEmulator {
                         i += 4; // "2;P_r;P_g;P_r"
                     }
                 } else if (firstArg == 5) {
-                    int color = mArgs[i + 2];
+                    int color = getArg(i + 2, 0, false);
                     i += 2; // "5;P_s"
                     if (color >= 0 && color < TextStyle.NUM_INDEXED_COLORS) {
                         if (code == 38) {
@@ -2092,13 +2088,14 @@ public final class TerminalEmulator {
 
     private void scrollDownOneLine() {
         mScrollCounter++;
+        long currentStyle = getStyle();
         if (mLeftMargin != 0 || mRightMargin != mColumns) {
             // Horizontal margin: Do not put anything into scroll history, just non-margin part of screen up.
             mScreen.blockCopy(mLeftMargin, mTopMargin + 1, mRightMargin - mLeftMargin, mBottomMargin - mTopMargin - 1, mLeftMargin, mTopMargin);
             // .. and blank bottom row between margins:
-            mScreen.blockSet(mLeftMargin, mBottomMargin - 1, mRightMargin - mLeftMargin, 1, ' ', mEffect);
+            mScreen.blockSet(mLeftMargin, mBottomMargin - 1, mRightMargin - mLeftMargin, 1, ' ', currentStyle);
         } else {
-            mScreen.scrollDownOneLine(mTopMargin, mBottomMargin, getStyle());
+            mScreen.scrollDownOneLine(mTopMargin, mBottomMargin, currentStyle);
         }
     }
 
@@ -2115,44 +2112,29 @@ public final class TerminalEmulator {
      *
      * https://vt100.net/docs/vt510-rm/chapter4.html#S4.3.3
      * */
-    private void parseArg(int inputByte) {
-        int[] bytes = new int[]{inputByte};
-        // Only doing this for ESC_CSI and not for other ESC_CSI_* since they seem to be using their
-        // own defaults with getArg*() calls, but there may be missed cases
-        if (mEscapeState == ESC_CSI) {
-            if ((mIsCSIStart && inputByte == ';') || // If sequence starts with a ; character, like \033[;m
-                (!mIsCSIStart && mLastCSIArg != null && mLastCSIArg == ';'  && inputByte == ';')) {  // If sequence contains sequential ; characters, like \033[;;m
-                bytes = new int[]{'0', ';'}; // Assume 0 was passed
-            }
-        }
-
-        mIsCSIStart = false;
-
-        for (int b : bytes) {
-            if (b >= '0' && b <= '9') {
-                if (mArgIndex < mArgs.length) {
-                    int oldValue = mArgs[mArgIndex];
-                    int thisDigit = b - '0';
-                    int value;
-                    if (oldValue >= 0) {
-                        value = oldValue * 10 + thisDigit;
-                    } else {
-                        value = thisDigit;
-                    }
-                    if (value > 9999)
-                        value = 9999;
-                    mArgs[mArgIndex] = value;
+    private void parseArg(int b) {
+        if (b >= '0' && b <= '9') {
+            if (mArgIndex < mArgs.length) {
+                int oldValue = mArgs[mArgIndex];
+                int thisDigit = b - '0';
+                int value;
+                if (oldValue >= 0) {
+                    value = oldValue * 10 + thisDigit;
+                } else {
+                    value = thisDigit;
                 }
-                continueSequence(mEscapeState);
-            } else if (b == ';') {
-                if (mArgIndex < mArgs.length) {
-                    mArgIndex++;
-                }
-                continueSequence(mEscapeState);
-            } else {
-                unknownSequence(b);
+                if (value > 9999)
+                    value = 9999;
+                mArgs[mArgIndex] = value;
             }
-            mLastCSIArg = b;
+            continueSequence(mEscapeState);
+        } else if (b == ';') {
+            if (mArgIndex < mArgs.length) {
+                mArgIndex++;
+            }
+            continueSequence(mEscapeState);
+        } else {
+            unknownSequence(b);
         }
     }
 
