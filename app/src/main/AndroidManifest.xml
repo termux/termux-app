@@ -57,20 +57,22 @@
         android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar"
         tools:targetApi="m">
         <!--termux-x11-->
-        <activity android:name="com.termux.display.controller.ControlsEditorActivity"
+        <activity
+            android:name="com.termux.display.controller.ControlsEditorActivity"
             android:exported="false"
-            android:theme="@style/AppThemeFullscreen"
-            android:screenOrientation="sensorLandscape" />
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/AppThemeFullscreen" />
 
-        <activity android:name="com.termux.display.controller.ExternalControllerBindingsActivity"
-            android:theme="@style/AppThemeLight"
+        <activity
+            android:name="com.termux.display.controller.ExternalControllerBindingsActivity"
             android:exported="false"
-            android:screenOrientation="sensor" />
+            android:screenOrientation="sensor"
+            android:theme="@style/AppThemeLight" />
         <activity
             android:name="com.termux.display.controller.InputControllerActivity"
             android:exported="false"
-            android:theme="@style/AppTheme"
-            android:screenOrientation="sensor"/>
+            android:screenOrientation="sensor"
+            android:theme="@style/AppTheme" />
 
         <meta-data
             android:name="android.allow_multiple_resumed_activities"
@@ -181,25 +183,24 @@
             </intent-filter>
         </activity-alias>
 
+        <!--        <provider-->
+        <!--            android:name=".filepicker.TermuxDocumentsProvider"-->
+        <!--            android:authorities="${TERMUX_PACKAGE_NAME}.documents"-->
+        <!--            android:exported="true"-->
+        <!--            android:grantUriPermissions="true"-->
+        <!--            android:permission="android.permission.MANAGE_DOCUMENTS">-->
+        <!--            <intent-filter>-->
+        <!--                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />-->
+        <!--            </intent-filter>-->
+        <!--        </provider>-->
         <provider
-            android:name=".filepicker.TermuxDocumentsProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.documents"
+            android:name=".filepicker.TermuxFilesProvider"
+            android:authorities="com.termux.TermuxFilesProvider"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
             <intent-filter>
                 <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
-            </intent-filter>
-        </provider>
-        <provider
-            android:name=".filepicker.TermuxFilesProvider"
-            android:permission="android.permission.MANAGE_DOCUMENTS"
-            android:exported="true"
-            android:authorities="com.termux.MTDataFilesProvider"
-            android:grantUriPermissions="true">
-            <intent-filter>
-                <action
-                    android:name="android.content.action.DOCUMENTS_PROVIDER" />
             </intent-filter>
         </provider>
 
