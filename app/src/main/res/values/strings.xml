@@ -4,14 +4,13 @@
 
 <resources>
 
-    <string name="application_name">&TERMUX_APP_NAME;</string>
+    <string name="application_name">&TERMUX_APP_NAME;termux</string>
     <string name="shared_user_label">&TERMUX_APP_NAME; user</string>
 
 
     <!-- Termux RUN_COMMAND permission -->
     <string name="permission_run_command_label">Run commands in &TERMUX_APP_NAME; environment</string>
-    <string name="permission_run_command_description">execute arbitrary commands within &TERMUX_APP_NAME;
-        environment and access files</string>
+    <string name="permission_run_command_description">&TERMUX_APP_NAME;execute arbitrary commands within environment and access files</string>
 
 
     <!-- Termux Bootstrap Packages Installation -->
@@ -20,13 +19,8 @@
     <string name="bootstrap_error_body">&TERMUX_APP_NAME; was unable to install the bootstrap packages.</string>
     <string name="bootstrap_error_abort">Abort</string>
     <string name="bootstrap_error_try_again">Try again</string>
-    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; can only be run as the primary user.
-        \nBootstrap binaries compiled for &TERMUX_APP_NAME; have hardcoded $PREFIX path and cannot be installed
-        under any path other than:\n%1$s.</string>
-    <string name="bootstrap_error_installed_on_portable_sd">&TERMUX_APP_NAME; cannot be installed on
-        portable/external/removable sd card on your device.
-        \nBootstrap binaries compiled for &TERMUX_APP_NAME; have hardcoded $PREFIX path and cannot be installed
-        under any path other than:\n%1$s.</string>
+    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME;&TERMUX_APP_NAME;" can only be run as the primary user. Bootstrap binaries compiled for  have hardcoded $PREFIX path and cannot be installed  under any path other than:%1$s."</string>
+    <string name="bootstrap_error_installed_on_portable_sd">&TERMUX_APP_NAME;&TERMUX_APP_NAME;" cannot be installed on portable/external/removable sd card on your device.  Bootstrap binaries compiled for  have hardcoded $PREFIX path and cannot be installed under any path other than:%1$s."</string>
 
 
     <!-- Terminal Sidebar and Shortcuts -->
@@ -122,7 +116,7 @@
     <string name="title_activity_termux_settings">&TERMUX_APP_NAME; Settings</string>
 
     <!-- Termux App Preferences -->
-    <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
+    <string name="termux_preferences_title">&TERMUX_APP_NAME;preference</string>
     <string name="termux_preferences_summary">Preferences for &TERMUX_APP_NAME; app</string>
 
     <!-- Debugging Preferences -->
@@ -188,23 +182,23 @@
 
 
     <!-- Termux:API App Preferences -->
-    <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;</string>
+    <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;termux api preference</string>
     <string name="termux_api_preferences_summary">Preferences for &TERMUX_API_APP_NAME; app</string>
 
 
     <!-- Termux:Float App Preferences -->
-    <string name="termux_float_preferences_title">&TERMUX_FLOAT_APP_NAME;</string>
+    <string name="termux_float_preferences_title">&TERMUX_FLOAT_APP_NAME;termux float preference</string>
     <string name="termux_float_preferences_summary">Preferences for &TERMUX_FLOAT_APP_NAME; app</string>
 
 
     <!-- Termux:Tasker App Preferences -->
-    <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;</string>
+    <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;termux tasker preference</string>
     <string name="termux_tasker_preferences_summary">Preferences for &TERMUX_TASKER_APP_NAME; app</string>
 
 
     <!-- Termux:Widget App Preferences -->
-    <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;</string>
-    <string name="termux_widget_preferences_summary">Preferences for &TERMUX_WIDGET_APP_NAME; app</string>
+    <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;termux widget preference</string>
+    <string name="termux_widget_preferences_summary">&TERMUX_WIDGET_APP_NAME;termux widget preference summary</string>
 
 
     <!-- About Preference -->

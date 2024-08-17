@@ -1,6 +1,6 @@
 <!DOCTYPE resources [<!ENTITY TERMUX_PACKAGE_NAME "com.termux"><!ENTITY TERMUX_APP_NAME "Termux"><!ENTITY TERMUX_DISPLAY_APP_NAME "Termux:X11">]>
 <resources>
-    <string name="app_name">&TERMUX_DISPLAY_APP_NAME;</string>
+    <string name="app_name">&TERMUX_DISPLAY_APP_NAME;termux</string>
     <string name="plugin_info">&TERMUX_DISPLAY_APP_NAME; is a plugin app for the &TERMUX_APP_NAME;
         app.
         \n\nCheck &TERMUX_APP_NAME; app github %1$s and &TERMUX_DISPLAY_APP_NAME; app github %2$s for more info.</string>
@@ -33,9 +33,59 @@
     <string name="not_connected">Not connected</string>
     <string name="help_button_text">   Help   </string>
     <string name="preferences_button_text">   Preferences   </string>
-    <string name="extra_keys_config_desc">Here you can set value of extra-keys variable like in Termux app (read <a href="http://wiki.termux.com/wiki/Touch_Keyboard#Extra_Keys_Row">this</a>) and more (e.g. META).
-    Put empty string for the default value.</string>
-
+    <string name="extra_keys_config_desc">Here you can set value of extra-keys variable like in Termux app (read <a href="http://wiki.termux.com/wiki/Touch_Keyboard#Extra_Keys_Row">this</a>) and more (e.g. META).</string>
+<!--    preference-->
+    <string name="output">Output</string>
+    <string name="display_resolution_mode">Display resolution mode</string>
+    <string name="display_scale">Display scale, %</string>
+    <string name="display_resolution">Display resolution</string>
+    <string name="display_resolution_summary">Example: 1280x1024</string>
+    <string name="touch_sensitivity">Touch sensitivity, x300ms</string>
+    <string name="open_keyboard">Open keyboard</string>
+    <string name="inputcontroller">Inputcontroller</string>
+    <string name="progress_manager">Progress manager</string>
+    <string name="install_x11_server_bridge">Install x11 server bridge</string>
+    <string name="stop_desktop">Stop desktop</string>
+    <string name="stretch_to_fit_display">Stretch to fit display</string>
+    <string name="reseed_screen">Reseed screen while soft keyboard is  open</string>
+    <string name="reseed_screen_summary">The screen size will be adjusted while Soft Keyboard is open.</string>
+    <string name="pip_mode">PIP mode</string>
+    <string name="pip_mode_summary">Show app in picture-in-picture mode when home button or recents button is pressed</string>
+    <string name="fullscreen_on_device_display">Fullscreen on device display</string>
+    <string name="fullscreen_on_device_display_summary">Toggles immersive mode in your device display</string>
+    <string name="force_landscape_orientation">Force landscape orientation</string>
+    <string name="hide_display_cutout">Hide display cutout (if any)</string>
+    <string name="keep_screen_on">Keep Screen On</string>
+    <string name="pointer">Pointer</string>
+    <string name="touchscreen_input_mode">Touchscreen input mode</string>
+    <string name="apply_display_scale_factor_to_touchpad">Apply display scale factor to touchpad</string>
+    <string name="show_stylus_click_options">Show stylus click options</string>
+    <string name="show_stylus_click_options_summary">Stylus touch override, left middle or right click (Only for the stylus)</string>
+    <string name="show_mouse_click_helper_overlay">Show mouse click helper overlay</string>
+    <string name="show_mouse_click_helper_overlay_summary">Onscreen mouse buttons usable with touchpad</string>
+    <string name="capture_external_mouse_when_possible">Capture external mouse when  possible</string>
+    <string name="capture_external_mouse_when_possible_summary">Intercept all hardware mouse events. Pointer is back to Android after pressing Escape key.</string>
+    <string name="enable_tap_to_move_for_touchpads">Enable tap-to-move for touchpads</string>
+    <string name="show_additional_keyboard">Show additional keyboard</string>
+    <string name="show_additional_keyboard_summary">Show keyboard with additional keys.</string>
+    <string name="hide_additional_keyboard_on_volume_down_key_press">Hide additional keyboard on  Volume Down key press</string>
+    <string name="show_ime_with_external_keyboard">Show IME with external keyboard</string>
+    <string name="show_ime_with_external_keyboard_summary">Show software keyboard while hardware  keyboard is connected. Requires WRITE_SECURE_SETTINGS permission.</string>
+    <string name="prefer_scancodes_when_possible">Prefer scancodes when possible</string>
+    <string name="prefer_scancodes_when_possible_summary">Let X server handle hardware keyboard layout (with DE settings or setxkbmap).</string>
+    <string name="intercept_system_shortcuts">Intercept system shortcuts</string>
+    <string name="intercept_system_shortcuts_summary">Samsung Dex only. Allows interception of
+        &quot;Alt+F4&quot;, &quot;Meta+D&quot;, &quot;Meta+E&quot;, etc. </string>
+    <string name="open_accessibility_settings">Open Accessibility settings.</string>
+    <string name="open_accessibility_settings_summary">Enable Accessibility service for   intercepting system shortcuts manually.</string>
+    <string name="requires_write_secure_settings">Enable Accessibility service for intercepting system shortcuts automatically.</string>
+    <string name="requires_write_secure_settings_summary">Requires WRITE_SECURE_SETTINGS permission.</string>
+    <string name="filter_out_intercepted">Filter out intercepted Win (Meta/Mod4) key.</string>
+    <string name="filter_out_intercepted_summary">Allows you to use Dex shortcuts while intercepting.</string>
+    <string name="extra_keys_config">Extra keys config</string>
+    <string name="other">Other</string>
+    <string name="automatic_uploading_clipboard">Automatic uploading clipboard to Android</string>
+    <string name="request_notification_permission">Request notification permission</string>
     <!-- Log Level -->
     <string name="log_level_title">Log Level</string>
     <string name="log_level_off">Off</string>
