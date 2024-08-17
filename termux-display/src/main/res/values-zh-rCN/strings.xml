@@ -251,7 +251,7 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="hide_display_cutout">尽力隐藏刘海</string>
     <string name="keep_screen_on">屏幕常亮</string>
     <string name="pointer">鼠标光标</string>
-    <string name="touchscreen_input_mode">鼠标控制moshing</string>
+    <string name="touchscreen_input_mode">触屏输入模式</string>
     <string name="apply_display_scale_factor_to_touchpad">将显示比例因子应用于触摸板</string>
     <string name="show_stylus_click_options">显示触控笔点击选项</string>
     <string name="show_mouse_click_helper_overlay">显示鼠标点击帮助覆盖</string>
