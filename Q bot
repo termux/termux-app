@@ -1,0 +1,23 @@
+pip install python-telegram-bot
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
+
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Привет! Я игровой бот.')
+
+def play_game(update: Update, context: CallbackContext) -> None:
+    # Логика вашей игры
+    update.message.reply_text('Игра началась!')
+
+def main() -> None:
+    updater = Updater("ВАШ_ТОКЕН", use_context=True)
+
+    dispatcher = updater.dispatcher
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("play", play_game))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
