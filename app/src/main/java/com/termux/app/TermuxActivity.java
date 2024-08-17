@@ -371,12 +371,14 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             public void reInstallX11StartScript(Activity activity) {
                 activity.runOnUiThread(() -> {
                     FileUtils.copyAssetsFile2Phone(activity, "install");
+                    FileUtils.copyAssetsFile2Phone(activity, "recover");
                     ArrayList<String> args = new ArrayList<>();
                     args.add("+x");
                     args.add(TERMUX_FILES_DIR_PATH + "/home/install");
                     CommandUtils.exec(activity, "chmod", args);
                     FileUtils.copyAssetsFile2Phone(activity, "termux-display-nightly-1-0-all.deb");
                     FileUtils.copyAssetsFile2Phone(activity,"winhandler.exe");
+                    FileUtils.copyAssetsFile2Phone(activity,"wfm.exe");
                     CommandUtils.execInPath(activity, "install", null, "/home/");
                 });
             }
