@@ -1,2 +1,25 @@
-#!/data/data/com.termux/files/usr/bin/sh
-tar -zxf "$@" -C /data/data/com.termux/files --recursive-unlink --preserve-permissions
+#/data/data/com.termux/files/usr/bin/sh
+if [ -d "${PREFIX}/glibc" ];then
+	echo "mobox installed"
+	moboxHomeEnv="export MOBOX_HOME=\$PREFIX/glibc"
+	pathEnv="export PATH=\$PATH:\$MOBOX_HOME/opt/scripts"
+	if [  $MOBOX_HOME ];then
+		echo "mobox env has been set, now update"
+		sed -i '/MOBOX_HOME/d' ~/.bashrc
+		sed -i '/^$/d' ~/.bashrc
+		echo $moboxHomeEnv
+		echo $pathEnv
+		echo $moboxHomeEnv >> ~/.bashrc
+		echo $pathEnv >> ~/.bashrc
+		source ~/.bashrc
+	else
+		echo "mobox env not set, now set"
+		echo $moboxHomeEnv
+		echo $pathEnv
+		echo $moboxHomeEnv >> ~/.bashrc
+		echo $pathEnv >> ~/.bashrc
+		source ~/.bashrc
+	fi
+else
+	echo "mobox not installed"
+fi

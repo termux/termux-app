@@ -269,8 +269,8 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
 
         ViewGroup vGroup = findViewById(R.id.id_termux_layout);
 
-        DisplayWindowLinearLayout mWraper = (DisplayWindowLinearLayout) vGroup.getChildAt(0);
-        LinearLayout lorieLayout = (LinearLayout) mWraper.getChildAt(1);
+        DisplayWindowLinearLayout viewContainer = (DisplayWindowLinearLayout) vGroup.getChildAt(0);
+        LinearLayout lorieLayout = (LinearLayout) viewContainer.getChildAt(1);
         lorieLayout.addView(lorieContentView);
         getSupportFragmentManager().beginTransaction().replace(R.id.id_window_preference, loriePreferenceFragment).commit();
 
@@ -305,9 +305,9 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             return insets;
         });
 
-        if (mProperties.isUsingFullScreen()) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+//        if (mProperties.isUsingFullScreen()) {
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        }
         setTermuxTerminalViewAndClients();
 
         setTerminalToolbarView(savedInstanceState);

@@ -8,9 +8,13 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+
+import androidx.core.view.WindowInsetsCompat;
 
 import com.nineoldandroids.view.ViewHelper;
 import com.termux.app.terminal.utils.ScreenUtils;
@@ -76,7 +80,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean switchSlider;
     private float downX, downY;
     private boolean moving;
-    private int statusHeight;
+    private static int statusHeight;
     public boolean hideCutout = false;
     private static boolean isAndroid12 =
         SDK_INT == Build.VERSION_CODES.S || SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU;
@@ -135,7 +139,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (!refreshEnd) {
             remeasure();
             if (mWrapper == null)
-                mWrapper = (LinearLayout) getChildAt(0);
+                mWrapper = (DisplayWindowLinearLayout) getChildAt(0);
             if (mLeftMenu == null)
                 mLeftMenu = (ViewGroup) mWrapper.getChildAt(0);
             if (mContent == null)
@@ -172,12 +176,15 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     private void remeasure() {
-        reInit();
         if (landscape) {
             mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
             mMenuRightPadding = mContentWidth * 3 / 5;
             if (hideCutout) {
-                mContentWidth += mReMeasureContentWidthOffset;
+                if (isAndroid12){
+                    mContentWidth -= mReMeasureContentWidthOffset;
+                }else{
+                    mContentWidth += mReMeasureContentWidthOffset;
+                }
             }
         } else {
             mContentWidth = mScreenWidth < mScreenHeight ? mScreenWidth : mScreenHeight;
@@ -194,9 +201,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         }
 
         if (landscape && hideCutout) {
-            if (SDK_INT == Build.VERSION_CODES.S ||
-                SDK_INT == Build.VERSION_CODES.S_V2 ||
-                SDK_INT == Build.VERSION_CODES.TIRAMISU) {
+            if (isAndroid12) {
                 ViewHelper.setTranslationX(mRightMenu, 0);
             }
         }
@@ -349,7 +354,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         refreshEnd = false;
         landscape = !(landscapeOriention == SCREEN_ORIENTATION_PORTRAIT);
         requestLayout();
-        requestFocus();
         showContent();
     }
 
@@ -361,7 +365,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         refreshEnd = false;
         hideCutout = hide;
         requestLayout();
-        requestFocus();
     }
 
     public void showContent() {
