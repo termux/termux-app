@@ -183,9 +183,19 @@
             </intent-filter>
         </activity-alias>
 
-        <!--        <provider-->
-        <!--            android:name=".filepicker.TermuxDocumentsProvider"-->
-        <!--            android:authorities="${TERMUX_PACKAGE_NAME}.documents"-->
+                <provider
+                    android:name=".filepicker.TermuxDocumentsProvider"
+                    android:authorities="${TERMUX_PACKAGE_NAME}.documents"
+                    android:exported="true"
+                    android:grantUriPermissions="true"
+                    android:permission="android.permission.MANAGE_DOCUMENTS">
+                    <intent-filter>
+                        <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+                    </intent-filter>
+                </provider>
+<!--        <provider-->
+        <!--            android:name=".filepicker.TermuxFilesProvider"-->
+        <!--            android:authorities="com.termux.TermuxFilesProvider"-->
         <!--            android:exported="true"-->
         <!--            android:grantUriPermissions="true"-->
         <!--            android:permission="android.permission.MANAGE_DOCUMENTS">-->
@@ -193,16 +203,6 @@
         <!--                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />-->
         <!--            </intent-filter>-->
         <!--        </provider>-->
-        <provider
-            android:name=".filepicker.TermuxFilesProvider"
-            android:authorities="com.termux.TermuxFilesProvider"
-            android:exported="true"
-            android:grantUriPermissions="true"
-            android:permission="android.permission.MANAGE_DOCUMENTS">
-            <intent-filter>
-                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
-            </intent-filter>
-        </provider>
 
         <provider
             android:name=".app.TermuxOpenReceiver$ContentProvider"
