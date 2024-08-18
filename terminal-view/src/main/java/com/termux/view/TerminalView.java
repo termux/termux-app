@@ -581,7 +581,21 @@ public final class TerminalView extends View {
 
             return true;
         } else if (action == R.id.a11y_speak_cursor_position && mEmulator != null) {
-            String text = getResources().getString(R.string.a11y_line_text) +
+            // because TalkBack might omit speaking out whitespace or punctuation,
+            // get the character under cursor to get a better idea what "column 24" means...
+            // in conjunction with "speak line", it should give you a good idea where you are
+            Character charAtCursor = mEmulator.getChar(mEmulator.getCursorCol(), mTopRow + mEmulator.getCursorRow());
+            // get the unicode name of the character; The screen reader may be configured to not
+            // speak out punctuation, and it will probably not say " "
+            String namedCharAtCursor = charAtCursor != null
+                ? Character.getName(charAtCursor)
+                : "";
+            // Character.getName() is allowed to return null...
+            // ...and it's easy to "accidently" your terminal with an unfortunate cat
+            if (namedCharAtCursor == null)
+                namedCharAtCursor = "unknown";
+            // "line Y / nScreenLines column X / nScreenColumns. unicode_name_of_character"
+            final String text = getResources().getString(R.string.a11y_line_text) +
                 " " +
                 (mEmulator.getCursorRow() + 1) +
                 " / " +
@@ -591,7 +605,9 @@ public final class TerminalView extends View {
                 " " +
                 (mEmulator.getCursorCol() + 1) +
                 " / " +
-                mEmulator.mColumns;
+                mEmulator.mColumns +
+                ". " +
+                namedCharAtCursor;
             announceForAccessibility(text);
             return true;
         } else if (action == R.id.a11y_speak_cursor_line && mEmulator != null) {

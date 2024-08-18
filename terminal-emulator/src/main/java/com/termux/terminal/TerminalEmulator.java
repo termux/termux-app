@@ -2443,6 +2443,11 @@ public final class TerminalEmulator {
         return mScreen.getSelectedText(x1, y1, x2, y2);
     }
 
+    /** used to read aloud the character under the cursor in A11Y */
+    public Character getChar(int x, int y) {
+        return mScreen.getChar(x, y);
+    }
+
     /** Get the terminal session's title (null if not set). */
     public String getTitle() {
         return mTitle;
