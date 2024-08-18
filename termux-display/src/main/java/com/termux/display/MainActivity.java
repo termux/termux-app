@@ -558,7 +558,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         if ("showMouseHelper".contentEquals(key)||
         "forceLandscape".contentEquals(key)||
         "fullscreen".contentEquals(key)||
-        "hideCutout".contentEquals(key)) {
+        "hideCutout".contentEquals(key)||
+        "ignoreCutoutOperation".contentEquals(key)) {
             startFresh = true;
         }
 
@@ -574,7 +575,6 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         mInputHandler.setLongPressedDelay(p.getInt("touch_sensitivity", 1));
         if (!p.getBoolean("pointerCapture", false) && lorieView.hasPointerCapture())
             lorieView.releasePointerCapture();
-
         SamsungDexUtils.dexMetaKeyCapture(this, p.getBoolean("dexMetaKeyCapture", false));
 
         setTerminalToolbarView();
@@ -776,7 +776,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         if (getRequestedOrientation() != requestedOrientation)
             setRequestedOrientation(requestedOrientation);
-
+        if (termuxActivityListener!=null){
+            termuxActivityListener.ignoreCutout(p.getBoolean("ignoreCutoutOperation",false));
+        }
         if (hasFocus) {
             if (SDK_INT >= VERSION_CODES.P) {
                 if (p.getBoolean("hideCutout", false)) {

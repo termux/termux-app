@@ -408,6 +408,11 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
             public void changePreference(String key) {
                 onPreferencesChanged(key);
             }
+
+            @Override
+            public void ignoreCutout(boolean ignoreCutoutOperation) {
+                slideWindowLayout.setIgnoreCutOut(ignoreCutoutOperation);
+            }
         };
     }
 
@@ -643,6 +648,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
     private void setSlideWindowLayout() {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+        slideWindowLayout.setIgnoreCutOut(p.getBoolean("ignoreCutoutOperation", false));
         slideWindowLayout.setHideCutout(p.getBoolean("hideCutout", false));
         DisplaySlidingWindow.setLandscape(p.getBoolean("forceLandscape",false));
     }

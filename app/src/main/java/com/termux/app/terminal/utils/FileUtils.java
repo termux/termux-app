@@ -14,6 +14,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore.Images.Media;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.termux.R;
@@ -33,37 +34,38 @@ public class FileUtils {
 
     private FileUtils() {
     }
-    public static void copyAssetsDir2Phone(Activity activity, String filePath){
+
+    public static void copyAssetsDir2Phone(Activity activity, String filePath) {
         try {
             String[] fileList = activity.getAssets().list(filePath);
-            if(fileList.length>0) {//this is directory
-                File file=new File(activity.getFilesDir().getAbsolutePath()+ File.separator+filePath);
+            if (fileList.length > 0) {//this is directory
+                File file = new File(activity.getFilesDir().getAbsolutePath() + File.separator + filePath);
                 file.mkdirs();//not exist such directory, create it recursively
-                for (String fileName:fileList){
-                    filePath=filePath+File.separator+fileName;
+                for (String fileName : fileList) {
+                    filePath = filePath + File.separator + fileName;
 
-                    copyAssetsDir2Phone(activity,filePath);
+                    copyAssetsDir2Phone(activity, filePath);
 
-                    filePath=filePath.substring(0,filePath.lastIndexOf(File.separator));
-                    Log.e("oldPath",filePath);
+                    filePath = filePath.substring(0, filePath.lastIndexOf(File.separator));
+                    Log.e("oldPath", filePath);
                 }
             } else {//this is a file
-                InputStream inputStream=activity.getAssets().open(filePath);
-                File file=new File(activity.getFilesDir().getAbsolutePath()+ File.separator+filePath);
-                Log.i("copyAssets2Phone","file:"+file);
-                if(!file.exists() || file.length()==0) {
-                    FileOutputStream fos=new FileOutputStream(file);
-                    int len=-1;
-                    byte[] buffer=new byte[1024];
-                    while ((len=inputStream.read(buffer))!=-1){
-                        fos.write(buffer,0,len);
+                InputStream inputStream = activity.getAssets().open(filePath);
+                File file = new File(activity.getFilesDir().getAbsolutePath() + File.separator + filePath);
+                Log.i("copyAssets2Phone", "file:" + file);
+                if (!file.exists() || file.length() == 0) {
+                    FileOutputStream fos = new FileOutputStream(file);
+                    int len = -1;
+                    byte[] buffer = new byte[1024];
+                    while ((len = inputStream.read(buffer)) != -1) {
+                        fos.write(buffer, 0, len);
                     }
                     fos.flush();
                     inputStream.close();
                     fos.close();
-                    showToast(activity,activity.getResources().getString(R.string.file_cpy_success),true);
+                    showToast(activity, activity.getResources().getString(R.string.file_cpy_success), true);
                 } else {
-                    showToast(activity,activity.getResources().getString(R.string.file_cpy_override),true);
+                    showToast(activity, activity.getResources().getString(R.string.file_cpy_override), true);
                 }
             }
         } catch (IOException e) {
@@ -73,45 +75,47 @@ public class FileUtils {
 
     /**
      * Convert files from the assets directory to the /data/data/packagename/files/ directory. The files in the assets directory will be packaged into the APK package without compression, and should also be exported from the APK package when used
+     *
      * @param fileName filename to write,such as aaa.txt
      */
-    public static void copyAssetsFile2Phone(Activity activity, String fileName){
+    public static void copyAssetsFile2Phone(Activity activity, String fileName) {
         try {
             InputStream inputStream = activity.getAssets().open(fileName);
             //getFilesDir() Get the installation path of the current app /data/data/${package name}/files directory
-            File file = new File(activity.getFilesDir().getAbsolutePath() + File.separator +"home" +File.separator+fileName);
-            if(!file.exists() || file.length()==0) {
-                FileOutputStream fos =new FileOutputStream(file);//If the file does not exist, FileOutputStream automatically creates the file
-                int len=-1;
+            File file = new File(activity.getFilesDir().getAbsolutePath() + File.separator + "home" + File.separator + fileName);
+            if (!file.exists() || file.length() == 0) {
+                FileOutputStream fos = new FileOutputStream(file);//If the file does not exist, FileOutputStream automatically creates the file
+                int len = -1;
                 byte[] buffer = new byte[1024];
-                while ((len=inputStream.read(buffer))!=-1){
-                    fos.write(buffer,0,len);
+                while ((len = inputStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, len);
                 }
                 fos.flush();//Refresh the buffer
                 inputStream.close();
                 fos.close();
-                showToast(activity,activity.getResources().getString(R.string.file_cpy_success),true);
+                showToast(activity, String.format(activity.getResources().getString(R.string.file_cpy_success) + "[%s]", fileName), true);
             } else {
                 boolean success = file.delete();
-                if (!success){
-                    showToast(activity,activity.getResources().getString(R.string.file_cpy_fail),true);
+                if (!success) {
+                    showToast(activity, String.format(activity.getResources().getString(R.string.file_cpy_fail) + "[%s]", fileName), true);
                     return;
                 }
-                FileOutputStream fos =new FileOutputStream(file);//If the file does not exist, FileOutputStream automatically creates the file
-                int len=-1;
+                FileOutputStream fos = new FileOutputStream(file);//If the file does not exist, FileOutputStream automatically creates the file
+                int len = -1;
                 byte[] buffer = new byte[1024];
-                while ((len=inputStream.read(buffer))!=-1){
-                    fos.write(buffer,0,len);
+                while ((len = inputStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, len);
                 }
                 fos.flush();//Refresh the buffer
                 inputStream.close();
                 fos.close();
-                showToast(activity,activity.getResources().getString(R.string.file_cpy_override),true);
+                showToast(activity, String.format(activity.getResources().getString(R.string.file_cpy_override) + "[%s]", fileName), true);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     public static boolean isExternalStorageDocument(Uri uri) {
         return "com.android.externalstorage.documents".equals(uri.getAuthority());
     }
@@ -134,7 +138,7 @@ public class FileUtils {
         String[] projection = new String[]{"_data"};
 
         try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, (String)null);
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, (String) null);
             if (cursor != null && cursor.moveToFirst()) {
                 int column_index = cursor.getColumnIndexOrThrow("_data");
                 String var8 = cursor.getString(column_index);
@@ -171,7 +175,7 @@ public class FileUtils {
                 if (!TextUtils.isEmpty(id)) {
                     try {
                         Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-                        return getDataColumn(context, contentUri, (String)null, (String[])null);
+                        return getDataColumn(context, contentUri, (String) null, (String[]) null);
                     } catch (NumberFormatException var9) {
                         Log.i("FileUtils", var9.getMessage());
                         return null;
@@ -200,7 +204,7 @@ public class FileUtils {
                     return uri.getLastPathSegment();
                 }
 
-                return getDataColumn(context, uri, (String)null, (String[])null);
+                return getDataColumn(context, uri, (String) null, (String[]) null);
             }
 
             if ("file".equalsIgnoreCase(uri.getScheme())) {

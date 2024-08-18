@@ -54,6 +54,8 @@
     <string name="fullscreen_on_device_display">Fullscreen on device display</string>
     <string name="fullscreen_on_device_display_summary">Toggles immersive mode in your device display</string>
     <string name="force_landscape_orientation">Force landscape orientation</string>
+    <string name="ignore_cutout_operation">Ignore display cutout adjustment</string>
+    <string name="ignore_cutout_operation_summary">Trun on this to get rid off display issue on some devices</string>
     <string name="hide_display_cutout">Hide display cutout (if any)</string>
     <string name="keep_screen_on">Keep Screen On</string>
     <string name="pointer">Pointer</string>
@@ -279,7 +281,7 @@
     ]]></string>
     <string name="box86_64_env_var_help__dynarec_fastnan">Generation of -NAN like on x86</string>
     <string name="box86_64_env_var_help__dynarec_fastround">Generation of precise x86 rounding</string>
-    <string name="box86_64_env_var_help__dynarec_x87double">Use of Float/Double for x87 emulation</string>
+    <string name="box86_64_env_var_help__dynarec_x87double">Use of Float/Double for x86 emulation</string>
     <string name="box86_64_env_var_help__dynarec_bigblock"><![CDATA[
         Dynarec building BigBlock<br /><br />
         <b>0</b> : Don\'t try to build block as big as possible<br />

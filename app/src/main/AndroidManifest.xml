@@ -61,18 +61,18 @@
             android:name="com.termux.display.controller.ControlsEditorActivity"
             android:exported="false"
             android:screenOrientation="sensorLandscape"
-            android:theme="@style/AppThemeFullscreen" />
+            android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
 
         <activity
             android:name="com.termux.display.controller.ExternalControllerBindingsActivity"
             android:exported="false"
             android:screenOrientation="sensor"
-            android:theme="@style/AppThemeLight" />
+            android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
         <activity
             android:name="com.termux.display.controller.InputControllerActivity"
             android:exported="false"
             android:screenOrientation="sensor"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
 
         <meta-data
             android:name="android.allow_multiple_resumed_activities"

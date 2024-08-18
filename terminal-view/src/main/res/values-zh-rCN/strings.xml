@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="paste_text">粘贴</string>
+    <string name="copy_text">复制</string>
+    <string name="text_selection_more">更多...</string>
+</resources>
