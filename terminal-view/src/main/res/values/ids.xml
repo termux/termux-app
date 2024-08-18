@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="a11y_copy_id" type="id" />
+    <item name="a11y_paste_id" type="id" />
+    <item name="a11y_show_termux_menu_id" type="id" />
+    <item name="a11y_speak_cursor_position" type="id" />
+    <item name="a11y_speak_cursor_line" type="id" />
+</resources>

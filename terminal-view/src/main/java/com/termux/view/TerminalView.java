@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -27,11 +28,14 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.autofill.AutofillValue;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -221,6 +225,10 @@ public final class TerminalView extends View {
         mScroller = new Scroller(context);
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mAccessibilityEnabled = am.isEnabled();
+
+        // A view is important for accessibility if it fires accessibility events
+        // and if it is reported to accessibility services that query the screen.
+        setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
     }
 
 
@@ -457,7 +465,158 @@ public final class TerminalView extends View {
         mEmulator.clearScrollCounter();
 
         invalidate();
-        if (mAccessibilityEnabled) setContentDescription(getText());
+        if (mAccessibilityEnabled) {
+            // fire off events that the content of this control changed,
+            // so that the accessibility service gets the updated text
+            sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
+        }
+    }
+
+    // ultimately called as a result of the code in updateScreen
+    @Override
+    public void onPopulateAccessibilityEvent(AccessibilityEvent event) {
+        super.onPopulateAccessibilityEvent(event);
+
+        // add our (most up to date) text
+        final CharSequence text = getText();
+        if (!TextUtils.isEmpty(text)) {
+            event.getText().add(text);
+        }
+    }
+
+    // called by accessibility service exploring what's available
+    @Override
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo node) {
+        super.onInitializeAccessibilityNodeInfo(node);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            node.setImportantForAccessibility(true);
+        }
+
+        final CharSequence text = getText();
+        node.setText(text);
+
+        // why only if text is non-empty? cargo cult, core TextView does this check,
+        // and the accessibility guide example also does this check, who am I to argue
+        if (!TextUtils.isEmpty(text)) {
+            // all granularities are valid, don't let the accessibility system guess;
+            // this allows a TalkBack user to navigate by char/word/paragraph within
+            // the TerminalView text only without accidently breaking out; other navigation
+            // modes such as default/controls allow you to move to other controls
+            node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
+            node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
+            node.setMovementGranularities(AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_PARAGRAPH
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_PAGE);
+
+            // add more selection actions
+            node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SET_SELECTION);
+            node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLEAR_SELECTION);
+        }
+
+        // behave more like a multiline text view
+        node.setEditable(true);
+        node.setMultiLine(true);
+        node.setScrollable(true);
+        node.setCanOpenPopup(true);
+
+        // add actions that you can do on this thing
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK);
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK);
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_FOCUS);
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_COPY);
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_PASTE);
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_FORWARD);
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_BACKWARD);
+
+        // Add accessibility actions
+
+        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
+            R.id.a11y_speak_cursor_position,
+            getResources().getString(R.string.a11y_speak_cursor_position_text)));
+        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
+            R.id.a11y_speak_cursor_line,
+            getResources().getString(R.string.a11y_speak_cursor_line_text)));
+        // Using a different to the Copy action in the popup, which you can technically
+        // get to if someone tells you it's there. You can't have the same button label
+        // do different things in different contexts; hence, different label
+        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
+            R.id.a11y_copy_id,
+            getResources().getString(R.string.a11y_copy_screen_text)));
+        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
+            R.id.a11y_paste_id,
+            getResources().getString(R.string.paste_text)));
+        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
+            R.id.a11y_show_termux_menu_id,
+            getResources().getString(R.string.a11y_termux_menu_text)));
+    }
+
+    @Override
+    public boolean performAccessibilityAction(int action, Bundle args) {
+        // only handle custom actions here, the defaults implemented by super are good enough
+        if (action == R.id.a11y_show_termux_menu_id) {
+            showContextMenu();
+            return true;
+        } else if (action == R.id.a11y_paste_id) {
+            doPaste();
+            return true;
+        } else if (action == R.id.a11y_copy_id) {
+            // I can't quite figure out how to make TextSelectionHandleView and/or
+            // TextSelectionCursor accessible; and I can't figure out how to hook up
+            // with the Accessibility Selection (2 finger 2x tap & hold) either;
+            // so at least give people the option to copy the screen; the whole
+            // transcript might be too much, plus there's a share transcript option
+            // in the More... menu;
+            // 3 finger double tap works as copy, but editable fields elsewhere tend
+            // to offer a Copy accessibility option
+            ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("screen text", getText());
+            clipboard.setPrimaryClip(clip);
+            Toast toast = Toast.makeText(
+                getContext(),
+                getResources().getText(R.string.copied_to_clipboard_text),
+                Toast.LENGTH_SHORT);
+            toast.show();
+
+            return true;
+        } else if (action == R.id.a11y_speak_cursor_position && mEmulator != null) {
+            // because TalkBack might omit speaking out whitespace or punctuation,
+            // get the character under cursor to get a better idea what "column 24" means...
+            // in conjunction with "speak line", it should give you a good idea where you are
+            Character charAtCursor = mEmulator.getChar(mEmulator.getCursorCol(), mTopRow + mEmulator.getCursorRow());
+            // get the unicode name of the character; The screen reader may be configured to not
+            // speak out punctuation, and it will probably not say " "
+            String namedCharAtCursor = charAtCursor != null
+                ? Character.getName(charAtCursor)
+                : "";
+            // Character.getName() is allowed to return null...
+            // ...and it's easy to "accidently" your terminal with an unfortunate cat
+            if (namedCharAtCursor == null)
+                namedCharAtCursor = "unknown";
+            // "line Y / nScreenLines column X / nScreenColumns. unicode_name_of_character"
+            final String text = getResources().getString(R.string.a11y_line_text) +
+                " " +
+                (mEmulator.getCursorRow() + 1) +
+                " / " +
+                mEmulator.mRows +
+                " " +
+                getResources().getString(R.string.a11y_column_text) +
+                " " +
+                (mEmulator.getCursorCol() + 1) +
+                " / " +
+                mEmulator.mColumns +
+                ". " +
+                namedCharAtCursor;
+            announceForAccessibility(text);
+            return true;
+        } else if (action == R.id.a11y_speak_cursor_line && mEmulator != null) {
+            CharSequence lineText = mEmulator.getScreen().getSelectedText(0, mTopRow + mEmulator.getCursorRow(), mEmulator.mColumns, mTopRow + mEmulator.getCursorRow());
+            announceForAccessibility(lineText);
+            return true;
+        }
+
+        return super.performAccessibilityAction(action, args);
     }
 
     /** This must be called by the hosting activity in {@link Activity#onContextMenuClosed(Menu)}
@@ -578,15 +737,7 @@ public final class TerminalView extends View {
                 if (action == MotionEvent.ACTION_DOWN) showContextMenu();
                 return true;
             } else if (event.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
-                ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clipData = clipboardManager.getPrimaryClip();
-                if (clipData != null) {
-                    ClipData.Item clipItem = clipData.getItemAt(0);
-                    if (clipItem != null) {
-                        CharSequence text = clipItem.coerceToText(getContext());
-                        if (!TextUtils.isEmpty(text)) mEmulator.paste(text.toString());
-                    }
-                }
+                doPaste();
             } else if (mEmulator.isMouseTrackingActive()) { // BUTTON_PRIMARY.
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
@@ -602,6 +753,18 @@ public final class TerminalView extends View {
 
         mGestureRecognizer.onTouchEvent(event);
         return true;
+    }
+
+    private void doPaste() {
+        ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clipData = clipboardManager.getPrimaryClip();
+        if (clipData != null) {
+            ClipData.Item clipItem = clipData.getItemAt(0);
+            if (clipItem != null) {
+                CharSequence text = clipItem.coerceToText(getContext());
+                if (!TextUtils.isEmpty(text)) mEmulator.paste(text.toString());
+            }
+        }
     }
 
     @Override
@@ -987,6 +1150,7 @@ public final class TerminalView extends View {
     }
 
     private CharSequence getText() {
+        if (mEmulator == null) return "";
         return mEmulator.getScreen().getSelectedText(0, mTopRow, mEmulator.mColumns, mTopRow + mEmulator.mRows);
     }
 

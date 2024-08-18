@@ -134,5 +134,8 @@
     <string name="log_level_verbose">Verbose</string>
     <string name="log_level_unknown">*Unknown*</string>
     <string name="log_level_value">Logcat log level set to \"%1$s\"</string>
+    <string name="a11y_special_key_latched_on">on, locked</string>
+    <string name="a11y_special_key_off">off</string>
+    <string name="a11y_special_key_on">on</string>
 
 </resources>

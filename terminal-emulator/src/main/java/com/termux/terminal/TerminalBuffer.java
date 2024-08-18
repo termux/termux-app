@@ -455,6 +455,17 @@ public final class TerminalBuffer {
         allocateFullLineIfNecessary(row).setChar(column, codePoint, style);
     }
 
+    /** used to read aloud the character under the cursor in A11Y */
+    public Character getChar(int column, int row) {
+        if (row  < 0 || row >= mScreenRows || column < 0 || column >= mColumns)
+            throw new IllegalArgumentException("TerminalBuffer.setChar(): row=" + row + ", column=" + column + ", mScreenRows=" + mScreenRows + ", mColumns=" + mColumns);
+        row = externalToInternalRow(row);
+        if(column < mLines[row].mText.length)
+            return mLines[row].mText[column];
+        else
+            return null;
+    }
+
     public long getStyleAt(int externalRow, int column) {
         return allocateFullLineIfNecessary(externalToInternalRow(externalRow)).getStyle(column);
     }
