@@ -523,42 +523,45 @@ public final class TerminalView extends View {
 
         // add actions that you can do on this thing
         node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK);
-        //node.addAction(AccessibilityNodeInfo.ACTION_LONG_CLICK); // already added
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK);
         node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_FOCUS);
         node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_COPY);
         node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_PASTE);
         node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_FORWARD);
         node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_BACKWARD);
 
-        // Add an accessibility action to open the context menu, it's a bit hard to get to it;
-        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
-            R.id.a11y_show_termux_menu_id,
-            getResources().getString(R.string.termux_menu_text)));
+        // Add accessibility actions
 
-        // Add an action to copy terminal text.
+        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
+            R.id.a11y_speak_cursor_position,
+            getResources().getString(R.string.a11y_speak_cursor_position_text)));
+        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
+            R.id.a11y_speak_cursor_line,
+            getResources().getString(R.string.a11y_speak_cursor_line_text)));
         // Using a different to the Copy action in the popup, which you can technically
         // get to if someone tells you it's there. You can't have the same button label
         // do different things in different contexts; hence, different label
         node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
             R.id.a11y_copy_id,
-            getResources().getString(R.string.copy_screen_text)));
-
-        // Add an accessibility action to paste text
+            getResources().getString(R.string.a11y_copy_screen_text)));
         node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
             R.id.a11y_paste_id,
             getResources().getString(R.string.paste_text)));
+        node.addAction(new AccessibilityNodeInfo.AccessibilityAction(
+            R.id.a11y_show_termux_menu_id,
+            getResources().getString(R.string.a11y_termux_menu_text)));
     }
 
     @Override
     public boolean performAccessibilityAction(int action, Bundle args) {
         // only handle custom actions here, the defaults implemented by super are good enough
-        if(action == R.id.a11y_show_termux_menu_id) {
+        if (action == R.id.a11y_show_termux_menu_id) {
             showContextMenu();
             return true;
-        } else if(action == R.id.a11y_paste_id) {
+        } else if (action == R.id.a11y_paste_id) {
             doPaste();
             return true;
-        } else if(action == R.id.a11y_copy_id) {
+        } else if (action == R.id.a11y_copy_id) {
             // I can't quite figure out how to make TextSelectionHandleView and/or
             // TextSelectionCursor accessible; and I can't figure out how to hook up
             // with the Accessibility Selection (2 finger 2x tap & hold) either;
@@ -577,11 +580,28 @@ public final class TerminalView extends View {
             toast.show();
 
             return true;
+        } else if (action == R.id.a11y_speak_cursor_position && mEmulator != null) {
+            String text = getResources().getString(R.string.a11y_line_text) +
+                " " +
+                (mEmulator.getCursorRow() + 1) +
+                " / " +
+                mEmulator.mRows +
+                " " +
+                getResources().getString(R.string.a11y_column_text) +
+                " " +
+                (mEmulator.getCursorCol() + 1) +
+                " / " +
+                mEmulator.mColumns;
+            announceForAccessibility(text);
+            return true;
+        } else if (action == R.id.a11y_speak_cursor_line && mEmulator != null) {
+            CharSequence lineText = mEmulator.getScreen().getSelectedText(0, mTopRow + mEmulator.getCursorRow(), mEmulator.mColumns, mTopRow + mEmulator.getCursorRow());
+            announceForAccessibility(lineText);
+            return true;
         }
 
         return super.performAccessibilityAction(action, args);
     }
-
 
     /** This must be called by the hosting activity in {@link Activity#onContextMenuClosed(Menu)}
      * when context menu for the {@link TerminalView} is started by
