@@ -334,7 +334,19 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
         } else {
-            this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
+            this.smoothScrollTo(mMenuWidth + mMenuWidth - mRightMenuOpenOffset, 0);
+            if (!isRightMenuOpen) {
+                mOnMenuChangeListener.onMenuOpen(true, 1);
+            }
+            if (landscape && hideCutout && !ignoreCutOut) {
+                if (SDK_INT == Build.VERSION_CODES.S) {
+                    ViewHelper.setTranslationX(mRightMenu, -mRightMenuOpenOffset);
+                } else if (SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU) {
+                    ViewHelper.setTranslationX(mWrapper, 0);
+                }
+
+            }
+            isRightMenuOpen = true;
         }
     }
 
