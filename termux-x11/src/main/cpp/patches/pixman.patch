@@ -1,0 +1,35 @@
+diff -u -r ../pixman-0.32.6/pixman/pixman-arm.c ./pixman/pixman-arm.c
+--- ../pixman-0.32.6/pixman/pixman-arm.c	2013-11-17 09:43:18.000000000 +0100
++++ ./pixman/pixman-arm.c	2014-08-05 12:54:39.252322492 +0200
+@@ -96,30 +96,10 @@
+ 
+ #elif defined(__ANDROID__) || defined(ANDROID) /* Android */
+ 
+-#include <cpu-features.h>
+-
+ static arm_cpu_features_t
+ detect_cpu_features (void)
+ {
+-    arm_cpu_features_t features = 0;
+-    AndroidCpuFamily cpu_family;
+-    uint64_t cpu_features;
+-
+-    cpu_family = android_getCpuFamily();
+-    cpu_features = android_getCpuFeatures();
+-
+-    if (cpu_family == ANDROID_CPU_FAMILY_ARM)
+-    {
+-	if (cpu_features & ANDROID_CPU_ARM_FEATURE_ARMv7)
+-	    features |= ARM_V7;
+-
+-	if (cpu_features & ANDROID_CPU_ARM_FEATURE_VFPv3)
+-	    features |= ARM_VFP;
+-
+-	if (cpu_features & ANDROID_CPU_ARM_FEATURE_NEON)
+-	    features |= ARM_NEON;
+-    }
+-
++    arm_cpu_features_t features = (ARM_V7 | ARM_VFP | ARM_NEON);
+     return features;
+ }
+ 

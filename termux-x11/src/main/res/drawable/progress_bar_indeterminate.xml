@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false" >
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="0"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="30" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="30"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="60" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="60"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="90" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="90"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="120" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="120"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="150" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="150"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="180" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="180"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="210" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="210"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="240" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="240"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="270" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="270"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="300" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="300"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="330" />
+    </item>
+    <item android:duration="100">
+        <rotate
+            android:drawable="@drawable/preloader_spinner"
+            android:fromDegrees="330"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:repeatCount="1"
+            android:toDegrees="360" />
+    </item>
+</animation-list>

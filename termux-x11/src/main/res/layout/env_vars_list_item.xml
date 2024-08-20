@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/TextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:layout_marginRight="4dp"
+        android:maxLines="1" />
+
+    <EditText
+        style="@style/EditText"
+        android:id="@+id/EditText"
+        android:layout_width="120dp" />
+
+    <ImageButton
+        style="@style/ListMenuButton"
+        android:id="@+id/BTRemove"
+        android:src="@drawable/icon_remove" />
+</LinearLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_settings"
+        android:shortcutId="preferences"
+        android:shortcutShortLabel="@string/preferences_button_text"
+        tools:ignore="UnusedAttribute">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.termux.x11"
+            android:targetClass="com.termux.x11.LoriePreferences" />
+    </shortcut>
+</shortcuts>

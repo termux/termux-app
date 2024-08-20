@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="68dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/content_dialog_background"
+    android:gravity="center"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
+
+    <ImageButton
+        style="@style/ListMenuButton"
+        android:id="@+id/BTMove"
+        android:src="@drawable/icon_move"
+        android:layout_marginBottom="4dp" />
+
+    <ImageButton
+        style="@style/ListMenuButton"
+        android:id="@+id/BTHide"
+        android:src="@drawable/icon_hide" />
+
+    <View style="@style/HorizontalLine" />
+
+    <ImageButton
+        style="@style/ListMenuButton"
+        android:id="@+id/BTZoomPlus"
+        android:src="@drawable/icon_zoom_plus"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp" />
+
+    <ImageButton
+        style="@style/ListMenuButton"
+        android:id="@+id/BTZoomMinus"
+        android:src="@drawable/icon_zoom_minus" />
+</LinearLayout>

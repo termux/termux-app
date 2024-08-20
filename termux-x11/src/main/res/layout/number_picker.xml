@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="42dp"
+    android:gravity="center_vertical"
+    android:layout_margin="1dp">
+
+    <ImageButton
+        android:id="@+id/BTDecrement"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/number_picker_background"
+        android:padding="7dp"
+        android:gravity="center"
+        android:scaleType="fitCenter"
+        android:src="@drawable/number_picker_decrement"
+        app:tint="#ffffff" />
+    
+    <EditText
+        style="@style/EditText"
+        android:id="@+id/EditText"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:focusable="false"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:focusableInTouchMode="false"
+        android:inputType="number" />
+
+    <ImageButton
+        android:id="@+id/BTIncrement"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/number_picker_background"
+        android:padding="7dp"
+        android:gravity="center"
+        android:scaleType="fitCenter"
+        android:src="@drawable/number_picker_increment"
+        app:tint="#ffffff" />
+</LinearLayout>

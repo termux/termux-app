@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="none">
+        <item android:icon="@drawable/icon_keyboard" android:id="@+id/main_menu_keyboard" android:title="@string/keyboard" />
+        <item android:icon="@drawable/icon_input_controls" android:id="@+id/main_menu_input_controls" android:title="@string/input_controls" />
+        <item android:icon="@drawable/icon_fullscreen" android:id="@+id/main_menu_toggle_fullscreen" android:title="@string/toggle_fullscreen" />
+        <item android:icon="@drawable/icon_task_manager" android:id="@+id/main_menu_task_manager" android:title="@string/task_manager" />
+        <item android:icon="@drawable/icon_magnifier" android:id="@+id/main_menu_magnifier" android:title="@string/magnifier" />
+        <item android:icon="@drawable/icon_help" android:id="@+id/main_menu_touchpad_help" android:title="@string/touchpad_help" />
+        <item android:icon="@drawable/icon_exit" android:id="@+id/main_menu_exit" android:title="@string/exit" />
+    </group>
+</menu>

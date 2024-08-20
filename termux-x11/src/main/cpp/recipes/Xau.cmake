@@ -1,0 +1,5 @@
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Xau")
+add_library(Xau STATIC "libxau/AuDispose.c" "libxau/AuRead.c")
+target_include_directories(Xau PUBLIC "libxau/include")
+target_compile_options(Xdmcp PRIVATE ${common_compile_options} "-D_GNU_SOURCE=1" "-DHAVE_EXPLICIT_BZERO" "-fPIC")
+target_link_libraries(Xau xorgproto)

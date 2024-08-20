@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="extraKeysButtonTextColor" format="reference" />
+    <attr name="extraKeysButtonActiveTextColor" format="reference" />
+    <attr name="extraKeysButtonBackgroundColor" format="reference" />
+    <attr name="extraKeysButtonActiveBackgroundColor" format="reference" />
+    <declare-styleable name="NumberPicker">
+        <attr name="value" format="integer" />
+        <attr name="minValue" format="integer" />
+        <attr name="maxValue" format="integer" />
+        <attr name="step" format="integer" />
+        <attr name="textSize" format="dimension" />
+    </declare-styleable>
+</resources>

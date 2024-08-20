@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical">
+
+    <Spinner
+        style="@style/ComboBox"
+        android:id="@+id/Spinner"
+        android:layout_width="100dp"
+        android:layout_marginRight="4dp" />
+
+    <EditText
+        style="@style/EditText"
+        android:id="@+id/EditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <ImageButton
+        style="@style/ListMenuButton"
+        android:id="@+id/BTSearch"
+        android:src="@drawable/icon_open" />
+
+    <ImageButton
+        style="@style/ListMenuButton"
+        android:id="@+id/BTRemove"
+        android:src="@drawable/icon_remove" />
+</LinearLayout>
