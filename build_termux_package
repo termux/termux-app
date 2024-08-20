@@ -2,7 +2,7 @@
 set -e
 cd "$(dirname "$0")"
 
-TERMUX_PKG_NAME="termux-display-nightly"
+TERMUX_PKG_NAME="termux-x11-nightly"
 TERMUX_PKG_HOMEPAGE="https://github.com/termux/termux-x11"
 TERMUX_PKG_DESCRIPTION="Companion package for termux-x11 app"
 TERMUX_PKG_MAINTAINER="Twaik Yont @twaik"
@@ -28,16 +28,16 @@ PREFIX=$DATA_DIR/data/data/com.termux/files/usr
 rm -rf $DEB_PACKAGE_PATH $PACMAN_PACKAGE_PATH $DATA_DIR $CONTROL_DIR $PACKAGE_DIR $INTERMEDIATES/.PKGINFO $INTERMEDIATES/.BUILDINFO $INTERMEDIATES/.MTREE
 
 mkdir -p $PREFIX/bin/
-mkdir -p $PREFIX/libexec/termux-display
+mkdir -p $PREFIX/libexec/termux-x11
 mkdir -p "$(dirname $DEB_PACKAGE_PATH)"
 
+cp termux-x11-app $PREFIX/bin/
+mv $PREFIX/bin/termux-x11-app $PREFIX/bin/termux-x11
 cp termux-x11-display $PREFIX/bin/
 mv $PREFIX/bin/termux-x11-display $PREFIX/bin/termux-display
-cp termux-x11 $PREFIX/bin/
 cp stopserver $PREFIX/bin/
 cp shell-loader/build/outputs/apk/debug/shell-loader-debug.apk \
-    $PREFIX/libexec/termux-display/loader.apk
-cp display $PREFIX/bin/
+    $PREFIX/libexec/termux-x11/loader.apk
 cp startxserver $PREFIX/bin/
 
 cp install $ASSETS_PATH
@@ -56,7 +56,7 @@ EOF
 
 cat <<EOF >$CONTROL_DIR/postinst
 #!/data/data/com.termux/files/usr/bin/sh
-chmod -w /data/data/com.termux/files/usr/libexec/termux-display/loader.apk
+chmod -w /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
 chmod +x /data/data/com.termux/files/usr/bin/display
 chmod +x /data/data/com.termux/files/usr/bin/startxserver
 chmod +x /data/data/com.termux/files/usr/bin/stopserver
@@ -102,7 +102,7 @@ BUILD_DATE=$(date +%s)
 } >$DATA_DIR/.BUILDINFO
 {
     echo "post_install() {"
-    echo "    chmod -w /data/data/com.termux/files/usr/libexec/termux-display/loader.apk"
+    echo "    chmod -w /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/display"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/startxserver"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/stopserver"

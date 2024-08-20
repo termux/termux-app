@@ -344,7 +344,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 } else if (SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU) {
                     ViewHelper.setTranslationX(mWrapper, 0);
                 }
-
             }
             isRightMenuOpen = true;
         }

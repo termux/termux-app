@@ -4,7 +4,7 @@
     android:installLocation="internalOnly"
     android:sharedUserLabel="@string/shared_user_label">
 
-    <uses-sdk tools:overrideLibrary="com.termux.display" />
+    <uses-sdk tools:overrideLibrary="com.termux.x11" />
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -58,18 +58,18 @@
         tools:targetApi="m">
         <!--termux-x11-->
         <activity
-            android:name="com.termux.display.controller.ControlsEditorActivity"
+            android:name="com.termux.x11.controller.ControlsEditorActivity"
             android:exported="false"
             android:screenOrientation="sensorLandscape"
             android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
 
         <activity
-            android:name="com.termux.display.controller.ExternalControllerBindingsActivity"
+            android:name="com.termux.x11.controller.ExternalControllerBindingsActivity"
             android:exported="false"
             android:screenOrientation="sensor"
             android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
         <activity
-            android:name="com.termux.display.controller.InputControllerActivity"
+            android:name="com.termux.x11.controller.InputControllerActivity"
             android:exported="false"
             android:screenOrientation="sensor"
             android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />

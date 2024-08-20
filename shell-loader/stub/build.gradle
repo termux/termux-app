@@ -3,7 +3,7 @@ plugins {
 }
 android.buildFeatures.buildConfig true
 android {
-    namespace 'com.termux.display'
+    namespace 'com.termux.x11'
     compileSdk 30
     defaultConfig {
         minSdkVersion 24

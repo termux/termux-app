@@ -2,4 +2,4 @@
 export CLASSPATH=/data/data/com.termux/files/usr/libexec/termux-display/loader.apk
 unset LD_LIBRARY_PATH LD_PRELOAD
 ps -ef | grep 'termux.x11*' | grep -v "grep" | awk '{print $2}'| xargs -r kill -9
-exec /system/bin/app_process / com.termux.display.Loader "$@"
+exec /system/bin/app_process -Xnoimage-dex2oat / com.termux.x11.Loader "$@"

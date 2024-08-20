@@ -1,4 +1,4 @@
 include ':app', ':termux-shared', ':terminal-emulator', ':terminal-view'
 include ':shell-loader'
 include ':shell-loader:stub'
-include ':termux-display'
+include ':termux-x11'

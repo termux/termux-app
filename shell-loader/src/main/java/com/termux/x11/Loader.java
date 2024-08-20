@@ -1,4 +1,4 @@
-package com.termux.display;
+package com.termux.x11;
 
 public class Loader {
     /**

@@ -40,8 +40,8 @@ android {
 
         implementation project(":terminal-view")
         implementation project(":termux-shared")
-//        implementation project(":termux-display")
-        implementation (project(':termux-display')){
+//        implementation project(":termux-x11")
+        implementation (project(':termux-x11')){
             exclude group: 'androidx.preference'
         }
     }

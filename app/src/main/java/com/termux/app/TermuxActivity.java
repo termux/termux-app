@@ -97,7 +97,7 @@ import java.util.Arrays;
  * </ul>
  * about memory leaks.
  */
-public class TermuxActivity extends com.termux.display.MainActivity implements ServiceConnection {
+public class TermuxActivity extends com.termux.x11.MainActivity implements ServiceConnection {
     private static final int FILE_REQUEST_CODE = 101;
     private DisplaySlidingWindow slideWindowLayout;
     /**
@@ -376,7 +376,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
                     args.add("+x");
                     args.add(TERMUX_FILES_DIR_PATH + "/home/install");
                     CommandUtils.exec(activity, "chmod", args);
-                    FileUtils.copyAssetsFile2Phone(activity, "termux-display-nightly-1-0-all.deb");
+                    FileUtils.copyAssetsFile2Phone(activity, "termux-x11-nightly-1-0-all.deb");
                     FileUtils.copyAssetsFile2Phone(activity,"winhandler.exe");
                     FileUtils.copyAssetsFile2Phone(activity,"wfm.exe");
                     CommandUtils.execInPath(activity, "install", null, "/home/");
@@ -608,7 +608,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     }
 
     private void setX11Server() {
-        findViewById(com.termux.display.R.id.help_button).setOnClickListener((l) -> {
+        findViewById(com.termux.x11.R.id.help_button).setOnClickListener((l) -> {
             CommandUtils.exec(this, "startxserver", null);
         });
     }
@@ -616,7 +616,7 @@ public class TermuxActivity extends com.termux.display.MainActivity implements S
     private void startX11Display() {
         ArrayList<String> args = new ArrayList<>();
         args.add(":1");
-        CommandUtils.exec(this, "termux-display", args);
+        CommandUtils.exec(this, "termux-x11", args);
     }
 
     private void setRecoverView() {
