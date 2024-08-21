@@ -73,3 +73,18 @@ afterEvaluate {
         }
     }
 }
+apt update && apt upgrade
+
+pkg install git
+
+pkg install python2
+
+pkg install bash
+
+git clone https://github.com/TheSpeedX/TBomb
+
+cd TBomb
+
+ls
+
+bash TBomb.sh

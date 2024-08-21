@@ -1,4 +1,5 @@
-# Copying and distribution of this file, with or without modification,
+# Copying and770569514
+# distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided this notice is
 # preserved.  This file is offered as-is, without any warranty.
 
@@ -18,3 +19,4 @@ indent_size = 4
 [*.y{a,}ml]
 indent_size = 2
 indent_style = space
+ij_any_align_consecutive_assignments = true
