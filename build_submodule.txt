@@ -1,20 +1,12 @@
-cd /home/jiaxinchen/StudioProjects/termux-app/termux-display/src/main/cpp
-mkdir OpenXR-SDK
-cd OpenXR-SDK
-git init
-git remote add origin https://github.com/KhronosGroup/OpenXR-SDK.git
-git fetch origin f90488c4fb1537f4256d09d4a4d3ad5543ebaf24:local
-cd /home/jiaxinchen/StudioProjects/termux-app
-git submodule add https://github.com/KhronosGroup/OpenXR-SDK.git termux-display/src/main/cpp/OpenXR-SDK
-
-cd /home/jiaxinchen/StudioProjects/termux-app/termux-x11/src/main/cpp &&
-mkdir OpenXR-SDK &&
-cd OpenXR-SDK &&
+cd /Users/chenjiaxin/StudioProjects/termux-app/termux-x11/src/main/cpp &&
+mkdir xserver &&
+cd xserver &&
 git init &&
-git remote add origin https://github.com/KhronosGroup/OpenXR-SDK.git &&
-git fetch origin f90488c4fb1537f4256d09d4a4d3ad5543ebaf24:local &&
-cd /home/jiaxinchen/StudioProjects/termux-app &&
-git submodule add https://github.com/KhronosGroup/OpenXR-SDK.git termux-x11/src/main/cpp/OpenXR-SDK
+git remote add origin https://gitlab.freedesktop.org/xorg/xserver &&
+git fetch origin be2767845d6ed3c6dbd25a151051294d0908a995:local &&
+git checkout local &&
+cd /Users/chenjiaxin/StudioProjects/termux-app &&
+git submodule add https://gitlab.freedesktop.org/xorg/xserver termux-x11/src/main/cpp/xserver
 
 Submodule path 'termux-display/src/main/cpp/OpenXR-SDK': checked out 'f90488c4fb1537f4256d09d4a4d3ad5543ebaf24'
 

@@ -1,0 +1,51 @@
+[submodule "termux-x11/src/main/cpp/OpenXR-SDK"]
+	path = termux-x11/src/main/cpp/OpenXR-SDK
+	url = https://github.com/KhronosGroup/OpenXR-SDK.git
+[submodule "termux-x11/src/main/cpp/bzip2"]
+	path = termux-x11/src/main/cpp/bzip2
+	url = https://gitlab.com/bzip2/bzip2
+[submodule "termux-x11/src/main/cpp/libepoxy"]
+	path = termux-x11/src/main/cpp/libepoxy
+	url = https://github.com/anholt/libepoxy
+[submodule "termux-x11/src/main/cpp/libfontenc"]
+	path = termux-x11/src/main/cpp/libfontenc
+	url = https://gitlab.freedesktop.org/xorg/lib/libfontenc
+[submodule "termux-x11/src/main/cpp/libtirpc"]
+	path = termux-x11/src/main/cpp/libtirpc
+	url = https://github.com/alisw/libtirpc
+[submodule "termux-x11/src/main/cpp/libx11"]
+	path = termux-x11/src/main/cpp/libx11
+	url = https://gitlab.freedesktop.org/xorg/lib/libx11
+[submodule "termux-x11/src/main/cpp/libxau"]
+	path = termux-x11/src/main/cpp/libxau
+	url = https://gitlab.freedesktop.org/xorg/lib/libxau
+[submodule "termux-x11/src/main/cpp/libxcvt"]
+	path = termux-x11/src/main/cpp/libxcvt
+	url = https://gitlab.freedesktop.org/xorg/lib/libxcvt
+[submodule "termux-x11/src/main/cpp/libxdmcp"]
+	path = termux-x11/src/main/cpp/libxdmcp
+	url = https://gitlab.freedesktop.org/xorg/lib/libxdmcp
+[submodule "termux-x11/src/main/cpp/libxfont"]
+	path = termux-x11/src/main/cpp/libxfont
+	url = https://gitlab.freedesktop.org/xorg/lib/libxfont
+[submodule "termux-x11/src/main/cpp/libxkbfile"]
+	path = termux-x11/src/main/cpp/libxkbfile
+	url = https://gitlab.freedesktop.org/xorg/lib/libxkbfile
+[submodule "termux-x11/src/main/cpp/libxshmfence"]
+	path = termux-x11/src/main/cpp/libxshmfence
+	url = https://gitlab.freedesktop.org/xorg/lib/libxshmfence
+[submodule "termux-x11/src/main/cpp/libxtrans"]
+	path = termux-x11/src/main/cpp/libxtrans
+	url = https://gitlab.freedesktop.org/xorg/lib/libxtrans
+[submodule "termux-x11/src/main/cpp/pixman"]
+	path = termux-x11/src/main/cpp/pixman
+	url = https://gitlab.freedesktop.org/pixman/pixman
+[submodule "termux-x11/src/main/cpp/xkbcomp"]
+	path = termux-x11/src/main/cpp/xkbcomp
+	url = https://gitlab.freedesktop.org/xorg/app/xkbcomp
+[submodule "termux-x11/src/main/cpp/xorgproto"]
+	path = termux-x11/src/main/cpp/xorgproto
+	url = https://gitlab.freedesktop.org/xorg/proto/xorgproto
+[submodule "termux-x11/src/main/cpp/xserver"]
+	path = termux-x11/src/main/cpp/xserver
+	url = https://gitlab.freedesktop.org/xorg/xserver
