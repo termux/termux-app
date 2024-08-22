@@ -7,6 +7,14 @@ git fetch origin f90488c4fb1537f4256d09d4a4d3ad5543ebaf24:local
 cd /home/jiaxinchen/StudioProjects/termux-app
 git submodule add https://github.com/KhronosGroup/OpenXR-SDK.git termux-display/src/main/cpp/OpenXR-SDK
 
+cd /home/jiaxinchen/StudioProjects/termux-app/termux-x11/src/main/cpp &&
+mkdir OpenXR-SDK &&
+cd OpenXR-SDK &&
+git init &&
+git remote add origin https://github.com/KhronosGroup/OpenXR-SDK.git &&
+git fetch origin f90488c4fb1537f4256d09d4a4d3ad5543ebaf24:local &&
+cd /home/jiaxinchen/StudioProjects/termux-app &&
+git submodule add https://github.com/KhronosGroup/OpenXR-SDK.git termux-x11/src/main/cpp/OpenXR-SDK
 
 Submodule path 'termux-display/src/main/cpp/OpenXR-SDK': checked out 'f90488c4fb1537f4256d09d4a4d3ad5543ebaf24'
 
