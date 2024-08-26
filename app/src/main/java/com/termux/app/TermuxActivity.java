@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.ContextMenu;
@@ -21,7 +20,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.autofill.AutofillManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -181,7 +179,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
     private static final int CONTEXT_MENU_SHARE_SELECTED_TEXT = 10;
-    private static final int CONTEXT_MENU_AUTOFILL_ID = 2;
+    private static final int CONTEXT_MENU_AUTOFILL_USERNAME = 11;
+    private static final int CONTEXT_MENU_AUTOFILL_PASSWORD = 2;
     private static final int CONTEXT_MENU_RESET_TERMINAL_ID = 3;
     private static final int CONTEXT_MENU_KILL_PROCESS_ID = 4;
     private static final int CONTEXT_MENU_STYLING_ID = 5;
@@ -632,20 +631,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         TerminalSession currentSession = getCurrentSession();
         if (currentSession == null) return;
 
-        boolean addAutoFillMenu = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            AutofillManager autofillManager = getSystemService(AutofillManager.class);
-            if (autofillManager != null && autofillManager.isEnabled()) {
-                addAutoFillMenu = true;
-            }
-        }
+        boolean autoFillEnabled = mTerminalView.isAutoFillEnabled();
 
         menu.add(Menu.NONE, CONTEXT_MENU_SELECT_URL_ID, Menu.NONE, R.string.action_select_url);
         menu.add(Menu.NONE, CONTEXT_MENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.action_share_transcript);
         if (!DataUtils.isNullOrEmpty(mTerminalView.getStoredSelectedText()))
             menu.add(Menu.NONE, CONTEXT_MENU_SHARE_SELECTED_TEXT, Menu.NONE, R.string.action_share_selected_text);
-        if (addAutoFillMenu)
-            menu.add(Menu.NONE, CONTEXT_MENU_AUTOFILL_ID, Menu.NONE, R.string.action_autofill_password);
+        if (autoFillEnabled)
+            menu.add(Menu.NONE, CONTEXT_MENU_AUTOFILL_USERNAME, Menu.NONE, R.string.action_autofill_username);
+        if (autoFillEnabled)
+            menu.add(Menu.NONE, CONTEXT_MENU_AUTOFILL_PASSWORD, Menu.NONE, R.string.action_autofill_password);
         menu.add(Menu.NONE, CONTEXT_MENU_RESET_TERMINAL_ID, Menu.NONE, R.string.action_reset_terminal);
         menu.add(Menu.NONE, CONTEXT_MENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.action_kill_process, getCurrentSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXT_MENU_STYLING_ID, Menu.NONE, R.string.action_style_terminal);
@@ -676,8 +671,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             case CONTEXT_MENU_SHARE_SELECTED_TEXT:
                 mTermuxTerminalViewClient.shareSelectedText();
                 return true;
-            case CONTEXT_MENU_AUTOFILL_ID:
-                requestAutoFill();
+            case CONTEXT_MENU_AUTOFILL_USERNAME:
+                mTerminalView.requestAutoFillUsername();
+                return true;
+            case CONTEXT_MENU_AUTOFILL_PASSWORD:
+                mTerminalView.requestAutoFillPassword();
                 return true;
             case CONTEXT_MENU_RESET_TERMINAL_ID:
                 onResetTerminalSession(session);
@@ -757,15 +755,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         } else {
             mTerminalView.setKeepScreenOn(true);
             mPreferences.setKeepScreenOn(true);
-        }
-    }
-
-    private void requestAutoFill() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            AutofillManager autofillManager = getSystemService(AutofillManager.class);
-            if (autofillManager != null && autofillManager.isEnabled()) {
-                autofillManager.requestAutofill(mTerminalView);
-            }
         }
     }
 
