@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">终端模拟器</string>
+    <string name="app_name">终端</string>
     <string name="plugin_info">这是\n应用程序的插件应用程序。\n\n查看应用程序 github %1$s 和应用程序 github %2$s 了解更多信息。</string>
     <string name="msg_storage_permission_not_granted_warning">必须向应用授予存储权限才能正常工作</string>
     <string name="action_grant_storage_permission">授予存储权限</string>
@@ -10,7 +10,7 @@
     <string name="action_grant_display_over_other_apps_permission">授予应用程序绘制权限</string>
     <string name="action_already_granted">已获授权</string>
     <string name="action_already_disabled">已禁用</string>
-    <string name="not_connected">未连接</string>
+    <string name="not_connected">无信号</string>
     <string name="help_button_text">   帮助   </string>
     <string name="preferences_button_text">   设置   </string>
     <string name="extra_keys_config_desc">在此处设置额附加按键变量的值，就像在 Termux 应用程序中一样（参考<a href="http://wiki.termux.com/wiki/Touch_Keyboard#Extra_Keys_Row">访问</a>）以及更多（例如 META）。</string>
@@ -70,7 +70,7 @@
     <string name="do_you_want_to_remove_this_controller">移除容器？</string>
     <string name="do_you_want_to_remove_this_wine_version">移除此版本wine?</string>
     <string name="do_you_want_to_remove_this_preset">移除此预设？</string>
-    <string name="do_you_want_to_end_this_process">杀死此进程？</string>
+    <string name="do_you_want_to_end_this_process">终止正在运行的进程？</string>
     <string name="controls_editor">控制器编辑器</string>
     <string name="enabled">打开</string>
     <string name="disabled">关闭</string>
@@ -82,7 +82,7 @@
     <string name="processor_affinity">绑定核心</string>
     <string name="cursor_speed">光标速度</string>
     <string name="lock_cursor">锁定光标</string>
-    <string name="toggle_switch">开启组合键</string>
+    <string name="toggle_switch">长按</string>
     <string name="profile_exported_to">导出配置文件</string>
     <string name="unable_to_import_profile">无法导入配置文件</string>
     <string name="wine_configuration">wine设置</string>
@@ -242,14 +242,14 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="open_keyboard">打开软键盘</string>
     <string name="inputcontroller">键盘手柄</string>
     <string name="progress_manager">任务管理器</string>
-    <string name="install_x11_server_bridge">重建显示器</string>
+    <string name="install_x11_server_bridge">重建依赖</string>
     <string name="stop_desktop">关闭显示器</string>
     <string name="stretch_to_fit_display">拉伸以适合显示屏</string>
     <string name="pip_mode">画中画模式</string>
     <string name="fullscreen_on_device_display">全屏显示</string>
     <string name="force_landscape_orientation">横屏显示</string>
-    <string name="hide_display_cutout">尽力隐藏刘海</string>
-    <string name="keep_screen_on">屏幕常亮</string>
+    <string name="hide_display_cutout">尽量隐藏刘海</string>
+    <string name="keep_screen_on">保持屏幕常亮</string>
     <string name="pointer">鼠标光标</string>
     <string name="touchscreen_input_mode">触屏输入模式</string>
     <string name="apply_display_scale_factor_to_touchpad">将显示比例因子应用于触摸板</string>
@@ -267,13 +267,13 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="prefer_scancodes_when_possible">尽可能使用 scan code</string>
     <string name="prefer_scancodes_when_possible_summary">让 X 服务器处理硬件键盘布局（使用 DE 设置或 setxkbmap）。</string>
     <string name="intercept_system_shortcuts">拦截系统快捷方式</string>
-    <string name="intercept_system_shortcuts_summary">仅限三星 Dex。允许拦截“Alt+F4”、“Meta+D”、“Meta+E”等。</string>
-    <string name="open_accessibility_settings_summary">启用辅助功能服务以手动拦截系统快捷方式。</string>
-    <string name="open_accessibility_settings">打开辅助功能设置。</string>
-    <string name="requires_write_secure_settings">请求 WRITE_SECURE_SETTINGS 权限。</string>
-    <string name="requires_write_secure_settings_summary">启用辅助功能服务以自动拦截系统快捷方式。</string>
-    <string name="filter_out_intercepted">过滤掉拦截的 Win（Meta/Mod4）键。</string>
-    <string name="filter_out_intercepted_summary">允许拦截时使用 Dex 快捷方式。</string>
+    <string name="intercept_system_shortcuts_summary">仅限三星 Dex，允许拦截“Alt+F4”、“Meta+D”、“Meta+E”等。</string>
+    <string name="open_accessibility_settings_summary">启用辅助功能服务以手动拦截系统快捷方式</string>
+    <string name="open_accessibility_settings">打开辅助功能设置</string>
+    <string name="requires_write_secure_settings">请求 WRITE_SECURE_SETTINGS 权限</string>
+    <string name="requires_write_secure_settings_summary">启用辅助功能服务以自动拦截系统快捷方式</string>
+    <string name="filter_out_intercepted">过滤掉拦截的 Win（Meta/Mod4）键</string>
+    <string name="filter_out_intercepted_summary">允许拦截时使用 Dex 快捷方式</string>
     <string name="extra_keys_config">附加按键配置</string>
     <string name="other">其他</string>
     <string name="automatic_uploading_clipboard">自动上传剪贴板到 Android</string>
