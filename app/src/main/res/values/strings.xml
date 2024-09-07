@@ -73,6 +73,7 @@
     <string name="title_share_selected_text">Terminal Text</string>
     <string name="title_share_selected_text_with">Send selected text to:</string>
 
+    <string name="action_autofill_username">Autofill username</string>
     <string name="action_autofill_password">Autofill password</string>
 
     <string name="action_reset_terminal">Reset</string>
