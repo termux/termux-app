@@ -29,15 +29,18 @@ rm -rf $DEB_PACKAGE_PATH $PACMAN_PACKAGE_PATH $DATA_DIR $CONTROL_DIR $PACKAGE_DI
 
 mkdir -p $PREFIX/bin/
 mkdir -p $PREFIX/libexec/termux-x11
+mkdir -p $PREFIX/libexec/termux-display
 mkdir -p "$(dirname $DEB_PACKAGE_PATH)"
 
 cp termux-x11-app $PREFIX/bin/
 mv $PREFIX/bin/termux-x11-app $PREFIX/bin/termux-x11
 cp termux-x11-display $PREFIX/bin/
 mv $PREFIX/bin/termux-x11-display $PREFIX/bin/termux-display
-cp stopserver $PREFIX/bin/
 cp shell-loader/build/outputs/apk/debug/shell-loader-debug.apk \
     $PREFIX/libexec/termux-x11/loader.apk
+cp shell-loader/build/outputs/apk/debug/shell-loader-debug.apk \
+    $PREFIX/libexec/termux-display/loader.apk
+cp stopserver $PREFIX/bin/
 cp startxserver $PREFIX/bin/
 
 cp install $ASSETS_PATH

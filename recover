@@ -5,7 +5,7 @@ function resetMobox(){
     echo $moboxHomeEnv >> ~/.bashrc
     echo $pathEnv >> ~/.bashrc
     source ~/.bashrc
-    tar -zxf ~/wine.tar.gz -C $winePathEnv/lib/
+    tar -zxf ~/wine.tar -C $winePathEnv/lib/
     cp -rf ~/wfm.exe $PREFIX/glibc/opt/apps/
     cp -rf ~/winhandler.exe $PREFIX/glibc/opt/apps/
     sed -i -e 's/"dinput8"="native,builtin"/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g';'s/"xinput1_1"="native,builtin"/"xinput1_1"="builtin,native"/g';'s/"xinput1_2"="native,builtin"/"xinput1_2"="builtin,native"/g';'s/"xinput1_3"="native,builtin"/"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"/g';'s/"xinput1_9_0"="native,builtin"/"xinput1_9_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg

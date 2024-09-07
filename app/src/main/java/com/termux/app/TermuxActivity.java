@@ -379,6 +379,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                     FileUtils.copyAssetsFile2Phone(activity, "termux-x11-nightly-1-0-all.deb");
                     FileUtils.copyAssetsFile2Phone(activity,"winhandler.exe");
                     FileUtils.copyAssetsFile2Phone(activity,"wfm.exe");
+                    FileUtils.copyAssetsFile2Phone(activity,"wine.tar");
                     CommandUtils.execInPath(activity, "install", null, "/home/");
                 });
             }
