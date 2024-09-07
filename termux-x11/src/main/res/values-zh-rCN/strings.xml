@@ -82,10 +82,10 @@
     <string name="processor_affinity">绑定核心</string>
     <string name="cursor_speed">光标速度</string>
     <string name="lock_cursor">锁定光标</string>
-    <string name="toggle_switch">长按</string>
+    <string name="toggle_switch">组合键</string>
     <string name="profile_exported_to">导出配置文件</string>
     <string name="unable_to_import_profile">无法导入配置文件</string>
-    <string name="wine_configuration">wine设置</string>
+    <string name="wine_configuration">wine配置</string>
     <string name="registry_keys">注册键值</string>
     <string name="csmt">CSMT (多线程命令流)</string>
     <string name="gpu_name">GPU 名称</string>
@@ -286,4 +286,5 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="display_resolution_summary">比如: 1280x1024</string>
     <string name="ignore_cutout_operation">忽略刘海画面瑕疵</string>
     <string name="ignore_cutout_operation_summary">打开此选项能够避免某些设备(比如全面屏，折叠屏)因为隐藏刘海带来的显示问题(禁止隐藏刘海)</string>
+    <string name="long_press">长按</string>
 </resources>

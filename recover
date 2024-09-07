@@ -1,24 +1,30 @@
 #/data/data/com.termux/files/usr/bin/sh
+function resetMobox(){
+    echo $moboxHomeEnv
+    echo $pathEnv
+    echo $moboxHomeEnv >> ~/.bashrc
+    echo $pathEnv >> ~/.bashrc
+    source ~/.bashrc
+    tar -zxf ~/wine.tar.gz -C $winePathEnv/lib/
+    cp -rf ~/wfm.exe $PREFIX/glibc/opt/apps/
+    cp -rf ~/winhandler.exe $PREFIX/glibc/opt/apps/
+    sed -i -e 's/"dinput8"="native,builtin"/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g';'s/"xinput1_1"="native,builtin"/"xinput1_1"="builtin,native"/g';'s/"xinput1_2"="native,builtin"/"xinput1_2"="builtin,native"/g';'s/"xinput1_3"="native,builtin"/"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"/g';'s/"xinput1_9_0"="native,builtin"/"xinput1_9_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+    sed -i 's/\$PREFIX\/glibc\/opt\/apps\/tfm.exe/\$PREFIX\/glibc\/opt\/apps\/winhandler.exe/g' $PREFIX/glibc/opt/scripts/start-tfm
+}
+
 if [ -d "${PREFIX}/glibc" ];then
 	echo "mobox installed"
 	moboxHomeEnv="export MOBOX_HOME=\$PREFIX/glibc"
 	pathEnv="export PATH=\$PATH:\$MOBOX_HOME/opt/scripts"
+	winePathEnv=$(cat $PREFIX/glibc/conf/wine_path.conf|grep "WINE_PATH="|cut -d= -f2)
 	if [  $MOBOX_HOME ];then
 		echo "mobox env has been set, now update"
 		sed -i '/MOBOX_HOME/d' ~/.bashrc
 		sed -i '/^$/d' ~/.bashrc
-		echo $moboxHomeEnv
-		echo $pathEnv
-		echo $moboxHomeEnv >> ~/.bashrc
-		echo $pathEnv >> ~/.bashrc
-		source ~/.bashrc
+		resetMobox
 	else
 		echo "mobox env not set, now set"
-		echo $moboxHomeEnv
-		echo $pathEnv
-		echo $moboxHomeEnv >> ~/.bashrc
-		echo $pathEnv >> ~/.bashrc
-		source ~/.bashrc
+		resetMobox
 	fi
 else
 	echo "mobox not installed"

@@ -160,6 +160,7 @@
     <string name="cursor_speed">Cursor Speed</string>
     <string name="lock_cursor">Lock Cursor</string>
     <string name="toggle_switch">Toggle Switch</string>
+    <string name="long_press">Long Press</string>
     <string name="profile_exported_to">Profile exported to</string>
     <string name="unable_to_import_profile">Unable to import profile</string>
     <string name="wine_configuration">Wine Configuration</string>
