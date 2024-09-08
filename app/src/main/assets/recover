@@ -1,22 +1,41 @@
-#/data/data/com.termux/files/usr/bin/sh
+#!/data/data/com.termux/files/usr/bin/bash
 function resetMobox(){
-    echo $moboxHomeEnv
-    echo $pathEnv
+    echo "moboxHomeEnv="$moboxHomeEnv
+    echo "pathEnv="$pathEnv
+    echo "winePathEnv="$winePathEnv
     echo $moboxHomeEnv >> ~/.bashrc
     echo $pathEnv >> ~/.bashrc
-    source ~/.bashrc
-    tar -zxf ~/wine.tar -C $winePathEnv/lib/
+
+    tar -xf ~/wine.tar -C $winePathEnv/lib/
     cp -rf ~/wfm.exe $PREFIX/glibc/opt/apps/
     cp -rf ~/winhandler.exe $PREFIX/glibc/opt/apps/
-    sed -i -e 's/"dinput8"="native,builtin"/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g';'s/"xinput1_1"="native,builtin"/"xinput1_1"="builtin,native"/g';'s/"xinput1_2"="native,builtin"/"xinput1_2"="builtin,native"/g';'s/"xinput1_3"="native,builtin"/"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"/g';'s/"xinput1_9_0"="native,builtin"/"xinput1_9_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+    #sed -i '/"dinput"="builtin,native"/d' $PREFIX/glibc/opt/prefix/user.reg
+    #sed -i '/"dinput"="native,builtin"/d' $PREFIX/glibc/opt/prefix/user.reg
+    #sed -i '/"xinput1_4"="builtin,native"/d' $PREFIX/glibc/opt/prefix/user.reg
+    #sed -i '/"xinput1_4"="native,builtin"/d' $PREFIX/glibc/opt/prefix/user.reg
+    #sed -i '/"xinputuap"="builtin,native"/d' $PREFIX/glibc/opt/prefix/user.reg
+    #sed -i '/"xinputuap"="native,builtin"/d' $PREFIX/glibc/opt/prefix/user.reg
+    #sed -i '/^$/d' $PREFIX/glibc/opt/prefix/user.reg
+    sed -i 's/"dinput8"="native,builtin"/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+    sed -i 's/"xinput1_1"="native,builtin"/"xinput1_1"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+    sed -i 's/"xinput1_2"="native,builtin"/"xinput1_2"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+    sed -i 's/"xinput1_3"="native,builtin"/"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+    sed -i 's/"xinput9_1_0"="native,builtin"/"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
     sed -i 's/\$PREFIX\/glibc\/opt\/apps\/tfm.exe/\$PREFIX\/glibc\/opt\/apps\/winhandler.exe/g' $PREFIX/glibc/opt/scripts/start-tfm
+    source ~/.bashrc
 }
-
+if [ -f ~/.bashrc ];then
+    echo ".bashrc already exist"
+else
+    touch ~/.bashrc
+fi
 if [ -d "${PREFIX}/glibc" ];then
 	echo "mobox installed"
 	moboxHomeEnv="export MOBOX_HOME=\$PREFIX/glibc"
 	pathEnv="export PATH=\$PATH:\$MOBOX_HOME/opt/scripts"
-	winePathEnv=$(cat $PREFIX/glibc/conf/wine_path.conf|grep "WINE_PATH="|cut -d= -f2)
+	prefixPath=$(echo $PREFIX)
+	winePath=$(cat $PREFIX/glibc/opt/conf/wine_path.conf|grep "WINE_PATH="|cut -d= -f2|sed 's/$PREFIX//g')
+	winePathEnv=$prefixPath$winePath
 	if [  $MOBOX_HOME ];then
 		echo "mobox env has been set, now update"
 		sed -i '/MOBOX_HOME/d' ~/.bashrc

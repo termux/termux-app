@@ -86,6 +86,7 @@ import com.termux.view.TerminalViewClient;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * A terminal emulator activity.
@@ -372,15 +373,14 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                 activity.runOnUiThread(() -> {
                     FileUtils.copyAssetsFile2Phone(activity, "install");
                     FileUtils.copyAssetsFile2Phone(activity, "recover");
-                    ArrayList<String> args = new ArrayList<>();
-                    args.add("+x");
-                    args.add(TERMUX_FILES_DIR_PATH + "/home/install");
-                    CommandUtils.exec(activity, "chmod", args);
+                    CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x",TERMUX_FILES_DIR_PATH + "/home/install")));
+                    CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x",TERMUX_FILES_DIR_PATH + "/home/recover")));
                     FileUtils.copyAssetsFile2Phone(activity, "termux-x11-nightly-1-0-all.deb");
                     FileUtils.copyAssetsFile2Phone(activity,"winhandler.exe");
                     FileUtils.copyAssetsFile2Phone(activity,"wfm.exe");
                     FileUtils.copyAssetsFile2Phone(activity,"wine.tar");
                     CommandUtils.execInPath(activity, "install", null, "/home/");
+                    CommandUtils.execInPath(activity, "recover", null, "/home/");
                 });
             }
 
