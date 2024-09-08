@@ -22,6 +22,7 @@ function resetMobox(){
     sed -i 's/"xinput1_3"="native,builtin"/"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
     sed -i 's/"xinput9_1_0"="native,builtin"/"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
     sed -i 's/\$PREFIX\/glibc\/opt\/apps\/tfm.exe/\$PREFIX\/glibc\/opt\/apps\/winhandler.exe/g' $PREFIX/glibc/opt/scripts/start-tfm
+    sed -i '/\$PREFIX\/glibc\/bin\/ib.exe/d' $PREFIX/glibc/opt/scripts/start-tfm
     source ~/.bashrc
 }
 if [ -f ~/.bashrc ];then
