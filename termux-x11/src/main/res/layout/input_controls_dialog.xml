@@ -8,13 +8,13 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_marginBottom="8dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <Spinner
-            style="@style/ComboBox"
             android:id="@+id/SProfile"
+            style="@style/ComboBox"
             android:layout_width="300dp" />
 
         <ImageView
@@ -22,8 +22,8 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_marginLeft="8dp"
-            app:tint="@color/colorPrimary"
-            android:src="@drawable/icon_settings" />
+            android:src="@drawable/icon_settings"
+            app:tint="@color/colorPrimary" />
     </LinearLayout>
 
     <CheckBox
@@ -38,4 +38,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/lock_cursor" />
+
+    <CheckBox
+        android:id="@+id/CBSetToggleModel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/toggle_model" />
 </LinearLayout>

@@ -6,6 +6,8 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 
+import static com.termux.x11.LorieView.LONG_PRESS_MODEL;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -259,7 +261,7 @@ public class LoriePreferences extends AppCompatActivity {
             findPreference("displayResolutionCustom").setSummary(p.getString("displayResolutionCustom", "1280x1024"));
             findPreference("displayStretch").setEnabled("exact".contentEquals(p.getString("displayResolutionMode", "native")) || "custom".contentEquals(p.getString("displayResolutionMode", "native")));
             int modeValue = Integer.parseInt(p.getString("touchMode", "1")) - 1;
-            findPreference("hideCutout").setVisible(!p.getBoolean("ignoreCutoutOperation",false));
+            findPreference("hideCutout").setVisible(!p.getBoolean("ignoreCutoutOperation", false));
 
             String mode = getResources().getStringArray(R.array.touchscreenInputModesEntries)[modeValue];
             findPreference("touchMode").setSummary(mode);
@@ -795,6 +797,8 @@ public class LoriePreferences extends AppCompatActivity {
 
         final CheckBox cbShowTouchscreenControls = dialog.findViewById(R.id.CBShowTouchscreenControls);
         cbShowTouchscreenControls.setChecked(inputControlsView.isShowTouchscreenControls());
+        final CheckBox cbSetToggleModel = dialog.findViewById(R.id.CBSetToggleModel);
+        cbSetToggleModel.setChecked(xServer.getToggleModel() == LONG_PRESS_MODEL ? true : false);
 
         dialog.findViewById(R.id.BTSettings).setOnClickListener((v) -> {
             int position = sProfile.getSelectedItemPosition();
@@ -816,6 +820,7 @@ public class LoriePreferences extends AppCompatActivity {
             }
             xServer.cursorLocker.setEnabled(cbLockCursor.isChecked() ? true : false);
             inputControlsView.setShowTouchscreenControls(cbShowTouchscreenControls.isChecked());
+            xServer.setToggleModel(cbSetToggleModel.isChecked() ? 0 : 1);
             int position = sProfile.getSelectedItemPosition();
             if (position > 0) {
                 showInputControls(inputControlsManager.getProfiles().get(position - 1));

@@ -42,6 +42,9 @@ import java.util.regex.PatternSyntaxException;
 @SuppressLint("WrongConstant")
 @SuppressWarnings("deprecation")
 public class LorieView extends SurfaceView implements InputStub {
+    public static final int TOGGLE_MODEL = 0;
+    public static final int LONG_PRESS_MODEL = 1;
+
     public enum Lockable {WINDOW_MANAGER, PIXMAP_MANAGER, DRAWABLE_MANAGER, GRAPHIC_CONTEXT_MANAGER, INPUT_DEVICE, CURSOR_MANAGER, SHMSEGMENT_MANAGER}
 
     public final Keyboard keyboard = Keyboard.createKeyboard(this);
@@ -50,6 +53,7 @@ public class LorieView extends SurfaceView implements InputStub {
     private final EnumMap<Lockable, ReentrantLock> locks = new EnumMap<>(Lockable.class);
     public ScreenInfo screenInfo;
     public CursorLocker cursorLocker;
+    public int toggleModel = TOGGLE_MODEL;
     public Window pointWindow;
     public WinHandler winHandler;
 
@@ -71,6 +75,14 @@ public class LorieView extends SurfaceView implements InputStub {
 
     public boolean isFullscreen() {
         return true;
+    }
+
+    public void setToggleModel(int i) {
+        this.toggleModel = i;
+    }
+
+    public int getToggleModel() {
+        return this.toggleModel;
     }
 
     public interface Callback {
