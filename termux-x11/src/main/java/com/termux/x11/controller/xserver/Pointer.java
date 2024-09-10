@@ -24,6 +24,11 @@ public class Pointer {
     private final LorieView xServer;
     private short x;
     private short y;
+    private Button pointerButton;
+
+    public Button getPointerButton() {
+        return pointerButton;
+    }
 
     public interface OnPointerMotionListener {
         default void onPointerButtonPress(Button button) {
@@ -80,7 +85,11 @@ public class Pointer {
         if (oldPressed != pressed) {
             if (pressed) {
                 triggerOnPointerButtonPress(button);
-            } else triggerOnPointerButtonRelease(button);
+                this.pointerButton = button;
+            } else {
+                triggerOnPointerButtonRelease(button);
+                this.pointerButton = null;
+            }
         }
     }
 

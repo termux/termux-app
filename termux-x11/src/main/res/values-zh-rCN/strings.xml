@@ -82,7 +82,7 @@
     <string name="processor_affinity">绑定核心</string>
     <string name="cursor_speed">光标速度</string>
     <string name="lock_cursor">锁定光标</string>
-    <string name="toggle_switch">组合键</string>
+    <string name="toggle_switch">按住</string>
     <string name="profile_exported_to">导出配置文件</string>
     <string name="unable_to_import_profile">无法导入配置文件</string>
     <string name="wine_configuration">wine配置</string>

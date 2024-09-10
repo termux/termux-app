@@ -85,8 +85,10 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
 
     @Override
     public void onPointerMove(short x, short y) {
-//        xServer.sendMouseEvent(x,y,Pointer.Button.BUTTON_LEFT.code(),false,true);
+        if (xServer.pointer.getPointerButton()!=null){
+            xServer.sendMouseEvent(x,y,xServer.pointer.getPointerButton().code(),true,true);
 //        Log.d("onPointerMove",x+","+ y);
+        }
     }
 
     @Override
