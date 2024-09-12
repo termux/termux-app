@@ -96,6 +96,7 @@ public class LoriePreferences extends AppCompatActivity {
         void onChangeOrientation(int landscape);
 
         void reInstallX11StartScript(Activity activity);
+        void reInstallCustomStartScript(Activity activity);
 
         void stopDesktop(Activity activity);
 

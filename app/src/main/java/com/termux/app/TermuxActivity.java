@@ -238,18 +238,18 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         slideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
             @Override
             public void onMenuOpen(boolean isOpen, int flag) {
-                if(isOpen&&flag==0){
+                if (isOpen && flag == 0) {
                     setX11FocusedPreferencesChanged(false);
-                }else{
+                } else {
                     setX11FocusedPreferencesChanged(true);
                 }
             }
 
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
-                if (inputControlsView.getProfile()!=null) {
+                if (inputControlsView.getProfile() != null) {
                     inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);
-                    if(xServer.cursorLocker.isEnabled()){
+                    if (xServer.cursorLocker.isEnabled()) {
                         return true;
                     }
                 }
@@ -372,14 +372,20 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             public void reInstallX11StartScript(Activity activity) {
                 activity.runOnUiThread(() -> {
                     FileUtils.copyAssetsFile2Phone(activity, "install");
-                    FileUtils.copyAssetsFile2Phone(activity, "recover");
-                    CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x",TERMUX_FILES_DIR_PATH + "/home/install")));
-                    CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x",TERMUX_FILES_DIR_PATH + "/home/recover")));
+                    CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x", TERMUX_FILES_DIR_PATH + "/home/install")));
                     FileUtils.copyAssetsFile2Phone(activity, "termux-x11-nightly-1-0-all.deb");
-                    FileUtils.copyAssetsFile2Phone(activity,"winhandler.exe");
-                    FileUtils.copyAssetsFile2Phone(activity,"wfm.exe");
-                    FileUtils.copyAssetsFile2Phone(activity,"wine.tar");
                     CommandUtils.execInPath(activity, "install", null, "/home/");
+                });
+            }
+
+            @Override
+            public void reInstallCustomStartScript(Activity activity) {
+                activity.runOnUiThread(() -> {
+                    FileUtils.copyAssetsFile2Phone(activity, "recover");
+                    FileUtils.copyAssetsFile2Phone(activity, "winhandler.exe");
+                    FileUtils.copyAssetsFile2Phone(activity, "wfm.exe");
+                    FileUtils.copyAssetsFile2Phone(activity, "wine.tar");
+                    CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x", TERMUX_FILES_DIR_PATH + "/home/recover")));
                     CommandUtils.execInPath(activity, "recover", null, "/home/");
                 });
             }
@@ -647,12 +653,14 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             }
         });
     }
+
     private void setSlideWindowLayout() {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         slideWindowLayout.setIgnoreCutOut(p.getBoolean("ignoreCutoutOperation", false));
         slideWindowLayout.setHideCutout(p.getBoolean("hideCutout", false));
-        DisplaySlidingWindow.setLandscape(p.getBoolean("forceLandscape",false));
+        DisplaySlidingWindow.setLandscape(p.getBoolean("forceLandscape", false));
     }
+
     private void closeTerminalSessionListView() {
         getDrawer().closeDrawers();
     }
