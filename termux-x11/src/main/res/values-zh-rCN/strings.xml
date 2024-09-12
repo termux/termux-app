@@ -240,7 +240,8 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="display_resolution">分辨率</string>
     <string name="touch_sensitivity">触控灵敏度</string>
     <string name="open_keyboard">打开软键盘</string>
-    <string name="inputcontroller">键盘手柄</string>
+    <string name="open_controller">启动控制器</string>
+    <string name="close_controller">关闭控制器</string>
     <string name="progress_manager">任务管理器</string>
     <string name="install_x11_server_bridge">重建依赖</string>
     <string name="stop_desktop">关闭显示器</string>

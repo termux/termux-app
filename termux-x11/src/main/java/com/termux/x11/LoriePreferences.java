@@ -6,8 +6,6 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 
-import static com.termux.x11.LorieView.LONG_PRESS_MODEL;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -96,7 +94,6 @@ public class LoriePreferences extends AppCompatActivity {
         void onChangeOrientation(int landscape);
 
         void reInstallX11StartScript(Activity activity);
-        void reInstallCustomStartScript(Activity activity);
 
         void stopDesktop(Activity activity);
 
@@ -189,7 +186,6 @@ public class LoriePreferences extends AppCompatActivity {
             termuxActivityListener.reInstallX11StartScript(this);
         }
     }
-
     public void stopDesktop() {
         if (termuxActivityListener != null) {
             termuxActivityListener.stopDesktop(this);
@@ -268,6 +264,11 @@ public class LoriePreferences extends AppCompatActivity {
             findPreference("touchMode").setSummary(mode);
             findPreference("scaleTouchpad").setVisible("1".equals(p.getString("touchMode", "1")) && !"native".equals(p.getString("displayResolutionMode", "native")));
             findPreference("showMouseHelper").setEnabled("1".equals(p.getString("touchMode", "1")));
+            if (preferenceActivity.touchShow){
+                findPreference("select_controller").setTitle(R.string.close_controller);
+            }else{
+                findPreference("select_controller").setTitle(R.string.open_controller);
+            }
 
             boolean requestNotificationPermissionVisible =
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
@@ -367,13 +368,11 @@ public class LoriePreferences extends AppCompatActivity {
             if ("open_keyboard".contentEquals(preference.getKey())) {
                 preferenceActivity.openSoftKeyboar();
             }
-            if ("open_inputcontroller".contentEquals(preference.getKey())) {
+            if ("select_controller".contentEquals(preference.getKey())) {
                 if (!preferenceActivity.touchShow) {
                     preferenceActivity.showInputControlsDialog();
-                    preferenceActivity.touchShow = true;
                 } else {
                     preferenceActivity.hideInputControls();
-                    preferenceActivity.touchShow = false;
                 }
             }
             if ("open_progress_manager".contentEquals(preference.getKey())) {
@@ -798,8 +797,6 @@ public class LoriePreferences extends AppCompatActivity {
 
         final CheckBox cbShowTouchscreenControls = dialog.findViewById(R.id.CBShowTouchscreenControls);
         cbShowTouchscreenControls.setChecked(inputControlsView.isShowTouchscreenControls());
-        final CheckBox cbSetToggleModel = dialog.findViewById(R.id.CBSetToggleModel);
-        cbSetToggleModel.setChecked(xServer.getToggleModel() == LONG_PRESS_MODEL ? true : false);
 
         dialog.findViewById(R.id.BTSettings).setOnClickListener((v) -> {
             int position = sProfile.getSelectedItemPosition();
@@ -821,11 +818,12 @@ public class LoriePreferences extends AppCompatActivity {
             }
             xServer.cursorLocker.setEnabled(cbLockCursor.isChecked() ? true : false);
             inputControlsView.setShowTouchscreenControls(cbShowTouchscreenControls.isChecked());
-            xServer.setToggleModel(cbSetToggleModel.isChecked() ? 0 : 1);
             int position = sProfile.getSelectedItemPosition();
             if (position > 0) {
                 showInputControls(inputControlsManager.getProfiles().get(position - 1));
-            } else hideInputControls();
+            } else {
+                hideInputControls();
+            }
         });
 
         dialog.show();
@@ -837,6 +835,8 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.setProfile(controlsProfile);
 
         inputControlsView.invalidate();
+        touchShow = true;
+        loriePreferenceFragment.updatePreferencesLayout();
     }
 
     protected void hideInputControls() {
@@ -846,5 +846,7 @@ public class LoriePreferences extends AppCompatActivity {
         xServer.cursorLocker.setEnabled(false);
 
         inputControlsView.invalidate();
+        touchShow = false;
+        loriePreferenceFragment.updatePreferencesLayout();
     }
 }

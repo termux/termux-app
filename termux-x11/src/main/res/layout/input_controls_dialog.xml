@@ -38,10 +38,4 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/lock_cursor" />
-
-    <CheckBox
-        android:id="@+id/CBSetToggleModel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/toggle_model" />
 </LinearLayout>

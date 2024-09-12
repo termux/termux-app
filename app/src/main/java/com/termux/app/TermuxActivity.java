@@ -32,11 +32,15 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -86,7 +90,6 @@ import com.termux.view.TerminalViewClient;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  * A terminal emulator activity.
@@ -196,7 +199,8 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
     private int mNavBarHeight;
 
     private float mTerminalToolbarDefaultHeight;
-
+    private ScrollView mToolBoxView;
+    private  PopupWindow mPop;
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
@@ -295,7 +299,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         int width = ScreenUtils.getScreenWidth(this);
         int height = ScreenUtils.getScreenHeight(this);
         bitmap = Bitmap.createBitmap(width, height,
-            Bitmap.Config.ARGB_8888);
+                Bitmap.Config.ARGB_8888);
         bitmap.eraseColor(Color.parseColor("#CC000000"));
 //        Bitmap blurBitmap = Blur.fastblur(this, bitmap, 20);
 //        mTermuxActivityRootView.setBackground(new BitmapDrawable(bitmap));
@@ -319,6 +323,8 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
         setToggleKeyboardView();
 
+        setToolBoxView();
+
         registerForContextMenu(mTerminalView);
 
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
@@ -339,9 +345,9 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         } catch (Exception e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "TermuxActivity failed to start TermuxService", e);
             Logger.showToast(this,
-                getString(e.getMessage() != null && e.getMessage().contains("app is in background") ?
-                    R.string.error_termux_service_start_failed_bg : R.string.error_termux_service_start_failed_general),
-                true);
+                    getString(e.getMessage() != null && e.getMessage().contains("app is in background") ?
+                            R.string.error_termux_service_start_failed_bg : R.string.error_termux_service_start_failed_general),
+                    true);
             mIsInvalidState = true;
             return;
         }
@@ -375,18 +381,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                     CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x", TERMUX_FILES_DIR_PATH + "/home/install")));
                     FileUtils.copyAssetsFile2Phone(activity, "termux-x11-nightly-1-0-all.deb");
                     CommandUtils.execInPath(activity, "install", null, "/home/");
-                });
-            }
-
-            @Override
-            public void reInstallCustomStartScript(Activity activity) {
-                activity.runOnUiThread(() -> {
-                    FileUtils.copyAssetsFile2Phone(activity, "recover");
-                    FileUtils.copyAssetsFile2Phone(activity, "winhandler.exe");
-                    FileUtils.copyAssetsFile2Phone(activity, "wfm.exe");
-                    FileUtils.copyAssetsFile2Phone(activity, "wine.tar");
-                    CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x", TERMUX_FILES_DIR_PATH + "/home/recover")));
-                    CommandUtils.execInPath(activity, "recover", null, "/home/");
                 });
             }
 
@@ -690,7 +684,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
     private void setTerminalToolbarView(Bundle savedInstanceState) {
         mTermuxTerminalExtraKeys = new TermuxTerminalExtraKeys(this, mTerminalView,
-            mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
+                mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
 
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (mPreferences.shouldShowTerminalToolbar())
@@ -715,8 +709,8 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         layoutParams.height = Math.round(mTerminalToolbarDefaultHeight *
-            (mTermuxTerminalExtraKeys.getExtraKeysInfo() == null ? 0 : mTermuxTerminalExtraKeys.getExtraKeysInfo().getMatrix().length) *
-            mProperties.getTerminalToolbarHeightScaleFactor());
+                (mTermuxTerminalExtraKeys.getExtraKeysInfo() == null ? 0 : mTermuxTerminalExtraKeys.getExtraKeysInfo().getMatrix().length) *
+                mProperties.getTerminalToolbarHeightScaleFactor());
         terminalToolbarViewPager.setLayoutParams(layoutParams);
     }
 
@@ -757,9 +751,9 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
             TextInputDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
-                R.string.action_create_named_session_confirm, text -> mTermuxTerminalSessionActivityClient.addNewSession(false, text),
-                R.string.action_new_session_failsafe, text -> mTermuxTerminalSessionActivityClient.addNewSession(true, text),
-                -1, null, null);
+                    R.string.action_create_named_session_confirm, text -> mTermuxTerminalSessionActivityClient.addNewSession(false, text),
+                    R.string.action_new_session_failsafe, text -> mTermuxTerminalSessionActivityClient.addNewSession(true, text),
+                    -1, null, null);
             return true;
         });
     }
@@ -776,6 +770,46 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         });
     }
 
+    private void setToolBoxView() {
+        mPop = new PopupWindow(this);
+        mToolBoxView = new ScrollView(this);
+        mToolBoxView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
+
+        GridLayout gridLayout = new GridLayout(this);
+        int r =2;
+        int c = 3;
+        int all = r*c;
+        gridLayout.setColumnCount(c);
+        gridLayout.setRowCount(r);
+        gridLayout.setVerticalScrollBarEnabled(true);
+
+        Button recover = new Button(this);
+        recover.setText("recover");
+        gridLayout.addView(recover);
+        recover.setOnClickListener(v -> {
+            reInstallCustomStartScript();
+            mPop.dismiss();
+        });
+        for (int i=1;i<all;i++){
+            Button but = new Button(this);
+            but.setText("(^*^)");
+            gridLayout.addView(but);
+            but.setOnClickListener(v -> {
+                mPop.dismiss();
+            });
+        }
+        mToolBoxView.addView(gridLayout);
+        mPop.setContentView(mToolBoxView);
+        findViewById(R.id.toggle_tool_box).setOnClickListener(v -> {
+            int x = 0;
+            int y = 120;
+            if (getExtraKeysView().getVisibility()==View.VISIBLE){
+                y+=getExtraKeysView().getHeight();
+            }
+            mPop.showAtLocation(findViewById(R.id.left_drawer),Gravity.LEFT|Gravity.BOTTOM,x,y);
+        });
+
+    }
 
     @SuppressLint("RtlHardcoded")
     @Override
@@ -927,9 +961,9 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.
             new AlertDialog.Builder(this).setMessage(getString(R.string.error_styling_not_installed))
-                .setPositiveButton(R.string.action_styling_install,
-                    (dialog, which) -> ActivityUtils.startActivity(this, new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL))))
-                .setNegativeButton(android.R.string.cancel, null).show();
+                    .setPositiveButton(R.string.action_styling_install,
+                            (dialog, which) -> ActivityUtils.startActivity(this, new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL))))
+                    .setNegativeButton(android.R.string.cancel, null).show();
         }
     }
 
@@ -967,16 +1001,16 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
                 // If permission is granted, then also setup storage symlinks.
                 if (PermissionUtils.checkAndRequestLegacyOrManageExternalStoragePermission(
-                    TermuxActivity.this, requestCode, !isPermissionCallback)) {
+                        TermuxActivity.this, requestCode, !isPermissionCallback)) {
                     if (isPermissionCallback)
                         Logger.logInfoAndShowToast(TermuxActivity.this, LOG_TAG,
-                            getString(com.termux.shared.R.string.msg_storage_permission_granted_on_request));
+                                getString(com.termux.shared.R.string.msg_storage_permission_granted_on_request));
 
                     TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
                 } else {
                     if (isPermissionCallback)
                         Logger.logInfoAndShowToast(TermuxActivity.this, LOG_TAG,
-                            getString(com.termux.shared.R.string.msg_storage_permission_not_granted_on_request));
+                                getString(com.termux.shared.R.string.msg_storage_permission_not_granted_on_request));
                 }
             }
         }.start();
@@ -993,7 +1027,16 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             onRequestLoadBackFile(requestCode, resultCode, data);
         }
     }
-
+    public void reInstallCustomStartScript() {
+        runOnUiThread(() -> {
+            FileUtils.copyAssetsFile2Phone(this, "recover");
+            FileUtils.copyAssetsFile2Phone(this, "winhandler.exe");
+            FileUtils.copyAssetsFile2Phone(this, "wfm.exe");
+            FileUtils.copyAssetsFile2Phone(this, "wine.tar");
+            CommandUtils.exec(this, "chmod", new ArrayList<>(Arrays.asList("+x", TERMUX_FILES_DIR_PATH + "/home/recover")));
+            CommandUtils.execInPath(this, "recover", null, "/home/");
+        });
+    }
     private void onRequestLoadBackFile(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK) {
             Uri uri = data.getData();

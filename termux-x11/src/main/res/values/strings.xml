@@ -42,7 +42,8 @@
     <string name="display_resolution_summary">Example: 1280x1024</string>
     <string name="touch_sensitivity">Touch sensitivity, x300ms</string>
     <string name="open_keyboard">Open keyboard</string>
-    <string name="inputcontroller">Inputcontroller</string>
+    <string name="open_controller">Open Controller</string>
+    <string name="close_controller">Close Controller</string>
     <string name="progress_manager">Progress manager</string>
     <string name="install_x11_server_bridge">Install x11 server bridge</string>
     <string name="stop_desktop">Stop desktop</string>

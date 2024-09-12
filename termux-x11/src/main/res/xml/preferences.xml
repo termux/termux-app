@@ -37,8 +37,8 @@
             android:key="open_keyboard"
             android:title="@string/open_keyboard" />
         <Preference
-            android:key="open_inputcontroller"
-            android:title="@string/inputcontroller" />
+            android:key="select_controller"
+            android:title="@string/open_controller" />
         <Preference
             android:key="open_progress_manager"
             android:title="@string/progress_manager" />
