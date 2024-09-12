@@ -20,6 +20,7 @@
     <string name="title_create_named_session">新建命名会话</string>
     <string name="action_create_named_session_confirm">创建</string>
     <string name="action_toggle_soft_keyboard">软键盘</string>
+    <string name="action_toggle_tool_box">工具箱</string>
     <string name="msg_enabling_terminal_toolbar">启用终端工具栏</string>
     <string name="msg_disabling_terminal_toolbar">禁用终端工具栏</string>
     <string name="action_select_url">选择网址</string>

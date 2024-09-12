@@ -4,35 +4,35 @@
     android:id="@+id/activity_termux_root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/activity_termux_root_relative_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_marginHorizontal="3dp"
         android:layout_marginVertical="0dp"
+        android:layout_weight="1"
         android:orientation="vertical">
 
         <androidx.drawerlayout.widget.DrawerLayout
             android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
-            android:layout_alignParentTop="true"
+            android:layout_height="match_parent"
             android:layout_above="@+id/terminal_toolbar_view_pager"
-            android:layout_height="match_parent">
+            android:layout_alignParentTop="true">
 
             <com.termux.view.TerminalView
                 android:id="@+id/terminal_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:autofillHints="password"
                 android:defaultFocusHighlightEnabled="false"
                 android:focusableInTouchMode="true"
+                android:importantForAutofill="no"
                 android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
                 android:scrollbars="vertical"
-                android:importantForAutofill="no"
-                android:autofillHints="password"
                 tools:ignore="UnusedAttribute" />
 
             <LinearLayout
@@ -40,40 +40,43 @@
                 android:layout_width="240dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"
+                android:background="?attr/termuxActivityDrawerBackground"
                 android:choiceMode="singleChoice"
+                android:descendantFocusability="blocksDescendants"
                 android:divider="@android:color/transparent"
                 android:dividerHeight="0dp"
-                android:descendantFocusability="blocksDescendants"
-                android:orientation="vertical"
-                android:background="?attr/termuxActivityDrawerBackground">
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <ImageButton
                         android:id="@+id/settings_button"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:src="@drawable/ic_settings"
                         android:background="@null"
                         android:contentDescription="@string/action_open_settings"
+                        android:src="@drawable/ic_settings"
                         app:tint="?attr/termuxActivityDrawerImageTint" />
+
                     <ImageButton
                         android:id="@+id/recover_button"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:src="@drawable/recover"
                         android:background="@null"
                         android:contentDescription="@string/action_recover_storage"
+                        android:src="@drawable/recover"
                         app:tint="?attr/termuxActivityDrawerImageTint" />
+
                     <ImageButton
                         android:id="@+id/backup_button"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:src="@drawable/backup"
                         android:background="@null"
                         android:contentDescription="@string/action_backup_storage"
+                        android:src="@drawable/backup"
                         app:tint="?attr/termuxActivityDrawerImageTint" />
                 </LinearLayout>
 
@@ -101,6 +104,14 @@
                         android:text="@string/action_toggle_soft_keyboard" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/toggle_tool_box"
+                        style="?android:attr/buttonBarButtonStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/action_toggle_tool_box" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/new_session_button"
                         style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="match_parent"
@@ -114,11 +125,11 @@
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/terminal_toolbar_view_pager"
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="37.5dp"
+            android:layout_alignParentBottom="true"
             android:background="@color/black"
-            android:layout_alignParentBottom="true" />
+            android:visibility="gone" />
 
     </RelativeLayout>
 

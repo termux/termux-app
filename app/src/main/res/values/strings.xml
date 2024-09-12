@@ -35,6 +35,7 @@
     <string name="action_create_named_session_confirm">Create</string>
 
     <string name="action_toggle_soft_keyboard">Keyboard</string>
+    <string name="action_toggle_tool_box">ToolBox</string>
 
     <string name="msg_enabling_terminal_toolbar">Enabling Terminal Toolbar</string>
     <string name="msg_disabling_terminal_toolbar">Disabling Terminal Toolbar</string>
