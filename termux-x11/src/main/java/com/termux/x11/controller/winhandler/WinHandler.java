@@ -220,7 +220,6 @@ public class WinHandler {
     }
 
     private void handleRequest(byte requestCode, final int port) {
-        Log.d("handleRequest","RequestCodes:"+requestCode);
         switch (requestCode) {
             case RequestCodes.INIT: {
                 initReceived = true;

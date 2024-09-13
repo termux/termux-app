@@ -85,6 +85,15 @@ public class LoriePreferences extends AppCompatActivity {
     protected LorieView xServer;
     protected boolean touchShow = false;
     protected int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+    public boolean getTouchShow(){
+        return touchShow;
+    }
+
+    public void getTermuxProcessorInfo() {
+        if (termuxActivityListener!=null){
+            termuxActivityListener.collectProcessorInfo();
+        }
+    }
 
     protected interface TermuxActivityListener {
         void onX11PreferenceSwitchChange(boolean isOpen);
@@ -106,6 +115,7 @@ public class LoriePreferences extends AppCompatActivity {
         void changePreference(String key);
 
         void ignoreCutout(boolean ignoreCutoutOperation);
+        void collectProcessorInfo();
     }
 
     public TermuxActivityListener getTermuxActivityListener() {

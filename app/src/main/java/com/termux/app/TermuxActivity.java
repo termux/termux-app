@@ -1,5 +1,6 @@
 package com.termux.app;
 
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_FILES_DIR_PATH;
 
 import android.annotation.SuppressLint;
@@ -16,6 +17,10 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -200,7 +205,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
     private float mTerminalToolbarDefaultHeight;
     private ScrollView mToolBoxView;
-    private  PopupWindow mPop;
+    private PopupWindow mPop;
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
@@ -413,6 +418,12 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             @Override
             public void ignoreCutout(boolean ignoreCutoutOperation) {
                 slideWindowLayout.setIgnoreCutOut(ignoreCutoutOperation);
+            }
+
+            @Override
+            public void collectProcessorInfo() {
+                String cmd = "ps -aux|sort -k4,6nr|head -n 13";
+                //collect，parse,fill
             }
         };
     }
@@ -772,41 +783,57 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
     private void setToolBoxView() {
         mPop = new PopupWindow(this);
+        mPop.setBackgroundDrawable(getDrawable(R.drawable.tool_box_background));
+        int width = ScreenUtils.getScreenWidth(this);
+        mPop.setWidth(width);
+        mPop.setHeight(width);
         mToolBoxView = new ScrollView(this);
-        mToolBoxView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
-
+        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        param.gravity = Gravity.CENTER | Gravity.TOP;
+        mToolBoxView.setLayoutParams(param);
         GridLayout gridLayout = new GridLayout(this);
-        int r =2;
-        int c = 3;
-        int all = r*c;
+        int r = 3;
+        int c = 4;
+        int all = r * c;
         gridLayout.setColumnCount(c);
         gridLayout.setRowCount(r);
         gridLayout.setVerticalScrollBarEnabled(true);
+        LinearLayout.LayoutParams grideParam = new LinearLayout.LayoutParams(width, width);
+        grideParam.gravity = Gravity.CENTER;
+        gridLayout.setLayoutParams(grideParam);
+        gridLayout.setPadding(50, 8, 50, 8);
+
 
         Button recover = new Button(this);
-        recover.setText("recover");
+        recover.setText("mobox");
+        recover.setWidth(width / 5);
         gridLayout.addView(recover);
         recover.setOnClickListener(v -> {
             reInstallCustomStartScript();
             mPop.dismiss();
         });
-        for (int i=1;i<all;i++){
+        for (int i = 1; i < all; i++) {
             Button but = new Button(this);
             but.setText("(^*^)");
+            but.setWidth(width / 5);
+            but.setGravity(Gravity.CENTER);
             gridLayout.addView(but);
             but.setOnClickListener(v -> {
                 mPop.dismiss();
             });
         }
-        mToolBoxView.addView(gridLayout);
+        LinearLayout linearLayout = new LinearLayout(this);
+        linearLayout.setLayoutParams(param);
+        linearLayout.addView(gridLayout);
+        mToolBoxView.addView(linearLayout);
         mPop.setContentView(mToolBoxView);
         findViewById(R.id.toggle_tool_box).setOnClickListener(v -> {
             int x = 0;
             int y = 120;
-            if (getExtraKeysView().getVisibility()==View.VISIBLE){
-                y+=getExtraKeysView().getHeight();
+            if (getExtraKeysView().getVisibility() == View.VISIBLE) {
+                y += getExtraKeysView().getHeight();
             }
-            mPop.showAtLocation(findViewById(R.id.left_drawer),Gravity.LEFT|Gravity.BOTTOM,x,y);
+            mPop.showAtLocation(findViewById(R.id.left_drawer), Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, x, y);
         });
 
     }
@@ -1027,6 +1054,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             onRequestLoadBackFile(requestCode, resultCode, data);
         }
     }
+
     public void reInstallCustomStartScript() {
         runOnUiThread(() -> {
             FileUtils.copyAssetsFile2Phone(this, "recover");
@@ -1037,6 +1065,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             CommandUtils.execInPath(this, "recover", null, "/home/");
         });
     }
+
     private void onRequestLoadBackFile(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK) {
             Uri uri = data.getData();
