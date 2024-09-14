@@ -59,6 +59,7 @@ import com.termux.x11.controller.core.DownloadProgressDialog;
 import com.termux.x11.controller.inputcontrols.ControlsProfile;
 import com.termux.x11.controller.inputcontrols.InputControlsManager;
 import com.termux.x11.controller.widget.InputControlsView;
+import com.termux.x11.controller.winhandler.ProcessInfo;
 import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.utils.KeyInterceptor;
 import com.termux.x11.utils.SamsungDexUtils;
@@ -72,6 +73,7 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.PatternSyntaxException;
@@ -89,10 +91,11 @@ public class LoriePreferences extends AppCompatActivity {
         return touchShow;
     }
 
-    public void getTermuxProcessorInfo() {
+    public List<ProcessInfo> getTermuxProcessorInfo(String tag) {
         if (termuxActivityListener!=null){
-            termuxActivityListener.collectProcessorInfo();
+           return termuxActivityListener.collectProcessorInfo(tag);
         }
+        return null;
     }
 
     protected interface TermuxActivityListener {
@@ -115,7 +118,7 @@ public class LoriePreferences extends AppCompatActivity {
         void changePreference(String key);
 
         void ignoreCutout(boolean ignoreCutoutOperation);
-        void collectProcessorInfo();
+        List<ProcessInfo> collectProcessorInfo(String tag);
     }
 
     public TermuxActivityListener getTermuxActivityListener() {

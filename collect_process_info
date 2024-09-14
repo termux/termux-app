@@ -1,0 +1,6 @@
+#!/data/data/com.termux/files/usr/bin/bash
+if [ "$1" -eq 0 ];then
+    ps -aux|sort -k5,6nr|head -n 14|awk '{print $2,$5,$6,$11}' > /data/data/com.termux/files/usr/tmp/process_info
+else
+    echo "" > /data/data/com.termux/files/usr/tmp/process_info
+fi

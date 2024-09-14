@@ -319,7 +319,6 @@ public class InputControlsView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (editMode && readyToDraw) {
-            Log.d("onTouchEvent.inputControllerview.editmode", "<<<<<<<<<<<<<" + event.getAction() + ">>>>>>>>>>>>>>>>>>>");
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     float x = event.getX();
