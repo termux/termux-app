@@ -45,6 +45,7 @@ cp startxserver $PREFIX/bin/
 
 cp install $ASSETS_PATH
 cp recover $ASSETS_PATH
+cp collect_process_info $ASSETS_PATH
 
 mkdir -p $CONTROL_DIR
 cat <<EOF >$CONTROL_DIR/control
