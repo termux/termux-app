@@ -463,7 +463,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                                 }
 
                                 ProcessInfo processInfo = new ProcessInfo(Integer.parseInt(strs[0]),
-                                    fileName, Long.parseLong(strs[2]), 15, false);
+                                    fileName, Long.parseLong(strs[1]), 15, false);
                                 processInfoList.add(processInfo);
                             }
                         } catch (IOException e) {
