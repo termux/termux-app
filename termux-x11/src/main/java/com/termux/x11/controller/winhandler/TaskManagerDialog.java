@@ -40,7 +40,6 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
         Button cancelButton = findViewById(R.id.BTCancel);
         cancelButton.setText(R.string.new_task);
         cancelButton.setOnClickListener((v) -> {
-            activity.getTermuxProcessorInfo("1");
             dismiss();
             ContentDialog.prompt(activity, R.string.new_task, "taskmgr.exe", (command) -> activity.getWinHandler().exec(command));
         });
@@ -50,7 +49,9 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
                 timer.cancel();
                 timer = null;
             }
-
+            activity.getTermuxProcessorInfo("1");
+            final LinearLayout container = findViewById(R.id.LLProcessList);
+            container.removeAllViews();
             activity.getWinHandler().setOnGetProcessInfoListener(null);
         });
         inflater = LayoutInflater.from(activity);
@@ -61,9 +62,11 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
             activity.getWinHandler().listProcesses();
 
             final LinearLayout container = findViewById(R.id.LLProcessList);
-            if (container.getChildCount() == 0){
+            if (container.getChildCount() == 0) {
                 listAndroidProcess();
-//                findViewById(R.id.TVEmptyText).setVisibility(View.VISIBLE);
+                if (container.getChildCount() == 0) {
+                    findViewById(R.id.TVEmptyText).setVisibility(View.VISIBLE);
+                }
             }
 
         }
@@ -74,13 +77,13 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
 
     private void listAndroidProcess() {
         List<ProcessInfo> processInfoList = activity.getTermuxProcessorInfo("0");
-        if (processInfoList==null){
+        if (processInfoList == null) {
             return;
         }
-        int idx =0;
-        for (ProcessInfo processInfo : processInfoList){
-            onGetProcessInfo(idx,processInfoList.size(),processInfo);
-            idx ++;
+        int idx = 0;
+        for (ProcessInfo processInfo : processInfoList) {
+            onGetProcessInfo(idx, processInfoList.size(), processInfo);
+            idx++;
         }
 //        ActivityManager activityManager = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
 //        List<ActivityManager.RunningAppProcessInfo> runningAppProcessInfoList = activityManager.getRunningAppProcesses();
@@ -126,7 +129,6 @@ public class TaskManagerDialog extends ContentDialog implements OnGetProcessInfo
             winHandler.setProcessAffinity(processInfo.pid, ProcessHelper.getAffinityMask(cpuListView.getCheckedCPUList()));
             update();
         });
-        activity.getTermuxProcessorInfo("1");
         dialog.show();
     }
 
