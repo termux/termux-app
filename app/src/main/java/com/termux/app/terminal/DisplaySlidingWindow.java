@@ -6,15 +6,9 @@ import static android.os.Build.VERSION.SDK_INT;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsets;
 import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
-
-import androidx.core.view.WindowInsetsCompat;
 
 import com.nineoldandroids.view.ViewHelper;
 import com.termux.app.terminal.utils.ScreenUtils;
@@ -74,11 +68,12 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private int mMenuRightPadding;
     private int verticalPadding;
 
-    public boolean isSwitchSlider() {
-        return switchSlider;
+    public boolean isContentSwitchSlider() {
+        return contentSwitchSlider;
     }
 
-    private boolean switchSlider;
+    private boolean contentSwitchSlider;
+    private boolean menuSwitchSlider;
     private float downX, downY;
     private boolean moving;
     private static int statusHeight;
@@ -120,7 +115,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
         setClickable(true);
         this.ctx = context;
-        switchSlider = true;
+        contentSwitchSlider = true;
         mScreenWidth = ScreenUtils.getScreenWidth(ctx);
         mScreenHeight = ScreenUtils.getScreenHeight(ctx);
         statusHeight = ScreenUtils.getStatusHeight(ctx);
@@ -208,8 +203,11 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 //        Log.d("onInterceptTouchEvent",String.valueOf(ev.getAction()));
-        if (!switchSlider) {
+        if (!contentSwitchSlider) {
             mOnMenuChangeListener.sendTouchEvent(ev);
+            return false;
+        }
+        if (menuSwitchSlider){
             return false;
         }
         return super.onInterceptTouchEvent(ev);
@@ -255,7 +253,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                             ViewHelper.setTranslationX(mLeftMenu, -mRightMenuOpenOffset);
                         }
                         isLeftMenuOpen = false;
-                        switchSlider = false;
+                        contentSwitchSlider = false;
+                        menuSwitchSlider = false;
                     } else//open left menu
                     {
                         this.smoothScrollTo(0, 0);
@@ -266,6 +265,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                             ViewHelper.setTranslationX(mLeftMenu, 0);
                         }
                         isLeftMenuOpen = true;
+                        menuSwitchSlider =true;
                     }
                 }
                 //operate right
@@ -284,6 +284,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
                         }
                         isRightMenuOpen = true;
+                        menuSwitchSlider = true;
 //					mRightMenu.bringToFront();
                     } else//close right menu
                     {
@@ -300,12 +301,13 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
                         }
                         isRightMenuOpen = false;
-                        switchSlider = false;
+                        contentSwitchSlider = false;
+                        menuSwitchSlider=false;
                     }
                 }
                 return false;
         }
-        if (switchSlider) {
+        if (contentSwitchSlider) {
             super.onTouchEvent(ev);
         } else {
 //           return mOnMenuChangeListener.sendTouchEvent(ev);
@@ -330,7 +332,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     public void setX11PreferenceSwitchSlider(boolean openSlider) {
-        this.switchSlider = openSlider;
+        this.contentSwitchSlider = openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
         } else {
@@ -350,7 +352,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     public void setTerminalViewSwitchSlider(boolean openSlider) {
-        this.switchSlider = openSlider;
+        this.contentSwitchSlider = openSlider;
+        this.menuSwitchSlider = !openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
         } else {
@@ -365,7 +368,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     public void releaseSlider(boolean open) {
-        this.switchSlider = open;
+        this.contentSwitchSlider = open;
+        this.menuSwitchSlider = !open;
     }
 
     public void setHideCutout(boolean hide) {
