@@ -6,6 +6,7 @@ import static android.os.Build.VERSION.SDK_INT;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
@@ -209,7 +210,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         }
         if (menuSwitchSlider){
             switch (ev.getAction()) {
-                case MotionEvent.ACTION_MOVE: {
+                case MotionEvent.ACTION_DOWN: {
                     if (!moving) {
                         downX = ev.getRawX();
                         downY = ev.getRawY();
@@ -234,9 +235,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     @Override
-
     public boolean onTouchEvent(MotionEvent ev) {
-//        Log.d("onTouchEvent",String.valueOf(ev.getAction()));
         int action = ev.getAction();
         switch (action) {
             // open menu if scroll to distance that more than half menu width

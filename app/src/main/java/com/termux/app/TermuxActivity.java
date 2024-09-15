@@ -484,10 +484,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         };
     }
 
-    public void execCommand(String cmd, ArrayList<String> args) {
-        CommandUtils.exec(this, cmd, args);
-    }
-
     @Override
     public void onStart() {
         super.onStart();
@@ -760,7 +756,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (mPreferences.shouldShowTerminalToolbar())
             terminalToolbarViewPager.setVisibility(View.VISIBLE);
-
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         mTerminalToolbarDefaultHeight = layoutParams.height;
 
@@ -788,7 +783,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
     public void toggleTerminalToolbar() {
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (terminalToolbarViewPager == null) return;
-
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
         terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
