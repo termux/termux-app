@@ -48,12 +48,12 @@ public class TerminalToolbarViewPager {
                 extraKeysView.setButtonTextAllCaps(mActivity.getProperties().shouldExtraKeysTextBeAllCaps());
                 mActivity.setExtraKeysView(extraKeysView);
                 extraKeysView.reload(mActivity.getTermuxTerminalExtraKeys().getExtraKeysInfo(),
-                    mActivity.getTerminalToolbarDefaultHeight());
+                        mActivity.getTerminalToolbarDefaultHeight());
 
                 // apply extra keys fix if enabled in prefs
-                if (mActivity.getProperties().isUsingFullScreen() && mActivity.getProperties().isUsingFullScreenWorkAround()) {
-                    FullScreenWorkAround.apply(mActivity);
-                }
+//                if (mActivity.getProperties().isUsingFullScreen() && mActivity.getProperties().isUsingFullScreenWorkAround()) {
+//                    FullScreenWorkAround.apply(mActivity);
+//                }
 
             } else {
                 layout = inflater.inflate(R.layout.view_terminal_toolbar_text_input, collection, false);
@@ -91,7 +91,6 @@ public class TerminalToolbarViewPager {
     }
 
 
-
     public static class OnPageChangeListener extends ViewPager.SimpleOnPageChangeListener {
 
         final TermuxActivity mActivity;
@@ -108,7 +107,8 @@ public class TerminalToolbarViewPager {
                 mActivity.getTerminalView().requestFocus();
             } else {
                 final EditText editText = mTerminalToolbarViewPager.findViewById(R.id.terminal_toolbar_text_input);
-                if (editText != null) editText.requestFocus();
+                // this lead screen flicker
+//                if (editText != null) editText.requestFocus();
             }
         }
 

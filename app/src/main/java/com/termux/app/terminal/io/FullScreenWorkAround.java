@@ -4,6 +4,7 @@ import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.termux.R;
 import com.termux.app.TermuxActivity;
 
 /**
@@ -27,7 +28,8 @@ public class FullScreenWorkAround {
     }
 
     private FullScreenWorkAround(TermuxActivity activity) {
-        ViewGroup content = activity.findViewById(android.R.id.content);
+//        ViewGroup content = activity.findViewById(android.R.id.content);
+        ViewGroup content = activity.findViewById(R.id.activity_termux_root_view);
         mChildOfContent = content.getChildAt(0);
         mViewGroupLayoutParams = mChildOfContent.getLayoutParams();
         mNavBarHeight = activity.getNavBarHeight();

@@ -188,6 +188,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
+        Log.d("onLayout","changed");
         if (changed) {
             // hide menu at start up
             showContent();
