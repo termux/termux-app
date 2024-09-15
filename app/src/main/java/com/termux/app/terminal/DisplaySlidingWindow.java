@@ -208,6 +208,26 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             return false;
         }
         if (menuSwitchSlider){
+            switch (ev.getAction()) {
+                case MotionEvent.ACTION_MOVE: {
+                    if (!moving) {
+                        downX = ev.getRawX();
+                        downY = ev.getRawY();
+                        moving = true;
+                    }
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                    int scrollX = getScrollX();
+                    moving = false;
+                    float dx = ev.getRawX() - downX;
+                    float dy = ev.getRawY() - downY;
+                    if (scrollX <= 0) {
+                        if (dx > mMenuWidth * 0.6 && Math.abs(dx) > Math.abs(dy)) {
+                            mOnMenuChangeListener.onEdgeReached();
+                        }
+                    }
+            }
             return false;
         }
         return super.onInterceptTouchEvent(ev);
@@ -219,27 +239,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 //        Log.d("onTouchEvent",String.valueOf(ev.getAction()));
         int action = ev.getAction();
         switch (action) {
-            case MotionEvent.ACTION_MOVE: {
-                if (!moving) {
-                    downX = ev.getRawX();
-                    downY = ev.getRawY();
-                    moving = true;
-                }
-                break;
-            }
-        }
-        switch (action) {
             // open menu if scroll to distance that more than half menu width
             case MotionEvent.ACTION_UP:
                 int scrollX = getScrollX();
-                moving = false;
-                float dx = ev.getRawX() - downX;
-                float dy = ev.getRawY() - downY;
-                if (scrollX <= 0) {
-                    if (dx > mMenuWidth * 0.6 && Math.abs(dx) > Math.abs(dy)) {
-                        mOnMenuChangeListener.onEdgeReached();
-                    }
-                }
                 //operate left
                 if (isOperateLeft) {
                     // area hidden more than half of menu width close it
