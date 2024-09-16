@@ -85,7 +85,7 @@ public class LoriePreferences extends AppCompatActivity {
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
     protected LoriePreferenceFragment loriePreferenceFragment;
     protected LorieView xServer;
-    protected boolean touchShow = false;
+    protected static boolean touchShow = false;
     protected int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
     public boolean getTouchShow(){
         return touchShow;
