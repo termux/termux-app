@@ -84,8 +84,8 @@ public final class TerminalEmulator {
     /** Escape processing: "ESC _" or Application Program Command (APC), followed by Escape. */
     private static final int ESC_APC_ESCAPE = 21;
 
-    /** The number of parameter arguments. This name comes from the ANSI standard for terminal escape codes. */
-    private static final int MAX_ESCAPE_PARAMETERS = 16;
+    /** The number of parameter arguments including colon separated sub-parameters. */
+    private static final int MAX_ESCAPE_PARAMETERS = 32;
 
     /** Needs to be large enough to contain reasonable OSC 52 pastes. */
     private static final int MAX_OSC_STRING_LENGTH = 8192;
@@ -178,6 +178,8 @@ public final class TerminalEmulator {
     private int mArgIndex;
     /** Holds the arguments of the current escape sequence. */
     private final int[] mArgs = new int[MAX_ESCAPE_PARAMETERS];
+    /** Holds the bit flags which arguments are sub parameters (after a colon) - bit N is set if <code>mArgs[N]</code> is a sub parameter. */
+    private int mArgsSubParamsBitSet = 0;
 
     /** Holds OSC and device control arguments, which can be strings. */
     private final StringBuilder mOSCOrDeviceControlArgs = new StringBuilder();
@@ -238,15 +240,17 @@ public final class TerminalEmulator {
     private boolean mCursorBlinkState;
 
     /**
-     * Current foreground and background colors. Can either be a color index in [0,259] or a truecolor (24-bit) value.
+     * Current foreground, background and underline colors. Can either be a color index in [0,259] or a truecolor (24-bit) value.
      * For a 24-bit value the top byte (0xff000000) is set.
+     *
+     * <p>Note that the underline color is currently parsed but not yet used during rendering.
      *
      * @see TextStyle
      */
-    int mForeColor, mBackColor;
+    int mForeColor, mBackColor, mUnderlineColor;
 
     /** Current {@link TextStyle} effect. */
-    private int mEffect;
+    int mEffect;
 
     /**
      * The number of scrolled lines since last calling {@link #clearScrollCounter()}. Used for moving selection up along
@@ -1324,6 +1328,7 @@ public final class TerminalEmulator {
         mEscapeState = ESC;
         mArgIndex = 0;
         Arrays.fill(mArgs, -1);
+        mArgsSubParamsBitSet = 0;
     }
 
     private void doLinefeed() {
@@ -1808,6 +1813,11 @@ public final class TerminalEmulator {
     private void selectGraphicRendition() {
         if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
         for (int i = 0; i <= mArgIndex; i++) {
+            // Skip leading sub parameters:
+            if ((mArgsSubParamsBitSet & (1 << i)) != 0) {
+                continue;
+            }
+
             int code = getArg(i, 0, false);
             if (code < 0) {
                 if (mArgIndex > 0) {
@@ -1827,7 +1837,19 @@ public final class TerminalEmulator {
             } else if (code == 3) {
                 mEffect |= TextStyle.CHARACTER_ATTRIBUTE_ITALIC;
             } else if (code == 4) {
-                mEffect |= TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                if (i + 1 <= mArgIndex && ((mArgsSubParamsBitSet & (1 << (i + 1))) != 0)) {
+                    // Sub parameter, see https://sw.kovidgoyal.net/kitty/underlines/
+                    i++;
+                    if (mArgs[i] == 0) {
+                        // No underline.
+                        mEffect &= ~TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                    } else {
+                        // Different variations of underlines: https://sw.kovidgoyal.net/kitty/underlines/
+                        mEffect |= TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                    }
+                } else {
+                    mEffect |= TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                }
             } else if (code == 5) {
                 mEffect |= TextStyle.CHARACTER_ATTRIBUTE_BLINK;
             } else if (code == 7) {
@@ -1856,8 +1878,8 @@ public final class TerminalEmulator {
                 mEffect &= ~TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH;
             } else if (code >= 30 && code <= 37) {
                 mForeColor = code - 30;
-            } else if (code == 38 || code == 48) {
-                // Extended set foreground(38)/background (48) color.
+            } else if (code == 38 || code == 48 || code == 58) {
+                // Extended set foreground(38)/background(48)/underline(58) color.
                 // This is followed by either "2;$R;$G;$B" to set a 24-bit color or
                 // "5;$INDEX" to set an indexed color.
                 if (i + 2 > mArgIndex) continue;
@@ -1873,11 +1895,11 @@ public final class TerminalEmulator {
                         if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
                             finishSequenceAndLogError("Invalid RGB: " + red + "," + green + "," + blue);
                         } else {
-                            int argbColor = 0xff000000 | (red << 16) | (green << 8) | blue;
-                            if (code == 38) {
-                                mForeColor = argbColor;
-                            } else {
-                                mBackColor = argbColor;
+                            int argbColor = 0xff_00_00_00 | (red << 16) | (green << 8) | blue;
+                            switch (code) {
+                                case 38: mForeColor = argbColor; break;
+                                case 48: mBackColor = argbColor; break;
+                                case 58: mUnderlineColor = argbColor; break;
                             }
                         }
                         i += 4; // "2;P_r;P_g;P_r"
@@ -1886,10 +1908,10 @@ public final class TerminalEmulator {
                     int color = getArg(i + 2, 0, false);
                     i += 2; // "5;P_s"
                     if (color >= 0 && color < TextStyle.NUM_INDEXED_COLORS) {
-                        if (code == 38) {
-                            mForeColor = color;
-                        } else {
-                            mBackColor = color;
+                        switch (code) {
+                            case 38: mForeColor = color; break;
+                            case 48: mBackColor = color; break;
+                            case 58: mUnderlineColor = color; break;
                         }
                     } else {
                         if (LOG_ESCAPE_SEQUENCES) Logger.logWarn(mClient, LOG_TAG, "Invalid color index: " + color);
@@ -1903,6 +1925,8 @@ public final class TerminalEmulator {
                 mBackColor = code - 40;
             } else if (code == 49) { // Set default background color.
                 mBackColor = TextStyle.COLOR_INDEX_BACKGROUND;
+            } else if (code == 59) { // Set default underline color.
+                mUnderlineColor = TextStyle.COLOR_INDEX_FOREGROUND;
             } else if (code >= 90 && code <= 97) { // Bright foreground colors (aixterm codes).
                 mForeColor = code - 90 + 8;
             } else if (code >= 100 && code <= 107) { // Bright background color (aixterm codes).
@@ -2152,15 +2176,21 @@ public final class TerminalEmulator {
     /**
      * Process the next ASCII character of a parameter.
      *
-     * Parameter characters modify the action or interpretation of the sequence. You can use up to
-     * 16 parameters per sequence. You must use the ; character to separate parameters.
-     * All parameters are unsigned, positive decimal integers, with the most significant
+     * <p>You must use the ; character to separate parameters and : to separate sub-parameters.
+     *
+     * <p>Parameter characters modify the action or interpretation of the sequence. Originally
+     * you can use up to 16 parameters per sequence, but following at least xterm and alacritty
+     * we use a common space for parameters and sub-parameters, allowing 32 in total.
+     *
+     * <p>All parameters are unsigned, positive decimal integers, with the most significant
      * digit sent first. Any parameter greater than 9999 (decimal) is set to 9999
      * (decimal). If you do not specify a value, a 0 value is assumed. A 0 value
      * or omitted parameter indicates a default value for the sequence. For most
      * sequences, the default value is 1.
      *
-     * https://vt100.net/docs/vt510-rm/chapter4.html#S4.3.3
+     * <p>References:
+     * <a href="https://vt100.net/docs/vt510-rm/chapter4.html#S4.3.3">VT510 Video Terminal Programmer Information: Control Sequences</a>
+     * <a href="https://github.com/alacritty/vte/issues/22">alacritty/vte: Implement colon separated CSI parameters</a>
      * */
     private void parseArg(int b) {
         if (b >= '0' && b <= '9') {
@@ -2178,9 +2208,14 @@ public final class TerminalEmulator {
                 mArgs[mArgIndex] = value;
             }
             continueSequence(mEscapeState);
-        } else if (b == ';') {
-            if (mArgIndex < mArgs.length) {
+        } else if (b == ';' || b == ':') {
+            if (mArgIndex + 1 < mArgs.length) {
                 mArgIndex++;
+                if (b == ':') {
+                    mArgsSubParamsBitSet |= 1 << mArgIndex;
+                }
+            } else {
+                logError("Too many parameters when in state: " + mEscapeState);
             }
             continueSequence(mEscapeState);
         } else {
