@@ -4,8 +4,10 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -225,6 +227,15 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             loadBindingSpinner(element, container, 1, R.string.binding_right);
             loadBindingSpinner(element, container, 2, R.string.binding_down);
             loadBindingSpinner(element, container, 3, R.string.binding_left);
+        }
+        else if (type == ControlElement.Type.COMBINE_BUTTON){
+            loadBindingSpinner(element, container, 0, R.string.binding);
+            Button add = new Button(this);
+            add.setText(R.string.add_button);
+            add.setBackground(R.drawable.button_add_key);
+            ViewGroup.LayoutParams p = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            add.setLayoutParams(p);
+            container.addView(add);
         }
     }
 
