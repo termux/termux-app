@@ -11,7 +11,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.52.0
+ * Version: v0.54.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -277,6 +277,10 @@ import java.util.List;
  *
  * - 0.52.0 (2022-06-18)
  *      - Added `TERMUX_PREFIX_DIR_IGNORED_SUB_FILES_PATHS_TO_CONSIDER_AS_EMPTY`.
+ * - 0.53.0 (2022-08-22)
+ *      - Added `PERMISSION_TERMUX_PLUGIN` and `PERMISSION_TERMUX_SIGNATURE`.
+ * - 0.54.0 (2022-08-22)
+ *      - Added `TERMUX_PLUGINS_DIR_PATH` and `TERMUX_PLUGINS_DIR`.
  */
 
 /**
@@ -682,6 +686,11 @@ public final class TermuxConstants {
     public static final String TERMUX_APPS_DIR_PATH = TERMUX_FILES_DIR_PATH + "/apps"; // Default: "/data/data/com.termux/files/apps"
     /** Termux and plugin apps directory */
     public static final File TERMUX_APPS_DIR = new File(TERMUX_APPS_DIR_PATH);
+    
+    /** Termux and plugin apps directory path */
+    public static final String TERMUX_PLUGINS_DIR_PATH = TERMUX_APPS_DIR_PATH + "/plugins"; // Default: "/data/data/com.termux/files/apps/plugins"
+    /** Termux and plugin apps directory */
+    public static final File TERMUX_PLUGINS_DIR = new File(TERMUX_PLUGINS_DIR_PATH);
 
 
     /** Termux app $PREFIX directory path ignored sub file paths to consider it empty */
@@ -879,6 +888,19 @@ public final class TermuxConstants {
     /** Android OS permission declared by Termux app in AndroidManifest.xml which can be requested by
      * 3rd party apps to run various commands in Termux app context */
     public static final String PERMISSION_RUN_COMMAND = TERMUX_PACKAGE_NAME + ".permission.RUN_COMMAND"; // Default: "com.termux.permission.RUN_COMMAND"
+    
+    /**
+     * Android OS permission declared by Termux app in AndroidManifest.xml which can be requested by
+     * 3rd party apps to connect to the {@link com.termux.app.plugin.PluginService}.
+     */
+    public static final String PERMISSION_TERMUX_PLUGIN = TERMUX_PACKAGE_NAME + ".permission.TERMUX_PLUGIN"; // Default: "com.termux.permission.TERMUX_PLUGIN"
+    
+    /**
+     * A permission only the Termux app can hold that can be used by 3rd party apps to restrict component access to Termux.
+     * The 3rd party apps should also verify the signature of the package {@link TermuxConstants#TERMUX_PACKAGE_NAME}
+     * and verify the request came from {@link TermuxConstants#TERMUX_PACKAGE_NAME}.
+     */
+    public static final String PERMISSION_TERMUX_SIGNATURE = TERMUX_PACKAGE_NAME + ".permission.TERMUX_SIGNATURE"; // Default: "com.termux.permission.TERMUX_SIGNATURE"
 
     /** Termux property defined in termux.properties file as a secondary check to PERMISSION_RUN_COMMAND
      * to allow 3rd party apps to run various commands in Termux app context */
