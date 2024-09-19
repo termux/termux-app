@@ -8,18 +8,19 @@
         android:id="@+id/SCBBindingType"
         style="@style/ComboBox"
         android:layout_width="0dp"
-        android:layout_weight="5"
+        android:layout_weight="4"
         android:entries="@array/binding_type_entries" />
 
     <Spinner
         android:id="@+id/SCBBinding"
         style="@style/ComboBox"
         android:layout_width="0dp"
-        android:layout_weight="5" />
+        android:layout_weight="4" />
 
     <ImageButton
+        android:id="@+id/IBTNDelKeyBinding"
         style="@style/BaseImageButton"
         android:layout_width="0dp"
-        android:layout_weight="2"
+        android:layout_weight="1"
         android:background="@drawable/ic_trash" />
 </LinearLayout>

@@ -1,6 +1,5 @@
 package com.termux.x11.controller;
 
-import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,6 +11,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -240,10 +240,10 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             btn.setText(R.string.add_button);
             btn.setTextColor(getResources().getColor(R.color.colorblack, null));
             btn.setOnClickListener(v -> {
-                loadCombineBindingSpinner(element, addButtonLayout, 0, R.string.binding);
-                container.invalidate();
+                loadCombineBindingSpinner(element, addButtonLayout, addButtonLayout.getChildCount(), R.string.binding);
             });
             addButtonLayout.addView(btn);
+            loadCombineBindingSpinner(element, addButtonLayout, 0, R.string.binding);
             container.addView(addButtonLayout);
         }
     }
@@ -327,6 +327,10 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
         View view = LayoutInflater.from(this).inflate(R.layout.binding_combine_field, container, false);
         final Spinner sBindingType = view.findViewById(R.id.SCBBindingType);
         final Spinner sBinding = view.findViewById(R.id.SCBBinding);
+        final ImageButton deleteButton = view.findViewById(R.id.IBTNDelKeyBinding);
+        deleteButton.setOnClickListener(v->{
+            container.removeView(view);
+        });
 
         Runnable update = () -> {
             String[] bindingEntries = null;
