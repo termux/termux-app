@@ -240,7 +240,11 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             btn.setText(R.string.add_button);
             btn.setTextColor(getResources().getColor(R.color.colorblack, null));
             btn.setOnClickListener(v -> {
-                loadCombineBindingSpinner(element, addButtonLayout, addButtonLayout.getChildCount(), R.string.binding);
+                if (addButtonLayout.getChildCount()<4){
+                    loadCombineBindingSpinner(element, addButtonLayout, addButtonLayout.getChildCount(), R.string.binding);
+                }else{
+                    AppUtils.showToast(this, R.string.too_much_key);
+                }
             });
             addButtonLayout.addView(btn);
             loadCombineBindingSpinner(element, addButtonLayout, 0, R.string.binding);

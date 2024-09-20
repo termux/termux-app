@@ -60,6 +60,7 @@
     <string name="cancel">取消</string>
     <string name="untitled">未命名</string>
     <string name="no_profile_selected">未选择配置文件</string>
+    <string name="too_much_key">不支持绑定超过四个按键</string>
     <string name="no_profile_found">未找到配置文件</string>
     <string name="do_you_want_to_remove_this_profile">删除配置文件？</string>
     <string name="do_you_want_to_duplicate_this_profile">复制配置文件？</string>

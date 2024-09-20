@@ -138,6 +138,7 @@
     <string name="cancel">Cancel</string>
     <string name="untitled">Untitled</string>
     <string name="no_profile_selected">No profile selected</string>
+    <string name="too_much_key">Too much key, No more than four</string>
     <string name="no_profile_found">No profile found</string>
     <string name="do_you_want_to_remove_this_profile">Do you want to remove this profile?</string>
     <string name="do_you_want_to_duplicate_this_profile">Do you want to duplicate this profile?</string>

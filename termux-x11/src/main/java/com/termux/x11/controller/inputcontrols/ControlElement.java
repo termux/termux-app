@@ -252,6 +252,7 @@ public class ControlElement {
         int halfHeight = 0;
 
         switch (type) {
+            case COMBINE_BUTTON:
             case BUTTON:
                 switch (shape) {
                     case RECT:
@@ -592,7 +593,7 @@ public class ControlElement {
     public boolean handleTouchDown(int pointerId, float x, float y) {
         if (currentPointerId == -1 && containsPoint(x, y)) {
             currentPointerId = pointerId;
-            if (type == Type.BUTTON) {
+            if (type == Type.BUTTON || type == Type.COMBINE_BUTTON) {
                 if (isKeepButtonPressedAfterMinTime()) touchTime = System.currentTimeMillis();
                 if (!toggleSwitch || !selected)
                     inputControlsView.handleInputEvent(getBindingAt(0), true);
@@ -713,7 +714,7 @@ public class ControlElement {
 
     public boolean handleTouchUp(int pointerId, float x, float y) {
         if (pointerId == currentPointerId) {
-            if (type == Type.BUTTON) {
+            if (type == Type.BUTTON || type == Type.COMBINE_BUTTON) {
                 Binding binding = getBindingAt(0);
                 if (isKeepButtonPressedAfterMinTime() && touchTime != null) {
                     selected = (System.currentTimeMillis() - (long) touchTime) > BUTTON_MIN_TIME_TO_KEEP_PRESSED;
