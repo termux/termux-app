@@ -30,7 +30,7 @@ public class ControlElement {
     public static final short BUTTON_MIN_TIME_TO_KEEP_PRESSED = 300;
 
     public enum Type {
-        BUTTON, D_PAD, RANGE_BUTTON, STICK, TRACKPAD, COMBINE_BUTTON;
+        BUTTON, D_PAD, RANGE_BUTTON, STICK, TRACKPAD, COMBINE_BUTTON, CHEAT_CODE_TEXT;
 
         public static String[] names() {
             Type[] types = values();
@@ -88,6 +88,8 @@ public class ControlElement {
     private RangeScroller scroller;
     private CubicBezierInterpolator interpolator;
     private Object touchTime;
+    private String cheatCodeText = "None";
+    private boolean cheatCodePressed = false;
 
     public ControlElement(InputControlsView inputControlsView) {
         this.inputControlsView = inputControlsView;
@@ -241,6 +243,14 @@ public class ControlElement {
         this.iconId = (byte) iconId;
     }
 
+    public String getCheatCodeText() {
+        return cheatCodeText;
+    }
+
+    public void setCheatCodeText(String cct) {
+        this.cheatCodeText = cct;
+    }
+
     public Rect getBoundingBox() {
         if (boundingBoxNeedsUpdate) computeBoundingBox();
         return boundingBox;
@@ -252,6 +262,7 @@ public class ControlElement {
         int halfHeight = 0;
 
         switch (type) {
+            case CHEAT_CODE_TEXT:
             case COMBINE_BUTTON:
             case BUTTON:
                 switch (shape) {
@@ -353,6 +364,7 @@ public class ControlElement {
         Rect boundingBox = getBoundingBox();
 
         switch (type) {
+            case CHEAT_CODE_TEXT:
             case COMBINE_BUTTON:
             case BUTTON: {
                 float cx = boundingBox.centerX();
@@ -570,6 +582,7 @@ public class ControlElement {
             elementJSONObject.put("toggleSwitch", toggleSwitch);
             elementJSONObject.put("text", text);
             elementJSONObject.put("iconId", iconId);
+            elementJSONObject.put("cheatCodeText", cheatCodeText);
 
             if (type == Type.RANGE_BUTTON && range != null) {
                 elementJSONObject.put("range", range.name());
@@ -593,7 +606,23 @@ public class ControlElement {
     public boolean handleTouchDown(int pointerId, float x, float y) {
         if (currentPointerId == -1 && containsPoint(x, y)) {
             currentPointerId = pointerId;
-            if (type == Type.BUTTON || type == Type.COMBINE_BUTTON) {
+            if (type == Type.CHEAT_CODE_TEXT) {
+                if (!cheatCodePressed) {
+                    inputControlsView.sendText(getCheatCodeText());
+                    cheatCodePressed = true;
+                }
+                return true;
+            } else if (type == Type.COMBINE_BUTTON) {
+                if (isKeepButtonPressedAfterMinTime()) touchTime = System.currentTimeMillis();
+                if (!toggleSwitch || !selected) {
+                    for (byte i = 0; i < states.length; i++) {
+                        if (getBindingAt(i) != Binding.NONE) {
+                            inputControlsView.handleInputEvent(getBindingAt(i), true);
+                        }
+                    }
+                }
+                return true;
+            } else if (type == Type.BUTTON) {
                 if (isKeepButtonPressedAfterMinTime()) touchTime = System.currentTimeMillis();
                 if (!toggleSwitch || !selected)
                     inputControlsView.handleInputEvent(getBindingAt(0), true);
@@ -714,7 +743,33 @@ public class ControlElement {
 
     public boolean handleTouchUp(int pointerId, float x, float y) {
         if (pointerId == currentPointerId) {
-            if (type == Type.BUTTON || type == Type.COMBINE_BUTTON) {
+            if (type == Type.CHEAT_CODE_TEXT) {
+                cheatCodePressed = false;
+            } else if (type == Type.COMBINE_BUTTON) {
+                if (isKeepButtonPressedAfterMinTime() && touchTime != null) {
+                    selected = (System.currentTimeMillis() - (long) touchTime) > BUTTON_MIN_TIME_TO_KEEP_PRESSED;
+                    if (!selected) {
+                        for (byte i = (byte) (states.length - 1); i >= 0; i--) {
+                            if (getBindingAt(i) != Binding.NONE) {
+                                inputControlsView.handleInputEvent(getBindingAt(i), false);
+                            }
+                        }
+                    }
+                    touchTime = null;
+                    inputControlsView.invalidate();
+                } else if (!toggleSwitch || selected) {
+                    for (byte i = (byte) (states.length - 1); i >= 0; i--) {
+                        if (getBindingAt(i) != Binding.NONE) {
+                            inputControlsView.handleInputEvent(getBindingAt(i), false);
+                        }
+                    }
+                }
+
+                if (toggleSwitch) {
+                    selected = !selected;
+                    inputControlsView.invalidate();
+                }
+            } else if (type == Type.BUTTON) {
                 Binding binding = getBindingAt(0);
                 if (isKeepButtonPressedAfterMinTime() && touchTime != null) {
                     selected = (System.currentTimeMillis() - (long) touchTime) > BUTTON_MIN_TIME_TO_KEEP_PRESSED;

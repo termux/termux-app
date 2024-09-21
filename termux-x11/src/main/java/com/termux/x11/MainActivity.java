@@ -51,11 +51,13 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -731,7 +733,19 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         orientation = newConfig.orientation;
         setTerminalToolbarView();
     }
+    public int getOrientation(){
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        int rotation = display.getRotation();
 
+        switch (rotation) {
+            case Surface.ROTATION_90:
+            case Surface.ROTATION_270:
+                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            default:
+                return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        }
+    }
     @SuppressLint("RestrictedApi")
     protected void switchSoftKeyboard(boolean hide) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -774,6 +788,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         if (getRequestedOrientation() != requestedOrientation)
             setRequestedOrientation(requestedOrientation);
+//        if (getOrientation() != requestedOrientation)
+//            setRequestedOrientation(requestedOrientation);
         if (termuxActivityListener!=null){
             termuxActivityListener.ignoreCutout(p.getBoolean("ignoreCutoutOperation",false));
         }

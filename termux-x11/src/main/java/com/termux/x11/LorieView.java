@@ -422,6 +422,14 @@ public class LorieView extends SurfaceView implements InputStub {
             keyboard.setKeyRelease(xKeycode.id);
         }
     }
+    public void injectText(String text) {
+        try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+            if (text.isEmpty()) {
+                return;
+            }
+            sendTextEvent(text.getBytes());
+        }
+    }
 
     static native void connect(int fd);
 

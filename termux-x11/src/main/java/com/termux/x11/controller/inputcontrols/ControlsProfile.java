@@ -75,13 +75,15 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
 
     public ExternalController getController(String id) {
         if (!controllersLoaded) loadControllers();
-        for (ExternalController controller : controllers) if (controller.getId().equals(id)) return controller;
+        for (ExternalController controller : controllers)
+            if (controller.getId().equals(id)) return controller;
         return null;
     }
 
     public ExternalController getController(int deviceId) {
         if (!controllersLoaded) loadControllers();
-        for (ExternalController controller : controllers) if (controller.getDeviceId() == deviceId) return controller;
+        for (ExternalController controller : controllers)
+            if (controller.getDeviceId() == deviceId) return controller;
         return null;
     }
 
@@ -113,30 +115,31 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
             if (!elementsLoaded && file.isFile()) {
                 JSONObject profileJSONObject = new JSONObject(FileUtils.readString(file));
                 elementsJSONArray = profileJSONObject.getJSONArray("elements");
-            }
-            else for (ControlElement element : elements) elementsJSONArray.put(element.toJSONObject());
+            } else for (ControlElement element : elements)
+                elementsJSONArray.put(element.toJSONObject());
             data.put("elements", elementsJSONArray);
 
             JSONArray controllersJSONArray = new JSONArray();
             if (!controllersLoaded && file.isFile()) {
                 JSONObject profileJSONObject = new JSONObject(FileUtils.readString(file));
-                if (profileJSONObject.has("controllers")) controllersJSONArray = profileJSONObject.getJSONArray("controllers");
-            }
-            else {
+                if (profileJSONObject.has("controllers"))
+                    controllersJSONArray = profileJSONObject.getJSONArray("controllers");
+            } else {
                 for (ExternalController controller : controllers) {
                     JSONObject controllerJSONObject = controller.toJSONObject();
-                    if (controllerJSONObject != null) controllersJSONArray.put(controllerJSONObject);
+                    if (controllerJSONObject != null)
+                        controllersJSONArray.put(controllerJSONObject);
                 }
             }
             if (controllersJSONArray.length() > 0) data.put("controllers", controllersJSONArray);
 
             FileUtils.writeString(file, data.toString());
+        } catch (JSONException e) {
         }
-        catch (JSONException e) {}
     }
 
     public static File getProfileFile(Context context, int id) {
-        return new File(InputControlsManager.getProfilesDir(context), "controls-"+id+".icp");
+        return new File(InputControlsManager.getProfilesDir(context), "controls-" + id + ".icp");
     }
 
     public void addElement(ControlElement element) {
@@ -186,8 +189,7 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
                 controllers.add(controller);
             }
             controllersLoaded = true;
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         return controllers;
@@ -210,13 +212,18 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
                 element.setType(ControlElement.Type.valueOf(elementJSONObject.getString("type")));
                 element.setShape(ControlElement.Shape.valueOf(elementJSONObject.getString("shape")));
                 element.setToggleSwitch(elementJSONObject.getBoolean("toggleSwitch"));
-                element.setX((int)(elementJSONObject.getDouble("x") * inputControlsView.getMaxWidth()));
-                element.setY((int)(elementJSONObject.getDouble("y") * inputControlsView.getMaxHeight()));
-                element.setScale((float)elementJSONObject.getDouble("scale"));
+                element.setX((int) (elementJSONObject.getDouble("x") * inputControlsView.getMaxWidth()));
+                element.setY((int) (elementJSONObject.getDouble("y") * inputControlsView.getMaxHeight()));
+                element.setScale((float) elementJSONObject.getDouble("scale"));
                 element.setText(elementJSONObject.getString("text"));
                 element.setIconId(elementJSONObject.getInt("iconId"));
-                if (elementJSONObject.has("range")) element.setRange(ControlElement.Range.valueOf(elementJSONObject.getString("range")));
-                if (elementJSONObject.has("orientation")) element.setOrientation((byte)elementJSONObject.getInt("orientation"));
+                if (elementJSONObject.has("cheatCodeText")) {
+                    element.setCheatCodeText(elementJSONObject.getString("cheatCodeText"));
+                }
+                if (elementJSONObject.has("range"))
+                    element.setRange(ControlElement.Range.valueOf(elementJSONObject.getString("range")));
+                if (elementJSONObject.has("orientation"))
+                    element.setOrientation((byte) elementJSONObject.getInt("orientation"));
 
                 boolean hasGamepadBinding = true;
                 JSONArray bindingsJSONArray = elementJSONObject.getJSONArray("bindings");
@@ -230,8 +237,7 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
                 elements.add(element);
             }
             elementsLoaded = true;
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }

@@ -55,7 +55,7 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
     public void onPointerButtonPress(Pointer.Button button) {
         if (xServer.isEnabled()) {
 //            Log.d("onPointerButtonPress LOCKED",button.code()+","+ button.flag());
-            if (button == Pointer.Button.BUTTON_SCROLL_UP || button == Pointer.Button.BUTTON_SCROLL_DOWN){
+            if (button == Pointer.Button.BUTTON_SCROLL_UP || button == Pointer.Button.BUTTON_SCROLL_DOWN) {
                 int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
                 xServer.sendMouseWheelEvent(0, wheelDelta);
                 return;
@@ -85,7 +85,7 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
 
     @Override
     public void onPointerMove(short x, short y) {
-        if (xServer.pointer.getPointerButton()!=null){
+        if (xServer.pointer.getPointerButton() != null) {
 //            xServer.sendMouseEvent(x,y,xServer.pointer.getPointerButton().code(),true,true);
 //        Log.d("onPointerMove",x+","+ y);
         }

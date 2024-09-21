@@ -474,7 +474,9 @@ public class InputControlsView extends View {
             }
         }
     }
-
+    public void sendText(String text){
+        xServer.injectText(text);
+    }
     public Bitmap getIcon(byte id) {
         if (icons[id] == null) {
             Context context = getContext();

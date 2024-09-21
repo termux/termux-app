@@ -2,6 +2,7 @@ package com.termux.x11.controller;
 
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -95,7 +96,8 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             view.findViewById(R.id.LLRangeOptions).setVisibility(View.GONE);
 
             if (type == ControlElement.Type.BUTTON ||
-                    type == ControlElement.Type.COMBINE_BUTTON) {
+                type == ControlElement.Type.COMBINE_BUTTON ||
+                type == ControlElement.Type.CHEAT_CODE_TEXT) {
                 view.findViewById(R.id.LLShape).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.CBToggleSwitch).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.LLCustomTextIcon).setVisibility(View.VISIBLE);
@@ -233,22 +235,33 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             loadBindingSpinner(element, container, 3, R.string.binding_left);
         } else if (type == ControlElement.Type.COMBINE_BUTTON) {
             LinearLayout addButtonLayout = new LinearLayout(this);
-            LinearLayout.LayoutParams  addButtonLayoutParam = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            LinearLayout.LayoutParams addButtonLayoutParam = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             addButtonLayout.setLayoutParams(addButtonLayoutParam);
             addButtonLayout.setOrientation(LinearLayout.VERTICAL);
             Button btn = new Button(this);
             btn.setText(R.string.add_button);
             btn.setTextColor(getResources().getColor(R.color.colorblack, null));
             btn.setOnClickListener(v -> {
-                if (addButtonLayout.getChildCount()<4){
-                    loadCombineBindingSpinner(element, addButtonLayout, addButtonLayout.getChildCount(), R.string.binding);
-                }else{
+                if (addButtonLayout.getChildCount() < 5) {
+                    loadCombineBindingSpinner(element, addButtonLayout, addButtonLayout.getChildCount() - 1);
+                } else {
                     AppUtils.showToast(this, R.string.too_much_key);
                 }
             });
             addButtonLayout.addView(btn);
-            loadCombineBindingSpinner(element, addButtonLayout, 0, R.string.binding);
+            for (int idx = 0; idx < element.getBindingCount(); idx++) {
+                if (element.getBindingAt(idx) != Binding.NONE) {
+                    loadCombineBindingSpinner(element, addButtonLayout, idx);
+                }
+            }
             container.addView(addButtonLayout);
+        } else if (type == ControlElement.Type.CHEAT_CODE_TEXT) {
+            LinearLayout cheatCodeLayout = new LinearLayout(this);
+            LinearLayout.LayoutParams cheatCodeLayoutParam = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            cheatCodeLayout.setLayoutParams(cheatCodeLayoutParam);
+            cheatCodeLayout.setOrientation(LinearLayout.VERTICAL);
+            loadCheatCodeTextEditor(element, cheatCodeLayout);
+            container.addView(cheatCodeLayout);
         }
     }
 
@@ -327,12 +340,13 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
         update.run();
         container.addView(view);
     }
-    private void loadCombineBindingSpinner(final ControlElement element, LinearLayout container, final int index, int titleResId) {
+
+    private void loadCombineBindingSpinner(final ControlElement element, LinearLayout container, final int index) {
         View view = LayoutInflater.from(this).inflate(R.layout.binding_combine_field, container, false);
         final Spinner sBindingType = view.findViewById(R.id.SCBBindingType);
         final Spinner sBinding = view.findViewById(R.id.SCBBinding);
         final ImageButton deleteButton = view.findViewById(R.id.IBTNDelKeyBinding);
-        deleteButton.setOnClickListener(v->{
+        deleteButton.setOnClickListener(v -> {
             container.removeView(view);
         });
 
@@ -403,6 +417,27 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
         });
 
         update.run();
+        container.addView(view);
+    }
+
+    private void loadCheatCodeTextEditor(final ControlElement element, LinearLayout container) {
+        TextView tv = new TextView(this);
+        tv.setText(R.string.cheat_code);
+        container.addView(tv);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.cheat_code_itm, container, false);
+        final EditText ed = view.findViewById(R.id.EDCCT);
+        final ImageButton setBtn = view.findViewById(R.id.IBTNSET);
+        String cct = element.getCheatCodeText();
+        ed.setText(cct);
+        setBtn.setOnClickListener(v -> {
+            String cheatCode = ed.getText().toString();
+            if (!cheatCode.contentEquals(cct)) {
+                element.setCheatCodeText(cheatCode);
+                profile.save();
+                inputControlsView.invalidate();
+            }
+        });
         container.addView(view);
     }
 
