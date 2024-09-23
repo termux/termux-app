@@ -192,6 +192,7 @@
                 android:layout_width="match_parent"
                 android:hint="@string/none"
                 android:inputType="textCapCharacters" />
+            <include layout="@layout/binding_icon_field"/>
 
             <TextView
                 android:layout_width="wrap_content"
