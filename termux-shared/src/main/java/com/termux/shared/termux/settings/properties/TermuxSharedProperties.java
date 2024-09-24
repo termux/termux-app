@@ -598,6 +598,16 @@ public abstract class TermuxSharedProperties {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_ENFORCE_CHAR_BASED_INPUT, true);
     }
 
+    public boolean shouldDrawBoldTextWithBrightColors() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DRAW_BOLD_TEXT_WITH_BRIGHT_COLORS, true);
+    }
+
+    /** Get the {@link TermuxPropertyConstants#KEY_DRAW_BOLD_TEXT_WITH_BRIGHT_COLORS} value from the properties file on disk. */
+    public static boolean shouldDrawBoldTextWithBrightColors(Context context) {
+        return (Boolean) TermuxSharedProperties.getTermuxInternalPropertyValue(context,
+            TermuxPropertyConstants.KEY_DRAW_BOLD_TEXT_WITH_BRIGHT_COLORS);
+    }
+
     public boolean shouldExtraKeysTextBeAllCaps() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_EXTRA_KEYS_TEXT_ALL_CAPS, true);
     }
