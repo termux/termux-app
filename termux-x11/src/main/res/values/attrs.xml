@@ -11,4 +11,7 @@
         <attr name="step" format="integer" />
         <attr name="textSize" format="dimension" />
     </declare-styleable>
+    <declare-styleable name="ImagePickerView">
+        <attr name="activityTypeCode" format="integer" />
+    </declare-styleable>
 </resources>

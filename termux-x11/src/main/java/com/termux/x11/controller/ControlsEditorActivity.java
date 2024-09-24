@@ -1,5 +1,7 @@
 package com.termux.x11.controller;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -21,8 +23,10 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.termux.x11.MainActivity;
 import com.termux.x11.R;
 import com.termux.x11.controller.core.AppUtils;
 import com.termux.x11.controller.core.FileUtils;
@@ -34,6 +38,8 @@ import com.termux.x11.controller.inputcontrols.InputControlsManager;
 import com.termux.x11.controller.math.Mathf;
 import com.termux.x11.controller.widget.InputControlsView;
 import com.termux.x11.controller.widget.NumberPicker;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -496,6 +502,14 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             }
 
             parent.addView(imageView);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == getResources().getDimension(R.dimen.load_button_icon_code) && resultCode == Activity.RESULT_OK) {
+
         }
     }
 }

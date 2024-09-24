@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
@@ -15,12 +16,14 @@
         android:id="@+id/CPVControllerBackgroundColor"
         android:layout_width="84dp"
         android:layout_height="wrap_content"
-        android:visibility="gone" />
+        android:visibility="visible"
+        app:activityTypeCode="@dimen/load_button_icon" />
 
     <com.termux.x11.controller.widget.ImagePickerView
         android:id="@+id/IPVControllerBackgroundImage"
         android:layout_width="84dp"
         android:layout_height="wrap_content"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:activityTypeCode="@dimen/load_button_icon" />
 
 </LinearLayout>

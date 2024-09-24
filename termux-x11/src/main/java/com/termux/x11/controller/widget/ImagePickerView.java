@@ -2,6 +2,7 @@ package com.termux.x11.controller.widget;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -24,9 +25,16 @@ import com.termux.x11.controller.core.UnitUtils;
 import com.termux.x11.controller.core.WineThemeManager;
 
 import java.io.File;
+
 import com.termux.x11.MainActivity;
+
 public class ImagePickerView extends View implements View.OnClickListener {
     private final Bitmap icon;
+    private int activityType;
+
+    public void setActivityType(int activityType) {
+        this.activityType = activityType;
+    }
 
     public ImagePickerView(Context context) {
         this(context, null);
@@ -38,7 +46,16 @@ public class ImagePickerView extends View implements View.OnClickListener {
 
     public ImagePickerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.ImagePickerView);
+        int n = typedArray.getIndexCount();
+        for (int i = 0; i < n; i++) {
+            int attr = typedArray.getIndex(i);
+            if (attr == R.styleable.ImagePickerView_activityTypeCode) {
+                activityType = (int) typedArray.getDimension(attr, MainActivity.OPEN_FILE_REQUEST_CODE);
+                break;
+            }
+        }
+        typedArray.recycle();
         icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon_image_picker);
 
         setBackgroundResource(R.drawable.combo_box);
@@ -75,13 +92,12 @@ public class ImagePickerView extends View implements View.OnClickListener {
 
         if (userWallpaperFile.isFile()) {
             imageView.setImageBitmap(BitmapFactory.decodeFile(userWallpaperFile.getPath()));
-        }
-        else imageView.setImageResource(R.drawable.wallpaper);
+        } else imageView.setImageResource(R.drawable.wallpaper);
 
         final PopupWindow[] popupWindow = {null};
         View browseButton = view.findViewById(R.id.BTBrowse);
         browseButton.setOnClickListener((v) -> {
-            MainActivity activity = (MainActivity)context;
+            MainActivity activity = (MainActivity) context;
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
             activity.setOpenFileCallback((data) -> {
@@ -91,7 +107,7 @@ public class ImagePickerView extends View implements View.OnClickListener {
                 ImageUtils.save(bitmap, userWallpaperFile, Bitmap.CompressFormat.PNG, 100);
                 popupWindow[0].dismiss();
             });
-            activity.startActivityForResult(intent, MainActivity.OPEN_FILE_REQUEST_CODE);
+            activity.startActivityForResult(intent, activityType);
         });
 
         View removeButton = view.findViewById(R.id.BTRemove);

@@ -2,4 +2,7 @@
 <resources>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="activity_horizontal_margin">4dip</dimen>
+    <dimen name="file_request_backup_code">101</dimen>
+    <dimen name="load_profile_code">102</dimen>
+    <dimen name="load_button_icon_code">103</dimen>
 </resources>

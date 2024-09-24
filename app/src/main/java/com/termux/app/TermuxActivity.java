@@ -2,7 +2,6 @@ package com.termux.app;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static com.termux.shared.termux.TermuxConstants.TERMUX_ENV_TEMP_FILE_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_FILES_DIR_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH;
 
@@ -20,10 +19,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,7 +35,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
@@ -100,7 +94,6 @@ import com.termux.x11.controller.winhandler.ProcessInfo;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -118,7 +111,7 @@ import java.util.List;
  * about memory leaks.
  */
 public class TermuxActivity extends com.termux.x11.MainActivity implements ServiceConnection {
-    private static final int FILE_REQUEST_CODE = 101;
+    private static final int FILE_REQUEST_BACKUP_CODE = 101;
     private DisplaySlidingWindow slideWindowLayout;
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -697,7 +690,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*/*");
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(intent, FILE_REQUEST_CODE);
+                startActivityForResult(intent, FILE_REQUEST_BACKUP_CODE);
             }
         });
     }
@@ -1147,7 +1140,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         if (requestCode == PermissionUtils.REQUEST_GRANT_STORAGE_PERMISSION) {
             requestStoragePermission(true);
         }
-        if (requestCode == FILE_REQUEST_CODE) {
+        if (requestCode == FILE_REQUEST_BACKUP_CODE) {
             onRequestLoadBackFile(requestCode, resultCode, data);
         }
     }
