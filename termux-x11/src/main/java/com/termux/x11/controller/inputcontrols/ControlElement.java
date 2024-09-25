@@ -90,6 +90,7 @@ public class ControlElement {
     private Object touchTime;
     private String cheatCodeText = "None";
     private boolean cheatCodePressed = false;
+    private String customIconId;
 
     public ControlElement(InputControlsView inputControlsView) {
         this.inputControlsView = inputControlsView;
@@ -249,6 +250,14 @@ public class ControlElement {
 
     public void setCheatCodeText(String cct) {
         this.cheatCodeText = cct;
+    }
+
+    public void setCustomIconId(String icId) {
+        this.customIconId = icId;
+    }
+
+    public String getCustomIconId() {
+        return this.customIconId;
     }
 
     public Rect getBoundingBox() {
@@ -583,6 +592,7 @@ public class ControlElement {
             elementJSONObject.put("text", text);
             elementJSONObject.put("iconId", iconId);
             elementJSONObject.put("cheatCodeText", cheatCodeText);
+            elementJSONObject.put("customIconId", customIconId);
 
             if (type == Type.RANGE_BUTTON && range != null) {
                 elementJSONObject.put("range", range.name());

@@ -220,6 +220,9 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
                 if (elementJSONObject.has("cheatCodeText")) {
                     element.setCheatCodeText(elementJSONObject.getString("cheatCodeText"));
                 }
+                if (elementJSONObject.has("customIconId")){
+                    element.setCustomIconId(elementJSONObject.getString("customIconId"));
+                }
                 if (elementJSONObject.has("range"))
                     element.setRange(ControlElement.Range.valueOf(elementJSONObject.getString("range")));
                 if (elementJSONObject.has("orientation"))

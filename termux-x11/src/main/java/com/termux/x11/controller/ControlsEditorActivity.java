@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +25,6 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.termux.x11.MainActivity;
 import com.termux.x11.R;
 import com.termux.x11.controller.core.AppUtils;
 import com.termux.x11.controller.core.FileUtils;
@@ -36,10 +34,10 @@ import com.termux.x11.controller.inputcontrols.ControlElement;
 import com.termux.x11.controller.inputcontrols.ControlsProfile;
 import com.termux.x11.controller.inputcontrols.InputControlsManager;
 import com.termux.x11.controller.math.Mathf;
+import com.termux.x11.controller.widget.ColorPickerView;
+import com.termux.x11.controller.widget.ImagePickerView;
 import com.termux.x11.controller.widget.InputControlsView;
 import com.termux.x11.controller.widget.NumberPicker;
-
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -170,6 +168,7 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
         etCustomText.setText(element.getText());
         final LinearLayout llIconList = view.findViewById(R.id.LLIconList);
         loadIcons(llIconList, element.getIconId());
+        loadCustomIconType(element, view);
 
         updateLayout.run();
 
@@ -189,6 +188,30 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             element.setIconId(iconId);
             profile.save();
             inputControlsView.invalidate();
+        });
+    }
+
+    private void loadCustomIconType(ControlElement element, View view) {
+        Spinner iconTypeSpinner = view.findViewById(R.id.SControllerIconType);
+        ColorPickerView colorPicker = view.findViewById(R.id.CPVControllerBackgroundColor);
+        ImagePickerView iconPicker = view.findViewById(R.id.IPVControllerBackgroundImage);
+        iconTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    colorPicker.setVisibility(View.INVISIBLE);
+                    iconPicker.setVisibility(View.VISIBLE);
+                } else {
+                    colorPicker.setVisibility(View.VISIBLE);
+                    iconPicker.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                colorPicker.setVisibility(View.VISIBLE);
+                iconPicker.setVisibility(View.INVISIBLE);
+            }
         });
     }
 

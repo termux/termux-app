@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="8dp">
 
         <TextView
@@ -16,8 +16,8 @@
             android:text="@string/type" />
 
         <Spinner
-            style="@style/ComboBox"
             android:id="@+id/SType"
+            style="@style/ComboBox"
             android:layout_width="match_parent" />
 
         <LinearLayout
@@ -32,8 +32,8 @@
                 android:text="@string/shape" />
 
             <Spinner
-                style="@style/ComboBox"
                 android:id="@+id/SShape"
+                style="@style/ComboBox"
                 android:layout_width="match_parent" />
         </LinearLayout>
 
@@ -46,7 +46,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/scale"/>
+                android:text="@string/scale" />
 
             <TextView
                 android:id="@+id/TVScale"
@@ -58,8 +58,8 @@
             android:id="@+id/SBScale"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:min="50"
-            android:max="150" />
+            android:max="150"
+            android:min="50" />
 
         <LinearLayout
             android:id="@+id/LLRangeOptions"
@@ -73,8 +73,8 @@
                 android:text="@string/range" />
 
             <Spinner
-                style="@style/ComboBox"
                 android:id="@+id/SRange"
+                style="@style/ComboBox"
                 android:layout_width="match_parent" />
 
             <TextView
@@ -110,8 +110,8 @@
                 android:id="@+id/NPColumns"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:minValue="3"
-                app:maxValue="8" />
+                app:maxValue="8"
+                app:minValue="3" />
         </LinearLayout>
 
         <LinearLayout
@@ -124,8 +124,8 @@
             android:id="@+id/LLDPadBindings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -133,8 +133,8 @@
                 android:text="@string/binding_up" />
 
             <Spinner
-                style="@style/ComboBox"
                 android:id="@+id/SBindingUp"
+                style="@style/ComboBox"
                 android:layout_width="match_parent" />
 
             <TextView
@@ -143,8 +143,8 @@
                 android:text="@string/binding_right" />
 
             <Spinner
-                style="@style/ComboBox"
                 android:id="@+id/SBindingRight"
+                style="@style/ComboBox"
                 android:layout_width="match_parent" />
 
             <TextView
@@ -153,8 +153,8 @@
                 android:text="@string/binding_down" />
 
             <Spinner
-                style="@style/ComboBox"
                 android:id="@+id/SBindingDown"
+                style="@style/ComboBox"
                 android:layout_width="match_parent" />
 
             <TextView
@@ -163,8 +163,8 @@
                 android:text="@string/binding_left" />
 
             <Spinner
-                style="@style/ComboBox"
                 android:id="@+id/SBindingLeft"
+                style="@style/ComboBox"
                 android:layout_width="match_parent" />
         </LinearLayout>
 
@@ -186,13 +186,16 @@
                 android:text="@string/custom_text" />
 
             <EditText
-                style="@style/EditText"
                 android:id="@+id/ETCustomText"
-                android:maxLength="8"
+                style="@style/EditText"
                 android:layout_width="match_parent"
                 android:hint="@string/none"
-                android:inputType="textCapCharacters" />
-            <include layout="@layout/binding_icon_field"/>
+                android:inputType="textCapCharacters"
+                android:maxLength="8" />
+
+            <include
+                android:id="@+id/IPKSelectIcon"
+                layout="@layout/binding_icon_field" />
 
             <TextView
                 android:layout_width="wrap_content"
