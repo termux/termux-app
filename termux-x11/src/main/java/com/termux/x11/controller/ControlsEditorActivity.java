@@ -508,7 +508,7 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == getResources().getDimension(R.dimen.load_button_icon_code) && resultCode == Activity.RESULT_OK) {
+        if (requestCode == getResources().getInteger(R.integer.load_button_icon_code) && resultCode == Activity.RESULT_OK) {
 
         }
     }

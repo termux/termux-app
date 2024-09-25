@@ -46,12 +46,12 @@ public class ImagePickerView extends View implements View.OnClickListener {
 
     public ImagePickerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.ImagePickerView);
+        TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ImagePickerView);
         int n = typedArray.getIndexCount();
         for (int i = 0; i < n; i++) {
             int attr = typedArray.getIndex(i);
             if (attr == R.styleable.ImagePickerView_activityTypeCode) {
-                activityType = (int) typedArray.getDimension(attr, MainActivity.OPEN_FILE_REQUEST_CODE);
+                activityType = (int) typedArray.getInt(attr, MainActivity.OPEN_FILE_REQUEST_CODE);
                 break;
             }
         }

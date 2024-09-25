@@ -17,13 +17,13 @@
         android:layout_width="84dp"
         android:layout_height="wrap_content"
         android:visibility="visible"
-        app:activityTypeCode="@dimen/load_button_icon" />
+        app:activityTypeCode="@integer/load_button_icon_code" />
 
     <com.termux.x11.controller.widget.ImagePickerView
         android:id="@+id/IPVControllerBackgroundImage"
         android:layout_width="84dp"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:activityTypeCode="@dimen/load_button_icon" />
+        app:activityTypeCode="@integer/load_button_icon_code" />
 
 </LinearLayout>
