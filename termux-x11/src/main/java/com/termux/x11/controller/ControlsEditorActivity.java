@@ -3,6 +3,7 @@ package com.termux.x11.controller;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.termux.x11.R;
 import com.termux.x11.controller.core.AppUtils;
+import com.termux.x11.controller.core.Callback;
 import com.termux.x11.controller.core.FileUtils;
 import com.termux.x11.controller.core.UnitUtils;
 import com.termux.x11.controller.inputcontrols.Binding;
@@ -46,6 +48,11 @@ import java.util.Arrays;
 public class ControlsEditorActivity extends AppCompatActivity implements View.OnClickListener {
     private InputControlsView inputControlsView;
     private ControlsProfile profile;
+    protected Callback<Uri> openFileCallback;
+
+    public void setOpenFileCallback(Callback<Uri> openFileCallback) {
+        this.openFileCallback = openFileCallback;
+    }
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -198,12 +205,12 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
         iconTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                colorPicker.setVisibility(View.GONE);
+                iconPicker.setVisibility(View.GONE);
                 if (position == 0) {
-                    colorPicker.setVisibility(View.INVISIBLE);
                     iconPicker.setVisibility(View.VISIBLE);
                 } else {
                     colorPicker.setVisibility(View.VISIBLE);
-                    iconPicker.setVisibility(View.INVISIBLE);
                 }
             }
 
@@ -532,7 +539,10 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == getResources().getInteger(R.integer.load_button_icon_code) && resultCode == Activity.RESULT_OK) {
-
+            if (openFileCallback != null) {
+                openFileCallback.call(data.getData());
+                openFileCallback = null;
+            }
         }
     }
 }

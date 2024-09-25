@@ -16,7 +16,7 @@
         android:id="@+id/CPVControllerBackgroundColor"
         android:layout_width="84dp"
         android:layout_height="wrap_content"
-        android:visibility="visible"
+        android:visibility="gone"
         app:activityTypeCode="@integer/load_button_icon_code" />
 
     <com.termux.x11.controller.widget.ImagePickerView
