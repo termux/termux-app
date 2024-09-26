@@ -62,4 +62,24 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
 		assertEquals("y\nz", mTerminal.getScreen().getTranscriptText());
 	}
 
+    public void testReportPixelSize() {
+        int columns = 3;
+        int rows = 3;
+        withTerminalSized(columns, rows);
+        int cellWidth = TerminalTest.INITIAL_CELL_WIDTH_PIXELS;
+        int cellHeight = TerminalTest.INITIAL_CELL_HEIGHT_PIXELS;
+        assertEnteringStringGivesResponse("\033[14t", "\033[4;" + (rows*cellHeight) + ";" + (columns*cellWidth) + "t");
+        assertEnteringStringGivesResponse("\033[16t", "\033[6;" + cellHeight + ";" + cellWidth + "t");
+        columns = 23;
+        rows = 33;
+        resize(columns, rows);
+        assertEnteringStringGivesResponse("\033[14t", "\033[4;" + (rows*cellHeight) + ";" + (columns*cellWidth) + "t");
+        assertEnteringStringGivesResponse("\033[16t", "\033[6;" + cellHeight + ";" + cellWidth + "t");
+        cellWidth = 8;
+        cellHeight = 18;
+        mTerminal.resize(columns, rows, cellWidth, cellHeight);
+        assertEnteringStringGivesResponse("\033[14t", "\033[4;" + (rows*cellHeight) + ";" + (columns*cellWidth) + "t");
+        assertEnteringStringGivesResponse("\033[16t", "\033[6;" + cellHeight + ";" + cellWidth + "t");
+    }
+
 }
