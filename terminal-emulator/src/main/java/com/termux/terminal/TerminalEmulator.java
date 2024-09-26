@@ -136,6 +136,9 @@ public final class TerminalEmulator {
     /** The number of character rows and columns in the terminal screen. */
     public int mRows, mColumns;
 
+    /** Size of a terminal cell in pixels. */
+    private int mCellWidthPixels, mCellHeightPixels;
+
     /** The number of terminal transcript rows that can be scrolled back to. */
     public static final int TERMINAL_TRANSCRIPT_ROWS_MIN = 100;
     public static final int TERMINAL_TRANSCRIPT_ROWS_MAX = 50000;
@@ -311,13 +314,15 @@ public final class TerminalEmulator {
         }
     }
 
-    public TerminalEmulator(TerminalOutput session, int columns, int rows, Integer transcriptRows, TerminalSessionClient client) {
+    public TerminalEmulator(TerminalOutput session, int columns, int rows, int cellWidthPixels, int cellHeightPixels, Integer transcriptRows, TerminalSessionClient client) {
         mSession = session;
         mScreen = mMainBuffer = new TerminalBuffer(columns, getTerminalTranscriptRows(transcriptRows), rows);
         mAltBuffer = new TerminalBuffer(columns, rows, rows);
         mClient = client;
         mRows = rows;
         mColumns = columns;
+        mCellWidthPixels = cellWidthPixels;
+        mCellHeightPixels = cellHeightPixels;
         mTabStop = new boolean[mColumns];
         reset();
     }
@@ -367,7 +372,10 @@ public final class TerminalEmulator {
         }
     }
 
-    public void resize(int columns, int rows) {
+    public void resize(int columns, int rows, int cellWidthPixels, int cellHeightPixels) {
+        this.mCellWidthPixels = cellWidthPixels;
+        this.mCellHeightPixels = cellHeightPixels;
+
         if (mRows == rows && mColumns == columns) {
             return;
         } else if (columns < 2 || rows < 2) {
@@ -1745,8 +1753,10 @@ public final class TerminalEmulator {
                         mSession.write("\033[3;0;0t");
                         break;
                     case 14: // Report xterm window in pixels. Result is CSI 4 ; height ; width t
-                        // We just report characters time 12 here.
-                        mSession.write(String.format(Locale.US, "\033[4;%d;%dt", mRows * 12, mColumns * 12));
+                        mSession.write(String.format(Locale.US, "\033[4;%d;%dt", mRows * mCellHeightPixels, mColumns * mCellWidthPixels));
+                        break;
+                    case 16: // Report xterm character cell size in pixels. Result is CSI 6 ; height ; width t
+                        mSession.write(String.format(Locale.US, "\033[6;%d;%dt", mCellHeightPixels, mCellWidthPixels));
                         break;
                     case 18: // Report the size of the text area in characters. Result is CSI 8 ; height ; width t
                         mSession.write(String.format(Locale.US, "\033[8;%d;%dt", mRows, mColumns));
