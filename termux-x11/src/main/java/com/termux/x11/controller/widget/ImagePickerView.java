@@ -86,6 +86,18 @@ public class ImagePickerView extends View implements View.OnClickListener {
 
     @Override
     public void onClick(View anchor) {
+        if (activityType == getResources().getInteger(R.integer.load_button_icon_code)) {
+            setButtonIcon(anchor);
+        } else {
+            setWineWallPaper(anchor);
+        }
+    }
+
+    private void setButtonIcon(View anchor) {
+
+    }
+
+    private void setWineWallPaper(View anchor) {
         final Context context = getContext();
         final File userWallpaperFile = WineThemeManager.getUserWallpaperFile(context);
 
@@ -99,31 +111,17 @@ public class ImagePickerView extends View implements View.OnClickListener {
         final PopupWindow[] popupWindow = {null};
         View browseButton = view.findViewById(R.id.BTBrowse);
         browseButton.setOnClickListener((v) -> {
-            if (activityType==MainActivity.OPEN_FILE_REQUEST_CODE){
-                MainActivity activity=(MainActivity) context;
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                activity.setOpenFileCallback((data) -> {
-                    Bitmap bitmap = ImageUtils.getBitmapFromUri(context, data, 1280);
-                    if (bitmap == null) return;
+            MainActivity activity = (MainActivity) context;
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            activity.setOpenFileCallback((data) -> {
+                Bitmap bitmap = ImageUtils.getBitmapFromUri(context, data, 1280);
+                if (bitmap == null) return;
 
-                    ImageUtils.save(bitmap, userWallpaperFile, Bitmap.CompressFormat.PNG, 100);
-                    popupWindow[0].dismiss();
-                });
-                activity.startActivityForResult(intent, activityType);
-            }else if (activityType == getResources().getInteger(R.integer.load_button_icon_code)){
-                ControlsEditorActivity activity = (ControlsEditorActivity)context;
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                activity.setOpenFileCallback((data) -> {
-                    Bitmap bitmap = ImageUtils.getBitmapFromUri(context, data, 1280);
-                    if (bitmap == null) return;
-
-                    ImageUtils.save(bitmap, userWallpaperFile, Bitmap.CompressFormat.PNG, 100);
-                    popupWindow[0].dismiss();
-                });
-                activity.startActivityForResult(intent, activityType);
-            }
+                ImageUtils.save(bitmap, userWallpaperFile, Bitmap.CompressFormat.PNG, 100);
+                popupWindow[0].dismiss();
+            });
+            activity.startActivityForResult(intent, activityType);
 
         });
 

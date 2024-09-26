@@ -1,6 +1,7 @@
 package com.termux.x11.controller;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -41,6 +42,7 @@ import com.termux.x11.controller.widget.ImagePickerView;
 import com.termux.x11.controller.widget.InputControlsView;
 import com.termux.x11.controller.widget.NumberPicker;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
