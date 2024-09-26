@@ -82,7 +82,7 @@ public class TerminalTest extends TerminalTestCase {
 		assertEnteringStringGivesResponse("\033[18t", "\033[8;5;5t");
 		for (int width = 3; width < 12; width++) {
 			for (int height = 3; height < 12; height++) {
-				mTerminal.resize(width, height);
+				resize(width, height);
 				assertEnteringStringGivesResponse("\033[18t", "\033[8;" + height + ";" + width + "t");
 			}
 		}
