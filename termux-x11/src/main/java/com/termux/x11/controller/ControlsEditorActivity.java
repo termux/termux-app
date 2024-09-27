@@ -1,7 +1,6 @@
 package com.termux.x11.controller;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -29,7 +28,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.termux.x11.R;
 import com.termux.x11.controller.core.AppUtils;
-import com.termux.x11.controller.core.Callback;
 import com.termux.x11.controller.core.FileUtils;
 import com.termux.x11.controller.core.UnitUtils;
 import com.termux.x11.controller.inputcontrols.Binding;
@@ -42,17 +40,20 @@ import com.termux.x11.controller.widget.ImagePickerView;
 import com.termux.x11.controller.widget.InputControlsView;
 import com.termux.x11.controller.widget.NumberPicker;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
 public class ControlsEditorActivity extends AppCompatActivity implements View.OnClickListener {
+    public interface LoadCallBack<T> {
+        String call(T t);
+    }
+
     private InputControlsView inputControlsView;
     private ControlsProfile profile;
-    protected Callback<Uri> openFileCallback;
+    protected LoadCallBack<Uri> openFileCallback;
 
-    public void setOpenFileCallback(Callback<Uri> openFileCallback) {
+    public void setOpenFileCallback(LoadCallBack<Uri> openFileCallback) {
         this.openFileCallback = openFileCallback;
     }
 
@@ -210,6 +211,9 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
                 colorPicker.setVisibility(View.GONE);
                 iconPicker.setVisibility(View.GONE);
                 if (position == 0) {
+                    if (element.getCustomIconId() != null && !element.getCustomIconId().isEmpty()) {
+                        iconPicker.setImageId(element.getCustomIconId());
+                    }
                     iconPicker.setVisibility(View.VISIBLE);
                 } else {
                     colorPicker.setVisibility(View.VISIBLE);
@@ -219,7 +223,6 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 colorPicker.setVisibility(View.VISIBLE);
-                iconPicker.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -542,7 +545,10 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == getResources().getInteger(R.integer.load_button_icon_code) && resultCode == Activity.RESULT_OK) {
             if (openFileCallback != null) {
-                openFileCallback.call(data.getData());
+                String id = openFileCallback.call(data.getData());
+                if (id != null && inputControlsView.getSelectedElement() != null) {
+                    inputControlsView.getSelectedElement().setCustomIconId(id);
+                }
                 openFileCallback = null;
             }
         }

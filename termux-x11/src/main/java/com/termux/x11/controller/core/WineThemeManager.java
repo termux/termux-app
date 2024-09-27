@@ -153,10 +153,10 @@ public abstract class WineThemeManager {
             canvas.drawBitmap(wallpaperBitmap, srcRect, dstRect, paint);
         }
 
-        MSBitmap.create(outputBitmap, new File("/data/data/com.termux/files/usr/glibc/", "/data/data/com.termux/files/usr/glibc/"+"/wallpaper.bmp"));
+        MSBitmap.create(outputBitmap, new File("/data/data/com.termux/files/usr/glibc", "wallpaper.bmp"));
     }
 
     public static File getUserWallpaperFile(Context context) {
-        return new File("/data/data/com.termux/files/usr/glibc/", "/data/data/com.termux/files/usr/glibc/"+"/user-wallpaper.png");
+        return new File("/data/data/com.termux/files/usr/glibc", "user-wallpaper.png");
     }
 }

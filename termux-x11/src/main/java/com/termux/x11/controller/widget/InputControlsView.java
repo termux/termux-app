@@ -12,6 +12,8 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -19,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.termux.x11.controller.core.ImageUtils;
 import com.termux.x11.controller.inputcontrols.Binding;
 import com.termux.x11.controller.inputcontrols.ControlElement;
 import com.termux.x11.controller.inputcontrols.ControlsProfile;
@@ -31,6 +34,7 @@ import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.controller.xserver.Pointer;
 import com.termux.x11.LorieView;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Timer;
@@ -434,7 +438,7 @@ public class InputControlsView extends View {
             } else if (binding == Binding.GAMEPAD_RIGHT_THUMB_LEFT || binding == Binding.GAMEPAD_RIGHT_THUMB_RIGHT) {
                 state.thumbRX = isActionDown ? offset : 0;
             } else if (binding == Binding.GAMEPAD_DPAD_UP || binding == Binding.GAMEPAD_DPAD_RIGHT ||
-                    binding == Binding.GAMEPAD_DPAD_DOWN || binding == Binding.GAMEPAD_DPAD_LEFT) {
+                binding == Binding.GAMEPAD_DPAD_DOWN || binding == Binding.GAMEPAD_DPAD_LEFT) {
                 state.dpad[binding.ordinal() - Binding.GAMEPAD_DPAD_UP.ordinal()] = isActionDown;
             }
 
@@ -474,9 +478,11 @@ public class InputControlsView extends View {
             }
         }
     }
-    public void sendText(String text){
+
+    public void sendText(String text) {
         xServer.injectText(text);
     }
+
     public Bitmap getIcon(byte id) {
         if (icons[id] == null) {
             Context context = getContext();
@@ -486,6 +492,31 @@ public class InputControlsView extends View {
             }
         }
         return icons[id];
+    }
+
+    public Bitmap getCustomIcon(String iconId) {
+        final File buttonIconFile = new File(getContext().getFilesDir().getPath() + "/home/.buttonIcons", iconId + ".png");
+        if (!buttonIconFile.exists()) {
+            return null;
+        }
+        return BitmapFactory.decodeFile(buttonIconFile.getPath());
+    }
+
+    public static Bitmap applyMask(Bitmap bitmap, Bitmap mask) {
+        Bitmap result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(result);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        canvas.drawBitmap(bitmap, 0, 0, paint);
+
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+
+        Rect srcRect = new Rect(0, 0, mask.getWidth(), mask.getHeight());
+        Rect destRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        canvas.drawBitmap(mask, srcRect, destRect, paint);
+
+        paint.setXfermode(null);
+        return result;
     }
 
     public float[] computeDeltaPoint(float lastX, float lastY, float x, float y) {

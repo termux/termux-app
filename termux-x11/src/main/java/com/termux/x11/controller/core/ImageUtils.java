@@ -8,9 +8,14 @@ import android.net.Uri;
 import androidx.annotation.IntRange;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public abstract class ImageUtils {
     private static int calculateInSampleSize(BitmapFactory.Options options, int maxSize) {
@@ -38,17 +43,14 @@ public abstract class ImageUtils {
             is = context.getContentResolver().openInputStream(uri);
             if (options != null) {
                 bitmap = BitmapFactory.decodeStream(is, null, options);
-            }
-            else bitmap = BitmapFactory.decodeStream(is);
-        }
-        catch (IOException e) {
+            } else bitmap = BitmapFactory.decodeStream(is);
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             try {
                 if (is != null) is.close();
+            } catch (IOException e) {
             }
-            catch (IOException e) {}
         }
         return bitmap;
     }
@@ -68,18 +70,38 @@ public abstract class ImageUtils {
             int inSampleSize = calculateInSampleSize(options, maxSize);
             options.inJustDecodeBounds = false;
             options.inSampleSize = inSampleSize;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             try {
                 if (is != null) is.close();
+            } catch (IOException e) {
             }
-            catch (IOException e) {}
         }
 
         return getBitmapFromUri(context, uri, options);
+    }
+
+    public static String getFileMD5(Context context, Uri uri) {
+        BigInteger bi = null;
+        InputStream is = null;
+        try {
+            byte[] buffer = new byte[8192];
+            int len = 0;
+            is = context.getContentResolver().openInputStream(uri);
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            while ((len = is.read(buffer)) != -1) {
+                md.update(buffer, 0, len);
+            }
+            is.close();
+            byte[] b = md.digest();
+            bi = new BigInteger(1, b);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bi.toString(16);
     }
 
     public static boolean save(Bitmap bitmap, File output, Bitmap.CompressFormat compressFormat, @IntRange(from = 0, to = 100) int quality) {
@@ -87,18 +109,15 @@ public abstract class ImageUtils {
         try {
             fos = new FileOutputStream(output);
             return bitmap.compress(compressFormat, quality, fos);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             try {
                 if (fos != null) {
                     fos.flush();
                     fos.close();
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

@@ -398,7 +398,7 @@ public class ControlElement {
                     }
                 }
 
-                if (iconId > 0) {
+                if (iconId > 0||(customIconId != null && !customIconId.isEmpty())) {
                     drawIcon(canvas, cx, cy, boundingBox.width(), boundingBox.height(), iconId);
                 } else {
                     String text = getDisplayText();
@@ -564,8 +564,13 @@ public class ControlElement {
 
     private void drawIcon(Canvas canvas, float cx, float cy, float width, float height, int iconId) {
         Paint paint = inputControlsView.getPaint();
-        Bitmap icon = inputControlsView.getIcon((byte) iconId);
-        paint.setColorFilter(inputControlsView.getColorFilter());
+        Bitmap icon = null;
+        if (customIconId != null && !customIconId.isEmpty()) {
+            icon = inputControlsView.getCustomIcon(customIconId);
+        } else {
+            icon = inputControlsView.getIcon((byte) iconId);
+            paint.setColorFilter(inputControlsView.getColorFilter());
+        }
         int margin = (int) (inputControlsView.getSnappingSize() * (shape == Shape.CIRCLE || shape == Shape.SQUARE ? 2.0f : 1.0f) * scale);
         int halfSize = (int) ((Math.min(width, height) - margin) * 0.5f);
 
