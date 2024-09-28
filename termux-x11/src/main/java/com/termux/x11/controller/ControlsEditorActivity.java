@@ -216,12 +216,18 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
                     }
                     iconPicker.setVisibility(View.VISIBLE);
                 } else {
+                    if (element.getCustomIconId() != null && element.getBackgroundColor() >= 0) {
+                        colorPicker.setColor(element.getBackgroundColor());
+                    }
                     colorPicker.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+                if (element.getCustomIconId() != null && element.getBackgroundColor() >= 0) {
+                    colorPicker.setColor(element.getBackgroundColor());
+                }
                 colorPicker.setVisibility(View.VISIBLE);
             }
         });
@@ -548,9 +554,44 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
                 String id = openFileCallback.call(data.getData());
                 if (id != null && inputControlsView.getSelectedElement() != null) {
                     inputControlsView.getSelectedElement().setCustomIconId(id);
+                    inputControlsView.invalidate();
                 }
                 openFileCallback = null;
             }
+        }
+    }
+
+    public boolean unLoadCustomIcon() {
+        if (inputControlsView != null &&
+            inputControlsView.getSelectedElement() != null) {
+            String iconId = inputControlsView.getSelectedElement().getCustomIconId();
+            inputControlsView.counterMapDecrease(iconId);
+            inputControlsView.getSelectedElement().setCustomIconId(null);
+            return inputControlsView.counterMapZero(iconId);
+        }
+        return false;
+    }
+
+    public void setButtonColor(int color) {
+        if (inputControlsView != null &&
+            inputControlsView.getSelectedElement() != null) {
+            inputControlsView.getSelectedElement().setBackgroundColor(color);
+            profile.save();
+            inputControlsView.invalidate();
+        }
+    }
+
+    public void setCustomButtonIcon(String id) {
+        if (inputControlsView != null &&
+            inputControlsView.getSelectedElement() != null) {
+            String iconId = inputControlsView.getSelectedElement().getCustomIconId();
+            if (iconId!=null&&iconId.equals(id)) {
+                return;
+            }
+            if (id == null) {
+                inputControlsView.counterMapDecrease(iconId);
+            }
+            inputControlsView.getSelectedElement().setCustomIconId(id);
         }
     }
 }

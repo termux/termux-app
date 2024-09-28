@@ -1,7 +1,11 @@
 package com.termux.x11.controller.inputcontrols;
 
+import static com.termux.x11.controller.inputcontrols.ControlElement.Shape.CIRCLE;
+import static com.termux.x11.controller.inputcontrols.ControlElement.Shape.SQUARE;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -19,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class ControlElement {
     public static final float STICK_DEAD_ZONE = 0.15f;
@@ -69,7 +74,7 @@ public class ControlElement {
 
     private final InputControlsView inputControlsView;
     private Type type = Type.BUTTON;
-    private Shape shape = Shape.CIRCLE;
+    private Shape shape = CIRCLE;
     private Binding[] bindings = {Binding.NONE, Binding.NONE, Binding.NONE, Binding.NONE};
     private float scale = 1.0f;
     private short x;
@@ -91,6 +96,10 @@ public class ControlElement {
     private String cheatCodeText = "None";
     private boolean cheatCodePressed = false;
     private String customIconId;
+    private Bitmap clipIcon;
+    private String oldCustomIconId;
+    private int backgroundColor;
+    private int oldBackgroundColor = -1;
 
     public ControlElement(InputControlsView inputControlsView) {
         this.inputControlsView = inputControlsView;
@@ -254,10 +263,24 @@ public class ControlElement {
 
     public void setCustomIconId(String icId) {
         this.customIconId = icId;
+        if (oldCustomIconId == null) {
+            oldCustomIconId = icId;
+        }
     }
 
     public String getCustomIconId() {
         return this.customIconId;
+    }
+
+    public void setBackgroundColor(int color) {
+        this.backgroundColor = color;
+        if (oldBackgroundColor <= 0) {
+            oldBackgroundColor = color;
+        }
+    }
+
+    public int getBackgroundColor() {
+        return this.backgroundColor;
     }
 
     public Rect getBoundingBox() {
@@ -397,8 +420,11 @@ public class ControlElement {
                         break;
                     }
                 }
-
-                if (iconId > 0||(customIconId != null && !customIconId.isEmpty())) {
+                if (customIconId != null && !customIconId.isEmpty()) {
+                    drawCustomIcon(canvas, cx, cy, boundingBox.width(), boundingBox.height(), customIconId, shape == CIRCLE);
+                } else if (backgroundColor > 0) {
+                    drawColorSolidIcon(canvas, cx, cy, boundingBox.width(), boundingBox.height(), backgroundColor, shape == CIRCLE);
+                } else if (iconId > 0) {
                     drawIcon(canvas, cx, cy, boundingBox.width(), boundingBox.height(), iconId);
                 } else {
                     String text = getDisplayText();
@@ -565,14 +591,64 @@ public class ControlElement {
     private void drawIcon(Canvas canvas, float cx, float cy, float width, float height, int iconId) {
         Paint paint = inputControlsView.getPaint();
         Bitmap icon = null;
-        if (customIconId != null && !customIconId.isEmpty()) {
-            icon = inputControlsView.getCustomIcon(customIconId);
-        } else {
-            icon = inputControlsView.getIcon((byte) iconId);
-            paint.setColorFilter(inputControlsView.getColorFilter());
-        }
-        int margin = (int) (inputControlsView.getSnappingSize() * (shape == Shape.CIRCLE || shape == Shape.SQUARE ? 2.0f : 1.0f) * scale);
+
+        icon = inputControlsView.getIcon((byte) iconId);
+        paint.setColorFilter(inputControlsView.getColorFilter());
+        int margin = (int) (inputControlsView.getSnappingSize() * (shape == CIRCLE || shape == SQUARE ? 2.0f : 1.0f) * scale);
         int halfSize = (int) ((Math.min(width, height) - margin) * 0.5f);
+
+        Rect srcRect = new Rect(0, 0, icon.getWidth(), icon.getHeight());
+        Rect dstRect = new Rect((int) (cx - halfSize), (int) (cy - halfSize), (int) (cx + halfSize), (int) (cy + halfSize));
+        canvas.drawBitmap(icon, srcRect, dstRect, paint);
+        paint.setColorFilter(null);
+    }
+
+    private void drawCustomIcon(Canvas canvas, float cx, float cy, float width, float height, String iconId, boolean isCycle) {
+        Paint paint = inputControlsView.getPaint();
+        Bitmap icon = null;
+        if (clipIcon != null && oldCustomIconId.equals(iconId)) {
+            icon = clipIcon;
+        } else {
+            Bitmap iconOrigin = inputControlsView.getCustomIcon(iconId);
+            if (iconOrigin == null) {
+                return;
+            }
+            icon = inputControlsView.clipBitmap(iconOrigin, isCycle);
+            if (icon == null) {
+                return;
+            }
+            clipIcon = icon;
+            oldCustomIconId = iconId;
+            inputControlsView.counterMapIncrease(iconId);
+        }
+        int margin = (int) (inputControlsView.getSnappingSize() * (shape == CIRCLE || shape == SQUARE ? 2.0f : 1.0f) * scale);
+        int halfSize = (int) ((Math.min(width, height) - margin) * 0.7f);
+
+        Rect srcRect = new Rect(0, 0, icon.getWidth(), icon.getHeight());
+        Rect dstRect = new Rect((int) (cx - halfSize), (int) (cy - halfSize), (int) (cx + halfSize), (int) (cy + halfSize));
+        canvas.drawBitmap(icon, srcRect, dstRect, paint);
+        paint.setColorFilter(null);
+    }
+
+    public static int toARGB(int rgb) {
+        return Color.argb(255, Color.red(rgb), Color.green(rgb), Color.blue(rgb));
+    }
+
+    private void drawColorSolidIcon(Canvas canvas, float cx, float cy, float width, float height, int iconColor, boolean isCycle) {
+        Paint paint = inputControlsView.getPaint();
+        Bitmap icon = null;
+        if (clipIcon != null && iconColor == oldBackgroundColor) {
+            icon = clipIcon;
+        } else {
+            icon = inputControlsView.createShapeBitmap(width, height, toARGB(iconColor), isCycle);
+            if (icon == null) {
+                return;
+            }
+            clipIcon = icon;
+            oldBackgroundColor = iconColor;
+        }
+        int margin = (int) (inputControlsView.getSnappingSize() * (shape == CIRCLE || shape == SQUARE ? 2.0f : 1.0f) * scale);
+        int halfSize = (int) ((Math.min(width, height) - margin) * 0.7f);
 
         Rect srcRect = new Rect(0, 0, icon.getWidth(), icon.getHeight());
         Rect dstRect = new Rect((int) (cx - halfSize), (int) (cy - halfSize), (int) (cx + halfSize), (int) (cy + halfSize));
@@ -596,8 +672,15 @@ public class ControlElement {
             elementJSONObject.put("toggleSwitch", toggleSwitch);
             elementJSONObject.put("text", text);
             elementJSONObject.put("iconId", iconId);
-            elementJSONObject.put("cheatCodeText", cheatCodeText);
-            elementJSONObject.put("customIconId", customIconId);
+            if (!cheatCodeText.isEmpty()) {
+                elementJSONObject.put("cheatCodeText", cheatCodeText);
+            }
+            if (customIconId != null && !customIconId.isEmpty()) {
+                elementJSONObject.put("customIconId", customIconId);
+            }
+            if (backgroundColor > 0) {
+                elementJSONObject.put("backgroundColor", backgroundColor);
+            }
 
             if (type == Type.RANGE_BUTTON && range != null) {
                 elementJSONObject.put("range", range.name());

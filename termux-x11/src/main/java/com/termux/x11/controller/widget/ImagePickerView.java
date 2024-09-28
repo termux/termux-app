@@ -11,9 +11,13 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import androidx.annotation.Nullable;
@@ -28,7 +32,10 @@ import com.termux.x11.controller.core.WineThemeManager;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 
 import com.termux.x11.MainActivity;
 
@@ -105,6 +112,7 @@ public class ImagePickerView extends View implements View.OnClickListener {
     public void onClick(View anchor) {
         if (activityType == getResources().getInteger(R.integer.load_button_icon_code)) {
             setButtonIcon(anchor);
+            createButtonImageList(anchor);
         } else {
             setWineWallPaper(anchor);
         }
@@ -119,7 +127,7 @@ public class ImagePickerView extends View implements View.OnClickListener {
 
         if (buttonIconFile.isFile()) {
             imageView.setImageBitmap(BitmapFactory.decodeFile(buttonIconFile.getPath()));
-        } else imageView.setImageResource(R.drawable.wallpaper);
+        } else imageView.setImageResource(R.drawable.ic_x11_icon);
 
         final PopupWindow[] popupWindow = {null};
         View browseButton = view.findViewById(R.id.BTBrowse);
@@ -148,8 +156,12 @@ public class ImagePickerView extends View implements View.OnClickListener {
         if (buttonIconFile.isFile()) {
             removeButton.setVisibility(View.VISIBLE);
             removeButton.setOnClickListener((v) -> {
-                FileUtils.delete(buttonIconFile);
                 popupWindow[0].dismiss();
+                ControlsEditorActivity activity = (ControlsEditorActivity) context;
+                boolean delTag = activity.unLoadCustomIcon();
+                if (delTag) {
+                    FileUtils.delete(buttonIconFile);
+                }
             });
         }
 
@@ -193,6 +205,64 @@ public class ImagePickerView extends View implements View.OnClickListener {
         }
 
         popupWindow[0] = AppUtils.showPopupWindow(anchor, view, 200, 240);
+    }
+
+    public void createButtonImageList(View anchor) {
+        Context context = getContext();
+        final int popupHeight = 60;
+        HorizontalScrollView horizontalScrollView = new HorizontalScrollView(context);
+        LinearLayout container = new LinearLayout(context);
+        container.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int) UnitUtils.dpToPx(popupHeight)));
+        container.setOrientation(LinearLayout.HORIZONTAL);
+        container.setGravity(Gravity.CENTER_VERTICAL);
+        container.setPadding(0, 0, (int) UnitUtils.dpToPx(4), 0);
+
+        Bitmap colorFrameSelected = BitmapFactory.decodeResource(context.getResources(), R.drawable.color_frame_selected);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams((int) UnitUtils.dpToPx(32), (int) UnitUtils.dpToPx(32));
+        params.setMargins((int) UnitUtils.dpToPx(4), 0, 0, 0);
+        final PopupWindow[] popupWindow = {null,};
+
+        ImageView delete = new ImageView(context);
+        delete.setLayoutParams(params);
+        String[] filenames = null;
+        String prefix = null;
+        try (InputStream is = context.getAssets().open("inputcontrols/icons/" + "0.png")) {
+            delete.setImageBitmap(BitmapFactory.decodeStream(is));
+            File buttonIconsDir = new File(context.getFilesDir(), "home/.buttonIcons");
+            prefix = buttonIconsDir.getPath();
+            filenames = buttonIconsDir.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.toLowerCase().endsWith(".png");
+                }
+            });
+        } catch (IOException e) {
+        }
+        delete.setOnClickListener((v) -> {
+            ControlsEditorActivity activity = (ControlsEditorActivity) context;
+            activity.setCustomButtonIcon(null);
+            invalidate();
+            if (popupWindow[0] != null) popupWindow[0].dismiss();
+        });
+        container.addView(delete);
+        if (filenames == null) {
+            return;
+        }
+        for (final String name : filenames) {
+            ImageView imageView = new ImageView(context);
+            imageView.setLayoutParams(params);
+            imageView.setImageBitmap(BitmapFactory.decodeFile(prefix + "/" + name));
+            imageView.setOnClickListener((v) -> {
+                ControlsEditorActivity activity = (ControlsEditorActivity) context;
+                String baseName = name.replace(".png", "");
+                activity.setCustomButtonIcon(baseName);
+                invalidate();
+                if (popupWindow[0] != null) popupWindow[0].dismiss();
+            });
+            container.addView(imageView);
+        }
+        horizontalScrollView.addView(container);
+        popupWindow[0] = AppUtils.showPopupWindow(anchor, horizontalScrollView, 0, popupHeight);
     }
 
     private File saveButtonIcon(String iconId) {

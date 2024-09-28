@@ -731,6 +731,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }
 
         orientation = newConfig.orientation;
+//        if (termuxActivityListener!=null){
+//            termuxActivityListener.onChangeOrientation(newConfig.orientation);
+//        }
         setTerminalToolbarView();
     }
     public int getOrientation(){

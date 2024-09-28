@@ -223,6 +223,9 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
                 if (elementJSONObject.has("customIconId")){
                     element.setCustomIconId(elementJSONObject.getString("customIconId"));
                 }
+                if(elementJSONObject.has("backgroundColor")){
+                    element.setBackgroundColor(elementJSONObject.getInt("backgroundColor"));
+                }
                 if (elementJSONObject.has("range"))
                     element.setRange(ControlElement.Range.valueOf(elementJSONObject.getString("range")));
                 if (elementJSONObject.has("orientation"))

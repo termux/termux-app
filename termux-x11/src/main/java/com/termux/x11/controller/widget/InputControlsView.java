@@ -3,6 +3,7 @@ package com.termux.x11.controller.widget;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -14,12 +15,16 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.util.IntProperty;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.termux.x11.controller.core.ImageUtils;
 import com.termux.x11.controller.inputcontrols.Binding;
@@ -37,6 +42,8 @@ import com.termux.x11.LorieView;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -67,6 +74,35 @@ public class InputControlsView extends View {
     private final PointF mouseMoveOffset = new PointF();
     private boolean showTouchscreenControls = true;
     private final float[] xform = XForm.getInstance();
+    private Map<String, Integer> counterMap = new HashMap<>();
+
+    public void counterMapIncrease(String iconId) {
+        Integer v = counterMap.get(iconId);
+        if (v == null) {
+            v = new Integer(0);
+        }
+        v++;
+        counterMap.put(iconId, v);
+    }
+
+    public void counterMapDecrease(String iconId) {
+        Integer v = counterMap.get(iconId);
+        if (v != null) {
+            v--;
+            counterMap.put(iconId, v);
+        }
+    }
+
+    public boolean counterMapZero(String iconId) {
+        Integer v = counterMap.get(iconId);
+        if (v == null) {
+            return true;
+        }
+        if (v <= 0) {
+            return true;
+        }
+        return false;
+    }
 
     public InputControlsView(Context context) {
         super(context);
@@ -502,21 +538,38 @@ public class InputControlsView extends View {
         return BitmapFactory.decodeFile(buttonIconFile.getPath());
     }
 
-    public static Bitmap applyMask(Bitmap bitmap, Bitmap mask) {
-        Bitmap result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(result);
+    public Bitmap clipBitmap(Bitmap bitmap, boolean isCircular) {
+        Bitmap clippedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(clippedBitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        canvas.drawBitmap(bitmap, 0, 0, paint);
+        BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        paint.setShader(shader);
+        if (isCircular) {
+            int centerX = bitmap.getWidth() / 2;
+            int centerY = bitmap.getHeight() / 2;
+            int radius = Math.min(centerX, centerY);
+            canvas.drawCircle(centerX, centerY, radius, paint);
+        } else {
+            RectF rect = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            canvas.drawRect(rect, paint);
+        }
+        return clippedBitmap;
+    }
 
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+    public static Bitmap createShapeBitmap(float width, float height, int color, boolean isCircular) {
+        Bitmap bitmap = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(color);
 
-        Rect srcRect = new Rect(0, 0, mask.getWidth(), mask.getHeight());
-        Rect destRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        canvas.drawBitmap(mask, srcRect, destRect, paint);
-
-        paint.setXfermode(null);
-        return result;
+        if (isCircular) {
+            int radius = (int) (Math.min(width, height) / 2);
+            canvas.drawCircle(width / 2, height / 2, radius, paint);
+        } else {
+            RectF rect = new RectF(0, 0, width, height);
+            canvas.drawRect(rect, paint);
+        }
+        return bitmap;
     }
 
     public float[] computeDeltaPoint(float lastX, float lastY, float x, float y) {
