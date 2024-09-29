@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 
 public class ScreenUtils {
     /**
-     * 获取ActionBar高度
+     *get ActionBar height
      */
     public static int getActionBarHeight(Context context) {
         TypedValue tv = new TypedValue();
@@ -28,7 +28,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取状态栏高度
+     * get status bar height
      */
     public static int getStatusHeight() {
         Resources resources = Resources.getSystem();
@@ -37,7 +37,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取底部导航栏高度
+     * get navigation bar height
      */
     public static int getNavBarHeight() {
         Resources res = Resources.getSystem();
@@ -50,14 +50,14 @@ public class ScreenUtils {
     }
 
     /**
-     * 判断底部状态栏是否显示
+     * get visibility og navigation bar
      */
     public static boolean isNavBarVisible(@NonNull final Activity activity) {
         return isNavBarVisible(activity.getWindow());
     }
 
     /**
-     * 判断底部状态栏是否显示
+     * get visibility og navigation bar
      */
     public static boolean isNavBarVisible(@NonNull final Window window) {
         boolean isVisible = false;
@@ -91,14 +91,14 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取屏幕宽度
+     * get screen width
      */
     public static int getScreenWidth(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         if (wm == null) return -1;
         Point point = new Point();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            //Andoird 4.0时，引入了虚拟导航键
+            //Andoird 4.0 and later, navigation bar was introduced
             wm.getDefaultDisplay().getRealSize(point);
         } else {
             wm.getDefaultDisplay().getSize(point);
@@ -107,7 +107,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取屏幕高度
+     * get screen height
      */
     public static int getScreenHeight(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -122,7 +122,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取宽度（排除系统装饰元素，如底部导航栏等），此方法是不准确的
+     * get screen width (exclude decorate element, such as navigation bar below), not exact
      */
     public static int getAppScreenWidth(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -133,7 +133,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取高度（排除系统装饰元素，如底部导航栏等），此方法是不准确的
+     * get screen height (exclude decorate element, such as navigation bar below), not exact
      */
     public static int getAppScreenHeight(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -144,7 +144,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取ContentView宽度
+     * get ContentView width
      */
     public static int getContentViewWidth(Activity activity) {
         View contentView = activity.findViewById(Window.ID_ANDROID_CONTENT);
@@ -152,7 +152,7 @@ public class ScreenUtils {
     }
 
     /**
-     * 获取ContentView高度
+     * get ContentView height
      */
     public static int getContentViewHeight(Activity activity) {
         View contentView = activity.findViewById(Window.ID_ANDROID_CONTENT);
