@@ -274,8 +274,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         setupInputController();
 
         if (SDK_INT >= VERSION_CODES.TIRAMISU
-                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PERMISSION_GRANTED
-                && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+            && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PERMISSION_GRANTED
+            && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 0);
         }
         winHandler = new WinHandler(this);
@@ -439,21 +439,21 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         });
 
         Map.of(left, InputStub.BUTTON_LEFT, middle, InputStub.BUTTON_MIDDLE, right, InputStub.BUTTON_RIGHT)
-                .forEach((v, b) -> v.setOnTouchListener((__, e) -> {
-                    switch (e.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                        case MotionEvent.ACTION_POINTER_DOWN:
-                            getLorieView().sendMouseEvent(0, 0, b, true, true);
-                            v.setPressed(true);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                        case MotionEvent.ACTION_POINTER_UP:
-                            getLorieView().sendMouseEvent(0, 0, b, false, true);
-                            v.setPressed(false);
-                            break;
-                    }
-                    return true;
-                }));
+            .forEach((v, b) -> v.setOnTouchListener((__, e) -> {
+                switch (e.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        getLorieView().sendMouseEvent(0, 0, b, true, true);
+                        v.setPressed(true);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_POINTER_UP:
+                        getLorieView().sendMouseEvent(0, 0, b, false, true);
+                        v.setPressed(false);
+                        break;
+                }
+                return true;
+            }));
 
         pos.setOnTouchListener(new View.OnTouchListener() {
             final int touchSlop = (int) Math.pow(ViewConfiguration.get(MainActivity.this).getScaledTouchSlop(), 2);
@@ -547,19 +547,18 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
 
     protected void onPreferencesChanged(String key) {
-        if("X11Focused".contentEquals(key)){
+        if ("X11Focused".contentEquals(key)) {
             return;
         }
         boolean startFresh = false;
         if ("additionalKbdVisible".equals(key) ||
-                "showAdditionalKbd".contentEquals(key)) {
+            "showAdditionalKbd".contentEquals(key)) {
             toggleExtraKeys(true, false);
         }
-        if ("showMouseHelper".contentEquals(key)||
-        "forceLandscape".contentEquals(key)||
-        "fullscreen".contentEquals(key)||
-        "hideCutout".contentEquals(key)||
-        "ignoreCutoutOperation".contentEquals(key)) {
+        if ("showMouseHelper".contentEquals(key) ||
+            "forceLandscape".contentEquals(key) ||
+            "fullscreen".contentEquals(key) ||
+            "hideCutout".contentEquals(key)) {
             startFresh = true;
         }
 
@@ -578,7 +577,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         SamsungDexUtils.dexMetaKeyCapture(this, p.getBoolean("dexMetaKeyCapture", false));
 
         setTerminalToolbarView();
-        if(startFresh){
+        if (startFresh) {
             onWindowFocusChanged(true);
         }
         LorieView.setClipboardSyncEnabled(p.getBoolean("clipboardSync", false));
@@ -591,13 +590,13 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 Settings.Secure.putString(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, "1");
             } catch (SecurityException e) {
                 new AlertDialog.Builder(this)
-                        .setTitle("Permission denied")
-                        .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
-                                "Please, launch this command using ADB:\n" +
-                                "adb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS")
-                        .setNegativeButton("OK", null)
-                        .create()
-                        .show();
+                    .setTitle("Permission denied")
+                    .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
+                        "Please, launch this command using ADB:\n" +
+                        "adb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS")
+                    .setNegativeButton("OK", null)
+                    .create()
+                    .show();
 
                 SharedPreferences.Editor edit = p.edit();
                 edit.putBoolean("enableAccessibilityServiceAutomatically", false);
@@ -607,7 +606,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             KeyInterceptor.shutdown();
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
-                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
         if (getRequestedOrientation() != requestedOrientation) {
             setRequestedOrientation(requestedOrientation);
@@ -673,7 +672,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             if (mExtraKeys != null) {
                 ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
                 layoutParams.height = Math.round(37.5f * getResources().getDisplayMetrics().density *
-                        (mExtraKeys.getExtraKeysInfo() == null ? 0 : mExtraKeys.getExtraKeysInfo().getMatrix().length));
+                    (mExtraKeys.getExtraKeysInfo() == null ? 0 : mExtraKeys.getExtraKeysInfo().getMatrix().length));
                 terminalToolbarViewPager.setLayoutParams(layoutParams);
             }
         }, 200);
@@ -731,12 +730,14 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }
 
         orientation = newConfig.orientation;
-//        if (termuxActivityListener!=null){
-//            termuxActivityListener.onChangeOrientation(newConfig.orientation);
-//        }
+        if (termuxActivityListener != null) {
+            termuxActivityListener.onChangeOrientation(newConfig.orientation);
+        }
         setTerminalToolbarView();
+//        Log.d("onConfigurationChanged","orientation:"+orientation);
     }
-    public int getOrientation(){
+
+    public int getOrientation() {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
         int rotation = display.getRotation();
@@ -749,6 +750,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         }
     }
+
     @SuppressLint("RestrictedApi")
     protected void switchSoftKeyboard(boolean hide) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -788,28 +790,19 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         fullscreen = fullscreen || (null != intent && intent.getBooleanExtra(REQUEST_LAUNCH_EXTERNAL_DISPLAY, false));
 
         int requestedOrientation = p.getBoolean("forceLandscape", false) ?
-                ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         if (getRequestedOrientation() != requestedOrientation)
             setRequestedOrientation(requestedOrientation);
 //        if (getOrientation() != requestedOrientation)
 //            setRequestedOrientation(requestedOrientation);
-        if (termuxActivityListener!=null){
-            termuxActivityListener.ignoreCutout(p.getBoolean("ignoreCutoutOperation",false));
-        }
         if (hasFocus) {
             if (SDK_INT >= VERSION_CODES.P) {
                 if (p.getBoolean("hideCutout", false)) {
                     getWindow().getAttributes().layoutInDisplayCutoutMode = (SDK_INT >= VERSION_CODES.R) ?
-                            LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS :
-                            LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-                    if (termuxActivityListener != null) {
-                        termuxActivityListener.hideCutout(true);
-                    }
+                        LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS :
+                        LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
                 } else {
                     getWindow().getAttributes().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-                    if (termuxActivityListener != null) {
-                        termuxActivityListener.hideCutout(false);
-                    }
                 }
             }
 
@@ -822,12 +815,12 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             if (fullscreen) {
                 window.addFlags(FLAG_FULLSCREEN);
                 decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
             } else {
                 window.clearFlags(FLAG_FULLSCREEN);
                 decorView.setSystemUiVisibility(0);

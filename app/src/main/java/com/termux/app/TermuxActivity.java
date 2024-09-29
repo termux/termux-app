@@ -1,5 +1,6 @@
 package com.termux.app;
 
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_FILES_DIR_PATH;
@@ -15,7 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -23,7 +24,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -310,8 +311,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         bitmap = Bitmap.createBitmap(width, height,
                 Bitmap.Config.ARGB_8888);
         bitmap.eraseColor(Color.parseColor("#CC000000"));
-//        Bitmap blurBitmap = Blur.fastblur(this, bitmap, 20);
-//        mTermuxActivityRootView.setBackground(new BitmapDrawable(bitmap));
         mTermuxActivityRootView.setBackground(new BitmapDrawable(getResources(), bitmap));
         View content = findViewById(android.R.id.content);
         content.setOnApplyWindowInsetsListener((v, insets) -> {
@@ -319,9 +318,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             return insets;
         });
 
-//        if (mProperties.isUsingFullScreen()) {
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        }
         setTermuxTerminalViewAndClients();
 
         setTerminalToolbarView(savedInstanceState);
@@ -378,7 +374,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             @Override
             public void onChangeOrientation(int landscape) {
                 slideWindowLayout.changeLayoutOrientation(landscape);
-                orientation = landscape;
                 hideInputControls();
                 inputControlsManager.loadProfiles(true);
             }
@@ -411,19 +406,8 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             }
 
             @Override
-            public void hideCutout(boolean hide) {
-                slideWindowLayout.setHideCutout(hide);
-                handler.postDelayed(() -> slideWindowLayout.showContent(), 500);
-            }
-
-            @Override
             public void changePreference(String key) {
                 onPreferencesChanged(key);
-            }
-
-            @Override
-            public void ignoreCutout(boolean ignoreCutoutOperation) {
-                slideWindowLayout.setIgnoreCutOut(ignoreCutoutOperation);
             }
 
             @Override
@@ -712,10 +696,10 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
     }
 
     private void setSlideWindowLayout() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        slideWindowLayout.setIgnoreCutOut(p.getBoolean("ignoreCutoutOperation", false));
-        slideWindowLayout.setHideCutout(p.getBoolean("hideCutout", false));
-        DisplaySlidingWindow.setLandscape(p.getBoolean("forceLandscape", false));
+        Configuration configuration = getResources().getConfiguration();
+        boolean landscape = !(configuration.orientation == SCREEN_ORIENTATION_PORTRAIT);
+        DisplaySlidingWindow.setLandscape(landscape);
+        Log.d("setSlideWindowLayout","configuration:"+landscape);
     }
 
     private void closeTerminalSessionListView() {

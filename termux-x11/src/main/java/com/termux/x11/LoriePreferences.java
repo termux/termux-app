@@ -113,11 +113,8 @@ public class LoriePreferences extends AppCompatActivity {
 
         void showProgressManager();
 
-        void hideCutout(boolean hide);
-
         void changePreference(String key);
 
-        void ignoreCutout(boolean ignoreCutoutOperation);
         List<ProcessInfo> collectProcessorInfo(String tag);
     }
 
@@ -271,17 +268,11 @@ public class LoriePreferences extends AppCompatActivity {
             findPreference("displayResolutionCustom").setSummary(p.getString("displayResolutionCustom", "1280x1024"));
             findPreference("displayStretch").setEnabled("exact".contentEquals(p.getString("displayResolutionMode", "native")) || "custom".contentEquals(p.getString("displayResolutionMode", "native")));
             int modeValue = Integer.parseInt(p.getString("touchMode", "1")) - 1;
-            findPreference("hideCutout").setVisible(!p.getBoolean("ignoreCutoutOperation", false));
 
             String mode = getResources().getStringArray(R.array.touchscreenInputModesEntries)[modeValue];
             findPreference("touchMode").setSummary(mode);
             findPreference("scaleTouchpad").setVisible("1".equals(p.getString("touchMode", "1")) && !"native".equals(p.getString("displayResolutionMode", "native")));
             findPreference("showMouseHelper").setEnabled("1".equals(p.getString("touchMode", "1")));
-            if (preferenceActivity.touchShow){
-                findPreference("select_controller").setTitle(R.string.close_controller);
-            }else{
-                findPreference("select_controller").setTitle(R.string.open_controller);
-            }
 
             boolean requestNotificationPermissionVisible =
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU

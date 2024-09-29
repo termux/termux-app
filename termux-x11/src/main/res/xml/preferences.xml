@@ -77,12 +77,6 @@
             android:title="@string/force_landscape_orientation" />
 
         <SwitchPreferenceCompat
-            android:defaultValue="true"
-            android:key="ignoreCutoutOperation"
-            android:summary="@string/ignore_cutout_operation_summary"
-            android:title="@string/ignore_cutout_operation" />
-
-        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="hideCutout"
             android:title="@string/hide_display_cutout" />

@@ -1,12 +1,9 @@
 package com.termux.app.terminal;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-import static android.os.Build.VERSION.SDK_INT;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
@@ -26,9 +23,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private ViewGroup mWrapper;
     private boolean isLeftMenuOpen;
     private boolean isRightMenuOpen;
-    private int mReMeasureContentWidthOffset;
-    private int mRightMenuOpenOffset;
-    private boolean ignoreCutOut = false;
 
     /**
      * listener for menu changed
@@ -76,38 +70,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean menuSwitchSlider;
     private float downX, downY;
     private boolean moving;
-    private static int statusHeight;
-    public boolean hideCutout = false;
-    private static boolean isAndroid12 =
-        SDK_INT == Build.VERSION_CODES.S || SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU;
-
     public static void setLandscape(boolean isLandscape) {
         DisplaySlidingWindow.landscape = isLandscape;
-    }
-
-    private void reInit() {
-        switch (SDK_INT) {
-            case Build.VERSION_CODES.P:
-            case Build.VERSION_CODES.Q:
-            case Build.VERSION_CODES.R: {
-                mReMeasureContentWidthOffset = statusHeight;
-                break;
-            }
-            case Build.VERSION_CODES.S:
-            case Build.VERSION_CODES.S_V2:
-            case Build.VERSION_CODES.TIRAMISU: {
-                mReMeasureContentWidthOffset = 0;
-                break;
-            }
-            default:
-                mReMeasureContentWidthOffset = statusHeight;
-        }
-        mRightMenuOpenOffset = (hideCutout && landscape) ? statusHeight : 0;
-        if (SDK_INT <= Build.VERSION_CODES.R ||
-            SDK_INT == Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
-            SDK_INT == 35) {
-            mRightMenuOpenOffset = 0;
-        }
     }
 
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
@@ -117,8 +81,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         contentSwitchSlider = true;
         mScreenWidth = ScreenUtils.getScreenWidth(context);
         mScreenHeight = ScreenUtils.getScreenHeight(context);
-        statusHeight = ScreenUtils.getStatusHeight(context);
-        reInit();
         remeasure();
     }
 
@@ -137,25 +99,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             mLeftMenu = (ViewGroup) mWrapper.getChildAt(0);
             mContent = (ViewGroup) mWrapper.getChildAt(1);
             mRightMenu = (ViewGroup) mWrapper.getChildAt(2);
-
-            if (DisplaySlidingWindow.isAndroid12 && landscape && !ignoreCutOut) {
-                if (hideCutout) {
-                    ViewHelper.setTranslationX(mWrapper, statusHeight);
-                    ViewHelper.setTranslationX(mLeftMenu, -statusHeight);
-                    ViewHelper.setTranslationX(mRightMenu, -statusHeight);
-                    mContentWidth -= statusHeight;
-                } else {
-                    if (mWrapper.getTranslationX() > 0) {
-                        ViewHelper.setTranslationX(mWrapper, 0);
-                    }
-                    if (mLeftMenu.getTranslationX() < 0) {
-                        ViewHelper.setTranslationX(mLeftMenu, 0);
-                    }
-                    if (mRightMenu.getTranslationX() < 0) {
-                        ViewHelper.setTranslationX(mRightMenu, 0);
-                    }
-                }
-            }
             mMenuWidth = mContentWidth - mMenuRightPadding;
             mHalfMenuWidth = mMenuWidth / 2;
             mLeftMenu.getLayoutParams().width = mMenuWidth;
@@ -167,20 +110,13 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     private void remeasure() {
+        mContentWidth = ScreenUtils.getScreenWidth(getContext());
         if (landscape) {
-            mContentWidth = mScreenHeight > mScreenWidth ? mScreenHeight : mScreenWidth;
             mMenuRightPadding = mContentWidth * 3 / 5;
-            if (hideCutout && !ignoreCutOut) {
-                if (isAndroid12) {
-                    mContentWidth -= mReMeasureContentWidthOffset;
-                } else {
-                    mContentWidth += mReMeasureContentWidthOffset;
-                }
-            }
         } else {
-            mContentWidth = mScreenWidth < mScreenHeight ? mScreenWidth : mScreenHeight;
             mMenuRightPadding = verticalPadding;
         }
+//        Log.d("remeasure","landscape:"+landscape+",mContentWidth:"+mContentWidth);
     }
 
     @Override
@@ -189,12 +125,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (changed) {
             // hide menu at start up
             showContent();
-        }
-
-        if (landscape && hideCutout && !ignoreCutOut) {
-            if (isAndroid12 && !ignoreCutOut) {
-                ViewHelper.setTranslationX(mRightMenu, 0);
-            }
         }
         refreshEnd = true;
     }
@@ -248,9 +178,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         if (isLeftMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(false, 0);
                         }
-                        if (DisplaySlidingWindow.isAndroid12 && landscape && hideCutout && !ignoreCutOut) {
-                            ViewHelper.setTranslationX(mLeftMenu, -mRightMenuOpenOffset);
-                        }
                         isLeftMenuOpen = false;
                         contentSwitchSlider = false;
                         menuSwitchSlider = false;
@@ -260,9 +187,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         if (!isLeftMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 0);
                         }
-                        if (DisplaySlidingWindow.isAndroid12 && landscape && hideCutout && !ignoreCutOut) {
-                            ViewHelper.setTranslationX(mLeftMenu, 0);
-                        }
                         isLeftMenuOpen = true;
                         menuSwitchSlider = true;
                     }
@@ -270,17 +194,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 //operate right
                 if (isOperateRight) {
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth - mRightMenuOpenOffset, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
-                        }
-                        if (landscape && hideCutout && !ignoreCutOut) {
-                            if (SDK_INT == Build.VERSION_CODES.S) {
-                                ViewHelper.setTranslationX(mRightMenu, -mRightMenuOpenOffset);
-                            } else if (SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU) {
-                                ViewHelper.setTranslationX(mWrapper, 0);
-                            }
-
                         }
                         isRightMenuOpen = true;
                         menuSwitchSlider = true;
@@ -290,14 +206,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         this.smoothScrollTo(mMenuWidth, 0);
                         if (isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(false, 1);
-                        }
-                        if (landscape && hideCutout && !ignoreCutOut) {
-                            if (SDK_INT == Build.VERSION_CODES.S) {
-                                ViewHelper.setTranslationX(mRightMenu, 0);
-                            } else if (SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU) {
-                                ViewHelper.setTranslationX(mWrapper, mRightMenuOpenOffset);
-                            }
-
                         }
                         isRightMenuOpen = false;
                         contentSwitchSlider = false;
@@ -335,16 +243,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
         } else {
-            this.smoothScrollTo(mMenuWidth + mMenuWidth - mRightMenuOpenOffset, 0);
+            this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
             if (!isRightMenuOpen) {
                 mOnMenuChangeListener.onMenuOpen(true, 1);
-            }
-            if (landscape && hideCutout && !ignoreCutOut) {
-                if (SDK_INT == Build.VERSION_CODES.S) {
-                    ViewHelper.setTranslationX(mRightMenu, -mRightMenuOpenOffset);
-                } else if (SDK_INT == Build.VERSION_CODES.S_V2 || SDK_INT == Build.VERSION_CODES.TIRAMISU) {
-                    ViewHelper.setTranslationX(mWrapper, 0);
-                }
             }
             isRightMenuOpen = true;
         }
@@ -360,9 +261,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         }
     }
 
-    public void changeLayoutOrientation(int landscapeOriention) {
+    public void changeLayoutOrientation(int landscapeOrientation) {
         refreshEnd = false;
-        landscape = !(landscapeOriention == SCREEN_ORIENTATION_PORTRAIT);
+        landscape = !(landscapeOrientation == SCREEN_ORIENTATION_PORTRAIT);
         requestLayout();
     }
 
@@ -370,20 +271,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         this.contentSwitchSlider = open;
         this.menuSwitchSlider = !open;
     }
-
-    public void setHideCutout(boolean hide) {
-        if (ignoreCutOut) {
-            return;
-        }
-        refreshEnd = false;
-        hideCutout = hide;
-        requestLayout();
-    }
-
-    public void setIgnoreCutOut(boolean ignore) {
-        this.ignoreCutOut = ignore;
-    }
-
     public void showContent() {
         this.contentSwitchSlider = false;
         this.menuSwitchSlider = true;
