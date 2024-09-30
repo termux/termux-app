@@ -36,7 +36,7 @@ public interface TerminalViewClient {
 
     boolean isTerminalViewSelected();
 
-
+    boolean isInputComposingDisabled();
 
     void copyModeChanged(boolean copyMode);
 
