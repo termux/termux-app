@@ -235,8 +235,8 @@ public class LorieView extends SurfaceView implements InputStub {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         if (preferences.getBoolean("displayStretch", false)
-                || "native".equals(preferences.getString("displayResolutionMode", "native"))
-                || "scaled".equals(preferences.getString("displayResolutionMode", "native"))) {
+            || "native".equals(preferences.getString("displayResolutionMode", "native"))
+            || "scaled".equals(preferences.getString("displayResolutionMode", "native"))) {
             getHolder().setSizeFromLayout();
             return;
         }
@@ -316,9 +316,9 @@ public class LorieView extends SurfaceView implements InputStub {
     public void checkForClipboardChange() {
         ClipDescription desc = clipboard.getPrimaryClipDescription();
         if (clipboardSyncEnabled && desc != null &&
-                lastClipboardTimestamp < desc.getTimestamp() &&
-                desc.getMimeTypeCount() == 1 &&
-                desc.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+            lastClipboardTimestamp < desc.getTimestamp() &&
+            desc.getMimeTypeCount() == 1 &&
+            desc.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
             lastClipboardTimestamp = desc.getTimestamp();
             sendClipboardAnnounce();
             Log.d("CLIP", "sending clipboard announce");
@@ -422,6 +422,7 @@ public class LorieView extends SurfaceView implements InputStub {
             keyboard.setKeyRelease(xKeycode.id);
         }
     }
+
     public void injectText(String text) {
         try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
             if (text.isEmpty()) {

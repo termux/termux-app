@@ -54,7 +54,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
      */
     private int mContentWidth;
     private int mScreenWidth;
-    private int mScreenHeight;
     public static boolean landscape = false;
     /**
      * dp menu padding from screen edge
@@ -70,6 +69,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean menuSwitchSlider;
     private float downX, downY;
     private boolean moving;
+
     public static void setLandscape(boolean isLandscape) {
         DisplaySlidingWindow.landscape = isLandscape;
     }
@@ -80,7 +80,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         setClickable(true);
         contentSwitchSlider = true;
         mScreenWidth = ScreenUtils.getScreenWidth(context);
-        mScreenHeight = ScreenUtils.getScreenHeight(context);
         remeasure();
     }
 
@@ -112,7 +111,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private void remeasure() {
         mContentWidth = ScreenUtils.getScreenWidth(getContext());
         if (landscape) {
-            mMenuRightPadding = mContentWidth * 3 / 5;
+            mMenuRightPadding = mContentWidth / 2;
         } else {
             mMenuRightPadding = verticalPadding;
         }
@@ -217,7 +216,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (contentSwitchSlider) {
             super.onTouchEvent(ev);
         } else {
-//           return mOnMenuChangeListener.sendTouchEvent(ev);
             return false;
         }
         return false;
@@ -271,10 +269,12 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         this.contentSwitchSlider = open;
         this.menuSwitchSlider = !open;
     }
+
     public void showContent() {
         this.contentSwitchSlider = false;
         this.menuSwitchSlider = true;
         refreshEnd = false;
+        remeasure();
         this.scrollTo(mMenuWidth, 0);
     }
 }
