@@ -3,7 +3,10 @@ package com.termux.app.terminal;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
@@ -17,10 +20,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private boolean isOperateRight;
     private boolean isOperateLeft;
     private boolean refreshEnd;
-    private ViewGroup mLeftMenu;
     private ViewGroup mContent;
-    private ViewGroup mRightMenu;
-    private ViewGroup mWrapper;
     private boolean isLeftMenuOpen;
     private boolean isRightMenuOpen;
 
@@ -53,7 +53,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
      * content width
      */
     private int mContentWidth;
-    private int mScreenWidth;
+    private int mStatusHeight;
     public static boolean landscape = false;
     /**
      * dp menu padding from screen edge
@@ -79,7 +79,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
         setClickable(true);
         contentSwitchSlider = true;
-        mScreenWidth = ScreenUtils.getScreenWidth(context);
+        int mScreenWidth = ScreenUtils.getScreenWidth(context);
         remeasure();
     }
 
@@ -94,10 +94,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
          */
         if (!refreshEnd) {
             remeasure();
-            mWrapper = (DisplayWindowLinearLayout) getChildAt(0);
-            mLeftMenu = (ViewGroup) mWrapper.getChildAt(0);
+            ViewGroup mWrapper = (DisplayWindowLinearLayout) getChildAt(0);
+            ViewGroup mLeftMenu = (ViewGroup) mWrapper.getChildAt(0);
             mContent = (ViewGroup) mWrapper.getChildAt(1);
-            mRightMenu = (ViewGroup) mWrapper.getChildAt(2);
+            ViewGroup mRightMenu = (ViewGroup) mWrapper.getChildAt(2);
             mMenuWidth = mContentWidth - mMenuRightPadding;
             mHalfMenuWidth = mMenuWidth / 2;
             mLeftMenu.getLayoutParams().width = mMenuWidth;
@@ -110,12 +110,18 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
     private void remeasure() {
         mContentWidth = ScreenUtils.getScreenWidth(getContext());
+        mStatusHeight = ScreenUtils.getStatusHeight();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        boolean hideCutout = preferences.getBoolean("hideCutout", false);
         if (landscape) {
+            if (hideCutout) {
+                mStatusHeight = 0;
+            }
             mMenuRightPadding = mContentWidth / 2;
         } else {
             mMenuRightPadding = verticalPadding;
         }
-//        Log.d("remeasure","landscape:"+landscape+",mContentWidth:"+mContentWidth);
+        Log.d("remeasure","landscape:"+landscape+",mContentWidth:"+mContentWidth+",mStatusHeight:"+mStatusHeight);
     }
 
     @Override
@@ -193,7 +199,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 //operate right
                 if (isOperateRight) {
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth+mStatusHeight, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
