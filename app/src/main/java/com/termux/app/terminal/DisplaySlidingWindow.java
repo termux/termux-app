@@ -199,7 +199,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 //operate right
                 if (isOperateRight) {
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth+mStatusHeight, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth+mStatusHeight*4, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
@@ -247,7 +247,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
         } else {
-            this.smoothScrollTo(mMenuWidth + mMenuWidth, 0);
+            this.smoothScrollTo(mMenuWidth + mMenuWidth+mStatusHeight*4, 0);
             if (!isRightMenuOpen) {
                 mOnMenuChangeListener.onMenuOpen(true, 1);
             }
