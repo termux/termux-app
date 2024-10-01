@@ -42,6 +42,10 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+    buildFeatures {
+        viewBinding true
+    }
+    buildToolsVersion '34.0.0'
 }
 
 tasks.withType(Test) {

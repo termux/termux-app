@@ -54,8 +54,13 @@ android {
             useLegacyPackaging false
         }
     }
+    buildFeatures {
+        viewBinding true
+    }
     buildFeatures.aidl true
     buildFeatures.buildConfig true
+    buildToolsVersion '34.0.0'
+    ndkVersion '25.1.8937393'
 }
 
 dependencies {

@@ -4,7 +4,7 @@ plugins {
 android.buildFeatures.buildConfig true
 android {
     namespace 'com.termux.x11'
-    compileSdk 30
+    compileSdk 34
     defaultConfig {
         minSdkVersion 24
         //noinspection ExpiredTargetSdkVersion
@@ -12,6 +12,7 @@ android {
     }
     buildFeatures {
         buildConfig false
+        viewBinding true
     }
     buildTypes {
         release {
@@ -22,6 +23,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildToolsVersion '34.0.0'
+    ndkVersion '25.1.8937393'
 }
 
 dependencies {

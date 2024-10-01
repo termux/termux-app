@@ -16,6 +16,9 @@ ext {
 }
 
 android {
+    buildFeatures {
+        viewBinding true
+    }
     namespace "com.termux"
     compileSdk project.properties.compileSdkVersion.toInteger()
 //    compileSdk 34
@@ -134,6 +137,11 @@ android {
     lint {
         disable 'ProtectedPermissions'
     }
+    dependenciesInfo {
+        includeInApk true
+        includeInBundle true
+    }
+    buildToolsVersion '34.0.0'
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->

@@ -1,10 +1,23 @@
 //file:noinspection UnnecessaryQualifiedReference, GrDeprecatedAPIUsage
 apply plugin: 'com.android.application'
+
+android {
+
+    compileSdk 34
+    buildFeatures {
+        viewBinding true
+    }
+    dependenciesInfo {
+        includeInApk true
+        includeInBundle true
+    }
+    buildToolsVersion '34.0.0'
+    ndkVersion '25.1.8937393'
+}
 android.buildFeatures.buildConfig true
 android.namespace 'com.termux.x11'
 android.defaultConfig.minSdkVersion 21
 android.defaultConfig.applicationId 'com.termux'
-android.compileSdkVersion 28
 android.buildTypes.debug.signingConfig null
 android.buildFeatures.buildConfig true
 android.compileOptions.sourceCompatibility JavaVersion.VERSION_1_8
