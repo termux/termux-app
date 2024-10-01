@@ -16,6 +16,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+import static android.view.WindowManager.LayoutParams.SCREEN_ORIENTATION_CHANGED;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN;
@@ -35,6 +36,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.health.connect.datatypes.AppInfo;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -730,7 +732,15 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
         orientation = newConfig.orientation;
         if (termuxActivityListener != null) {
-            termuxActivityListener.onChangeOrientation(newConfig.orientation);
+            SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+            boolean forceLandscape = p.getBoolean("forceLandscape", false);
+            if (!forceLandscape) {
+                termuxActivityListener.onChangeOrientation(newConfig.orientation);
+            } else {
+                if (newConfig.orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                    termuxActivityListener.onChangeOrientation(newConfig.orientation);
+                }
+            }
             getLorieView().regenerate();
         }
         setTerminalToolbarView();
