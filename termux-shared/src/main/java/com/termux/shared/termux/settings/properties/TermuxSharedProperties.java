@@ -273,6 +273,8 @@ public abstract class TermuxSharedProperties {
                 return (int) getTerminalMarginVerticalInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS:
                 return (int) getTerminalTranscriptRowsInternalPropertyValueFromValue(value);
+            case TermuxPropertyConstants.KEY_BACKGROUND_OVERLAY_COLOR:
+                return (int) getBackgroundOverlayInternalPropertyValueFromValue(value);
 
             /* float */
             case TermuxPropertyConstants.KEY_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR:
@@ -436,6 +438,18 @@ public abstract class TermuxSharedProperties {
             TermuxPropertyConstants.IVALUE_TERMINAL_TRANSCRIPT_ROWS_MIN,
             TermuxPropertyConstants.IVALUE_TERMINAL_TRANSCRIPT_ROWS_MAX,
             true, true, LOG_TAG);
+    }
+
+    /**
+     * Returns the int for the color value if its not null and is in form of {@code #AARRGGBB}.
+     * If the value does not contain alpha value then it will borrow it from {@link
+     * TermuxPropertyConstants#DEFAULT_IVALUE_BACKGROUND_OVERLAY_COLOR}
+     *
+     * @param value The {@link String} value to convert.
+     * @return Returns the internal value for value.
+     */
+    public static int getBackgroundOverlayInternalPropertyValueFromValue(String value) {
+        return DataUtils.getIntColorFromString(value, TermuxPropertyConstants.DEFAULT_IVALUE_BACKGROUND_OVERLAY_COLOR, true);
     }
 
     /**
@@ -652,6 +666,10 @@ public abstract class TermuxSharedProperties {
 
     public int getTerminalTranscriptRows() {
         return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_TRANSCRIPT_ROWS, true);
+    }
+
+    public int getBackgroundOverlayColor() {
+        return (int) getInternalPropertyValue(TermuxPropertyConstants.KEY_BACKGROUND_OVERLAY_COLOR, true);
     }
 
     public float getTerminalToolbarHeightScaleFactor() {

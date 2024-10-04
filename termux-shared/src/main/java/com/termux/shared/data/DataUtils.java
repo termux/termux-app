@@ -1,5 +1,7 @@
 package com.termux.shared.data;
 
+import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,7 +12,6 @@ import com.google.common.base.Strings;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Collections;
 
 public class DataUtils {
 
@@ -253,6 +254,52 @@ public class DataUtils {
         } catch (Exception e) {
             return -1;
         }
+    }
+
+
+    /**
+     * Wrapper for {@link #getIntColorFromString(String, int, boolean)} with `setAlpha` `false`.
+     */
+    public static int getIntColorFromString(String value, int def) {
+        return getIntColorFromString(value, def, false);
+    }
+
+    /**
+     * Get an {@code int} color from {@link String} with alpha value change. If {@code setAlpha}
+     * is {@code true} and given value is missing alpha then set it using def alpha.
+     *
+     * @param value    The {@link String} value.
+     * @param def      The default value if failed to read a valid value.
+     * @param setAlpha The {@code boolean} value that decides whether to set alpha or not.
+     * @return Returns the {@code int} color value after parsing the {@link String}
+     * value, otherwise returns default value.
+     */
+    public static int getIntColorFromString(String value, int def, boolean setAlpha) {
+        if (value == null) return def;
+
+        try {
+            int color = Color.parseColor(value);
+
+            if (setAlpha && value.length() == 7) {
+                // Use alpha value of `def` color and rgb value of given `value`.
+                color = (def & 0xff000000) | (color & 0x00ffffff);
+            }
+
+            return color;
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
+
+    /**
+     * Exchanges the value of x and y in {@link Point}.
+     *
+     * @param point The original source point to swap.
+     * @return Returns new swaped point.
+     */
+    public static Point swap(Point point) {
+        return new Point(point.y, point.x);
     }
 
 }

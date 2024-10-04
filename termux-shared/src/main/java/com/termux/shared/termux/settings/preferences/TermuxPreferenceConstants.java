@@ -69,6 +69,10 @@ package com.termux.shared.termux.settings.preferences;
  * - 0.16.0 (2022-06-11)
  *      - Added following to `TERMUX_APP`:
  *          `KEY_APP_SHELL_NUMBER_SINCE_BOOT` and `KEY_TERMINAL_SESSION_NUMBER_SINCE_BOOT`.
+ *
+ * - 0.17.0 (2022-11-04)
+ *      - Added following to `TERMUX_APP`:
+ *          `KEY_BACKGROUND_IMAGE_ENABLED` and `DEFAULT_VALUE_BACKGROUND_IMAGE_ENABLED`.
  */
 
 import com.termux.shared.shell.command.ExecutionCommand;
@@ -179,6 +183,12 @@ public final class TermuxPreferenceConstants {
          */
         public static final String KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED = "crash_report_notifications_enabled";
         public static final boolean DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED = true;
+
+        /**
+         * Defines the key for whether background image is enabled or not.
+         */
+        public static final String KEY_BACKGROUND_IMAGE_ENABLED = "background_image_enabled";
+        public static final boolean DEFAULT_VALUE_BACKGROUND_IMAGE_ENABLED = false;
 
     }
 
