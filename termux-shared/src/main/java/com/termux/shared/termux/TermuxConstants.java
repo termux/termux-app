@@ -993,6 +993,9 @@ public final class TermuxConstants {
             /** Intent action to execute command with TERMUX_SERVICE */
             public static final String ACTION_SERVICE_EXECUTE = TERMUX_PACKAGE_NAME + ".service_execute"; // Default: "com.termux.service_execute"
 
+            /** Intent action to stop command execution with TERMUX_SERVICE */
+            public static final String ACTION_SERVICE_STOP = TERMUX_PACKAGE_NAME + ".service_execution_stop"; // Default: "com.termux.service_execution_stop"
+
             /** Uri scheme for paths sent via intent to TERMUX_SERVICE */
             public static final String URI_SCHEME_SERVICE_EXECUTE = TERMUX_PACKAGE_NAME + ".file"; // Default: "com.termux.file"
             /** Intent {@code String[]} extra for arguments to the executable of the command for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
@@ -1046,6 +1049,9 @@ public final class TermuxConstants {
              * be created in {@link #EXTRA_RESULT_DIRECTORY} if {@link #EXTRA_RESULT_SINGLE_FILE} is
              * {@code false} for the TERMUX_SERVICE.ACTION_SERVICE_EXECUTE intent */
             public static final String EXTRA_RESULT_FILES_SUFFIX = TERMUX_PACKAGE_NAME + ".execute.result_files_suffix"; // Default: "com.termux.execute.result_files_suffix"
+            /** Intent {@code long} extra for the delay between SIGTERM and SIGKILL
+             * for the TERMUX_SERVICE.ACTION_SERVICE_STOP intent */
+            public static final String EXTRA_SIGKILL_DELAY_ON_STOP = TERMUX_PACKAGE_NAME + ".execute.sigkill_delay_on_stop"; // Default: "com.termux.execute.sigkill_delay_on_stop"
 
 
 
