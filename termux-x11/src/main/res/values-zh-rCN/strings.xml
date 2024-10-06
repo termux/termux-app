@@ -21,7 +21,8 @@
     <string name="log_level_verbose">Verbose</string>
     <string name="log_level_unknown">*Unknown*</string>
     <string name="log_level_value">Logcat log level set to \"%1$s\"</string>
-    <string name="help_button_start_x11">启动桌面</string>
+    <string name="start_button_start_x11">启动桌面</string>
+    <string name="exit_button_exit_app">退出程序</string>
     <string name="x11_server_bridge_config">重新安装 x11 服务器用于与 termux 通信的桥接器。安装将导致当前图形界面停止运行并需要重新启动。如果任何文件未保存，请保存并重试。</string>
     <string name="run">运行</string>
     <string name="edit">编辑</string>
@@ -292,4 +293,5 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="ignore_cutout_operation_summary">打开此选项能够避免某些设备(比如全面屏，折叠屏)因为隐藏刘海带来的显示问题(禁止隐藏刘海)</string>
     <string name="toggle_model">组合(不选)/长按(勾选)</string>
     <string name="add_button">增加按键</string>
+    <string name="launch_button_text">启动</string>
 </resources>

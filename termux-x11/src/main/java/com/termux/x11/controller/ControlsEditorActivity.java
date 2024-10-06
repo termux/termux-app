@@ -287,7 +287,7 @@ public class ControlsEditorActivity extends AppCompatActivity implements View.On
             addButtonLayout.setOrientation(LinearLayout.VERTICAL);
             Button btn = new Button(this);
             btn.setText(R.string.add_button);
-            btn.setTextColor(getResources().getColor(R.color.colorblack, null));
+            btn.setTextColor(getResources().getColor(R.color.colorBlack, null));
             btn.setOnClickListener(v -> {
                 if (addButtonLayout.getChildCount() < 5) {
                     loadCombineBindingSpinner(element, addButtonLayout, addButtonLayout.getChildCount() - 1);

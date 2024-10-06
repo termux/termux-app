@@ -39,6 +39,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
@@ -182,16 +183,16 @@
             </intent-filter>
         </activity-alias>
 
-<!--                <provider-->
-<!--                    android:name=".filepicker.TermuxDocumentsProvider"-->
-<!--                    android:authorities="${TERMUX_PACKAGE_NAME}.documents"-->
-<!--                    android:exported="true"-->
-<!--                    android:grantUriPermissions="true"-->
-<!--                    android:permission="android.permission.MANAGE_DOCUMENTS">-->
-<!--                    <intent-filter>-->
-<!--                        <action android:name="android.content.action.DOCUMENTS_PROVIDER" />-->
-<!--                    </intent-filter>-->
-<!--                </provider>-->
+        <!--                <provider-->
+        <!--                    android:name=".filepicker.TermuxDocumentsProvider"-->
+        <!--                    android:authorities="${TERMUX_PACKAGE_NAME}.documents"-->
+        <!--                    android:exported="true"-->
+        <!--                    android:grantUriPermissions="true"-->
+        <!--                    android:permission="android.permission.MANAGE_DOCUMENTS">-->
+        <!--                    <intent-filter>-->
+        <!--                        <action android:name="android.content.action.DOCUMENTS_PROVIDER" />-->
+        <!--                    </intent-filter>-->
+        <!--                </provider>-->
         <provider
             android:name=".filepicker.TermuxFilesProvider"
             android:authorities="com.termux.TermuxFilesProvider"

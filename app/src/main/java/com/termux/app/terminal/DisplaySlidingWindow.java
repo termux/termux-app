@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
@@ -59,7 +58,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
      * dp menu padding from screen edge
      */
     private int mMenuRightPadding;
-    private int verticalPadding;
 
     public boolean isContentSwitchSlider() {
         return contentSwitchSlider;
@@ -79,7 +77,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
         setClickable(true);
         contentSwitchSlider = true;
-        int mScreenWidth = ScreenUtils.getScreenWidth(context);
         remeasure();
     }
 
@@ -117,11 +114,11 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             if (hideCutout) {
                 mStatusHeight = 0;
             }
-            mMenuRightPadding = mContentWidth / 2;
+            mMenuRightPadding = mContentWidth * 3 / 5;
         } else {
-            mMenuRightPadding = verticalPadding;
+            mMenuRightPadding = 0;
         }
-        Log.d("remeasure","landscape:"+landscape+",mContentWidth:"+mContentWidth+",mStatusHeight:"+mStatusHeight);
+//        Log.d("remeasure","landscape:"+landscape+",mContentWidth:"+mContentWidth+",mStatusHeight:"+mStatusHeight);
     }
 
     @Override
@@ -199,7 +196,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                 //operate right
                 if (isOperateRight) {
                     if (scrollX > mHalfMenuWidth + mMenuWidth) {
-                        this.smoothScrollTo(mMenuWidth + mMenuWidth+mStatusHeight*4, 0);
+                        this.smoothScrollTo(mMenuWidth + mMenuWidth + mStatusHeight * 4, 0);
                         if (!isRightMenuOpen) {
                             mOnMenuChangeListener.onMenuOpen(true, 1);
                         }
@@ -247,7 +244,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
         } else {
-            this.smoothScrollTo(mMenuWidth + mMenuWidth+mStatusHeight*4, 0);
+            this.smoothScrollTo(mMenuWidth + mMenuWidth + mStatusHeight * 4, 0);
             if (!isRightMenuOpen) {
                 mOnMenuChangeListener.onMenuOpen(true, 1);
             }
@@ -267,7 +264,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
     public void changeLayoutOrientation(int landscapeOrientation) {
         refreshEnd = false;
-        landscape = !(landscapeOrientation == SCREEN_ORIENTATION_PORTRAIT);
+        landscape = (landscapeOrientation != SCREEN_ORIENTATION_PORTRAIT);
         requestLayout();
     }
 

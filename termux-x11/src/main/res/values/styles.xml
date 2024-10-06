@@ -1,10 +1,12 @@
 <resources>
+
     <style name="AppTheme" parent="@style/Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
+
     <style name="AppThemeLight" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -20,12 +22,14 @@
         <item name="android:popupMenuStyle">@style/PopupMenu</item>
         <item name="popupMenuStyle">@style/PopupMenu</item>
     </style>
+
     <style name="AppThemeFullscreen" parent="@style/AppTheme">
         <item name="android:windowFullscreen">true</item>
-        <item name="android:windowBackground">@color/colorblack</item>
+        <item name="android:windowBackground">@color/colorBlack</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
+
     <style name="ComboBox">
         <item name="android:layout_width">192dp</item>
         <item name="android:layout_height">42dp</item>
@@ -44,22 +48,46 @@
         <item name="android:background">@drawable/combo_box</item>
         <item name="android:popupBackground">@drawable/content_dialog_background</item>
     </style>
+
+    <style name="TerminalComboBox">
+        <item name="android:layout_width">192dp</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:gravity">left|center_vertical</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">36dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:spinnerMode">dropdown</item>
+        <item name="android:background">@drawable/terminal_combo_box</item>
+        <item name="android:popupBackground">@drawable/content_dialog_background</item>
+    </style>
+
     <style name="ListPopupWindow" parent="@android:style/Widget.ListPopupWindow">
         <item name="android:popupBackground">@drawable/content_dialog_background</item>
         <item name="android:dropDownHorizontalOffset">-4dp</item>
     </style>
+
     <style name="PopupWindow" parent="@android:style/Widget.PopupWindow">
         <item name="android:popupBackground">@drawable/content_dialog_background</item>
         <item name="android:dropDownHorizontalOffset">-4dp</item>
     </style>
+
     <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
         <item name="android:popupBackground">@drawable/content_dialog_background</item>
     </style>
+
     <style name="ContentDialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">@drawable/content_dialog_background</item>
     </style>
+
     <style name="EditText">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">42dp</item>
@@ -73,12 +101,15 @@
         <item name="android:inputType">text</item>
         <item name="android:background">@drawable/edit_text</item>
     </style>
+
     <style name="TextView" parent="@android:style/Widget.TextView">
         <item name="android:textSize">16sp</item>
     </style>
+
     <style name="CheckBox" parent="@android:style/Widget.CompoundButton.CheckBox">
         <item name="android:textSize">16sp</item>
     </style>
+
     <style name="BaseButton">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">42dp</item>
@@ -91,14 +122,17 @@
         <item name="android:paddingRight">24dp</item>
         <item name="android:textAllCaps">false</item>
     </style>
+
     <style name="ButtonNeutral" parent="BaseButton">
         <item name="android:background">@drawable/button_neutral</item>
         <item name="android:textColor">#ffffff</item>
     </style>
+
     <style name="ButtonPositive" parent="BaseButton">
         <item name="android:background">@drawable/button_positive</item>
         <item name="android:textColor">#ffffff</item>
     </style>
+
     <style name="BaseImageButton">
         <item name="android:layout_width">42dp</item>
         <item name="android:layout_height">42dp</item>
@@ -109,11 +143,13 @@
         <item name="android:background">?selectableItemBackgroundBorderless</item>
         <item name="android:padding">4dp</item>
     </style>
+
     <style name="ToolButton" parent="BaseImageButton">
         <item name="android:layout_marginLeft">2dp</item>
         <item name="android:layout_marginRight">2dp</item>
         <item name="android:tint">@color/colorPrimary</item>
     </style>
+
     <style name="ListMenuButton" parent="BaseImageButton">
         <item name="android:layout_width">34dp</item>
         <item name="android:layout_height">34dp</item>
@@ -121,6 +157,7 @@
         <item name="android:layout_marginLeft">2dp</item>
         <item name="android:layout_marginRight">2dp</item>
     </style>
+
     <style name="VerticalLine">
         <item name="android:layout_width">2dp</item>
         <item name="android:layout_height">match_parent</item>
@@ -130,6 +167,7 @@
         <item name="android:layout_marginLeft">4dp</item>
         <item name="android:layout_marginRight">4dp</item>
     </style>
+
     <style name="HorizontalLine">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">2dp</item>
@@ -137,6 +175,7 @@
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:layout_marginBottom">8dp</item>
     </style>
+
     <style name="FieldSeparator">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
@@ -144,6 +183,7 @@
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:layout_marginBottom">8dp</item>
     </style>
+
     <style name="FieldSet">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -155,6 +195,7 @@
         <item name="android:paddingTop">16dp</item>
         <item name="android:layout_marginTop">10dp</item>
     </style>
+
     <style name="FieldSetLabel">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -165,6 +206,7 @@
         <item name="android:layout_marginLeft">8dp</item>
         <item name="android:textColor">#bdbdbd</item>
     </style>
+
     <style name="TableHeadBackground">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">28dp</item>
@@ -174,6 +216,7 @@
         <item name="android:paddingLeft">4dp</item>
         <item name="android:gravity">center_vertical</item>
     </style>
+
     <style name="HelpButton">
         <item name="android:layout_width">22dp</item>
         <item name="android:layout_height">22dp</item>

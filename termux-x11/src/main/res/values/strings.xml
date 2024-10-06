@@ -34,7 +34,7 @@
     <string name="help_button_text">   Help   </string>
     <string name="preferences_button_text">   Preferences   </string>
     <string name="extra_keys_config_desc">Here you can set value of extra-keys variable like in Termux app (read <a href="http://wiki.termux.com/wiki/Touch_Keyboard#Extra_Keys_Row">this</a>) and more (e.g. META).</string>
-<!--    preference-->
+    <!--    preference-->
     <string name="output">Output</string>
     <string name="display_resolution_mode">Display resolution mode</string>
     <string name="display_scale">Display scale, %</string>
@@ -97,7 +97,8 @@
     <string name="log_level_verbose">Verbose</string>
     <string name="log_level_unknown">*Unknown*</string>
     <string name="log_level_value">Logcat log level set to \"%1$s\"</string>
-    <string name="help_button_start_x11">start x11 server</string>
+    <string name="start_button_start_x11">start x11 server</string>
+    <string name="exit_button_exit_app">Exit</string>
     <string name="x11_server_bridge_config">Reinstall the bridge that the x11 server uses to communicate with termux. The installation will cause the current graphical interface to stop running and require a restart. If any file is not saved, save it and retry.</string>
 
     <!--inpt controller-->
@@ -317,5 +318,6 @@
     <string name="bring_to_front">Bring to Front</string>
     <string name="options">Options</string>
     <string name="add_button">add key</string>
+    <string name="launch_button_text">launch</string>
 
 </resources>
