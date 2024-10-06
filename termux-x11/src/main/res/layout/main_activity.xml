@@ -11,20 +11,20 @@
         android:id="@+id/frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@android:color/black"
         android:clipToPadding="false"
         android:layoutDirection="ltr"
         android:paddingLeft="0dp"
         android:paddingTop="0dp"
         android:paddingRight="0dp"
-        android:paddingBottom="0dp"
-        android:background="@android:color/black">
+        android:paddingBottom="0dp">
 
         <com.termux.x11.LorieView
             android:id="@+id/lorieView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:visibility="visible" />
 
         <LinearLayout
             android:id="@+id/stub"
@@ -39,9 +39,9 @@
                 android:id="@+id/x11_image"
                 android:layout_width="130dp"
                 android:layout_height="130dp"
+                android:contentDescription="X Logo"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/ic_x11_icon"
-                android:contentDescription="X Logo"
                 tools:ignore="HardcodedText" />
 
             <Space
@@ -74,11 +74,13 @@
                 android:layout_height="wrap_content"
                 android:minHeight="10dp" />
 
+            <include layout="@layout/binding_launch_item" />
+
             <Button
-                android:id="@+id/help_button"
+                android:id="@+id/exit_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/help_button_start_x11" />
+                android:text="@string/exit_button_exit_app" />
         </LinearLayout>
 
     </FrameLayout>
@@ -172,8 +174,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
         android:layout_marginBottom="40dp"
-        android:orientation="vertical"
         android:alpha="0.7"
+        android:orientation="vertical"
         android:translationX="0px"
         android:translationY="0px">
 
@@ -187,6 +189,7 @@
                 android:id="@+id/mouse_button_left_click"
                 android:layout_width="96dp"
                 android:layout_height="48dp"
+                android:background="@drawable/mouse_buttons"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
                 android:padding="0px"
@@ -198,7 +201,6 @@
                 android:paddingBottom="0px"
                 android:text="L"
                 android:textColor="@android:color/black"
-                android:background="@drawable/mouse_buttons"
                 android:textSize="8sp"
                 tools:ignore="HardcodedText,PxUsage,SmallSp" />
 
@@ -206,6 +208,7 @@
                 android:id="@+id/mouse_button_middle_click"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:background="@drawable/mouse_buttons"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
                 android:padding="0px"
@@ -217,7 +220,6 @@
                 android:paddingBottom="0px"
                 android:text="M"
                 android:textColor="@android:color/black"
-                android:background="@drawable/mouse_buttons"
                 android:textSize="8sp"
                 tools:ignore="HardcodedText,PxUsage,SmallSp" />
 
@@ -225,6 +227,7 @@
                 android:id="@+id/mouse_button_right_click"
                 android:layout_width="96dp"
                 android:layout_height="48dp"
+                android:background="@drawable/mouse_buttons"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
                 android:padding="0px"
@@ -236,7 +239,6 @@
                 android:paddingBottom="0px"
                 android:text="R"
                 android:textColor="@android:color/black"
-                android:background="@drawable/mouse_buttons"
                 android:textSize="8sp"
                 tools:ignore="HardcodedText,PxUsage,SmallSp" />
         </LinearLayout>
@@ -245,30 +247,30 @@
             android:id="@+id/mouse_buttons_position"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:background="@drawable/mouse_buttons"
+            android:contentDescription="MOVE"
             android:minWidth="40dp"
             android:minHeight="40dp"
-            android:adjustViewBounds="true"
             android:padding="2dp"
             android:scaleType="fitCenter"
             android:src="@android:drawable/ic_menu_mylocation"
-            android:contentDescription="MOVE"
-            android:layout_gravity="center"
-            android:background="@drawable/mouse_buttons"
             tools:ignore="HardcodedText,PxUsage,SmallSp" />
     </LinearLayout>
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/display_terminal_toolbar_view_pager"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="37.5dp"
+        android:layout_gravity="bottom|center"
         android:background="@android:color/black"
-        android:layout_gravity="bottom|center"/>
+        android:visibility="gone" />
 
     <View
         android:id="@+id/activity_termux_bottom_space_view"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@android:color/transparent"
-        android:layout_gravity="bottom|center" />
+        android:layout_gravity="bottom|center"
+        android:background="@android:color/transparent" />
 </FrameLayout>

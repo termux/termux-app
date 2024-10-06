@@ -212,5 +212,8 @@
     <string name="file_cpy_success">the file has been copied</string>
     <string name="file_cpy_override">the file has been over written</string>
     <string name="file_cpy_fail">the file can not been write to desiginated path</string>
+    <string name="exit_toast_text">press again for exit app</string>
+    <string name="no_such_file">file not found</string>
+    <string name="not_executable">is not executable</string>
 
 </resources>
