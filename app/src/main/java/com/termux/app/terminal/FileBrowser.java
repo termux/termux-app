@@ -23,37 +23,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileBrowser implements FileAdapter.OnItemClickListener {
-    private View fileBrowserView;
-    private TextView searchEditText;
-    private RecyclerView recyclerView;
-    private FileAdapter fileAdapter;
-    private ArrayList<FileInfo> fileList;
-    private TermuxActivity termuxActivity;
-    private PopupWindow popupWindow;
-    private StartEntryClient startEntryClient;
-    private int popWindowHeight, popWindowWidth;
-    private String currentPath = TERMUX_FILES_DIR_PATH;
+    private View mFileBrowserView;
+    private TextView mSearchEditText;
+    private RecyclerView mRecyclerView;
+    private FileAdapter mFileAdapter;
+    private ArrayList<FileInfo> mFileList;
+    private TermuxActivity mTermuxActivity;
+    private PopupWindow mPopupWindow;
+    private StartEntryClient mStartEntryClient;
+    private int popWindowHeight, mPopWindowWidth;
+    private String mCurrentPath = TERMUX_FILES_DIR_PATH;
 
     private FileBrowser() {
     }
 
     public FileBrowser(TermuxActivity activity, StartEntryClient entryClien) {
-        this.termuxActivity = activity;
-        this.startEntryClient = entryClien;
-        popWindowWidth = 210;
+        this.mTermuxActivity = activity;
+        this.mStartEntryClient = entryClien;
+        mPopWindowWidth = 210;
     }
 
     public void init() {
-        fileBrowserView = LayoutInflater.from(termuxActivity).inflate(R.layout.file_bowser, null);
-        recyclerView = fileBrowserView.findViewById(R.id.recyclerView);
-        searchEditText = fileBrowserView.findViewById(R.id.ESearchEditText);
-        fileList = new ArrayList<>();
+        mFileBrowserView = LayoutInflater.from(mTermuxActivity).inflate(R.layout.file_bowser, null);
+        mRecyclerView = mFileBrowserView.findViewById(R.id.recyclerView);
+        mSearchEditText = mFileBrowserView.findViewById(R.id.ESearchEditText);
+        mFileList = new ArrayList<>();
 
-        fileAdapter = new FileAdapter(fileList, this);
-        recyclerView.setAdapter(fileAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(termuxActivity));
+        mFileAdapter = new FileAdapter(mFileList, this);
+        mRecyclerView.setAdapter(mFileAdapter);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(mTermuxActivity));
 
-        searchEditText.addTextChangedListener(new TextWatcher() {
+        mSearchEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -65,10 +65,10 @@ public class FileBrowser implements FileAdapter.OnItemClickListener {
             @Override
             public void afterTextChanged(Editable s) {
                 String keyword = s.toString();
-                if (s.length()<1){
+                if (s.length() < 1) {
                     return;
                 }
-                fileAdapter.filter(keyword,currentPath);
+                mFileAdapter.filter(keyword, mCurrentPath);
             }
         });
 
@@ -77,9 +77,9 @@ public class FileBrowser implements FileAdapter.OnItemClickListener {
 
     private void loadFiles(String path) {
         List<FileInfo> fileList = getFileList(path);
-        this.fileList.clear();
-        this.fileList.addAll(fileList);
-        fileAdapter.notifyDataSetChanged();
+        this.mFileList.clear();
+        this.mFileList.addAll(fileList);
+        mFileAdapter.notifyDataSetChanged();
     }
 
     private List<FileInfo> getFileList(String path) {
@@ -96,42 +96,46 @@ public class FileBrowser implements FileAdapter.OnItemClickListener {
     }
 
     public void showFileBrowser(View view) {
-        if (popupWindow == null) {
+        if (mPopupWindow == null) {
             popWindowHeight = Math.min(AppUtils.getScreenWidth(), AppUtils.getScreenHeight());
             popWindowHeight = (int) UnitUtils.pxToDp(popWindowHeight * 4 / 5);
-            popupWindow = AppUtils.showPopupWindow(view, fileBrowserView, popWindowWidth, popWindowHeight);
+            mPopupWindow = AppUtils.showPopupWindow(view, mFileBrowserView, mPopWindowWidth, popWindowHeight);
         }
-        popupWindow.showAsDropDown(view);
+        mPopupWindow.showAsDropDown(view);
     }
 
     public void hideFileBrowser() {
-        if (popupWindow == null || !popupWindow.isShowing()) {
+        if (mPopupWindow == null || !mPopupWindow.isShowing()) {
             return;
         }
-        popupWindow.dismiss();
+        mPopupWindow.dismiss();
     }
 
     @Override
     public void onItemClick(FileInfo fileInfo) {
         if (fileInfo.getName().equals("..")) {
+//            Log.d("FileBrowser.onItemClick", ".. : " + fileInfo.getPath());
             if (fileInfo.getPath().equals(TERMUX_FILES_DIR_PATH)) {
                 return;
             }
             int pathIdx = fileInfo.getPath().lastIndexOf("/");
             String path = fileInfo.getPath().substring(0, pathIdx);
+//            Log.d("FileBrowser.onItemClick", "path: " + path);
             loadFiles(path);
-            currentPath = path;
+            mCurrentPath = path;
         } else if (fileInfo.isDirectory()) {
+//            Log.d("FileBrowser.onItemClick", "dir : " + fileInfo.getPath());
             loadFiles(fileInfo.getPath());
-            currentPath = fileInfo.getPath();
+            mCurrentPath = fileInfo.getPath();
         } else {
+//            Log.d("FileBrowser.onItemClick", fileInfo.getName() + ": " + fileInfo.getPath());
             File currentFile = new File(fileInfo.getPath());
             if (!currentFile.canExecute()) {
-                Toast.makeText(termuxActivity, fileInfo.getName() + "is not executable file", Toast.LENGTH_LONG).show();
+                Toast.makeText(mTermuxActivity, fileInfo.getName() + "is not executable file", Toast.LENGTH_LONG).show();
                 return;
             }
-            currentPath = fileInfo.getPath();
-            startEntryClient.addStartEntry(fileInfo);
+            mCurrentPath = fileInfo.getPath();
+            mStartEntryClient.addStartEntry(fileInfo);
         }
     }
 }

@@ -35,7 +35,8 @@
                 android:id="@+id/BRemove_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_delete_item" />
+                android:layout_marginRight="10dp"
+                android:background="@drawable/ic_delete_item_shape" />
 
             <Spinner
                 android:id="@+id/SLaunchItemList"
@@ -47,7 +48,8 @@
                 android:id="@+id/BAdd_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_add_item" />
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/ic_save_item_shape" />
         </LinearLayout>
 
         <ImageButton
@@ -55,6 +57,6 @@
             android:id="@+id/BConfig_item"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:background="@drawable/ic_file_browser" />
+            android:background="@drawable/ic_file_browser_shape" />
     </LinearLayout>
 </LinearLayout>

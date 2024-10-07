@@ -5,4 +5,5 @@
     android:textColor="@color/white"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
     android:padding="2dp" />

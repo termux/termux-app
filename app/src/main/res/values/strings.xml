@@ -215,5 +215,6 @@
     <string name="exit_toast_text">press again for exit app</string>
     <string name="no_such_file">file not found</string>
     <string name="not_executable">is not executable</string>
+    <string name="select_command_first">select a startup file</string>
 
 </resources>

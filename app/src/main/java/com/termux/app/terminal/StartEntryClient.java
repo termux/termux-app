@@ -3,6 +3,7 @@ package com.termux.app.terminal;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -15,7 +16,6 @@ import com.termux.app.TermuxActivity;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 public class StartEntryClient {
     private TermuxActivity mTermuxActivity;
@@ -27,8 +27,8 @@ public class StartEntryClient {
     private ImageButton mRemoveConfigButton;
     private Spinner mLaunchItemSpinner;
     private ArrayList<StartEntry.Entry> mEntries;
-    private StartEntryArrayAdapter adapter;
-    private int currentCommand;
+    private StartEntryArrayAdapter mAdapter;
+    private int mCurrentCommand;
     private FileBrowser mFileBrowser;
 
 
@@ -50,20 +50,20 @@ public class StartEntryClient {
         mLaunchItemSpinner = mTermuxActivity.findViewById(com.termux.x11.R.id.SLaunchItemList);
         mLaunchButton.setVisibility(View.VISIBLE);
         mStartItemEntriesConfig.setVisibility(View.GONE);
-        currentCommand = StartEntry.getCurrentStartItemIdx();
+        mCurrentCommand = StartEntry.getCurrentStartItemIdx();
         mEntries = StartEntry.getStartItemList();
-        if (currentCommand < StartEntry.getStartItemList().size()) {
-            mLaunchButton.setText(StartEntry.getStartItemList().get(currentCommand).getFileName());
+        if (mCurrentCommand < StartEntry.getStartItemList().size()) {
+            mLaunchButton.setText(StartEntry.getStartItemList().get(mCurrentCommand).getFileName());
         }
 
-        adapter = new StartEntryArrayAdapter(mTermuxActivity, StartEntry.getStartItemList());
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mLaunchItemSpinner.setAdapter(adapter);
+        mAdapter = new StartEntryArrayAdapter(mTermuxActivity, StartEntry.getStartItemList());
+        mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mLaunchItemSpinner.setAdapter(mAdapter);
         mLaunchItemSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mLaunchButton.setText(adapter.getItem(position).getFileName());
-                currentCommand = position;
+                mLaunchButton.setText(mAdapter.getItem(position).getFileName());
+                mCurrentCommand = position;
             }
 
             @Override
@@ -73,24 +73,30 @@ public class StartEntryClient {
         });
 
         mLaunchButton.setOnClickListener((v) -> {
-            if (currentCommand >= StartEntry.getStartItemList().size()) {
+            if(StartEntry.getStartItemList().isEmpty()){
+                Toast.makeText(mTermuxActivity, mTermuxActivity.getResources().getString(R.string.select_command_first), Toast.LENGTH_SHORT).show();
+                mLaunchButton.setVisibility(View.GONE);
+                mStartItemEntriesConfig.setVisibility(View.VISIBLE);
+                return;
+            }
+            if (mCurrentCommand >= StartEntry.getStartItemList().size()) {
                 Toast.makeText(mTermuxActivity, mTermuxActivity.getResources().getString(R.string.no_such_file) + ": " + "empty command", Toast.LENGTH_SHORT).show();
                 return;
             }
-            File file = new File(StartEntry.getStartItemList().get(currentCommand).getPath());
+            File file = new File(StartEntry.getStartItemList().get(mCurrentCommand).getPath());
             if (!file.exists()) {
-                Toast.makeText(mTermuxActivity, mTermuxActivity.getResources().getString(R.string.no_such_file) + ": " + StartEntry.getStartItemList().get(currentCommand).getFileName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(mTermuxActivity, mTermuxActivity.getResources().getString(R.string.no_such_file) + ": " + StartEntry.getStartItemList().get(mCurrentCommand).getFileName(), Toast.LENGTH_SHORT).show();
                 return;
             }
             if (!file.canExecute()) {
-                Toast.makeText(mTermuxActivity, mTermuxActivity.getResources().getString(R.string.not_executable) + ": " + StartEntry.getStartItemList().get(currentCommand).getFileName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(mTermuxActivity, mTermuxActivity.getResources().getString(R.string.not_executable) + ": " + StartEntry.getStartItemList().get(mCurrentCommand).getFileName(), Toast.LENGTH_SHORT).show();
                 return;
             }
             String command = "^c";
-            if (StartEntry.getStartItemList().get(currentCommand).getPath().contains(TERMUX_BIN_PREFIX_DIR_PATH)) {
-                command = StartEntry.getStartItemList().get(currentCommand).getFileName() + "\n";
+            if (StartEntry.getStartItemList().get(mCurrentCommand).getPath().contains(TERMUX_BIN_PREFIX_DIR_PATH)) {
+                command = StartEntry.getStartItemList().get(mCurrentCommand).getFileName() + "\n";
             } else {
-                command = StartEntry.getStartItemList().get(currentCommand).getPath() + "\n";
+                command = StartEntry.getStartItemList().get(mCurrentCommand).getPath() + "\n";
             }
 
             mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
@@ -107,7 +113,7 @@ public class StartEntryClient {
             } else {
                 mLaunchButton.setVisibility(View.VISIBLE);
                 mStartItemEntriesConfig.setVisibility(View.GONE);
-                StartEntry.setCurrentStartItemIdx(currentCommand);
+                StartEntry.setCurrentStartItemIdx(mCurrentCommand);
                 StartEntry.saveStartItems();
             }
         });
@@ -118,8 +124,11 @@ public class StartEntryClient {
             mFileBrowser.showFileBrowser(mStartItemEntriesConfig);
         });
         mRemoveConfigButton.setOnClickListener(v -> {
-            StartEntry.deleteStartEntry(StartEntry.getStartItemList().get(currentCommand));
-            adapter.notifyDataSetChanged();
+            if(StartEntry.getStartItemList().isEmpty()){
+                return;
+            }
+            StartEntry.deleteStartEntry(StartEntry.getStartItemList().get(mCurrentCommand));
+            mAdapter.notifyDataSetChanged();
             StartEntry.saveStartItems();
         });
     }
@@ -130,11 +139,11 @@ public class StartEntryClient {
         entry.setFileName(fileInfo.getName());
         entry.setPath(fileInfo.getPath());
         boolean added = StartEntry.addStartEntry(entry);
-        StartEntry.setCurrentStartItemIdx(currentCommand);
+        StartEntry.setCurrentStartItemIdx(mCurrentCommand);
         StartEntry.saveStartItems();
         if (added) {
-            adapter.notifyDataSetChanged();
-            mLaunchItemSpinner.setSelection(adapter.getCount() - 1);
+            mAdapter.notifyDataSetChanged();
+            mLaunchItemSpinner.setSelection(mAdapter.getCount() - 1);
         }
     }
 }

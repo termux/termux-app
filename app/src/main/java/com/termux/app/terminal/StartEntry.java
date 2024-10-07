@@ -1,6 +1,5 @@
 package com.termux.app.terminal;
 
-import static com.termux.shared.termux.TermuxConstants.TERMUX_FILES_DIR_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_HOME_DIR_PATH;
 
 import com.termux.x11.controller.core.FileUtils;
@@ -24,24 +23,24 @@ public class StartEntry {
             return path;
         }
 
-        public void setPath(String path) {
-            this.path = path;
+        public void setPath(String mPath) {
+            this.path = mPath;
         }
 
         public String getFileName() {
             return fileName;
         }
 
-        public void setFileName(String fileName) {
-            this.fileName = fileName;
+        public void setFileName(String mFileName) {
+            this.fileName = mFileName;
         }
 
         public String getIconPath() {
             return iconPath;
         }
 
-        public void setIconPath(String iconPath) {
-            this.iconPath = iconPath;
+        public void setIconPath(String mIconPath) {
+            this.iconPath = mIconPath;
         }
 
         public JSONObject toJSONObject() {
@@ -55,26 +54,22 @@ public class StartEntry {
                 return null;
             }
         }
-
-        public String toTerminalCommand() {
-            return TERMUX_FILES_DIR_PATH + getPath() + getFileName();
-        }
     }
 
-    private static final ArrayList<Entry> startEntryList = new ArrayList<>();
-    private static final HashSet<String> startSet = new HashSet<>();
-    private static int currentStartItemIdx = 0;
+    private static final ArrayList<Entry> mStartEntryList = new ArrayList<>();
+    private static final HashSet<String> mStartSet = new HashSet<>();
+    private static int mCurrentStartItemIdx = 0;
 
     public static ArrayList<Entry> getStartItemList() {
-        return startEntryList;
+        return mStartEntryList;
     }
 
     public static int getCurrentStartItemIdx() {
-        return currentStartItemIdx;
+        return mCurrentStartItemIdx;
     }
 
     public static void setCurrentStartItemIdx(int startItemIdx) {
-        currentStartItemIdx = startItemIdx;
+        mCurrentStartItemIdx = startItemIdx;
     }
 
     public static void saveStartItems() {
@@ -83,14 +78,14 @@ public class StartEntry {
             JSONObject data = new JSONObject();
             data.put("version", "1.0");
             data.put("name", "startItemEntries");
-            data.put("currentStartItem", currentStartItemIdx);
+            data.put("currentStartItem", mCurrentStartItemIdx);
 
             JSONArray elementsJSONArray = new JSONArray();
-            for (Entry itm : startEntryList) {
+            for (Entry itm : mStartEntryList) {
                 elementsJSONArray.put(itm.toJSONObject());
-                if (!startSet.contains(itm.getPath())) {
-                    startSet.add(itm.getPath());
-                    startEntryList.add(itm);
+                if (!mStartSet.contains(itm.getPath())) {
+                    mStartSet.add(itm.getPath());
+                    mStartEntryList.add(itm);
                 }
             }
             data.put("elements", elementsJSONArray);
@@ -119,13 +114,13 @@ public class StartEntry {
                 entry.setFileName(fileName);
                 entry.setIconPath(iconPath);
                 String key = entry.getPath();
-                if (!startSet.contains(key)) {
-                    startSet.add(key);
-                    startEntryList.add(entry);
+                if (!mStartSet.contains(key)) {
+                    mStartSet.add(key);
+                    mStartEntryList.add(entry);
                 }
             }
             if (startItemEntriesJSONObject.has("currentStartItem")) {
-                currentStartItemIdx = startItemEntriesJSONObject.getInt("currentStartItem");
+                mCurrentStartItemIdx = startItemEntriesJSONObject.getInt("currentStartItem");
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -134,18 +129,18 @@ public class StartEntry {
 
     public static boolean addStartEntry(Entry item) {
         String key = item.getPath();
-        if (!startSet.contains(key)) {
-            startSet.add(key);
-            startEntryList.add(item);
+        if (!mStartSet.contains(key)) {
+            mStartSet.add(key);
+            mStartEntryList.add(item);
             return true;
         }
         return false;
     }
 
     public static void deleteStartEntry(Entry currentCommand) {
-        if (startSet.contains(currentCommand.getPath())) {
-            startEntryList.remove(currentCommand);
-            startSet.remove(currentCommand.getPath());
+        if (mStartSet.contains(currentCommand.getPath())) {
+            mStartEntryList.remove(currentCommand);
+            mStartSet.remove(currentCommand.getPath());
         }
     }
 }
