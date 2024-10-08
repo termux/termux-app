@@ -82,7 +82,7 @@ public class BackGroudSeletor {
         Bitmap bitmap = null;
         try {
 //			File file = new File("image/" + imagename  + ".png");
-            String imagePath = "image/" + imagename + ".png";
+            String imagePath = imagename + ".png";
 //			if (!file.isFile()) {
 //				imagePath = "image/" + imagename + "480x800" + ".png";
 //			}

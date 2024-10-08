@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.floatball.FloatBallManager;
 import com.termux.floatball.menu.FloatMenuCfg;
@@ -67,7 +68,7 @@ public class FloatBallMenuClient {
     private void init(boolean showMenu) {
         //1 初始化悬浮球配置，定义好悬浮球大小和icon的drawable
         int ballSize = DensityUtil.dip2px(mTermuxActivity, 45);
-        Drawable ballIcon = BackGroudSeletor.getdrawble("ic_floatball", mTermuxActivity);
+        Drawable ballIcon = mTermuxActivity.getDrawable(R.drawable.ic_terminal);
         //可以尝试使用以下几种不同的config。
 //        FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon);
 //        FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.LEFT_CENTER,false);
@@ -158,20 +159,20 @@ public class FloatBallMenuClient {
     }
 
     private void addFloatMenuItem() {
-        MenuItem personItem = new MenuItem(BackGroudSeletor.getdrawble("ic_weixin", mTermuxActivity)) {
+        MenuItem personItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.ic_code)) {
             @Override
             public void action() {
                 toast("打开微信");
                 mFloatballManager.closeMenu();
             }
         };
-        MenuItem walletItem = new MenuItem(BackGroudSeletor.getdrawble("ic_weibo", mTermuxActivity)) {
+        MenuItem walletItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.ic_executable)) {
             @Override
             public void action() {
                 toast("打开微博");
             }
         };
-        MenuItem settingItem = new MenuItem(BackGroudSeletor.getdrawble("ic_email", mTermuxActivity)) {
+        MenuItem settingItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.ic_shortcut)) {
             @Override
             public void action() {
                 toast("打开邮箱");
