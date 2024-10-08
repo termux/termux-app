@@ -15,7 +15,7 @@ android {
     ndkVersion '25.1.8937393'
 }
 android.buildFeatures.buildConfig true
-android.namespace 'com.termux.x11'
+android.namespace 'com.termux.shell'
 android.defaultConfig.minSdkVersion 21
 android.defaultConfig.applicationId 'com.termux'
 android.buildTypes.debug.signingConfig null

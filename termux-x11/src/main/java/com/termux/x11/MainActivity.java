@@ -133,11 +133,11 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 finishAffinity();
             } else if (ACTION_PREFERENCES_CHANGED.equals(intent.getAction())) {
 //                Log.d("MainActivity", "preference: " + intent.getStringExtra("key"));
-//                if (!"showAdditionalKbd".equals(intent.getStringExtra("key"))) {
-//                    onPreferencesChanged("");
-//                } else {
-//                    toggleExtraKeys(true, false);
-//                }
+                if (!"showAdditionalKbd".equals(intent.getStringExtra("key"))) {
+                    onPreferencesChanged("");
+                } else {
+                    toggleExtraKeys(true, false);
+                }
             }
         }
     };

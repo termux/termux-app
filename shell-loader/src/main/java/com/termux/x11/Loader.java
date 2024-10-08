@@ -1,5 +1,7 @@
 package com.termux.x11;
 
+import com.termux.shell.BuildConfig;
+
 public class Loader {
     /**
      * Command-line entry point.

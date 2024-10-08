@@ -58,6 +58,7 @@ import com.termux.app.activities.SettingsActivity;
 import com.termux.app.api.file.FileReceiverActivity;
 import com.termux.app.terminal.DisplaySlidingWindow;
 import com.termux.app.terminal.DisplayWindowLinearLayout;
+import com.termux.app.terminal.FloatBallMenuClient;
 import com.termux.app.terminal.StartEntryClient;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxSessionsListViewController;
@@ -229,6 +230,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
 
     private static final String LOG_TAG = "TermuxActivity";
+    private FloatBallMenuClient mFloatBallMenuClient;
 
     @SuppressLint("ResourceType")
     @Override
@@ -338,6 +340,9 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         setRecoverView();
         setX11Server();
         setBackupView();
+        mFloatBallMenuClient = new FloatBallMenuClient(this);
+        mFloatBallMenuClient.onCreate();
+        mFloatBallMenuClient.showFloatBall(slideWindowLayout);
 
         try {
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
@@ -550,6 +555,19 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         } catch (Exception e) {
             // ignore.
         }
+        mFloatBallMenuClient.onDestroy();
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mFloatBallMenuClient.onAttachedToWindow();
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mFloatBallMenuClient.onDetachedFromWindow();
     }
 
     @Override
