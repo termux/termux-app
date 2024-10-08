@@ -68,7 +68,7 @@ public class FloatBallMenuClient {
     private void init(boolean showMenu) {
         //1 初始化悬浮球配置，定义好悬浮球大小和icon的drawable
         int ballSize = DensityUtil.dip2px(mTermuxActivity, 45);
-        Drawable ballIcon = mTermuxActivity.getDrawable(R.drawable.ic_terminal);
+        Drawable ballIcon = mTermuxActivity.getDrawable(R.drawable.icon_float_ball_shape);
         //可以尝试使用以下几种不同的config。
 //        FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon);
 //        FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.LEFT_CENTER,false);
@@ -81,7 +81,7 @@ public class FloatBallMenuClient {
             //2 需要显示悬浮菜单
             //2.1 初始化悬浮菜单配置，有菜单item的大小和菜单item的个数
             int menuSize = DensityUtil.dip2px(mTermuxActivity, 180);
-            int menuItemSize = DensityUtil.dip2px(mTermuxActivity, 40);
+            int menuItemSize = DensityUtil.dip2px(mTermuxActivity, 30);
             FloatMenuCfg menuCfg = new FloatMenuCfg(menuSize, menuItemSize);
             //3 生成floatballManager
             mFloatballManager = new FloatBallManager(mTermuxActivity.getApplicationContext(), ballCfg, menuCfg);
@@ -159,30 +159,60 @@ public class FloatBallMenuClient {
     }
 
     private void addFloatMenuItem() {
-        MenuItem personItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.ic_code)) {
+        MenuItem terminalItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_start_terminal_shape)) {
             @Override
             public void action() {
-                toast("打开微信");
+                toast("打开终端");
                 mFloatballManager.closeMenu();
             }
         };
-        MenuItem walletItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.ic_executable)) {
+        MenuItem stopItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_kill_current_process_shape)) {
             @Override
             public void action() {
-                toast("打开微博");
-            }
-        };
-        MenuItem settingItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.ic_shortcut)) {
-            @Override
-            public void action() {
-                toast("打开邮箱");
+                toast("终止服务");
                 mFloatballManager.closeMenu();
             }
         };
-        mFloatballManager.addMenuItem(personItem)
-            .addMenuItem(walletItem)
-            .addMenuItem(personItem)
-            .addMenuItem(walletItem)
+        MenuItem gamePadItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_game_pad_shape)) {
+            @Override
+            public void action() {
+                toast("游戏控制器");
+                mFloatballManager.closeMenu();
+            }
+        };
+        MenuItem unLockLayoutItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_shape)) {
+            @Override
+            public void action() {
+                toast("解除锁定");
+                mFloatballManager.closeMenu();
+            }
+        };
+        MenuItem keyboardItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_keyboard_shape)) {
+            @Override
+            public void action() {
+                toast("打开键盘");
+            }
+        };
+        MenuItem taskManagerItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_task_manager_shape)) {
+            @Override
+            public void action() {
+                toast("打开任务管理器");
+                mFloatballManager.closeMenu();
+            }
+        };
+        MenuItem settingItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_setting_shape)) {
+            @Override
+            public void action() {
+                toast("打开设置");
+                mFloatballManager.closeMenu();
+            }
+        };
+        mFloatballManager.addMenuItem(terminalItem)
+            .addMenuItem(stopItem)
+            .addMenuItem(keyboardItem)
+            .addMenuItem(gamePadItem)
+            .addMenuItem(unLockLayoutItem)
+            .addMenuItem(taskManagerItem)
             .addMenuItem(settingItem)
             .buildMenu();
     }
