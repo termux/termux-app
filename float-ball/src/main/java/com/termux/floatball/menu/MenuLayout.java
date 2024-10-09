@@ -83,7 +83,7 @@ public class MenuLayout extends ViewGroup implements ICarrier {
 
     public MenuLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        MIN_RADIUS = DensityUtil.dip2px(context, 65);
+        MIN_RADIUS = DensityUtil.dip2px(context, 40);
         mRunner = new ScrollRunner(this);
         setChildrenDrawingOrderEnabled(true);
     }

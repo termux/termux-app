@@ -115,7 +115,7 @@ import java.util.List;
 public class TermuxActivity extends com.termux.x11.MainActivity implements ServiceConnection {
     private static final int FILE_REQUEST_BACKUP_CODE = 101;
 
-    private DisplaySlidingWindow mSlideWindowLayout;
+    private DisplaySlidingWindow mMainContentView;
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
      * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
@@ -252,8 +252,8 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         setActivityTheme();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_termux_main);
-        mSlideWindowLayout = findViewById(R.id.id_termux_layout);
-        mSlideWindowLayout.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
+        mMainContentView = findViewById(R.id.id_termux_layout);
+        mMainContentView.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
             @Override
             public void onMenuOpen(boolean isOpen, int flag) {
                 if (isOpen && flag == 0) {
@@ -274,7 +274,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 //                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
                 if (null != mInputHandler) {
                     if (!inputControllerViewHandled) {
-                        mInputHandler.handleTouchEvent(mSlideWindowLayout, getLorieView(), ev);
+                        mInputHandler.handleTouchEvent(mMainContentView, getLorieView(), ev);
                     }
                 }
                 return true;
@@ -343,7 +343,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         setBackupView();
         mFloatBallMenuClient = new FloatBallMenuClient(this);
         mFloatBallMenuClient.onCreate();
-        mFloatBallMenuClient.showFloatBall();
 
         try {
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
@@ -370,17 +369,17 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         termuxActivityListener = new TermuxActivityListener() {
             @Override
             public void onX11PreferenceSwitchChange(boolean isOpen) {
-                mSlideWindowLayout.setX11PreferenceSwitchSlider(isOpen);
+                mMainContentView.setX11PreferenceSwitchSlider(isOpen);
             }
 
             @Override
             public void releaseSlider(boolean open) {
-                mSlideWindowLayout.releaseSlider(open);
+                mMainContentView.releaseSlider(open);
             }
 
             @Override
             public void onChangeOrientation(int landscape) {
-                mSlideWindowLayout.changeLayoutOrientation(landscape);
+                mMainContentView.changeLayoutOrientation(landscape);
                 hideInputControls();
                 inputControlsManager.loadProfiles(true);
             }
@@ -714,7 +713,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                     command = "termux-setup-storage;sleep 5s;tar -zcf /sdcard/termux-backup.tar.gz -C /data/data/com.termux/files ./home ./usr \n";
                 }
                 mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
-                mSlideWindowLayout.setTerminalViewSwitchSlider(true);
+                mMainContentView.setTerminalViewSwitchSlider(true);
                 closeTerminalSessionListView();
             }
         });
@@ -944,7 +943,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             getDrawer().closeDrawers();
         } else {
 //            finishActivityIfNotFinishing();
-            mSlideWindowLayout.releaseSlider(true);
+            mMainContentView.releaseSlider(true);
         }
     }
 
@@ -1189,7 +1188,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                     mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
                 }
             });
-            mSlideWindowLayout.setTerminalViewSwitchSlider(true);
+            mMainContentView.setTerminalViewSwitchSlider(true);
         }
     }
 
@@ -1399,7 +1398,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
     }
-    public DisplaySlidingWindow getmSlideWindowLayout() {
-        return mSlideWindowLayout;
+    public DisplaySlidingWindow getMainContentView() {
+        return mMainContentView;
     }
 }

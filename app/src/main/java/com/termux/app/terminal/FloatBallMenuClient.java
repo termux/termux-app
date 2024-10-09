@@ -32,22 +32,13 @@ public class FloatBallMenuClient {
         mTermuxActivity = termuxActivity;
     }
 
-    public void showFloatBall() {
-        mFloatballManager.show();
-    }
-
     public void onCreate() {
         boolean showMenu = true;
         init(showMenu);
         mFloatballManager.show();
         //5 set float ball click handler
         if (mFloatballManager.getMenuItemSize() == 0) {
-            mFloatballManager.setOnFloatBallClickListener(new FloatBallManager.OnFloatBallClickListener() {
-                @Override
-                public void onFloatBallClick() {
-                    toast("点击了悬浮球");
-                }
-            });
+            mFloatballManager.setOnFloatBallClickListener(() -> toast(mTermuxActivity.getString(R.string.add_some_menu_item)));
         }
         //     6 if only float ball within app, register it to Application(out data, actually, it is enough within activity )
 //      mTermuxActivity.getApplication().registerActivityLifecycleCallbacks(mActivityLifeCycleListener);
@@ -70,7 +61,7 @@ public class FloatBallMenuClient {
 
     private void init(boolean showMenu) {
 //      1 set position of float ball, set size, icon and drawable
-        int ballSize = DensityUtil.dip2px(mTermuxActivity, 45);
+        int ballSize = DensityUtil.dip2px(mTermuxActivity, 40);
         Drawable ballIcon = AppCompatResources.getDrawable(mTermuxActivity, R.drawable.icon_float_ball_shape);
 //      different config below
 //      FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon);
@@ -78,7 +69,7 @@ public class FloatBallMenuClient {
 //      FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.LEFT_BOTTOM, -100);
 //      FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.RIGHT_TOP, 100);
         FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.RIGHT_CENTER);
-        //     set float ball weather hide
+//      set float ball weather hide
         ballCfg.setHideHalfLater(true);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mTermuxActivity);
         boolean floatBallOverOtherApp = preferences.getBoolean("floatBallOverApp", false);
@@ -89,8 +80,8 @@ public class FloatBallMenuClient {
         if (showMenu) {
             //2 display float ball menu
             //2.1 init float ball menu config, every size of menu item and number of item
-            int menuSize = DensityUtil.dip2px(mTermuxActivity, 160);
-            int menuItemSize = DensityUtil.dip2px(mTermuxActivity, 30);
+            int menuSize = DensityUtil.dip2px(mTermuxActivity, 110);
+            int menuItemSize = DensityUtil.dip2px(mTermuxActivity, 20);
             FloatMenuCfg menuCfg = new FloatMenuCfg(menuSize, menuItemSize);
             //3 create float ball Manager
             mFloatballManager = new FloatBallManager(ctx, ballCfg, menuCfg);
@@ -102,6 +93,12 @@ public class FloatBallMenuClient {
         mFloatballManager.setFloatBallOverOtherApp(floatBallOverOtherApp);
         if (floatBallOverOtherApp) {
             setFloatPermission();
+        }
+        if (mFloatballManager.getFloatBall()!=null){
+            mFloatballManager.getFloatBall().setOnLongClickListener(l-> {
+                mTermuxActivity.getMainContentView().showContent();
+                return true;
+            });
         }
     }
 
@@ -174,7 +171,7 @@ public class FloatBallMenuClient {
         MenuItem terminalItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_start_terminal_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.getmSlideWindowLayout().setTerminalViewSwitchSlider(true);
+                mTermuxActivity.getMainContentView().setTerminalViewSwitchSlider(true);
                 toast(mTermuxActivity.getString(R.string.open_terminal));
                 mFloatballManager.closeMenu();
             }
@@ -182,6 +179,7 @@ public class FloatBallMenuClient {
         MenuItem stopItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_kill_current_process_shape)) {
             @Override
             public void action() {
+                mTermuxActivity.stopDesktop();
                 toast(mTermuxActivity.getString(R.string.terminate_current_process));
                 mFloatballManager.closeMenu();
             }
@@ -189,6 +187,7 @@ public class FloatBallMenuClient {
         MenuItem gamePadItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_game_pad_shape)) {
             @Override
             public void action() {
+                mTermuxActivity.showInputControlsDialog();
                 toast(mTermuxActivity.getString(com.termux.x11.R.string.open_controller));
                 mFloatballManager.closeMenu();
             }
@@ -196,7 +195,7 @@ public class FloatBallMenuClient {
         MenuItem unLockLayoutItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.getmSlideWindowLayout().releaseSlider(true);
+                mTermuxActivity.getMainContentView().releaseSlider(true);
                 toast(mTermuxActivity.getString(R.string.lock_layout));
                 mFloatballManager.closeMenu();
             }
@@ -206,6 +205,7 @@ public class FloatBallMenuClient {
             public void action() {
                 mTermuxActivity.switchSoftKeyboard(true);
                 toast(mTermuxActivity.getString(com.termux.x11.R.string.open_keyboard));
+                mFloatballManager.closeMenu();
             }
         };
         MenuItem taskManagerItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_task_manager_shape)) {
@@ -219,7 +219,7 @@ public class FloatBallMenuClient {
         MenuItem settingItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_setting_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.getmSlideWindowLayout().setX11PreferenceSwitchSlider(true);
+                mTermuxActivity.getMainContentView().setX11PreferenceSwitchSlider(true);
                 toast(mTermuxActivity.getString(com.termux.x11.R.string.settings));
                 mFloatballManager.closeMenu();
             }

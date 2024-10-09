@@ -36,6 +36,9 @@ public class FloatBallManager {
     public boolean isFloatBallOverOtherApp() {
         return mFloatBallOverOtherApp;
     }
+    public FloatBall getFloatBall(){
+        return this.floatBall;
+    }
 
     public void setFloatBallOverOtherApp(boolean floatBallOverOtherApp) {
         this.mFloatBallOverOtherApp = floatBallOverOtherApp;
