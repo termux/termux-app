@@ -216,5 +216,8 @@
     <string name="no_such_file">file not found</string>
     <string name="not_executable">is not executable</string>
     <string name="select_command_first">select a startup file</string>
-
+    <string name="apply_display_over_other_app_permission">apply display over other permission first</string>
+    <string name="open_terminal">open terminal</string>
+    <string name="terminate_current_process">kill current running process</string>
+    <string name="lock_layout">unlock screen slide</string>
 </resources>

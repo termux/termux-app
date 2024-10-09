@@ -21,7 +21,8 @@ public class RomUtils {
     private static final String TAG = "RomUtils";
 
     /**
-     * 获取 emui 版本号
+     * Get the emui version number
+     *
      * @return
      */
     public static double getEmuiVersion() {
@@ -36,7 +37,7 @@ public class RomUtils {
     }
 
     /**
-     * 获取小米 rom 版本号，获取失败返回 -1
+     * Get Xiaomi ROM version number, return -1 if failed
      *
      * @return miui rom version code, if fail , return -1
      */
@@ -74,6 +75,7 @@ public class RomUtils {
         }
         return line;
     }
+
     public static boolean checkIsHuaweiRom() {
         return Build.MANUFACTURER.contains("HUAWEI");
     }
@@ -87,12 +89,12 @@ public class RomUtils {
 
     public static boolean checkIsMeizuRom() {
         //return Build.MANUFACTURER.contains("Meizu");
-        String meizuFlymeOSFlag  = getSystemProperty("ro.build.display.id");
-        if (TextUtils.isEmpty(meizuFlymeOSFlag)){
+        String meizuFlymeOSFlag = getSystemProperty("ro.build.display.id");
+        if (TextUtils.isEmpty(meizuFlymeOSFlag)) {
             return false;
-        }else if (meizuFlymeOSFlag.contains("flyme") || meizuFlymeOSFlag.toLowerCase().contains("flyme")){
-            return  true;
-        }else {
+        } else if (meizuFlymeOSFlag.contains("flyme") || meizuFlymeOSFlag.toLowerCase().contains("flyme")) {
+            return true;
+        } else {
             return false;
         }
     }
@@ -100,6 +102,6 @@ public class RomUtils {
     public static boolean checkIs360Rom() {
         //fix issue https://github.com/zhaozepeng/FloatWindowPermission/issues/9
         return Build.MANUFACTURER.contains("QiKU")
-                || Build.MANUFACTURER.contains("360");
+            || Build.MANUFACTURER.contains("360");
     }
 }

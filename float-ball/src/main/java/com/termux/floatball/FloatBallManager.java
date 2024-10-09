@@ -4,16 +4,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Point;
-import android.os.Build;
 import android.view.View;
 import android.view.WindowManager;
 
-import com.termux.floatball.widget.FloatBall;
-import com.termux.floatball.widget.FloatBallCfg;
-import com.termux.floatball.widget.StatusBarView;
 import com.termux.floatball.menu.FloatMenu;
 import com.termux.floatball.menu.FloatMenuCfg;
 import com.termux.floatball.menu.MenuItem;
+import com.termux.floatball.widget.FloatBall;
+import com.termux.floatball.widget.FloatBallCfg;
+import com.termux.floatball.widget.StatusBarView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,23 +22,31 @@ public class FloatBallManager {
     public int mScreenWidth, mScreenHeight;
 
     private IFloatBallPermission mPermission;
-    private OnFloatBallClickListener mFloatballClickListener;
-    private WindowManager mWindowManager;
-    private Context mContext;
-    private FloatBall floatBall;
-    private FloatMenu floatMenu;
-    private StatusBarView statusBarView;
-    public int floatballX, floatballY;
+    private OnFloatBallClickListener mFloatBallClickListener;
+    private final WindowManager mWindowManager;
+    private final Context mContext;
+    private final FloatBall floatBall;
+    private final FloatMenu floatMenu;
+    private final StatusBarView statusBarView;
+    public int floatBallX, floatBallY;
     private boolean isShowing = false;
     private List<MenuItem> menuItems = new ArrayList<>();
-    private Activity mActivity;
+    private boolean mFloatBallOverOtherApp = false;
+
+    public boolean isFloatBallOverOtherApp() {
+        return mFloatBallOverOtherApp;
+    }
+
+    public void setFloatBallOverOtherApp(boolean floatBallOverOtherApp) {
+        this.mFloatBallOverOtherApp = floatBallOverOtherApp;
+    }
 
     public FloatBallManager(Context application, FloatBallCfg ballCfg) {
         this(application, ballCfg, null);
     }
 
     public FloatBallManager(Context application, FloatBallCfg ballCfg, FloatMenuCfg menuCfg) {
-        mContext = application.getApplicationContext();
+        mContext = application;
         FloatBallUtil.inSingleActivity = false;
         mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         computeScreenSize();
@@ -48,26 +55,12 @@ public class FloatBallManager {
         statusBarView = new StatusBarView(mContext, this);
     }
 
-    public FloatBallManager(Activity activity, FloatBallCfg ballCfg) {
-        this(activity, ballCfg, null);
-    }
-
-    public FloatBallManager(Activity activity, FloatBallCfg ballCfg, FloatMenuCfg menuCfg) {
-        mActivity = activity;
-        FloatBallUtil.inSingleActivity = true;
-        mWindowManager = (WindowManager) mActivity.getSystemService(Context.WINDOW_SERVICE);
-        computeScreenSize();
-        floatBall = new FloatBall(mActivity, this, ballCfg);
-        floatMenu = new FloatMenu(mActivity, this, menuCfg);
-        statusBarView = new StatusBarView(mActivity, this);
-    }
-
     public void buildMenu() {
         inflateMenuItem();
     }
 
     /**
-     * 添加一个菜单条目
+     * add menu item
      *
      * @param item
      */
@@ -81,7 +74,7 @@ public class FloatBallManager {
     }
 
     /**
-     * 设置菜单
+     * set menu item
      *
      * @param items
      */
@@ -117,7 +110,7 @@ public class FloatBallManager {
     }
 
     public void show() {
-        if (mActivity == null) {
+        if (mFloatBallOverOtherApp) {
             if (mPermission == null) {
                 return;
             }
@@ -148,8 +141,8 @@ public class FloatBallManager {
         if (menuItems != null && menuItems.size() > 0) {
             floatMenu.attachToWindow(mWindowManager);
         } else {
-            if (mFloatballClickListener != null) {
-                mFloatballClickListener.onFloatBallClick();
+            if (mFloatBallClickListener != null) {
+                mFloatBallClickListener.onFloatBallClick();
             }
         }
     }
@@ -172,7 +165,7 @@ public class FloatBallManager {
     }
 
     public void setOnFloatBallClickListener(OnFloatBallClickListener listener) {
-        mFloatballClickListener = listener;
+        mFloatBallClickListener = listener;
     }
 
     public interface OnFloatBallClickListener {

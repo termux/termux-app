@@ -175,6 +175,9 @@ Java_com_termux_x11_CmdEntryPoint_start(JNIEnv *env, __unused jclass cls, jobjec
         execlp("logcat", "logcat", "--pid", pid, NULL);
     }
 
+    if (access("/data/data/com.termux/files/usr/lib/libtermux-exec.so", F_OK) == 0)
+        setenv("LD_PRELOAD", "/data/data/com.termux/files/usr/lib/libtermux-exec.so", 1);
+
     // adb sets TMPDIR to /data/local/tmp which is pretty useless.
     if (!strcmp("/data/local/tmp", getenv("TMPDIR") ?: ""))
         unsetenv("TMPDIR");

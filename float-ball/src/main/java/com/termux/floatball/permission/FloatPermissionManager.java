@@ -6,7 +6,6 @@ package com.termux.floatball.permission;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -17,6 +16,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
 
+import com.termux.floatball.R;
 import com.termux.floatball.permission.rom.HuaweiUtils;
 import com.termux.floatball.permission.rom.MeizuUtils;
 import com.termux.floatball.permission.rom.MiuiUtils;
@@ -52,7 +52,7 @@ public class FloatPermissionManager {
     }
 
     public boolean checkPermission(Context context) {
-        //6.0 版本之后由于 google 增加了对悬浮窗权限的管理，所以方式就统一了
+        //After version 6.0, Google added management of floating window permissions, so the method is unified.
         if (Build.VERSION.SDK_INT < 23) {
             if (RomUtils.checkIsMiuiRom()) {
                 return miuiPermissionCheck(context);
@@ -84,7 +84,7 @@ public class FloatPermissionManager {
     }
 
     private boolean commonROMPermissionCheck(Context context) {
-        //最新发现魅族6.0的系统这种方式不好用，天杀的，只有你是奇葩，没办法，单独适配一下
+        //I recently discovered that this method doesn't work well with the Meizu 6.0 system. you are the only weirdo. There is no other way. You have to adapt it separately.
         if (RomUtils.checkIsMeizuRom()) {
             return meizuPermissionCheck(context);
         } else {
@@ -170,10 +170,10 @@ public class FloatPermissionManager {
     }
 
     /**
-     * 通用 rom 权限申请
+     * Universal ROM permission application
      */
     private void commonROMPermissionApply(final Context context) {
-        //这里也一样，魅族系统需要单独适配
+        //The same is true here, the Meizu system needs to be adapted separately
         if (RomUtils.checkIsMeizuRom()) {
             meizuROMPermissionApply(context);
         } else {
@@ -195,7 +195,6 @@ public class FloatPermissionManager {
                             }
                         } else {
                             Log.d(TAG, "user manually refuse OVERLAY_PERMISSION");
-                            //需要做统计效果
                         }
                     }
                 });
@@ -204,7 +203,7 @@ public class FloatPermissionManager {
     }
 
     private void showConfirmDialog(Context context, OnConfirmResult result) {
-        showConfirmDialog(context, "您的手机没有授予悬浮窗权限，请开启后再试", result);
+        showConfirmDialog(context, context.getString(R.string.no_display_over_app_permission), result);
     }
 
     private void showConfirmDialog(Context context, String message, final OnConfirmResult result) {
@@ -213,23 +212,16 @@ public class FloatPermissionManager {
         }
 
         dialog = new AlertDialog.Builder(context).setCancelable(true).setTitle("")
-                .setMessage(message)
-                .setPositiveButton("现在去开启",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                result.confirmResult(true);
-                                dialog.dismiss();
-                            }
-                        }).setNegativeButton("暂不开启",
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                result.confirmResult(false);
-                                dialog.dismiss();
-                            }
-                        }).create();
+            .setMessage(message)
+            .setPositiveButton(context.getString(R.string.open_permission),
+                (dialog, which) -> {
+                    result.confirmResult(true);
+                    dialog.dismiss();
+                }).setNegativeButton(context.getString(R.string.not_open_permission),
+                (dialog, which) -> {
+                    result.confirmResult(false);
+                    dialog.dismiss();
+                }).create();
         dialog.show();
     }
 
@@ -260,8 +252,8 @@ public class FloatPermissionManager {
         mParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         mParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         mParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+            | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+            | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
         mParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
         mParams.format = PixelFormat.RGBA_8888;
         mParams.gravity = Gravity.LEFT | Gravity.TOP;

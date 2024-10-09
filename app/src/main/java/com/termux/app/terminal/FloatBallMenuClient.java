@@ -1,12 +1,13 @@
 package com.termux.app.terminal;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.view.View;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.termux.R;
 import com.termux.app.TermuxActivity;
@@ -14,17 +15,15 @@ import com.termux.floatball.FloatBallManager;
 import com.termux.floatball.menu.FloatMenuCfg;
 import com.termux.floatball.menu.MenuItem;
 import com.termux.floatball.permission.FloatPermissionManager;
-import com.termux.floatball.utils.BackGroudSeletor;
 import com.termux.floatball.utils.DensityUtil;
 import com.termux.floatball.widget.FloatBallCfg;
 
 public class FloatBallMenuClient {
     private FloatBallManager mFloatballManager;
     private FloatPermissionManager mFloatPermissionManager;
-    private ActivityLifeCycleListener mActivityLifeCycleListener = new ActivityLifeCycleListener();
+    //    private ActivityLifeCycleListener mActivityLifeCycleListener = new ActivityLifeCycleListener();
     private int resumed;
     private TermuxActivity mTermuxActivity;
-    private View mFloatView;
 
     private FloatBallMenuClient() {
     }
@@ -33,17 +32,15 @@ public class FloatBallMenuClient {
         mTermuxActivity = termuxActivity;
     }
 
-    public void showFloatBall(View v) {
+    public void showFloatBall() {
         mFloatballManager.show();
     }
 
     public void onCreate() {
-
-//        setContentView(R.layout.activity_main);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        boolean showMenu = true;//换成false试试
+        boolean showMenu = true;
         init(showMenu);
-        //5 如果没有添加菜单，可以设置悬浮球点击事件
+        mFloatballManager.show();
+        //5 set float ball click handler
         if (mFloatballManager.getMenuItemSize() == 0) {
             mFloatballManager.setOnFloatBallClickListener(new FloatBallManager.OnFloatBallClickListener() {
                 @Override
@@ -52,13 +49,19 @@ public class FloatBallMenuClient {
                 }
             });
         }
-        //6 如果想做成应用内悬浮球，可以添加以下代码。
-        mTermuxActivity.getApplication().registerActivityLifecycleCallbacks(mActivityLifeCycleListener);
+        //     6 if only float ball within app, register it to Application(out data, actually, it is enough within activity )
+//      mTermuxActivity.getApplication().registerActivityLifecycleCallbacks(mActivityLifeCycleListener);
     }
 
     public void onAttachedToWindow() {
-        mFloatballManager.show();
-        mFloatballManager.onFloatBallClick();
+        try {
+            mFloatballManager.show();
+            mFloatballManager.onFloatBallClick();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            toast(mTermuxActivity.getString(R.string.apply_display_over_other_app_permission));
+        }
+
     }
 
     public void onDetachedFromWindow() {
@@ -66,36 +69,45 @@ public class FloatBallMenuClient {
     }
 
     private void init(boolean showMenu) {
-        //1 初始化悬浮球配置，定义好悬浮球大小和icon的drawable
+//      1 set position of float ball, set size, icon and drawable
         int ballSize = DensityUtil.dip2px(mTermuxActivity, 45);
-        Drawable ballIcon = mTermuxActivity.getDrawable(R.drawable.icon_float_ball_shape);
-        //可以尝试使用以下几种不同的config。
-//        FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon);
-//        FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.LEFT_CENTER,false);
-//        FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.LEFT_BOTTOM, -100);
-//        FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.RIGHT_TOP, 100);
+        Drawable ballIcon = AppCompatResources.getDrawable(mTermuxActivity, R.drawable.icon_float_ball_shape);
+//      different config below
+//      FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon);
+//      FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.LEFT_CENTER,false);
+//      FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.LEFT_BOTTOM, -100);
+//      FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.RIGHT_TOP, 100);
         FloatBallCfg ballCfg = new FloatBallCfg(ballSize, ballIcon, FloatBallCfg.Gravity.RIGHT_CENTER);
-        //设置悬浮球不半隐藏
-        ballCfg.setHideHalfLater(false);
+        //     set float ball weather hide
+        ballCfg.setHideHalfLater(true);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mTermuxActivity);
+        boolean floatBallOverOtherApp = preferences.getBoolean("floatBallOverApp", false);
+        Context ctx = mTermuxActivity;
+        if (floatBallOverOtherApp) {
+            ctx = mTermuxActivity.getApplicationContext();
+        }
         if (showMenu) {
-            //2 需要显示悬浮菜单
-            //2.1 初始化悬浮菜单配置，有菜单item的大小和菜单item的个数
-            int menuSize = DensityUtil.dip2px(mTermuxActivity, 180);
+            //2 display float ball menu
+            //2.1 init float ball menu config, every size of menu item and number of item
+            int menuSize = DensityUtil.dip2px(mTermuxActivity, 160);
             int menuItemSize = DensityUtil.dip2px(mTermuxActivity, 30);
             FloatMenuCfg menuCfg = new FloatMenuCfg(menuSize, menuItemSize);
-            //3 生成floatballManager
-            mFloatballManager = new FloatBallManager(mTermuxActivity.getApplicationContext(), ballCfg, menuCfg);
+            //3 create float ball Manager
+            mFloatballManager = new FloatBallManager(ctx, ballCfg, menuCfg);
             addFloatMenuItem();
 
         } else {
-            mFloatballManager = new FloatBallManager(mTermuxActivity.getApplicationContext(), ballCfg);
+            mFloatballManager = new FloatBallManager(ctx, ballCfg);
         }
-        setFloatPermission();
+        mFloatballManager.setFloatBallOverOtherApp(floatBallOverOtherApp);
+        if (floatBallOverOtherApp) {
+            setFloatPermission();
+        }
     }
 
     private void setFloatPermission() {
-        // 设置悬浮球权限，用于申请悬浮球权限的，这里用的是别人写好的库，可以自己选择
-        //如果不设置permission，则不会弹出悬浮球
+        // set 'display over other app' permission of float bal menu
+        //once permission, float ball never show
         mFloatPermissionManager = new FloatPermissionManager();
         mFloatballManager.setPermission(new FloatBallManager.IFloatBallPermission() {
             @Override
@@ -117,42 +129,42 @@ public class FloatBallMenuClient {
         });
     }
 
-    public class ActivityLifeCycleListener implements Application.ActivityLifecycleCallbacks {
-
-        @Override
-        public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-        }
-
-        @Override
-        public void onActivityStarted(Activity activity) {
-        }
-
-        @Override
-        public void onActivityResumed(Activity activity) {
-            ++resumed;
-            setFloatballVisible(true);
-        }
-
-        @Override
-        public void onActivityPaused(Activity activity) {
-            --resumed;
-            if (!isApplicationInForeground()) {
-                setFloatballVisible(false);
-            }
-        }
-
-        @Override
-        public void onActivityStopped(Activity activity) {
-        }
-
-        @Override
-        public void onActivityDestroyed(Activity activity) {
-        }
-
-        @Override
-        public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-        }
-    }
+//    public class ActivityLifeCycleListener implements Application.ActivityLifecycleCallbacks {
+//
+//        @Override
+//        public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+//        }
+//
+//        @Override
+//        public void onActivityStarted(Activity activity) {
+//        }
+//
+//        @Override
+//        public void onActivityResumed(Activity activity) {
+//            ++resumed;
+//            setFloatballVisible(true);
+//        }
+//
+//        @Override
+//        public void onActivityPaused(Activity activity) {
+//            --resumed;
+//            if (!isApplicationInForeground()) {
+//                setFloatballVisible(false);
+//            }
+//        }
+//
+//        @Override
+//        public void onActivityStopped(Activity activity) {
+//        }
+//
+//        @Override
+//        public void onActivityDestroyed(Activity activity) {
+//        }
+//
+//        @Override
+//        public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+//        }
+//    }
 
     private void toast(String msg) {
         Toast.makeText(mTermuxActivity, msg, Toast.LENGTH_SHORT).show();
@@ -162,48 +174,53 @@ public class FloatBallMenuClient {
         MenuItem terminalItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_start_terminal_shape)) {
             @Override
             public void action() {
-                toast("打开终端");
+                mTermuxActivity.getmSlideWindowLayout().setTerminalViewSwitchSlider(true);
+                toast(mTermuxActivity.getString(R.string.open_terminal));
                 mFloatballManager.closeMenu();
             }
         };
         MenuItem stopItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_kill_current_process_shape)) {
             @Override
             public void action() {
-                toast("终止服务");
+                toast(mTermuxActivity.getString(R.string.terminate_current_process));
                 mFloatballManager.closeMenu();
             }
         };
         MenuItem gamePadItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_game_pad_shape)) {
             @Override
             public void action() {
-                toast("游戏控制器");
+                toast(mTermuxActivity.getString(com.termux.x11.R.string.open_controller));
                 mFloatballManager.closeMenu();
             }
         };
         MenuItem unLockLayoutItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_shape)) {
             @Override
             public void action() {
-                toast("解除锁定");
+                mTermuxActivity.getmSlideWindowLayout().releaseSlider(true);
+                toast(mTermuxActivity.getString(R.string.lock_layout));
                 mFloatballManager.closeMenu();
             }
         };
         MenuItem keyboardItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_keyboard_shape)) {
             @Override
             public void action() {
-                toast("打开键盘");
+                mTermuxActivity.switchSoftKeyboard(true);
+                toast(mTermuxActivity.getString(com.termux.x11.R.string.open_keyboard));
             }
         };
         MenuItem taskManagerItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_task_manager_shape)) {
             @Override
             public void action() {
-                toast("打开任务管理器");
+                mTermuxActivity.showProgressManagerDialog();
+                toast(mTermuxActivity.getString(com.termux.x11.R.string.task_manager));
                 mFloatballManager.closeMenu();
             }
         };
         MenuItem settingItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_setting_shape)) {
             @Override
             public void action() {
-                toast("打开设置");
+                mTermuxActivity.getmSlideWindowLayout().setX11PreferenceSwitchSlider(true);
+                toast(mTermuxActivity.getString(com.termux.x11.R.string.settings));
                 mFloatballManager.closeMenu();
             }
         };
@@ -217,13 +234,13 @@ public class FloatBallMenuClient {
             .buildMenu();
     }
 
-    private void setFloatballVisible(boolean visible) {
-        if (visible) {
-            mFloatballManager.show();
-        } else {
-            mFloatballManager.hide();
-        }
-    }
+//    private void setFloatballVisible(boolean visible) {
+//        if (visible) {
+//            mFloatballManager.show();
+//        } else {
+//            mFloatballManager.hide();
+//        }
+//    }
 
     public boolean isApplicationInForeground() {
         return resumed > 0;
@@ -231,7 +248,7 @@ public class FloatBallMenuClient {
 
     public void onDestroy() {
         mTermuxActivity.onDestroy();
-        //注册ActivityLifeCyclelistener以后要记得注销，以防内存泄漏。
-        mTermuxActivity.getApplication().unregisterActivityLifecycleCallbacks(mActivityLifeCycleListener);
+        //unregister ActivityLifeCycle listener once register it, in case of memory leak
+//        mTermuxActivity.getApplication().unregisterActivityLifecycleCallbacks(mActivityLifeCycleListener);
     }
 }

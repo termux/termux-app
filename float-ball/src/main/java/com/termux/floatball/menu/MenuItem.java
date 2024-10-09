@@ -4,7 +4,7 @@ import android.graphics.drawable.Drawable;
 
 public abstract class MenuItem {
     /**
-     * 菜单icon
+     * menu icon
      */
     public Drawable mDrawable;
 
@@ -13,7 +13,7 @@ public abstract class MenuItem {
     }
 
     /**
-     * 点击次菜单执行的操作
+     * menu item action
      */
     public abstract void action();
 }

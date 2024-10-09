@@ -760,7 +760,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
 
     @SuppressLint("RestrictedApi")
-    protected void switchSoftKeyboard(boolean hide) {
+    public void switchSoftKeyboard(boolean hide) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         View view = getCurrentFocus();
         if (view == null) {
@@ -925,7 +925,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         handler.postDelayed(this::checkXEvents, 100);
     }
 
-    protected void showProgressManagerDialog() {
+    public void showProgressManagerDialog() {
         (new TaskManagerDialog(this)).show();
     }
 }

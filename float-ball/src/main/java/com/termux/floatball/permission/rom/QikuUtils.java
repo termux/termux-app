@@ -18,7 +18,7 @@ public class QikuUtils {
     private static final String TAG = "QikuUtils";
 
     /**
-     * 检测 360 悬浮窗权限
+     * Check 360 floating window permissions
      */
     public static boolean checkFloatWindowPermission(Context context) {
         final int version = Build.VERSION.SDK_INT;
@@ -36,7 +36,7 @@ public class QikuUtils {
             try {
                 Class clazz = AppOpsManager.class;
                 Method method = clazz.getDeclaredMethod("checkOp", int.class, int.class, String.class);
-                return AppOpsManager.MODE_ALLOWED == (int)method.invoke(manager, op, Binder.getCallingUid(), context.getPackageName());
+                return AppOpsManager.MODE_ALLOWED == (int) method.invoke(manager, op, Binder.getCallingUid(), context.getPackageName());
             } catch (Exception e) {
                 Log.e(TAG, Log.getStackTraceString(e));
             }
@@ -47,7 +47,7 @@ public class QikuUtils {
     }
 
     /**
-     * 去360权限申请页面
+     * Check 360 floating window permissions
      */
     public static void applyPermission(Context context) {
         Intent intent = new Intent();
@@ -61,7 +61,7 @@ public class QikuUtils {
                 context.startActivity(intent);
             } else {
                 Log.e(TAG, "can't open permission page with particular name, please use " +
-                        "\"adb shell dumpsys activity\" command and tell me the name of the float window permission page");
+                    "\"adb shell dumpsys activity\" command and tell me the name of the float window permission page");
             }
         }
     }

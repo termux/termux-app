@@ -18,7 +18,6 @@ package com.termux.floatball.menu;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -63,13 +62,8 @@ public class FloatMenu extends FrameLayout {
         mLayoutParams = FloatBallUtil.getLayoutParams(context, mListenBackEvent);
     }
 
-    @SuppressWarnings("deprecation")
     public void removeViewTreeObserver(ViewTreeObserver.OnGlobalLayoutListener listener) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            getViewTreeObserver().removeGlobalOnLayoutListener(listener);
-        } else {
-            getViewTreeObserver().removeOnGlobalLayoutListener(listener);
-        }
+        getViewTreeObserver().removeOnGlobalLayoutListener(listener);
     }
 
     public int getSize() {
@@ -100,8 +94,8 @@ public class FloatMenu extends FrameLayout {
     public void attachToWindow(WindowManager windowManager) {
         if (!isAdded) {
             mBallSize = floatBallManager.getBallSize();
-            mLayoutParams.x = floatBallManager.floatballX;
-            mLayoutParams.y = floatBallManager.floatballY - mSize / 2;
+            mLayoutParams.x = floatBallManager.floatBallX;
+            mLayoutParams.y = floatBallManager.floatBallY - mSize / 2;
             mPosition = computeMenuLayout(mLayoutParams);
             refreshPathMenu(mPosition);
             toggle(mDuration);
@@ -149,18 +143,15 @@ public class FloatMenu extends FrameLayout {
             }
         });
         if (mListenBackEvent) {
-            setOnKeyListener(new OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    int action = event.getAction();
-                    if (action == KeyEvent.ACTION_DOWN) {
-                        if (keyCode == KeyEvent.KEYCODE_BACK) {
-                            FloatMenu.this.floatBallManager.closeMenu();
-                            return true;
-                        }
+            setOnKeyListener((v, keyCode, event) -> {
+                int action = event.getAction();
+                if (action == KeyEvent.ACTION_DOWN) {
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        FloatMenu.this.floatBallManager.closeMenu();
+                        return true;
                     }
-                    return false;
                 }
+                return false;
             });
             setFocusableInTouchMode(true);
         }
@@ -201,7 +192,7 @@ public class FloatMenu extends FrameLayout {
     public void addItem(final MenuItem menuItem) {
         if (mConfig == null) return;
         ImageView imageview = new ImageView(getContext());
-        imageview.setBackgroundDrawable(menuItem.mDrawable);
+        imageview.setBackground(menuItem.mDrawable);
         mMenuLayout.addView(imageview);
         imageview.setOnClickListener(new OnClickListener() {
             @Override
@@ -217,50 +208,50 @@ public class FloatMenu extends FrameLayout {
     }
 
     /**
-     * 根据按钮位置改变子菜单方向
+     * adjustment menu layout with float ball position
      */
     public void refreshPathMenu(int position) {
         LayoutParams menuLp = (LayoutParams) mMenuLayout.getLayoutParams();
         LayoutParams iconLp = (LayoutParams) mIconView.getLayoutParams();
 
         switch (position) {
-            case LEFT_TOP://左上
+            case LEFT_TOP://left top
                 iconLp.gravity = Gravity.LEFT | Gravity.TOP;
                 menuLp.gravity = Gravity.LEFT | Gravity.TOP;
                 mMenuLayout.setArc(0, 90, position);
                 break;
-            case LEFT_CENTER://左中
+            case LEFT_CENTER://left middle
                 iconLp.gravity = Gravity.LEFT | Gravity.CENTER_VERTICAL;
                 menuLp.gravity = Gravity.LEFT | Gravity.CENTER_VERTICAL;
                 mMenuLayout.setArc(270, 270 + 180, position);
                 break;
-            case LEFT_BOTTOM://左下
+            case LEFT_BOTTOM://left bottom
                 iconLp.gravity = Gravity.LEFT | Gravity.BOTTOM;
                 menuLp.gravity = Gravity.LEFT | Gravity.BOTTOM;
                 mMenuLayout.setArc(270, 360, position);
                 break;
-            case RIGHT_TOP://右上
+            case RIGHT_TOP://right top
                 iconLp.gravity = Gravity.RIGHT | Gravity.TOP;
                 menuLp.gravity = Gravity.RIGHT | Gravity.TOP;
                 mMenuLayout.setArc(90, 180, position);
                 break;
-            case RIGHT_CENTER://右中
+            case RIGHT_CENTER://right middle
                 iconLp.gravity = Gravity.RIGHT | Gravity.CENTER_VERTICAL;
                 menuLp.gravity = Gravity.RIGHT | Gravity.CENTER_VERTICAL;
                 mMenuLayout.setArc(90, 270, position);
                 break;
-            case RIGHT_BOTTOM://右下
+            case RIGHT_BOTTOM://right bottom
                 iconLp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
                 menuLp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
                 mMenuLayout.setArc(180, 270, position);
                 break;
 
-            case CENTER_TOP://上中
+            case CENTER_TOP://up middle
                 iconLp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
                 menuLp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
                 mMenuLayout.setArc(0, 180, position);
                 break;
-            case CENTER_BOTTOM://下中
+            case CENTER_BOTTOM://bottom middle
                 iconLp.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
                 menuLp.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
                 mMenuLayout.setArc(180, 360, position);
@@ -276,7 +267,7 @@ public class FloatMenu extends FrameLayout {
     }
 
     /**
-     * 计算菜单中各个view的位置
+     * calculate position of every menu item's position
      *
      * @return
      */
@@ -285,35 +276,35 @@ public class FloatMenu extends FrameLayout {
         final int halfBallSize = mBallSize / 2;
         final int screenWidth = floatBallManager.mScreenWidth;
         final int screenHeight = floatBallManager.mScreenHeight;
-        final int floatballCenterY = floatBallManager.floatballY + halfBallSize;
+        final int floatballCenterY = floatBallManager.floatBallY + halfBallSize;
 
-        int wmX = floatBallManager.floatballX;
+        int wmX = floatBallManager.floatBallX;
         int wmY = floatballCenterY;
 
-        if (wmX <= screenWidth / 3) //左边  竖区域
+        if (wmX <= screenWidth / 3) //left  portrait
         {
             wmX = 0;
             if (wmY <= mSize / 2) {
-                position = FloatMenu.LEFT_TOP;//左上
+                position = FloatMenu.LEFT_TOP;//left top
                 wmY = floatballCenterY - halfBallSize;
             } else if (wmY > screenHeight - mSize / 2) {
-                position = FloatMenu.LEFT_BOTTOM;//左下
+                position = FloatMenu.LEFT_BOTTOM;//left bottom
                 wmY = floatballCenterY - mSize + halfBallSize;
             } else {
-                position = FloatMenu.LEFT_CENTER;//左中
+                position = FloatMenu.LEFT_CENTER;//left middle
                 wmY = floatballCenterY - mSize / 2;
             }
-        } else if (wmX >= screenWidth * 2 / 3)//右边竖区域
+        } else if (wmX >= screenWidth * 2 / 3)//right portrait
         {
             wmX = screenWidth - mSize;
             if (wmY <= mSize / 2) {
-                position = FloatMenu.RIGHT_TOP;//右上
+                position = FloatMenu.RIGHT_TOP;//right top
                 wmY = floatballCenterY - halfBallSize;
             } else if (wmY > screenHeight - mSize / 2) {
-                position = FloatMenu.RIGHT_BOTTOM;//右下
+                position = FloatMenu.RIGHT_BOTTOM;//right bottom
                 wmY = floatballCenterY - mSize + halfBallSize;
             } else {
-                position = FloatMenu.RIGHT_CENTER;//右中
+                position = FloatMenu.RIGHT_CENTER;//right middle
                 wmY = floatballCenterY - mSize / 2;
             }
         }

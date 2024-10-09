@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">float-ball</string>
+    <string name="no_display_over_app_permission">Your phone does not grant floating window permission, please enable it and try again</string>
+    <string name="open_permission">Grant permission now</string>
+    <string name="not_open_permission">Not grant permission</string>
+    <string name="apply_permission">Failed to enter the settings page, please set it manually</string>
 </resources>

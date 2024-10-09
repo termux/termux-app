@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">float-ball</string>
+    <string name="no_display_over_app_permission">您的手机没有授予悬浮窗权限，请开启后再试</string>
+    <string name="open_permission">现在去开启</string>
+    <string name="not_open_permission">暂不开启</string>
+    <string name="apply_permission">进入设置页面失败，请手动设置</string>
+</resources>

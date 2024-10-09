@@ -6,7 +6,7 @@ public class FloatBallCfg {
     public Drawable mIcon;
     public int mSize;
     /**
-     * 标记悬浮球所处于屏幕中的位置
+     * Mark the position of the floating ball on the screen
      *
      * @see Gravity#LEFT_TOP
      * @see Gravity#LEFT_CENTER
@@ -16,7 +16,7 @@ public class FloatBallCfg {
      * @see Gravity#RIGHT_BOTTOM
      */
     public Gravity mGravity;
-    //第一次显示的y坐标偏移量，左上角是原点。
+    //The y coordinate offset for the first display, with the upper left corner being the origin.
     public int mOffsetY = 0;
     public boolean mHideHalfLater = true;
 

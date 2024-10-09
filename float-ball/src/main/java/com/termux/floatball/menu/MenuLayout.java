@@ -11,9 +11,8 @@ import com.termux.floatball.utils.DensityUtil;
 
 
 /**
- * 子菜单项布局
+ * menu layout
  *
- * @author 何凌波
  */
 public class MenuLayout extends ViewGroup implements ICarrier {
     private int mChildSize;
@@ -21,7 +20,7 @@ public class MenuLayout extends ViewGroup implements ICarrier {
     private float mFromDegrees;
     private float mToDegrees;
     private static int MIN_RADIUS;
-    private int mRadius;// 中心菜单圆点到子菜单中心的距离
+    private int mRadius;// distance between center and menu item
     private boolean mExpanded = false;
     private boolean isMoving = false;
     private int position = FloatMenu.LEFT_TOP;
@@ -34,35 +33,35 @@ public class MenuLayout extends ViewGroup implements ICarrier {
         int width = size;
         int height = size;
         switch (position) {
-            case FloatMenu.LEFT_TOP://左上
+            case FloatMenu.LEFT_TOP://left top
                 centerX = width / 2 - getRadiusAndPadding();
                 centerY = height / 2 - getRadiusAndPadding();
                 break;
-            case FloatMenu.LEFT_CENTER://左中
+            case FloatMenu.LEFT_CENTER://left middle
                 centerX = width / 2 - getRadiusAndPadding();
                 centerY = height / 2;
                 break;
-            case FloatMenu.LEFT_BOTTOM://左下
+            case FloatMenu.LEFT_BOTTOM://left bottom
                 centerX = width / 2 - getRadiusAndPadding();
                 centerY = height / 2 + getRadiusAndPadding();
                 break;
-            case FloatMenu.CENTER_TOP://上中
+            case FloatMenu.CENTER_TOP://top middle
                 centerX = width / 2;
                 centerY = height / 2 - getRadiusAndPadding();
                 break;
-            case FloatMenu.CENTER_BOTTOM://下中
+            case FloatMenu.CENTER_BOTTOM://bottom middle
                 centerX = width / 2;
                 centerY = height / 2 + getRadiusAndPadding();
                 break;
-            case FloatMenu.RIGHT_TOP://右上
+            case FloatMenu.RIGHT_TOP://right top
                 centerX = width / 2 + getRadiusAndPadding();
                 centerY = height / 2 - getRadiusAndPadding();
                 break;
-            case FloatMenu.RIGHT_CENTER://右中
+            case FloatMenu.RIGHT_CENTER://right middle
                 centerX = width / 2 + getRadiusAndPadding();
                 centerY = height / 2;
                 break;
-            case FloatMenu.RIGHT_BOTTOM://右下
+            case FloatMenu.RIGHT_BOTTOM://right bottom
                 centerX = width / 2 + getRadiusAndPadding();
                 centerY = height / 2 + getRadiusAndPadding();
                 break;
@@ -90,7 +89,7 @@ public class MenuLayout extends ViewGroup implements ICarrier {
     }
 
     /**
-     * 计算半径
+     * compute radius
      */
     private static int computeRadius(final float arcDegrees, final int childCount, final int childSize, final int childPadding, final int minRadius) {
         if (childCount < 2) {
@@ -105,19 +104,19 @@ public class MenuLayout extends ViewGroup implements ICarrier {
     }
 
     /**
-     * 计算子菜单项的范围
+     * compute item show range
      */
     private static Rect computeChildFrame(final int centerX, final int centerY, final int radius, final float degrees, final int size) {
-        //子菜单项中心点
+        //position of menu center
         final double childCenterX = centerX + radius * Math.cos(Math.toRadians(degrees));
         final double childCenterY = centerY + radius * Math.sin(Math.toRadians(degrees));
-        //子菜单项的左上角，右上角，左下角，右下角
+        //menu's postion lt, rt,lb, lr
         return new Rect((int) (childCenterX - size / 2),
                 (int) (childCenterY - size / 2), (int) (childCenterX + size / 2), (int) (childCenterY + size / 2));
     }
 
     /**
-     * 子菜单项大小
+     * size of menu item
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -138,7 +137,7 @@ public class MenuLayout extends ViewGroup implements ICarrier {
     }
 
     /**
-     * 子菜单项位置
+     * position of menu item
      */
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
@@ -150,7 +149,7 @@ public class MenuLayout extends ViewGroup implements ICarrier {
 
     @Override
     protected int getChildDrawingOrder(int childCount, int i) {
-        //当悬浮球在右侧时，使其菜单从上到下的顺序和在左边时一样。
+        //When the hover ball is on the right side, make its menus in the same order from top to bottom as when it is on the left side.
         if (!isLeft()) {
             return childCount - i - 1;
         }
@@ -197,7 +196,7 @@ public class MenuLayout extends ViewGroup implements ICarrier {
     }
 
     /**
-     * 切换中心按钮的展开缩小
+     * Toggle center button expansion and contraction
      */
     public void switchState(int position, int duration) {
         this.position = position;
@@ -232,7 +231,7 @@ public class MenuLayout extends ViewGroup implements ICarrier {
     }
 
     /**
-     * 设定弧度
+     * Set the arc
      */
     public void setArc(float fromDegrees, float toDegrees, int position) {
         this.position = position;
@@ -246,14 +245,14 @@ public class MenuLayout extends ViewGroup implements ICarrier {
     }
 
     /**
-     * 设定弧度
+     * Set the arc
      */
     public void setArc(float fromDegrees, float toDegrees) {
         setArc(fromDegrees, toDegrees, position);
     }
 
     /**
-     * 设定子菜单项大小
+     * Set the submenu item size
      */
     public void setChildSize(int size) {
         mChildSize = size;

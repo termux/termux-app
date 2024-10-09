@@ -115,4 +115,8 @@
     <string name="no_such_file">文件不存在</string>
     <string name="not_executable">不是可执行文件</string>
     <string name="select_command_first">选择一个启动文件</string>
+    <string name="apply_display_over_other_app_permission">需要申请悬浮窗口权限</string>
+    <string name="open_terminal">显示终端</string>
+    <string name="terminate_current_process">终止终端中当前运行的程序</string>
+    <string name="lock_layout">解除侧边栏锁定</string>
 </resources>

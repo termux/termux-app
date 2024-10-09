@@ -20,7 +20,7 @@ public class MiuiUtils {
     private static final String TAG = "MiuiUtils";
 
     /**
-     * 获取小米 rom 版本号，获取失败返回 -1
+     * Get Xiaomi ROM version number, return -1 if failed
      *
      * @return miui rom version code, if fail , return -1
      */
@@ -38,7 +38,7 @@ public class MiuiUtils {
     }
 
     /**
-     * 检测 miui 悬浮窗权限
+     * Check miui floating window permissions
      */
     public static boolean checkFloatWindowPermission(Context context) {
         final int version = Build.VERSION.SDK_INT;
@@ -99,7 +99,7 @@ public class MiuiUtils {
     }
 
     /**
-     * 小米 V5 版本 ROM权限申请
+     * Xiaomi V5 version ROM permission application
      */
     public static void goToMiuiPermissionActivity_V5(Context context) {
         Intent intent = null;
@@ -114,7 +114,7 @@ public class MiuiUtils {
             Log.e(TAG, "intent is not available!");
         }
 
-        //设置页面在应用详情页面
+//        Settings page in the app details page
 //        Intent intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
 //        PackageInfo pInfo = null;
 //        try {
@@ -134,7 +134,7 @@ public class MiuiUtils {
     }
 
     /**
-     * 小米 V6 版本 ROM权限申请
+     * Xiaomi V6 version ROM permission application
      */
     public static void goToMiuiPermissionActivity_V6(Context context) {
         Intent intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
@@ -150,7 +150,7 @@ public class MiuiUtils {
     }
 
     /**
-     * 小米 V7 版本 ROM权限申请
+     * Xiaomi V7 version ROM permission application
      */
     public static void goToMiuiPermissionActivity_V7(Context context) {
         Intent intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
@@ -166,7 +166,7 @@ public class MiuiUtils {
     }
 
     /**
-     * 小米 V8 版本 ROM权限申请
+     * Xiaomi V8 version ROM permission application
      */
     public static void goToMiuiPermissionActivity_V8(Context context) {
         Intent intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
@@ -182,7 +182,7 @@ public class MiuiUtils {
             intent.setPackage("com.miui.securitycenter");
             intent.putExtra("extra_pkgname", context.getPackageName());
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            
+
             if (isIntentAvailable(intent, context)) {
                 context.startActivity(intent);
             } else {
