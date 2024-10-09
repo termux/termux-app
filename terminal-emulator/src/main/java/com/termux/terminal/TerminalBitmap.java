@@ -105,7 +105,7 @@ public class TerminalBitmap {
         } else {
             try {
                 bm = BitmapFactory.decodeByteArray(image, 0, image.length);
-            } catch (Exception e) {
+            } catch (OutOfMemoryError e) {
                 Logger.logWarn(null, LOG_TAG, "Out of memory, cannot decode image");
             }
         }

@@ -197,6 +197,7 @@ public final class TerminalEmulator {
     private boolean ESC_P_sixel = false;
     private ArrayList<Byte> ESC_OSC_data;
     private int ESC_OSC_colon = 0;
+    private boolean ESC_OSC_outofmem = false;
 
     private final SavedScreenState mSavedStateMain = new SavedScreenState();
     private final SavedScreenState mSavedStateAlt = new SavedScreenState();
@@ -2089,7 +2090,9 @@ public final class TerminalEmulator {
                     // Collect base64 data for OSC 1337
                     ESC_OSC_colon = mOSCOrDeviceControlArgs.length();
                     ESC_OSC_data = new ArrayList<Byte>(65536);
+                    ESC_OSC_outofmem = false;
                 } else if (ESC_OSC_colon >= 0 && mOSCOrDeviceControlArgs.length() - ESC_OSC_colon == 4) {
+                    if (!ESC_OSC_outofmem) {
                     try {
                         byte[] decoded = Base64.decode(mOSCOrDeviceControlArgs.substring(ESC_OSC_colon), 0);
                         for (int i = 0 ; i < decoded.length; i++) {
@@ -2097,6 +2100,11 @@ public final class TerminalEmulator {
                         }
                     } catch(Exception e) {
                         // Ignore non-Base64 data.
+                    } catch(OutOfMemoryError e) {
+                        // Out of memory
+                        // Keep decoding, but fo not collect the data
+                        ESC_OSC_outofmem = true;
+                    }
                     }
                     mOSCOrDeviceControlArgs.setLength(ESC_OSC_colon);
 
