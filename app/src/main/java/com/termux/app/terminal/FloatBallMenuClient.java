@@ -33,8 +33,7 @@ public class FloatBallMenuClient {
     }
 
     public void onCreate() {
-        boolean showMenu = true;
-        init(showMenu);
+        init();
         mFloatballManager.show();
         //5 set float ball click handler
         if (mFloatballManager.getMenuItemSize() == 0) {
@@ -59,7 +58,7 @@ public class FloatBallMenuClient {
         mFloatballManager.hide();
     }
 
-    private void init(boolean showMenu) {
+    private void init() {
 //      1 set position of float ball, set size, icon and drawable
         int ballSize = DensityUtil.dip2px(mTermuxActivity, 40);
         Drawable ballIcon = AppCompatResources.getDrawable(mTermuxActivity, R.drawable.icon_float_ball_shape);
@@ -72,34 +71,29 @@ public class FloatBallMenuClient {
 //      set float ball weather hide
         ballCfg.setHideHalfLater(true);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mTermuxActivity);
-        boolean floatBallOverOtherApp = preferences.getBoolean("floatBallOverApp", false);
+        boolean floatBallOverOtherApp = preferences.getBoolean("enableGlobalFloatBallMenu", false);
         Context ctx = mTermuxActivity;
         if (floatBallOverOtherApp) {
             ctx = mTermuxActivity.getApplicationContext();
         }
-        if (showMenu) {
-            //2 display float ball menu
-            //2.1 init float ball menu config, every size of menu item and number of item
-            int menuSize = DensityUtil.dip2px(mTermuxActivity, 110);
-            int menuItemSize = DensityUtil.dip2px(mTermuxActivity, 20);
-            FloatMenuCfg menuCfg = new FloatMenuCfg(menuSize, menuItemSize);
-            //3 create float ball Manager
-            mFloatballManager = new FloatBallManager(ctx, ballCfg, menuCfg);
-            addFloatMenuItem();
-
-        } else {
-            mFloatballManager = new FloatBallManager(ctx, ballCfg);
-        }
+        //2 display float ball menu
+        //2.1 init float ball menu config, every size of menu item and number of item
+        int menuSize = DensityUtil.dip2px(mTermuxActivity, 110);
+        int menuItemSize = DensityUtil.dip2px(mTermuxActivity, 20);
+        FloatMenuCfg menuCfg = new FloatMenuCfg(menuSize, menuItemSize);
+        //3 create float ball Manager
+        mFloatballManager = new FloatBallManager(ctx, ballCfg, menuCfg);
+        addFloatMenuItem();
         mFloatballManager.setFloatBallOverOtherApp(floatBallOverOtherApp);
         if (floatBallOverOtherApp) {
             setFloatPermission();
         }
-        if (mFloatballManager.getFloatBall()!=null){
-            mFloatballManager.getFloatBall().setOnLongClickListener(l-> {
-                mTermuxActivity.getMainContentView().showContent();
-                return true;
-            });
-        }
+//        if (mFloatballManager.getFloatBall()!=null){
+//            mFloatballManager.getFloatBall().setOnLongClickListener(l-> {
+//                mTermuxActivity.getMainContentView().showContent();
+//                return true;
+//            });
+//        }
     }
 
     private void setFloatPermission() {
@@ -203,8 +197,8 @@ public class FloatBallMenuClient {
         MenuItem keyboardItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_keyboard_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.switchSoftKeyboard(true);
-                toast(mTermuxActivity.getString(com.termux.x11.R.string.open_keyboard));
+                mTermuxActivity.switchSoftKeyboard(false);
+                toast(mTermuxActivity.getString(com.termux.x11.R.string.open_keyboard_x11));
                 mFloatballManager.closeMenu();
             }
         };
@@ -247,8 +241,12 @@ public class FloatBallMenuClient {
     }
 
     public void onDestroy() {
-        mTermuxActivity.onDestroy();
+        onDetachedFromWindow();
         //unregister ActivityLifeCycle listener once register it, in case of memory leak
 //        mTermuxActivity.getApplication().unregisterActivityLifecycleCallbacks(mActivityLifeCycleListener);
+    }
+
+    public boolean isGlobalFloatBallMenu() {
+        return mFloatballManager.isFloatBallOverOtherApp();
     }
 }

@@ -50,6 +50,15 @@
             android:title="@string/stop_desktop" />
         <SwitchPreferenceCompat
             android:defaultValue="false"
+            android:key="enableFloatBallMenu"
+            android:summary="@string/enabl_float_ball_menu_notice"
+            android:title="@string/enabl_float_ball_menu" />
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="enableGlobalFloatBallMenu"
+            android:title="@string/enable_global_float_ball_menu" />
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
             android:key="displayStretch"
             android:title="@string/stretch_to_fit_display" />
 

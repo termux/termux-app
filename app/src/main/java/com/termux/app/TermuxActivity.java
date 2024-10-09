@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -24,6 +25,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -341,8 +343,8 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         setRecoverView();
         setX11Server();
         setBackupView();
-        mFloatBallMenuClient = new FloatBallMenuClient(this);
-        mFloatBallMenuClient.onCreate();
+        setFloatBallMenuClient();
+
 
         try {
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
@@ -374,7 +376,10 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
             @Override
             public void releaseSlider(boolean open) {
-                mMainContentView.releaseSlider(open);
+                if (!TermuxActivity.this.mEnableFloatBallMenu
+                    || TermuxActivity.this.mFloatBallMenuClient == null) {
+                    mMainContentView.releaseSlider(open);
+                }
             }
 
             @Override
@@ -467,7 +472,40 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                 });
                 return processInfoList.isEmpty() ? null : processInfoList;
             }
+
+            @Override
+            public void setFloatBallMenu(boolean enableFloatBallMenu, boolean enableGlobalFloatBallMenu) {
+                if (mFloatBallMenuClient != null) {
+                    if (!enableFloatBallMenu) {
+                        mFloatBallMenuClient.onDestroy();
+                        mFloatBallMenuClient = null;
+                    } else {
+                        if (enableGlobalFloatBallMenu != mFloatBallMenuClient.isGlobalFloatBallMenu()) {
+                            mFloatBallMenuClient.onDestroy();
+                            mFloatBallMenuClient = null;
+                            handler.postDelayed(() -> {
+                                mFloatBallMenuClient = new FloatBallMenuClient(TermuxActivity.this);
+                                mFloatBallMenuClient.onCreate();
+                            }, 2000);
+                        }
+                    }
+                } else {
+                    if (enableFloatBallMenu) {
+                        mFloatBallMenuClient = new FloatBallMenuClient(TermuxActivity.this);
+                        mFloatBallMenuClient.onCreate();
+                    }
+                }
+            }
         };
+    }
+
+    private void setFloatBallMenuClient() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mEnableFloatBallMenu = preferences.getBoolean("enableFloatBallMenu", false);
+        if (mEnableFloatBallMenu) {
+            mFloatBallMenuClient = new FloatBallMenuClient(this);
+            mFloatBallMenuClient.onCreate();
+        }
     }
 
     @Override
@@ -555,19 +593,27 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         } catch (Exception e) {
             // ignore.
         }
-        mFloatBallMenuClient.onDestroy();
+        if (mFloatBallMenuClient != null) {
+            mFloatBallMenuClient.onDestroy();
+        }
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        mFloatBallMenuClient.onAttachedToWindow();
+        if (mFloatBallMenuClient != null) {
+            mFloatBallMenuClient.onAttachedToWindow();
+        }
     }
 
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        mFloatBallMenuClient.onDetachedFromWindow();
+        if (mFloatBallMenuClient != null) {
+            {
+                mFloatBallMenuClient.onDetachedFromWindow();
+            }
+        }
     }
 
     @Override
@@ -943,7 +989,9 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             getDrawer().closeDrawers();
         } else {
 //            finishActivityIfNotFinishing();
-            mMainContentView.releaseSlider(true);
+            if (!mEnableFloatBallMenu || mFloatBallMenuClient == null) {
+                mMainContentView.releaseSlider(true);
+            }
         }
     }
 
@@ -1398,6 +1446,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
     }
+
     public DisplaySlidingWindow getMainContentView() {
         return mMainContentView;
     }

@@ -258,6 +258,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
         } else {
+            mOnMenuChangeListener.onMenuOpen(true, 0);
             this.smoothScrollTo(0, 0);
         }
     }

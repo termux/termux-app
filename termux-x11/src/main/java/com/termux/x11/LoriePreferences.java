@@ -112,6 +112,8 @@ public class LoriePreferences extends AppCompatActivity {
         void changePreference(String key);
 
         List<ProcessInfo> collectProcessorInfo(String tag);
+
+        void setFloatBallMenu(boolean enableFloatBallMenu, boolean enableGlobalFloatBallMenu);
     }
 
     public TermuxActivityListener getTermuxActivityListener() {
@@ -274,6 +276,30 @@ public class LoriePreferences extends AppCompatActivity {
                 findPreference("select_controller").setTitle(R.string.close_controller);
             } else {
                 findPreference("select_controller").setTitle(R.string.open_controller);
+            }
+            boolean enableFloatBallMenu = p.getBoolean("enableFloatBallMenu", false);
+            if (!enableFloatBallMenu) {
+                findPreference("enableGlobalFloatBallMenu").setEnabled(false);
+                findPreference("enableGlobalFloatBallMenu").setVisible(false);
+                findPreference("stop_desktop").setEnabled(true);
+                findPreference("stop_desktop").setVisible(true);
+                findPreference("open_keyboard").setEnabled(true);
+                findPreference("open_keyboard").setVisible(true);
+                findPreference("select_controller").setEnabled(true);
+                findPreference("select_controller").setVisible(true);
+                findPreference("open_progress_manager").setVisible(true);
+                findPreference("open_progress_manager").setVisible(true);
+            } else {
+                findPreference("enableGlobalFloatBallMenu").setVisible(true);
+                findPreference("enableGlobalFloatBallMenu").setEnabled(true);
+                findPreference("stop_desktop").setEnabled(false);
+                findPreference("stop_desktop").setVisible(false);
+                findPreference("open_keyboard").setEnabled(false);
+                findPreference("open_keyboard").setVisible(false);
+                findPreference("select_controller").setEnabled(false);
+                findPreference("select_controller").setVisible(false);
+                findPreference("open_progress_manager").setVisible(false);
+                findPreference("open_progress_manager").setVisible(false);
             }
 
             boolean requestNotificationPermissionVisible =

@@ -107,6 +107,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     private boolean filterOutWinKey = false;
     private static final int KEY_BACK = 158;
     protected static boolean hasInit = false;
+    protected boolean mEnableFloatBallMenu=false;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -565,72 +566,116 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         LorieView lorieView = getLorieView();
 
-        int mode = Integer.parseInt(p.getString("touchMode", "1"));
-        mInputHandler.setInputMode(mode);
-        mInputHandler.setTapToMove(p.getBoolean("tapToMove", false));
-        mInputHandler.setPreferScancodes(p.getBoolean("preferScancodes", false));
-        mInputHandler.setPointerCaptureEnabled(p.getBoolean("pointerCapture", false));
-        mInputHandler.setApplyDisplayScaleFactorToTouchpad(p.getBoolean("scaleTouchpad", true));
-        mInputHandler.setLongPressedDelay(p.getInt("touch_sensitivity", 1));
-        if (!p.getBoolean("pointerCapture", false) && lorieView.hasPointerCapture())
-            lorieView.releasePointerCapture();
-        SamsungDexUtils.dexMetaKeyCapture(this, p.getBoolean("dexMetaKeyCapture", false));
+        switch (key) {
+            case "enableGlobalFloatBallMenu":
+            case "enableFloatBallMenu": {
+                boolean enableGlobalFloatBallMenu = p.getBoolean("enableGlobalFloatBallMenu", false);
+                mEnableFloatBallMenu = p.getBoolean("enableFloatBallMenu", false);
+                if (termuxActivityListener!=null){
+                    termuxActivityListener.setFloatBallMenu(mEnableFloatBallMenu,enableGlobalFloatBallMenu);
+                }
+                break;
+            }
+            case "touchMode": {
+                int mode = Integer.parseInt(p.getString("touchMode", "1"));
+                mInputHandler.setInputMode(mode);
+                break;
+            }
+            case "tapToMove": {
+                mInputHandler.setTapToMove(p.getBoolean("tapToMove", false));
+                break;
+            }
+            case "preferScancodes": {
+                mInputHandler.setPreferScancodes(p.getBoolean("preferScancodes", false));
+                break;
+            }
+            case "pointerCapture": {
+                mInputHandler.setPointerCaptureEnabled(p.getBoolean("pointerCapture", false));
+                if (!p.getBoolean("pointerCapture", false) && lorieView.hasPointerCapture())
+                    lorieView.releasePointerCapture();
+                break;
+            }
+            case "scaleTouchpad": {
+                mInputHandler.setApplyDisplayScaleFactorToTouchpad(p.getBoolean("scaleTouchpad", true));
+                break;
+            }
+            case "touch_sensitivity": {
+                mInputHandler.setLongPressedDelay(p.getInt("touch_sensitivity", 1));
+                break;
+            }
+            case "dexMetaKeyCapture": {
+                SamsungDexUtils.dexMetaKeyCapture(this, p.getBoolean("dexMetaKeyCapture", false));
+                break;
+            }
+            case "filterOutWinkey": {
+                filterOutWinKey = p.getBoolean("filterOutWinkey", false);
+                break;
+            }
+            case "enableAccessibilityServiceAutomatically": {
+                if (p.getBoolean("enableAccessibilityServiceAutomatically", false)) {
+                    try {
+                        Settings.Secure.putString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "com.termux.x11/.utils.KeyInterceptor");
+                        Settings.Secure.putString(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, "1");
+                    } catch (SecurityException e) {
+                        new AlertDialog.Builder(this)
+                            .setTitle("Permission denied")
+                            .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
+                                "Please, launch this command using ADB:\n" +
+                                "adb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS")
+                            .setNegativeButton("OK", null)
+                            .create()
+                            .show();
 
+                        SharedPreferences.Editor edit = p.edit();
+                        edit.putBoolean("enableAccessibilityServiceAutomatically", false);
+                        edit.commit();
+                    }
+                } else if (checkSelfPermission(WRITE_SECURE_SETTINGS) == PERMISSION_GRANTED)
+                    KeyInterceptor.shutdown();
+                break;
+            }
+            case "clipboardSync": {
+                LorieView.setClipboardSyncEnabled(p.getBoolean("clipboardSync", false));
+                break;
+            }
+            case "forceLandscape": {
+                int requestedOrientation = p.getBoolean("forceLandscape", false) ?
+                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
+                if (getRequestedOrientation() != requestedOrientation) {
+                    setRequestedOrientation(requestedOrientation);
+                    if (null != termuxActivityListener) {
+                        termuxActivityListener.onChangeOrientation(requestedOrientation);
+                        getLorieView().regenerate();
+                    }
+                }
+                break;
+            }
+            case "showStylusClickOverride":
+            case "showMouseHelper": {
+                findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
+                LinearLayout buttons = findViewById(R.id.mouse_helper_visibility);
+                if (p.getBoolean("showStylusClickOverride", false)) {
+                    buttons.setVisibility(View.VISIBLE);
+                } else {
+                    //Reset default input back to normal
+                    TouchInputHandler.STYLUS_INPUT_HELPER_MODE = 1;
+                    final float menuUnselectedTrasparency = 0.66f;
+                    final float menuSelectedTrasparency = 1.0f;
+                    findViewById(R.id.button_left_click).setAlpha(menuSelectedTrasparency);
+                    findViewById(R.id.button_right_click).setAlpha(menuUnselectedTrasparency);
+                    findViewById(R.id.button_middle_click).setAlpha(menuUnselectedTrasparency);
+                    findViewById(R.id.button_visibility).setAlpha(menuUnselectedTrasparency);
+                    buttons.setVisibility(View.GONE);
+                }
+                break;
+            }
+        }
         setTerminalToolbarView();
         if (startFresh) {
             onWindowFocusChanged(true);
         }
-        LorieView.setClipboardSyncEnabled(p.getBoolean("clipboardSync", false));
-
         lorieView.triggerCallback();
-        filterOutWinKey = p.getBoolean("filterOutWinkey", false);
-        if (p.getBoolean("enableAccessibilityServiceAutomatically", false)) {
-            try {
-                Settings.Secure.putString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "com.termux.x11/.utils.KeyInterceptor");
-                Settings.Secure.putString(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, "1");
-            } catch (SecurityException e) {
-                new AlertDialog.Builder(this)
-                    .setTitle("Permission denied")
-                    .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
-                        "Please, launch this command using ADB:\n" +
-                        "adb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS")
-                    .setNegativeButton("OK", null)
-                    .create()
-                    .show();
-
-                SharedPreferences.Editor edit = p.edit();
-                edit.putBoolean("enableAccessibilityServiceAutomatically", false);
-                edit.commit();
-            }
-        } else if (checkSelfPermission(WRITE_SECURE_SETTINGS) == PERMISSION_GRANTED)
-            KeyInterceptor.shutdown();
-
-        int requestedOrientation = p.getBoolean("forceLandscape", false) ?
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-
-        if (getRequestedOrientation() != requestedOrientation) {
-            setRequestedOrientation(requestedOrientation);
-            if (null != termuxActivityListener) {
-                termuxActivityListener.onChangeOrientation(requestedOrientation);
-                getLorieView().regenerate();
-            }
-        }
-
-        findViewById(R.id.mouse_buttons).setVisibility(p.getBoolean("showMouseHelper", false) && "1".equals(p.getString("touchMode", "1")) && mClientConnected ? View.VISIBLE : View.GONE);
-        LinearLayout buttons = findViewById(R.id.mouse_helper_visibility);
-        if (p.getBoolean("showStylusClickOverride", false)) {
-            buttons.setVisibility(View.VISIBLE);
-        } else {
-            //Reset default input back to normal
-            TouchInputHandler.STYLUS_INPUT_HELPER_MODE = 1;
-            final float menuUnselectedTrasparency = 0.66f;
-            final float menuSelectedTrasparency = 1.0f;
-            findViewById(R.id.button_left_click).setAlpha(menuSelectedTrasparency);
-            findViewById(R.id.button_right_click).setAlpha(menuUnselectedTrasparency);
-            findViewById(R.id.button_middle_click).setAlpha(menuUnselectedTrasparency);
-            findViewById(R.id.button_visibility).setAlpha(menuUnselectedTrasparency);
-            buttons.setVisibility(View.GONE);
-        }
     }
 
     @Override
