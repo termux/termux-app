@@ -220,5 +220,5 @@
     <string name="open_terminal">open terminal</string>
     <string name="terminate_current_process">kill current running process</string>
     <string name="lock_layout">unlock screen slide</string>
-    <string name="add_some_menu_item">add some menu item</string>
+    <string name="raise_termux_app">raise termux app</string>
 </resources>

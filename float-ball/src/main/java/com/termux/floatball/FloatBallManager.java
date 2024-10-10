@@ -141,8 +141,11 @@ public class FloatBallManager {
     }
 
     public void onFloatBallClick() {
-        if (menuItems != null && menuItems.size() > 0) {
+        if (menuItems != null && !menuItems.isEmpty()) {
             floatMenu.attachToWindow(mWindowManager);
+            if (mFloatBallClickListener != null) {
+                mFloatBallClickListener.onFloatBallClick();
+            }
         } else {
             if (mFloatBallClickListener != null) {
                 mFloatBallClickListener.onFloatBallClick();

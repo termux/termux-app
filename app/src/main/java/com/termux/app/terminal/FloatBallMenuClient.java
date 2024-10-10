@@ -1,9 +1,13 @@
 package com.termux.app.terminal;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
@@ -21,9 +25,10 @@ import com.termux.floatball.widget.FloatBallCfg;
 public class FloatBallMenuClient {
     private FloatBallManager mFloatballManager;
     private FloatPermissionManager mFloatPermissionManager;
-    //    private ActivityLifeCycleListener mActivityLifeCycleListener = new ActivityLifeCycleListener();
+    private ActivityLifeCycleListener mActivityLifeCycleListener = new ActivityLifeCycleListener();
     private int resumed;
     private TermuxActivity mTermuxActivity;
+    private boolean mAppNotOnFront = false;
 
     private FloatBallMenuClient() {
     }
@@ -37,10 +42,21 @@ public class FloatBallMenuClient {
         mFloatballManager.show();
         //5 set float ball click handler
         if (mFloatballManager.getMenuItemSize() == 0) {
-            mFloatballManager.setOnFloatBallClickListener(() -> toast(mTermuxActivity.getString(R.string.add_some_menu_item)));
+            mFloatballManager.setOnFloatBallClickListener(() -> {
+                if (mAppNotOnFront) {
+                    PackageManager packageManager = mTermuxActivity.getPackageManager();
+                    Intent intent = packageManager.getLaunchIntentForPackage("com.termux");
+                    if (intent != null) {
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        mTermuxActivity.startActivity(intent);
+                        toast(mTermuxActivity.getString(R.string.raise_termux_app));
+                    }
+                }
+            });
         }
         //     6 if only float ball within app, register it to Application(out data, actually, it is enough within activity )
-//      mTermuxActivity.getApplication().registerActivityLifecycleCallbacks(mActivityLifeCycleListener);
+        mTermuxActivity.getApplication().registerActivityLifecycleCallbacks(mActivityLifeCycleListener);
     }
 
     public void onAttachedToWindow() {
@@ -88,12 +104,6 @@ public class FloatBallMenuClient {
         if (floatBallOverOtherApp) {
             setFloatPermission();
         }
-//        if (mFloatballManager.getFloatBall()!=null){
-//            mFloatballManager.getFloatBall().setOnLongClickListener(l-> {
-//                mTermuxActivity.getMainContentView().showContent();
-//                return true;
-//            });
-//        }
     }
 
     private void setFloatPermission() {
@@ -120,42 +130,42 @@ public class FloatBallMenuClient {
         });
     }
 
-//    public class ActivityLifeCycleListener implements Application.ActivityLifecycleCallbacks {
-//
-//        @Override
-//        public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-//        }
-//
-//        @Override
-//        public void onActivityStarted(Activity activity) {
-//        }
-//
-//        @Override
-//        public void onActivityResumed(Activity activity) {
-//            ++resumed;
-//            setFloatballVisible(true);
-//        }
-//
-//        @Override
-//        public void onActivityPaused(Activity activity) {
-//            --resumed;
-//            if (!isApplicationInForeground()) {
-//                setFloatballVisible(false);
-//            }
-//        }
-//
-//        @Override
-//        public void onActivityStopped(Activity activity) {
-//        }
-//
-//        @Override
-//        public void onActivityDestroyed(Activity activity) {
-//        }
-//
-//        @Override
-//        public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-//        }
-//    }
+    public class ActivityLifeCycleListener implements Application.ActivityLifecycleCallbacks {
+
+        @Override
+        public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+        }
+
+        @Override
+        public void onActivityStarted(Activity activity) {
+        }
+
+        @Override
+        public void onActivityResumed(Activity activity) {
+            ++resumed;
+            setFloatBallVisible(true);
+        }
+
+        @Override
+        public void onActivityPaused(Activity activity) {
+            --resumed;
+            if (!isApplicationInForeground()) {
+                setFloatBallVisible(false);
+            }
+        }
+
+        @Override
+        public void onActivityStopped(Activity activity) {
+        }
+
+        @Override
+        public void onActivityDestroyed(Activity activity) {
+        }
+
+        @Override
+        public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+        }
+    }
 
     private void toast(String msg) {
         Toast.makeText(mTermuxActivity, msg, Toast.LENGTH_SHORT).show();
@@ -228,13 +238,15 @@ public class FloatBallMenuClient {
             .buildMenu();
     }
 
-//    private void setFloatballVisible(boolean visible) {
-//        if (visible) {
+    private void setFloatBallVisible(boolean visible) {
+        if (visible) {
 //            mFloatballManager.show();
-//        } else {
+            mAppNotOnFront = false;
+        } else {
 //            mFloatballManager.hide();
-//        }
-//    }
+            mAppNotOnFront = true;
+        }
+    }
 
     public boolean isApplicationInForeground() {
         return resumed > 0;
@@ -243,7 +255,7 @@ public class FloatBallMenuClient {
     public void onDestroy() {
         onDetachedFromWindow();
         //unregister ActivityLifeCycle listener once register it, in case of memory leak
-//        mTermuxActivity.getApplication().unregisterActivityLifecycleCallbacks(mActivityLifeCycleListener);
+        mTermuxActivity.getApplication().unregisterActivityLifecycleCallbacks(mActivityLifeCycleListener);
     }
 
     public boolean isGlobalFloatBallMenu() {
