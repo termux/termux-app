@@ -398,7 +398,7 @@ public class LoriePreferences extends AppCompatActivity {
                     .show();
             }
             if ("open_keyboard".contentEquals(preference.getKey())) {
-                preferenceActivity.openSoftKeyboar();
+                preferenceActivity.openSoftKeyBoar();
             }
             if ("select_controller".contentEquals(preference.getKey())) {
                 if (!preferenceActivity.touchShow) {
@@ -531,7 +531,7 @@ public class LoriePreferences extends AppCompatActivity {
         }
     }
 
-    private void openSoftKeyboar() {
+    private void openSoftKeyBoar() {
         termuxActivityListener.openSoftwareKeyboard();
     }
 

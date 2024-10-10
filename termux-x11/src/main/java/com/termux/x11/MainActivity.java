@@ -95,6 +95,8 @@ import java.util.concurrent.Executors;
 public class MainActivity extends LoriePreferences implements View.OnApplyWindowInsetsListener {
     static final String ACTION_STOP = "com.termux.x11.ACTION_STOP";
     static final String REQUEST_LAUNCH_EXTERNAL_DISPLAY = "request_launch_external_display";
+    public static final int TERMINAL_VIEW = 0;
+    public static final int LORIE_VIEW = 1;
     public TermuxX11ExtraKeys mExtraKeys;
     protected boolean inputControllerViewHandled = false;
     protected FrameLayout frm;
@@ -107,7 +109,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     private boolean filterOutWinKey = false;
     private static final int KEY_BACK = 158;
     protected static boolean hasInit = false;
-    protected boolean mEnableFloatBallMenu=false;
+    protected boolean mEnableFloatBallMenu = false;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -145,6 +147,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity instance;
+    protected int mCurrentWidgetIndex = LORIE_VIEW;
 
 
     public MainActivity() {
@@ -571,8 +574,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             case "enableFloatBallMenu": {
                 boolean enableGlobalFloatBallMenu = p.getBoolean("enableGlobalFloatBallMenu", false);
                 mEnableFloatBallMenu = p.getBoolean("enableFloatBallMenu", false);
-                if (termuxActivityListener!=null){
-                    termuxActivityListener.setFloatBallMenu(mEnableFloatBallMenu,enableGlobalFloatBallMenu);
+                if (termuxActivityListener != null) {
+                    termuxActivityListener.setFloatBallMenu(mEnableFloatBallMenu, enableGlobalFloatBallMenu);
                 }
                 break;
             }
@@ -808,20 +811,19 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     public void switchSoftKeyboard(boolean hide) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         View view = getCurrentFocus();
-        if (view == null) {
+        if (view == null ||
+            mCurrentWidgetIndex == LORIE_VIEW) {
             view = getLorieView();
             view.requestFocus();
+        } else {
+            return;
         }
+
         if (hide) {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         } else {
             if (null != termuxActivityListener) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        loriePreferenceFragment.updatePreferencesLayout();
-                    }
-                }, 500);
+                handler.postDelayed(() -> loriePreferenceFragment.updatePreferencesLayout(), 500);
                 termuxActivityListener.onX11PreferenceSwitchChange(false);
             }
             imm.showSoftInput(view, 0);

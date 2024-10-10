@@ -120,4 +120,5 @@
     <string name="terminate_current_process">终止终端中当前运行的程序</string>
     <string name="lock_layout">解除侧边栏锁定</string>
     <string name="raise_termux_app">唤起termux</string>
+    <string name="add_menu_item">添加一些菜单</string>
 </resources>

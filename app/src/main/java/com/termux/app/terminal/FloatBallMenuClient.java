@@ -42,6 +42,8 @@ public class FloatBallMenuClient {
         mFloatballManager.show();
         //5 set float ball click handler
         if (mFloatballManager.getMenuItemSize() == 0) {
+            toast(mTermuxActivity.getString(R.string.add_menu_item));
+        }else{
             mFloatballManager.setOnFloatBallClickListener(() -> {
                 if (mAppNotOnFront) {
                     PackageManager packageManager = mTermuxActivity.getPackageManager();

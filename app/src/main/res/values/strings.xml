@@ -221,4 +221,5 @@
     <string name="terminate_current_process">kill current running process</string>
     <string name="lock_layout">unlock screen slide</string>
     <string name="raise_termux_app">raise termux app</string>
+    <string name="add_menu_item">add some item to float ball menu</string>
 </resources>
