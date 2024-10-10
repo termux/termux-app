@@ -194,12 +194,9 @@ public class FloatMenu extends FrameLayout {
         ImageView imageview = new ImageView(getContext());
         imageview.setBackground(menuItem.mDrawable);
         mMenuLayout.addView(imageview);
-        imageview.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!mMenuLayout.isMoving())
-                    menuItem.action();
-            }
+        imageview.setOnClickListener(v -> {
+            if (!mMenuLayout.isMoving())
+                menuItem.action();
         });
     }
 

@@ -260,10 +260,8 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             public void onMenuOpen(boolean isOpen, int flag) {
                 if (isOpen && flag == 0) {
                     setX11FocusedPreferencesChanged(false);
-                    TermuxActivity.this.mCurrentWidgetIndex = TERMINAL_VIEW;
                 } else {
                     setX11FocusedPreferencesChanged(true);
-                    TermuxActivity.this.mCurrentWidgetIndex = LORIE_VIEW;
                 }
             }
 

@@ -29,6 +29,8 @@ public class FloatBallMenuClient {
     private int resumed;
     private TermuxActivity mTermuxActivity;
     private boolean mAppNotOnFront = false;
+    private boolean mShowKeyboard = false;
+    private boolean mLockSlider = false;
 
     private FloatBallMenuClient() {
     }
@@ -43,7 +45,7 @@ public class FloatBallMenuClient {
         //5 set float ball click handler
         if (mFloatballManager.getMenuItemSize() == 0) {
             toast(mTermuxActivity.getString(R.string.add_menu_item));
-        }else{
+        } else {
             mFloatballManager.setOnFloatBallClickListener(() -> {
                 if (mAppNotOnFront) {
                     PackageManager packageManager = mTermuxActivity.getPackageManager();
@@ -201,6 +203,12 @@ public class FloatBallMenuClient {
         MenuItem unLockLayoutItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_shape)) {
             @Override
             public void action() {
+                if (mLockSlider){
+                    mDrawable = mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_open_shape);
+                }else {
+                    mDrawable = mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_shape);
+                }
+                mLockSlider = !mLockSlider;
                 mTermuxActivity.getMainContentView().releaseSlider(true);
                 toast(mTermuxActivity.getString(R.string.lock_layout));
                 mFloatballManager.closeMenu();
@@ -209,7 +217,13 @@ public class FloatBallMenuClient {
         MenuItem keyboardItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_keyboard_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.switchSoftKeyboard(false);
+                if (mShowKeyboard) {
+                    mDrawable = mTermuxActivity.getDrawable(R.drawable.icon_menu_show_keyboard_open_shape);
+                } else {
+                    mDrawable = mTermuxActivity.getDrawable(R.drawable.icon_menu_show_keyboard_shape);
+                }
+                mShowKeyboard = !mShowKeyboard;
+                mTermuxActivity.openSoftKeyboardWithBackKeyPressed();
                 toast(mTermuxActivity.getString(com.termux.x11.R.string.open_keyboard_x11));
                 mFloatballManager.closeMenu();
             }

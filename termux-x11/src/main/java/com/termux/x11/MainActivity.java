@@ -95,8 +95,6 @@ import java.util.concurrent.Executors;
 public class MainActivity extends LoriePreferences implements View.OnApplyWindowInsetsListener {
     static final String ACTION_STOP = "com.termux.x11.ACTION_STOP";
     static final String REQUEST_LAUNCH_EXTERNAL_DISPLAY = "request_launch_external_display";
-    public static final int TERMINAL_VIEW = 0;
-    public static final int LORIE_VIEW = 1;
     public TermuxX11ExtraKeys mExtraKeys;
     protected boolean inputControllerViewHandled = false;
     protected FrameLayout frm;
@@ -147,7 +145,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity instance;
-    protected int mCurrentWidgetIndex = LORIE_VIEW;
+    protected boolean mRaiseSoftKeyBoard = false;
 
 
     public MainActivity() {
@@ -202,7 +200,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             }
 
             if (k == KEYCODE_BACK) {
-                if (null != termuxActivityListener) {
+                if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
+                    switchSoftKeyboard(false);
+                } else if (null != termuxActivityListener && !mEnableFloatBallMenu) {
                     termuxActivityListener.releaseSlider(true);
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -227,12 +227,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             }
             return mInputHandler.sendKeyEvent(v, e);
         };
-        lorieParent.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
+        lorieParent.setOnTouchListener((v, event) -> true);
 
         lorieView.setOnKeyListener(mLorieKeyListener);
 
@@ -576,6 +571,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                 mEnableFloatBallMenu = p.getBoolean("enableFloatBallMenu", false);
                 if (termuxActivityListener != null) {
                     termuxActivityListener.setFloatBallMenu(mEnableFloatBallMenu, enableGlobalFloatBallMenu);
+                    if (!mEnableFloatBallMenu) {
+                        mRaiseSoftKeyBoard = false;
+                    }
                 }
                 break;
             }
@@ -811,12 +809,9 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     public void switchSoftKeyboard(boolean hide) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         View view = getCurrentFocus();
-        if (view == null ||
-            mCurrentWidgetIndex == LORIE_VIEW) {
+        if (view == null) {
             view = getLorieView();
             view.requestFocus();
-        } else {
-            return;
         }
 
         if (hide) {
@@ -828,6 +823,10 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             }
             imm.showSoftInput(view, 0);
         }
+    }
+
+    public void openSoftKeyboardWithBackKeyPressed() {
+        mRaiseSoftKeyBoard = !mRaiseSoftKeyBoard;
     }
 
     @SuppressLint("WrongConstant")
