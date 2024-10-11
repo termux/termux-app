@@ -9,6 +9,7 @@ on:
     branches:
       - master
       - android-10
+  workflow_dispatch:
 
 jobs:
   testing:
