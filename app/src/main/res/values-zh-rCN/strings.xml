@@ -118,7 +118,8 @@
     <string name="apply_display_over_other_app_permission">需要申请悬浮窗口权限</string>
     <string name="open_terminal">显示终端</string>
     <string name="terminate_current_process">终止终端中当前运行的程序</string>
-    <string name="lock_layout">解除侧边栏锁定</string>
+    <string name="unlock_layout">解除侧边栏锁定</string>
     <string name="raise_termux_app">唤起termux</string>
     <string name="add_menu_item">添加一些菜单</string>
+    <string name="hide_terminal">隐藏终端</string>
 </resources>

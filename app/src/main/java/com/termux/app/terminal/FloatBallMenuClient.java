@@ -31,6 +31,8 @@ public class FloatBallMenuClient {
     private boolean mAppNotOnFront = false;
     private boolean mShowKeyboard = false;
     private boolean mLockSlider = false;
+    private boolean mShowTerminal = false;
+    private boolean mShowPreference = false;
 
     private FloatBallMenuClient() {
     }
@@ -179,8 +181,14 @@ public class FloatBallMenuClient {
         MenuItem terminalItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_start_terminal_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.getMainContentView().setTerminalViewSwitchSlider(true);
-                toast(mTermuxActivity.getString(R.string.open_terminal));
+                if (!mShowTerminal) {
+                    mTermuxActivity.getMainContentView().setTerminalViewSwitchSlider(true);
+                    toast(mTermuxActivity.getString(R.string.open_terminal));
+                } else {
+                    mTermuxActivity.getMainContentView().setTerminalViewSwitchSlider(false);
+                    toast(mTermuxActivity.getString(R.string.hide_terminal));
+                }
+                mShowTerminal = !mShowTerminal;
                 mFloatballManager.closeMenu();
             }
         };
@@ -195,10 +203,10 @@ public class FloatBallMenuClient {
         MenuItem gamePadItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_game_pad_shape)) {
             @Override
             public void action() {
-                if (!mTermuxActivity.getTouchShow()){
+                if (!mTermuxActivity.getTouchShow()) {
                     mTermuxActivity.showInputControlsDialog();
                     toast(mTermuxActivity.getString(com.termux.x11.R.string.open_controller));
-                }else{
+                } else {
                     mTermuxActivity.hideInputControls();
                     toast(mTermuxActivity.getString(com.termux.x11.R.string.close_controller));
                 }
@@ -208,14 +216,14 @@ public class FloatBallMenuClient {
         MenuItem unLockLayoutItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_shape)) {
             @Override
             public void action() {
-                if (mLockSlider){
+                if (mLockSlider) {
                     mDrawable = mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_open_shape);
-                }else {
+                } else {
                     mDrawable = mTermuxActivity.getDrawable(R.drawable.icon_menu_unlock_layout_shape);
                 }
                 mLockSlider = !mLockSlider;
                 mTermuxActivity.getMainContentView().releaseSlider(true);
-                toast(mTermuxActivity.getString(R.string.lock_layout));
+                toast(mTermuxActivity.getString(R.string.unlock_layout));
                 mFloatballManager.closeMenu();
             }
         };
@@ -228,7 +236,7 @@ public class FloatBallMenuClient {
                     mDrawable = mTermuxActivity.getDrawable(R.drawable.icon_menu_show_keyboard_shape);
                 }
                 mShowKeyboard = !mShowKeyboard;
-                mTermuxActivity.openSoftKeyboardWithBackKeyPressed();
+                mTermuxActivity.openSoftKeyboardWithBackKeyPressed(mShowKeyboard);
                 toast(mTermuxActivity.getString(com.termux.x11.R.string.open_keyboard_x11));
                 mFloatballManager.closeMenu();
             }
@@ -244,8 +252,14 @@ public class FloatBallMenuClient {
         MenuItem settingItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_setting_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.getMainContentView().setX11PreferenceSwitchSlider(true);
-                toast(mTermuxActivity.getString(com.termux.x11.R.string.settings));
+                if (!mShowPreference) {
+                    mTermuxActivity.getMainContentView().setX11PreferenceSwitchSlider(true);
+                    toast(mTermuxActivity.getString(com.termux.x11.R.string.open_x11_settings));
+                } else {
+                    mTermuxActivity.getMainContentView().setX11PreferenceSwitchSlider(false);
+                    toast(mTermuxActivity.getString(com.termux.x11.R.string.hide_x11_settings));
+                }
+                mShowPreference = !mShowPreference;
                 mFloatballManager.closeMenu();
             }
         };

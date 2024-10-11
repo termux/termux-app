@@ -825,8 +825,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }
     }
 
-    public void openSoftKeyboardWithBackKeyPressed() {
-        mRaiseSoftKeyBoard = !mRaiseSoftKeyBoard;
+    public void openSoftKeyboardWithBackKeyPressed(boolean raiseSoftKeyBoard) {
+        mRaiseSoftKeyBoard = raiseSoftKeyBoard;
     }
 
     @SuppressLint("WrongConstant")

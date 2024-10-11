@@ -323,5 +323,7 @@
     <string name="enable_global_float_ball_menu">global float ball menu</string>
     <string name="open_keyboard_x11">open soft keyboad for x11 text input</string>
     <string name="enabl_float_ball_menu_notice">once turn this on, unlocking sliding app content and some other functions will be moved to float ball menu</string>
+    <string name="open_x11_settings">show x11 setting</string>
+    <string name="hide_x11_settings">hide x11 setting</string>
 
 </resources>

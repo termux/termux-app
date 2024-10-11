@@ -219,7 +219,8 @@
     <string name="apply_display_over_other_app_permission">apply display over other permission first</string>
     <string name="open_terminal">open terminal</string>
     <string name="terminate_current_process">kill current running process</string>
-    <string name="lock_layout">unlock screen slide</string>
+    <string name="unlock_layout">unlock screen slider</string>
     <string name="raise_termux_app">raise termux app</string>
     <string name="add_menu_item">add some item to float ball menu</string>
+    <string name="hide_terminal">hide terminal</string>
 </resources>
