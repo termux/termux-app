@@ -3,10 +3,10 @@ name: Build
 on:
   push:
     branches:
-      - master-x11-submodule
+      - master
   pull_request:
     branches:
-      - master-x11-submodule
+      - master
   workflow_dispatch:
 
 jobs:
@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
+          - with:
+            submodules: 'true'
+
 
       - name: Build APKs
         shell: bash {0}
@@ -55,7 +58,7 @@ jobs:
           export TERMUX_APP_VERSION_NAME="${RELEASE_VERSION_NAME/v/}" # Used by app/build.gradle
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
           export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
-          if ! git submodule update --init --recursive && ./gradlew assembleDebug; then
+          if ! ./gradlew assembleDebug; then
             exit_on_error "Build failed for '$APK_VERSION_TAG' build."
           fi
 
