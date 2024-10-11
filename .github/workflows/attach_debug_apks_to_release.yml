@@ -1,9 +1,6 @@
 name: Attach Debug APKs To Release
 
 on:
-  release:
-    types:
-      - published
   workflow_dispatch:
 
 jobs:
@@ -21,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ env.GITHUB_REF }}
+          submodules: 'true'
 
       - name: Build
         shell: bash {0}
@@ -69,6 +67,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: "**/*.apk"
           file_glob: true
-          release_name: 
+          release_name:
           tag: ${{ github.event.release.tag_name }}
           checksums: sha256,sha512,md5
