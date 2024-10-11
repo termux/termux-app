@@ -67,12 +67,12 @@ public class TermuxFilesProvider extends DocumentsProvider {
      * like {@link #dataDir}
      * once privateRootDir start with /data/user,instance this,replace start with /data/user_de/
      */
-    private File userDataDir;
+//    private File userDataDir;
     /**
      * external private directory,such as：/storage/emulated/0/Android/data/package/name
      */
-    private File androidDataDir;
-    private File androidObbDir;
+//    private File androidDataDir;
+//    private File androidObbDir;
 
     /**
      * delete files in directory or soft link
@@ -118,15 +118,16 @@ public class TermuxFilesProvider extends DocumentsProvider {
     @Override
     public final void attachInfo(Context context, ProviderInfo info) {
         super.attachInfo(context, info);
-        this.pkgName = context.getPackageName();
-        this.dataDir = Objects.requireNonNull(context.getFilesDir().getParentFile());
-        String path = dataDir.getPath();
-        if (path.startsWith("/data/user/"))
-            this.userDataDir = new File("/data/user_de/" + path.substring("/data/user/".length()));
-        File externalFilesDir = context.getExternalFilesDir(null);
-        if (externalFilesDir != null)
-            this.androidDataDir = externalFilesDir.getParentFile();
-        this.androidObbDir = context.getObbDir();
+        this.pkgName = Objects.requireNonNull(getContext()).getPackageName();
+        this.dataDir = Objects.requireNonNull(context.getFilesDir());
+//        this.dataDir = Objects.requireNonNull(context.getFilesDir().getParentFile());
+//        String path = dataDir.getPath();
+//        if (path.startsWith("/data/user/"))
+//            this.userDataDir = new File("/data/user_de/" + path.substring("/data/user/".length()));
+//        File externalFilesDir = context.getExternalFilesDir(null);
+//        if (externalFilesDir != null)
+//            this.androidDataDir = externalFilesDir.getParentFile();
+//        this.androidObbDir = context.getObbDir();
     }
 
     /**
@@ -159,13 +160,13 @@ public class TermuxFilesProvider extends DocumentsProvider {
         File targetFile;
         if (virtualName.equalsIgnoreCase("data")) {
             targetFile = new File(this.dataDir, realPath);
-        } else if (virtualName.equalsIgnoreCase("android_data") && this.androidDataDir != null) {
+        } /*else if (virtualName.equalsIgnoreCase("android_data") && this.androidDataDir != null) {
             targetFile = new File(this.androidDataDir, realPath);
         } else if (virtualName.equalsIgnoreCase("android_obb") && this.androidObbDir != null) {
             targetFile = new File(this.androidObbDir, realPath);
         } else if (virtualName.equalsIgnoreCase("user_de_data") && this.userDataDir != null) {
             targetFile = new File(this.userDataDir, realPath);
-        } else
+        }*/ else
             throw new FileNotFoundException(documentId.concat(" not found"));
 
         if (lsFileState) {
@@ -298,14 +299,15 @@ public class TermuxFilesProvider extends DocumentsProvider {
         //once private directory
         String path = file.getPath();
         if (path.equals(this.dataDir.getPath())) {
-            displayName = "data";
-        } else if (androidDataDir != null && path.equals(androidDataDir.getPath())) {
+//            displayName = "data";
+            displayName = file.getName();
+        } /*else if (androidDataDir != null && path.equals(androidDataDir.getPath())) {
             displayName = "android_data";
         } else if (androidObbDir != null && path.equals(androidObbDir.getPath())) {
             displayName = "android_obb";
         } else if (userDataDir != null && path.equals(userDataDir.getPath())) {
             displayName = "user_de_data";
-        } else {
+        }*/ else {
             displayName = file.getName();
             isNormalFile = true;
         }
@@ -391,15 +393,14 @@ public class TermuxFilesProvider extends DocumentsProvider {
         //once virtual root, list out private directory
         if (parent == null) {
             includeFile(cursor, parentDocumentId.concat("/data"), this.dataDir);
-
-            if (androidDataDir != null && androidDataDir.exists())
+/*if (androidDataDir != null && androidDataDir.exists())
                 includeFile(cursor, parentDocumentId.concat("/android_data"), this.androidDataDir);
 
             if (androidObbDir != null && androidObbDir.exists())
                 includeFile(cursor, parentDocumentId.concat("/android_obb"), this.androidObbDir);
 
             if (userDataDir != null && userDataDir.exists())
-                includeFile(cursor, parentDocumentId.concat("/user_de_data"), this.userDataDir);
+                includeFile(cursor, parentDocumentId.concat("/user_de_data"), this.userDataDir);*/
         } else {
             File[] children = parent.listFiles();
             if (children != null)
