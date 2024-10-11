@@ -51,6 +51,7 @@ public class FloatBall extends FrameLayout implements ICarrier {
         public void onRun() {
             if (mHideHalfLater && !sleep && isAdded) {
                 sleep = true;
+                floatBallManager.closeMenu();
                 moveToEdge(false, sleep);
                 mSleepX = mLayoutParams.x;
             }

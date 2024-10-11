@@ -870,7 +870,7 @@ public class LoriePreferences extends AppCompatActivity {
         loriePreferenceFragment.updatePreferencesLayout();
     }
 
-    protected void hideInputControls() {
+    public void hideInputControls() {
         inputControlsView.setShowTouchscreenControls(true);
         inputControlsView.setVisibility(View.GONE);
         inputControlsView.setProfile(null);

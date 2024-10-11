@@ -195,8 +195,13 @@ public class FloatBallMenuClient {
         MenuItem gamePadItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_game_pad_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.showInputControlsDialog();
-                toast(mTermuxActivity.getString(com.termux.x11.R.string.open_controller));
+                if (!mTermuxActivity.getTouchShow()){
+                    mTermuxActivity.showInputControlsDialog();
+                    toast(mTermuxActivity.getString(com.termux.x11.R.string.open_controller));
+                }else{
+                    mTermuxActivity.hideInputControls();
+                    toast(mTermuxActivity.getString(com.termux.x11.R.string.close_controller));
+                }
                 mFloatballManager.closeMenu();
             }
         };
