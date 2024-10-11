@@ -25,7 +25,7 @@ jobs:
         env:
           PACKAGE_VARIANT: ${{ matrix.package_variant }}
         run: |
-          RELEASE_VERSION_NAME="${GITHUB_REF/refs\/tags\//}"
+          RELEASE_VERSION_NAME="${GITHUB_REF/refs\/1.0.4\//}"
           if ! printf "%s" "${RELEASE_VERSION_NAME/v/}" | grep -qP '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'; then
             echo "The versionName '${RELEASE_VERSION_NAME/v/}' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html."
             exit 1
