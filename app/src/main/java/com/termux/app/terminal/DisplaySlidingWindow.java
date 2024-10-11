@@ -243,6 +243,8 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         this.mContentSwitchSlider = openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
+            mOnMenuChangeListener.onMenuOpen(false, 1);
+            mIsRightMenuOpen = false;
         } else {
             this.smoothScrollTo(mMenuWidth + mMenuWidth + mStatusHeight * 4, 0);
             if (!mIsRightMenuOpen) {
@@ -257,9 +259,12 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         this.mMenuSwitchSlider = !openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
+            mOnMenuChangeListener.onMenuOpen(false, 0);
+            mIsLeftMenuOpen = false;
         } else {
-            mOnMenuChangeListener.onMenuOpen(true, 0);
             this.smoothScrollTo(0, 0);
+            mOnMenuChangeListener.onMenuOpen(true, 0);
+            mIsLeftMenuOpen = true;
         }
     }
 
@@ -279,6 +284,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         this.mMenuSwitchSlider = true;
         mRefreshEnd = false;
         remeasure();
-        this.scrollTo(mMenuWidth, 0);
+        this.smoothScrollTo(mMenuWidth, 0);
     }
 }

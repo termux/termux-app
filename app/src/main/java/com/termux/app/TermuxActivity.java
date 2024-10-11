@@ -260,8 +260,24 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             public void onMenuOpen(boolean isOpen, int flag) {
                 if (isOpen && flag == 0) {
                     setX11FocusedPreferencesChanged(false);
-                } else {
+                    if (mFloatBallMenuClient!=null) {
+                        mFloatBallMenuClient.setTerminalShow(true);
+                    }
+                }else if (!isOpen &&flag ==0){
                     setX11FocusedPreferencesChanged(true);
+                    if (mFloatBallMenuClient!=null) {
+                        mFloatBallMenuClient.setTerminalShow(false);
+                    }
+                }else if(isOpen && flag == 1){
+                    setX11FocusedPreferencesChanged(true);
+                    if (mFloatBallMenuClient!=null) {
+                        mFloatBallMenuClient.setShowPreference(true);
+                    }
+                }else {
+                    setX11FocusedPreferencesChanged(true);
+                    if (mFloatBallMenuClient!=null) {
+                        mFloatBallMenuClient.setShowPreference(false);
+                    }
                 }
             }
 

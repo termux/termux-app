@@ -136,6 +136,14 @@ public class FloatBallMenuClient {
         });
     }
 
+    public void setTerminalShow(boolean showTerminal) {
+        mShowTerminal = showTerminal;
+    }
+
+    public void setShowPreference(boolean showPreference) {
+        mShowPreference = showPreference;
+    }
+
     public class ActivityLifeCycleListener implements Application.ActivityLifecycleCallbacks {
 
         @Override
@@ -181,14 +189,15 @@ public class FloatBallMenuClient {
         MenuItem terminalItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_start_terminal_shape)) {
             @Override
             public void action() {
-                if (!mShowTerminal) {
+                boolean preState = mShowTerminal;
+                mShowTerminal = !mShowTerminal;
+                if (!preState) {
                     mTermuxActivity.getMainContentView().setTerminalViewSwitchSlider(true);
                     toast(mTermuxActivity.getString(R.string.open_terminal));
                 } else {
                     mTermuxActivity.getMainContentView().setTerminalViewSwitchSlider(false);
                     toast(mTermuxActivity.getString(R.string.hide_terminal));
                 }
-                mShowTerminal = !mShowTerminal;
                 mFloatballManager.closeMenu();
             }
         };
@@ -252,14 +261,15 @@ public class FloatBallMenuClient {
         MenuItem settingItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_setting_shape)) {
             @Override
             public void action() {
-                if (!mShowPreference) {
+                boolean preState = mShowPreference;
+                mShowPreference = !mShowPreference;
+                if (!preState) {
                     mTermuxActivity.getMainContentView().setX11PreferenceSwitchSlider(true);
                     toast(mTermuxActivity.getString(com.termux.x11.R.string.open_x11_settings));
                 } else {
                     mTermuxActivity.getMainContentView().setX11PreferenceSwitchSlider(false);
                     toast(mTermuxActivity.getString(com.termux.x11.R.string.hide_x11_settings));
                 }
-                mShowPreference = !mShowPreference;
                 mFloatballManager.closeMenu();
             }
         };

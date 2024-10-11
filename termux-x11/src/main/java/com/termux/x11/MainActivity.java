@@ -785,7 +785,10 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                     termuxActivityListener.onChangeOrientation(newConfig.orientation);
                 }
             }
-            getLorieView().regenerate();
+            handler.postDelayed(() -> {
+                getLorieView().regenerate();
+            }, 1000);
+
         }
         setTerminalToolbarView();
 //        Log.d("onConfigurationChanged","orientation:"+orientation);
