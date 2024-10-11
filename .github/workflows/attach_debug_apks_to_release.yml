@@ -26,12 +26,6 @@ jobs:
           PACKAGE_VARIANT: ${{ matrix.package_variant }}
         run: |
           RELEASE_VERSION_NAME="1.0.5"
-#          RELEASE_VERSION_NAME="${GITHUB_REF/refs\/tag\//}"
-#          if ! printf "%s" "${RELEASE_VERSION_NAME/v/}" | grep -qP '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'; then
-#            echo "The versionName '${RELEASE_VERSION_NAME/v/}' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html."
-#            exit 1
-#          fi
-
           APK_DIR_PATH="./app/build/outputs/apk/debug"
           APK_VERSION_TAG="$RELEASE_VERSION_NAME+${{ env.PACKAGE_VARIANT }}-github-debug"
           APK_BASENAME_PREFIX="termux-app_$APK_VERSION_TAG"
