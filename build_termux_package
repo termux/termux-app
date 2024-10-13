@@ -7,7 +7,8 @@ TERMUX_PKG_HOMEPAGE="https://github.com/termux/termux-x11"
 TERMUX_PKG_DESCRIPTION="Companion package for termux-x11 app"
 TERMUX_PKG_MAINTAINER="Twaik Yont @twaik"
 TERMUX_PKG_REVISION=0
-TERMUX_PKG_VERSION=$(grep versionName termux-x11/build.gradle | cut -d '"' -f 2)
+TERMUX_PKG_VERSION="1.03.10"
+#TERMUX_PKG_VERSION=$(grep versionName termux-x11/build.gradle | cut -d '"' -f 2)
 TERMUX_PKG_DEPENDS="xkeyboard-config"
 
 TERMUX_PKG_FULLVERSION="$TERMUX_PKG_VERSION-$TERMUX_PKG_REVISION"

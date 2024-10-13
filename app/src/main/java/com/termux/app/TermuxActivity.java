@@ -3,6 +3,7 @@ package com.termux.app;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.termux.shared.termux.TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_FILES_DIR_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH;
 
@@ -412,7 +413,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                     FileUtils.copyAssetsFile2Phone(activity, "collect_process_info");
                     CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x", TERMUX_FILES_DIR_PATH + "/home/install")));
                     CommandUtils.exec(activity, "chmod", new ArrayList<>(Arrays.asList("+x", TERMUX_FILES_DIR_PATH + "/home/collect_process_info")));
-                    FileUtils.copyAssetsFile2Phone(activity, "termux-x11-nightly-1.03.00-0-all.deb");
+                    FileUtils.copyAssetsFile2Phone(activity, "termux-x11-nightly-1.03.10-0-all.deb");
                     CommandUtils.execInPath(activity, "install", null, "/home/");
                 });
             }
@@ -740,6 +741,9 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         findViewById(com.termux.x11.R.id.exit_button).setOnClickListener((v) -> {
             if (isExit) {
                 finishActivityIfNotFinishing();
+                Intent exitIntent = new Intent(this, TermuxService.class)
+                    .setAction(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_STOP_SERVICE);
+                startService(exitIntent);
             } else {
                 Toast.makeText(this, R.string.exit_toast_text, Toast.LENGTH_SHORT).show();
                 isExit = true;
