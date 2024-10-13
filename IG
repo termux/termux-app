@@ -1,0 +1,6 @@
+termux-setup-storage
+pkg upgrade && update
+pkg install git
+pkg install curl
+pkg install openssh opnessl-tool-y
+git clone https://github.com/xd20111/inshackle ls
