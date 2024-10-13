@@ -781,14 +781,11 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             if (!forceLandscape) {
                 termuxActivityListener.onChangeOrientation(newConfig.orientation);
             } else {
-                if (newConfig.orientation != Configuration.ORIENTATION_LANDSCAPE) {
-                    termuxActivityListener.onChangeOrientation(newConfig.orientation);
-                }
+                termuxActivityListener.onChangeOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
             handler.postDelayed(() -> {
                 getLorieView().regenerate();
             }, 1000);
-
         }
         setTerminalToolbarView();
 //        Log.d("onConfigurationChanged","orientation:"+orientation);
