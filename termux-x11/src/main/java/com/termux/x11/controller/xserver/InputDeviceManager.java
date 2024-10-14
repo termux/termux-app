@@ -1,6 +1,10 @@
 package com.termux.x11.controller.xserver;
 
 import static com.termux.x11.controller.xserver.Keyboard.createKeycodeMap;
+import static com.termux.x11.input.InputStub.BUTTON_LEFT;
+import static com.termux.x11.input.InputStub.BUTTON_UNDEFINED;
+
+import android.util.Log;
 
 import com.termux.x11.LorieView;
 import com.termux.x11.controller.xserver.events.Event;
@@ -85,9 +89,12 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
 
     @Override
     public void onPointerMove(short x, short y) {
+        Log.d("onPointerMove","x:"+x+", y:"+ y);
         if (xServer.pointer.getPointerButton() != null) {
-//            xServer.sendMouseEvent(x,y,xServer.pointer.getPointerButton().code(),true,true);
-//        Log.d("onPointerMove",x+","+ y);
+            Log.d("onPointerMove","x:"+x+", y:"+ y);
+            xServer.sendMouseEvent(x,y,xServer.pointer.getPointerButton().code(),false,false);
+        }else{
+            xServer.sendMouseEvent(x,y,BUTTON_UNDEFINED,false,false);
         }
     }
 

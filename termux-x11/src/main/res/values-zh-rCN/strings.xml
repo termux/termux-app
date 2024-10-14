@@ -296,7 +296,8 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="launch_button_text">启动</string>
     <string name="enabl_float_ball_menu">开启悬浮菜单</string>
     <string name="enable_global_float_ball_menu">开启桌面悬浮菜单</string>
-    <string name="open_keyboard_x11">打开软键盘，向X11桌面输入文本</string>
+    <string name="start_keyboard_x11">点击返回键打开软键盘</string>
+    <string name="stop_keyboard_x11">停止软件盘输入</string>
     <string name="enabl_float_ball_menu_notice">开启悬浮球菜单后，返回键将失去解锁侧边栏能力，其它部分功能也将转移到悬浮球</string>
     <string name="open_x11_settings">打开x11设置</string>
     <string name="hide_x11_settings">隐藏x11设置</string>

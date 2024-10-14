@@ -261,22 +261,22 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             public void onMenuOpen(boolean isOpen, int flag) {
                 if (isOpen && flag == 0) {
                     setX11FocusedPreferencesChanged(false);
-                    if (mFloatBallMenuClient!=null) {
+                    if (mFloatBallMenuClient != null) {
                         mFloatBallMenuClient.setTerminalShow(true);
                     }
-                }else if (!isOpen &&flag ==0){
+                } else if (!isOpen && flag == 0) {
                     setX11FocusedPreferencesChanged(true);
-                    if (mFloatBallMenuClient!=null) {
+                    if (mFloatBallMenuClient != null) {
                         mFloatBallMenuClient.setTerminalShow(false);
                     }
-                }else if(isOpen && flag == 1){
+                } else if (isOpen && flag == 1) {
                     setX11FocusedPreferencesChanged(true);
-                    if (mFloatBallMenuClient!=null) {
+                    if (mFloatBallMenuClient != null) {
                         mFloatBallMenuClient.setShowPreference(true);
                     }
-                }else {
+                } else {
                     setX11FocusedPreferencesChanged(true);
-                    if (mFloatBallMenuClient!=null) {
+                    if (mFloatBallMenuClient != null) {
                         mFloatBallMenuClient.setShowPreference(false);
                     }
                 }
@@ -285,10 +285,12 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
                 if (inputControlsView.getProfile() != null) {
-                    inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);
-                    if (xServer.cursorLocker.isEnabled()) {
-                        return true;
-                    }
+                    inputControlsView.handleTouchEvent(ev);
+                    return true;
+//                    inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);
+//                    if (xServer.cursorLocker.isEnabled()) {
+//                        return true;
+//                    }
                 }
 //                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
                 if (null != mInputHandler) {

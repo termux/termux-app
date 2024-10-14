@@ -735,7 +735,7 @@ public class ControlElement {
                 }
                 return handleTouchMove(pointerId, x, y);
             }
-        } else return containsPoint(x, y);
+        } else return false;
     }
 
     public boolean handleTouchMove(int pointerId, float x, float y) {
@@ -746,7 +746,7 @@ public class ControlElement {
 
             if (type == Type.TRACKPAD) {
                 if (currentPosition == null) currentPosition = new PointF();
-                float[] deltaPoint = inputControlsView.computeDeltaPoint(currentPosition.x, currentPosition.y, x, y);
+                float[] deltaPoint = inputControlsView.getTouchpadView().computeDeltaPoint(currentPosition.x, currentPosition.y, x, y);
                 deltaX = deltaPoint[0];
                 deltaY = deltaPoint[1];
                 currentPosition.set(x, y);
@@ -836,7 +836,7 @@ public class ControlElement {
         } else if (pointerId == currentPointerId && type == Type.RANGE_BUTTON) {
             scroller.handleTouchMove(x, y);
             return true;
-        } else return containsPoint(x, y);
+        } else return false;
     }
 
     public boolean handleTouchUp(int pointerId, float x, float y) {
@@ -898,6 +898,6 @@ public class ControlElement {
             currentPointerId = -1;
             return true;
         }
-        return containsPoint(x, y);
+        return false;
     }
 }

@@ -68,6 +68,7 @@ public class InputControlsView extends View {
     private ControlElement selectedElement;
     private ControlsProfile profile;
     private float overlayOpacity = DEFAULT_OVERLAY_OPACITY;
+    private TouchpadView touchpadView;
     private LorieView xServer;
     private final Bitmap[] icons = new Bitmap[17];
     private Timer mouseMoveTimer;
@@ -283,6 +284,13 @@ public class InputControlsView extends View {
     public ColorFilter getColorFilter() {
         return colorFilter;
     }
+    public TouchpadView getTouchpadView() {
+        return touchpadView;
+    }
+
+    public void setTouchpadView(TouchpadView touchpadView) {
+        this.touchpadView = touchpadView;
+    }
 
     public LorieView getXServer() {
         return xServer;
@@ -406,15 +414,17 @@ public class InputControlsView extends View {
                 case MotionEvent.ACTION_POINTER_DOWN: {
                     float x = event.getX(actionIndex);
                     float y = event.getY(actionIndex);
+                    touchpadView.setPointerButtonLeftEnabled(true);
                     for (ControlElement element : profile.getElements()) {
                         if (element.handleTouchDown(pointerId, x, y)) {
                             handled = true;
-                        }
-                        if (element.getBindingAt(0) == Binding.MOUSE_LEFT_BUTTON) {
-
+                            if (element.getBindingAt(0) == Binding.MOUSE_LEFT_BUTTON) {
+                                touchpadView.setPointerButtonLeftEnabled(false);
+                            }
                         }
                     }
                     if (!handled) {
+                        touchpadView.onTouchEvent(event);
                     }
                     break;
                 }
@@ -429,6 +439,7 @@ public class InputControlsView extends View {
                             }
                         }
                         if (!handled) {
+                            touchpadView.onTouchEvent(event);
                         }
                     }
                     break;
@@ -444,6 +455,7 @@ public class InputControlsView extends View {
                                 handled = true;
                             }
                         if (!handled) {
+                            touchpadView.onTouchEvent(event);
                         }
                     }
                     break;
@@ -570,21 +582,5 @@ public class InputControlsView extends View {
             canvas.drawRect(rect, paint);
         }
         return bitmap;
-    }
-
-    public float[] computeDeltaPoint(float lastX, float lastY, float x, float y) {
-        final float[] result = {0, 0};
-
-        XForm.transformPoint(xform, lastX, lastY, result);
-        lastX = result[0];
-        lastY = result[1];
-
-        XForm.transformPoint(xform, x, y, result);
-        x = result[0];
-        y = result[1];
-
-        result[0] = x - lastX;
-        result[1] = y - lastY;
-        return result;
     }
 }

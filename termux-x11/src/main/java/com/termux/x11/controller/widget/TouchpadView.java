@@ -10,6 +10,8 @@ import android.widget.FrameLayout;
 
 import com.termux.x11.controller.core.AppUtils;
 import com.termux.x11.controller.math.XForm;
+import com.termux.x11.controller.winhandler.MouseEventFlags;
+import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.controller.xserver.Viewport;
 import com.termux.x11.controller.xserver.Pointer;
 import com.termux.x11.LorieView;
@@ -221,8 +223,8 @@ public class TouchpadView extends View {
 
             if (xServer.cursorLocker.isEnabled()) {
                 xServer.sendMouseWheelEvent(dx,dy);
-//                WinHandler winHandler = xServer.getWinHandler();
-//                winHandler.mouseEvent(MouseEventFlags.MOVE, dx, dy, 0);
+                WinHandler winHandler = xServer.getWinHandler();
+                winHandler.mouseEvent(MouseEventFlags.MOVE, dx, dy, 0);
             }else {
                 xServer.injectPointerMoveDelta(dx, dy);
             }
@@ -337,5 +339,20 @@ public class TouchpadView extends View {
             }
         }
         return handled;
+    }
+    public float[] computeDeltaPoint(float lastX, float lastY, float x, float y) {
+        final float[] result = {0, 0};
+
+        XForm.transformPoint(xform, lastX, lastY, result);
+        lastX = result[0];
+        lastY = result[1];
+
+        XForm.transformPoint(xform, x, y, result);
+        x = result[0];
+        y = result[1];
+
+        result[0] = x - lastX;
+        result[1] = y - lastY;
+        return result;
     }
 }

@@ -391,6 +391,7 @@ public class LorieView extends SurfaceView implements InputStub {
 
     public void injectPointerMoveDelta(int dx, int dy) {
         try (XLock lock = lock(Lockable.WINDOW_MANAGER, Lockable.INPUT_DEVICE)) {
+//            Log.d("injectPointerMoveDelta","x:"+(pointer.getX() + dx)+", y:"+(pointer.getY() + dy));
             pointer.moveTo(pointer.getX() + dx, pointer.getY() + dy);
         }
     }

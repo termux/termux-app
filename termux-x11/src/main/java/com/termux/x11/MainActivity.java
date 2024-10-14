@@ -73,6 +73,7 @@ import com.termux.x11.controller.container.Container;
 import com.termux.x11.controller.container.Shortcut;
 import com.termux.x11.controller.inputcontrols.InputControlsManager;
 import com.termux.x11.controller.widget.InputControlsView;
+import com.termux.x11.controller.widget.TouchpadView;
 import com.termux.x11.controller.winhandler.TaskManagerDialog;
 import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.input.InputEventSender;
@@ -292,10 +293,19 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
     }
 
     private void setupInputController() {
+        xServer = getLorieView();
+        globalCursorSpeed = 1.0f;
+        touchpadView = new TouchpadView(this, xServer);
+        touchpadView.setSensitivity(globalCursorSpeed);
+        touchpadView.setVisibility(View.GONE);
+        touchpadView.setBackground(getDrawable(R.drawable.touchpad_background));
+        frm.addView(touchpadView);
+
         inputControlsView = new InputControlsView(this);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         inputControlsView.setOverlayOpacity(preferences.getFloat("overlay_opacity", InputControlsView.DEFAULT_OVERLAY_OPACITY));
-        inputControlsView.setXServer(getLorieView());
+        inputControlsView.setTouchpadView(touchpadView);
+        inputControlsView.setXServer(xServer);
         inputControlsView.setVisibility(View.GONE);
         frm.addView(inputControlsView);
         inputControlsManager = new InputControlsManager(this);
@@ -303,7 +313,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         container = new Container(0);
         if (shortcutPath != null && !shortcutPath.isEmpty())
             shortcut = new Shortcut(container, new File(shortcutPath));
-        xServer = getLorieView();
+
     }
 
     //Register the needed events to handle stylus as left, middle and right click

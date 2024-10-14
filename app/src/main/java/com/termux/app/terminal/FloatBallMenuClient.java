@@ -246,7 +246,11 @@ public class FloatBallMenuClient {
                 }
                 mShowKeyboard = !mShowKeyboard;
                 mTermuxActivity.openSoftKeyboardWithBackKeyPressed(mShowKeyboard);
-                toast(mTermuxActivity.getString(com.termux.x11.R.string.open_keyboard_x11));
+                if(mShowKeyboard) {
+                    toast(mTermuxActivity.getString(com.termux.x11.R.string.start_keyboard_x11));
+                }else{
+                    toast(mTermuxActivity.getString(com.termux.x11.R.string.stop_keyboard_x11));
+                }
                 mFloatballManager.closeMenu();
             }
         };

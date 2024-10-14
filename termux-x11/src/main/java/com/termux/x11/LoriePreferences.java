@@ -55,6 +55,7 @@ import com.termux.x11.controller.core.DownloadProgressDialog;
 import com.termux.x11.controller.inputcontrols.ControlsProfile;
 import com.termux.x11.controller.inputcontrols.InputControlsManager;
 import com.termux.x11.controller.widget.InputControlsView;
+import com.termux.x11.controller.widget.TouchpadView;
 import com.termux.x11.controller.winhandler.ProcessInfo;
 import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.utils.KeyInterceptor;
@@ -139,6 +140,7 @@ public class LoriePreferences extends AppCompatActivity {
     //input controller
     protected InputControlsManager inputControlsManager;
     protected InputControlsView inputControlsView;
+    protected TouchpadView touchpadView;
     protected Runnable editInputControlsCallback;
     protected Shortcut shortcut;
     protected DownloadProgressDialog preloaderDialog;
@@ -865,6 +867,10 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.requestFocus();
         inputControlsView.setProfile(controlsProfile);
 
+//        touchpadView.setSensitivity(profile.getCursorSpeed() * globalCursorSpeed);
+        touchpadView.setPointerButtonRightEnabled(false);
+        touchpadView.setVisibility(View.VISIBLE);
+
         inputControlsView.invalidate();
         touchShow = true;
         loriePreferenceFragment.updatePreferencesLayout();
@@ -874,6 +880,11 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.setShowTouchscreenControls(true);
         inputControlsView.setVisibility(View.GONE);
         inputControlsView.setProfile(null);
+
+        touchpadView.setSensitivity(globalCursorSpeed);
+        touchpadView.setPointerButtonLeftEnabled(true);
+        touchpadView.setPointerButtonRightEnabled(true);
+        touchpadView.setVisibility(View.GONE);
         xServer.cursorLocker.setEnabled(false);
 
         inputControlsView.invalidate();
