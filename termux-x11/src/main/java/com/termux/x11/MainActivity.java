@@ -237,6 +237,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
 
             mInputHandler.handleHostSizeChanged(surfaceWidth, surfaceHeight);
             mInputHandler.handleClientSizeChanged(screenWidth, screenHeight);
+            lorieView.screenInfo.handleHostSizeChanged(surfaceWidth, surfaceHeight);
+            lorieView.screenInfo.handleClientSizeChanged(surfaceWidth, surfaceHeight);
             LorieView.sendWindowChange(screenWidth, screenHeight, framerate);
 
             if (service != null) {

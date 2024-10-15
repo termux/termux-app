@@ -57,44 +57,27 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
 
     @Override
     public void onPointerButtonPress(Pointer.Button button) {
-        if (xServer.isEnabled()) {
-//            Log.d("onPointerButtonPress LOCKED",button.code()+","+ button.flag());
-            if (button == Pointer.Button.BUTTON_SCROLL_UP || button == Pointer.Button.BUTTON_SCROLL_DOWN) {
-                int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
-                xServer.sendMouseWheelEvent(0, wheelDelta);
-                return;
-            }
-            xServer.sendMouseEvent(0, 0, button.code(), true, true);
-        } else {
-            if (button == Pointer.Button.BUTTON_SCROLL_UP || button == Pointer.Button.BUTTON_SCROLL_DOWN) {
-                int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
-                xServer.sendMouseWheelEvent(0, wheelDelta);
-                return;
-            }
-            xServer.sendMouseEvent(0, 0, button.code(), true, true);
-//            Log.d("onPointerButtonPress UnLOCKED",button.code()+","+ button.flag());
+        if (button == Pointer.Button.BUTTON_SCROLL_UP || button == Pointer.Button.BUTTON_SCROLL_DOWN) {
+            int wheelDelta = button == Pointer.Button.BUTTON_SCROLL_UP ? MOUSE_WHEEL_DELTA : (button == Pointer.Button.BUTTON_SCROLL_DOWN ? -MOUSE_WHEEL_DELTA : 0);
+            xServer.sendMouseWheelEvent(0, wheelDelta);
+            return;
         }
+        xServer.sendMouseEvent(0, 0, button.code(), true, true);
     }
 
     @Override
     public void onPointerButtonRelease(Pointer.Button button) {
-        if (xServer.isEnabled()) {
-            xServer.sendMouseEvent(0, 0, button.code(), false, true);
-//            Log.d("onPointerButtonRelease LOCKED",button.code()+","+ button.flag());
-        } else {
-            xServer.sendMouseEvent(0, 0, button.code(), false, true);
-//            Log.d("onPointerButtonRelease UnLOCKED",button.code()+","+ button.flag());
-        }
+        xServer.sendMouseEvent(0, 0, button.code(), false, true);
     }
 
     @Override
     public void onPointerMove(short x, short y) {
-        Log.d("onPointerMove","x:"+x+", y:"+ y);
+//        Log.d("onPointerMove", "x:" + x + ", y:" + y);
         if (xServer.pointer.getPointerButton() != null) {
-            Log.d("onPointerMove","x:"+x+", y:"+ y);
-            xServer.sendMouseEvent(x,y,xServer.pointer.getPointerButton().code(),false,false);
-        }else{
-            xServer.sendMouseEvent(x,y,BUTTON_UNDEFINED,false,false);
+//            Log.d("onPointerMove", "x:" + x + ", y:" + y);
+            xServer.sendMouseEvent(x, y, xServer.pointer.getPointerButton().code(), false, false);
+        } else {
+            xServer.sendMouseEvent(x, y, BUTTON_UNDEFINED, false, false);
         }
     }
 

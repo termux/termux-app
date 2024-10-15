@@ -70,9 +70,11 @@ public class Pointer {
     }
 
     public void moveTo(int x, int y) {
-        setX(x);
-        setY(y);
-        triggerOnPointerMove(this.x, this.y);
+        if (xServer.screenInfo.setCursorPosition(x,y)){
+//            setX(x);
+//            setY(y);
+            triggerOnPointerMove(this.x, this.y);
+        }
     }
 
     public Bitmask getButtonMask() {

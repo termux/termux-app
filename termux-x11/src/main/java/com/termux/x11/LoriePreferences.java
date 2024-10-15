@@ -868,7 +868,7 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.setProfile(controlsProfile);
 
 //        touchpadView.setSensitivity(profile.getCursorSpeed() * globalCursorSpeed);
-        touchpadView.setPointerButtonRightEnabled(false);
+        touchpadView.setPointerButtonRightEnabled(true);
         touchpadView.setVisibility(View.VISIBLE);
 
         inputControlsView.invalidate();
