@@ -252,7 +252,7 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="stretch_to_fit_display">拉伸以适合显示屏</string>
     <string name="pip_mode">画中画模式</string>
     <string name="fullscreen_on_device_display">全屏显示</string>
-    <string name="force_landscape_orientation">横屏显示</string>
+    <string name="force_landscape_orientation">强制横屏</string>
     <string name="hide_display_cutout">尽量隐藏刘海</string>
     <string name="keep_screen_on">保持屏幕常亮</string>
     <string name="pointer">鼠标光标</string>
@@ -301,4 +301,5 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="enabl_float_ball_menu_notice">开启悬浮球菜单后，返回键将失去解锁侧边栏能力，其它部分功能也将转移到悬浮球</string>
     <string name="open_x11_settings">打开x11设置</string>
     <string name="hide_x11_settings">隐藏x11设置</string>
+    <string name="enable_touch_screen">触屏模式</string>
 </resources>

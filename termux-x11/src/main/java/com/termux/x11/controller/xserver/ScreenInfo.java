@@ -8,17 +8,4 @@ public class ScreenInfo {
         this.width = (short)width;
         this.height = (short)height;
     }
-
-    public short getWidthInMillimeters() {
-        return (short)(width / 10);
-    }
-
-    public short getHeightInMillimeters() {
-        return (short)(height / 10);
-    }
-
-    @Override
-    public String toString() {
-        return width+"x"+height;
-    }
 }

@@ -24,7 +24,6 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -830,6 +829,8 @@ public class LoriePreferences extends AppCompatActivity {
         final CheckBox cbLockCursor = dialog.findViewById(R.id.CBLockCursor);
         cbLockCursor.setChecked(xServer.cursorLocker.isEnabled());
 
+        final CheckBox cbEnableTouchScreen = dialog.findViewById(R.id.CBTouchScreen);
+
         final CheckBox cbShowTouchscreenControls = dialog.findViewById(R.id.CBShowTouchscreenControls);
         cbShowTouchscreenControls.setChecked(inputControlsView.isShowTouchscreenControls());
 
@@ -854,6 +855,11 @@ public class LoriePreferences extends AppCompatActivity {
             inputControlsView.setShowTouchscreenControls(cbShowTouchscreenControls.isChecked());
             int position = sProfile.getSelectedItemPosition();
             if (position > 0) {
+                if (cbEnableTouchScreen.isChecked()) {
+                    touchpadView.setTouchMode(TouchpadView.TouchMode.TOUCH_SCREEN);
+                } else {
+                    touchpadView.setTouchMode(TouchpadView.TouchMode.TRACK_PAD);
+                }
                 showInputControls(inputControlsManager.getProfiles().get(position - 1));
             } else {
                 hideInputControls();
@@ -871,14 +877,6 @@ public class LoriePreferences extends AppCompatActivity {
         if (profile != null) {
             touchpadView.setSensitivity(profile.getCursorSpeed() * globalCursorSpeed);
         }
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        int mode = Integer.parseInt(p.getString("touchMode", "1"));
-        if (mode == 1) {
-            touchpadView.setTouchMode(TouchpadView.TouchMode.TRACK_PAD);
-        } else {
-            touchpadView.setTouchMode(TouchpadView.TouchMode.TOUCH_PAD);
-        }
-        Log.d("showInputControls","model: "+mode);
         touchpadView.setPointerButtonRightEnabled(true);
         touchpadView.setVisibility(View.VISIBLE);
 

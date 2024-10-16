@@ -51,6 +51,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
@@ -235,6 +236,71 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
     private static final String LOG_TAG = "TermuxActivity";
     private FloatBallMenuClient mFloatBallMenuClient;
 
+
+    public void onMenuOpen(boolean isOpen, int flag) {
+        if (isOpen && flag == 0) {
+            setX11FocusedPreferencesChanged(false);
+            if (mFloatBallMenuClient != null) {
+                mFloatBallMenuClient.setTerminalShow(true);
+            }
+        } else if (!isOpen && flag == 0) {
+            setX11FocusedPreferencesChanged(true);
+            if (mFloatBallMenuClient != null) {
+                mFloatBallMenuClient.setTerminalShow(false);
+            }
+        } else if (isOpen && flag == 1) {
+            setX11FocusedPreferencesChanged(true);
+            if (mFloatBallMenuClient != null) {
+                mFloatBallMenuClient.setShowPreference(true);
+            }
+        } else {
+            setX11FocusedPreferencesChanged(true);
+            if (mFloatBallMenuClient != null) {
+                mFloatBallMenuClient.setShowPreference(false);
+            }
+        }
+    }
+
+
+    public boolean sendTouchEvent(MotionEvent ev) {
+        if (inputControlsView.getProfile() != null) {
+            int[] view0Location = new int[2];
+            int[] viewLocation = new int[2];
+
+            mMainContentView.getLocationOnScreen(view0Location);
+            getLorieView().getLocationOnScreen(viewLocation);
+
+            int offsetX = viewLocation[0] - view0Location[0];
+            int offsetY = viewLocation[1] - view0Location[1];
+            if (mMainContentView.isLandscape()){
+                offsetX = offsetX-mMainContentView.getScreenOffset();
+            }else{
+                offsetY = offsetY-mMainContentView.getScreenOffset();
+            }
+
+            getLorieView().screenInfo.offsetX = offsetX;
+            getLorieView().screenInfo.offsetY = offsetY;
+            inputControlsView.handleTouchEvent(ev);
+            return true;
+//                    inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);
+//                    if (xServer.cursorLocker.isEnabled()) {
+//                        return true;
+//                    }
+        }
+//                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
+        if (null != mInputHandler) {
+            if (!inputControllerViewHandled) {
+                mInputHandler.handleTouchEvent(mMainContentView, getLorieView(), ev);
+            }
+        }
+        return true;
+    }
+
+
+    public void onEdgeReached() {
+        getDrawer().openDrawer(GravityCompat.START);
+    }
+
     @SuppressLint("ResourceType")
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -255,67 +321,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_termux_main);
         mMainContentView = findViewById(R.id.id_termux_layout);
-        mMainContentView.setOnMenuOpenListener(new DisplaySlidingWindow.OnMenuChangeListener() {
-            @Override
-            public void onMenuOpen(boolean isOpen, int flag) {
-                if (isOpen && flag == 0) {
-                    setX11FocusedPreferencesChanged(false);
-                    if (mFloatBallMenuClient != null) {
-                        mFloatBallMenuClient.setTerminalShow(true);
-                    }
-                } else if (!isOpen && flag == 0) {
-                    setX11FocusedPreferencesChanged(true);
-                    if (mFloatBallMenuClient != null) {
-                        mFloatBallMenuClient.setTerminalShow(false);
-                    }
-                } else if (isOpen && flag == 1) {
-                    setX11FocusedPreferencesChanged(true);
-                    if (mFloatBallMenuClient != null) {
-                        mFloatBallMenuClient.setShowPreference(true);
-                    }
-                } else {
-                    setX11FocusedPreferencesChanged(true);
-                    if (mFloatBallMenuClient != null) {
-                        mFloatBallMenuClient.setShowPreference(false);
-                    }
-                }
-            }
-
-            @Override
-            public boolean sendTouchEvent(MotionEvent ev) {
-                if (inputControlsView.getProfile() != null) {
-                    int[] view0Location = new int[2];
-                    int[] viewLocation = new int[2];
-
-                    mMainContentView.getLocationOnScreen(view0Location);
-                    getLorieView().getLocationOnScreen(viewLocation);
-
-                    int offsetX = viewLocation[0] - view0Location[0];
-                    int offsetY = viewLocation[1] - view0Location[1];
-
-                    getLorieView().screenInfo.offsetX = offsetX;
-                    getLorieView().screenInfo.offsetY = offsetY;
-                    inputControlsView.handleTouchEvent(ev);
-                    return true;
-//                    inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);
-//                    if (xServer.cursorLocker.isEnabled()) {
-//                        return true;
-//                    }
-                }
-//                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
-                if (null != mInputHandler) {
-                    if (!inputControllerViewHandled) {
-                        mInputHandler.handleTouchEvent(mMainContentView, getLorieView(), ev);
-                    }
-                }
-                return true;
-            }
-
-            @Override
-            public void onEdgeReached() {
-                getDrawer().openDrawer(Gravity.START);
-            }
-        });
+        mMainContentView.setTermuxActivity(this);
 
         ViewGroup vGroup = findViewById(R.id.id_termux_layout);
 

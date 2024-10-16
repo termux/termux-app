@@ -326,4 +326,5 @@
     <string name="enabl_float_ball_menu_notice">once turn this on, unlocking sliding app content and some other functions will be moved to float ball menu</string>
     <string name="open_x11_settings">show x11 setting</string>
     <string name="hide_x11_settings">hide x11 setting</string>
+    <string name="enable_touch_screen">touch screen</string>
 </resources>

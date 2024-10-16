@@ -1,5 +1,7 @@
 package com.termux.x11.controller.xserver;
 
+import android.util.Log;
+
 import com.termux.x11.LorieView;
 import com.termux.x11.controller.math.Mathf;
 
@@ -50,14 +52,14 @@ public class Pointer {
         if (screenPointLiesOutsideImageBoundaryX(x)){
             return;
         }
-        this.x = (short) x;
+        this.x = x;
     }
 
     public void setY(int y) {
         if (screenPointLiesOutsideImageBoundaryY(y)){
             return;
         }
-        this.y = (short) y;
+        this.y = y;
     }
 
     public int getX() {
@@ -85,15 +87,17 @@ public class Pointer {
     }
 
     private boolean screenPointLiesOutsideImageBoundaryX(float screenX) {
-        float scaledX = screenX * xServer.screenInfo.scale.x;
+        float scaledX = screenX / xServer.screenInfo.scale.x;
         float imageWidth = (float) xServer.screenInfo.imageWidth + EPSILON;
-        return scaledX < -EPSILON || scaledX > imageWidth;
+        Log.d("OutsideBoundaryX","screenX: "+screenX+", scaledX:"+scaledX+", imageWidth: "+imageWidth);
+        return scaledX < -EPSILON || screenX > imageWidth;
     }
 
     private boolean screenPointLiesOutsideImageBoundaryY(float screenY) {
-        float scaledY = screenY * xServer.screenInfo.scale.y;
+        float scaledY = screenY /xServer.screenInfo.scale.y;
         float imageHeight = (float) xServer.screenInfo.imageHeight + EPSILON;
-        return scaledY < -EPSILON || scaledY > imageHeight;
+//        Log.d("OutsideBoundaryX","screenY: "+screenY+", scaledY:"+scaledY+", imageHeight: "+imageHeight);
+        return scaledY < -EPSILON || screenY > imageHeight;
     }
 
     public void setButton(Button button, boolean pressed) {

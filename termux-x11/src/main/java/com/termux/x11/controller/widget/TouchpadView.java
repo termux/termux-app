@@ -18,7 +18,7 @@ import com.termux.x11.controller.xserver.Viewport;
 
 public class TouchpadView extends View {
     public enum TouchMode {
-        TRACK_PAD, TOUCH_PAD
+        TRACK_PAD, TOUCH_SCREEN
     }
 
     private static final byte MAX_FINGERS = 4;
@@ -39,7 +39,7 @@ public class TouchpadView extends View {
     private final LorieView xServer;
     private Runnable fourFingersTapCallback;
     private final float[] xform = XForm.getInstance();
-    private TouchMode touchMode = TouchMode.TOUCH_PAD;
+    private TouchMode touchMode = TouchMode.TOUCH_SCREEN;
 
     public void setTouchMode(TouchMode touchMode) {
         this.touchMode = touchMode;
@@ -109,6 +109,9 @@ public class TouchpadView extends View {
         }
 
         private boolean isTap() {
+            if(touchMode ==TouchMode.TOUCH_SCREEN){
+                return (System.currentTimeMillis() - touchTime) < MAX_TAP_MILLISECONDS*5 && travelDistance() < MAX_TAP_TRAVEL_DISTANCE*5;
+            }
             return (System.currentTimeMillis() - touchTime) < MAX_TAP_MILLISECONDS && travelDistance() < MAX_TAP_TRAVEL_DISTANCE;
         }
 
@@ -132,9 +135,8 @@ public class TouchpadView extends View {
                 scrolling = false;
                 fingers[pointerId] = new Finger(event.getX(actionIndex), event.getY(actionIndex));
                 numFingers++;
-                if (numFingers == 1) {
-                    handlerFingerDown(fingers[pointerId]);
-                }
+
+                handlerFingerDown(fingers[pointerId]);
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
@@ -170,13 +172,11 @@ public class TouchpadView extends View {
                 numFingers = 0;
                 break;
         }
-
         return true;
     }
 
     private void handlerFingerDown(Finger finger1) {
-        if (touchMode == TouchMode.TOUCH_PAD) {
-            Log.d("onTouchEvent", "handlerFingerDown");
+        if (touchMode == TouchMode.TOUCH_SCREEN && numFingers == 1) {
             xServer.pointer.moveTo(finger1.x, finger1.y);
         }
     }
@@ -243,7 +243,7 @@ public class TouchpadView extends View {
             int dy = finger1.deltaY();
 
 //            if (xServer.isRelativeMouseMovement()) {
-            if (touchMode == TouchMode.TOUCH_PAD) {
+            if (touchMode == TouchMode.TOUCH_SCREEN) {
 //                xServer.injectPointerMove(dx, dy);
 //                WinHandler winHandler = xServer.getWinHandler();
 //                winHandler.mouseEvent(MouseEventFlags.MOVE, dx, dy, 0);
