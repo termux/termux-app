@@ -286,17 +286,17 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             @Override
             public boolean sendTouchEvent(MotionEvent ev) {
                 if (inputControlsView.getProfile() != null) {
-                    int[] view0Location = new int[2];
-                    int[] viewLocation = new int[2];
-
-                    mMainContentView.getLocationOnScreen(view0Location);
-                    getLorieView().getLocationOnScreen(viewLocation);
-
-                    int offsetX = viewLocation[0] - view0Location[0];
-                    int offsetY = viewLocation[1] - view0Location[1];
-
-                    getLorieView().screenInfo.offsetX = offsetX;
-                    getLorieView().screenInfo.offsetY = offsetY;
+//                    int[] view0Location = new int[2];
+//                    int[] viewLocation = new int[2];
+//
+//                    mMainContentView.getLocationOnScreen(view0Location);
+//                    getLorieView().getLocationOnScreen(viewLocation);
+//
+//                    int offsetX = viewLocation[0] - view0Location[0];
+//                    int offsetY = viewLocation[1] - view0Location[1];
+//
+//                    getLorieView().screenInfo.offsetX = offsetX;
+//                    getLorieView().screenInfo.offsetY = offsetY;
                     inputControlsView.handleTouchEvent(ev);
                     return true;
 //                    inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);

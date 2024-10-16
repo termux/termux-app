@@ -128,6 +128,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             // hide menu at start up
             showContent();
         }
+        showContent();
         mRefreshEnd = true;
     }
 
@@ -282,7 +283,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
     public void showContent() {
         this.mContentSwitchSlider = false;
-        this.mMenuSwitchSlider = true;
+        this.mMenuSwitchSlider = false;
         mRefreshEnd = false;
         remeasure();
         this.smoothScrollTo(mMenuWidth, 0);
