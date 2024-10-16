@@ -867,7 +867,17 @@ public class LoriePreferences extends AppCompatActivity {
         inputControlsView.requestFocus();
         inputControlsView.setProfile(controlsProfile);
 
-//        touchpadView.setSensitivity(profile.getCursorSpeed() * globalCursorSpeed);
+        if (profile != null) {
+            touchpadView.setSensitivity(profile.getCursorSpeed() * globalCursorSpeed);
+        }
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+        int mode = Integer.parseInt(p.getString("touchMode", "0"));
+        if (mode != 1) {
+            touchpadView.setTouchMode(TouchpadView.TouchMode.TRACK_PAD);
+        } else {
+            touchpadView.setTouchMode(TouchpadView.TouchMode.TOUCH_PAD);
+        }
+
         touchpadView.setPointerButtonRightEnabled(true);
         touchpadView.setVisibility(View.VISIBLE);
 

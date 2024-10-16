@@ -38,7 +38,11 @@ public class TouchpadView extends View {
     private final LorieView xServer;
     private Runnable fourFingersTapCallback;
     private final float[] xform = XForm.getInstance();
-    private final TouchMode touchMode = TouchMode.TRACK_PAD;
+    private TouchMode touchMode = TouchMode.TRACK_PAD;
+
+    public void setTouchMode(TouchMode touchMode) {
+        this.touchMode = touchMode;
+    }
 
     public TouchpadView(Context context, LorieView xServer) {
         super(context);
