@@ -119,8 +119,7 @@ public class TermuxFilesProvider extends DocumentsProvider {
     public final void attachInfo(Context context, ProviderInfo info) {
         super.attachInfo(context, info);
         this.pkgName = Objects.requireNonNull(getContext()).getPackageName();
-        this.dataDir = Objects.requireNonNull(context.getFilesDir());
-//        this.dataDir = Objects.requireNonNull(context.getFilesDir().getParentFile());
+        this.dataDir = Objects.requireNonNull(context.getFilesDir().getParentFile());
 //        String path = dataDir.getPath();
 //        if (path.startsWith("/data/user/"))
 //            this.userDataDir = new File("/data/user_de/" + path.substring("/data/user/".length()));
@@ -299,8 +298,8 @@ public class TermuxFilesProvider extends DocumentsProvider {
         //once private directory
         String path = file.getPath();
         if (path.equals(this.dataDir.getPath())) {
-//            displayName = "data";
-            displayName = file.getName();
+            displayName = "data";
+//            displayName = file.getName();
         } /*else if (androidDataDir != null && path.equals(androidDataDir.getPath())) {
             displayName = "android_data";
         } else if (androidObbDir != null && path.equals(androidObbDir.getPath())) {

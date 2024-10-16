@@ -17,7 +17,7 @@ public class CursorLocker extends TimerTask {
         this.xServer = xServer;
         maxDistance = (short)(xServer.screenInfo.width * 0.05f);
         Timer timer = new Timer();
-        timer.scheduleAtFixedRate(this, 0, 1000 / 60);
+        timer.schedule(this, 0, 1000 / 60);
     }
 
     public short getMaxDistance() {

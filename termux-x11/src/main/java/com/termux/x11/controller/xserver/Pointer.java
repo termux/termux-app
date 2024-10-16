@@ -18,6 +18,7 @@ public class Pointer {
         }
     }
 
+    private static final float EPSILON = 0.001f;
     public static final byte MAX_BUTTONS = 8;
     private final ArrayList<OnPointerMotionListener> onPointerMotionListeners = new ArrayList<>();
     private final Bitmask buttonMask = new Bitmask();
@@ -46,10 +47,16 @@ public class Pointer {
     }
 
     public void setX(int x) {
+        if (screenPointLiesOutsideImageBoundaryX(x)){
+            return;
+        }
         this.x = (short) x;
     }
 
     public void setY(int y) {
+        if (screenPointLiesOutsideImageBoundaryY(y)){
+            return;
+        }
         this.y = (short) y;
     }
 
@@ -70,11 +77,23 @@ public class Pointer {
     }
 
     public void moveTo(int x, int y) {
-        if (xServer.screenInfo.setCursorPosition(x,y)){
-//            setX(x);
-//            setY(y);
+        if (xServer.screenInfo.setCursorPosition(x, y)) {
+            setX(x);
+            setY(y);
             triggerOnPointerMove(this.x, this.y);
         }
+    }
+
+    private boolean screenPointLiesOutsideImageBoundaryX(float screenX) {
+        float scaledX = screenX * xServer.screenInfo.scale.x;
+        float imageWidth = (float) xServer.screenInfo.imageWidth + EPSILON;
+        return scaledX < -EPSILON || scaledX > imageWidth;
+    }
+
+    private boolean screenPointLiesOutsideImageBoundaryY(float screenY) {
+        float scaledY = screenY * xServer.screenInfo.scale.y;
+        float imageHeight = (float) xServer.screenInfo.imageHeight + EPSILON;
+        return scaledY < -EPSILON || scaledY > imageHeight;
     }
 
     public Bitmask getButtonMask() {
