@@ -4,12 +4,6 @@ public class ScreenInfo {
     public final short width;
     public final short height;
 
-    public ScreenInfo(String value) {
-        String[] parts = value.split("x");
-        width = Short.parseShort(parts[0]);
-        height = Short.parseShort(parts[1]);
-    }
-
     public ScreenInfo(int width, int height) {
         this.width = (short)width;
         this.height = (short)height;

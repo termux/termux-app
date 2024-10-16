@@ -28,13 +28,10 @@ import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.controller.xserver.InputDeviceManager;
 import com.termux.x11.controller.xserver.Keyboard;
 import com.termux.x11.controller.xserver.Pointer;
-import com.termux.x11.controller.xserver.Window;
 import com.termux.x11.controller.xserver.XKeycode;
 import com.termux.x11.input.InputStub;
 
 import java.nio.charset.StandardCharsets;
-import java.util.EnumMap;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.PatternSyntaxException;
 
 @Keep
@@ -46,7 +43,6 @@ public class LorieView extends SurfaceView implements InputStub {
     final public InputDeviceManager inputDeviceManager = new InputDeviceManager(this);
     public ScreenInfo screenInfo;
     public CursorLocker cursorLocker;
-    public Window pointWindow;
     public WinHandler winHandler;
 
     public void setWinHandler(WinHandler handler) {
@@ -57,13 +53,6 @@ public class LorieView extends SurfaceView implements InputStub {
         return winHandler;
     }
 
-    public void setWindow(Window wd) {
-        this.pointWindow = wd;
-    }
-
-    public Window getPointWindow() {
-        return pointWindow;
-    }
 
     public boolean isFullscreen() {
         return true;

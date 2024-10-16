@@ -96,10 +96,6 @@ public class Pointer {
         return scaledY < -EPSILON || scaledY > imageHeight;
     }
 
-    public Bitmask getButtonMask() {
-        return buttonMask;
-    }
-
     public void setButton(Button button, boolean pressed) {
         boolean oldPressed = isButtonPressed(button);
         buttonMask.set(button.flag(), pressed);

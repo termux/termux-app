@@ -1,19 +1,14 @@
 package com.termux.x11.controller.xserver;
 
 import static com.termux.x11.controller.xserver.Keyboard.createKeycodeMap;
-import static com.termux.x11.input.InputStub.BUTTON_LEFT;
 import static com.termux.x11.input.InputStub.BUTTON_UNDEFINED;
 
-import android.util.Log;
-
 import com.termux.x11.LorieView;
-import com.termux.x11.controller.xserver.events.Event;
 
 import java.util.HashMap;
 
-public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyboard.OnKeyboardListener, XResourceManager.OnResourceLifecycleListener {
+public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyboard.OnKeyboardListener {
     private static final byte MOUSE_WHEEL_DELTA = 120;
-    private Window pointWindow;
     private final LorieView xServer;
     final private HashMap<Byte, Integer> eventKeyCodeMap = createKeyMap();
 
@@ -40,20 +35,6 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
         return keyMap;
     }
 
-    @Override
-    public void onCreateResource(XResource resource) {
-        updatePointWindow();
-    }
-
-    @Override
-    public void onFreeResource(XResource resource) {
-        updatePointWindow();
-    }
-
-    private void updatePointWindow() {
-        Window pointWindow = xServer.getPointWindow();
-        this.pointWindow = pointWindow;
-    }
 
     @Override
     public void onPointerButtonPress(Pointer.Button button) {
@@ -105,39 +86,5 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
         }
 //        Log.d("onKeyRelease",realKeyCode+"");
         xServer.sendKeyEvent(0, realKeyCode, false);
-    }
-
-    private Bitmask createPointerEventMask() {
-        Bitmask eventMask = new Bitmask();
-        eventMask.set(Event.POINTER_MOTION);
-
-        Bitmask buttonMask = xServer.pointer.getButtonMask();
-        if (!buttonMask.isEmpty()) {
-            eventMask.set(Event.BUTTON_MOTION);
-
-            if (buttonMask.isSet(Pointer.Button.BUTTON_LEFT.flag())) {
-                eventMask.set(Event.BUTTON1_MOTION);
-            }
-            if (buttonMask.isSet(Pointer.Button.BUTTON_MIDDLE.flag())) {
-                eventMask.set(Event.BUTTON2_MOTION);
-            }
-            if (buttonMask.isSet(Pointer.Button.BUTTON_RIGHT.flag())) {
-                eventMask.set(Event.BUTTON3_MOTION);
-            }
-            if (buttonMask.isSet(Pointer.Button.BUTTON_SCROLL_UP.flag())) {
-                eventMask.set(Event.BUTTON4_MOTION);
-            }
-            if (buttonMask.isSet(Pointer.Button.BUTTON_SCROLL_DOWN.flag())) {
-                eventMask.set(Event.BUTTON5_MOTION);
-            }
-        }
-        return eventMask;
-    }
-
-    public Bitmask getKeyButMask() {
-        Bitmask keyButMask = new Bitmask();
-        keyButMask.join(xServer.pointer.getButtonMask());
-        keyButMask.join(xServer.keyboard.getModifiersMask());
-        return keyButMask;
     }
 }

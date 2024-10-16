@@ -1,7 +1,6 @@
 package com.termux.x11.controller.widget;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
