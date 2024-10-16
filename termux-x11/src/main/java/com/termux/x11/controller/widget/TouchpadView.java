@@ -2,6 +2,7 @@ package com.termux.x11.controller.widget;
 
 
 import android.content.Context;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
@@ -38,7 +39,7 @@ public class TouchpadView extends View {
     private final LorieView xServer;
     private Runnable fourFingersTapCallback;
     private final float[] xform = XForm.getInstance();
-    private TouchMode touchMode = TouchMode.TRACK_PAD;
+    private TouchMode touchMode = TouchMode.TOUCH_PAD;
 
     public void setTouchMode(TouchMode touchMode) {
         this.touchMode = touchMode;
@@ -131,6 +132,9 @@ public class TouchpadView extends View {
                 scrolling = false;
                 fingers[pointerId] = new Finger(event.getX(actionIndex), event.getY(actionIndex));
                 numFingers++;
+                if (numFingers == 1) {
+                    handlerFingerDown(fingers[pointerId]);
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
@@ -168,6 +172,13 @@ public class TouchpadView extends View {
         }
 
         return true;
+    }
+
+    private void handlerFingerDown(Finger finger1) {
+        if (touchMode == TouchMode.TOUCH_PAD) {
+            Log.d("onTouchEvent", "handlerFingerDown");
+            xServer.pointer.moveTo(finger1.x, finger1.y);
+        }
     }
 
     private void handleFingerUp(Finger finger1) {
@@ -233,7 +244,7 @@ public class TouchpadView extends View {
 
 //            if (xServer.isRelativeMouseMovement()) {
             if (touchMode == TouchMode.TOUCH_PAD) {
-                xServer.injectPointerMove(dx, dy);
+//                xServer.injectPointerMove(dx, dy);
 //                WinHandler winHandler = xServer.getWinHandler();
 //                winHandler.mouseEvent(MouseEventFlags.MOVE, dx, dy, 0);
             } else {

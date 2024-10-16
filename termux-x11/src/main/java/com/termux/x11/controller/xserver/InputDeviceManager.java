@@ -52,7 +52,7 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
     }
 
     @Override
-    public void onPointerMove(short x, short y) {
+    public void onPointerMove(int x, int y) {
 //        Log.d("onPointerMove", "x:" + x + ", y:" + y);
         if (xServer.pointer.getPointerButton() != null) {
 //            Log.d("onPointerMove", "x:" + x + ", y:" + y);

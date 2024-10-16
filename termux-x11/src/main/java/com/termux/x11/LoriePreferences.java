@@ -24,6 +24,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -871,13 +872,13 @@ public class LoriePreferences extends AppCompatActivity {
             touchpadView.setSensitivity(profile.getCursorSpeed() * globalCursorSpeed);
         }
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        int mode = Integer.parseInt(p.getString("touchMode", "0"));
-        if (mode != 1) {
+        int mode = Integer.parseInt(p.getString("touchMode", "1"));
+        if (mode == 1) {
             touchpadView.setTouchMode(TouchpadView.TouchMode.TRACK_PAD);
         } else {
             touchpadView.setTouchMode(TouchpadView.TouchMode.TOUCH_PAD);
         }
-
+        Log.d("showInputControls","model: "+mode);
         touchpadView.setPointerButtonRightEnabled(true);
         touchpadView.setVisibility(View.VISIBLE);
 

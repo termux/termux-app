@@ -23,8 +23,8 @@ public class Pointer {
     private final ArrayList<OnPointerMotionListener> onPointerMotionListeners = new ArrayList<>();
     private final Bitmask buttonMask = new Bitmask();
     private final LorieView xServer;
-    private short x;
-    private short y;
+    private int x;
+    private int y;
     private Button pointerButton;
 
     public Button getPointerButton() {
@@ -38,7 +38,7 @@ public class Pointer {
         default void onPointerButtonRelease(Button button) {
         }
 
-        default void onPointerMove(short x, short y) {
+        default void onPointerMove(int x, int y) {
         }
     }
 
@@ -60,11 +60,11 @@ public class Pointer {
         this.y = (short) y;
     }
 
-    public short getX() {
+    public int getX() {
         return x;
     }
 
-    public short getY() {
+    public int getY() {
         return y;
     }
 
@@ -80,7 +80,7 @@ public class Pointer {
         if (xServer.screenInfo.setCursorPosition(x, y)) {
             setX(x);
             setY(y);
-            triggerOnPointerMove(this.x, this.y);
+            triggerOnPointerMove(this.x-xServer.screenInfo.offsetX, this.y-xServer.screenInfo.offsetY);
         }
     }
 
@@ -134,7 +134,7 @@ public class Pointer {
         }
     }
 
-    private void triggerOnPointerMove(short x, short y) {
+    private void triggerOnPointerMove(int x, int y) {
         for (int i = onPointerMotionListeners.size() - 1; i >= 0; i--) {
             onPointerMotionListeners.get(i).onPointerMove(x, y);
         }
