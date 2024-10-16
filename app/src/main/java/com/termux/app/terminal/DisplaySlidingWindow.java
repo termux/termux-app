@@ -241,6 +241,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
     public void setX11PreferenceSwitchSlider(boolean openSlider) {
         this.mContentSwitchSlider = openSlider;
+        this.mMenuSwitchSlider = !openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
             mOnMenuChangeListener.onMenuOpen(false, 1);
