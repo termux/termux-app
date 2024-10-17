@@ -1,7 +1,5 @@
 package com.termux.x11.controller.xserver;
 
-import android.util.Log;
-
 import com.termux.x11.LorieView;
 import com.termux.x11.controller.math.Mathf;
 
