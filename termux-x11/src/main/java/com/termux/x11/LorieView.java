@@ -330,7 +330,7 @@ public class LorieView extends SurfaceView implements InputStub {
     }
 
     public void injectPointerMoveDelta(int dx, int dy) {
-        pointer.moveTo(pointer.getX() + dx, pointer.getY() + dy);
+        pointer.moveDelta(dx, dy);
     }
 
     public void injectPointerButtonPress(Pointer.Button buttonCode) {

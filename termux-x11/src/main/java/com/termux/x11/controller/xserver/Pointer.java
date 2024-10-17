@@ -42,6 +42,10 @@ public class Pointer {
 
         default void onPointerMove(int x, int y) {
         }
+
+        default void onPointMoveDelta(int dx, int dy) {
+
+        }
     }
 
     public Pointer(LorieView xServer) {
@@ -49,14 +53,14 @@ public class Pointer {
     }
 
     public void setX(int x) {
-        if (screenPointLiesOutsideImageBoundaryX(x)){
+        if (screenPointLiesOutsideImageBoundaryX(x)) {
             return;
         }
         this.x = x;
     }
 
     public void setY(int y) {
-        if (screenPointLiesOutsideImageBoundaryY(y)){
+        if (screenPointLiesOutsideImageBoundaryY(y)) {
             return;
         }
         this.y = y;
@@ -82,19 +86,23 @@ public class Pointer {
         if (xServer.screenInfo.setCursorPosition(x, y)) {
             setX(x);
             setY(y);
-            triggerOnPointerMove(this.x-xServer.screenInfo.offsetX, this.y-xServer.screenInfo.offsetY);
+            triggerOnPointerMove(this.x - xServer.screenInfo.offsetX, this.y - xServer.screenInfo.offsetY);
         }
+    }
+
+    public void moveDelta(int dx, int dy) {
+        triggerOnPointerMoveDelta(dx, dy);
     }
 
     private boolean screenPointLiesOutsideImageBoundaryX(float screenX) {
         float scaledX = screenX / xServer.screenInfo.scale.x;
         float imageWidth = (float) xServer.screenInfo.imageWidth + EPSILON;
-        Log.d("OutsideBoundaryX","screenX: "+screenX+", scaledX:"+scaledX+", imageWidth: "+imageWidth);
+        Log.d("OutsideBoundaryX", "screenX: " + screenX + ", scaledX:" + scaledX + ", imageWidth: " + imageWidth);
         return scaledX < -EPSILON || screenX > imageWidth;
     }
 
     private boolean screenPointLiesOutsideImageBoundaryY(float screenY) {
-        float scaledY = screenY /xServer.screenInfo.scale.y;
+        float scaledY = screenY / xServer.screenInfo.scale.y;
         float imageHeight = (float) xServer.screenInfo.imageHeight + EPSILON;
 //        Log.d("OutsideBoundaryX","screenY: "+screenY+", scaledY:"+scaledY+", imageHeight: "+imageHeight);
         return scaledY < -EPSILON || screenY > imageHeight;
@@ -141,6 +149,12 @@ public class Pointer {
     private void triggerOnPointerMove(int x, int y) {
         for (int i = onPointerMotionListeners.size() - 1; i >= 0; i--) {
             onPointerMotionListeners.get(i).onPointerMove(x, y);
+        }
+    }
+
+    private void triggerOnPointerMoveDelta(int dx, int dy) {
+        for (int i = onPointerMotionListeners.size() - 1; i >= 0; i--) {
+            onPointerMotionListeners.get(i).onPointMoveDelta(dx, dy);
         }
     }
 }
