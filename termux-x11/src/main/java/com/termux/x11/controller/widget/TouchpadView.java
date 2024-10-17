@@ -2,6 +2,7 @@ package com.termux.x11.controller.widget;
 
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -133,7 +134,11 @@ public class TouchpadView extends View {
                 if (event.isFromSource(InputDevice.SOURCE_MOUSE)) return true;
                 scrollAccumY = 0;
                 scrolling = false;
-                fingers[pointerId] = new Finger(event.getX(actionIndex), event.getY(actionIndex));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    fingers[pointerId] = new Finger(event.getRawX(actionIndex), event.getRawY(actionIndex));
+                }else{
+                    fingers[pointerId] = new Finger(event.getX(actionIndex), event.getY(actionIndex));
+                }
                 numFingers++;
 
                 handlerFingerDown(fingers[pointerId]);
@@ -147,7 +152,11 @@ public class TouchpadView extends View {
                         if (fingers[i] != null) {
                             int pointerIndex = event.findPointerIndex(i);
                             if (pointerIndex >= 0) {
-                                fingers[i].update(event.getX(pointerIndex), event.getY(pointerIndex));
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    fingers[i].update(event.getRawX(pointerIndex), event.getRawY(pointerIndex));
+                                }else{
+                                    fingers[i].update(event.getX(pointerIndex), event.getY(pointerIndex));
+                                }
                                 handleFingerMove(fingers[i]);
                             } else {
                                 handleFingerUp(fingers[i]);
@@ -161,7 +170,11 @@ public class TouchpadView extends View {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
                 if (fingers[pointerId] != null) {
-                    fingers[pointerId].update(event.getX(actionIndex), event.getY(actionIndex));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        fingers[pointerId].update(event.getRawX(actionIndex), event.getRawY(actionIndex));
+                    }else{
+                        fingers[pointerId].update(event.getX(actionIndex), event.getY(actionIndex));
+                    }
                     handleFingerUp(fingers[pointerId]);
                     fingers[pointerId] = null;
                     numFingers--;
