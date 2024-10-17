@@ -17,6 +17,7 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
         with:
+          java-version: '17'
           ref: ${{ env.GITHUB_REF }}
           submodules: 'true'
 
