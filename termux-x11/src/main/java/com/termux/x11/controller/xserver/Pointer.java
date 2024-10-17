@@ -97,7 +97,7 @@ public class Pointer {
     private boolean screenPointLiesOutsideImageBoundaryX(float screenX) {
         float scaledX = screenX / xServer.screenInfo.scale.x;
         float imageWidth = (float) xServer.screenInfo.imageWidth + EPSILON;
-        Log.d("OutsideBoundaryX", "screenX: " + screenX + ", scaledX:" + scaledX + ", imageWidth: " + imageWidth);
+//        Log.d("OutsideBoundaryX", "screenX: " + screenX + ", scaledX:" + scaledX + ", imageWidth: " + imageWidth);
         return scaledX < -EPSILON || screenX > imageWidth;
     }
 

@@ -300,7 +300,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         touchpadView = new TouchpadView(this, xServer);
         touchpadView.setSensitivity(globalCursorSpeed);
         touchpadView.setVisibility(View.GONE);
-        touchpadView.setBackground(getDrawable(R.drawable.touchpad_background));
+//        touchpadView.setBackground(getDrawable(R.drawable.touchpad_background));
         frm.addView(touchpadView);
 
         inputControlsView = new InputControlsView(this);
