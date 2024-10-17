@@ -15,7 +15,7 @@ public class CursorLocker extends TimerTask {
 
     public CursorLocker(LorieView xServer) {
         this.xServer = xServer;
-        maxDistance = (short)(xServer.screenInfo.width * 0.05f);
+        maxDistance = (short)(xServer.screenInfo.screenWidth * 0.05f);
         Timer timer = new Timer();
         timer.schedule(this, 0, 1000 / 60);
     }
@@ -61,20 +61,20 @@ public class CursorLocker extends TimerTask {
             }
         }
 
-        short x = (short) Mathf.clamp(xServer.pointer.getX(), -maxDistance, xServer.screenInfo.width + maxDistance);
-        short y = (short)Mathf.clamp(xServer.pointer.getY(), -maxDistance, xServer.screenInfo.height + maxDistance);
+        short x = (short) Mathf.clamp(xServer.pointer.getX(), -maxDistance, xServer.screenInfo.screenWidth + maxDistance);
+        short y = (short)Mathf.clamp(xServer.pointer.getY(), -maxDistance, xServer.screenInfo.screenHeight + maxDistance);
 
         if (x < 0) {
             xServer.pointer.setX((short)Math.ceil(x * damping));
         }
-        else if (x >= xServer.screenInfo.width) {
-            xServer.pointer.setX((short)Math.floor(xServer.screenInfo.width + (x - xServer.screenInfo.width) * damping));
+        else if (x >= xServer.screenInfo.screenWidth) {
+            xServer.pointer.setX((short)Math.floor(xServer.screenInfo.screenWidth + (x - xServer.screenInfo.screenWidth) * damping));
         }
         if (y < 0) {
             xServer.pointer.setY((short)Math.ceil(y * damping));
         }
-        else if (y >= xServer.screenInfo.height) {
-            xServer.pointer.setY((short)Math.floor(xServer.screenInfo.height + (y - xServer.screenInfo.height) * damping));
+        else if (y >= xServer.screenInfo.screenHeight) {
+            xServer.pointer.setY((short)Math.floor(xServer.screenInfo.screenHeight + (y - xServer.screenInfo.screenHeight) * damping));
         }
     }
 }

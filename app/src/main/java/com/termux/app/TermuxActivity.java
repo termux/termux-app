@@ -267,16 +267,16 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             int[] view0Location = new int[2];
             int[] viewLocation = new int[2];
 
-            mMainContentView.getLocationOnScreen(view0Location);
+            touchpadView.getLocationOnScreen(view0Location);
             getLorieView().getLocationOnScreen(viewLocation);
 
             int offsetX = viewLocation[0] - view0Location[0];
             int offsetY = viewLocation[1] - view0Location[1];
-            if (mMainContentView.isLandscape()){
-                offsetX = offsetX-mMainContentView.getScreenOffset();
-            }else{
-                offsetY = offsetY-mMainContentView.getScreenOffset();
-            }
+//            if (mMainContentView.isLandscape()){
+//                offsetX = offsetX-mMainContentView.getScreenOffset();
+//            }else{
+//                offsetY = offsetY-mMainContentView.getScreenOffset();
+//            }
 
             getLorieView().screenInfo.offsetX = offsetX;
             getLorieView().screenInfo.offsetY = offsetY;

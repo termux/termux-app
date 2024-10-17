@@ -204,12 +204,12 @@ public class LorieView extends SurfaceView implements InputStub {
 
         if ((width < height && w > h) || (width > height && w < h)) {
             p.set(h, w);
-            screenInfo.width = (short) h;
-            screenInfo.height = (short) w;
+            screenInfo.screenWidth = (short) h;
+            screenInfo.screenHeight = (short) w;
         } else {
             p.set(w, h);
-            screenInfo.width = (short) w;
-            screenInfo.height = (short) h;
+            screenInfo.screenWidth = (short) w;
+            screenInfo.screenHeight = (short) h;
         }
     }
 

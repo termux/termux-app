@@ -1,5 +1,7 @@
 package com.termux.x11.controller.xserver;
 
+import static androidx.core.math.MathUtils.clamp;
+
 import com.termux.x11.LorieView;
 import com.termux.x11.controller.math.Mathf;
 
@@ -73,18 +75,18 @@ public class Pointer {
     }
 
     public short getClampedX() {
-        return (short) Mathf.clamp(x, 0, xServer.screenInfo.width - 1);
+        return (short) Mathf.clamp(x, 0, xServer.screenInfo.screenWidth - 1);
     }
 
     public short getClampedY() {
-        return (short) Mathf.clamp(y, 0, xServer.screenInfo.height - 1);
+        return (short) Mathf.clamp(y, 0, xServer.screenInfo.screenHeight - 1);
     }
 
     public void moveTo(int x, int y) {
         if (xServer.screenInfo.setCursorPosition(x, y)) {
             setX(x);
             setY(y);
-            triggerOnPointerMove(this.x - xServer.screenInfo.offsetX, this.y - xServer.screenInfo.offsetY);
+            triggerOnPointerMove((int) ((this.x - xServer.screenInfo.offsetX) * xServer.screenInfo.scale.x), (int) ((this.y - xServer.screenInfo.offsetY) * xServer.screenInfo.scale.y));
         }
     }
 
@@ -93,17 +95,17 @@ public class Pointer {
     }
 
     private boolean screenPointLiesOutsideImageBoundaryX(float screenX) {
-        float scaledX = screenX / xServer.screenInfo.scale.x;
-        float imageWidth = (float) xServer.screenInfo.imageWidth + EPSILON;
+//        float scaledX = (screenX-xServer.screenInfo.offsetX) * xServer.screenInfo.scale.x;
+//        float imageWidth = (float) xServer.screenInfo.imageWidth + EPSILON;
 //        Log.d("OutsideBoundaryX", "screenX: " + screenX + ", scaledX:" + scaledX + ", imageWidth: " + imageWidth);
-        return scaledX < -EPSILON || screenX > imageWidth;
+        return screenX < xServer.screenInfo.offsetX || screenX > xServer.screenInfo.imageWidth + xServer.screenInfo.offsetX;
     }
 
     private boolean screenPointLiesOutsideImageBoundaryY(float screenY) {
-        float scaledY = screenY / xServer.screenInfo.scale.y;
-        float imageHeight = (float) xServer.screenInfo.imageHeight + EPSILON;
+//        float scaledY = (screenY-xServer.screenInfo.offsetY) * xServer.screenInfo.scale.y;
+//        float imageHeight = (float) xServer.screenInfo.imageHeight + EPSILON;
 //        Log.d("OutsideBoundaryX","screenY: "+screenY+", scaledY:"+scaledY+", imageHeight: "+imageHeight);
-        return scaledY < -EPSILON || screenY > imageHeight;
+        return screenY < xServer.screenInfo.offsetY || screenY > xServer.screenInfo.imageHeight + xServer.screenInfo.offsetY;
     }
 
     public void setButton(Button button, boolean pressed) {

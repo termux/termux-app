@@ -6,8 +6,8 @@ import android.graphics.PointF;
 
 public class ScreenInfo {
     private LorieView xserver;
-    public int width=1024;
-    public int height=768;
+    public int screenWidth =1024;
+    public int screenHeight =768;
 
     public int imageWidth;
     public int imageHeight;
@@ -20,33 +20,35 @@ public class ScreenInfo {
        this.xserver = xserver;
     }
 
-    public ScreenInfo(int width, int height) {
-        this.width = (short) width;
-        this.height = (short) height;
+    public ScreenInfo(int screenWidth, int screenHeight) {
+        this.screenWidth = (short) screenWidth;
+        this.screenHeight = (short) screenHeight;
     }
 
     public short getWidthInMillimeters() {
-        return (short) (width / 10);
+        return (short) (screenWidth / 10);
     }
 
     public short getHeightInMillimeters() {
-        return (short) (height / 10);
+        return (short) (screenHeight / 10);
     }
 
     @Override
     public String toString() {
-        return width + "x" + height;
+        return screenWidth + "x" + screenHeight;
     }
 
     private void resetTransformation() {
-        float sx = (float) width / (float) imageWidth;
-        float sy = (float) height / (float) imageHeight;
+        float sx = (float) screenWidth / (float) imageWidth;
+        float sy = (float) screenHeight / (float) imageHeight;
+//        float sx = (float) imageWidth / (float) screenWidth;
+//        float sy = (float) imageHeight / (float) screenHeight;
         scale.set(sx, sy);
     }
 
     public void handleClientSizeChanged(int w, int h) {
-        width = w;
-        height = h;
+        screenWidth = w;
+        screenHeight = h;
         moveCursorToScreenPoint((float) w / 2, (float) h / 2);
 
         resetTransformation();
