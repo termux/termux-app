@@ -881,8 +881,10 @@ public class LoriePreferences extends AppCompatActivity {
 
         inputControlsView.invalidate();
         touchShow = true;
-        touchpadView.requestFocus();
         loriePreferenceFragment.updatePreferencesLayout();
+        if (termuxActivityListener!=null){
+            termuxActivityListener.onX11PreferenceSwitchChange(false);
+        }
     }
 
     public void hideInputControls() {
