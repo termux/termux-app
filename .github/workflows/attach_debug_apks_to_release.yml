@@ -17,9 +17,14 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
         with:
-          java-version: '17'
           ref: ${{ env.GITHUB_REF }}
           submodules: 'true'
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: "temurin"
 
       - name: Build
         shell: bash {0}
