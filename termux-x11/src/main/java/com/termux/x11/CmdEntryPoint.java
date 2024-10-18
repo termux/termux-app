@@ -31,15 +31,17 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 
-@Keep @SuppressLint({"StaticFieldLeak", "UnsafeDynamicallyLoadedCode"})
+@Keep
+@SuppressLint({"StaticFieldLeak", "UnsafeDynamicallyLoadedCode"})
 public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     public static final String ACTION_START = "com.termux.x11.CmdEntryPoint.ACTION_START";
     public static final int PORT = 7893;
-//    public static final int PORT = 7892;
+    //    public static final int PORT = 7892;
     public static final byte[] MAGIC = "0xDEADBEEF".getBytes();
     private static final Handler handler;
     public static Context ctx;
-    public static boolean initFlag=false;
+    public static boolean initFlag = false;
+
     static {
         try {
             ctx = createContext();
@@ -66,7 +68,7 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
             System.exit(1);
 
 //        spawnListeningThread();
-//        sendBroadcastDelayed();
+        sendBroadcastDelayed();
     }
 
     @SuppressLint({"WrongConstant", "PrivateApi"})
@@ -104,28 +106,30 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
             try {
                 //noinspection JavaReflectionMemberAccess
                 am = (IActivityManager) android.app.ActivityManager.class
-                        .getMethod("getService")
-                        .invoke(null);
+                    .getMethod("getService")
+                    .invoke(null);
             } catch (Exception e2) {
                 try {
                     am = (IActivityManager) Class.forName("android.app.ActivityManagerNative")
-                            .getMethod("getDefault")
-                            .invoke(null);
+                        .getMethod("getDefault")
+                        .invoke(null);
                 } catch (Exception e3) {
                     throw new RuntimeException(e3);
                 }
             }
 
             assert am != null;
-            IIntentSender sender = am.getIntentSender(1, packageName, null, null, 0, new Intent[] { intent },
-                    null, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT, null, 0);
+            IIntentSender sender = am.getIntentSender(1, packageName, null, null, 0, new Intent[]{intent},
+                null, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT, null, 0);
             try {
                 //noinspection JavaReflectionMemberAccess
                 IIntentSender.class
-                        .getMethod("send", int.class, Intent.class, String.class, IBinder.class, IIntentReceiver.class, String.class, Bundle.class)
-                        .invoke(sender, 0, intent, null, null, new IIntentReceiver.Stub() {
-                            @Override public void performReceive(Intent i, int r, String d, Bundle e, boolean o, boolean s, int a) {}
-                        }, null, null);
+                    .getMethod("send", int.class, Intent.class, String.class, IBinder.class, IIntentReceiver.class, String.class, Bundle.class)
+                    .invoke(sender, 0, intent, null, null, new IIntentReceiver.Stub() {
+                        @Override
+                        public void performReceive(Intent i, int r, String d, Bundle e, boolean o, boolean s, int a) {
+                        }
+                    }, null, null);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -151,9 +155,9 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
              */
             Log.e("CmdEntryPoint", "Listening port " + PORT);
             try (ServerSocket listeningSocket =
-                         new ServerSocket(PORT, 0, InetAddress.getByName("127.0.0.1"))) {
+                     new ServerSocket(PORT, 0, InetAddress.getByName("127.0.0.1"))) {
                 listeningSocket.setReuseAddress(true);
-                while(true) {
+                while (true) {
                     try (Socket client = listeningSocket.accept()) {
                         Log.e("CmdEntryPoint", "Somebody connected!");
                         // We should ensure that it is some
@@ -190,7 +194,9 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
         }).start();
     }
 
-    /** @noinspection DataFlowIssue*/
+    /**
+     * @noinspection DataFlowIssue
+     */
     @SuppressLint("DiscouragedPrivateApi")
     public static Context createContext() {
         try {
@@ -198,19 +204,23 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
             f.setAccessible(true);
             Object unsafe = f.get(null);
             return ((android.app.ActivityThread) Class.
-                    forName("sun.misc.Unsafe").
-                    getMethod("allocateInstance", Class.class).
-                    invoke(unsafe, android.app.ActivityThread.class))
-                    .getSystemContext();
+                forName("sun.misc.Unsafe").
+                getMethod("allocateInstance", Class.class).
+                invoke(unsafe, android.app.ActivityThread.class))
+                .getSystemContext();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public static native boolean start(String[] args);
-    public native void windowChanged(Surface surface,String name);
+
+    public native void windowChanged(Surface surface, String name);
+
     public native ParcelFileDescriptor getXConnection();
+
     public native ParcelFileDescriptor getLogcatOutput();
+
     private static native boolean connected();
     //cgefhdrwfger
 
