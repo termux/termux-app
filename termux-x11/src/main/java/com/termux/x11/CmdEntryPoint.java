@@ -65,23 +65,8 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
         if (!start(args))
             System.exit(1);
 
-        spawnListeningThread();
-        sendBroadcastDelayed();
-    }
-    public CmdEntryPoint() {
-        if (initFlag){
-            return;
-        }
-        Executors.newSingleThreadExecutor().execute(() -> {
-            String args[] = {":1"};
-            Log.i("CmdEntryPoint", "x11 port: " + Arrays.toString(args));
-            if (!start(args))
-                System.exit(1);
-            initFlag=true;
-            spawnListeningThread();
-            sendBroadcastDelayed();
-        });
-
+//        spawnListeningThread();
+//        sendBroadcastDelayed();
     }
 
     @SuppressLint({"WrongConstant", "PrivateApi"})

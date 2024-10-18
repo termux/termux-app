@@ -20,7 +20,6 @@ public class Pointer {
         }
     }
 
-    private static final float EPSILON = 0.001f;
     public static final byte MAX_BUTTONS = 8;
     private final ArrayList<OnPointerMotionListener> onPointerMotionListeners = new ArrayList<>();
     private final Bitmask buttonMask = new Bitmask();

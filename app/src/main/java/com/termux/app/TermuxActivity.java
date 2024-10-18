@@ -272,20 +272,11 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
             int offsetX = viewLocation[0] - view0Location[0];
             int offsetY = viewLocation[1] - view0Location[1];
-//            if (mMainContentView.isLandscape()){
-//                offsetX = offsetX-mMainContentView.getScreenOffset();
-//            }else{
-//                offsetY = offsetY-mMainContentView.getScreenOffset();
-//            }
 
             getLorieView().screenInfo.offsetX = offsetX;
             getLorieView().screenInfo.offsetY = offsetY;
             inputControlsView.handleTouchEvent(ev);
             return true;
-//                    inputControllerViewHandled = inputControlsView.handleTouchEvent(ev);
-//                    if (xServer.cursorLocker.isEnabled()) {
-//                        return true;
-//                    }
         }
 //                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
         if (null != mInputHandler) {
@@ -447,8 +438,8 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             }
 
             @Override
-            public void showProgressManager() {
-                showProgressManagerDialog();
+            public void showProcessManager() {
+                showProcessManagerDialog();
             }
 
             @Override
@@ -762,6 +753,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                 Intent exitIntent = new Intent(this, TermuxService.class)
                     .setAction(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_STOP_SERVICE);
                 startService(exitIntent);
+                finishActivityIfNotFinishing();
             } else {
                 Toast.makeText(this, R.string.exit_toast_text, Toast.LENGTH_SHORT).show();
                 isExit = true;

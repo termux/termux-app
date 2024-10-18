@@ -983,7 +983,7 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         handler.postDelayed(this::checkXEvents, 100);
     }
 
-    public void showProgressManagerDialog() {
+    public void showProcessManagerDialog() {
         (new TaskManagerDialog(this)).show();
     }
 }

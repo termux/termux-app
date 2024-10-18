@@ -81,9 +81,6 @@ public class TouchpadView extends View {
         private final long touchTime;
 
         public Finger(float x, float y) {
-//            float[] transformedPoint = XForm.transformPoint(xform, x, y);
-//            this.x = this.startX = this.lastX = (int) transformedPoint[0];
-//            this.y = this.startY = this.lastY = (int) transformedPoint[1];
             this.x = this.startX = this.lastX = (int) x;
             this.y = this.startY = this.lastY = (int) y;
             touchTime = System.currentTimeMillis();
@@ -92,9 +89,6 @@ public class TouchpadView extends View {
         public void update(float x, float y) {
             lastX = this.x;
             lastY = this.y;
-//            float[] transformedPoint = XForm.transformPoint(xform, x, y);
-//            this.x = (int) transformedPoint[0];
-//            this.y = (int) transformedPoint[1];
             this.x = (int) x;
             this.y = (int) y;
         }
@@ -136,11 +130,6 @@ public class TouchpadView extends View {
                 if (event.isFromSource(InputDevice.SOURCE_MOUSE)) return true;
                 scrollAccumY = 0;
                 scrolling = false;
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                    fingers[pointerId] = new Finger(event.getRawX(actionIndex), event.getRawY(actionIndex));
-//                } else {
-//                    fingers[pointerId] = new Finger(event.getX(actionIndex), event.getY(actionIndex));
-//                }
                 fingers[pointerId] = new Finger(event.getX(actionIndex), event.getY(actionIndex));
                 numFingers++;
 
@@ -155,11 +144,6 @@ public class TouchpadView extends View {
                         if (fingers[i] != null) {
                             int pointerIndex = event.findPointerIndex(i);
                             if (pointerIndex >= 0) {
-//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                                    fingers[i].update(event.getRawX(pointerIndex), event.getRawY(pointerIndex));
-//                                } else {
-//                                    fingers[i].update(event.getX(pointerIndex), event.getY(pointerIndex));
-//                                }
                                 fingers[i].update(event.getX(pointerIndex), event.getY(pointerIndex));
                                 handleFingerMove(fingers[i]);
                             } else {
@@ -174,11 +158,6 @@ public class TouchpadView extends View {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
                 if (fingers[pointerId] != null) {
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                        fingers[pointerId].update(event.getRawX(actionIndex), event.getRawY(actionIndex));
-//                    } else {
-//                        fingers[pointerId].update(event.getX(actionIndex), event.getY(actionIndex));
-//                    }
                     fingers[pointerId].update(event.getX(actionIndex), event.getY(actionIndex));
                     handleFingerUp(fingers[pointerId]);
                     fingers[pointerId] = null;
@@ -204,14 +183,12 @@ public class TouchpadView extends View {
             case 1:
                 if (finger1.isTap()) {
                     pressPointerButtonLeft(finger1);
-                    releasePointerButtonLeft(finger1);
                 }
                 break;
             case 2:
                 Finger finger2 = findSecondFinger(finger1);
                 if (finger2 != null && finger1.isTap()) {
                     pressPointerButtonRight(finger1);
-                    releasePointerButtonRight(finger1);
                 }
                 break;
             case 4:
@@ -223,9 +200,8 @@ public class TouchpadView extends View {
                 }
                 break;
         }
-
-//        releasePointerButtonLeft(finger1);
-//        releasePointerButtonRight(finger1);
+        releasePointerButtonLeft(finger1);
+        releasePointerButtonRight(finger1);
     }
 
     private void handleFingerMove(Finger finger1) {

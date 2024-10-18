@@ -257,7 +257,7 @@ public class FloatBallMenuClient {
         MenuItem taskManagerItem = new MenuItem(mTermuxActivity.getDrawable(R.drawable.icon_menu_show_task_manager_shape)) {
             @Override
             public void action() {
-                mTermuxActivity.showProgressManagerDialog();
+                mTermuxActivity.showProcessManagerDialog();
                 toast(mTermuxActivity.getString(com.termux.x11.R.string.task_manager));
                 mFloatballManager.closeMenu();
             }

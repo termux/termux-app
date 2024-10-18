@@ -108,7 +108,7 @@ public class LoriePreferences extends AppCompatActivity {
 
         void openSoftwareKeyboard();
 
-        void showProgressManager();
+        void showProcessManager();
 
         void changePreference(String key);
 
@@ -529,7 +529,7 @@ public class LoriePreferences extends AppCompatActivity {
 
     private void callProgressManager() {
         if (termuxActivityListener != null) {
-            termuxActivityListener.showProgressManager();
+            termuxActivityListener.showProcessManager();
         }
     }
 

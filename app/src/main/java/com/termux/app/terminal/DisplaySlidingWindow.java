@@ -24,18 +24,9 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private ViewGroup mContent;
     private boolean mIsLeftMenuOpen;
     private boolean mIsRightMenuOpen;
-    public int mScreenOffset;
 
     public void setTermuxActivity(TermuxActivity activity) {
         this.mTermuxActivity = activity;
-    }
-
-    public int getScreenOffset() {
-        return mScreenOffset;
-    }
-
-    public boolean isLandscape() {
-        return mLandscape;
     }
 
     /**
@@ -120,7 +111,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     private void remeasure() {
-        mScreenOffset = ScreenUtils.getStatusHeight();
         mContentWidth = ScreenUtils.getScreenWidth(getContext());
         mStatusHeight = ScreenUtils.getStatusHeight();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());

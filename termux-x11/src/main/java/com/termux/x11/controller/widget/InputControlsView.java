@@ -13,20 +13,14 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.util.IntProperty;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 
-import com.termux.x11.controller.core.ImageUtils;
 import com.termux.x11.controller.inputcontrols.Binding;
 import com.termux.x11.controller.inputcontrols.ControlElement;
 import com.termux.x11.controller.inputcontrols.ControlsProfile;
@@ -34,7 +28,6 @@ import com.termux.x11.controller.inputcontrols.ExternalController;
 import com.termux.x11.controller.inputcontrols.ExternalControllerBinding;
 import com.termux.x11.controller.inputcontrols.GamepadState;
 import com.termux.x11.controller.math.Mathf;
-import com.termux.x11.controller.math.XForm;
 import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.controller.xserver.Pointer;
 import com.termux.x11.LorieView;
@@ -49,8 +42,6 @@ import java.util.TimerTask;
 
 public class InputControlsView extends View {
     public static final float DEFAULT_OVERLAY_OPACITY = 0.4f;
-    private static final byte MAX_FINGERS = 4;
-    private static final short MAX_TWO_FINGERS_SCROLL_DISTANCE = 350;
     public static final byte MAX_TAP_TRAVEL_DISTANCE = 10;
     public static final short MAX_TAP_MILLISECONDS = 200;
     public static final float CURSOR_ACCELERATION = 1.25f;
@@ -74,7 +65,6 @@ public class InputControlsView extends View {
     private Timer mouseMoveTimer;
     private final PointF mouseMoveOffset = new PointF();
     private boolean showTouchscreenControls = true;
-    private final float[] xform = XForm.getInstance();
     private Map<String, Integer> counterMap = new HashMap<>();
 
     public void counterMapIncrease(String iconId) {
