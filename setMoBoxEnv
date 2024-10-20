@@ -67,7 +67,6 @@ if [ -d "${PREFIX}/glibc" ];then
 	if [  $MOBOX_HOME ];then
 		echo "mobox env has been set, now update"
 		sed -i '/MOBOX_HOME/d' ~/.bashrc
-		sed -i '/^$/d' ~/.bashrc
         if [ $# -eq 0 ]; then
             resetMobox
         else

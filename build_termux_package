@@ -44,7 +44,7 @@ cp stopserver $PREFIX/bin/
 cp startxserver $PREFIX/bin/
 
 cp install $ASSETS_PATH
-cp recover $ASSETS_PATH
+cp setMoBoxEnv $ASSETS_PATH
 cp collect_process_info $ASSETS_PATH
 
 mkdir -p $CONTROL_DIR
@@ -61,7 +61,6 @@ EOF
 cat <<EOF >$CONTROL_DIR/postinst
 #!/data/data/com.termux/files/usr/bin/sh
 chmod -w /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
-chmod +x /data/data/com.termux/files/usr/bin/display
 chmod +x /data/data/com.termux/files/usr/bin/startxserver
 chmod +x /data/data/com.termux/files/usr/bin/stopserver
 chmod +x /data/data/com.termux/files/usr/bin/termux-x11

@@ -14,6 +14,7 @@ import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -38,6 +39,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
@@ -985,7 +987,40 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         LinearLayout recover = createImageButton("script", "mobox", width / 5);
         gridLayout.addView(recover);
         recover.setOnClickListener(v -> {
-            reInstallCustomStartScript();
+            LinearLayout linearLayout = new LinearLayout(this);
+            CheckBox dInputCheckBox = new CheckBox(this);
+            dInputCheckBox.setText(getText(R.string.set_dinput));
+            linearLayout.addView(dInputCheckBox);
+            CheckBox xInputCheckoutBox = new CheckBox(this);
+            xInputCheckoutBox.setText(getText(R.string.set_xinput));
+            linearLayout.addView(xInputCheckoutBox);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setView(linearLayout);
+            builder.setMessage(getText(R.string.ready_set_mobox_env))
+                .setPositiveButton(getText(R.string.yes), (dialog, id) -> {
+                    int option1 = 0b0001; // dinput
+                    int option2 = 0b0010; // xinput
+                    int flags = 0;
+                    if (dInputCheckBox.isChecked()) {
+                        flags |= option1;
+                    }
+                    if (xInputCheckoutBox.isChecked()) {
+                        flags |= option2;
+                    }
+                    Integer mode = null;
+                    if (flags != 0) {
+                        mode = flags;
+                    }
+                    reInstallCustomStartScript(mode);
+                })
+                .setNegativeButton(getText(R.string.cancel), (dialog, id) -> {
+
+                });
+
+            AlertDialog dialog = builder.create();
+            dialog.setTitle(getText(R.string.select_gamepad_input_mode));
+            dialog.show();
+
             mPop.dismiss();
         });
         for (int i = 1; i < all; i++) {
@@ -1232,13 +1267,17 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         }
     }
 
-    public void reInstallCustomStartScript() {
+    public void reInstallCustomStartScript(Integer mode) {
         runOnUiThread(() -> {
             FileUtils.copyAssetsFile2Phone(this, "setMoBoxEnv");
             FileUtils.copyAssetsFile2Phone(this, "winhandler.exe");
             FileUtils.copyAssetsFile2Phone(this, "wfm.exe");
             FileUtils.copyAssetsFile2Phone(this, "wine.tar");
-            String command = TERMUX_HOME_DIR_PATH +"/setMoBoxEnv\n";
+            String command = TERMUX_HOME_DIR_PATH + "/setMoBoxEnv ";
+            if (mode != null) {
+                command = command + mode;
+            }
+            command = command + "\n";
             mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
         });
     }

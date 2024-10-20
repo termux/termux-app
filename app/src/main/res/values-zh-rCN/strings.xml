@@ -122,4 +122,10 @@
     <string name="raise_termux_app">唤起termux</string>
     <string name="add_menu_item">添加一些菜单</string>
     <string name="hide_terminal">隐藏终端</string>
+    <string name="set_dinput">dinput</string>
+    <string name="set_xinput">xinput</string>
+    <string name="select_gamepad_input_mode">选择游戏手柄的类型</string>
+    <string name="ready_set_mobox_env">确认这个操作吗？</string>
+    <string name="yes">确认</string>
+    <string name="cancel">取消</string>
 </resources>

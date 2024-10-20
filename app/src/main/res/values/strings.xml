@@ -223,4 +223,10 @@
     <string name="raise_termux_app">raise termux app</string>
     <string name="add_menu_item">add some item to float ball menu</string>
     <string name="hide_terminal">hide terminal</string>
+    <string name="set_dinput">dinput</string>
+    <string name="set_xinput">xinput</string>
+    <string name="select_gamepad_input_mode">select controller type for game pad</string>
+    <string name="ready_set_mobox_env">set mobox env now?</string>
+    <string name="yes">yes</string>
+    <string name="cancel">cancel</string>
 </resources>
