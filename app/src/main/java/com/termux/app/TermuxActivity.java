@@ -4,6 +4,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_FILES_DIR_PATH;
+import static com.termux.shared.termux.TermuxConstants.TERMUX_HOME_DIR_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH;
 
 import android.annotation.SuppressLint;
@@ -1233,12 +1234,12 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
     public void reInstallCustomStartScript() {
         runOnUiThread(() -> {
-            FileUtils.copyAssetsFile2Phone(this, "recover");
+            FileUtils.copyAssetsFile2Phone(this, "setMoBoxEnv");
             FileUtils.copyAssetsFile2Phone(this, "winhandler.exe");
             FileUtils.copyAssetsFile2Phone(this, "wfm.exe");
             FileUtils.copyAssetsFile2Phone(this, "wine.tar");
-            CommandUtils.exec(this, "chmod", new ArrayList<>(Arrays.asList("+x", TERMUX_FILES_DIR_PATH + "/home/recover")));
-            CommandUtils.execInPath(this, "recover", null, "/home/");
+            String command = TERMUX_HOME_DIR_PATH +"/setMoBoxEnv\n";
+            mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast().write(command);
         });
     }
 
