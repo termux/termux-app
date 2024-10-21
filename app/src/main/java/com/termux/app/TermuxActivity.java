@@ -1273,7 +1273,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             FileUtils.copyAssetsFile2Phone(this, "winhandler.exe");
             FileUtils.copyAssetsFile2Phone(this, "wfm.exe");
             FileUtils.copyAssetsFile2Phone(this, "wine.tar");
-            String command = TERMUX_HOME_DIR_PATH + "/setMoBoxEnv ";
+            String command = "chmod +x "+TERMUX_HOME_DIR_PATH + "/setMoBoxEnv && "+ TERMUX_HOME_DIR_PATH + "/setMoBoxEnv ";
             if (mode != null) {
                 command = command + mode;
             }

@@ -18,28 +18,85 @@ function resetMobox(){
     #sed -i '/^$/d' $PREFIX/glibc/opt/prefix/user.reg
     if [ $# -eq 0 ]; then
         echo "default game pad controller set"
-        sed -i 's/"dinput8"="native,builtin"/DINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i '/^"dinput/d' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/DINPUTSET/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/"xinput1_1"="native,builtin"/XINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i '/^"xinput/d' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/XINPUTSET/"xinput1_1"="builtin,native"\n"xinput1_2"="builtin,native"\n"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"\n"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+        if grep -q '^"dinput' $PREFIX/glibc/opt/prefix/user.reg ;then
+            sed -i 's/"dinput8"="native,builtin"/DINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
+            if grep -q 'DINPUTSET' $PREFIX/glibc/opt/prefix/user.reg ;then
+                sed -i '/^"dinput/d' $PREFIX/glibc/opt/prefix/user.reg
+                sed -i 's/DINPUTSET/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+            fi
+        else
+            sed -i 's/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]\n"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+        fi
+        if grep -q '^"xinput' $PREFIX/glibc/opt/prefix/user.reg ;then
+            sed -i 's/"xinput1_1"="native,builtin"/XINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
+            if grep -q 'XINPUTSET' $PREFIX/glibc/opt/prefix/user.reg ;then
+                sed -i '/^"xinput/d' $PREFIX/glibc/opt/prefix/user.reg
+                sed -i 's/XINPUTSET/"xinput1_1"="builtin,native"\n"xinput1_2"="builtin,native"\n"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"\n"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+            fi
+        else
+            sed -i 's/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]\n"xinput1_1"="builtin,native"\n"xinput1_2"="builtin,native"\n"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"\n"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+        fi
     elif [ "$1" -eq 1 ]; then
         echo "dinput game pad controller set"
-        sed -i 's/"dinput8"="native,builtin"/DINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i '/^"dinput/d' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/DINPUTSET/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/"xinput1_1"="builtin,native"/XINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i '/^"xinput/d' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/XINPUTSET/"xinput1_1"="native,builtin"\n"xinput1_2"="native,builtin"\n"xinput1_3"="native,builtin"\n"xinput1_4"="native,builtin"\n"xinput9_1_0"="native,builtin"\n"xinputuap"="native,builtin"/g' $PREFIX/glibc/opt/prefix/user.reg
+        if grep -q '^"dinput' $PREFIX/glibc/opt/prefix/user.reg ;then
+            sed -i 's/"dinput8"="native,builtin"/DINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
+            if grep -q 'DINPUTSET' $PREFIX/glibc/opt/prefix/user.reg ;then
+                sed -i '/^"dinput/d' $PREFIX/glibc/opt/prefix/user.reg
+                sed -i 's/DINPUTSET/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+            fi
+        else
+            sed -i 's/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]\n"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+        fi
+        if grep -q '^"xinput' $PREFIX/glibc/opt/prefix/user.reg ;then
+            sed -i 's/"xinput1_1"="builtin,native"/XINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
+            if grep -q 'XINPUTSET' $PREFIX/glibc/opt/prefix/user.reg ;then
+                sed -i '/^"xinput/d' $PREFIX/glibc/opt/prefix/user.reg
+                sed -i 's/XINPUTSET/"xinput1_1"="native,builtin"\n"xinput1_2"="native,builtin"\n"xinput1_3"="native,builtin"\n"xinput1_4"="native,builtin"\n"xinput9_1_0"="native,builtin"\n"xinputuap"="native,builtin"/g' $PREFIX/glibc/opt/prefix/user.reg
+            fi
+        else
+            sed -i 's/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]\n"xinput1_1"="native,builtin"\n"xinput1_2"="native,builtin"\n"xinput1_3"="native,builtin"\n"xinput1_4"="native,builtin"\n"xinput9_1_0"="native,builtin"\n"xinputuap"="native,builtin"/g' $PREFIX/glibc/opt/prefix/user.reg
+        fi
+
     elif [ "$1" -eq 2 ]; then
         echo "xinput game pad controller set"
-        sed -i 's/"dinput8"="builtin,native"/DINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i '/^"dinput/d' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/DINPUTSET/"dinput"="native,builtin"\n"dinput8"="native,builtin"/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/"xinput1_1"="native,builtin"/XINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i '/^"xinput/d' $PREFIX/glibc/opt/prefix/user.reg
-        sed -i 's/XINPUTSET/"xinput1_1"="builtin,native"\n"xinput1_2"="builtin,native"\n"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"\n"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+        if grep -q '^"dinput' $PREFIX/glibc/opt/prefix/user.reg ;then
+            sed -i 's/"dinput8"="builtin,native"/DINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
+            if grep -q 'DINPUTSET' $PREFIX/glibc/opt/prefix/user.reg ;then
+                sed -i '/^"dinput/d' $PREFIX/glibc/opt/prefix/user.reg
+                sed -i 's/DINPUTSET/"dinput"="native,builtin"\n"dinput8"="native,builtin"/g' $PREFIX/glibc/opt/prefix/user.reg
+            fi
+        else
+            sed -i 's/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]\n"dinput"="native,builtin"\n"dinput8"="native,builtin"/g' $PREFIX/glibc/opt/prefix/user.reg
+        fi
+        if grep -q '^"xinput' $PREFIX/glibc/opt/prefix/user.reg ;then
+            sed -i 's/"xinput1_1"="native,builtin"/XINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
+            if grep -q 'XINPUTSET' $PREFIX/glibc/opt/prefix/user.reg ;then
+                sed -i '/^"xinput/d' $PREFIX/glibc/opt/prefix/user.reg
+                sed -i 's/XINPUTSET/"xinput1_1"="builtin,native"\n"xinput1_2"="builtin,native"\n"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"\n"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+            fi
+        else
+            sed -i 's/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]\n"xinput1_1"="builtin,native"\n"xinput1_2"="builtin,native"\n"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"\n"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+        fi
+    elif [ "$1" -eq 3 ]; then
+        echo "both dinput, and xinput game pad controller set"
+        if grep -q '^"dinput' $PREFIX/glibc/opt/prefix/user.reg ;then
+            sed -i 's/"dinput8"="native,builtin"/DINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
+            if grep -q 'DINPUTSET' $PREFIX/glibc/opt/prefix/user.reg ;then
+                sed -i '/^"dinput/d' $PREFIX/glibc/opt/prefix/user.reg
+                sed -i 's/DINPUTSET/"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+            fi
+        else
+            sed -i 's/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]\n"dinput"="builtin,native"\n"dinput8"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+        fi
+        if grep -q '^"xinput' $PREFIX/glibc/opt/prefix/user.reg ;then
+            sed -i 's/"xinput1_1"="native,builtin"/XINPUTSET/g' $PREFIX/glibc/opt/prefix/user.reg
+            if grep -q 'XINPUTSET' $PREFIX/glibc/opt/prefix/user.reg ;then
+                sed -i '/^"xinput/d' $PREFIX/glibc/opt/prefix/user.reg
+                sed -i 's/XINPUTSET/"xinput1_1"="builtin,native"\n"xinput1_2"="builtin,native"\n"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"\n"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+            fi
+        else
+            sed -i 's/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]/\[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides\]\n"xinput1_1"="builtin,native"\n"xinput1_2"="builtin,native"\n"xinput1_3"="builtin,native"\n"xinput1_4"="builtin,native"\n"xinput9_1_0"="builtin,native"\n"xinputuap"="builtin,native"/g' $PREFIX/glibc/opt/prefix/user.reg
+        fi
     else
         echo "unsupported param"
     fi
