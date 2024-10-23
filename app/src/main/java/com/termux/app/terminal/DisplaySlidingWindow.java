@@ -24,6 +24,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private ViewGroup mContent;
     private boolean mIsLeftMenuOpen;
     private boolean mIsRightMenuOpen;
+    private int mCurrentPage;
 
     public void setTermuxActivity(TermuxActivity activity) {
         this.mTermuxActivity = activity;
@@ -82,6 +83,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         super(context, attrs, defStyle);
         setClickable(true);
         mContentSwitchSlider = true;
+        mCurrentPage=1;
         remeasure();
     }
 
@@ -129,10 +131,11 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
-        if (changed) {
-            // hide menu at start up
-            showContent();
-        }
+//        if (changed) {
+//            // hide menu at start up
+//            showContent();
+//        }
+        showContent();
         mRefreshEnd = true;
     }
 
@@ -188,6 +191,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         mIsLeftMenuOpen = false;
                         mContentSwitchSlider = false;
                         mMenuSwitchSlider = false;
+                        mCurrentPage = 1;
                     } else//open left menu
                     {
                         this.smoothScrollTo(0, 0);
@@ -196,6 +200,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         }
                         mIsLeftMenuOpen = true;
                         mMenuSwitchSlider = true;
+                        mCurrentPage = 0;
                     }
                 }
                 //operate right
@@ -207,6 +212,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         }
                         mIsRightMenuOpen = true;
                         mMenuSwitchSlider = true;
+                        mCurrentPage = 2;
 //					mRightMenu.bringToFront();
                     } else//close right menu
                     {
@@ -217,6 +223,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                         mIsRightMenuOpen = false;
                         mContentSwitchSlider = false;
                         mMenuSwitchSlider = false;
+                        mCurrentPage = 1;
                     }
                 }
                 return false;
@@ -251,12 +258,14 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             this.smoothScrollTo(mMenuWidth, 0);
             mTermuxActivity.onMenuOpen(false, 1);
             mIsRightMenuOpen = false;
+            mCurrentPage=1;
         } else {
             this.smoothScrollTo(mMenuWidth + mMenuWidth + mStatusHeight * 4, 0);
             if (!mIsRightMenuOpen) {
                 mTermuxActivity.onMenuOpen(true, 1);
             }
             mIsRightMenuOpen = true;
+            mCurrentPage=2;
         }
     }
 
@@ -267,10 +276,12 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             this.smoothScrollTo(mMenuWidth, 0);
             mTermuxActivity.onMenuOpen(false, 0);
             mIsLeftMenuOpen = false;
+            mCurrentPage=1;
         } else {
             this.smoothScrollTo(0, 0);
             mTermuxActivity.onMenuOpen(true, 0);
             mIsLeftMenuOpen = true;
+            mCurrentPage=0;
         }
     }
 
@@ -286,10 +297,33 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     public void showContent() {
-        this.mContentSwitchSlider = false;
-        this.mMenuSwitchSlider = false;
-        mRefreshEnd = false;
-        remeasure();
-        this.smoothScrollTo(mMenuWidth, 0);
+        switch (mCurrentPage) {
+            case 0: {
+                this.smoothScrollTo(0, 0);
+                if (!mIsLeftMenuOpen) {
+                    mTermuxActivity.onMenuOpen(true, 0);
+                }
+                mIsLeftMenuOpen = true;
+                mMenuSwitchSlider = true;
+                break;
+            }
+            case 1: {
+                this.mContentSwitchSlider = false;
+                this.mMenuSwitchSlider = false;
+                mRefreshEnd = false;
+                remeasure();
+                this.smoothScrollTo(mMenuWidth, 0);
+                break;
+            }
+            case 2: {
+                this.smoothScrollTo(mMenuWidth + mMenuWidth + mStatusHeight * 4, 0);
+                if (!mIsRightMenuOpen) {
+                    mTermuxActivity.onMenuOpen(true, 1);
+                }
+                mIsRightMenuOpen = true;
+                mMenuSwitchSlider = true;
+                break;
+            }
+        }
     }
 }
