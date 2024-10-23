@@ -83,7 +83,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         super(context, attrs, defStyle);
         setClickable(true);
         mContentSwitchSlider = true;
-        mCurrentPage=1;
         remeasure();
     }
 
