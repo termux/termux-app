@@ -302,4 +302,6 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="open_x11_settings">打开x11设置</string>
     <string name="hide_x11_settings">隐藏x11设置</string>
     <string name="enable_touch_screen">触屏模式</string>
+    <string name="command">命令</string>
+    <string name="title">标题</string>
 </resources>

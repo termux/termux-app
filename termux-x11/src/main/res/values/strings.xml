@@ -327,4 +327,6 @@
     <string name="open_x11_settings">show x11 setting</string>
     <string name="hide_x11_settings">hide x11 setting</string>
     <string name="enable_touch_screen">touch screen</string>
+    <string name="command">command</string>
+    <string name="title">title</string>
 </resources>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/id_binding_launch_item"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/LMenuItems"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/BLaunch_item"
+            android:layout_width="60dp"
+            android:layout_height="80dp"
+            android:padding="0dp"
+            android:text="@string/launch_button_text"
+            android:textColor="@color/colorWhite"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="15dp"
+            android:text="Menu item"
+            android:maxLines="1"
+            android:textAlignment="center"
+            android:textColor="@color/colorWhite" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/LConfigStartItems"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/BRemove_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/ic_delete_item_shape" />
+
+            <Spinner
+                android:id="@+id/SLaunchItemList"
+                style="@style/TerminalComboBox"
+                android:layout_width="140dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/BAdd_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/ic_save_item_shape" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/BConfig_item"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/ic_file_browser_shape" />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="15dp"
+            android:maxLines="1"
+            android:hint="@string/command"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="15dp"
+            android:maxLines="1"
+            android:hint="@string/title"/>
+    </LinearLayout>
+</LinearLayout>
