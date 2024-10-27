@@ -1,8 +1,6 @@
 package com.termux.app;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_FILES_DIR_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_HOME_DIR_PATH;
 import static com.termux.shared.termux.TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH;
@@ -14,7 +12,6 @@ import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -39,17 +36,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.GridLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -66,7 +57,7 @@ import com.termux.app.terminal.DisplaySlidingWindow;
 import com.termux.app.terminal.DisplayWindowLinearLayout;
 import com.termux.app.terminal.FloatBallMenuClient;
 import com.termux.app.terminal.StartEntryClient;
-import com.termux.app.terminal.StartMenuEntryClient;
+import com.termux.app.terminal.MenuEntryClient;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
@@ -218,7 +209,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
     private int mNavBarHeight;
 
     private float mTerminalToolbarDefaultHeight;
-    private StartMenuEntryClient mMenuEntryClient;
+    private MenuEntryClient mMenuEntryClient;
     private boolean isExit;
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
@@ -363,7 +354,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
         setToggleKeyboardView();
 
-        mMenuEntryClient = new StartMenuEntryClient(this, mTermuxTerminalSessionActivityClient);
+        mMenuEntryClient = new MenuEntryClient(this, mTermuxTerminalSessionActivityClient);
 
         registerForContextMenu(mTerminalView);
 

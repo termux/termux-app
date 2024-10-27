@@ -23,10 +23,7 @@ import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.app.terminal.utils.ScreenUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class StartMenuEntryClient implements FileBrowser.FileSlectedAdapter {
+public class MenuEntryClient implements FileBrowser.FileSlectedAdapter {
     private TermuxActivity mTermuxActivity;
     private TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
     private PopupWindow mPop;
@@ -37,10 +34,10 @@ public class StartMenuEntryClient implements FileBrowser.FileSlectedAdapter {
     private MenuEntry mMenutryEntry;
     private FileBrowser mFileBrowser;
 
-    private StartMenuEntryClient() {
+    private MenuEntryClient() {
     }
 
-    public StartMenuEntryClient(TermuxActivity activity, TermuxTerminalSessionActivityClient termuxTerminalSessionActivityClient) {
+    public MenuEntryClient(TermuxActivity activity, TermuxTerminalSessionActivityClient termuxTerminalSessionActivityClient) {
         this.mTermuxActivity = activity;
         this.mTermuxTerminalSessionActivityClient = termuxTerminalSessionActivityClient;
         mMenutryEntry = new MenuEntry();
