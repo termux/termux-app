@@ -503,10 +503,13 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                         if (enableGlobalFloatBallMenu != mFloatBallMenuClient.isGlobalFloatBallMenu()) {
                             mFloatBallMenuClient.onDestroy();
                             mFloatBallMenuClient = null;
-                            handler.postDelayed(() -> {
-                                mFloatBallMenuClient = new FloatBallMenuClient(TermuxActivity.this);
-                                mFloatBallMenuClient.onCreate();
-                            }, 2000);
+                            if (enableFloatBallMenu) {
+                                handler.postDelayed(() -> {
+                                    mFloatBallMenuClient = new FloatBallMenuClient(TermuxActivity.this);
+                                    mFloatBallMenuClient.onCreate();
+                                }, 2000);
+                            }
+
                         }
                     }
                 } else {
@@ -1134,7 +1137,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             FileUtils.copyAssetsFile2Phone(this, "winhandler.exe");
             FileUtils.copyAssetsFile2Phone(this, "wfm.exe");
             FileUtils.copyAssetsFile2Phone(this, "wine.tar");
-            String command = "chmod +x "+TERMUX_HOME_DIR_PATH + "/setMoBoxEnv && "+ TERMUX_HOME_DIR_PATH + "/setMoBoxEnv ";
+            String command = "chmod +x " + TERMUX_HOME_DIR_PATH + "/setMoBoxEnv && " + TERMUX_HOME_DIR_PATH + "/setMoBoxEnv ";
             if (mode != null) {
                 command = command + mode;
             }
