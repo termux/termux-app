@@ -85,7 +85,6 @@ public class StartEntry {
                 elementsJSONArray.put(itm.toJSONObject());
                 if (!mStartSet.contains(itm.getPath())) {
                     mStartSet.add(itm.getPath());
-                    mStartEntryList.add(itm);
                 }
             }
             data.put("elements", elementsJSONArray);
@@ -96,6 +95,7 @@ public class StartEntry {
     }
 
     public static void loadStartItems() {
+        mStartEntryList.clear();
         File file = new File(TERMUX_HOME_DIR_PATH, ".startItemEntries");
         if (!file.exists() || !file.isFile()) {
             return;

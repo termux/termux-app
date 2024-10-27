@@ -66,6 +66,7 @@ import com.termux.app.terminal.DisplaySlidingWindow;
 import com.termux.app.terminal.DisplayWindowLinearLayout;
 import com.termux.app.terminal.FloatBallMenuClient;
 import com.termux.app.terminal.StartEntryClient;
+import com.termux.app.terminal.StartMenuEntryClient;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
@@ -217,8 +218,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
     private int mNavBarHeight;
 
     private float mTerminalToolbarDefaultHeight;
-    private ScrollView mToolBoxView;
-    private PopupWindow mPop;
+    private StartMenuEntryClient mMenuEntryClient;
     private boolean isExit;
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
@@ -363,7 +363,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
         setToggleKeyboardView();
 
-        setToolBoxView();
+        mMenuEntryClient = new StartMenuEntryClient(this, mTermuxTerminalSessionActivityClient);
 
         registerForContextMenu(mTerminalView);
 
@@ -916,136 +916,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             toggleTerminalToolbar();
             return true;
         });
-    }
-
-    private LinearLayout createImageButton(String type, String title, int size) {
-        LinearLayout layout = new LinearLayout(this);
-        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(size < 10 ? WRAP_CONTENT : size, size < 10 ? WRAP_CONTENT : size);
-        param.setMargins(10, 10, 10, 10);
-        layout.setLayoutParams(param);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setGravity(Gravity.CENTER);
-        ImageView v = new ImageView(this);
-        LinearLayout.LayoutParams vParam = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
-        vParam.weight = 3;
-        vParam.gravity = Gravity.CENTER_VERTICAL;
-        v.setLayoutParams(vParam);
-        switch (type) {
-            case "script": {
-                v.setImageDrawable(getDrawable(R.drawable.ic_script));
-                break;
-            }
-            case "exectuable": {
-                v.setImageDrawable(getDrawable(R.drawable.ic_executable));
-                break;
-            }
-            case "short_cut": {
-                v.setImageDrawable(getDrawable(R.drawable.ic_shortcut));
-                break;
-            }
-            case "terminal": {
-                v.setImageDrawable(getDrawable(R.drawable.ic_terminal));
-                break;
-            }
-            default:
-                v.setImageDrawable(getDrawable(R.drawable.ic_code));
-        }
-        TextView tv = new TextView(this);
-        LinearLayout.LayoutParams tvParam = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
-        tvParam.weight = 1;
-        tv.setGravity(Gravity.CENTER);
-        tv.setLayoutParams(tvParam);
-        tv.setText(title);
-        layout.addView(v);
-        layout.addView(tv);
-        return layout;
-    }
-
-    private void setToolBoxView() {
-        mPop = new PopupWindow(this);
-        mPop.setBackgroundDrawable(getDrawable(R.drawable.tool_box_background));
-        int width = ScreenUtils.getScreenWidth(this);
-        mPop.setWidth(width);
-        mPop.setHeight(width);
-        mToolBoxView = new ScrollView(this);
-        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        param.gravity = Gravity.CENTER | Gravity.TOP;
-        mToolBoxView.setLayoutParams(param);
-        GridLayout gridLayout = new GridLayout(this);
-        int r = 3;
-        int c = 4;
-        int all = r * c;
-        gridLayout.setColumnCount(c);
-        gridLayout.setRowCount(r);
-        gridLayout.setVerticalScrollBarEnabled(true);
-        LinearLayout.LayoutParams grideParam = new LinearLayout.LayoutParams(width, width);
-        grideParam.gravity = Gravity.CENTER_VERTICAL;
-        gridLayout.setLayoutParams(grideParam);
-        gridLayout.setPadding(50, 8, 50, 8);
-
-
-        LinearLayout recover = createImageButton("script", "mobox", width / 5);
-        gridLayout.addView(recover);
-        recover.setOnClickListener(v -> {
-            LinearLayout linearLayout = new LinearLayout(this);
-            CheckBox dInputCheckBox = new CheckBox(this);
-            dInputCheckBox.setText(getText(R.string.set_dinput));
-            linearLayout.addView(dInputCheckBox);
-            CheckBox xInputCheckoutBox = new CheckBox(this);
-            xInputCheckoutBox.setText(getText(R.string.set_xinput));
-            linearLayout.addView(xInputCheckoutBox);
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setView(linearLayout);
-            builder.setMessage(getText(R.string.ready_set_mobox_env))
-                .setPositiveButton(getText(R.string.yes), (dialog, id) -> {
-                    int option1 = 0b0001; // dinput
-                    int option2 = 0b0010; // xinput
-                    int flags = 0;
-                    if (dInputCheckBox.isChecked()) {
-                        flags |= option1;
-                    }
-                    if (xInputCheckoutBox.isChecked()) {
-                        flags |= option2;
-                    }
-                    Integer mode = null;
-                    if (flags != 0) {
-                        mode = flags;
-                    }
-                    reInstallCustomStartScript(mode);
-                })
-                .setNegativeButton(getText(R.string.cancel), (dialog, id) -> {
-
-                });
-
-            AlertDialog dialog = builder.create();
-            dialog.setTitle(getText(R.string.select_gamepad_input_mode));
-            dialog.show();
-
-            mPop.dismiss();
-        });
-        for (int i = 1; i < all; i++) {
-            LinearLayout but = createImageButton("none", "(^*^)", width / 5);
-            but.setGravity(Gravity.CENTER_VERTICAL);
-            but.setOrientation(LinearLayout.VERTICAL);
-            gridLayout.addView(but);
-            but.setOnClickListener(v -> {
-                mPop.dismiss();
-            });
-        }
-        LinearLayout linearLayout = new LinearLayout(this);
-        linearLayout.setLayoutParams(param);
-        linearLayout.addView(gridLayout);
-        mToolBoxView.addView(linearLayout);
-        mPop.setContentView(mToolBoxView);
-        findViewById(R.id.toggle_tool_box).setOnClickListener(v -> {
-            int x = 0;
-            int y = 120;
-            if (getExtraKeysView().getVisibility() == View.VISIBLE) {
-                y += getExtraKeysView().getHeight();
-            }
-            mPop.showAtLocation(findViewById(R.id.left_drawer), Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, x, y);
-        });
-
     }
 
     @SuppressLint({"RtlHardcoded", "MissingSuperCall"})

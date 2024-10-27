@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileBrowser implements FileAdapter.OnItemClickListener {
+    public interface FileSlectedAdapter{
+        public void onFileSelected(FileInfo fileInfo);
+    }
     private View mFileBrowserView;
     private TextView mSearchEditText;
     private RecyclerView mRecyclerView;
@@ -30,16 +33,16 @@ public class FileBrowser implements FileAdapter.OnItemClickListener {
     private ArrayList<FileInfo> mFileList;
     private TermuxActivity mTermuxActivity;
     private PopupWindow mPopupWindow;
-    private StartEntryClient mStartEntryClient;
     private int popWindowHeight, mPopWindowWidth;
     private String mCurrentPath = TERMUX_FILES_DIR_PATH;
+    private FileSlectedAdapter fileSlectedAdapter;
 
     private FileBrowser() {
     }
 
-    public FileBrowser(TermuxActivity activity, StartEntryClient entryClien) {
+    public FileBrowser(TermuxActivity activity, FileSlectedAdapter ada) {
         this.mTermuxActivity = activity;
-        this.mStartEntryClient = entryClien;
+        this.fileSlectedAdapter = ada;
         mPopWindowWidth = 210;
     }
 
@@ -135,7 +138,9 @@ public class FileBrowser implements FileAdapter.OnItemClickListener {
                 return;
             }
             mCurrentPath = fileInfo.getPath();
-            mStartEntryClient.addStartEntry(fileInfo);
+            if (this.fileSlectedAdapter!=null){
+                fileSlectedAdapter.onFileSelected(fileInfo);
+            }
         }
     }
 }

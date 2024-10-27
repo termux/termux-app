@@ -229,4 +229,8 @@
     <string name="ready_set_mobox_env">set mobox env now?</string>
     <string name="yes">yes</string>
     <string name="cancel">cancel</string>
+    <string name="executable_file">executable file</string>
+    <string name="remove_shortcut">remove this shortcut?</string>
+    <string name="remove">delete</string>
+    <string name="invalid_config">invalid config</string>
 </resources>

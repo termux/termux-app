@@ -17,7 +17,7 @@ import com.termux.app.TermuxActivity;
 import java.io.File;
 import java.util.ArrayList;
 
-public class StartEntryClient {
+public class StartEntryClient implements FileBrowser.FileSlectedAdapter{
     private TermuxActivity mTermuxActivity;
     private TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
     private LinearLayout mStartItemEntriesConfig;
@@ -145,5 +145,10 @@ public class StartEntryClient {
             mAdapter.notifyDataSetChanged();
             mLaunchItemSpinner.setSelection(mAdapter.getCount() - 1);
         }
+    }
+
+    @Override
+    public void onFileSelected(FileInfo fileInfo) {
+        addStartEntry(fileInfo);
     }
 }

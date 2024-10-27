@@ -128,4 +128,8 @@
     <string name="ready_set_mobox_env">确认这个操作吗？</string>
     <string name="yes">确认</string>
     <string name="cancel">取消</string>
+    <string name="executable_file">可执行文件</string>
+    <string name="remove_shortcut">删除快捷方式?</string>
+    <string name="remove">删除</string>
+    <string name="invalid_config">无效的参数</string>
 </resources>
