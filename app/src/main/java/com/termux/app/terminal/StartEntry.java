@@ -95,7 +95,6 @@ public class StartEntry {
     }
 
     public static void loadStartItems() {
-        mStartEntryList.clear();
         File file = new File(TERMUX_HOME_DIR_PATH, ".startItemEntries");
         if (!file.exists() || !file.isFile()) {
             return;
