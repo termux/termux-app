@@ -64,11 +64,12 @@ public class InputDeviceManager implements Pointer.OnPointerMotionListener, Keyb
 
     @Override
     public void onPointMoveDelta(int dx, int dy) {
-        if (xServer.pointer.getPointerButton() != null) {
-            xServer.sendMouseEvent(dx, dy, xServer.pointer.getPointerButton().code(), false, true);
-        } else {
-            xServer.sendMouseEvent(dx, dy, BUTTON_UNDEFINED, false, true);
-        }
+//        if (xServer.pointer.getPointerButton() != null) {
+//            xServer.sendMouseEvent(dx, dy, xServer.pointer.getPointerButton().code(), false, true);
+//        } else {
+//            xServer.sendMouseEvent(dx, dy, BUTTON_UNDEFINED, false, true);
+//        }
+        xServer.sendMouseEvent(dx, dy, BUTTON_UNDEFINED, false, true);
     }
 
     @Override
