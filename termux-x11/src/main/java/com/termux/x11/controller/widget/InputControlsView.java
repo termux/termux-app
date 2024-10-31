@@ -31,6 +31,7 @@ import com.termux.x11.controller.math.Mathf;
 import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.controller.xserver.Pointer;
 import com.termux.x11.LorieView;
+import com.termux.x11.controller.xserver.XKeycode;
 
 import java.io.File;
 import java.io.IOException;
@@ -519,6 +520,8 @@ public class InputControlsView extends View {
 
     public void sendText(String text) {
         xServer.injectText(text);
+        xServer.injectKeyPress(XKeycode.KEY_ENTER);
+        xServer.injectKeyRelease(XKeycode.KEY_ENTER);
     }
 
     public Bitmap getIcon(byte id) {

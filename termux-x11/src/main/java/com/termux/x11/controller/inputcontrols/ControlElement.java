@@ -17,6 +17,7 @@ import com.termux.x11.controller.core.CubicBezierInterpolator;
 
 import com.termux.x11.controller.math.Mathf;
 import com.termux.x11.controller.widget.InputControlsView;
+import com.termux.x11.controller.xserver.XKeycode;
 
 import org.json.JSONArray;
 import org.json.JSONException;
