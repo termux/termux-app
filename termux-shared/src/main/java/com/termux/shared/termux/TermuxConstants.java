@@ -990,6 +990,10 @@ public final class TermuxConstants {
             public static final String ACTION_WAKE_UNLOCK = TERMUX_PACKAGE_NAME + ".service_wake_unlock"; // Default: "com.termux.service_wake_unlock"
 
 
+            /** Intent action to show TERMUX_SERVICE wakelock state */
+            public static       String ACTION_WAKE_SHOW = TERMUX_PACKAGE_NAME + ".service_wake_show"; // Default: "com.termux.service_wake_show"
+
+
             /** Intent action to execute command with TERMUX_SERVICE */
             public static final String ACTION_SERVICE_EXECUTE = TERMUX_PACKAGE_NAME + ".service_execute"; // Default: "com.termux.service_execute"
 
