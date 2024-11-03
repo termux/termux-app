@@ -142,9 +142,6 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 //        Log.d("onInterceptTouchEvent",String.valueOf(ev.getAction()));
         if (!mContentSwitchSlider) {
-            if (ev.isFromSource(InputDevice.SOURCE_MOUSE)){
-                return false;
-            }
             mTermuxActivity.sendTouchEvent(ev);
             return false;
         }

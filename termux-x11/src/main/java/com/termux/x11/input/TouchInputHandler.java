@@ -143,6 +143,10 @@ public class TouchInputHandler {
                 && ((event.getSource() & InputDevice.SOURCE_TOUCHPAD) != InputDevice.SOURCE_TOUCHPAD)
                 && (event.getToolType(event.getActionIndex()) == MotionEvent.TOOL_TYPE_FINGER);
     }
+    public void setRenderDataOffset(int offsetX,int offsetY){
+        mRenderData.offsetX = offsetX;
+        mRenderData.offsetY = offsetY;
+    }
 
     public boolean handleTouchEvent(View view0, View view, MotionEvent event) {
         if (view0 != view) {

@@ -28,6 +28,7 @@ import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
+import android.view.InputDevice;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -271,6 +272,9 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             getLorieView().screenInfo.offsetY = offsetY;
             inputControlsView.handleTouchEvent(ev);
             return true;
+        }
+        if (ev.isFromSource(InputDevice.SOURCE_MOUSE)){
+            return false;
         }
 //                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
         if (null != mInputHandler) {

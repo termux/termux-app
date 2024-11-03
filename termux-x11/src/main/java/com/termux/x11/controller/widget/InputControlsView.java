@@ -15,6 +15,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -356,6 +357,11 @@ public class InputControlsView extends View {
     }
 
     @Override
+    public boolean onHoverEvent(MotionEvent event) {
+        return touchpadView.onHoverEvent(event);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (editMode && readyToDraw) {
             switch (event.getAction()) {
@@ -394,6 +400,9 @@ public class InputControlsView extends View {
     }
 
     public boolean handleTouchEvent(MotionEvent event) {
+        if (event.isFromSource(InputDevice.SOURCE_MOUSE)){
+            return touchpadView.onTouchEvent(event);
+        }
         if (!editMode && profile != null) {
             int actionIndex = event.getActionIndex();
             int pointerId = event.getPointerId(actionIndex);

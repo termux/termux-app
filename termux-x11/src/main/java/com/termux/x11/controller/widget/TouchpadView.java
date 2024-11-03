@@ -2,6 +2,7 @@ package com.termux.x11.controller.widget;
 
 
 import android.content.Context;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
@@ -118,6 +119,11 @@ public class TouchpadView extends View {
     }
 
     @Override
+    public boolean onHoverEvent(MotionEvent event) {
+        return onTouchEvent(event);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         int actionIndex = event.getActionIndex();
         int pointerId = event.getPointerId(actionIndex);
@@ -127,36 +133,41 @@ public class TouchpadView extends View {
         switch (actionMasked) {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-                if (event.isFromSource(InputDevice.SOURCE_MOUSE)) return true;
+            case MotionEvent.ACTION_HOVER_ENTER:
                 scrollAccumY = 0;
                 scrolling = false;
                 fingers[pointerId] = new Finger(event.getX(actionIndex), event.getY(actionIndex));
                 numFingers++;
-
-                handlerFingerDown(fingers[pointerId]);
+                if (!event.isFromSource(InputDevice.SOURCE_MOUSE)) {
+                    handlerFingerDown(fingers[pointerId]);
+                } else {
+                    xServer.pointer.moveTo(fingers[pointerId].x, fingers[pointerId].y);
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
-                    float[] transformedPoint = XForm.transformPoint(xform, event.getX(), event.getY());
-                    xServer.injectPointerMove((int) transformedPoint[0], (int) transformedPoint[1]);
-                } else {
-                    for (byte i = 0; i < MAX_FINGERS; i++) {
-                        if (fingers[i] != null) {
-                            int pointerIndex = event.findPointerIndex(i);
-                            if (pointerIndex >= 0) {
-                                fingers[i].update(event.getX(pointerIndex), event.getY(pointerIndex));
-                                handleFingerMove(fingers[i]);
+            case MotionEvent.ACTION_HOVER_MOVE:
+                for (byte i = 0; i < MAX_FINGERS; i++) {
+                    if (fingers[i] != null) {
+                        int pointerIndex = event.findPointerIndex(i);
+                        if (pointerIndex >= 0) {
+                            fingers[i].update(event.getX(pointerIndex), event.getY(pointerIndex));
+                            if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
+                                xServer.pointer.moveTo(fingers[pointerId].x, fingers[pointerId].y);
                             } else {
-                                handleFingerUp(fingers[i]);
-                                fingers[i] = null;
-                                numFingers--;
+                                handleFingerMove(fingers[i]);
                             }
+
+                        } else {
+                            handleFingerUp(fingers[i]);
+                            fingers[i] = null;
+                            numFingers--;
                         }
                     }
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_HOVER_EXIT:
                 if (fingers[pointerId] != null) {
                     fingers[pointerId].update(event.getX(actionIndex), event.getY(actionIndex));
                     handleFingerUp(fingers[pointerId]);

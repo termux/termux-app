@@ -201,17 +201,20 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
             }
 
             if (k == KEYCODE_BACK) {
-                if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
-                    switchSoftKeyboard(false);
-                } else if (null != termuxActivityListener && !mEnableFloatBallMenu) {
-                    termuxActivityListener.releaseSlider(true);
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            loriePreferenceFragment.updatePreferencesLayout();
-                        }
-                    }, 500);
+                if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
+                    if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
+                        switchSoftKeyboard(false);
+                    } else if (null != termuxActivityListener && !mEnableFloatBallMenu) {
+                        termuxActivityListener.releaseSlider(true);
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                loriePreferenceFragment.updatePreferencesLayout();
+                            }
+                        }, 500);
+                    }
                 }
+
                 if (e.isFromSource(InputDevice.SOURCE_MOUSE) || e.isFromSource(InputDevice.SOURCE_MOUSE_RELATIVE)) {
                     if (e.getRepeatCount() != 0) // ignore auto-repeat
                         return true;
@@ -279,6 +282,18 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         initStylusAuxButtons();
         initMouseAuxButtons();
         setupInputController();
+//        inputControlsView.setOnHoverListener((v, e) -> {
+//            int[] view0Location = new int[2];
+//            int[] viewLocation = new int[2];
+//
+//            lorieParent.getLocationOnScreen(view0Location);
+//            lorieView.getLocationOnScreen(viewLocation);
+//
+//            int offsetX = viewLocation[0] - view0Location[0];
+//            int offsetY = viewLocation[1] - view0Location[1];
+//            xServer.pointer.moveTo((int) (e.getRawX()-offsetX), (int) (e.getRawY()-offsetY));
+//            return false;
+//        });
 
         if (SDK_INT >= VERSION_CODES.TIRAMISU
             && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PERMISSION_GRANTED
