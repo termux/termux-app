@@ -2,12 +2,12 @@ package com.termux.x11.utils;
 
 import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.graphics.Rect;
-import android.widget.FrameLayout;
-import android.view.View;
 import android.app.Activity;
+import android.content.SharedPreferences;
+import android.graphics.Rect;
+import android.preference.PreferenceManager;
+import android.view.View;
+import android.widget.FrameLayout;
 
 @SuppressWarnings("deprecation")
 public class FullscreenWorkaround {
@@ -21,6 +21,11 @@ public class FullscreenWorkaround {
     private final Activity mActivity;
 
     private int usableHeightPrevious;
+    private static boolean x11Focused;
+
+    public static void setX11Focused(boolean focused) {
+        x11Focused = focused;
+    }
 
     private FullscreenWorkaround(Activity activity) {
         mActivity = activity;
@@ -34,7 +39,7 @@ public class FullscreenWorkaround {
             !mActivity.hasWindowFocus() ||
                 !((mActivity.getWindow().getAttributes().flags & FLAG_FULLSCREEN) == FLAG_FULLSCREEN) ||
                 !preferences.getBoolean("Reseed", true) ||
-                !preferences.getBoolean("X11Focused", true) ||
+                !x11Focused ||
                 !preferences.getBoolean("fullscreen", false) ||
                 SamsungDexUtils.checkDeXEnabled(mActivity)
         )

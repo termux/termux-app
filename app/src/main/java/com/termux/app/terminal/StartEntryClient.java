@@ -150,5 +150,6 @@ public class StartEntryClient implements FileBrowser.FileSlectedAdapter{
     @Override
     public void onFileSelected(FileInfo fileInfo) {
         addStartEntry(fileInfo);
+        mFileBrowser.hideFileBrowser();
     }
 }

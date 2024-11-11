@@ -57,8 +57,8 @@ import com.termux.app.api.file.FileReceiverActivity;
 import com.termux.app.terminal.DisplaySlidingWindow;
 import com.termux.app.terminal.DisplayWindowLinearLayout;
 import com.termux.app.terminal.FloatBallMenuClient;
-import com.termux.app.terminal.StartEntryClient;
 import com.termux.app.terminal.MenuEntryClient;
+import com.termux.app.terminal.StartEntryClient;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
@@ -233,24 +233,19 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
 
     public void onMenuOpen(boolean isOpen, int flag) {
-        if (isOpen && flag == 0) {
-            setX11FocusedPreferencesChanged(false);
-            if (mFloatBallMenuClient != null) {
-                mFloatBallMenuClient.setTerminalShow(true);
-            }
-        } else if (!isOpen && flag == 0) {
-            setX11FocusedPreferencesChanged(true);
-            if (mFloatBallMenuClient != null) {
-                mFloatBallMenuClient.setTerminalShow(false);
-            }
-        } else if (isOpen && flag == 1) {
-            setX11FocusedPreferencesChanged(true);
-            if (mFloatBallMenuClient != null) {
-                mFloatBallMenuClient.setShowPreference(true);
-            }
+        if (isOpen && flag == 1) {
+            setX11FocusedChanged(true);
         } else {
-            setX11FocusedPreferencesChanged(true);
-            if (mFloatBallMenuClient != null) {
+            setX11FocusedChanged(false);
+        }
+        if (mFloatBallMenuClient != null) {
+            if (isOpen && flag == 0) {
+                mFloatBallMenuClient.setTerminalShow(true);
+            } else if (!isOpen && flag == 0) {
+                mFloatBallMenuClient.setTerminalShow(false);
+            } else if (isOpen && flag == 1) {
+                mFloatBallMenuClient.setShowPreference(true);
+            } else {
                 mFloatBallMenuClient.setShowPreference(false);
             }
         }
@@ -273,7 +268,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             inputControlsView.handleTouchEvent(ev);
             return true;
         }
-        if (ev.isFromSource(InputDevice.SOURCE_MOUSE)){
+        if (ev.isFromSource(InputDevice.SOURCE_MOUSE)) {
             return false;
         }
 //                Log.d("sendTouchEvent",String.valueOf(inputControllerViewHandled));
@@ -562,6 +557,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
     public void onResume() {
         super.onResume();
         inputControlsManager.loadProfiles(true);
+        mMainContentView.onResume();
         Logger.logVerbose(LOG_TAG, "onResume");
 
         if (mIsInvalidState) return;

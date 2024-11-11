@@ -205,13 +205,16 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                     if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
                         switchSoftKeyboard(false);
                     } else if (null != termuxActivityListener && !mEnableFloatBallMenu) {
-                        termuxActivityListener.releaseSlider(true);
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                loriePreferenceFragment.updatePreferencesLayout();
-                            }
-                        }, 500);
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                        if (!imm.isActive()) {
+                            termuxActivityListener.releaseSlider(true);
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    loriePreferenceFragment.updatePreferencesLayout();
+                                }
+                            }, 500);
+                        }
                     }
                 }
 
@@ -570,17 +573,11 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }
     }
 
-    protected void setX11FocusedPreferencesChanged(boolean value) {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor edit = p.edit();
-        edit.putBoolean("X11Focused", value);
-        edit.commit();
+    public void setX11FocusedChanged(boolean value) {
+        FullscreenWorkaround.setX11Focused(value);
     }
 
     protected void onPreferencesChanged(String key) {
-        if ("X11Focused".contentEquals(key)) {
-            return;
-        }
         boolean startFresh = false;
         if ("additionalKbdVisible".equals(key) ||
             "showAdditionalKbd".contentEquals(key)) {
