@@ -241,7 +241,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         if (mFloatBallMenuClient != null) {
             if (isOpen && flag == 0) {
                 mFloatBallMenuClient.setTerminalShow(true);
-            } else if (isOpen && flag == 2) {
+            } else if (isOpen && flag == 1) {
                 mFloatBallMenuClient.setShowPreference(true);
             } else {
                 mFloatBallMenuClient.setShowPreference(false);

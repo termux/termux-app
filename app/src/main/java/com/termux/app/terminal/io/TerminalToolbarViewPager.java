@@ -106,7 +106,7 @@ public class TerminalToolbarViewPager {
             if (position == 0) {
                 mActivity.getTerminalView().requestFocus();
             } else {
-                final EditText editText = mTerminalToolbarViewPager.findViewById(R.id.terminal_toolbar_text_input);
+//                final EditText editText = mTerminalToolbarViewPager.findViewById(R.id.terminal_toolbar_text_input);
                 // this lead screen flicker
 //                if (editText != null) editText.requestFocus();
             }

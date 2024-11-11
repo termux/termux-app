@@ -263,28 +263,30 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
             mTermuxActivity.onMenuOpen(false, 1);
             mContentType = ContentType.CENTER_CONTENT;
             mIsRightMenuOpen = false;
-            mLockContentSlider =false;
+            this.mLockContentSlider=false;
         } else {
             this.smoothScrollTo(mMenuWidth + mMenuWidth + mStatusHeight * 4, 0);
             mTermuxActivity.onMenuOpen(true, 1);
             mContentType = ContentType.RIGHT_CONTENT;
             mIsRightMenuOpen = true;
+            this.mLockContentSlider=true;
         }
     }
 
     public void setTerminalViewSwitchSlider(boolean openSlider) {
+        this.mMenuSwitchSlider = openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
             mTermuxActivity.onMenuOpen(false, 0);
             mContentType = ContentType.CENTER_CONTENT;
             mIsLeftMenuOpen = false;
-            mMenuSwitchSlider=false;
+            this.mLockContentSlider=false;
         } else {
             this.smoothScrollTo(0, 0);
             mTermuxActivity.onMenuOpen(true, 0);
             mContentType = ContentType.LEFT_CONTENT;
             mIsLeftMenuOpen = true;
-            mMenuSwitchSlider=true;
+            this.mLockContentSlider=true;
         }
     }
 
