@@ -205,16 +205,13 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
                     if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
                         switchSoftKeyboard(false);
                     } else if (null != termuxActivityListener && !mEnableFloatBallMenu) {
-                        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-                        if (!imm.isActive()) {
-                            termuxActivityListener.releaseSlider(true);
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    loriePreferenceFragment.updatePreferencesLayout();
-                                }
-                            }, 500);
-                        }
+                        termuxActivityListener.releaseSlider(true);
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                loriePreferenceFragment.updatePreferencesLayout();
+                            }
+                        }, 500);
                     }
                 }
 
@@ -573,8 +570,8 @@ public class MainActivity extends LoriePreferences implements View.OnApplyWindow
         }
     }
 
-    public void setX11FocusedChanged(boolean value) {
-        FullscreenWorkaround.setX11Focused(value);
+    public void setX11FocusedChanged(boolean x11Focused) {
+        FullscreenWorkaround.setX11Focused(x11Focused);
     }
 
     protected void onPreferencesChanged(String key) {

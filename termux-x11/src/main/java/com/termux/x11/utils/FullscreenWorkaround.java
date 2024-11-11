@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -21,7 +22,7 @@ public class FullscreenWorkaround {
     private final Activity mActivity;
 
     private int usableHeightPrevious;
-    private static boolean x11Focused;
+    private static boolean x11Focused = true;
 
     public static void setX11Focused(boolean focused) {
         x11Focused = focused;

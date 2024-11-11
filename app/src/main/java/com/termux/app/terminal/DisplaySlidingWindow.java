@@ -73,10 +73,10 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private int mMenuRightPadding;
 
     public boolean isContentSwitchSlider() {
-        return mContentSwitchSlider;
+        return mLockContentSlider;
     }
 
-    private boolean mContentSwitchSlider;
+    private boolean mLockContentSlider;
     private boolean mMenuSwitchSlider;
     private float mDownX, mDownY;
     private boolean mMoving;
@@ -88,7 +88,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     public DisplaySlidingWindow(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         setClickable(true);
-        mContentSwitchSlider = true;
+        mLockContentSlider = true;
         mContentType = ContentType.CENTER_CONTENT;
         remeasure();
     }
@@ -139,16 +139,15 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
         super.onLayout(changed, l, t, r, b);
         if (changed) {
             // hide menu at start up
-            showContent();
+            onResume();
         }
-//        showContent();
         mRefreshEnd = true;
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 //        Log.d("onInterceptTouchEvent",String.valueOf(ev.getAction()));
-        if (!mContentSwitchSlider) {
+        if (!mLockContentSlider) {
             mTermuxActivity.sendTouchEvent(ev);
             return false;
         }
@@ -196,7 +195,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                             mContentType = ContentType.CENTER_CONTENT;
                         }
                         mIsLeftMenuOpen = false;
-                        mContentSwitchSlider = false;
+                        mLockContentSlider = false;
                         mMenuSwitchSlider = false;
                     } else//open left menu
                     {
@@ -228,13 +227,13 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
                             mContentType = ContentType.CENTER_CONTENT;
                         }
                         mIsRightMenuOpen = false;
-                        mContentSwitchSlider = false;
+                        mLockContentSlider = false;
                         mMenuSwitchSlider = false;
                     }
                 }
                 return false;
         }
-        if (mContentSwitchSlider) {
+        if (mLockContentSlider) {
             super.onTouchEvent(ev);
         } else {
             return false;
@@ -259,31 +258,33 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
 
     public void setX11PreferenceSwitchSlider(boolean openSlider) {
         this.mMenuSwitchSlider = openSlider;
-        this.mContentSwitchSlider = !openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
             mTermuxActivity.onMenuOpen(false, 1);
+            mContentType = ContentType.CENTER_CONTENT;
             mIsRightMenuOpen = false;
+            mLockContentSlider =false;
         } else {
             this.smoothScrollTo(mMenuWidth + mMenuWidth + mStatusHeight * 4, 0);
-            if (!mIsRightMenuOpen) {
-                mTermuxActivity.onMenuOpen(true, 1);
-            }
+            mTermuxActivity.onMenuOpen(true, 1);
+            mContentType = ContentType.RIGHT_CONTENT;
             mIsRightMenuOpen = true;
         }
     }
 
     public void setTerminalViewSwitchSlider(boolean openSlider) {
-        this.mContentSwitchSlider = !openSlider;
-        this.mMenuSwitchSlider = openSlider;
         if (!openSlider) {
             this.smoothScrollTo(mMenuWidth, 0);
             mTermuxActivity.onMenuOpen(false, 0);
+            mContentType = ContentType.CENTER_CONTENT;
             mIsLeftMenuOpen = false;
+            mMenuSwitchSlider=false;
         } else {
             this.smoothScrollTo(0, 0);
             mTermuxActivity.onMenuOpen(true, 0);
+            mContentType = ContentType.LEFT_CONTENT;
             mIsLeftMenuOpen = true;
+            mMenuSwitchSlider=true;
         }
     }
 
@@ -294,18 +295,19 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     }
 
     public void releaseSlider(boolean open) {
-        this.mContentSwitchSlider = open;
+        this.mLockContentSlider = open;
         this.mMenuSwitchSlider = !open;
     }
 
     public void showContent() {
-        this.mContentSwitchSlider = false;
+        this.mLockContentSlider = false;
         this.mMenuSwitchSlider = false;
         mRefreshEnd = false;
         remeasure();
         this.smoothScrollTo(mMenuWidth, 0);
         if (mOnMenuChangeListener != null) {
             mOnMenuChangeListener.onMenuOpen(true, 1);
+            mContentType = ContentType.CENTER_CONTENT;
         }
     }
 
