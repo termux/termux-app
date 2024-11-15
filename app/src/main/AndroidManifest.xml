@@ -194,13 +194,14 @@
         <!--                    </intent-filter>-->
         <!--                </provider>-->
         <provider
-            android:name=".filepicker.TermuxFilesProvider"
-            android:authorities="com.termux.TermuxFilesProvider"
+            android:name="bin.mt.file.content.MTDataFilesProvider"
+            android:permission="android.permission.MANAGE_DOCUMENTS"
             android:exported="true"
-            android:grantUriPermissions="true"
-            android:permission="android.permission.MANAGE_DOCUMENTS">
+            android:authorities="com.termux.MTDataFilesProvider"
+            android:grantUriPermissions="true">
             <intent-filter>
-                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+                <action
+                    android:name="android.content.action.DOCUMENTS_PROVIDER" />
             </intent-filter>
         </provider>
 

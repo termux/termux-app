@@ -1,4 +1,4 @@
-package com.termux.filepicker;
+package bin.mt.file.content;
 
 import static android.provider.DocumentsContract.Document.MIME_TYPE_DIR;
 import static android.system.OsConstants.S_IFLNK;
@@ -35,7 +35,7 @@ import java.util.Objects;
  * come from https://github.com/ewt45/winlator-fork/blob/extra2/app/src/main/java/bin/mt/file
  * /content/MTDataFilesProvider.java
  */
-public class TermuxFilesProvider extends DocumentsProvider {
+public class MTDataFilesProvider extends DocumentsProvider {
     private static final String[] g_DEFAULT_ROOT_PROJECTION = {
         Root.COLUMN_ROOT_ID,
         Root.COLUMN_MIME_TYPES,
