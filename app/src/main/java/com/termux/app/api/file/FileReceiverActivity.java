@@ -55,6 +55,8 @@ public class FileReceiverActivity extends AppCompatActivity {
     private static final String LOG_TAG = "FileReceiverActivity";
 
     static boolean isSharedTextAnUrl(String sharedText) {
+        if (sharedText == null || sharedText.isEmpty()) return false;
+
         return Patterns.WEB_URL.matcher(sharedText).matches()
             || Pattern.matches("magnet:\\?xt=urn:btih:.*?", sharedText);
     }

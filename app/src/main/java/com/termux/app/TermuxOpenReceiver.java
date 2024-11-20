@@ -172,6 +172,13 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
 
         @Override
         public String getType(@NonNull Uri uri) {
+            String path = uri.getLastPathSegment();
+            int extIndex = path.lastIndexOf('.') + 1;
+            if (extIndex > 0) {
+                MimeTypeMap mimeMap = MimeTypeMap.getSingleton();
+                String ext = path.substring(extIndex).toLowerCase();
+                return mimeMap.getMimeTypeFromExtension(ext);
+            }
             return null;
         }
 

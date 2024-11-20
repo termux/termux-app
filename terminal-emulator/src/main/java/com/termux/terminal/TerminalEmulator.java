@@ -79,9 +79,13 @@ public final class TerminalEmulator {
     private static final int ESC_CSI_SINGLE_QUOTE = 18;
     /** Escape processing: CSI ! */
     private static final int ESC_CSI_EXCLAMATION = 19;
+    /** Escape processing: "ESC _" or Application Program Command (APC). */
+    private static final int ESC_APC = 20;
+    /** Escape processing: "ESC _" or Application Program Command (APC), followed by Escape. */
+    private static final int ESC_APC_ESCAPE = 21;
 
-    /** The number of parameter arguments. This name comes from the ANSI standard for terminal escape codes. */
-    private static final int MAX_ESCAPE_PARAMETERS = 16;
+    /** The number of parameter arguments including colon separated sub-parameters. */
+    private static final int MAX_ESCAPE_PARAMETERS = 32;
 
     /** Needs to be large enough to contain reasonable OSC 52 pastes. */
     private static final int MAX_OSC_STRING_LENGTH = 8192;
@@ -126,16 +130,14 @@ public final class TerminalEmulator {
     private String mTitle;
     private final Stack<String> mTitleStack = new Stack<>();
 
-    /** If processing first character of first parameter of {@link #ESC_CSI}. */
-    private boolean mIsCSIStart;
-    /** The last character processed of a parameter of {@link #ESC_CSI}. */
-    private Integer mLastCSIArg;
-
     /** The cursor position. Between (0,0) and (mRows-1, mColumns-1). */
     private int mCursorRow, mCursorCol;
 
     /** The number of character rows and columns in the terminal screen. */
     public int mRows, mColumns;
+
+    /** Size of a terminal cell in pixels. */
+    private int mCellWidthPixels, mCellHeightPixels;
 
     /** The number of terminal transcript rows that can be scrolled back to. */
     public static final int TERMINAL_TRANSCRIPT_ROWS_MIN = 100;
@@ -176,6 +178,8 @@ public final class TerminalEmulator {
     private int mArgIndex;
     /** Holds the arguments of the current escape sequence. */
     private final int[] mArgs = new int[MAX_ESCAPE_PARAMETERS];
+    /** Holds the bit flags which arguments are sub parameters (after a colon) - bit N is set if <code>mArgs[N]</code> is a sub parameter. */
+    private int mArgsSubParamsBitSet = 0;
 
     /** Holds OSC and device control arguments, which can be strings. */
     private final StringBuilder mOSCOrDeviceControlArgs = new StringBuilder();
@@ -236,15 +240,17 @@ public final class TerminalEmulator {
     private boolean mCursorBlinkState;
 
     /**
-     * Current foreground and background colors. Can either be a color index in [0,259] or a truecolor (24-bit) value.
+     * Current foreground, background and underline colors. Can either be a color index in [0,259] or a truecolor (24-bit) value.
      * For a 24-bit value the top byte (0xff000000) is set.
+     *
+     * <p>Note that the underline color is currently parsed but not yet used during rendering.
      *
      * @see TextStyle
      */
-    int mForeColor, mBackColor;
+    int mForeColor, mBackColor, mUnderlineColor;
 
     /** Current {@link TextStyle} effect. */
-    private int mEffect;
+    int mEffect;
 
     /**
      * The number of scrolled lines since last calling {@link #clearScrollCounter()}. Used for moving selection up along
@@ -315,13 +321,15 @@ public final class TerminalEmulator {
         }
     }
 
-    public TerminalEmulator(TerminalOutput session, int columns, int rows, Integer transcriptRows, TerminalSessionClient client) {
+    public TerminalEmulator(TerminalOutput session, int columns, int rows, int cellWidthPixels, int cellHeightPixels, Integer transcriptRows, TerminalSessionClient client) {
         mSession = session;
         mScreen = mMainBuffer = new TerminalBuffer(columns, getTerminalTranscriptRows(transcriptRows), rows);
         mAltBuffer = new TerminalBuffer(columns, rows, rows);
         mClient = client;
         mRows = rows;
         mColumns = columns;
+        mCellWidthPixels = cellWidthPixels;
+        mCellHeightPixels = cellHeightPixels;
         mTabStop = new boolean[mColumns];
         reset();
     }
@@ -371,7 +379,10 @@ public final class TerminalEmulator {
         }
     }
 
-    public void resize(int columns, int rows) {
+    public void resize(int columns, int rows, int cellWidthPixels, int cellHeightPixels) {
+        this.mCellWidthPixels = cellWidthPixels;
+        this.mCellHeightPixels = cellHeightPixels;
+
         if (mRows == rows && mColumns == columns) {
             return;
         } else if (columns < 2 || rows < 2) {
@@ -553,6 +564,15 @@ public final class TerminalEmulator {
     }
 
     public void processCodePoint(int b) {
+        // The Application Program-Control (APC) string might be arbitrary non-printable characters, so handle that early.
+        if (mEscapeState == ESC_APC) {
+            doApc(b);
+            return;
+        } else if (mEscapeState == ESC_APC_ESCAPE) {
+            doApcEscape(b);
+            return;
+        }
+
         switch (b) {
             case 0: // Null character (NUL, ^@). Do nothing.
                 break;
@@ -1009,6 +1029,30 @@ public final class TerminalEmulator {
         }
     }
 
+    /**
+     * When in {@link #ESC_APC} (APC, Application Program Command) sequence.
+     */
+    private void doApc(int b) {
+        if (b == 27) {
+            continueSequence(ESC_APC_ESCAPE);
+        }
+        // Eat APC sequences silently for now.
+    }
+
+    /**
+     * When in {@link #ESC_APC} (APC, Application Program Command) sequence.
+     */
+    private void doApcEscape(int b) {
+        if (b == '\\') {
+            // A String Terminator (ST), ending the APC escape sequence.
+            finishSequence();
+        } else {
+            // The Escape character was not the start of a String Terminator (ST),
+            // but instead just data inside of the APC escape sequence.
+            continueSequence(ESC_APC);
+        }
+    }
+
     private int nextTabStop(int numTabs) {
         for (int i = mCursorCol + 1; i < mColumns; i++)
             if (mTabStop[i] && --numTabs == 0) return Math.min(i, mRightMargin);
@@ -1284,6 +1328,7 @@ public final class TerminalEmulator {
         mEscapeState = ESC;
         mArgIndex = 0;
         Arrays.fill(mArgs, -1);
+        mArgsSubParamsBitSet = 0;
     }
 
     private void doLinefeed() {
@@ -1378,8 +1423,8 @@ public final class TerminalEmulator {
                 // http://www.vt100.net/docs/vt100-ug/chapter3.html: "Move the active position to the same horizontal
                 // position on the preceding line. If the active position is at the top margin, a scroll down is performed".
                 if (mCursorRow <= mTopMargin) {
-                    mScreen.blockCopy(0, mTopMargin, mColumns, mBottomMargin - (mTopMargin + 1), 0, mTopMargin + 1);
-                    blockClear(0, mTopMargin, mColumns);
+                    mScreen.blockCopy(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, mBottomMargin - (mTopMargin + 1), mLeftMargin, mTopMargin + 1);
+                    blockClear(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin);
                 } else {
                     mCursorRow--;
                 }
@@ -1393,8 +1438,6 @@ public final class TerminalEmulator {
                 break;
             case '[':
                 continueSequence(ESC_CSI);
-                mIsCSIStart = true;
-                mLastCSIArg = null;
                 break;
             case '=': // DECKPAM
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, true);
@@ -1405,6 +1448,9 @@ public final class TerminalEmulator {
                 break;
             case '>': // DECKPNM
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, false);
+                break;
+            case '_': // APC - Application Program Command.
+                continueSequence(ESC_APC);
                 break;
             default:
                 unknownSequence(b);
@@ -1587,8 +1633,8 @@ public final class TerminalEmulator {
                     final int linesToScrollArg = getArg0(1);
                     final int linesBetweenTopAndBottomMargins = mBottomMargin - mTopMargin;
                     final int linesToScroll = Math.min(linesBetweenTopAndBottomMargins, linesToScrollArg);
-                    mScreen.blockCopy(0, mTopMargin, mColumns, linesBetweenTopAndBottomMargins - linesToScroll, 0, mTopMargin + linesToScroll);
-                    blockClear(0, mTopMargin, mColumns, linesToScroll);
+                    mScreen.blockCopy(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, linesBetweenTopAndBottomMargins - linesToScroll, mLeftMargin, mTopMargin + linesToScroll);
+                    blockClear(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, linesToScroll);
                 } else {
                     // "${CSI}${func};${startx};${starty};${firstrow};${lastrow}T" - initiate highlight mouse tracking.
                     unimplementedSequence(b);
@@ -1715,8 +1761,10 @@ public final class TerminalEmulator {
                         mSession.write("\033[3;0;0t");
                         break;
                     case 14: // Report xterm window in pixels. Result is CSI 4 ; height ; width t
-                        // We just report characters time 12 here.
-                        mSession.write(String.format(Locale.US, "\033[4;%d;%dt", mRows * 12, mColumns * 12));
+                        mSession.write(String.format(Locale.US, "\033[4;%d;%dt", mRows * mCellHeightPixels, mColumns * mCellWidthPixels));
+                        break;
+                    case 16: // Report xterm character cell size in pixels. Result is CSI 6 ; height ; width t
+                        mSession.write(String.format(Locale.US, "\033[6;%d;%dt", mCellHeightPixels, mCellWidthPixels));
                         break;
                     case 18: // Report the size of the text area in characters. Result is CSI 8 ; height ; width t
                         mSession.write(String.format(Locale.US, "\033[8;%d;%dt", mRows, mColumns));
@@ -1765,7 +1813,12 @@ public final class TerminalEmulator {
     private void selectGraphicRendition() {
         if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
         for (int i = 0; i <= mArgIndex; i++) {
-            int code = mArgs[i];
+            // Skip leading sub parameters:
+            if ((mArgsSubParamsBitSet & (1 << i)) != 0) {
+                continue;
+            }
+
+            int code = getArg(i, 0, false);
             if (code < 0) {
                 if (mArgIndex > 0) {
                     continue;
@@ -1784,7 +1837,19 @@ public final class TerminalEmulator {
             } else if (code == 3) {
                 mEffect |= TextStyle.CHARACTER_ATTRIBUTE_ITALIC;
             } else if (code == 4) {
-                mEffect |= TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                if (i + 1 <= mArgIndex && ((mArgsSubParamsBitSet & (1 << (i + 1))) != 0)) {
+                    // Sub parameter, see https://sw.kovidgoyal.net/kitty/underlines/
+                    i++;
+                    if (mArgs[i] == 0) {
+                        // No underline.
+                        mEffect &= ~TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                    } else {
+                        // Different variations of underlines: https://sw.kovidgoyal.net/kitty/underlines/
+                        mEffect |= TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                    }
+                } else {
+                    mEffect |= TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE;
+                }
             } else if (code == 5) {
                 mEffect |= TextStyle.CHARACTER_ATTRIBUTE_BLINK;
             } else if (code == 7) {
@@ -1813,8 +1878,8 @@ public final class TerminalEmulator {
                 mEffect &= ~TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH;
             } else if (code >= 30 && code <= 37) {
                 mForeColor = code - 30;
-            } else if (code == 38 || code == 48) {
-                // Extended set foreground(38)/background (48) color.
+            } else if (code == 38 || code == 48 || code == 58) {
+                // Extended set foreground(38)/background(48)/underline(58) color.
                 // This is followed by either "2;$R;$G;$B" to set a 24-bit color or
                 // "5;$INDEX" to set an indexed color.
                 if (i + 2 > mArgIndex) continue;
@@ -1823,27 +1888,30 @@ public final class TerminalEmulator {
                     if (i + 4 > mArgIndex) {
                         Logger.logWarn(mClient, LOG_TAG, "Too few CSI" + code + ";2 RGB arguments");
                     } else {
-                        int red = mArgs[i + 2], green = mArgs[i + 3], blue = mArgs[i + 4];
+                        int red = getArg(i + 2, 0, false);
+                        int green = getArg(i + 3, 0, false);
+                        int blue = getArg(i + 4, 0, false);
+
                         if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
                             finishSequenceAndLogError("Invalid RGB: " + red + "," + green + "," + blue);
                         } else {
-                            int argbColor = 0xff000000 | (red << 16) | (green << 8) | blue;
-                            if (code == 38) {
-                                mForeColor = argbColor;
-                            } else {
-                                mBackColor = argbColor;
+                            int argbColor = 0xff_00_00_00 | (red << 16) | (green << 8) | blue;
+                            switch (code) {
+                                case 38: mForeColor = argbColor; break;
+                                case 48: mBackColor = argbColor; break;
+                                case 58: mUnderlineColor = argbColor; break;
                             }
                         }
                         i += 4; // "2;P_r;P_g;P_r"
                     }
                 } else if (firstArg == 5) {
-                    int color = mArgs[i + 2];
+                    int color = getArg(i + 2, 0, false);
                     i += 2; // "5;P_s"
                     if (color >= 0 && color < TextStyle.NUM_INDEXED_COLORS) {
-                        if (code == 38) {
-                            mForeColor = color;
-                        } else {
-                            mBackColor = color;
+                        switch (code) {
+                            case 38: mForeColor = color; break;
+                            case 48: mBackColor = color; break;
+                            case 58: mUnderlineColor = color; break;
                         }
                     } else {
                         if (LOG_ESCAPE_SEQUENCES) Logger.logWarn(mClient, LOG_TAG, "Invalid color index: " + color);
@@ -1857,6 +1925,8 @@ public final class TerminalEmulator {
                 mBackColor = code - 40;
             } else if (code == 49) { // Set default background color.
                 mBackColor = TextStyle.COLOR_INDEX_BACKGROUND;
+            } else if (code == 59) { // Set default underline color.
+                mUnderlineColor = TextStyle.COLOR_INDEX_FOREGROUND;
             } else if (code >= 90 && code <= 97) { // Bright foreground colors (aixterm codes).
                 mForeColor = code - 90 + 8;
             } else if (code >= 100 && code <= 107) { // Bright background color (aixterm codes).
@@ -2092,67 +2162,64 @@ public final class TerminalEmulator {
 
     private void scrollDownOneLine() {
         mScrollCounter++;
+        long currentStyle = getStyle();
         if (mLeftMargin != 0 || mRightMargin != mColumns) {
             // Horizontal margin: Do not put anything into scroll history, just non-margin part of screen up.
             mScreen.blockCopy(mLeftMargin, mTopMargin + 1, mRightMargin - mLeftMargin, mBottomMargin - mTopMargin - 1, mLeftMargin, mTopMargin);
             // .. and blank bottom row between margins:
-            mScreen.blockSet(mLeftMargin, mBottomMargin - 1, mRightMargin - mLeftMargin, 1, ' ', mEffect);
+            mScreen.blockSet(mLeftMargin, mBottomMargin - 1, mRightMargin - mLeftMargin, 1, ' ', currentStyle);
         } else {
-            mScreen.scrollDownOneLine(mTopMargin, mBottomMargin, getStyle());
+            mScreen.scrollDownOneLine(mTopMargin, mBottomMargin, currentStyle);
         }
     }
 
     /**
      * Process the next ASCII character of a parameter.
      *
-     * Parameter characters modify the action or interpretation of the sequence. You can use up to
-     * 16 parameters per sequence. You must use the ; character to separate parameters.
-     * All parameters are unsigned, positive decimal integers, with the most significant
+     * <p>You must use the ; character to separate parameters and : to separate sub-parameters.
+     *
+     * <p>Parameter characters modify the action or interpretation of the sequence. Originally
+     * you can use up to 16 parameters per sequence, but following at least xterm and alacritty
+     * we use a common space for parameters and sub-parameters, allowing 32 in total.
+     *
+     * <p>All parameters are unsigned, positive decimal integers, with the most significant
      * digit sent first. Any parameter greater than 9999 (decimal) is set to 9999
      * (decimal). If you do not specify a value, a 0 value is assumed. A 0 value
      * or omitted parameter indicates a default value for the sequence. For most
      * sequences, the default value is 1.
      *
-     * https://vt100.net/docs/vt510-rm/chapter4.html#S4.3.3
+     * <p>References:
+     * <a href="https://vt100.net/docs/vt510-rm/chapter4.html#S4.3.3">VT510 Video Terminal Programmer Information: Control Sequences</a>
+     * <a href="https://github.com/alacritty/vte/issues/22">alacritty/vte: Implement colon separated CSI parameters</a>
      * */
-    private void parseArg(int inputByte) {
-        int[] bytes = new int[]{inputByte};
-        // Only doing this for ESC_CSI and not for other ESC_CSI_* since they seem to be using their
-        // own defaults with getArg*() calls, but there may be missed cases
-        if (mEscapeState == ESC_CSI) {
-            if ((mIsCSIStart && inputByte == ';') || // If sequence starts with a ; character, like \033[;m
-                (!mIsCSIStart && mLastCSIArg != null && mLastCSIArg == ';'  && inputByte == ';')) {  // If sequence contains sequential ; characters, like \033[;;m
-                bytes = new int[]{'0', ';'}; // Assume 0 was passed
+    private void parseArg(int b) {
+        if (b >= '0' && b <= '9') {
+            if (mArgIndex < mArgs.length) {
+                int oldValue = mArgs[mArgIndex];
+                int thisDigit = b - '0';
+                int value;
+                if (oldValue >= 0) {
+                    value = oldValue * 10 + thisDigit;
+                } else {
+                    value = thisDigit;
+                }
+                if (value > 9999)
+                    value = 9999;
+                mArgs[mArgIndex] = value;
             }
-        }
-
-        mIsCSIStart = false;
-
-        for (int b : bytes) {
-            if (b >= '0' && b <= '9') {
-                if (mArgIndex < mArgs.length) {
-                    int oldValue = mArgs[mArgIndex];
-                    int thisDigit = b - '0';
-                    int value;
-                    if (oldValue >= 0) {
-                        value = oldValue * 10 + thisDigit;
-                    } else {
-                        value = thisDigit;
-                    }
-                    if (value > 9999)
-                        value = 9999;
-                    mArgs[mArgIndex] = value;
+            continueSequence(mEscapeState);
+        } else if (b == ';' || b == ':') {
+            if (mArgIndex + 1 < mArgs.length) {
+                mArgIndex++;
+                if (b == ':') {
+                    mArgsSubParamsBitSet |= 1 << mArgIndex;
                 }
-                continueSequence(mEscapeState);
-            } else if (b == ';') {
-                if (mArgIndex < mArgs.length) {
-                    mArgIndex++;
-                }
-                continueSequence(mEscapeState);
             } else {
-                unknownSequence(b);
+                logError("Too many parameters when in state: " + mEscapeState);
             }
-            mLastCSIArg = b;
+            continueSequence(mEscapeState);
+        } else {
+            unknownSequence(b);
         }
     }
 
