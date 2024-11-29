@@ -4,7 +4,7 @@
 
 <resources>
 
-    <string name="application_name">&TERMUX_APP_NAME;termux</string>
+    <string name="application_name">&TERMUX_APP_NAME; </string>
     <string name="shared_user_label">&TERMUX_APP_NAME; user</string>
 
 
