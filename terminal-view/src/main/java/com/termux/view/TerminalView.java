@@ -512,12 +512,12 @@ public final class TerminalView extends View {
      * @param textSize the new font size, in density-independent pixels.
      */
     public void setTextSize(int textSize) {
-        mRenderer = new TerminalRenderer(textSize, mRenderer == null ? Typeface.MONOSPACE : mRenderer.mTypeface);
+        mRenderer = new TerminalRenderer(textSize, mRenderer == null ? Typeface.MONOSPACE : mRenderer.mTypeface, mRenderer == null ? Typeface.MONOSPACE : mRenderer.mItalicTypeface);
         updateSize();
     }
 
-    public void setTypeface(Typeface newTypeface) {
-        mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
+    public void setTypefaces(Typeface newTypeface, Typeface newItalicTypeFace) {
+        mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface, newItalicTypeFace);
         updateSize();
         invalidate();
     }
