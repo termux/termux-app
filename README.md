@@ -179,7 +179,8 @@ The main ones are the following.
 
 - [XTerm control sequences](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html)
 - [vt100.net](https://vt100.net/)
-- [Terminal codes (ANSI and terminfo equivalents)](https://wiki.bash-hackers.org/scripting/terminalcodes)
+- [Terminal codes (ANSI and terminfo equivalents)](https://archive.ph/20200706182357/https://wiki.bash-hackers.org/scripting/terminalcodes)
+- [ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code)
 
 ### Terminal emulators
 
