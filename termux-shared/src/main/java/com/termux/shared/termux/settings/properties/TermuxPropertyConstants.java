@@ -82,7 +82,7 @@ import java.util.Set;
  *      - Add `KEY_DISABLE_FILE_SHARE_RECEIVER` and `KEY_DISABLE_FILE_VIEW_RECEIVER`.
  * 
  * - 0.19.0 (2025-01-23)
- *      - Add `KEY_DISABLE_ZOOM_SCALE`.
+ *      - Add `disable-terminal-view-scaling`.
  */
 
 /**
@@ -102,8 +102,8 @@ public final class TermuxPropertyConstants {
 
     /* boolean */
     
-    /** Defines the key for whether screen scaling are enabled. */
-    public static final String KEY_DISABLE_ZOOM_SCALE =  "disable-zoom-scale"; // Default: "disable-zoom-scale"
+    /** Defines the key for whether terminal view scaling are enabled. */
+    public static final String KEY_DISABLE_TERMINAL_VIEW_SCALING =  "disable-terminal-view-scaling"; // Default: "disable-terminal-view-scaling"
 
 
 
@@ -399,7 +399,7 @@ public final class TermuxPropertyConstants {
      * */
     public static final Set<String> TERMUX_APP_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         /* boolean */        
-        KEY_DISABLE_ZOOM_SCALE,
+        KEY_DISABLE_TERMINAL_VIEW_SCALING,
         KEY_DISABLE_FILE_SHARE_RECEIVER,
         KEY_DISABLE_FILE_VIEW_RECEIVER,
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
@@ -448,7 +448,7 @@ public final class TermuxPropertyConstants {
      * default: false
      */
     public static final Set<String> TERMUX_DEFAULT_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
-        KEY_DISABLE_ZOOM_SCALE,
+        KEY_DISABLE_TERMINAL_VIEW_SCALING,
         KEY_DISABLE_FILE_SHARE_RECEIVER,
         KEY_DISABLE_FILE_VIEW_RECEIVER,
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,

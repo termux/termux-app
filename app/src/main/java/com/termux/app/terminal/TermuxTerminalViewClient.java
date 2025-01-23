@@ -227,8 +227,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     }
 
     @Override
-    public boolean isZoomScaleDisabled() {
-        return mActivity.getProperties().isZoomScaleDisabled();
+    public boolean isTerminalViewScalingDisabled() {
+        return mActivity.getProperties().isTerminalViewScalingDisabled();
     }
 
 

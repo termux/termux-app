@@ -36,7 +36,7 @@ public interface TerminalViewClient {
 
     boolean isTerminalViewSelected();
 
-    boolean isZoomScaleDisabled();
+    boolean isTerminalViewScalingDisabled();
 
 
     void copyModeChanged(boolean copyMode);

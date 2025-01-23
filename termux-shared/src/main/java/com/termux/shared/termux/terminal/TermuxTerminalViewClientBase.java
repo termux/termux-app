@@ -13,7 +13,7 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
     }
 
     @Override
-    public boolean isZoomScaleDisabled() {
+    public boolean isTerminalViewScalingDisabled() {
         return false;
     }
     
