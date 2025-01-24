@@ -1,6 +1,15 @@
 package com.termux.terminal;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.HashMap;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+
+import android.os.SystemClock;
 
 /**
  * A circular buffer of {@link TerminalRow}:s which keeps notes about what is visible on a logical screen and the scroll
@@ -20,6 +29,12 @@ public final class TerminalBuffer {
     /** The index in the circular buffer where the visible screen starts. */
     private int mScreenFirstRow = 0;
 
+    public HashMap<Integer,TerminalBitmap> bitmaps;
+    public WorkingTerminalBitmap workingBitmap;
+    private boolean hasBitmaps;
+    private long bitmapLastGC;
+
+
     /**
      * Create a transcript screen.
      *
@@ -35,6 +50,9 @@ public final class TerminalBuffer {
         mLines = new TerminalRow[totalRows];
 
         blockSet(0, 0, columns, screenRows, ' ', TextStyle.NORMAL);
+        hasBitmaps = false;
+        bitmaps = new HashMap<Integer,TerminalBitmap>();
+        bitmapLastGC = SystemClock.uptimeMillis();
     }
 
     public String getTranscriptText() {
@@ -401,6 +419,28 @@ public final class TerminalBuffer {
         if (mLines[blankRow] == null) {
             mLines[blankRow] = new TerminalRow(mColumns, style);
         } else {
+            // find if a bitmap is completely scrolled out
+            Set<Integer> used = new HashSet<Integer>();
+            if(mLines[blankRow].mHasBitmap) {
+                for (int column = 0; column < mColumns; column++) {
+                    final long st = mLines[blankRow].getStyle(column);
+                    if (TextStyle.isBitmap(st)) {
+                        used.add((int)(st >> 16) & 0xffff);
+                    }
+                }
+                TerminalRow nextLine =  mLines[(blankRow + 1) % mTotalRows];
+                if(nextLine.mHasBitmap) {
+                    for (int column = 0; column < mColumns; column++) {
+                        final long st = nextLine.getStyle(column);
+                        if (TextStyle.isBitmap(st)) {
+                            used.remove((int)(st >> 16) & 0xffff);
+                        }
+                    }
+                }
+                for(Integer bm: used) {
+                    bitmaps.remove(bm);
+                }
+            }
             mLines[blankRow].clear(style);
         }
     }
@@ -439,9 +479,13 @@ public final class TerminalBuffer {
             throw new IllegalArgumentException(
                 "Illegal arguments! blockSet(" + sx + ", " + sy + ", " + w + ", " + h + ", " + val + ", " + mColumns + ", " + mScreenRows + ")");
         }
-        for (int y = 0; y < h; y++)
+        for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++)
                 setChar(sx + x, sy + y, val, style);
+            if (sx+w == mColumns && val == ' ') {
+                clearLineWrap(sy + y);
+            }
+        }
     }
 
     public TerminalRow allocateFullLineIfNecessary(int row) {
@@ -492,6 +536,92 @@ public final class TerminalBuffer {
             Arrays.fill(mLines, mScreenFirstRow - mActiveTranscriptRows, mScreenFirstRow, null);
         }
         mActiveTranscriptRows = 0;
+        bitmaps.clear();
+        hasBitmaps = false;
     }
 
+    public Bitmap getSixelBitmap(int codePoint, long style) {
+        return bitmaps.get(TextStyle.bitmapNum(style)).bitmap;
+    }
+
+    public Rect getSixelRect(int codePoint, long style ) {
+        TerminalBitmap bm = bitmaps.get(TextStyle.bitmapNum(style));
+        int x = TextStyle.bitmapX(style);
+        int y = TextStyle.bitmapY(style);
+        Rect r = new Rect(x * bm.cellWidth, y * bm.cellHeight, (x+1) * bm.cellWidth, (y+1) * bm.cellHeight);
+        return r;
+    }
+
+    public void sixelStart(int width, int height) {
+        workingBitmap = new WorkingTerminalBitmap(width, height);
+    }
+
+    public void sixelChar(int c, int rep) {
+        workingBitmap.sixelChar(c, rep);
+    }
+
+    public void sixelSetColor(int col) {
+        workingBitmap.sixelSetColor(col);
+    }
+
+    public void sixelSetColor(int col, int r, int g, int b) {
+        workingBitmap.sixelSetColor(col, r, g, b);
+    }
+
+    private int findFreeBitmap() {
+        int i = 0;
+        while (bitmaps.containsKey(i)) {
+            i++;
+        }
+        return i;
+    }
+
+    public int sixelEnd(int Y, int X, int cellW, int cellH) {
+        int num = findFreeBitmap();
+        bitmaps.put(num, new TerminalBitmap(num, workingBitmap, Y, X, cellW, cellH, this));
+        workingBitmap = null;
+        if (bitmaps.get(num).bitmap == null) {
+            bitmaps.remove(num);
+            return 0;
+        }
+        hasBitmaps = true;
+        bitmapGC(30000);
+        return bitmaps.get(num).scrollLines;
+    }
+
+    public int[] addImage(byte[] image, int Y, int X, int cellW, int cellH, int width, int height, boolean aspect) {
+        int num = findFreeBitmap();
+        bitmaps.put(num, new TerminalBitmap(num, image, Y, X, cellW, cellH, width, height, aspect, this));
+        if (bitmaps.get(num).bitmap == null) {
+            bitmaps.remove(num);
+            return new int[] {0,0};
+        }
+        hasBitmaps = true;
+        bitmapGC(30000);
+        return bitmaps.get(num).cursorDelta;
+    }
+
+    public void bitmapGC(int timeDelta) {
+        if (!hasBitmaps || bitmapLastGC + timeDelta > SystemClock.uptimeMillis()) {
+            return;
+        }
+        Set<Integer> used = new HashSet<Integer>();
+        for (int line = 0; line < mLines.length; line++) {
+            if(mLines[line] != null && mLines[line].mHasBitmap) {
+                for (int column = 0; column < mColumns; column++) {
+                    final long st = mLines[line].getStyle(column);
+                    if (TextStyle.isBitmap(st)) {
+                        used.add((int)(st >> 16) & 0xffff);
+                    }
+                }
+            }
+        }
+        Set<Integer> keys = new HashSet<Integer>(bitmaps.keySet());
+        for (Integer bn: keys) {
+            if (!used.contains(bn)) {
+                bitmaps.remove(bn);
+            }
+        }
+        bitmapLastGC = SystemClock.uptimeMillis();
+    }
 }
