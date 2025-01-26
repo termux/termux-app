@@ -496,6 +496,8 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             File colorsFile = TermuxConstants.TERMUX_COLOR_PROPERTIES_FILE;
             File fontFile = TermuxConstants.TERMUX_FONT_FILE;
             File italicFontFile = TermuxConstants.TERMUX_ITALIC_FONT_FILE;
+            File boldFontFile = TermuxConstants.TERMUX_BOLD_FONT_FILE;
+            File boldItalicFontFile = TermuxConstants.TERMUX_BOLD_ITALIC_FONT_FILE;
 
             final Properties props = new Properties();
             if (colorsFile.isFile()) {
@@ -513,7 +515,15 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
             final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
             final Typeface newItalicTypeface = (italicFontFile.exists() && italicFontFile.length() > 0) ? Typeface.createFromFile(italicFontFile) : newTypeface;
-            mActivity.getTerminalView().setTypefaces(newTypeface, newItalicTypeface);
+            final Typeface newBoldTypeface = (boldFontFile.exists() && boldFontFile.length() > 0) ? Typeface.createFromFile(boldFontFile) : newTypeface;
+            final Typeface newBoldItalicTypeface;
+            if (boldItalicFontFile.exists() && boldItalicFontFile.length() > 0) {
+                newBoldItalicTypeface = Typeface.createFromFile(boldItalicFontFile);
+            } else {
+                newBoldItalicTypeface = newItalicTypeface != newTypeface ? newItalicTypeface : newBoldTypeface;
+            }
+
+            mActivity.getTerminalView().setTypefaces(newTypeface, newItalicTypeface, newBoldTypeface, newBoldItalicTypeface);
         } catch (Exception e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error in checkForFontAndColors()", e);
         }

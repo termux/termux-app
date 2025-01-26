@@ -21,6 +21,8 @@ public final class TerminalRenderer {
     final int mTextSize;
     final Typeface mTypeface;
     final Typeface mItalicTypeface;
+    final Typeface mBoldTypeface;
+    final Typeface mBoldItalicTypeface;
     private final Paint mTextPaint = new Paint();
 
     /** The width of a single mono spaced character obtained by {@link Paint#measureText(String)} on a single 'X'. */
@@ -31,33 +33,18 @@ public final class TerminalRenderer {
     private final int mFontAscent;
     /** The {@link #mFontLineSpacing} + {@link #mFontAscent}. */
     final int mFontLineSpacingAndAscent;
-
-
-    /** The width of a single mono spaced italic character obtained by {@link Paint#measureText(String)} on a single 'X'. */
-    final float mItalicFontWidth;
-    /** The {@link Paint#getFontSpacing()}. See http://www.fampennings.nl/maarten/android/08numgrid/font.png */
-    final int mItalicFontLineSpacing;
-    /** The {@link Paint#ascent()}. See http://www.fampennings.nl/maarten/android/08numgrid/font.png */
-    private final int mItalicFontAscent;
-    /** The {@link #mFontLineSpacing} + {@link #mFontAscent}. */
-    final int mItalicFontLineSpacingAndAscent;
-
     private final float[] asciiMeasures = new float[127];
 
-    public TerminalRenderer(int textSize, Typeface typeface, Typeface italicTypeface) {
+    public TerminalRenderer(int textSize, Typeface typeface, Typeface italicTypeface, Typeface boldTypeface, Typeface boldItalicTypeface) {
         mTextSize = textSize;
         mTypeface = typeface;
         mItalicTypeface = italicTypeface;
-
-        mTextPaint.setTypeface(italicTypeface);
-        mTextPaint.setAntiAlias(true);
-        mTextPaint.setTextSize(textSize);
-        mItalicFontLineSpacing = (int) Math.ceil(mTextPaint.getFontSpacing());
-        mItalicFontAscent = (int) Math.ceil(mTextPaint.ascent());
-        mItalicFontLineSpacingAndAscent = mItalicFontLineSpacing + mItalicFontAscent;
-        mItalicFontWidth = mTextPaint.measureText("X");
+        mBoldTypeface = boldTypeface;
+        mBoldItalicTypeface = boldItalicTypeface;
 
         mTextPaint.setTypeface(typeface);
+        mTextPaint.setAntiAlias(true);
+        mTextPaint.setTextSize(textSize);
         typeface.getStyle();
 
         mFontLineSpacing = (int) Math.ceil(mTextPaint.getFontSpacing());
@@ -187,23 +174,18 @@ public final class TerminalRenderer {
         final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
         final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
 
-        final float fontWidth;
-        final int fontAscent;
-        final int fontLineSpacingAndAscent;
 
-        if (italic) {
-            fontWidth = mItalicFontWidth;
-            fontAscent = mItalicFontAscent;
-            fontLineSpacingAndAscent = mItalicFontLineSpacingAndAscent;
-
+        if (italic && bold) {
+            mTextPaint.setTypeface(mBoldItalicTypeface);
+        } else if (italic) {
             mTextPaint.setTypeface(mItalicTypeface);
-        } else {
-            fontWidth = mFontWidth;
-            fontAscent = mFontAscent;
-            fontLineSpacingAndAscent = mFontLineSpacingAndAscent;
-
-            mTextPaint.setTypeface(mTypeface);
+        } else if (bold) {
+            mTextPaint.setTypeface(mBoldTypeface);
         }
+
+        final float fontWidth = mTextPaint.measureText("X");
+        final int fontAscent = (int) Math.ceil(mTextPaint.ascent());
+        final int fontLineSpacingAndAscent = (int) Math.ceil(mTextPaint.getFontSpacing()) + fontAscent;
 
         if ((foreColor & 0xff000000) != 0xff000000) {
             // Let bold have bright colors if applicable (one of the first 8):
@@ -263,9 +245,9 @@ public final class TerminalRenderer {
                 foreColor = 0xFF000000 + (red << 16) + (green << 8) + blue;
             }
 
-            mTextPaint.setFakeBoldText(bold);
+            mTextPaint.setFakeBoldText(bold && !mTextPaint.getTypeface().isBold());
             mTextPaint.setUnderlineText(underline);
-            mTextPaint.setTextSkewX(italic && mItalicTypeface == mTypeface ? -0.35f : 0.f);
+            mTextPaint.setTextSkewX(italic && !mTextPaint.getTypeface().isItalic() ? -0.35f : 0.f);
             mTextPaint.setStrikeThruText(strikeThrough);
             mTextPaint.setColor(foreColor);
 
