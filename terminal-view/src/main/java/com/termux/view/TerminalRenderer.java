@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.util.Log;
 
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalEmulator;
@@ -17,6 +18,9 @@ import com.termux.terminal.WcWidth;
  * Saves font metrics, so needs to be recreated each time the typeface or font size changes.
  */
 public final class TerminalRenderer {
+    boolean uniqueItalicTypeface;
+    boolean uniqueBoldTypeface;
+    boolean uniqueBoldItalicTypeface;
 
     final int mTextSize;
     final Typeface mTypeface;
@@ -41,6 +45,11 @@ public final class TerminalRenderer {
         mItalicTypeface = italicTypeface;
         mBoldTypeface = boldTypeface;
         mBoldItalicTypeface = boldItalicTypeface;
+
+        uniqueItalicTypeface = !mItalicTypeface.equals(mTypeface);
+        uniqueBoldTypeface = !mBoldTypeface.equals(mTypeface);
+        uniqueBoldItalicTypeface = !mBoldItalicTypeface.equals(mTypeface) && !mBoldItalicTypeface.equals(mItalicTypeface) && !mBoldItalicTypeface.equals(mBoldTypeface);
+
 
         mTextPaint.setTypeface(typeface);
         mTextPaint.setAntiAlias(true);
@@ -177,10 +186,28 @@ public final class TerminalRenderer {
 
         if (italic && bold) {
             mTextPaint.setTypeface(mBoldItalicTypeface);
+            if (mBoldItalicTypeface.equals(mBoldTypeface) && uniqueBoldTypeface) {
+                mTextPaint.setFakeBoldText(false);
+                mTextPaint.setTextSkewX(-0.35f);
+            } else if (mBoldItalicTypeface.equals(mItalicTypeface) && uniqueItalicTypeface){
+                mTextPaint.setFakeBoldText(true);
+                mTextPaint.setTextSkewX(uniqueItalicTypeface ? 0.f : -0.35f);
+            } else {
+                mTextPaint.setFakeBoldText(false);
+                mTextPaint.setTextSkewX(0.f);
+            }
         } else if (italic) {
             mTextPaint.setTypeface(mItalicTypeface);
+            mTextPaint.setFakeBoldText(false);
+            mTextPaint.setTextSkewX(uniqueItalicTypeface ? 0.f : -0.35f);
         } else if (bold) {
             mTextPaint.setTypeface(mBoldTypeface);
+            mTextPaint.setFakeBoldText(!uniqueBoldTypeface);
+            mTextPaint.setTextSkewX(0.f);
+        } else {
+            mTextPaint.setTypeface(mTypeface);
+            mTextPaint.setFakeBoldText(false);
+            mTextPaint.setTextSkewX(0.f);
         }
 
         final float fontWidth = mTextPaint.measureText("X");
@@ -245,9 +272,7 @@ public final class TerminalRenderer {
                 foreColor = 0xFF000000 + (red << 16) + (green << 8) + blue;
             }
 
-            mTextPaint.setFakeBoldText(bold && !mTextPaint.getTypeface().isBold());
             mTextPaint.setUnderlineText(underline);
-            mTextPaint.setTextSkewX(italic && !mTextPaint.getTypeface().isItalic() ? -0.35f : 0.f);
             mTextPaint.setStrikeThruText(strikeThrough);
             mTextPaint.setColor(foreColor);
 

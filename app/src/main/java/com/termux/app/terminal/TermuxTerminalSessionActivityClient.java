@@ -520,7 +520,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             if (boldItalicFontFile.exists() && boldItalicFontFile.length() > 0) {
                 newBoldItalicTypeface = Typeface.createFromFile(boldItalicFontFile);
             } else {
-                newBoldItalicTypeface = newItalicTypeface != newTypeface ? newItalicTypeface : newBoldTypeface;
+                newBoldItalicTypeface = newBoldTypeface != newTypeface ? newBoldTypeface : newItalicTypeface;
             }
 
             mActivity.getTerminalView().setTypefaces(newTypeface, newItalicTypeface, newBoldTypeface, newBoldItalicTypeface);
