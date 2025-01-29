@@ -14,7 +14,7 @@ android {
         implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
         implementation "io.noties.markwon:linkify:$markwonVersion"
         implementation "io.noties.markwon:recycler:$markwonVersion"
-        implementation "org.lsposed.hiddenapibypass:hiddenapibypass:2.0"
+        implementation "org.lsposed.hiddenapibypass:hiddenapibypass:5.0"
 
         // Do not increment version higher than 1.0.0-alpha09 since it will break ViewUtils and needs to be looked into
         // noinspection GradleDependency
