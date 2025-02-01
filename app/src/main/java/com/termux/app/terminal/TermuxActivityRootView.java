@@ -3,6 +3,8 @@ package com.termux.app.terminal;
 import android.content.Context;
 import android.graphics.Rect;
 import android.inputmethodservice.InputMethodService;
+import android.os.Bundle;
+import java.lang.reflect.Method;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -118,6 +120,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
 
     @Override
     public void onGlobalLayout() {
+        if (isMIUI() || isHyperOS()) return;
         if (mActivity == null || !mActivity.isVisible()) return;
 
         View bottomSpaceView = mActivity.getTermuxActivityBottomSpaceView();
@@ -281,4 +284,34 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
         }
     }
 
+	private boolean isMIUI() {
+		try {
+			String miuiVersion = getSystemProperty("ro.miui.ui.version.name");
+			return !miuiVersion.isEmpty();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private boolean isHyperOS() {
+		try {
+			String hyperOSVersion = getSystemProperty("ro.mi.os.version.name");
+			return !hyperOSVersion.isEmpty();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private String getSystemProperty(String key) {
+		try {
+			Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
+			Method getMethod = systemPropertiesClass.getMethod("get", String.class);
+			return (String) getMethod.invoke(null, key);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
 }
