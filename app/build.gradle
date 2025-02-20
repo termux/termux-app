@@ -126,6 +126,7 @@ android {
             useLegacyPackaging true
         }
     }
+    namespace 'com.termux'
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->

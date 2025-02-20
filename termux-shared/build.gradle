@@ -60,6 +60,12 @@ android {
             path file('src/main/cpp/Android.mk')
         }
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
+    namespace 'com.termux.shared'
 }
 
 dependencies {
@@ -71,7 +77,6 @@ dependencies {
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier "sources"
 }
 
 afterEvaluate {

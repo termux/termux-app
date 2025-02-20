@@ -4,7 +4,9 @@ plugins {
 }
 
 android {
-    
+    buildFeatures {
+        aidl true
+    }
     
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
 
@@ -25,11 +27,17 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
+    namespace 'com.termux.plugin_aidl'
 }
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs, "build/generated/aidl_source_output_dir/release/out"
-    classifier "sources"
     dependsOn "compileReleaseAidl"
 }
 
