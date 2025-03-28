@@ -10,6 +10,13 @@ ext {
     // by replacing $PREFIX since app code is dependant on the variant used to build the APK.
     // Currently supported values are: [ "apt-android-7" "apt-android-5" ]
     packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7" // Default: "apt-android-7"
+    bootstrapMinSdk = packageVariant == "apt-android-5" ? 21 : 24
+    bootstrapMinRelease = packageVariant == "apt-android-5" ? "5.0" : "7.0"
+    bootstrapMaxSdk = packageVariant == "apt-android-5" ? 23 : null
+    bootstrapMaxRelease = packageVariant == "apt-android-5" ? "6.0" : null
+
+    buildMinSdk = bootstrapMinSdk
+    buildTargetSdk = project.properties.targetSdkVersion.toInteger()
 }
 
 android {
@@ -39,14 +46,20 @@ android {
 
     defaultConfig {
         applicationId "com.termux"
-        minSdkVersion project.properties.minSdkVersion.toInteger()
-        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        minSdk buildMinSdk
+        targetSdk buildTargetSdk
         versionCode 1020
         versionName "0.119.0-beta.1"
 
         if (appVersionName) versionName = appVersionName
         validateVersionName(versionName)
 
+        buildConfigField "Integer", "TERMUX_APP__BOOTSTRAP_MIN_SDK", project.ext.bootstrapMinSdk.toString()
+        buildConfigField "String", "TERMUX_APP__BOOTSTRAP_MIN_RELEASE",
+                project.ext.bootstrapMinRelease ? "\"" + project.ext.bootstrapMinRelease + "\"" : "null"
+        buildConfigField "Integer", "TERMUX_APP__BOOTSTRAP_MAX_SDK", project.ext.bootstrapMaxSdk.toString()
+        buildConfigField "String", "TERMUX_APP__BOOTSTRAP_MAX_RELEASE",
+                project.ext.bootstrapMaxRelease ? "\"" + project.ext.bootstrapMaxRelease + "\"" : "null"
         buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"" + project.ext.packageVariant + "\"" // Used by TermuxApplication class
 
         manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux"

@@ -27,10 +27,18 @@
 
     <!-- Termux Bootstrap Packages Installation -->
     <string name="bootstrap_installer_body">Installing bootstrap packages…</string>
-    <string name="bootstrap_error_title">Unable to install bootstrap</string>
+    <string name="bootstrap_error_title">&TERMUX_APP_NAME; Bootstrap Error</string>
     <string name="bootstrap_error_body">&TERMUX_APP_NAME; was unable to install the bootstrap packages.</string>
     <string name="bootstrap_error_abort">Abort</string>
     <string name="bootstrap_error_try_again">Try again</string>
+    <string name="bootstrap_error_apk_bootstrap_variant_min_sdk_incompatible">The APK bootstrap variant %1$s
+        of currently installed &TERMUX_APP_NAME; app is not compatible with the Android version %2$s
+        (sdk `%3$d`) of the device and it requires minimum Android version %4$s (sdk `%5$d`).
+        \n\nUninstall the &TERMUX_APP_NAME; app and reinstall the correct APK build variant.</string>
+    <string name="bootstrap_error_apk_bootstrap_variant_max_sdk_incompatible">The APK bootstrap variant %1$s
+        of currently installed &TERMUX_APP_NAME; app is not compatible with the Android version %2$s
+        (sdk `%3$d`) of the device and it requires maximum Android version %4$s (sdk `%5$d`).
+        \n\nUninstall the &TERMUX_APP_NAME; app and reinstall the correct APK build variant.</string>
     <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; can only be run as the primary user.
         \nBootstrap binaries compiled for &TERMUX_APP_NAME; have hardcoded $PREFIX path and cannot be installed
         under any path other than:\n%1$s.</string>
