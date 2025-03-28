@@ -1,9 +1,13 @@
 package com.termux.shared.shell;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
+import com.termux.shared.android.SELinuxUtils;
+import com.termux.shared.data.DataUtils;
 import com.termux.shared.models.errors.Error;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.file.FileUtils;
@@ -57,10 +61,42 @@ public class TermuxShellUtils {
         if (TERMUX_API_VERSION_NAME != null)
             environment.add("TERMUX_API_VERSION=" + TERMUX_API_VERSION_NAME);
 
+
+
         environment.add("TERM=xterm-256color");
         environment.add("COLORTERM=truecolor");
+
+        try {
+            ApplicationInfo applicationInfo = currentPackageContext.getPackageManager().getApplicationInfo(
+                TermuxConstants.TERMUX_PACKAGE_NAME, 0);
+            if (applicationInfo != null && !applicationInfo.enabled) {
+                applicationInfo = null;
+            }
+
+            if (applicationInfo != null) {
+                environment.add("TERMUX_APP__DATA_DIR=" + applicationInfo.dataDir);
+                environment.add("TERMUX_APP__LEGACY_DATA_DIR=" + "/data/data/" + applicationInfo.packageName);
+                environment.add("TERMUX_APP__BUILD_DATA_DIR=" + TermuxConstants.TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH);
+
+                environment.add("TERMUX_APP__SE_FILE_CONTEXT=" + SELinuxUtils.getFileContext(applicationInfo.dataDir));
+
+                String seInfoUser = PackageUtils.getApplicationInfoSeInfoUserForPackage(applicationInfo);
+                environment.add("TERMUX_APP__SE_INFO=" + PackageUtils.getApplicationInfoSeInfoForPackage(applicationInfo) +
+                    (DataUtils.isNullOrEmpty(seInfoUser) ? "" : seInfoUser));
+            }
+
+        } catch (final Exception e) {
+            // Ignore
+        }
+
+        environment.add("TERMUX__ROOTFS=" + TermuxConstants.TERMUX_FILES_DIR_PATH);
         environment.add("HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH);
+        environment.add("TERMUX__HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH);
         environment.add("PREFIX=" + TermuxConstants.TERMUX_PREFIX_DIR_PATH);
+        environment.add("TERMUX__PREFIX=" + TermuxConstants.TERMUX_PREFIX_DIR_PATH);
+
+        environment.add("TERMUX__SE_PROCESS_CONTEXT=" + SELinuxUtils.getContext());
+
         environment.add("BOOTCLASSPATH=" + System.getenv("BOOTCLASSPATH"));
         environment.add("ANDROID_ROOT=" + System.getenv("ANDROID_ROOT"));
         environment.add("ANDROID_DATA=" + System.getenv("ANDROID_DATA"));
