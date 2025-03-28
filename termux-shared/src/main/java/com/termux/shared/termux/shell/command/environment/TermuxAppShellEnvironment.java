@@ -59,13 +59,13 @@ public class TermuxAppShellEnvironment {
     public static final String ENV_TERMUX_APP__APK_FILE = TERMUX_APP_ENV_PREFIX + "APK_FILE";
     /** Environment variable for the Termux app is installed on external/portable storage. */
     public static final String ENV_TERMUX_APP__IS_INSTALLED_ON_EXTERNAL_STORAGE = TERMUX_APP_ENV_PREFIX + "IS_INSTALLED_ON_EXTERNAL_STORAGE";
-
-    /** Environment variable for the Termux app process selinux context. */
-    public static final String ENV_TERMUX__SE_PROCESS_CONTEXT = TERMUX_ENV__S_TERMUX + "SE_PROCESS_CONTEXT";
     /** Environment variable for the Termux app data files selinux context. */
-    public static final String ENV_TERMUX__SE_FILE_CONTEXT = TERMUX_ENV__S_TERMUX + "SE_FILE_CONTEXT";
+    public static final String ENV_TERMUX_APP__SE_FILE_CONTEXT = TERMUX_APP_ENV_PREFIX + "SE_FILE_CONTEXT";
     /** Environment variable for the Termux app seInfo tag found in selinux policy used to set app process and app data files selinux context. */
-    public static final String ENV_TERMUX__SE_INFO = TERMUX_ENV__S_TERMUX + "SE_INFO";
+    public static final String ENV_TERMUX_APP__SE_INFO = TERMUX_APP_ENV_PREFIX + "SE_INFO";
+
+    /** Environment variable for the current Termux process selinux context. */
+    public static final String ENV_TERMUX__SE_PROCESS_CONTEXT = TERMUX_ENV__S_TERMUX + "SE_PROCESS_CONTEXT";
     /** Environment variable for the Termux app user id. */
     public static final String ENV_TERMUX__USER_ID = TERMUX_ENV__S_TERMUX + "USER_ID";
     /** Environment variable for the Termux app profile owner. */
@@ -148,10 +148,10 @@ public class TermuxAppShellEnvironment {
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__BUILD_DATA_DIR, TermuxConstants.TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH);
 
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX__SE_PROCESS_CONTEXT, SELinuxUtils.getContext());
-            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX__SE_FILE_CONTEXT, SELinuxUtils.getFileContext(applicationInfo.dataDir));
+            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__SE_FILE_CONTEXT, SELinuxUtils.getFileContext(applicationInfo.dataDir));
 
             String seInfoUser = PackageUtils.getApplicationInfoSeInfoUserForPackage(applicationInfo);
-            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX__SE_INFO, PackageUtils.getApplicationInfoSeInfoForPackage(applicationInfo) +
+            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__SE_INFO, PackageUtils.getApplicationInfoSeInfoForPackage(applicationInfo) +
                 (DataUtils.isNullOrEmpty(seInfoUser) ? "" : seInfoUser));
 
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
