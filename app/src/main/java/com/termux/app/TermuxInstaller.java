@@ -212,10 +212,16 @@ final class TermuxInstaller {
                         throw new RuntimeException("Moving termux prefix staging to prefix directory failed");
                     }
 
-                    // Run Termux bootstrap second stage
-                    Logger.logInfo(LOG_TAG, "Running Termux bootstrap second stage.");
+                    // Run Termux bootstrap second stage.
                     String termuxBootstrapSecondStageFile = TERMUX_PREFIX_DIR_PATH + "/etc/termux/bootstrap/termux-bootstrap-second-stage.sh";
-                    if (FileUtils.fileExists(termuxBootstrapSecondStageFile, false)) {
+                    if (!FileUtils.fileExists(termuxBootstrapSecondStageFile, false)) {
+                        Logger.logInfo(LOG_TAG, "Not running Termux bootstrap second stage since script not found at \"" + termuxBootstrapSecondStageFile + "\" path.");
+                    } else {
+                        if (!FileUtils.fileExists(TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash", true)) {
+                            Logger.logInfo(LOG_TAG, "Not running Termux bootstrap second stage since bash not found.");
+                        }
+                        Logger.logInfo(LOG_TAG, "Running Termux bootstrap second stage.");
+
                         ExecutionCommand executionCommand = new ExecutionCommand(-1,
                             termuxBootstrapSecondStageFile, null, null,
                             null, true, false);
