@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.UserManager;
 
 import androidx.annotation.NonNull;
@@ -17,8 +18,10 @@ import com.termux.shared.R;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
+import com.termux.shared.reflection.ReflectionUtils;
 import com.termux.shared.termux.TermuxConstants;
 
+import java.lang.reflect.Field;
 import java.security.MessageDigest;
 import java.util.List;
 
@@ -90,6 +93,55 @@ public class PackageUtils {
         try {
             return context.getPackageManager().getPackageInfo(context.getPackageName(), flags);
         } catch (final Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get the {@code seInfo} {@link Field} of the {@link ApplicationInfo} class.
+     *
+     * String retrieved from the seinfo tag found in selinux policy. This value can be set through
+     * the mac_permissions.xml policy construct. This value is used for setting an SELinux security
+     * context on the process as well as its data directory.
+     *
+     * https://cs.android.com/android/platform/superproject/+/android-7.1.0_r1:frameworks/base/core/java/android/content/pm/ApplicationInfo.java;l=609
+     * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/content/pm/ApplicationInfo.java;l=981
+     * https://cs.android.com/android/platform/superproject/+/android-7.0.0_r1:frameworks/base/services/core/java/com/android/server/pm/SELinuxMMAC.java;l=282
+     * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/services/core/java/com/android/server/pm/SELinuxMMAC.java;l=375
+     * https://cs.android.com/android/_/android/platform/frameworks/base/+/be0b8896d1bc385d4c8fb54c21929745935dcbea
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the selinux info or {@code null} if an exception was raised.
+     */
+    @Nullable
+    public static String getApplicationInfoSeInfoForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        ReflectionUtils.bypassHiddenAPIReflectionRestrictions();
+        try {
+            return (String) ReflectionUtils.invokeField(ApplicationInfo.class, Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? "seinfo" : "seInfo", applicationInfo).value;
+        } catch (Exception e) {
+            // ClassCastException may be thrown
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to get seInfo field value for ApplicationInfo class", e);
+            return null;
+        }
+    }
+
+    /**
+     * Get the {@code seInfoUser} {@link Field} of the {@link ApplicationInfo} class.
+     *
+     * Also check {@link #getApplicationInfoSeInfoForPackage(ApplicationInfo)}.
+     *
+     * @param applicationInfo The {@link ApplicationInfo} for the package.
+     * @return Returns the selinux info user or {@code null} if an exception was raised.
+     */
+    @Nullable
+    public static String getApplicationInfoSeInfoUserForPackage(@NonNull final ApplicationInfo applicationInfo) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null;
+        ReflectionUtils.bypassHiddenAPIReflectionRestrictions();
+        try {
+            return (String) ReflectionUtils.invokeField(ApplicationInfo.class, "seInfoUser", applicationInfo).value;
+        } catch (Exception e) {
+            // ClassCastException may be thrown
+            Logger.logStackTraceWithMessage(LOG_TAG, "Failed to get seInfoUser field value for ApplicationInfo class", e);
             return null;
         }
     }
