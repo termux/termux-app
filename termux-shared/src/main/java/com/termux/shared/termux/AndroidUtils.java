@@ -99,7 +99,19 @@ public class AndroidUtils {
         appendPropertyToMarkdown(markdownString, "BOARD", Build.BOARD);
         appendPropertyToMarkdown(markdownString, "HARDWARE", Build.HARDWARE);
         appendPropertyToMarkdown(markdownString, "DEVICE", Build.DEVICE);
+
         appendPropertyToMarkdown(markdownString, "SUPPORTED_ABIS", Joiner.on(", ").skipNulls().join(Build.SUPPORTED_ABIS));
+        appendPropertyToMarkdown(markdownString, "SUPPORTED_32_BIT_ABIS", Joiner.on(", ").skipNulls().join(Build.SUPPORTED_32_BIT_ABIS));
+        appendPropertyToMarkdown(markdownString, "SUPPORTED_64_BIT_ABIS", Joiner.on(", ").skipNulls().join(Build.SUPPORTED_64_BIT_ABIS));
+
+        // If on Android >= 15
+        if (Build.VERSION.SDK_INT >= 35) {
+            try {
+                appendPropertyToMarkdownIfSet(markdownString, "PAGE_SIZE", Os.sysconf(OsConstants._SC_PAGESIZE));
+            } catch (Throwable t) {
+                // Ignore
+            }
+        }
 
         markdownString.append("\n##\n");
 
