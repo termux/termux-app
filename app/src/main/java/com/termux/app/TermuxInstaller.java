@@ -231,12 +231,14 @@ final class TermuxInstaller {
                         AppShell appShell = AppShell.execute(activity, executionCommand, null, new TermuxShellEnvironment(), null, true);
                         boolean stderrSet = !executionCommand.resultData.stderr.toString().isEmpty();
                         if (appShell == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0 || stderrSet) {
-                            // Delete prefix directory as otherwise when app is restarted, the broken prefix directory would be used and logged into
+                            // Generate debug report before deleting broken prefix directory to get `stat` info at time of failure.
+                            showBootstrapErrorDialog(activity, whenDone, MarkdownUtils.getMarkdownCodeForString(executionCommand.toString(), true));
+
+                            // Delete prefix directory as otherwise when app is restarted, the broken prefix directory would be used and logged into.
+                            Logger.logInfo(LOG_TAG, "Deleting broken termux prefix.");
                             error = FileUtils.deleteFile("termux prefix directory", TERMUX_PREFIX_DIR_PATH, true);
                             if (error != null)
                                 Logger.logErrorExtended(LOG_TAG, error.toString());
-
-                            showBootstrapErrorDialog(activity, whenDone, MarkdownUtils.getMarkdownCodeForString(executionCommand.toString(), true));
                             return;
                         }
                     }
