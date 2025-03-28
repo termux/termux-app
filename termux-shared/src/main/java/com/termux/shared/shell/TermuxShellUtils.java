@@ -75,6 +75,8 @@ public class TermuxShellUtils {
         addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
         addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
 
+        environment.add("ANDROID__BUILD_VERSION_SDK=" + Build.VERSION.SDK_INT);
+
         if (isFailSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             environment.add("PATH= " + System.getenv("PATH"));
