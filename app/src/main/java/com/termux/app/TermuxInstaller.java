@@ -235,8 +235,7 @@ final class TermuxInstaller {
                         executionCommand.commandLabel = "Termux Bootstrap Second Stage Command";
                         executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_NORMAL;
                         AppShell appShell = AppShell.execute(activity, executionCommand, null, new TermuxShellEnvironment(), null, true);
-                        boolean stderrSet = !executionCommand.resultData.stderr.toString().isEmpty();
-                        if (appShell == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0 || stderrSet) {
+                        if (appShell == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
                             // Generate debug report before deleting broken prefix directory to get `stat` info at time of failure.
                             showBootstrapErrorDialog(activity, whenDone, MarkdownUtils.getMarkdownCodeForString(executionCommand.toString(), true));
 
