@@ -1,7 +1,7 @@
 package com.termux.shared.termux.settings.preferences;
 
 /*
- * Version: v0.16.0
+ * Version: v0.17.0
  *
  * Changelog
  *
@@ -69,6 +69,10 @@ package com.termux.shared.termux.settings.preferences;
  * - 0.16.0 (2022-06-11)
  *      - Added following to `TERMUX_APP`:
  *          `KEY_APP_SHELL_NUMBER_SINCE_BOOT` and `KEY_TERMINAL_SESSION_NUMBER_SINCE_BOOT`.
+ *
+ * - 0.17.0 (2024-08-07)
+ *      - Added following to `TERMUX_APP`:
+ *          `KEY_ADVANCED_MOUSE` and `DEFAULT_VALUE_KEY_ADVANCED_MOUSE`
  */
 
 import com.termux.shared.shell.command.ExecutionCommand;
@@ -117,6 +121,12 @@ public final class TermuxPreferenceConstants {
         public static final String KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE = "soft_keyboard_enabled_only_if_no_hardware";
         public static final boolean DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE = false;
 
+
+        /**
+         * Defines the key for whether dragging the touch screen sends full mouse events instead of scroll wheel up/down
+         */
+        public static final String KEY_ADVANCED_MOUSE = "advanced_mouse";
+        public static final boolean DEFAULT_VALUE_KEY_ADVANCED_MOUSE = false;
 
         /**
          * Defines the key for whether to always keep screen on.

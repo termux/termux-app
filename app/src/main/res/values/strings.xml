@@ -189,6 +189,15 @@
                     no hardware keyboard is connected.</string>
 
 
+            <!-- Mouse Category -->
+            <string name="termux_mouse_header">Mouse</string>
+
+                <!-- Touch Dragging -->
+                <string name="termux_advanced_mouse_title">Advanced Mouse Mode</string>
+                <string name="termux_advanced_mouse_off">Dragging the touch screen sends scroll wheel up/down events. (Default)</string>
+                <string name="termux_advanced_mouse_on">Dragging the touch screen sends mouse move events.</string>
+
+
         <!-- Terminal View Preferences -->
         <string name="termux_terminal_view_preferences_title">Terminal View</string>
         <string name="termux_terminal_view_preferences_summary">Preferences for terminal view</string>

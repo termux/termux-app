@@ -18,4 +18,15 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        app:key="mouse"
+        app:title="@string/termux_mouse_header">
+
+        <SwitchPreferenceCompat
+            app:key="advanced_mouse"
+            app:summaryOff="@string/termux_advanced_mouse_off"
+            app:summaryOn="@string/termux_advanced_mouse_on"
+            app:title="@string/termux_advanced_mouse_title" />
+
+    </PreferenceCategory>
 </PreferenceScreen>
