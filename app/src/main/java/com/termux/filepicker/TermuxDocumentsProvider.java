@@ -147,6 +147,46 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
     }
 
     @Override
+    public String moveDocument(String sourceDocumentId, String sourceParentDocumentId, String targetParentDocumentId) throws FileNotFoundException {
+        File sourceFile = getFileForDocId(sourceDocumentId);
+        File targetParentFile = getFileForDocId(targetParentDocumentId);
+        if (!isChildDocument(sourceParentDocumentId, sourceDocumentId)) {
+            throw new FileNotFoundException("Document with id " + sourceParentDocumentId +
+                " is not the parent document of " + sourceDocumentId);
+        }
+        if (!targetParentFile.isDirectory()) {
+            throw new FileNotFoundException("Target parent document with id " +
+                targetParentDocumentId + " is not a directory");
+        }
+        File targetFile = new File(targetParentFile, sourceFile.getName());
+        if (targetFile.exists()) {
+            throw new FileNotFoundException("Failed to move document with id " +
+                sourceDocumentId + " : target file " + targetFile.getPath() + " exists");
+        }
+        if (!sourceFile.renameTo(targetFile)) {
+            throw new FileNotFoundException("Failed to move document with id " +
+                sourceDocumentId + " (whose parent document id is " + sourceParentDocumentId +
+                ") to directory with document id " + targetParentDocumentId);
+        }
+        return targetFile.getPath();
+    }
+
+    @Override
+    public String renameDocument(String documentId, String displayName) throws FileNotFoundException {
+        File sourceFile = getFileForDocId(documentId);
+        File targetFile = new File(sourceFile.getParentFile(), displayName);
+        if (targetFile.exists()) {
+            throw new FileNotFoundException("Failed to rename document with id " +
+                documentId + " : target file " + targetFile.getPath() + " exists");
+        }
+        if (!sourceFile.renameTo(targetFile)) {
+            throw new FileNotFoundException("Failed to rename document with id " +
+                documentId + " to display name " + displayName);
+        }
+        return targetFile.getPath();
+    }
+
+    @Override
     public String getDocumentType(String documentId) throws FileNotFoundException {
         File file = getFileForDocId(documentId);
         return getMimeType(file);
