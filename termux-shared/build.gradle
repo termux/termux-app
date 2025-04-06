@@ -9,7 +9,9 @@ android {
         implementation "androidx.annotation:annotation:1.3.0"
         implementation "androidx.core:core:1.6.0"
         implementation "com.google.android.material:material:1.4.0"
-        implementation "com.google.guava:guava:24.1-jre"
+        implementation("com.google.guava:guava:24.1-jre") {
+            exclude group: 'com.google.guava', module: 'listenablefuture'
+        }
         implementation "io.noties.markwon:core:$markwonVersion"
         implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
         implementation "io.noties.markwon:linkify:$markwonVersion"
@@ -30,6 +32,7 @@ android {
         implementation "com.termux:termux-am-library:v2.0.0"
     }
 
+    namespace "com.termux.shared"
     defaultConfig {
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
@@ -60,6 +63,11 @@ android {
             path file('src/main/cpp/Android.mk')
         }
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
@@ -71,7 +79,8 @@ dependencies {
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier "sources"
+    //classifier "sources" //depracated
+    archiveClassifier.set("sources") //functional
 }
 
 afterEvaluate {

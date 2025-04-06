@@ -1,10 +1,13 @@
-apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+}
 
 android {
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
     ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
 
+    namespace "com.termux.terminal"
     defaultConfig {
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
@@ -41,6 +44,11 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 tasks.withType(Test) {
@@ -56,7 +64,8 @@ dependencies {
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier "sources"
+    //classifier "sources" //depracated
+    archiveClassifier.set("sources") //functional
 }
 
 afterEvaluate {
