@@ -1,0 +1,8 @@
+# ~/.termux_spice_welcome.sh
+
+echo -e "\e[1;35m
+====================================
+     Welcome to Termux - Spice Edition
+====================================
+Ready to spice up your command line?
+\e[0m"
