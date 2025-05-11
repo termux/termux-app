@@ -7,30 +7,77 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @RunWith(RobolectricTestRunner.class)
 public class FileReceiverActivityTest {
 
     @Test
-    public void testIsSharedTextAnUrl() {
-        List<String> validUrls = new ArrayList<>();
-        validUrls.add("http://example.com");
-        validUrls.add("https://example.com");
-        validUrls.add("https://example.com/path/parameter=foo");
-        validUrls.add("magnet:?xt=urn:btih:d540fc48eb12f2833163eed6421d449dd8f1ce1f&dn=Ubuntu+desktop+19.04+%2864bit%29&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Ftracker.publicbt.com%3A80&tr=udp%3A%2F%2Ftracker.ccc.de%3A80");
-        for (String url : validUrls) {
-            Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl(url));
-        }
+    public void testHttpUrl() {
+        Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl("http://example.com"));
+    }
 
-        List<String> invalidUrls = new ArrayList<>();
-        invalidUrls.add("a test with example.com");
-        invalidUrls.add("");
-        invalidUrls.add(null);
-        for (String url : invalidUrls) {
-            Assert.assertFalse(FileReceiverActivity.isSharedTextAnUrl(url));
+    @Test
+    public void testHttpsUrlWithPath() {
+        Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl("https://example.com/path/parameter=foo"));
+    }
+
+    @Test
+    public void testMagnetUrl() {
+        String magnet = "magnet:?xt=urn:btih:d540fc48eb12f2833163eed6421d449dd8f1ce1f&dn=Ubuntu+desktop+19.04+%2864bit%29";
+        Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl(magnet));
+    }
+
+    @Test
+    public void testFtpUrl() {
+        Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl("ftp://example.com/resource"));
+    }
+
+    @Test
+    public void testUnicodeUrl() {
+        Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl("https://مثال.إختبار"));
+    }
+
+    @Test
+    public void testWwwPrefix() {
+        Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl("www.example.com"));
+    }
+
+    @Test
+    public void testUrlWithEscapedCharacters() {
+        Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl("https://example.com/search?q=some%20value"));
+    }
+
+    @Test
+    public void testTextWithUrlButNotLink() {
+        Assert.assertFalse(FileReceiverActivity.isSharedTextAnUrl("a test with example.com"));
+    }
+
+    @Test
+    public void testEmptyString() {
+        Assert.assertFalse(FileReceiverActivity.isSharedTextAnUrl(""));
+    }
+
+    @Test
+    public void testNullInput() {
+        try {
+            Assert.assertFalse(FileReceiverActivity.isSharedTextAnUrl(null));
+        } catch (Exception e) {
+            Assert.fail("Should not throw exception on null input");
         }
     }
 
-}
+    @Test
+    public void testSpacesBeforeUrl() {
+        Assert.assertFalse(FileReceiverActivity.isSharedTextAnUrl("   https://example.com"));
+    }
+
+    @Test
+    public void testRandomText() {
+        Assert.assertFalse(FileReceiverActivity.isSharedTextAnUrl("This is just some random sentence."));
+    }
+
+    @Test
+    public void testLongUrl() {
+        String longUrl = "https://example.com/" + "a".repeat(1000);
+        Assert.assertTrue(FileReceiverActivity.isSharedTextAnUrl(longUrl));
+    }
+    }
