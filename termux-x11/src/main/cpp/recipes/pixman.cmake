@@ -49,6 +49,7 @@ set(PIXMAN_SRC
         pixman/pixman/pixman-radial-gradient.c
         pixman/pixman/pixman-region16.c
         pixman/pixman/pixman-region32.c
+        pixman/pixman/pixman-riscv.c
         pixman/pixman/pixman-solid-fill.c
         pixman/pixman/pixman-timer.c
         pixman/pixman/pixman-trap.c

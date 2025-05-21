@@ -80,16 +80,3 @@ set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_OLD})
 foreach(project xorgproto fontenc md pixman tirpc xshmfence Xdmcp Xau Xfont2 xkbcomp xserver)
     include(recipes/${project}.cmake)
 endforeach()
-
-if(${ANDROID_ABI} MATCHES "arm64-v8a")
-    add_subdirectory(OpenXR-SDK)
-    add_library(XRio SHARED
-                "xrio/android.c"
-                "xrio/engine.c"
-                "xrio/framebuffer.c"
-                "xrio/input.c"
-                "xrio/math.c"
-                "xrio/renderer.c")
-    target_link_options(XRio PRIVATE "-Wl,--as-needed" "-Wl,--no-undefined" "-fvisibility=hidden")
-    target_link_libraries(XRio "-Wl,--whole-archive" "-Wl,--no-whole-archive" android log EGL GLESv2 openxr_loader)
-endif()

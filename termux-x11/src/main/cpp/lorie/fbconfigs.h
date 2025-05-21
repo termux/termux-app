@@ -1,5 +1,5 @@
 /*
- * For some reasong configs generated on top of parameters
+ * For some reason configs generated on top of parameters
  * extracted from GL configs do not work for glxgears and glmark
  */
 

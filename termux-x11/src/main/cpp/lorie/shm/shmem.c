@@ -49,6 +49,10 @@ static size_t shmem_amount = 0;
 
 static uint8_t syscall_supported = 0;
 
+__LIBC_HIDDEN__ void android_shmem_sysv_shm_force(uint8_t enable) {
+    syscall_supported = enable;
+}
+
 #define ANDROID_LINUX_SHM
 #undef SYS_ipc
 static bool isProot(void) {

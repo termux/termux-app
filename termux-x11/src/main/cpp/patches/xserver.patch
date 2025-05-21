@@ -30,7 +30,7 @@ diff --git a/dix/main.c b/dix/main.c
 index bfc8addbe..56fb30b63 100644
 --- a/dix/main.c
 +++ b/dix/main.c
-@@ -266,6 +266,7 @@ dix_main(int argc, char *argv[], char *envp[])
+@@ -268,6 +268,7 @@ dix_main(int argc, char *argv[], char *envp[])
          }
  
          NotifyParentProcess();
@@ -42,7 +42,7 @@ diff --git a/include/os.h b/include/os.h
 index bb3348b18..1a5400717 100644
 --- a/include/os.h
 +++ b/include/os.h
-@@ -560,6 +560,8 @@ enum ExitCode {
+@@ -557,6 +557,8 @@ enum ExitCode {
  extern _X_EXPORT void
  ddxGiveUp(enum ExitCode error);
  extern _X_EXPORT void
@@ -96,7 +96,7 @@ diff --git a/os/osinit.c b/os/osinit.c
 index 8575319ff..06c44a416 100644
 --- a/os/osinit.c
 +++ b/os/osinit.c
-@@ -170,11 +170,11 @@ OsInit(void)
+@@ -170,11 +170,9 @@ OsInit(void)
  #endif
  
      if (!been_here) {
@@ -106,15 +106,15 @@ index 8575319ff..06c44a416 100644
          int i;
  
 -        int siglist[] = { SIGSEGV, SIGQUIT, SIGILL, SIGFPE, SIGBUS,
-+        int siglist[] = { SIGQUIT, SIGILL, SIGFPE, SIGBUS,
-             SIGABRT,
-             SIGSYS,
++        int siglist[] = { SIGQUIT, SIGILL, SIGFPE,
+-            SIGABRT,
+-            SIGSYS,
              SIGXCPU,
 diff --git a/os/utils.c b/os/utils.c
 index 92a66e81a..d2ca69684 100644
 --- a/os/utils.c
 +++ b/os/utils.c
-@@ -212,6 +212,8 @@ OsSignal(int sig, OsSigHandlerPtr handler)
+@@ -214,6 +214,8 @@ OsSignal(int sig, OsSigHandlerPtr handler)
  {
  #if defined(WIN32) && !defined(__CYGWIN__)
      return signal(sig, handler);
@@ -123,7 +123,7 @@ index 92a66e81a..d2ca69684 100644
  #else
      struct sigaction act, oact;
  
-@@ -232,7 +234,7 @@ OsSignal(int sig, OsSigHandlerPtr handler)
+@@ -234,7 +236,7 @@ OsSignal(int sig, OsSigHandlerPtr handler)
   * server at a time.  This keeps the servers from stomping on each other
   * if the user forgets to give them different display numbers.
   */
@@ -132,7 +132,7 @@ index 92a66e81a..d2ca69684 100644
  #define LOCK_TMP_PREFIX "/.tX"
  #define LOCK_PREFIX "/.X"
  #define LOCK_SUFFIX "-lock"
-@@ -324,7 +326,7 @@ LockServer(void)
+@@ -326,7 +328,7 @@ LockServer(void)
      i = 0;
      haslock = 0;
      while ((!haslock) && (i++ < 3)) {
@@ -141,7 +141,7 @@ index 92a66e81a..d2ca69684 100644
          if (haslock) {
              /*
               * We're done.
-@@ -1412,6 +1414,10 @@ static struct pid {
+@@ -1421,6 +1423,10 @@ static struct pid {
      int pid;
  } *pidlist;
  
@@ -152,7 +152,7 @@ index 92a66e81a..d2ca69684 100644
  void *
  Popen(const char *command, const char *type)
  {
-@@ -1475,8 +1481,11 @@ Popen(const char *command, const char *type)
+@@ -1484,8 +1490,11 @@ Popen(const char *command, const char *type)
              }
              close(pdes[1]);
          }
@@ -206,3 +206,156 @@ index f9b7b06d9..f4b2aeddc 100644
      free(xkbbasedirflag);
  
      if (!buf) {
++++ ./dix/dixutils.c
+@@ -506,18 +506,25 @@
+ 
+ WorkQueuePtr workQueue;
+ static WorkQueuePtr *workQueueLast = &workQueue;
++static pthread_spinlock_t workQueueLock;
++
++__attribute__((constructor)) static void workQueueLockInit (void) {
++    pthread_spin_init(&workQueueLock, FALSE);
++}
+ 
+ void
+ ClearWorkQueue(void)
+ {
+     WorkQueuePtr q, *p;
+ 
++    pthread_spin_lock(&workQueueLock);
+     p = &workQueue;
+     while ((q = *p)) {
+         *p = q->next;
+         free(q);
+     }
+     workQueueLast = p;
++    pthread_spin_unlock(&workQueueLock);
+ }
+ 
+ void
+@@ -525,6 +532,7 @@
+ {
+     WorkQueuePtr q, *p;
+ 
++    pthread_spin_lock(&workQueueLock);
+     p = &workQueue;
+     /*
+      * Scan the work queue once, calling each function.  Those
+@@ -533,16 +541,20 @@
+      * QueueWorkProc.
+      */
+     while ((q = *p)) {
++        pthread_spin_unlock(&workQueueLock);
+         if ((*q->function) (q->client, q->closure)) {
++            pthread_spin_lock(&workQueueLock);
+             /* remove q from the list */
+             *p = q->next;       /* don't fetch until after func called */
+             free(q);
+         }
+         else {
++            pthread_spin_lock(&workQueueLock);
+             p = &q->next;       /* don't fetch until after func called */
+         }
+     }
+     workQueueLast = p;
++    pthread_spin_unlock(&workQueueLock);
+ }
+ 
+ void
+@@ -550,6 +562,7 @@
+ {
+     WorkQueuePtr q, *p;
+ 
++    pthread_spin_lock(&workQueueLock);
+     p = &workQueue;
+     while ((q = *p)) {
+         if (q->client && q->client->clientGone) {
+@@ -563,6 +576,7 @@
+         }
+     }
+     workQueueLast = p;
++    pthread_spin_unlock(&workQueueLock);
+ }
+ 
+ Bool
+@@ -578,8 +592,10 @@
+     q->client = client;
+     q->closure = closure;
+     q->next = NULL;
++    pthread_spin_lock(&workQueueLock);
+     *workQueueLast = q;
+     workQueueLast = &q->next;
++    pthread_spin_unlock(&workQueueLock);
+     return TRUE;
+ }
+ 
++++ ./os/connection.c
+@@ -242,7 +242,7 @@
+ CreateWellKnownSockets(void)
+ {
+     int i;
+-    int partial;
++    int partial = 0;
+ 
+     /* display is initialized to "0" by main(). It is then set to the display
+      * number if specified on the command line. */
+
++++ b/present/present.h
+@@ -93,6 +93,9 @@ typedef Bool (*present_flip_ptr) (RRCrtcPtr crtc,
+                                   uint64_t target_msc,
+                                   PixmapPtr pixmap,
+                                   Bool sync_flip);
++
++typedef void (*present_after_flip_ptr) (RRCrtcPtr crtc, uint64_t event_id, uint64_t ust, uint64_t target_msc, PixmapPtr pixmap);
++
+ /* Flip pixmap for window, return false if it didn't happen.
+  *
+  * Like present_flip_ptr, additionally with:
+@@ -134,6 +137,7 @@ typedef struct present_screen_info {
+     uint32_t                            capabilities;
+     present_check_flip_ptr              check_flip;
+     present_flip_ptr                    flip;
++    present_after_flip_ptr              after_flip;
+     present_unflip_ptr                  unflip;
+     present_check_flip2_ptr             check_flip2;
+ 
++++ b/present/present_scmd.c
+@@ -599,6 +599,8 @@ present_execute(present_vblank_ptr vblank, uint64_t ust, uint64_t crtc_msc)
+                     damage = &window->clipList;
+ 
+                 DamageDamageRegion(&vblank->window->drawable, damage);
++
++                screen_priv->info->after_flip(vblank->crtc, vblank->event_id, ust, vblank->target_msc, vblank->pixmap);
+                 return;
+             }
+ 
++++ b/dix/enterleave.c
+@@ -1540,6 +1540,8 @@ DeviceFocusEvents(DeviceIntPtr dev, WindowPtr from, WindowPtr to, int mode)
+     }
+ }
+ 
++extern void DDXNotifyFocusChanged(void);
++
+ /**
+  * Figure out if focus events are necessary and send them to the
+  * appropriate windows.
+@@ -1550,6 +1552,9 @@ DeviceFocusEvents(DeviceIntPtr dev, WindowPtr from, WindowPtr to, int mode)
+ void
+ DoFocusEvents(DeviceIntPtr pDev, WindowPtr from, WindowPtr to, int mode)
+ {
++    if (from != to)
++        DDXNotifyFocusChanged();
++
+     if (!IsKeyboardDevice(pDev))
+         return;
+ 
+
++++ ./os/connection.c
+@@ -281,6 +281,7 @@ CreateWellKnownSockets(void)
+         int fd = _XSERVTransGetConnectionNumber(ListenTransConns[i]);
+
+         ListenTransFds[i] = fd;
++        _XSERVTransSetOption(ListenTransConns[i], TRANS_CLOSEONEXEC, 0);
+         SetNotifyFd(fd, EstablishNewConnections, X_NOTIFY_READ, NULL);
+
+         if (!_XSERVTransIsLocal(ListenTransConns[i]))
