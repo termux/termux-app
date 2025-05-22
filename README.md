@@ -49,7 +49,7 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 
 ## Installation
 
-Latest version is `v0.118.2`.
+![GitHub Release](https://img.shields.io/github/v/release/termux/termux-app?display_name=release&label=Latest%20version%3A%20)
 
 **NOTICE: It is highly recommended that you update to `v0.118.0` or higher ASAP for various bug fixes, including a critical world-readable vulnerability reported [here](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html). See [below](#google-play-store-experimental-branch) for information regarding Termux on Google Play.**
 
