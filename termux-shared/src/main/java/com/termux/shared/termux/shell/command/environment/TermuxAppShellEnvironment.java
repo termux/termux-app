@@ -78,7 +78,6 @@ public class TermuxAppShellEnvironment {
     /** Environment variable for the Termux app files directory. */
     public static final String ENV_TERMUX_APP__DATA_DIR = TERMUX_APP_ENV_PREFIX + "DATA_DIR";
     public static final String ENV_TERMUX_APP__LEGACY_DATA_DIR = TERMUX_APP_ENV_PREFIX + "LEGACY_DATA_DIR";
-    public static final String ENV_TERMUX_APP__BUILD_DATA_DIR = TERMUX_APP_ENV_PREFIX + "BUILD_DATA_DIR";
 
     /** Environment variable for the Termux app {@link TermuxAmSocketServer#getTermuxAppAMSocketServerEnabled(Context)}. */
     public static final String ENV_TERMUX_APP__AM_SOCKET_SERVER_ENABLED = TERMUX_APP_ENV_PREFIX + "AM_SOCKET_SERVER_ENABLED";
@@ -145,7 +144,6 @@ public class TermuxAppShellEnvironment {
 
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__DATA_DIR, applicationInfo.dataDir);
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__LEGACY_DATA_DIR, "/data/data/" + applicationInfo.packageName);
-            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__BUILD_DATA_DIR, TermuxConstants.TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH);
 
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX__SE_PROCESS_CONTEXT, SELinuxUtils.getContext());
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__SE_FILE_CONTEXT, SELinuxUtils.getFileContext(applicationInfo.dataDir));

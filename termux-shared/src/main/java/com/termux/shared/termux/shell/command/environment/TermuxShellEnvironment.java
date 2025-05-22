@@ -88,7 +88,7 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
         if (applicationInfo != null) {
             environment.put("TERMUX__APPS_DIR", applicationInfo.dataDir + "/termux/apps");
         }
-        environment.put("TERMUX__ROOTFS", TermuxConstants.TERMUX_FILES_DIR_PATH);
+        environment.put("TERMUX__ROOTFS_DIR", TermuxConstants.TERMUX_FILES_DIR_PATH);
         environment.put(ENV_HOME, TermuxConstants.TERMUX_HOME_DIR_PATH);
         environment.put("TERMUX__HOME", TermuxConstants.TERMUX_HOME_DIR_PATH);
         environment.put(ENV_PREFIX, TermuxConstants.TERMUX_PREFIX_DIR_PATH);
