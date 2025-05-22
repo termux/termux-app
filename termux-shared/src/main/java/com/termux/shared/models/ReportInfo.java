@@ -1,5 +1,7 @@
 package com.termux.shared.models;
 
+import androidx.annotation.Keep;
+
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.android.AndroidUtils;
 
@@ -9,6 +11,25 @@ import java.io.Serializable;
  * An object that stored info for {@link com.termux.shared.activities.ReportActivity}.
  */
 public class ReportInfo implements Serializable {
+
+    /**
+     * Explicitly define `serialVersionUID` to prevent exceptions on deserialization.
+     *
+     * Like when calling `Bundle.getSerializable()` on Android.
+     * `android.os.BadParcelableException: Parcelable encountered IOException reading a Serializable object` (name = <class_name>)
+     * `java.io.InvalidClassException: <class_name>; local class incompatible`
+     *
+     * The `@Keep` annotation is necessary to prevent the field from being removed by proguard when
+     * app is compiled, even if its kept during library compilation.
+     *
+     * **See Also:**
+     * - https://docs.oracle.com/javase/8/docs/platform/serialization/spec/version.html#a6678
+     * - https://docs.oracle.com/javase/8/docs/platform/serialization/spec/class.html#a4100
+     */
+    @Keep
+    private static final long serialVersionUID = 1L;
+
+
 
     /** The user action that was being processed for which the report was generated. */
     public final String userAction;
