@@ -76,7 +76,6 @@ public class TermuxShellUtils {
             if (applicationInfo != null) {
                 environment.add("TERMUX_APP__DATA_DIR=" + applicationInfo.dataDir);
                 environment.add("TERMUX_APP__LEGACY_DATA_DIR=" + "/data/data/" + applicationInfo.packageName);
-                environment.add("TERMUX_APP__BUILD_DATA_DIR=" + TermuxConstants.TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH);
 
                 environment.add("TERMUX_APP__SE_FILE_CONTEXT=" + SELinuxUtils.getFileContext(applicationInfo.dataDir));
 
@@ -89,7 +88,7 @@ public class TermuxShellUtils {
             // Ignore
         }
 
-        environment.add("TERMUX__ROOTFS=" + TermuxConstants.TERMUX_FILES_DIR_PATH);
+        environment.add("TERMUX__ROOTFS_DIR=" + TermuxConstants.TERMUX_FILES_DIR_PATH);
         environment.add("HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH);
         environment.add("TERMUX__HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH);
         environment.add("PREFIX=" + TermuxConstants.TERMUX_PREFIX_DIR_PATH);
