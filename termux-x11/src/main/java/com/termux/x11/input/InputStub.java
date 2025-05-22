@@ -37,7 +37,6 @@ public interface InputStub {
      * methods.
      */
     void sendTextEvent(byte[] utf8Bytes);
-    void sendUnicodeEvent(int code);
 
     /** Sends an event, not flushing connection. */
     void sendTouchEvent(int action, int pointerId, int x, int y);
