@@ -35,6 +35,15 @@
     <string name="preferences_button_text">   Preferences   </string>
     <string name="extra_keys_config_desc">Here you can set value of extra-keys variable like in Termux app (read <a href="http://wiki.termux.com/wiki/Touch_Keyboard#Extra_Keys_Row">this</a>) and more (e.g. META).</string>
     <!--    preference-->
+    <string name="pref_main">Preferences</string>
+    <string name="pref_output">Output</string>
+    <string name="pref_pointer">Pointer</string>
+    <string name="pref_kbd">Keyboard</string>
+    <string name="pref_other">Other</string>
+    <string name="pref_version">Version</string>
+    <string name="pref_ekbar">Extra key bar preferences</string>
+    <string name="pref_userActions">Response to user actions</string>
+
     <string name="output">Output</string>
     <string name="display_resolution_mode">Display resolution mode</string>
     <string name="display_scale">Display scale, %</string>

@@ -238,6 +238,16 @@ Dynarec 构建 BigBlock<br /><br />
     <string name="magnifier">磁贴</string>
     <string name="bring_to_front">带到最前</string>
     <string name="options">选项</string>
+
+    <string name="pref_main">偏好设置</string>
+    <string name="pref_output">视频输出</string>
+    <string name="pref_pointer">鼠标指针</string>
+    <string name="pref_kbd">键盘</string>
+    <string name="pref_other">其他</string>
+    <string name="pref_version">版本</string>
+    <string name="pref_ekbar">外接键盘</string>
+    <string name="pref_userActions">自定义用户事件</string>
+
     <string name="output">视频输出</string>
     <string name="display_resolution_mode">显示分辨率</string>
     <string name="display_scale">显示缩放率 %</string>
