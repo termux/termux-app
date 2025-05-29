@@ -24,7 +24,6 @@ public class TapGestureDetector {
     public void setLongPressedDelay(int longPressedDelay) {
         this.longPressedDelay = longPressedDelay;
     }
-
     /** The listener for receiving notifications of tap gestures. */
     public interface OnTapListener {
         /**
@@ -114,7 +113,6 @@ public class TapGestureDetector {
 
                 // Cause a long-press notification to be triggered after the timeout.
                 mHandler.sendEmptyMessageDelayed(0, ViewConfiguration.getLongPressTimeout()*longPressedDelay);
-//                Log.d("onTouchEvent", String.valueOf(ViewConfiguration.getLongPressTimeout()));
                 mPointerCount = 1;
                 break;
 
@@ -134,7 +132,7 @@ public class TapGestureDetector {
 
             case MotionEvent.ACTION_UP:
                 cancelLongTouchNotification();
-                if (!mTapCancelled&&mInitialPoint!=null)
+                if (!mTapCancelled)
                     mListener.onTap(mPointerCount, mInitialPoint.x, mInitialPoint.y);
                 mInitialPoint = null;
                 break;

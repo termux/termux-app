@@ -19,8 +19,8 @@ public class TermuxX11ExtraKeyButton {
     /** The key name for the macro value of the extra key if using a dict to define the extra key. {macro: value, ...} */
     public static final String KEY_MACRO = "macro";
 
-    /** The key name for the alternate x11 name of the extra key if using a dict to define the extra key. {x11: name, ...} */
-    public static final String KEY_DISPLAY_NAME = "x11";
+    /** The key name for the alternate display name of the extra key if using a dict to define the extra key. {display: name, ...} */
+    public static final String KEY_DISPLAY_NAME = "display";
 
     /** The key name for the nested dict to define popup extra key info if using a dict to define the extra key. {popup: {key: name, ...}, ...} */
     public static final String KEY_POPUP = "popup";

@@ -10,6 +10,20 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+    <string-array name="transformCapturedPointerEntries">
+        <item>No</item>
+        <item>Clockwise</item>
+        <item>Counter clockwise</item>
+        <item>Upside down</item>
+        <item>Automatic (for touchpad)</item>
+    </string-array>
+    <string-array name="transformCapturedPointerValues">
+        <item>no</item>
+        <item>c</item>
+        <item>cc</item>
+        <item>ud</item>
+        <item>at</item>
+    </string-array>
     <string-array name="displayResolutionVariants">
         <item>native</item>
         <item>scaled</item>

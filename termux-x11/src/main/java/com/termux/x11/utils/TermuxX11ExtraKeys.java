@@ -33,11 +33,12 @@ import org.json.JSONException;
 
 public class TermuxX11ExtraKeys implements TermuxExtraKeysView.IExtraKeysView {
     @SuppressWarnings("FieldCanBeLocal")
-    private final String LOG_TAG = "TermuxX11ExtraKeys";
+    private static final String LOG_TAG = "TermuxX11ExtraKeys";
     private final View.OnKeyListener mEventListener;
     private final MainActivity mActivity;
-    private final TermuxExtraKeysView mTermuxExtraKeysView;
-    private TermuxX11ExtraKeysInfo mTermuxX11ExtraKeysInfo;
+    private final TermuxExtraKeysView mExtraKeysView;
+    private final ClipboardManager mClipboardManager;
+    static private TermuxX11ExtraKeysInfo mExtraKeysInfo;
 
     private boolean ctrlDown;
     private boolean altDown;
@@ -45,12 +46,13 @@ public class TermuxX11ExtraKeys implements TermuxExtraKeysView.IExtraKeysView {
     private boolean metaDown;
 
     /** Defines the key for extra keys */
-    public static final String DEFAULT_IVALUE_EXTRA_KEYS = "[['ESC','/',{key: '-', popup: '|'},'HOME','UP','END','PGUP'], ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN']]"; // Double row
+    public static final String DEFAULT_IVALUE_EXTRA_KEYS = "[['ESC','/',{key: '-', popup: '|'},'HOME','UP','END','PGUP','PREFERENCES'], ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN','KEYBOARD']]"; // Double row
 
     public TermuxX11ExtraKeys(@NonNull View.OnKeyListener eventlistener, MainActivity activity, TermuxExtraKeysView extrakeysview) {
         mEventListener = eventlistener;
         mActivity = activity;
-        mTermuxExtraKeysView = extrakeysview;
+        mExtraKeysView = extrakeysview;
+        mClipboardManager = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
     }
 
     private final KeyCharacterMap mVirtualKeyboardKeyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
@@ -58,33 +60,34 @@ public class TermuxX11ExtraKeys implements TermuxExtraKeysView.IExtraKeysView {
 
     @Override
     public void onExtraKeyButtonClick(View view, TermuxX11ExtraKeyButton buttonInfo, Button button) {
-        Log.e("keys", "key " + buttonInfo.display);
         if (buttonInfo.macro) {
             String[] keys = buttonInfo.key.split(" ");
-            boolean ctrlDown = false;
-            boolean altDown = false;
-            boolean shiftDown = false;
-            boolean metaDown = false;
-            boolean fnDown = false;
+            boolean ctrlDown = false, altDown = false, shiftDown = false, metaDown = false, fnDown = false;
             for (String key : keys) {
-                if (TermuxX11SpecialButton.CTRL.getKey().equals(key)) {
+                if (TermuxX11SpecialButton.CTRL.getKey().equals(key))
                     ctrlDown = true;
-                } else if (TermuxX11SpecialButton.ALT.getKey().equals(key)) {
+                else if (TermuxX11SpecialButton.ALT.getKey().equals(key))
                     altDown = true;
-                } else if (TermuxX11SpecialButton.SHIFT.getKey().equals(key)) {
+                else if (TermuxX11SpecialButton.SHIFT.getKey().equals(key))
                     shiftDown = true;
-                } else if (TermuxX11SpecialButton.META.getKey().equals(key)) {
+                else if (TermuxX11SpecialButton.META.getKey().equals(key))
                     metaDown = true;
-                } else if (TermuxX11SpecialButton.FN.getKey().equals(key)) {
+                else if (TermuxX11SpecialButton.FN.getKey().equals(key))
                     fnDown = true;
-                } else {
-                    ctrlDown = false;
-                    altDown = false;
-                    shiftDown = false;
-                    metaDown = false;
-                    fnDown = false;
-                }
-                onLorieExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, metaDown, fnDown);
+            }
+
+            for (String key : keys) {
+                if (!TermuxX11SpecialButton.CTRL.getKey().equals(key)
+                    && !TermuxX11SpecialButton.ALT.getKey().equals(key)
+                    && !TermuxX11SpecialButton.SHIFT.getKey().equals(key)
+                    && !TermuxX11SpecialButton.META.getKey().equals(key)
+                    && !TermuxX11SpecialButton.FN.getKey().equals(key))
+                    onLorieExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, metaDown, fnDown);
+            }
+
+            if (ctrlDown || altDown || shiftDown || metaDown || fnDown) {
+                onLorieExtraKeyButtonClick(view, null, false, false, false, false, false);
+                unsetSpecialKeys();
             }
         } else {
             onLorieExtraKeyButtonClick(view, buttonInfo.key, false, false, false, false, false);
@@ -118,10 +121,24 @@ public class TermuxX11ExtraKeys implements TermuxExtraKeysView.IExtraKeysView {
 
             mActivity.getLorieView().sendKeyEvent(0, keyCode, true);
             mActivity.getLorieView().sendKeyEvent(0, keyCode, false);
-        } else {
+        } else if (key != null) {
             // not a control char
             mActivity.getLorieView().sendTextEvent(key.getBytes(UTF_8));
         }
+    }
+
+    public void unsetSpecialKeys() {
+        if (mExtraKeysView == null)
+            return;
+
+        if (Boolean.TRUE.equals(mExtraKeysView.readSpecialButton(TermuxX11SpecialButton.CTRL, true)))
+            mActivity.getLorieView().sendKeyEvent(0, KeyEvent.KEYCODE_CTRL_LEFT, false);
+        if (Boolean.TRUE.equals(mExtraKeysView.readSpecialButton(TermuxX11SpecialButton.ALT, true)))
+            mActivity.getLorieView().sendKeyEvent(0, KeyEvent.KEYCODE_ALT_LEFT, false);
+        if (Boolean.TRUE.equals(mExtraKeysView.readSpecialButton(TermuxX11SpecialButton.SHIFT, true)))
+            mActivity.getLorieView().sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, false);
+        if (Boolean.TRUE.equals(mExtraKeysView.readSpecialButton(TermuxX11SpecialButton.META, true)))
+            mActivity.getLorieView().sendKeyEvent(0, KeyEvent.KEYCODE_META_LEFT, false);
     }
 
     @Override
@@ -130,19 +147,19 @@ public class TermuxX11ExtraKeys implements TermuxExtraKeysView.IExtraKeysView {
             boolean pressed;
             switch (buttonInfo.key) {
                 case "CTRL":
-                    pressed = Boolean.TRUE.equals(mTermuxExtraKeysView.readSpecialButton(TermuxX11SpecialButton.CTRL, false));
+                    pressed = Boolean.TRUE.equals(mExtraKeysView.readSpecialButton(TermuxX11SpecialButton.CTRL, false));
                     mActivity.getLorieView().sendKeyEvent(0, KeyEvent.KEYCODE_CTRL_LEFT, pressed);
                     break;
                 case "ALT":
-                    pressed = Boolean.TRUE.equals(mTermuxExtraKeysView.readSpecialButton(TermuxX11SpecialButton.ALT, false));
+                    pressed = Boolean.TRUE.equals(mExtraKeysView.readSpecialButton(TermuxX11SpecialButton.ALT, false));
                     mActivity.getLorieView().sendKeyEvent(0, KeyEvent.KEYCODE_ALT_LEFT, pressed);
                     break;
                 case "SHIFT":
-                    pressed = Boolean.TRUE.equals(mTermuxExtraKeysView.readSpecialButton(TermuxX11SpecialButton.SHIFT, false));
+                    pressed = Boolean.TRUE.equals(mExtraKeysView.readSpecialButton(TermuxX11SpecialButton.SHIFT, false));
                     mActivity.getLorieView().sendKeyEvent(0, KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
                     break;
                 case "META":
-                    pressed = Boolean.TRUE.equals(mTermuxExtraKeysView.readSpecialButton(TermuxX11SpecialButton.META, false));
+                    pressed = Boolean.TRUE.equals(mExtraKeysView.readSpecialButton(TermuxX11SpecialButton.META, false));
                     mActivity.getLorieView().sendKeyEvent(0, KeyEvent.KEYCODE_META_LEFT, pressed);
                     break;
             }
@@ -151,74 +168,62 @@ public class TermuxX11ExtraKeys implements TermuxExtraKeysView.IExtraKeysView {
         return false;
     }
 
-    public void paste(CharSequence input) {
-        KeyEvent[] events = mVirtualKeyboardKeyCharacterMap.getEvents(input.toString().toCharArray());
-        if (events != null) {
-            for (KeyEvent event : events) {
-                int keyCode = event.getKeyCode();
-                mEventListener.onKey(mActivity.getLorieView(), keyCode, event);
-            }
-        }
-    }
-
-    private ViewPager getToolbarViewPager() {
-        return mActivity.findViewById(R.id.display_terminal_toolbar_view_pager);
-    }
-
     @SuppressLint("RtlHardcoded")
     public void onLorieExtraKeyButtonClick(View view, String key, boolean ctrlDown, boolean altDown, boolean shiftDown, boolean metaDown, boolean fnDown) {
-        if ("KEYBOARD".equals(key)) {
-            if (getToolbarViewPager()!=null) {
-                getToolbarViewPager().requestFocus();
-                toggleKeyboardVisibility(mActivity);
-            }
-        } else if ("DRAWER".equals(key)) {
-            Intent preferencesIntent = new Intent(mActivity, LoriePreferences.class);
-            preferencesIntent.setAction(ACTION_START_PREFERENCES_ACTIVITY);
-            mActivity.startActivity(preferencesIntent);
-        } else if ("PASTE".equals(key)) {
-            ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clipData = clipboard.getPrimaryClip();
+        if ("KEYBOARD".equals(key))
+            toggleKeyboardVisibility(mActivity);
+        else if ("DRAWER".equals(key) || "PREFERENCES".equals(key))
+            mActivity.startActivity(new Intent(mActivity, LoriePreferences.class) {{ setAction(ACTION_START_PREFERENCES_ACTIVITY); }});
+        else if ("EXIT".equals(key))
+            mActivity.finish();
+        else if ("PASTE".equals(key)) {
+            ClipData clipData = mClipboardManager.getPrimaryClip();
             if (clipData != null) {
                 CharSequence pasted = clipData.getItemAt(0).coerceToText(mActivity);
-                if (!TextUtils.isEmpty(pasted)) paste(pasted);
+                if (!TextUtils.isEmpty(pasted)) {
+                    KeyEvent[] events = mVirtualKeyboardKeyCharacterMap.getEvents(pasted.toString().toCharArray());
+                    if (events != null)
+                        for (KeyEvent event : events)
+                            mEventListener.onKey(mActivity.getLorieView(), event.getKeyCode(), event);
+                }
             }
-        } else {
+        } else if ("MOUSE_HELPER".equals(key))
+            mActivity.toggleMouseAuxButtons();
+        else if ("STYLUS_HELPER".equals(key))
+            mActivity.toggleStylusAuxButtons();
+        else
             onTerminalExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, metaDown, fnDown);
-        }
     }
 
     /**
      * Set the terminal extra keys and style.
      */
-    @SuppressWarnings("deprecation")
-    private void setExtraKeys() {
-        mTermuxX11ExtraKeysInfo = null;
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+    public static void setExtraKeys() {
+        mExtraKeysInfo = null;
 
         try {
             // The mMap stores the extra key and style string values while loading properties
             // Check {@link #getExtraKeysInternalPropertyValueFromValue(String)} and
             // {@link #getExtraKeysStyleInternalPropertyValueFromValue(String)}
-            String extrakeys = preferences.getString("extra_keys_config", TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS);
-            mTermuxX11ExtraKeysInfo = new TermuxX11ExtraKeysInfo(extrakeys, "extra-keys-style", TermuxX11ExtraKeysConstants.CONTROL_CHARS_ALIASES);
+            String extrakeys = MainActivity.getPrefs().extra_keys_config.get();
+            mExtraKeysInfo = new TermuxX11ExtraKeysInfo(extrakeys, "extra-keys-style", TermuxX11ExtraKeysConstants.CONTROL_CHARS_ALIASES);
         } catch (JSONException e) {
-            Toast.makeText(mActivity, "Could not load and set the \"extra-keys\" property from the properties file: " + e, Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.getInstance(), "Could not load and set the \"extra-keys\" property from the properties file: " + e, Toast.LENGTH_LONG).show();
             Log.e(LOG_TAG, "Could not load and set the \"extra-keys\" property from the properties file: ", e);
 
             try {
-                mTermuxX11ExtraKeysInfo = new TermuxX11ExtraKeysInfo(TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS, "default", TermuxX11ExtraKeysConstants.CONTROL_CHARS_ALIASES);
+                mExtraKeysInfo = new TermuxX11ExtraKeysInfo(TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS, "default", TermuxX11ExtraKeysConstants.CONTROL_CHARS_ALIASES);
             } catch (JSONException e2) {
-                Toast.makeText(mActivity, "Can't create default extra keys", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.getInstance(), "Can't create default extra keys", Toast.LENGTH_LONG).show();
                 Log.e(LOG_TAG, "Could create default extra keys: ", e);
-                mTermuxX11ExtraKeysInfo = null;
+                mExtraKeysInfo = null;
             }
         }
     }
 
-    public TermuxX11ExtraKeysInfo getExtraKeysInfo() {
-        if (mTermuxX11ExtraKeysInfo == null)
+    public static TermuxX11ExtraKeysInfo getExtraKeysInfo() {
+        if (mExtraKeysInfo == null)
             setExtraKeys();
-        return mTermuxX11ExtraKeysInfo;
+        return mExtraKeysInfo;
     }
 }

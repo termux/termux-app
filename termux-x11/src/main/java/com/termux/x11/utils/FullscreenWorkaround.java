@@ -1,16 +1,14 @@
 package com.termux.x11.utils;
 
 import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
-
+import com.termux.x11.MainActivity;
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.graphics.Rect;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
-@SuppressWarnings("deprecation")
+import com.termux.x11.Prefs;
+
 public class FullscreenWorkaround {
     // For more information, see https://issuetracker.google.com/issues/36911528
     // To use this class, simply invoke assistActivity() on an Activity that already has its content view set.
@@ -35,13 +33,13 @@ public class FullscreenWorkaround {
     }
 
     private void possiblyResizeChildOfContent() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        Prefs p = MainActivity.getPrefs();
         if (
             !mActivity.hasWindowFocus() ||
                 !((mActivity.getWindow().getAttributes().flags & FLAG_FULLSCREEN) == FLAG_FULLSCREEN) ||
-                !preferences.getBoolean("Reseed", true) ||
+                !p.Reseed.get() ||
                 !x11Focused ||
-                !preferences.getBoolean("fullscreen", false) ||
+                !p.fullscreen.get() ||
                 SamsungDexUtils.checkDeXEnabled(mActivity)
         )
             return;

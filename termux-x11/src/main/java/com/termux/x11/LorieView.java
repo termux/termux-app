@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.text.Editable;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -29,8 +30,10 @@ import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.CorrectionInfo;
+import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
@@ -355,7 +358,7 @@ public class LorieView extends SurfaceView implements InputStub {
     }
 
     public interface Callback {
-        void changed(Surface sfc, int surfaceWidth, int surfaceHeight, int screenWidth, int screenHeight);
+        void changed(int surfaceWidth, int surfaceHeight, int screenWidth, int screenHeight);
     }
 
     interface PixelFormat {
@@ -369,29 +372,236 @@ public class LorieView extends SurfaceView implements InputStub {
     private final InputMethodManager mIMM = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
     private Callback mCallback;
     private final Point p = new Point();
-    private final SurfaceHolder.Callback mSurfaceCallback = new SurfaceHolder.Callback() {
+    boolean commitedText = false;
+    private final InputConnection mConnection = new InputConnectionWrapper(new BaseInputConnection(this, false) {
+        private final MainActivity a = MainActivity.getInstance();
+        private CharSequence currentComposingText = null;
+
+        // We can not inspect X windows and get currently edited text
+        // or even check if currently focused element in window is editable.
+        @Override public Editable getEditable() {
+            return null;
+        }
+        // Keeps track of nested begin/end batch edit to ensure this connection always has a
+        // balanced impact on its associated TextView.
+        // A negative value means that this connection has been finished by the InputMethodManager.
+        private int mBatchEditNesting = 0;
         @Override
-        public void surfaceCreated(@NonNull SurfaceHolder holder) {
-            holder.setFormat(PixelFormat.BGRA_8888);
+        public boolean beginBatchEdit() {
+            synchronized (this) {
+                if (mBatchEditNesting >= 0) {
+                    mBatchEditNesting++;
+                    if (mBatchEditNesting == 1) {
+                        resetCursorPosition = false;
+                        requestedPos = -1;
+                    }
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
-        public void surfaceChanged(@NonNull SurfaceHolder holder, int f, int width, int height) {
+        public boolean endBatchEdit() {
+            synchronized (this) {
+                if (mBatchEditNesting > 0) {
+                    // When the connection is reset by the InputMethodManager and reportFinish
+                    // is called, some endBatchEdit calls may still be asynchronously received from the
+                    // IME. Do not take these into account, thus ensuring that this IC's final
+                    // contribution to mTextView's nested batch edit count is zero.
+                    mBatchEditNesting--;
+                    if (mBatchEditNesting == 0) {
+                        sendCursorPosition();
+                        requestedPos = -1;
+                    }
+                    return mBatchEditNesting > 0;
+                }
+            }
+            return false;
+        }
+
+        // Needed to trace current fake cursor position.
+        int currentPos = 1, requestedPos;
+        boolean resetCursorPosition;
+        void sendCursorPosition() {
+            if (resetCursorPosition) {
+                mIMM.updateSelection(LorieView.this, -1, -1, -1, -1);
+                currentPos = 1;
+            }
+            mIMM.updateSelection(LorieView.this, currentPos, currentPos, -1, -1);
+            Log.d("InputConnectionWrapper", "SENDING CURSOR POS " + currentPos);
+        }
+
+        // Needed to send arrow keys with IME's cursor control feature
+        // Also gboard's word suggestions behave weird if there is no whitespace before cursor
+        // and it always tries to remove whitespace after word so we put there ASCII letter.
+        // Gboard stops suggesting words if it sees period after cursor.
+        // Also in the case of whitespace it tries to remove it with `deleteSurroundingText`
+        // so we can not use it here.
+        @Override public CharSequence getTextBeforeCursor(int length, int flags) { return " "; }
+        @Override public CharSequence getTextAfterCursor(int length, int flags) { return " "; }
+        @Override public boolean setComposingRegion(int start, int end) { return true; }
+
+        @Override
+        public SurroundingText getSurroundingText(int beforeLength, int afterLength, int flags) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                return new SurroundingText(beforeLength == 0 || afterLength == 0 ? " " : "  ", 1, 1, -1);
+            else
+                return null;
+        }
+
+        void sendKey(int k) {
+            LorieView.this.sendKeyEvent(0, k, true);
+            LorieView.this.sendKeyEvent(0, k, false);
+        }
+
+        @Override public boolean deleteSurroundingText(int beforeLength, int afterLength) {
+            if (requestedPos != -1 && requestedPos > currentPos && beforeLength > 0) {
+                // sometimes gboard sees following whitespace and wants to remove it.
+                // but we do not want to send backspace key events
+                // because the whitespace is fake, it is required for cursor control
+                requestedPos -= beforeLength;
+                return true;
+            }
+
+            if (beforeLength == 1 && mBatchEditNesting > 0) {
+                // in the case if this code was called between beginBatchEdit and endBatchEdit
+                // most likely it was triggered by backspace key.
+                // In the case of physical backspace we should cancel pending physical release
+                keyReleaseHandler.removeMessages(KeyEvent.KEYCODE_DEL);
+            }
+
+            for (int i=0; i<beforeLength; i++)
+                sendKey(KeyEvent.KEYCODE_DEL);
+            for (int i=0; i<afterLength; i++)
+                sendKey(KeyEvent.KEYCODE_FORWARD_DEL);
+
+            currentPos -= beforeLength;
+            if (currentPos <= 1)
+                resetCursorPosition = true;
+
+            return true;
+        }
+
+        /**
+         * X server itself does not provide any way to compose text.
+         * But we can simply send text we want and erase it in the case if user does not need it.
+         *
+         * @noinspection SameReturnValue*/
+        boolean replaceText(CharSequence newText, boolean reuse) {
+            int oldLen = currentComposingText != null ? currentComposingText.length() : 0;
+            int newLen = newText != null ? newText.length() : 0;
+            if (oldLen > 0 && newLen > 0 && (currentComposingText.toString().startsWith(newText.toString())
+                || newText.toString().startsWith(currentComposingText.toString()))) {
+                for (int i=0; i < oldLen - newLen; i++)
+                    sendKey(KeyEvent.KEYCODE_DEL);
+                for (int i=oldLen; i<newLen; i++)
+                    sendTextEvent(String.valueOf(newText.charAt(i)).getBytes(UTF_8));
+            } else {
+                for (int i = 0; i < oldLen; i++)
+                    sendKey(KeyEvent.KEYCODE_DEL);
+                if (newText != null)
+                    sendTextEvent(newText.toString().getBytes(UTF_8));
+            }
+
+            currentComposingText = reuse ? newText : null;
+
+            if (a.useTermuxEKBarBehaviour && a.mExtraKeys != null)
+                a.mExtraKeys.unsetSpecialKeys();
+            commitedText = true;
+            return true;
+        }
+
+        public boolean setSelection(int start, int end) {
+            // Samsung keyboard moves cursor by sending DPAD directional key events.
+            // Gboard invokes `setSelection`. We should handle both ways.
+            if (mBatchEditNesting == 0) { // outside of batchedit so most likely cursor control
+                if (start == end) {
+                    if (start < 1)
+                        sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
+                    else if (start > 1)
+                        sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+                }
+
+                mIMM.updateSelection(LorieView.this, -1, -1, -1, -1);
+                mIMM.updateSelection(LorieView.this, 1, 1, -1, -1);
+                currentPos = 1;
+            } else if (mBatchEditNesting > 0){
+                // Most likely gboard following whitespace and wants to remove it
+                if (start == end && start > currentPos)
+                    requestedPos = start;
+            }
+            return true;
+        }
+
+        @Override public boolean setComposingText(CharSequence text, int newCursorPosition) {
+            return replaceText(text, true);
+        }
+
+        @Override
+        public boolean commitText(CharSequence text, int newPos) {
+            Log.d("InputConnectionWrapper", newPos + " - 1 + " + currentPos + " + " + text.length());
+            Log.d("InputConnectionWrapper", "OLD " + currentPos + " NEW " + Math.max(1, newPos - 1 + currentPos + text.length()) + " mBatchEditNesting " + mBatchEditNesting);
+            if (newPos > 0)
+                currentPos = Math.max(1, newPos - 1 + currentPos + text.length());
+            else
+                resetCursorPosition = true;
+            if (mBatchEditNesting == 0)
+                // beginBatchEdit was not called so it will not be reported otherwise
+                sendCursorPosition();
+
+            return replaceText(text, false);
+        }
+
+        @Override
+        public boolean finishComposingText() {
+            // We do not implement real composing, so no need to finish it.
+            currentComposingText = null;
+            return true;
+        }
+
+        @Override
+        public boolean sendKeyEvent(KeyEvent event) {
+            return LorieView.this.dispatchKeyEvent(event);
+        }
+
+        @Override
+        public boolean requestCursorUpdates(int cursorUpdateMode) {
+            mIMM.updateCursorAnchorInfo(LorieView.this, new CursorAnchorInfo.Builder()
+                .setComposingText(-1, null)
+                .setSelectionRange(currentPos, currentPos)
+                .build());
+            return true;
+        }
+
+        @Override
+        public boolean requestCursorUpdates(int cursorUpdateMode, int cursorUpdateFilter) {
+            return requestCursorUpdates(cursorUpdateMode);
+        }
+    });
+    private final SurfaceHolder.Callback mSurfaceCallback = new SurfaceHolder.Callback() {
+        @Override public void surfaceCreated(@NonNull SurfaceHolder holder) {
+            holder.setFormat(PixelFormat.BGRA_8888);
+        }
+
+        @Override public void surfaceChanged(@NonNull SurfaceHolder holder, int f, int width, int height) {
+            LorieView.this.surfaceChanged(holder.getSurface());
             width = getMeasuredWidth();
             height = getMeasuredHeight();
 
-//            Log.d("SurfaceChangedListener", "Surface was changed: " + width + "x" + height);
+            Log.d("SurfaceChangedListener", "Surface was changed: " + width + "x" + height);
             if (mCallback == null)
                 return;
 
             getDimensionsFromSettings();
-            mCallback.changed(holder.getSurface(), width, height, p.x, p.y);
+            if (mCallback != null)
+                mCallback.changed(width, height, p.x, p.y);
         }
 
-        @Override
-        public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+        @Override public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+            LorieView.this.surfaceChanged(null);
             if (mCallback != null)
-                mCallback.changed(holder.getSurface(), 0, 0, 0, 0);
+                mCallback.changed(0, 0, 0, 0);
         }
     };
 

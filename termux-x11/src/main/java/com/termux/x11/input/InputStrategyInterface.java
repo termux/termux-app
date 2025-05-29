@@ -29,7 +29,7 @@ public interface InputStrategyInterface {
      * @param button The button value for the tap event.
      * @return A boolean representing whether the event was handled.
      */
-    boolean onPressAndHold(int button);
+    boolean onPressAndHold(int button, boolean force);
 
     /**
      * Called when a MotionEvent is received.  This method allows the input strategy to store or
@@ -49,7 +49,7 @@ public interface InputStrategyInterface {
 
     class NullInputStrategy implements InputStrategyInterface {
         @Override public void onTap(int button) {}
-        @Override public boolean onPressAndHold(int button) { return false; }
+        @Override public boolean onPressAndHold(int button, boolean force) { return false; }
         @Override public void onScroll(float distanceX, float distanceY) {}
         @Override public void onMotionEvent(MotionEvent event) {}
     }
@@ -92,7 +92,7 @@ public interface InputStrategyInterface {
         private int mHeldButton = InputStub.BUTTON_UNDEFINED;
 
         public SimulatedTouchInputStrategy(
-                RenderData renderData, InputEventSender injector, Context context) {
+            RenderData renderData, InputEventSender injector, Context context) {
             if (injector == null)
                 throw new NullPointerException();
             mRenderData = renderData;
@@ -115,7 +115,7 @@ public interface InputStrategyInterface {
             // problem, getScaledDoubleTapSlop() gives a value which is optimized for an Android based
             // UI however this value is too large for interacting with remote elements in our app.
             // Our solution is to use the original value from getScaledDoubleTapSlop() (which includes
-            // scaling to account for x11 differences between devices) and apply a fudge/scale
+            // scaling to account for display differences between devices) and apply a fudge/scale
             // factor to make the interaction more intuitive and useful for our scenario.
             ViewConfiguration config = ViewConfiguration.get(context);
             int scaledDoubleTapSlopInPx = config.getScaledDoubleTapSlop();
@@ -152,7 +152,7 @@ public interface InputStrategyInterface {
         }
 
         @Override
-        public boolean onPressAndHold(int button) {
+        public boolean onPressAndHold(int button, boolean force) {
             mInjector.sendMouseDown(button, false);
             mHeldButton = button;
             return true;
@@ -210,7 +210,10 @@ public interface InputStrategyInterface {
         }
 
         @Override
-        public boolean onPressAndHold(int button) {
+        public boolean onPressAndHold(int button, boolean force) {
+            if (mInjector.tapToMove && !force)
+                return false;
+
             mInjector.sendMouseDown(button, true);
             mHeldButton = button;
             return true;
