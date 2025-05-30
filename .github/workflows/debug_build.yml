@@ -6,15 +6,14 @@ on:
       - master
       - 'github-releases/**'
   pull_request:
-    branches:
-      - master
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ ubuntu-latest, macos-15 ]
         package_variant: [ apt-android-7, apt-android-5 ]
 
     steps:
