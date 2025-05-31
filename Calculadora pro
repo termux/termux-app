@@ -1,0 +1,232 @@
+import math
+
+# --- Configuración Global ---
+modo_angulo = "radianes" # Puede ser "radianes" o "grados"
+PRECISION_FLOTANTE = 1e-9 # Umbral para comparar números flotantes con cero
+
+# --- Funciones Auxiliares de Conversión ---
+def _obtener_valor_numerico(entrada_str):
+    """Convierte una cadena de entrada a un número flotante, manejando 'pi' y 'e'."""
+    entrada_str_lower = entrada_str.lower()
+    if entrada_str_lower == 'pi':
+        return math.pi
+    elif entrada_str_lower == 'e':
+        return math.e
+    else:
+        return float(entrada_str)
+
+# --- Funciones Aritméticas Básicas ---
+def sumar(x, y):
+  return x + y
+
+def restar(x, y):
+  return x - y
+
+def multiplicar(x, y):
+  return x * y
+
+def dividir(x, y):
+  if abs(y) < PRECISION_FLOTANTE: # Usar umbral para evitar división por cero con flotantes
+    return "Error: No se puede dividir por cero"
+  else:
+    return x / y
+
+# --- Funciones Científicas ---
+def raiz_cuadrada(x):
+  if x < 0:
+    return "Error: No se puede calcular la raíz cuadrada de un número negativo"
+  else:
+    return math.sqrt(x)
+
+def potencia(base, exponente):
+  return base ** exponente
+
+def _convertir_a_radianes(angulo):
+    """Convierte un ángulo a radianes si el modo actual es grados."""
+    global modo_angulo
+    if modo_angulo == "grados":
+        return math.radians(angulo)
+    return angulo
+
+def seno(x):
+  x_radianes = _convertir_a_radianes(x)
+  return math.sin(x_radianes)
+
+def coseno(x):
+  x_radianes = _convertir_a_radianes(x)
+  return math.cos(x_radianes)
+
+def tangente(x):
+  x_radianes = _convertir_a_radianes(x)
+  # Considerar el caso de tan(90) o tan(270) en grados, o pi/2, 3pi/2 en radianes
+  if abs(math.cos(x_radianes)) < PRECISION_FLOTANTE:
+      return "Error: Tangente indefinida (división por cero)"
+  return math.tan(x_radianes)
+
+def logaritmo_base10(x):
+  if x <= 0:
+    return "Error: El logaritmo solo está definido para números positivos"
+  return math.log10(x)
+
+def logaritmo_natural(x): # Logaritmo base e (ln)
+  if x <= 0:
+    return "Error: El logaritmo natural solo está definido para números positivos"
+  return math.log(x)
+
+def exponencial_e(x): # e^x
+  return math.exp(x)
+
+def factorial_n(n):
+  if not isinstance(n, int):
+      return "Error: Factorial solo definido para números enteros."
+  if n < 0:
+    return "Error: Factorial no definido para números negativos."
+  return math.factorial(n)
+
+def absoluto(x):
+    """Calcula el valor absoluto de un número."""
+    return abs(x)
+
+def modulo(x, y):
+    """Calcula el residuo de la división (módulo)."""
+    if abs(y) < PRECISION_FLOTANTE:
+        return "Error: No se puede calcular el módulo por cero."
+    return x % y
+
+# --- Función para cambiar modo de ángulo ---
+def cambiar_modo_angulo():
+    global modo_angulo
+    if modo_angulo == "radianes":
+        modo_angulo = "grados"
+        print("Modo de ángulo cambiado a: Grados")
+    else:
+        modo_angulo = "radianes"
+        print("Modo de ángulo cambiado a: Radianes")
+
+# --- Menú Principal ---
+def mostrar_menu():
+    print("\n--- CALCULADORA CIENTÍFICA UNIVERSITARIA ---")
+    print("Selecciona una operación:")
+    print("--- Básicas ---")
+    print("1. Sumar (x + y)")
+    print("2. Restar (x - y)")
+    print("3. Multiplicar (x * y)")
+    print("4. Dividir (x / y)")
+    print("5. Módulo (x % y)")
+    print("--- Científicas Avanzadas ---")
+    print("6. Raíz Cuadrada (√x)")
+    print("7. Potencia (x^y)")
+    print(f"8. Seno (sin) - Modo actual: {modo_angulo}")
+    print(f"9. Coseno (cos) - Modo actual: {modo_angulo}")
+    print(f"10. Tangente (tan) - Modo actual: {modo_angulo}")
+    print("11. Logaritmo base 10 (log₁₀)")
+    print("12. Logaritmo Natural (ln)")
+    print("13. Exponencial (e^x)")
+    print("14. Factorial (n!)")
+    print("15. Valor Absoluto (|x|)")
+    print("--- Constantes y Configuración ---")
+    print("16. Mostrar Pi (π)")
+    print("17. Mostrar e (Número de Euler)")
+    print("18. Cambiar Modo Ángulo (Grados/Radianes)")
+    print("0. Salir")
+    print("---------------------------------------------")
+
+# --- Bucle Principal de la Calculadora ---
+def iniciar_calculadora():
+    while True:
+        mostrar_menu()
+        opcion = input("Ingresa tu opción: ")
+
+        if opcion == '0':
+            print("Saliendo de la calculadora. ¡Hasta pronto!")
+            break
+
+        try:
+            # Operaciones que necesitan dos números
+            if opcion in ('1', '2', '3', '4', '5', '7'): # Sumar, Restar, Multiplicar, Dividir, Módulo, Potencia
+                num1_str = input("Ingresa el primer número (o 'pi'/'e'): ")
+                num1 = _obtener_valor_numerico(num1_str)
+
+                num2_str = input("Ingresa el segundo número (o 'pi'/'e'): ")
+                num2 = _obtener_valor_numerico(num2_str)
+
+                if opcion == '1':
+                    resultado = sumar(num1, num2)
+                    print(f"Resultado: {num1} + {num2} = {resultado}")
+                elif opcion == '2':
+                    resultado = restar(num1, num2)
+                    print(f"Resultado: {num1} - {num2} = {resultado}")
+                elif opcion == '3':
+                    resultado = multiplicar(num1, num2)
+                    print(f"Resultado: {num1} * {num2} = {resultado}")
+                elif opcion == '4':
+                    resultado = dividir(num1, num2)
+                    print(f"Resultado: {num1} / {num2} = {resultado}")
+                elif opcion == '5':
+                    resultado = modulo(num1, num2)
+                    print(f"Resultado: {num1} % {num2} = {resultado}")
+                elif opcion == '7': # Potencia
+                    resultado = potencia(num1, num2)
+                    print(f"Resultado: {num1}^{num2} = {resultado}")
+
+            # Operaciones que necesitan un número
+            elif opcion in ('6', '8', '9', '10', '11', '12', '13', '14', '15'):
+                num_str = input("Ingresa el número (o 'pi'/'e'): ")
+                num = _obtener_valor_numerico(num_str)
+
+                if opcion == '6': # Raíz Cuadrada
+                    resultado = raiz_cuadrada(num)
+                    print(f"Resultado: √{num} = {resultado}")
+                elif opcion == '8': # Seno
+                    resultado = seno(num)
+                    print(f"Resultado: sin({num}) = {resultado}")
+                elif opcion == '9': # Coseno
+                    resultado = coseno(num)
+                    print(f"Resultado: cos({num}) = {resultado}")
+                elif opcion == '10': # Tangente
+                    resultado = tangente(num)
+                    print(f"Resultado: tan({num}) = {resultado}")
+                elif opcion == '11': # Logaritmo base 10
+                    resultado = logaritmo_base10(num)
+                    print(f"Resultado: log₁₀({num}) = {resultado}")
+                elif opcion == '12': # Logaritmo Natural
+                    resultado = logaritmo_natural(num)
+                    print(f"Resultado: ln({num}) = {resultado}")
+                elif opcion == '13': # Exponencial e^x
+                    resultado = exponencial_e(num)
+                    print(f"Resultado: e^{num} = {resultado}")
+                elif opcion == '14': # Factorial
+                    # Para factorial, el número debe ser entero
+                    if not isinstance(num, int) or num < 0: # num es float, verificar si es entero
+                        if abs(num - round(num)) < PRECISION_FLOTANTE and num >= 0: # Si es "prácticamente" un entero positivo
+                            resultado = factorial_n(int(round(num))) # Redondear y convertir a int
+                        else:
+                            resultado = "Error: Factorial solo definido para números enteros no negativos."
+                    else:
+                        resultado = factorial_n(num) # Si ya es entero
+                    print(f"Resultado: {num}! = {resultado}")
+                elif opcion == '15': # Valor Absoluto
+                    resultado = absoluto(num)
+                    print(f"Resultado: |{num}| = {resultado}")
+                        
+            # Constantes y configuración
+            elif opcion == '16':
+                print(f"Pi (π) ≈ {math.pi}")
+            elif opcion == '17':
+                print(f"Número de Euler (e) ≈ {math.e}")
+            elif opcion == '18':
+                cambiar_modo_angulo()
+            
+            else:
+                print("Opción inválida. Por favor, intenta de nuevo.")
+
+        except ValueError:
+            print("Entrada inválida. Por favor ingresa números válidos o las constantes 'pi'/'e'.")
+        except Exception as e:
+            print(f"Ha ocurrido un error inesperado: {e}")
+
+        input("\nPresiona Enter para continuar...") # Pausa para que el usuario vea el resultado
+
+# Iniciar la calculadora al ejecutar el script
+if __name__ == "__main__":
+    iniciar_calculadora()
