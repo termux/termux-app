@@ -101,6 +101,11 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         boolean isTerminalViewKeyLoggingEnabled = mActivity.getPreferences().isTerminalViewKeyLoggingEnabled();
         mActivity.getTerminalView().setIsTerminalViewKeyLoggingEnabled(isTerminalViewKeyLoggingEnabled);
 
+        // Set {@link TerminalView#ADVANCED_MOUSE} value
+        // Also required if user changed the preference from {@link TermuxSettings} activity and returns
+        boolean isAdvancedMouse = mActivity.getPreferences().isAdvancedMouse();
+        mActivity.getTerminalView().setAdvancedMouse(isAdvancedMouse);
+
         // Piggyback on the terminal view key logging toggle for now, should add a separate toggle in future
         mActivity.getTermuxActivityRootView().setIsRootViewLoggingEnabled(isTerminalViewKeyLoggingEnabled);
         ViewUtils.setIsViewUtilsLoggingEnabled(isTerminalViewKeyLoggingEnabled);
