@@ -141,14 +141,14 @@ public class MainActivity extends LoriePreferences {
         }
     };
 
-    ViewTreeObserver.OnPreDrawListener mOnPredrawListener = new ViewTreeObserver.OnPreDrawListener() {
-        @Override
-        public boolean onPreDraw() {
-            if (LorieView.connected())
-                handler.post(() -> findViewById(android.R.id.content).getViewTreeObserver().removeOnPreDrawListener(mOnPredrawListener));
-            return false;
-        }
-    };
+//    ViewTreeObserver.OnPreDrawListener mOnPredrawListener = new ViewTreeObserver.OnPreDrawListener() {
+//        @Override
+//        public boolean onPreDraw() {
+//            if (LorieView.connected())
+//                handler.post(() -> findViewById(android.R.id.content).getViewTreeObserver().removeOnPreDrawListener(mOnPredrawListener));
+//            return false;
+//        }
+//    };
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity instance;
@@ -218,7 +218,7 @@ public class MainActivity extends LoriePreferences {
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                loriePreferenceFragment.updatePreferencesLayout();
+                                updatePreferencesLayout();
                             }
                         }, 500);
                     }
@@ -277,8 +277,8 @@ public class MainActivity extends LoriePreferences {
 
         if (tryConnect()) {
             final View content = findViewById(android.R.id.content);
-            content.getViewTreeObserver().addOnPreDrawListener(mOnPredrawListener);
-            handler.postDelayed(() -> content.getViewTreeObserver().removeOnPreDrawListener(mOnPredrawListener), 500);
+//            content.getViewTreeObserver().addOnPreDrawListener(mOnPredrawListener);
+//            handler.postDelayed(() -> content.getViewTreeObserver().removeOnPreDrawListener(mOnPredrawListener), 500);
         }
         onPreferencesChanged("");
 
@@ -602,7 +602,7 @@ public class MainActivity extends LoriePreferences {
         FullscreenWorkaround.setX11Focused(x11Focused);
     }
 
-    void onPreferencesChanged(String key) {
+    protected void onPreferencesChanged(String key) {
         if ("additionalKbdVisible".equals(key))
             return;
 

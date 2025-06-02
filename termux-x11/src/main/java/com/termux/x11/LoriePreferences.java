@@ -10,6 +10,8 @@ import static android.system.Os.getuid;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -17,22 +19,43 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.database.ContentObserver;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceDataStore;
+import androidx.preference.PreferenceFragmentCompat;
+
+import androidx.preference.Preference.OnPreferenceChangeListener;
+import androidx.preference.PreferenceScreen;
+import androidx.preference.SeekBarPreference;
+
 import android.provider.Settings;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
+import android.view.InputDevice;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -42,22 +65,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.util.Consumer;
-import androidx.preference.Preference;
-import androidx.preference.Preference.OnPreferenceChangeListener;
-import androidx.preference.PreferenceDataStore;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceGroup;
-import androidx.preference.SeekBarPreference;
 
 import com.termux.x11.controller.InputControllerActivity;
 import com.termux.x11.controller.container.Container;
@@ -73,87 +80,30 @@ import com.termux.x11.controller.winhandler.ProcessInfo;
 import com.termux.x11.controller.winhandler.WinHandler;
 import com.termux.x11.utils.KeyInterceptor;
 import com.termux.x11.utils.SamsungDexUtils;
+import com.termux.x11.utils.TermuxX11ExtraKeys;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.PatternSyntaxException;
 
 @SuppressWarnings("deprecation")
-public class LoriePreferences extends AppCompatActivity {
-    public static int OPEN_FILE_REQUEST_CODE = 102;
+public class LoriePreferences extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     static final String ACTION_PREFERENCES_CHANGED = "com.termux.x11.ACTION_PREFERENCES_CHANGED";
     public static Prefs prefs = null;
+
+    public static int OPEN_FILE_REQUEST_CODE = 102;
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
     protected LoriePreferenceFragment loriePreferenceFragment;
     protected LorieView xServer;
     protected static boolean touchShow = false;
     protected int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-
-    public boolean getTouchShow() {
-        return touchShow;
-    }
-
-    public List<ProcessInfo> getTermuxProcessorInfo(String tag) {
-        if (termuxActivityListener != null) {
-            return termuxActivityListener.collectProcessorInfo(tag);
-        }
-        return null;
-    }
-
-    protected interface TermuxActivityListener {
-        void onX11PreferenceSwitchChange(boolean isOpen);
-
-        void releaseSlider(boolean open);
-
-        void onChangeOrientation(int landscape);
-
-        void reInstallX11StartScript(Activity activity);
-
-        void stopDesktop(Activity activity);
-
-        void openSoftwareKeyboard();
-
-        void showProcessManager();
-
-        void changePreference(String key);
-
-        List<ProcessInfo> collectProcessorInfo(String tag);
-
-        void setFloatBallMenu(boolean enableFloatBallMenu, boolean enableGlobalFloatBallMenu);
-    }
-
-    public TermuxActivityListener getTermuxActivityListener() {
-        return termuxActivityListener;
-    }
-
-    protected TermuxActivityListener termuxActivityListener;
-
-
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-        @SuppressLint("UnspecifiedRegisterReceiverFlag")
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (ACTION_PREFERENCES_CHANGED.equals(intent.getAction())) {
-                if (intent.getBooleanExtra("fromBroadcast", false)) {
-                    loriePreferenceFragment.getPreferenceScreen().removeAll();
-                    loriePreferenceFragment.addPreferencesFromResource(R.xml.preferences);
-                }
-            }
-        }
-    };
 
     //input controller
     protected InputControlsManager inputControlsManager;
@@ -168,20 +118,94 @@ public class LoriePreferences extends AppCompatActivity {
     protected String controlsProfile;
     protected Container container;
 
+    public boolean getTouchShow() {
+        return touchShow;
+    }
+
+    public List<ProcessInfo> getTermuxProcessorInfo(String tag) {
+        if (termuxActivityListener != null) {
+            return termuxActivityListener.collectProcessorInfo(tag);
+        }
+        return null;
+    }
+
+    protected interface TermuxActivityListener {
+        void onX11PreferenceSwitchChange(boolean isOpen);
+        void releaseSlider(boolean open);
+        void onChangeOrientation(int landscape);
+        void reInstallX11StartScript(Activity activity);
+        void stopDesktop(Activity activity);
+        void openSoftwareKeyboard();
+        void showProcessManager();
+        void changePreference(String key);
+        List<ProcessInfo> collectProcessorInfo(String tag);
+        void setFloatBallMenu(boolean enableFloatBallMenu, boolean enableGlobalFloatBallMenu);
+    }
+
+    public TermuxActivityListener getTermuxActivityListener() {
+        return termuxActivityListener;
+    }
+
+    protected TermuxActivityListener termuxActivityListener;
+
+
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @SuppressLint("UnspecifiedRegisterReceiverFlag")
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ACTION_PREFERENCES_CHANGED.equals(intent.getAction()) &&
+                intent.getBooleanExtra("fromBroadcast", false))
+                updatePreferencesLayout();
+        }
+    };
+
+    private final ContentObserver accessibilityObserver = new ContentObserver(null) {
+        private final Runnable updateLayout = () -> updatePreferencesLayout();
+
+        @Override
+        public void onChange(boolean selfChange) {
+            handler.removeCallbacks(updateLayout);
+            handler.postDelayed(updateLayout, 200);
+        }
+
+        @Override
+        public boolean deliverSelfNotifications() {
+            return true;
+        }
+    };
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus)
+            updatePreferencesLayout();
+    }
+
+    protected void updatePreferencesLayout() {
+        getSupportFragmentManager().getFragments().forEach(fragment -> {
+            if (fragment instanceof LoriePreferenceFragment)
+                ((LoriePreferenceFragment) fragment).updatePreferencesLayout();
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = new Prefs(this);
-        loriePreferenceFragment = new LoriePreferenceFragment();
-//        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, loriePreferenceFragment).commit();
+//        loriePreferenceFragment = new LoriePreferenceFragment(null);
+//        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, new LoriePreferenceFragment(null)).commit();
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
-            actionBar.setTitle("Preferences");
         }
-        loriePreferenceFragment.setPreferenceActivity(this);
+
+        Uri ENABLED_ACCESSIBILITY_SERVICES = Settings.Secure.getUriFor(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        Uri ACCESSIBILITY_ENABLED = Settings.Secure.getUriFor(Settings.Secure.ACCESSIBILITY_ENABLED);
+
+        getContentResolver().registerContentObserver(ENABLED_ACCESSIBILITY_SERVICES, true, accessibilityObserver);
+        getContentResolver().registerContentObserver(ACCESSIBILITY_ENABLED, true, accessibilityObserver);
     }
 
     @SuppressLint("WrongConstant")
@@ -203,13 +227,32 @@ public class LoriePreferences extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == android.R.id.home) {
-            finish();
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0)
+                finish();
+            else
+                onBackPressed();
+
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    protected void showFragment(PreferenceFragmentCompat fragment) {
+        getSupportFragmentManager().beginTransaction()
+//            .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right)
+            .replace(android.R.id.content, fragment)
+            .addToBackStack(null)
+            .commit();
+    }
+
+    @Override
+    public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
+        final LoriePreferenceFragment fragment = new LoriePreferenceFragment(pref.getFragment());
+        fragment.setTargetFragment(caller, 0);
+        showFragment(fragment);
+        return true;
+    }
     public void installX11ServerBridge() {
         if (termuxActivityListener != null) {
             termuxActivityListener.reInstallX11StartScript(this);
@@ -222,19 +265,14 @@ public class LoriePreferences extends AppCompatActivity {
         }
     }
 
-    public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
-        private LoriePreferences preferenceActivity;
-
-        public void setPreferenceActivity(LoriePreferences preferenceActivity) {
-            this.preferenceActivity = preferenceActivity;
-        }
-
+    public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener {
         private final Runnable updateLayout = this::updatePreferencesLayout;
         private static final Method onSetInitialValue;
         static {
             try {
                 //noinspection JavaReflectionMemberAccess
-                onSetInitialValue = Preference.class.getMethod("onSetInitialValue", boolean.class, Object.class);
+                onSetInitialValue = Preference.class.getDeclaredMethod("onSetInitialValue", boolean.class, Object.class);
+                onSetInitialValue.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
@@ -262,7 +300,10 @@ public class LoriePreferences extends AppCompatActivity {
         public void onResume() {
             super.onResume();
             //noinspection DataFlowIssue
-            ((LoriePreferences) getActivity()).getSupportActionBar().setTitle(getPreferenceScreen().getTitle());
+            ActionBar actionBar = ((LoriePreferences) getActivity()).getSupportActionBar();
+            if(actionBar!=null){
+                actionBar.setTitle(getPreferenceScreen().getTitle());
+            }
         }
 
         /** @noinspection SameParameterValue*/
@@ -278,257 +319,183 @@ public class LoriePreferences extends AppCompatActivity {
             return getResources().getIdentifier("pref_" + name, "string", getContext().getPackageName());
         }
 
-        @Override
+        /** @noinspection DataFlowIssue*/
+        @Override @SuppressLint("ApplySharedPref")
         public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-            SharedPreferences p = getPreferenceManager().getSharedPreferences();
-            int modeValue = p == null ? 0 : Integer.parseInt(p.getString("touchMode", "1")) - 1;
-            if (modeValue > 2) {
-                SharedPreferences.Editor e = Objects.requireNonNull(p).edit();
-                e.putString("touchMode", "1");
-                e.apply();
+            getPreferenceManager().setPreferenceDataStore(prefs);
+
+            if ((Integer.parseInt(prefs.touchMode.get()) - 1) > 2)
+                prefs.touchMode.put("1");
+
+            setPreferencesFromResource(R.xml.preferences, root == null ? "main" : root);
+
+            int id;
+            PreferenceScreen screen = getPreferenceScreen();
+            if ((id = findId(screen.getKey())) != 0)
+                getPreferenceScreen().setTitle(getResources().getString(id));
+            for (int i=0; i<getPreferenceScreen().getPreferenceCount(); i++) {
+                Preference p = screen.getPreference(i);
+                p.setOnPreferenceChangeListener(this);
+                p.setPreferenceDataStore(prefs);
+
+                if ((id = findId(p.getKey())) != 0)
+                    p.setTitle(getResources().getString(id));
+
+                if ((id = findId(p.getKey() + "_summary")) != 0)
+                    p.setSummary(getResources().getString(id));
+
+                if (p instanceof ListPreference) {
+                    ListPreference list = (ListPreference) p;
+                    list.setEntries(prefs.keys.get(p.getKey()).asList().getEntries());
+                    list.setEntryValues(prefs.keys.get(p.getKey()).asList().getValues());
+                    list.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
+                }
             }
 
-            addPreferencesFromResource(R.xml.preferences);
-        }
+            with("showAdditionalKbd", p -> p.setLayoutResource(R.layout.display_preference));
+            with("version", p -> p.setSummary(BuildConfig.VERSION_NAME));
 
-        @SuppressLint("RestrictedApi")
-        @SuppressWarnings("ConstantConditions")
-        void updatePreferencesLayout() {
-            SharedPreferences p = getPreferenceManager().getSharedPreferences();
+            setSummary("displayStretch", R.string.pref_summary_requiresExactOrCustom);
+            setSummary("adjustResolution", R.string.pref_summary_requiresExactOrCustom);
+            setSummary("pauseKeyInterceptingWithEsc", R.string.pref_summary_requiresIntercepting);
+            setSummary("scaleTouchpad", R.string.pref_summary_requiresTrackpadAndNative);
+
             if (!SamsungDexUtils.available())
-                findPreference("dexMetaKeyCapture").setVisible(false);
-            SeekBarPreference scalePreference = findPreference("displayScale");
-            scalePreference.setMin(30);
-            scalePreference.setMax(200);
-            scalePreference.setSeekBarIncrement(10);
-            scalePreference.setShowSeekBarValue(true);
-
-            switch (p.getString("displayResolutionMode", "native")) {
-                case "scaled":
-                    findPreference("displayScale").setVisible(true);
-                    findPreference("displayResolutionExact").setVisible(false);
-                    findPreference("displayResolutionCustom").setVisible(false);
-                    break;
-                case "exact":
-                    findPreference("displayScale").setVisible(false);
-                    findPreference("displayResolutionExact").setVisible(true);
-                    findPreference("displayResolutionCustom").setVisible(false);
-                    break;
-                case "custom":
-                    findPreference("displayScale").setVisible(false);
-                    findPreference("displayResolutionExact").setVisible(false);
-                    findPreference("displayResolutionCustom").setVisible(true);
-                    break;
-                default:
-                    findPreference("displayScale").setVisible(false);
-                    findPreference("displayResolutionExact").setVisible(false);
-                    findPreference("displayResolutionCustom").setVisible(false);
-            }
-            findPreference("hideEKOnVolDown").setEnabled(p.getBoolean("showAdditionalKbd", false));
-            findPreference("dexMetaKeyCapture").setEnabled(!p.getBoolean("enableAccessibilityServiceAutomatically", false));
-            findPreference("enableAccessibilityServiceAutomatically").setEnabled(!p.getBoolean("dexMetaKeyCapture", false));
-            findPreference("filterOutWinkey").setEnabled(p.getBoolean("enableAccessibilityServiceAutomatically", false));
+                setVisible("dexMetaKeyCapture", false);
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P)
-                findPreference("hideCutout").setVisible(false);
+                setVisible("hideCutout", false);
 
-            findPreference("displayResolutionMode").setSummary(p.getString("displayResolutionMode", "native"));
-            findPreference("displayResolutionExact").setSummary(p.getString("displayResolutionExact", "1280x1024"));
-            findPreference("displayResolutionCustom").setSummary(p.getString("displayResolutionCustom", "1280x1024"));
-            findPreference("displayStretch").setEnabled("exact".contentEquals(p.getString("displayResolutionMode", "native")) || "custom".contentEquals(p.getString("displayResolutionMode", "native")));
-            int modeValue = Integer.parseInt(p.getString("touchMode", "1")) - 1;
+            boolean stylusAvailable = Arrays.stream(InputDevice.getDeviceIds())
+                .mapToObj(InputDevice::getDevice)
+                .filter(Objects::nonNull)
+                .anyMatch(d -> d.supportsSource(InputDevice.SOURCE_STYLUS));
 
-            String mode = getResources().getStringArray(R.array.touchscreenInputModesEntries)[modeValue];
-            findPreference("touchMode").setSummary(mode);
-            findPreference("scaleTouchpad").setVisible("1".equals(p.getString("touchMode", "1")) && !"native".equals(p.getString("displayResolutionMode", "native")));
-            findPreference("showMouseHelper").setEnabled("1".equals(p.getString("touchMode", "1")));
-            if (preferenceActivity.touchShow) {
-                findPreference("select_controller").setTitle(R.string.close_controller);
-            } else {
-                findPreference("select_controller").setTitle(R.string.open_controller);
+            setVisible("showStylusClickOverride", stylusAvailable);
+            setVisible("stylusIsMouse", stylusAvailable);
+            setVisible("stylusButtonContactModifierMode", stylusAvailable);
+
+            setNoActionOptionText(findPreference("volumeDownAction"), "android volume control");
+            setNoActionOptionText(findPreference("volumeUpAction"), "android volume control");
+            setNoActionOptionText(findPreference("mediaKeysAction"), "android media control");
+        }
+
+        private void setSummary(CharSequence key, int disabled) {
+            Preference pref = findPreference(key);
+            if (pref != null)
+                pref.setSummaryProvider(new Preference.SummaryProvider<>() {
+                    @Nullable @Override public CharSequence provideSummary(@NonNull Preference p) {
+                        return p.isEnabled() ? null : getResources().getString(disabled);
+                    }
+                });
+        }
+
+        private void setVisible(CharSequence key, boolean value) {
+            Preference p = findPreference(key);
+            if (p != null)
+                p.setVisible(value);
+        }
+
+        private void setEnabled(CharSequence key, boolean value) {
+            Preference p = findPreference(key);
+            if (p != null)
+                p.setEnabled(value);
+        }
+
+        @SuppressWarnings("ConstantConditions")
+        void updatePreferencesLayout() {
+            if (getContext() == null)
+                return;
+
+            for (String key : prefs.keys.keySet()) {
+                Preference p = findPreference(key);
+                if (p != null)
+                    onSetInitialValue(p);
             }
-            boolean enableFloatBallMenu = p.getBoolean("enableFloatBallMenu", false);
-            if (!enableFloatBallMenu) {
-                findPreference("enableGlobalFloatBallMenu").setEnabled(false);
-                findPreference("enableGlobalFloatBallMenu").setVisible(false);
-                findPreference("stop_desktop").setEnabled(true);
-                findPreference("stop_desktop").setVisible(true);
-                findPreference("open_keyboard").setEnabled(true);
-                findPreference("open_keyboard").setVisible(true);
-                findPreference("select_controller").setEnabled(true);
-                findPreference("select_controller").setVisible(true);
-                findPreference("open_progress_manager").setVisible(true);
-                findPreference("open_progress_manager").setVisible(true);
-            } else {
-                findPreference("enableGlobalFloatBallMenu").setVisible(true);
-                findPreference("enableGlobalFloatBallMenu").setEnabled(true);
-                findPreference("stop_desktop").setEnabled(false);
-                findPreference("stop_desktop").setVisible(false);
-                findPreference("open_keyboard").setEnabled(false);
-                findPreference("open_keyboard").setVisible(false);
-                findPreference("select_controller").setEnabled(false);
-                findPreference("select_controller").setVisible(false);
-                findPreference("open_progress_manager").setVisible(false);
-                findPreference("open_progress_manager").setVisible(false);
-            }
+
+            String displayResMode = prefs.displayResolutionMode.get();
+            setVisible("displayScale", displayResMode.contentEquals("scaled"));
+            setVisible("displayResolutionExact", displayResMode.contentEquals("exact"));
+            setVisible("displayResolutionCustom", displayResMode.contentEquals("custom"));
+
+            setEnabled("dexMetaKeyCapture", !prefs.enableAccessibilityServiceAutomatically.get());
+            setEnabled("enableAccessibilityServiceAutomatically", !prefs.dexMetaKeyCapture.get());
+            setEnabled("pauseKeyInterceptingWithEsc", prefs.dexMetaKeyCapture.get() ||
+                prefs.enableAccessibilityServiceAutomatically.get() ||
+                KeyInterceptor.isLaunched());
+            setEnabled("enableAccessibilityServiceAutomatically", prefs.enableAccessibilityServiceAutomatically.get() || KeyInterceptor.isLaunched());
+            setEnabled("filterOutWinkey", prefs.enableAccessibilityServiceAutomatically.get() || KeyInterceptor.isLaunched());
+
+            boolean displayStretchEnabled = "exact".contentEquals(prefs.displayResolutionMode.get()) || "custom".contentEquals(prefs.displayResolutionMode.get());
+            setEnabled("displayStretch", displayStretchEnabled);
+            setEnabled("adjustResolution", displayStretchEnabled);
+
+            setEnabled("scaleTouchpad", "1".equals(prefs.touchMode.get()) && !"native".equals(prefs.displayResolutionMode.get()));
+            setEnabled("showMouseHelper", "1".equals(prefs.touchMode.get()));
 
             boolean requestNotificationPermissionVisible =
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                     && ContextCompat.checkSelfPermission(requireContext(), POST_NOTIFICATIONS) == PERMISSION_DENIED;
-            findPreference("requestNotificationPermission").setVisible(requestNotificationPermissionVisible);
+            setVisible("requestNotificationPermission", requestNotificationPermissionVisible);
+        }
+
+        /** @noinspection SameParameterValue*/
+        private void setNoActionOptionText(Preference preference, CharSequence text) {
+            if (preference == null)
+                return;
+            ListPreference p = (ListPreference) preference;
+            CharSequence[] options = p.getEntries();
+            for (int i=0; i<options.length; i++) {
+                if ("no action".contentEquals(options[i]))
+                    options[i] = "no action (" + text + ")";
+            }
         }
 
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            SharedPreferences preferences = getPreferenceManager().getSharedPreferences();
 
-            String showImeEnabled = Settings.Secure.getString(requireActivity().getContentResolver(), SHOW_IME_WITH_HARD_KEYBOARD);
-            if (showImeEnabled == null) showImeEnabled = "0";
-            SharedPreferences.Editor p = Objects.requireNonNull(preferences).edit();
-            p.putBoolean("showIMEWhileExternalConnected", showImeEnabled.contentEquals("1"));
-            p.apply();
-
-            setListeners(getPreferenceScreen());
             updatePreferencesLayout();
-        }
-
-        void setListeners(PreferenceGroup g) {
-            for (int i = 0; i < g.getPreferenceCount(); i++) {
-                g.getPreference(i).setOnPreferenceChangeListener(this);
-                g.getPreference(i).setOnPreferenceClickListener(this);
-                g.getPreference(i).setSingleLineTitle(false);
-
-                if (g.getPreference(i) instanceof PreferenceGroup)
-                    setListeners((PreferenceGroup) g.getPreference(i));
-            }
         }
 
         @Override
-        public boolean onPreferenceClick(@NonNull Preference preference) {
-            if ("enableAccessibilityService".contentEquals(preference.getKey())) {
-                Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                startActivityForResult(intent, 0);
-            }
+        public boolean onPreferenceTreeClick(@NonNull Preference p) {
+            if (p.getKey() == null)
+                return super.onPreferenceTreeClick(p);
 
-            if ("extra_keys_config".contentEquals(preference.getKey())) {
-                @SuppressLint("InflateParams")
-                View view = getLayoutInflater().inflate(R.layout.extra_keys_config, null, false);
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-                EditText config = view.findViewById(R.id.extra_keys_config);
-                config.setTypeface(Typeface.MONOSPACE);
-                TextView desc = view.findViewById(R.id.extra_keys_config_description);
-                desc.setLinksClickable(true);
-                desc.setText(R.string.extra_keys_config_desc);
-                desc.setMovementMethod(LinkMovementMethod.getInstance());
-                new android.app.AlertDialog.Builder(getActivity())
-                    .setView(view)
-                    .setTitle("Extra keys config")
-                    .setPositiveButton("OK",
-                        (dialog, whichButton) -> {
-
-                        }
-                    )
-                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
-                    .create()
-                    .show();
-            }
-            if ("install_x11_server_bridge".contentEquals(preference.getKey())) {
-                View view = getLayoutInflater().inflate(R.layout.x11_server_bridge_config, null, false);
-                @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-                TextView desc = view.findViewById(R.id.x11_server_bridge_config_description);
-                desc.setText(R.string.x11_server_bridge_config);
-                desc.setMovementMethod(LinkMovementMethod.getInstance());
-                new android.app.AlertDialog.Builder(getActivity())
-                    .setView(view)
-                    .setTitle("X11 server bridge installer")
-                    .setPositiveButton("OK",
-                        (dialog, whichButton) -> {
-                            if (preferenceActivity != null) {
-                                preferenceActivity.installX11ServerBridge();
-                            }
-                        }
-                    )
-                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
-                    .create()
-                    .show();
-            }
-            if ("stop_desktop".contentEquals(preference.getKey())) {
-                new android.app.AlertDialog.Builder(getActivity())
-                    .setTitle("Stop Desktop")
-                    .setPositiveButton("OK",
-                        (dialog, whichButton) -> {
-                            if (preferenceActivity != null) {
-                                preferenceActivity.stopDesktop();
-                            }
-                        }
-                    )
-                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
-                    .create()
-                    .show();
-            }
-            if ("open_keyboard".contentEquals(preference.getKey())) {
-                preferenceActivity.openSoftKeyBoar();
-            }
-            if ("select_controller".contentEquals(preference.getKey())) {
-                if (!preferenceActivity.touchShow) {
-                    preferenceActivity.showInputControlsDialog();
-                } else {
-                    preferenceActivity.hideInputControls();
+            if ("version".contentEquals(p.getKey())) {
+                Context ctx = getContext();
+                if (ctx != null) {
+                    ((ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE))
+                        .setPrimaryClip(ClipData.newPlainText(p.getSummary(), p.getSummary()));
+                    Toast.makeText(ctx, "Copied to clipboard", Toast.LENGTH_SHORT).show();
                 }
             }
-            if ("open_progress_manager".contentEquals(preference.getKey())) {
-                preferenceActivity.callProgressManager();
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(preference.getKey()))
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(p.getKey())) {
                 ActivityCompat.requestPermissions(requireActivity(), new String[]{POST_NOTIFICATIONS}, 101);
+                return true;
+            }
 
             updatePreferencesLayout();
-            return false;
+            return super.onPreferenceTreeClick(p);
         }
 
         @SuppressLint("ApplySharedPref")
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             String key = preference.getKey();
-
-            if ("showIMEWhileExternalConnected".contentEquals(key)) {
-                boolean enabled = newValue.toString().contentEquals("true");
-                try {
-                    Settings.Secure.putString(requireActivity().getContentResolver(), SHOW_IME_WITH_HARD_KEYBOARD, enabled ? "1" : "0");
-                } catch (Exception e) {
-                    if (e instanceof SecurityException) {
-                        new AlertDialog.Builder(requireActivity())
-                            .setTitle("Permission denied")
-                            .setMessage("Android requires WRITE_SECURE_SETTINGS permission to change this setting.\n" +
-                                "Please, launch this command using ADB:\n" +
-                                "adb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS")
-                            .setNegativeButton("OK", null)
-                            .create()
-                            .show();
-                    } else e.printStackTrace();
-                    return false;
-                }
-            }
+            Log.e("Preferences", "changed preference: " + key);
+            handler.removeCallbacks(updateLayout);
+            handler.postDelayed(updateLayout, 50);
 
             if ("displayScale".contentEquals(key)) {
                 int scale = (Integer) newValue;
                 if (scale % 10 != 0) {
-                    scale = Math.round(((float) scale) / 10) * 10;
+                    scale = Math.round( ( (float) scale ) / 10 ) * 10;
                     ((SeekBarPreference) preference).setValue(scale);
                     return false;
                 }
-            }
-
-            if ("displayDensity".contentEquals(key)) {
-                int v;
-                try {
-                    v = Integer.parseInt((String) newValue);
-                } catch (NumberFormatException | PatternSyntaxException ignored) {
-                    Toast.makeText(getActivity(), "This field accepts only numerics between 96 and 800", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-                return (v > 96 && v < 800);
             }
 
             if ("displayResolutionCustom".contentEquals(key)) {
@@ -542,24 +509,9 @@ public class LoriePreferences extends AppCompatActivity {
                     return false;
                 }
             }
-            if ("touch_sensitivity".contentEquals(key)) {
-                int v;
-                try {
-                    v = (int) newValue;
-                } catch (NumberFormatException | PatternSyntaxException ignored) {
-                    Toast.makeText(getActivity(), "Wrong touch sensitivity", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-                if (v < 1 || v > 20) {
-                    return false;
-                }
-            }
-            if ("showAdditionalKbd".contentEquals(key) && (Boolean) newValue) {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
-                SharedPreferences.Editor edit = preferences.edit();
-                edit.putBoolean("additionalKbdVisible", true);
-                edit.commit();
-            }
+
+            if ("showAdditionalKbd".contentEquals(key) && (Boolean) newValue)
+                prefs.additionalKbdVisible.put(true);
 
             if ("enableAccessibilityServiceAutomatically".contentEquals(key)) {
                 if (!((Boolean) newValue))
@@ -577,32 +529,43 @@ public class LoriePreferences extends AppCompatActivity {
                 }
             }
 
-//            Intent intent = new Intent(ACTION_PREFERENCES_CHANGED);
-//            intent.putExtra("key", key);
-//            intent.setPackage("com.termux");
-//            requireContext().sendBroadcast(intent);
-            handler.postAtTime(new Runnable() {
-                @Override
-                public void run() {
-                    if (preferenceActivity.termuxActivityListener != null) {
-                        updatePreferencesLayout();
-                        preferenceActivity.termuxActivityListener.changePreference(key);
-                    }
-                }
-            }, 1000);
-//            handler.postAtTime(this::updatePreferencesLayout, 100);
+            requireContext().sendBroadcast(new Intent(ACTION_PREFERENCES_CHANGED) {{
+                putExtra("key", key);
+                putExtra("fromBroadcast", true);
+                setPackage("com.termux.x11");
+            }});
+
             return true;
         }
-    }
 
-    private void callProgressManager() {
-        if (termuxActivityListener != null) {
-            termuxActivityListener.showProcessManager();
+        @Override
+        public void onDisplayPreferenceDialog(@NonNull Preference preference) {
+            if ("extra_keys_config".contentEquals(preference.getKey())) {
+                @SuppressLint("InflateParams")
+                View view = getLayoutInflater().inflate(R.layout.extra_keys_config, null, false);
+                EditText config = view.findViewById(R.id.extra_keys_config);
+                config.setTypeface(Typeface.MONOSPACE);
+                config.setText(prefs.extra_keys_config.get());
+                TextView desc = view.findViewById(R.id.extra_keys_config_description);
+                desc.setLinksClickable(true);
+                desc.setText(R.string.extra_keys_config_desc);
+                desc.setMovementMethod(LinkMovementMethod.getInstance());
+                new android.app.AlertDialog.Builder(getActivity())
+                    .setView(view)
+                    .setTitle("Extra keys config")
+                    .setPositiveButton("OK",
+                        (dialog, whichButton) -> {
+                            String text = config.getText().toString();
+                            prefs.extra_keys_config.put(!text.isEmpty() ? text : TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS);
+                        }
+                    )
+                    .setNeutralButton("Reset",
+                        (dialog, whichButton) -> prefs.extra_keys_config.put(TermuxX11ExtraKeys.DEFAULT_IVALUE_EXTRA_KEYS))
+                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
+                    .create()
+                    .show();
+            } else super.onDisplayPreferenceDialog(preference);
         }
-    }
-
-    private void openSoftKeyBoar() {
-        termuxActivityListener.openSoftwareKeyboard();
     }
 
     public static class Receiver extends BroadcastReceiver {
@@ -822,11 +785,11 @@ public class LoriePreferences extends AppCompatActivity {
         }
     }
 
-    public static Handler handler = Looper.getMainLooper() != null ? new Handler(Looper.getMainLooper()) : null;
+//    public static Handler handler = Looper.getMainLooper() != null ? new Handler(Looper.getMainLooper()) : null;
+    public static Handler handler = new Handler();
 
     public void onClick(View view) {
-//        showFragment(new LoriePreferenceFragment("ekbar"));
-        termuxActivityListener.onX11PreferenceSwitchChange(true);
+        showFragment(new LoriePreferenceFragment("ekbar"));
     }
 
     /** @noinspection unused*/
@@ -1005,7 +968,15 @@ public class LoriePreferences extends AppCompatActivity {
             return preferences == secondaryDisplayPreferences;
         }
     }
+    private void callProgressManager() {
+        if (termuxActivityListener != null) {
+            termuxActivityListener.showProcessManager();
+        }
+    }
 
+    private void openSoftKeyBoar() {
+        termuxActivityListener.openSoftwareKeyboard();
+    }
     //inout control
     public InputControlsView getInputControlsView() {
         return inputControlsView;

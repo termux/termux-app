@@ -311,7 +311,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         DisplayWindowLinearLayout viewContainer = (DisplayWindowLinearLayout) vGroup.getChildAt(0);
         LinearLayout lorieLayout = (LinearLayout) viewContainer.getChildAt(1);
         lorieLayout.addView(lorieContentView);
-        getSupportFragmentManager().beginTransaction().replace(R.id.id_window_preference, loriePreferenceFragment).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.id_window_preference, loriePreferenceFragment).commit();
 
 
         // Load termux shared preferences
@@ -389,6 +389,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         termuxActivityListener = new TermuxActivityListener() {
             @Override
             public void onX11PreferenceSwitchChange(boolean isOpen) {
+                showFragment(new LoriePreferenceFragment(null));
                 mMainContentView.setX11PreferenceSwitchSlider(isOpen);
             }
 
@@ -436,7 +437,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
             @Override
             public void changePreference(String key) {
-                onPreferencesChanged(key);
+                TermuxActivity.this.onPreferencesChanged(key);
             }
 
             @Override
