@@ -311,6 +311,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         DisplayWindowLinearLayout viewContainer = (DisplayWindowLinearLayout) vGroup.getChildAt(0);
         LinearLayout lorieLayout = (LinearLayout) viewContainer.getChildAt(1);
         lorieLayout.addView(lorieContentView);
+        setPreferenceViewId(R.id.id_window_preference);
 //        getSupportFragmentManager().beginTransaction().replace(R.id.id_window_preference, loriePreferenceFragment).commit();
 
 

@@ -148,6 +148,11 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
     protected TermuxActivityListener termuxActivityListener;
 
+    private   int id_preference_view;
+    public void setPreferenceViewId(int viewId){
+        id_preference_view = viewId;
+    }
+
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -241,7 +246,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     protected void showFragment(PreferenceFragmentCompat fragment) {
         getSupportFragmentManager().beginTransaction()
 //            .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right)
-            .replace(android.R.id.content, fragment)
+            .replace(id_preference_view, fragment)
             .addToBackStack(null)
             .commit();
     }
@@ -249,6 +254,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     @Override
     public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
         final LoriePreferenceFragment fragment = new LoriePreferenceFragment(pref.getFragment());
+        if (fragment.loriePreferences==null){
+            fragment.loriePreferences=this;
+        }
         fragment.setTargetFragment(caller, 0);
         showFragment(fragment);
         return true;
@@ -266,6 +274,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     }
 
     public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener {
+        private LoriePreferences loriePreferences;
+
         private final Runnable updateLayout = this::updatePreferencesLayout;
         private static final Method onSetInitialValue;
         static {
@@ -470,6 +480,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                         .setPrimaryClip(ClipData.newPlainText(p.getSummary(), p.getSummary()));
                     Toast.makeText(ctx, "Copied to clipboard", Toast.LENGTH_SHORT).show();
                 }
+            }
+            if("previous_menu".contentEquals(p.getKey())){
+                loriePreferences.showFragment(null);
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(p.getKey())) {
@@ -785,8 +798,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         }
     }
 
-//    public static Handler handler = Looper.getMainLooper() != null ? new Handler(Looper.getMainLooper()) : null;
-    public static Handler handler = new Handler();
+    public static Handler handler = Looper.getMainLooper() != null ? new Handler(Looper.getMainLooper()) : null;
+//    public static Handler handler = new Handler();
 
     public void onClick(View view) {
         showFragment(new LoriePreferenceFragment("ekbar"));
