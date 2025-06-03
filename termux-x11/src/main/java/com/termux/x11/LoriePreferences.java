@@ -482,7 +482,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 }
             }
             if("previous_menu".contentEquals(p.getKey())){
-                loriePreferences.showFragment(null);
+                loriePreferences.onBackPressed();
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(p.getKey())) {
@@ -987,7 +987,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         }
     }
 
-    private void openSoftKeyBoar() {
+    private void openSoftKeyBoard() {
         termuxActivityListener.openSoftwareKeyboard();
     }
     //inout control
