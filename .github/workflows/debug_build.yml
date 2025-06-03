@@ -47,13 +47,21 @@ jobs:
 
           # Used by attachment steps later
           echo "APK_DIR_PATH=$APK_DIR_PATH" >> $GITHUB_ENV
+          echo "APK_DIR_PATH=$APK_DIR_PATH"
           echo "APK_VERSION_TAG=$APK_VERSION_TAG" >> $GITHUB_ENV
+          echo "APK_VERSION_TAG=$APK_VERSION_TAG"
+          echo "APK_BASENAME_PREFIX=$APK_BASENAME_PREFIX"
           echo "APK_BASENAME_PREFIX=$APK_BASENAME_PREFIX" >> $GITHUB_ENV
 
-          echo "Building APKs for 'APK_VERSION_TAG' build"
+          echo "Building APKs for $APK_VERSION_TAG build"
           export TERMUX_APP_VERSION_NAME="${RELEASE_VERSION_NAME/v/}" # Used by app/build.gradle
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
           export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
+
+          echo "TERMUX_PACKAGE_VARIANT=$TERMUX_PACKAGE_VARIANT"
+          echo "TERMUX_APK_VERSION_TAG=$TERMUX_APK_VERSION_TAG"
+          echo "TERMUX_APP_VERSION_NAME=$TERMUX_APP_VERSION_NAME"
+
           if ! ./gradlew assembleDebug; then
             exit_on_error "Build failed for '$APK_VERSION_TAG' build."
           fi
