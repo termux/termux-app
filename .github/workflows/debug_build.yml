@@ -76,7 +76,7 @@ jobs:
           echo "APK_VERSION_TAG=$APK_VERSION_TAG" >> $GITHUB_ENV
           echo "APK_BASENAME_PREFIX=$APK_BASENAME_PREFIX" >> $GITHUB_ENV
 
-          echo "Building APKs for 'APK_VERSION_TAG' build"
+          echo "Building APKs for $APK_VERSION_TAG build"
           export TERMUX_APP_VERSION_NAME="${RELEASE_VERSION_NAME/v/}" # Used by app/build.gradle
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
           export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
