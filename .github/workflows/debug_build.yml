@@ -6,6 +6,8 @@ on:
       - master
       - 'github-releases/**'
   pull_request:
+    branches:
+      - master
 
 jobs:
   build:
@@ -13,12 +15,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-14, macos-15 ]
+        os: [ ubuntu-latest, macos-15 ]
         package_variant: [ apt-android-7, apt-android-5 ]
 
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
+
+      - name: Install GNU tools on macos runner
+        if: runner.os == 'macOS'
+        run: |
+          # macOS runner ships with bash v3, and BSD grep and sed which dont support the required options.
+          brew update
+          brew install bash
+          brew install grep
+          brew install gnu-sed
+
+          echo "/opt/homebrew/opt/grep/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin" >> "$GITHUB_PATH"
 
       - name: Build APKs
         shell: bash {0}
@@ -26,6 +39,19 @@ jobs:
           PACKAGE_VARIANT: ${{ matrix.package_variant }}
         run: |
           exit_on_error() { echo "$1"; exit 1; }
+
+          if [ -n "$JAVA_HOME_17_X64" ]; then
+            JAVA_HOME_17="$JAVA_HOME_17_X64"
+          elif [ -n "$JAVA_HOME_17_arm64" ]; then
+            JAVA_HOME_17="$JAVA_HOME_17_arm64"
+          else
+            exit_on_error "jdk-17 not set in '\$JAVA_HOME_17_X64\' or '\$JAVA_HOME_17_arm64\'."
+          fi
+
+          if [ ! -f "$JAVA_HOME_17/bin/javac" ] || [ ! -x "$JAVA_HOME_17/bin/javac" ]; then
+              exit_on_error "jdk-17 binary not found at path '$JAVA_HOME_17/bin/javac' or is not executable."
+          fi
+
 
           echo "Setting vars"
 
@@ -47,21 +73,14 @@ jobs:
 
           # Used by attachment steps later
           echo "APK_DIR_PATH=$APK_DIR_PATH" >> $GITHUB_ENV
-          echo "APK_DIR_PATH=$APK_DIR_PATH"
           echo "APK_VERSION_TAG=$APK_VERSION_TAG" >> $GITHUB_ENV
-          echo "APK_VERSION_TAG=$APK_VERSION_TAG"
-          echo "APK_BASENAME_PREFIX=$APK_BASENAME_PREFIX"
           echo "APK_BASENAME_PREFIX=$APK_BASENAME_PREFIX" >> $GITHUB_ENV
 
-          echo "Building APKs for $APK_VERSION_TAG build"
+          echo "Building APKs for 'APK_VERSION_TAG' build"
           export TERMUX_APP_VERSION_NAME="${RELEASE_VERSION_NAME/v/}" # Used by app/build.gradle
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
           export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
-
-          echo "TERMUX_PACKAGE_VARIANT=$TERMUX_PACKAGE_VARIANT"
-          echo "TERMUX_APK_VERSION_TAG=$TERMUX_APK_VERSION_TAG"
-          echo "TERMUX_APP_VERSION_NAME=$TERMUX_APP_VERSION_NAME"
-
+          export GRADLE_OPTS="-Dorg.gradle.java.home=$JAVA_HOME_17"
           if ! ./gradlew assembleDebug; then
             exit_on_error "Build failed for '$APK_VERSION_TAG' build."
           fi
@@ -88,7 +107,7 @@ jobs:
       - name: Attach universal APK file
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_BASENAME_PREFIX }}_universal
+          name: ${{ env.APK_BASENAME_PREFIX }}_universal_${{ matrix.os }}
           path: |
             ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_universal.apk
             ${{ env.APK_DIR_PATH }}/output-metadata.json
@@ -96,7 +115,7 @@ jobs:
       - name: Attach arm64-v8a APK file
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_BASENAME_PREFIX }}_arm64-v8a
+          name: ${{ env.APK_BASENAME_PREFIX }}_arm64-v8a_${{ matrix.os }}
           path: |
             ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_arm64-v8a.apk
             ${{ env.APK_DIR_PATH }}/output-metadata.json
@@ -104,7 +123,7 @@ jobs:
       - name: Attach armeabi-v7a APK file
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_BASENAME_PREFIX }}_armeabi-v7a
+          name: ${{ env.APK_BASENAME_PREFIX }}_armeabi-v7a_${{ matrix.os }}
           path: |
             ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_armeabi-v7a.apk
             ${{ env.APK_DIR_PATH }}/output-metadata.json
@@ -112,7 +131,7 @@ jobs:
       - name: Attach x86_64 APK file
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_BASENAME_PREFIX }}_x86_64
+          name: ${{ env.APK_BASENAME_PREFIX }}_x86_64_${{ matrix.os }}
           path: |
             ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_x86_64.apk
             ${{ env.APK_DIR_PATH }}/output-metadata.json
@@ -120,7 +139,7 @@ jobs:
       - name: Attach x86 APK file
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_BASENAME_PREFIX }}_x86
+          name: ${{ env.APK_BASENAME_PREFIX }}_x86_${{ matrix.os }}
           path: |
             ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_x86.apk
             ${{ env.APK_DIR_PATH }}/output-metadata.json
@@ -128,7 +147,7 @@ jobs:
       - name: Attach sha256sums file
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_BASENAME_PREFIX }}_sha256sums
+          name: ${{ env.APK_BASENAME_PREFIX }}_sha256sums_${{ matrix.os }}
           path: |
             ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_sha256sums
             ${{ env.APK_DIR_PATH }}/output-metadata.json
