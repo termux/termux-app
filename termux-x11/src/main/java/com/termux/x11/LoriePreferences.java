@@ -481,8 +481,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                     Toast.makeText(ctx, "Copied to clipboard", Toast.LENGTH_SHORT).show();
                 }
             }
-            if("previous_menu".contentEquals(p.getKey())){
-                loriePreferences.onBackPressed();
+            if("return".contentEquals(p.getKey())){
+                loriePreferences.getSupportFragmentManager().popBackStack();
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(p.getKey())) {

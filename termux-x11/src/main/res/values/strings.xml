@@ -44,7 +44,7 @@
     <string name="pref_ekbar">Extra key bar preferences</string>
     <string name="pref_userActions">Response to user actions</string>
 
-    <string name="pref_previous_menu">Previous menu</string>
+    <string name="pref_return">Return</string>
 
     <string name="pref_displayResolutionMode">Display resolution mode</string>
     <string name="pref_displayScale">Display scale, %</string>
