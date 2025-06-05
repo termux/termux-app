@@ -312,7 +312,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         LinearLayout lorieLayout = (LinearLayout) viewContainer.getChildAt(1);
         lorieLayout.addView(lorieContentView);
         setPreferenceViewId(R.id.id_window_preference);
-//        getSupportFragmentManager().beginTransaction().replace(R.id.id_window_preference, loriePreferenceFragment).commit();
+        showFragment(new LoriePreferenceFragment(null));
 
 
         // Load termux shared preferences
@@ -390,7 +390,6 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
         termuxActivityListener = new TermuxActivityListener() {
             @Override
             public void onX11PreferenceSwitchChange(boolean isOpen) {
-                showFragment(new LoriePreferenceFragment(null));
                 mMainContentView.setX11PreferenceSwitchSlider(isOpen);
             }
 

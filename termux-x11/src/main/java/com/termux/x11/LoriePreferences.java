@@ -131,14 +131,23 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
     protected interface TermuxActivityListener {
         void onX11PreferenceSwitchChange(boolean isOpen);
+
         void releaseSlider(boolean open);
+
         void onChangeOrientation(int landscape);
+
         void reInstallX11StartScript(Activity activity);
+
         void stopDesktop(Activity activity);
+
         void openSoftwareKeyboard();
+
         void showProcessManager();
+
         void changePreference(String key);
+
         List<ProcessInfo> collectProcessorInfo(String tag);
+
         void setFloatBallMenu(boolean enableFloatBallMenu, boolean enableGlobalFloatBallMenu);
     }
 
@@ -148,8 +157,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
     protected TermuxActivityListener termuxActivityListener;
 
-    private   int id_preference_view;
-    public void setPreferenceViewId(int viewId){
+    private int id_preference_view;
+
+    public void setPreferenceViewId(int viewId) {
         id_preference_view = viewId;
     }
 
@@ -254,13 +264,18 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     @Override
     public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
         final LoriePreferenceFragment fragment = new LoriePreferenceFragment(pref.getFragment());
-        if (fragment.loriePreferences==null){
-            fragment.loriePreferences=this;
+        if (fragment.loriePreferences == null) {
+            fragment.loriePreferences = this;
         }
         fragment.setTargetFragment(caller, 0);
         showFragment(fragment);
         return true;
     }
+
+    public void back2PreviousMenu() {
+        getSupportFragmentManager().popBackStack();
+    }
+
     public void installX11ServerBridge() {
         if (termuxActivityListener != null) {
             termuxActivityListener.reInstallX11StartScript(this);
@@ -278,6 +293,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         private final Runnable updateLayout = this::updatePreferencesLayout;
         private static final Method onSetInitialValue;
+
         static {
             try {
                 //noinspection JavaReflectionMemberAccess
@@ -297,7 +313,10 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         }
 
         final String root;
-        /** @noinspection unused*/ // Used by `androidx.fragment.app.Fragment.instantiate`...
+
+        /**
+         * @noinspection unused
+         */ // Used by `androidx.fragment.app.Fragment.instantiate`...
         public LoriePreferenceFragment() {
             this(null);
         }
@@ -311,12 +330,14 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             super.onResume();
             //noinspection DataFlowIssue
             ActionBar actionBar = ((LoriePreferences) getActivity()).getSupportActionBar();
-            if(actionBar!=null){
+            if (actionBar != null) {
                 actionBar.setTitle(getPreferenceScreen().getTitle());
             }
         }
 
-        /** @noinspection SameParameterValue*/
+        /**
+         * @noinspection SameParameterValue
+         */
         private void with(CharSequence key, Consumer<Preference> action) {
             Preference p = findPreference(key);
             if (p != null)
@@ -329,8 +350,11 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             return getResources().getIdentifier("pref_" + name, "string", getContext().getPackageName());
         }
 
-        /** @noinspection DataFlowIssue*/
-        @Override @SuppressLint("ApplySharedPref")
+        /**
+         * @noinspection DataFlowIssue
+         */
+        @Override
+        @SuppressLint("ApplySharedPref")
         public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
             getPreferenceManager().setPreferenceDataStore(prefs);
 
@@ -343,7 +367,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             PreferenceScreen screen = getPreferenceScreen();
             if ((id = findId(screen.getKey())) != 0)
                 getPreferenceScreen().setTitle(getResources().getString(id));
-            for (int i=0; i<getPreferenceScreen().getPreferenceCount(); i++) {
+            for (int i = 0; i < getPreferenceScreen().getPreferenceCount(); i++) {
                 Preference p = screen.getPreference(i);
                 p.setOnPreferenceChangeListener(this);
                 p.setPreferenceDataStore(prefs);
@@ -394,7 +418,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             Preference pref = findPreference(key);
             if (pref != null)
                 pref.setSummaryProvider(new Preference.SummaryProvider<>() {
-                    @Nullable @Override public CharSequence provideSummary(@NonNull Preference p) {
+                    @Nullable
+                    @Override
+                    public CharSequence provideSummary(@NonNull Preference p) {
                         return p.isEnabled() ? null : getResources().getString(disabled);
                     }
                 });
@@ -449,13 +475,15 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             setVisible("requestNotificationPermission", requestNotificationPermissionVisible);
         }
 
-        /** @noinspection SameParameterValue*/
+        /**
+         * @noinspection SameParameterValue
+         */
         private void setNoActionOptionText(Preference preference, CharSequence text) {
             if (preference == null)
                 return;
             ListPreference p = (ListPreference) preference;
             CharSequence[] options = p.getEntries();
-            for (int i=0; i<options.length; i++) {
+            for (int i = 0; i < options.length; i++) {
                 if ("no action".contentEquals(options[i]))
                     options[i] = "no action (" + text + ")";
             }
@@ -481,8 +509,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                     Toast.makeText(ctx, "Copied to clipboard", Toast.LENGTH_SHORT).show();
                 }
             }
-            if("return".contentEquals(p.getKey())){
-                loriePreferences.getSupportFragmentManager().popBackStack();
+            if (p.getKey().contains("return_")) {
+                loriePreferences.back2PreviousMenu();
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(p.getKey())) {
@@ -505,7 +533,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             if ("displayScale".contentEquals(key)) {
                 int scale = (Integer) newValue;
                 if (scale % 10 != 0) {
-                    scale = Math.round( ( (float) scale ) / 10 ) * 10;
+                    scale = Math.round(((float) scale) / 10) * 10;
                     ((SeekBarPreference) preference).setValue(scale);
                     return false;
                 }
@@ -591,7 +619,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             return super.peekService(myContext, service);
         }
 
-        /** @noinspection StringConcatenationInLoop*/
+        /**
+         * @noinspection StringConcatenationInLoop
+         */
         @SuppressLint("ApplySharedPref")
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -675,7 +705,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                                 } else if (pref != null && pref.type == int.class) {
                                     try {
                                         edit.putInt(key, Integer.parseInt(newValue));
-                                    } catch (NumberFormatException | PatternSyntaxException exception) {
+                                    } catch (NumberFormatException |
+                                             PatternSyntaxException exception) {
                                         sendResponse(remote, 1, 4, key + ": failed to parse integer: " + exception);
                                         return;
                                     }
@@ -779,7 +810,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 }
             }
 
-            for (String a: args) {
+            for (String a : args) {
                 if ("list".equals(a)) {
                     i.putExtra("list", "");
                 } else if (a != null && a.contains(":")) {
@@ -805,13 +836,16 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         showFragment(new LoriePreferenceFragment("ekbar"));
     }
 
-    /** @noinspection unused*/
+    /**
+     * @noinspection unused
+     */
     @SuppressLint("ApplySharedPref")
     public static class PrefsProto extends PreferenceDataStore {
         public static class Preference {
             protected final String key;
             protected final Class<?> type;
             protected final Object defValue;
+
             protected Preference(String key, Class<?> class_, Object default_) {
                 this.key = key;
                 this.type = class_;
@@ -912,7 +946,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
             private String[] getArrayItems(int resourceId, Resources resources) {
                 ArrayList<String> itemList = new ArrayList<>();
-                try(TypedArray typedArray = resources.obtainTypedArray(resourceId)) {
+                try (TypedArray typedArray = resources.obtainTypedArray(resourceId)) {
                     for (int i = 0; i < typedArray.length(); i++) {
                         int type = typedArray.getType(i);
                         if (type == TypedValue.TYPE_STRING) {
@@ -936,7 +970,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         protected SharedPreferences builtInDisplayPreferences;
         protected SharedPreferences secondaryDisplayPreferences;
 
-        private PrefsProto() {} // No instantiation allowed
+        private PrefsProto() {
+        } // No instantiation allowed
+
         protected PrefsProto(Context ctx) {
             this.ctx = ctx;
             builtInDisplayPreferences = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -950,28 +986,73 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             preferences = (storeSecondaryDisplayPreferencesSeparately && isExternalDisplay) ? secondaryDisplayPreferences : builtInDisplayPreferences;
         }
 
-        @Override public void putBoolean(String k, boolean v) {
+        @Override
+        public void putBoolean(String k, boolean v) {
             if ("storeSecondaryDisplayPreferencesSeparately".contentEquals(k)) {
                 builtInDisplayPreferences.edit().putBoolean(k, v).commit();
                 recheckStoringSecondaryDisplayPreferences();
             } else
                 preferences.edit().putBoolean(k, v).commit();
         }
-        @Override public boolean getBoolean(String k, boolean d) {
+
+        @Override
+        public boolean getBoolean(String k, boolean d) {
             if ("storeSecondaryDisplayPreferencesSeparately".contentEquals(k))
                 return builtInDisplayPreferences.getBoolean(k, d);
             return preferences.getBoolean(k, d);
         }
-        @Override public void putString(String k, @Nullable String v) { prefs.get().edit().putString(k, v).commit(); }
-        @Override public void putStringSet(String k, @Nullable Set<String> v) { prefs.get().edit().putStringSet(k, v).commit(); }
-        @Override public void putInt(String k, int v) { prefs.get().edit().putInt(k, v).commit(); }
-        @Override public void putLong(String k, long v) { prefs.get().edit().putLong(k, v).commit(); }
-        @Override public void putFloat(String k, float v) { prefs.get().edit().putFloat(k, v).commit(); }
-        @Nullable @Override public String getString(String k, @Nullable String d) { return prefs.get().getString(k, d); }
-        @Nullable @Override public Set<String> getStringSet(String k, @Nullable Set<String> ds) { return prefs.get().getStringSet(k, ds); }
-        @Override public int getInt(String k, int d) { return prefs.get().getInt(k, d); }
-        @Override public long getLong(String k, long d) { return prefs.get().getLong(k, d); }
-        @Override public float getFloat(String k, float d) { return prefs.get().getFloat(k, d); }
+
+        @Override
+        public void putString(String k, @Nullable String v) {
+            prefs.get().edit().putString(k, v).commit();
+        }
+
+        @Override
+        public void putStringSet(String k, @Nullable Set<String> v) {
+            prefs.get().edit().putStringSet(k, v).commit();
+        }
+
+        @Override
+        public void putInt(String k, int v) {
+            prefs.get().edit().putInt(k, v).commit();
+        }
+
+        @Override
+        public void putLong(String k, long v) {
+            prefs.get().edit().putLong(k, v).commit();
+        }
+
+        @Override
+        public void putFloat(String k, float v) {
+            prefs.get().edit().putFloat(k, v).commit();
+        }
+
+        @Nullable
+        @Override
+        public String getString(String k, @Nullable String d) {
+            return prefs.get().getString(k, d);
+        }
+
+        @Nullable
+        @Override
+        public Set<String> getStringSet(String k, @Nullable Set<String> ds) {
+            return prefs.get().getStringSet(k, ds);
+        }
+
+        @Override
+        public int getInt(String k, int d) {
+            return prefs.get().getInt(k, d);
+        }
+
+        @Override
+        public long getLong(String k, long d) {
+            return prefs.get().getLong(k, d);
+        }
+
+        @Override
+        public float getFloat(String k, float d) {
+            return prefs.get().getFloat(k, d);
+        }
 
         public SharedPreferences get() {
             return preferences;
@@ -981,6 +1062,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             return preferences == secondaryDisplayPreferences;
         }
     }
+
     private void callProgressManager() {
         if (termuxActivityListener != null) {
             termuxActivityListener.showProcessManager();
@@ -990,6 +1072,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     private void openSoftKeyBoard() {
         termuxActivityListener.openSoftwareKeyboard();
     }
+
     //inout control
     public InputControlsView getInputControlsView() {
         return inputControlsView;
@@ -1103,7 +1186,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         inputControlsView.invalidate();
         touchShow = true;
         loriePreferenceFragment.updatePreferencesLayout();
-        if (termuxActivityListener!=null){
+        if (termuxActivityListener != null) {
             termuxActivityListener.onX11PreferenceSwitchChange(false);
         }
     }
