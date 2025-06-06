@@ -18,7 +18,6 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-import static android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN;
 import static com.termux.x11.CmdEntryPoint.ACTION_START;
 
 import android.Manifest;
@@ -55,7 +54,6 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -210,6 +208,9 @@ public class MainActivity extends LoriePreferences {
             }
 
             if (k == KEYCODE_BACK) {
+                if(!getX11Focus()){
+                    return back2PreviousMenu();
+                }
                 if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
                     if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
                         switchSoftKeyboard(false);
@@ -601,6 +602,9 @@ public class MainActivity extends LoriePreferences {
     public void setX11FocusedChanged(boolean x11Focused) {
         FullscreenWorkaround.setX11Focused(x11Focused);
     }
+    public boolean getX11Focus(){
+        return FullscreenWorkaround.getX11Focused();
+    }
 
     protected void onPreferencesChanged(String key) {
         if ("additionalKbdVisible".equals(key))
@@ -799,35 +803,114 @@ public class MainActivity extends LoriePreferences {
         mRaiseSoftKeyBoard = raiseSoftKeyBoard;
     }
 
+//    @SuppressLint("WrongConstant")
+//    @Override
+//    public void onWindowFocusChanged(boolean hasFocus) {
+//        super.onWindowFocusChanged(hasFocus);
+//
+//        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+//        Window window = getWindow();
+//        View decorView = window.getDecorView();
+//        boolean fullscreen = p.getBoolean("fullscreen", false);
+//        boolean reseed = p.getBoolean("Reseed", true);
+//
+//        Intent intent = getIntent();
+//        fullscreen = fullscreen || (null != intent && intent.getBooleanExtra(REQUEST_LAUNCH_EXTERNAL_DISPLAY, false));
+//
+//        int requestedOrientation = p.getBoolean("forceLandscape", false) ?
+//            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+//        if (getRequestedOrientation() != requestedOrientation)
+//            setRequestedOrientation(requestedOrientation);
+////        if (getOrientation() != requestedOrientation)
+////            setRequestedOrientation(requestedOrientation);
+//        if (hasFocus) {
+//            if (SDK_INT >= VERSION_CODES.P) {
+//                if (p.getBoolean("hideCutout", false)) {
+//                    getWindow().getAttributes().layoutInDisplayCutoutMode = (SDK_INT >= VERSION_CODES.R) ?
+//                        LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS :
+//                        LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+//                } else {
+//                    getWindow().getAttributes().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+//                }
+//            }
+//
+//            window.setStatusBarColor(Color.BLACK);
+//            window.setNavigationBarColor(Color.BLACK);
+//        }
+//
+//        window.setFlags(FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS | FLAG_KEEP_SCREEN_ON | FLAG_TRANSLUCENT_STATUS, 0);
+//        if (hasFocus) {
+//            if (fullscreen) {
+//                window.addFlags(FLAG_FULLSCREEN);
+//                decorView.setSystemUiVisibility(
+//                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+//            } else {
+//                window.clearFlags(FLAG_FULLSCREEN);
+//                decorView.setSystemUiVisibility(0);
+//            }
+//        }
+//
+//        if (p.getBoolean("keepScreenOn", true))
+//            window.addFlags(FLAG_KEEP_SCREEN_ON);
+//        else
+//            window.clearFlags(FLAG_KEEP_SCREEN_ON);
+//        window.setSoftInputMode((reseed ? SOFT_INPUT_ADJUST_RESIZE : SOFT_INPUT_ADJUST_PAN) | SOFT_INPUT_STATE_HIDDEN);
+//        ((FrameLayout) findViewById(R.id.id_display_window)).getChildAt(0).setFitsSystemWindows(!fullscreen);
+//        SamsungDexUtils.dexMetaKeyCapture(this, hasFocus && p.getBoolean("dexMetaKeyCapture", false));
+//
+//        if (hasFocus) {
+//            getLorieView().regenerate();
+//            getLorieView().requestLayout();
+//        }
+//        getLorieView().requestFocus();
+//    }
+
     @SuppressLint("WrongConstant")
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+        KeyInterceptor.recheck();
+        prefs.recheckStoringSecondaryDisplayPreferences();
         Window window = getWindow();
         View decorView = window.getDecorView();
-        boolean fullscreen = p.getBoolean("fullscreen", false);
-        boolean reseed = p.getBoolean("Reseed", true);
+        boolean fullscreen = prefs.fullscreen.get();
+        boolean hideCutout = prefs.hideCutout.get();
+        boolean reseed = prefs.Reseed.get();
 
-        Intent intent = getIntent();
-        fullscreen = fullscreen || (null != intent && intent.getBooleanExtra(REQUEST_LAUNCH_EXTERNAL_DISPLAY, false));
+//        if (oldHideCutout != hideCutout || oldFullscreen != fullscreen) {
+//            oldHideCutout = hideCutout;
+//            oldFullscreen = fullscreen;
+//            // For some reason cutout or fullscreen change makes layout calculations wrong and invalid.
+//            // I did not find simple and reliable way to fix it so it is better to start from the beginning.
+//            recreate();
+//            return;
+//        }
 
-        int requestedOrientation = p.getBoolean("forceLandscape", false) ?
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        int requestedOrientation;
+        switch (prefs.forceOrientation.get()) {
+            case "portrait": requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT; break;
+            case "landscape": requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE; break;
+            case "reverse portrait": requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT; break;
+            case "reverse landscape": requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE; break;
+            default: requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        }
+
         if (getRequestedOrientation() != requestedOrientation)
             setRequestedOrientation(requestedOrientation);
-//        if (getOrientation() != requestedOrientation)
-//            setRequestedOrientation(requestedOrientation);
+
         if (hasFocus) {
             if (SDK_INT >= VERSION_CODES.P) {
-                if (p.getBoolean("hideCutout", false)) {
+                if (hideCutout)
                     getWindow().getAttributes().layoutInDisplayCutoutMode = (SDK_INT >= VERSION_CODES.R) ?
                         LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS :
                         LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-                } else {
+                else
                     getWindow().getAttributes().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-                }
             }
 
             window.setStatusBarColor(Color.BLACK);
@@ -851,14 +934,14 @@ public class MainActivity extends LoriePreferences {
             }
         }
 
-        if (p.getBoolean("keepScreenOn", true))
+        if (prefs.keepScreenOn.get())
             window.addFlags(FLAG_KEEP_SCREEN_ON);
         else
             window.clearFlags(FLAG_KEEP_SCREEN_ON);
-        window.setSoftInputMode((reseed ? SOFT_INPUT_ADJUST_RESIZE : SOFT_INPUT_ADJUST_PAN) | SOFT_INPUT_STATE_HIDDEN);
-        ((FrameLayout) findViewById(R.id.id_display_window)).getChildAt(0).setFitsSystemWindows(!fullscreen);
-        SamsungDexUtils.dexMetaKeyCapture(this, hasFocus && p.getBoolean("dexMetaKeyCapture", false));
 
+        window.setSoftInputMode(reseed ? SOFT_INPUT_ADJUST_RESIZE : SOFT_INPUT_ADJUST_PAN);
+
+        ((FrameLayout) findViewById(android.R.id.content)).getChildAt(0).setFitsSystemWindows(!fullscreen);
         if (hasFocus) {
             getLorieView().regenerate();
             getLorieView().requestLayout();

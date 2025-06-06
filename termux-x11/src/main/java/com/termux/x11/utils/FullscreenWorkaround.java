@@ -25,6 +25,9 @@ public class FullscreenWorkaround {
     public static void setX11Focused(boolean focused) {
         x11Focused = focused;
     }
+    public static boolean getX11Focused() {
+        return x11Focused;
+    }
 
     private FullscreenWorkaround(Activity activity) {
         mActivity = activity;

@@ -29,6 +29,7 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -233,7 +234,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
 
     public void onMenuOpen(boolean isOpen, int flag) {
-        if (isOpen && flag == 0) {
+        if (isOpen /*&& flag == 0*/) {
             setX11FocusedChanged(false);
         } else {
             setX11FocusedChanged(true);

@@ -24,32 +24,12 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceDataStore;
-import androidx.preference.PreferenceFragmentCompat;
-
-import androidx.preference.Preference.OnPreferenceChangeListener;
-import androidx.preference.PreferenceScreen;
-import androidx.preference.SeekBarPreference;
-
 import android.provider.Settings;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -65,6 +45,24 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.Preference.OnPreferenceChangeListener;
+import androidx.preference.PreferenceDataStore;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
+import androidx.preference.SeekBarPreference;
 
 import com.termux.x11.controller.InputControllerActivity;
 import com.termux.x11.controller.container.Container;
@@ -189,12 +187,12 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         }
     };
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus)
-            updatePreferencesLayout();
-    }
+//    @Override
+//    public void onWindowFocusChanged(boolean hasFocus) {
+//        super.onWindowFocusChanged(hasFocus);
+//        if (hasFocus)
+//            updatePreferencesLayout();
+//    }
 
     protected void updatePreferencesLayout() {
         getSupportFragmentManager().getFragments().forEach(fragment -> {
@@ -267,13 +265,22 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         if (LoriePreferenceFragment.loriePreferences == null) {
             LoriePreferenceFragment.loriePreferences = this;
         }
+        loriePreferenceFragment = fragment;
         fragment.setTargetFragment(caller, 0);
         showFragment(fragment);
         return true;
     }
 
-    public void back2PreviousMenu() {
-        getSupportFragmentManager().popBackStack();
+    long current = System.currentTimeMillis();
+    public boolean back2PreviousMenu() {
+        boolean isSubMenu = getSupportFragmentManager().getBackStackEntryCount()>1;
+        if (isSubMenu){
+            if((System.currentTimeMillis()-current)>300) {
+                getSupportFragmentManager().popBackStack();
+            }
+            current = System.currentTimeMillis();
+        }
+        return isSubMenu;
     }
 
     public void installX11ServerBridge() {
@@ -1186,7 +1193,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         inputControlsView.invalidate();
         touchShow = true;
-        loriePreferenceFragment.updatePreferencesLayout();
+//        loriePreferenceFragment.updatePreferencesLayout();
         if (termuxActivityListener != null) {
             termuxActivityListener.onX11PreferenceSwitchChange(false);
         }
@@ -1201,6 +1208,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         inputControlsView.invalidate();
         touchShow = false;
-        loriePreferenceFragment.updatePreferencesLayout();
+//        loriePreferenceFragment.updatePreferencesLayout();
     }
 }

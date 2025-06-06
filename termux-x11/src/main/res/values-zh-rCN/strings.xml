@@ -25,7 +25,6 @@
     <string name="pref_ekbar">外接键盘</string>
     <string name="pref_userActions">自定义用户事件</string>
 
-    <string name="pref_return">返回</string>
 
     <string name="pref_displayResolutionMode">分辨路模式</string>
     <string name="pref_displayScale">显示缩放系数, %</string>
