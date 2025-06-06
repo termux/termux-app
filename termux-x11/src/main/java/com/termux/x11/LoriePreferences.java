@@ -264,8 +264,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     @Override
     public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
         final LoriePreferenceFragment fragment = new LoriePreferenceFragment(pref.getFragment());
-        if (fragment.loriePreferences == null) {
-            fragment.loriePreferences = this;
+        if (LoriePreferenceFragment.loriePreferences == null) {
+            LoriePreferenceFragment.loriePreferences = this;
         }
         fragment.setTargetFragment(caller, 0);
         showFragment(fragment);
@@ -289,7 +289,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     }
 
     public static class LoriePreferenceFragment extends PreferenceFragmentCompat implements OnPreferenceChangeListener {
-        private LoriePreferences loriePreferences;
+        private static LoriePreferences loriePreferences;
 
         private final Runnable updateLayout = this::updatePreferencesLayout;
         private static final Method onSetInitialValue;
@@ -570,11 +570,12 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 }
             }
 
-            requireContext().sendBroadcast(new Intent(ACTION_PREFERENCES_CHANGED) {{
-                putExtra("key", key);
-                putExtra("fromBroadcast", true);
-                setPackage("com.termux.x11");
-            }});
+//            requireContext().sendBroadcast(new Intent(ACTION_PREFERENCES_CHANGED) {{
+//                putExtra("key", key);
+//                putExtra("fromBroadcast", true);
+//                setPackage("com.termux.x11");
+//            }});
+            loriePreferences.termuxActivityListener.changePreference(key);
 
             return true;
         }
@@ -736,7 +737,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                         Intent intent0 = new Intent(ACTION_PREFERENCES_CHANGED);
                         intent0.putExtra("key", key);
                         intent0.putExtra("fromBroadcast", true);
-                        intent0.setPackage("com.termux.x11");
+                        intent0.setPackage("com.termux");
                         context.sendBroadcast(intent0);
                     }
                     edit.commit();
