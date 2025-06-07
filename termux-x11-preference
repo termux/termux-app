@@ -1,7 +1,14 @@
 #!/data/data/com.termux/files/usr/bin/bash
-COMMAND=("am" "broadcast" "-a" "com.termux.x11.CHANGE_PREFERENCE" "-p" "com.termux.x11")
+if [ "$(getprop ro.build.version.sdk)" -ge "34" ]; then
+  unset LD_LIBRARY_PATH LD_PRELOAD
+  export CLASSPATH=/data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
+  export TERMUX_X11_LOADER_OVERRIDE_CMDENTRYPOINT_CLASS=com.termux.x11.LoriePreferences\$Receiver
+  exec /system/bin/app_process -Xnoimage-dex2oat / com.termux.x11.Loader "$@"
+fi
+
+COMMAND=("am" "broadcast" "-a" "com.termux.x11.CHANGE_PREFERENCE" "-p" "com.termux")
 help() {
-  echo "$0 {list} {key:value}..."
+  echo "$0 [list] {key:value} [{key2:value2}]..."
   exit 1
 }
 
@@ -22,7 +29,20 @@ list() {
 }
 
 if [ $# -eq 0 ]; then
-  help
+  if [ -t 0 ]; then
+    help
+  else
+    OLD_LENGTH="${#COMMAND[@]}"
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      [ -z "$line" ] && continue
+      key=$(echo "$line" | sed -E 's/^"([^"]+)".*/\1/')
+      value=$(echo "$line" | sed -E 's/^"[^"]+"="(.*)"/\1/')
+      COMMAND+=("-e" "$key" "$value")
+    done
+    if [[ "$OLD_LENGTH" == "${#COMMAND[@]}" ]]; then
+      help
+    fi
+  fi
 fi
 
 while [[ $# -gt 0 ]]; do

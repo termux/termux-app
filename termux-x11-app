@@ -1,8 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/sh
+[ -z "${LD_LIBRARY_PATH+x}" ] || export XSTARTUP_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+[ -z "${LD_PRELOAD+x}" ] || export XSTARTUP_LD_PRELOAD="$LD_PRELOAD"
+[ -z "${CLASSPATH+x}" ] || export XSTARTUP_CLASSPATH="$CLASSPATH"
 export CLASSPATH=/data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
 unset LD_LIBRARY_PATH LD_PRELOAD
 if ps -ef | grep 'com.termux.x11*' | grep -v grep  > /dev/null;then
     echo "com.termux.x11 is running"
 else
-    exec /system/bin/app_process -Xnoimage-dex2oat / com.termux.x11.Loader "$@"
+    exec /system/bin/app_process -Xnoimage-dex2oat / --nice-name="termux-x11 com.termux.x11 $*" com.termux.x11.Loader "$@"
 fi

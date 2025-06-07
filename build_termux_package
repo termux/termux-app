@@ -60,7 +60,7 @@ EOF
 
 cat <<EOF >$CONTROL_DIR/postinst
 #!/data/data/com.termux/files/usr/bin/sh
-chmod -w /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
+chmod 400 /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
 chmod +x /data/data/com.termux/files/usr/bin/startxserver
 chmod +x /data/data/com.termux/files/usr/bin/stopserver
 chmod +x /data/data/com.termux/files/usr/bin/termux-x11
@@ -105,7 +105,7 @@ BUILD_DATE=$(date +%s)
 } >$DATA_DIR/.BUILDINFO
 {
     echo "post_install() {"
-    echo "    chmod -w /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk"
+    echo "    chmod 400 /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/display"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/startxserver"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/stopserver"
@@ -117,10 +117,44 @@ PACMAN_PACKAGE_PATH=$(realpath $PACMAN_PACKAGE_PATH)
 
 cd $DATA_DIR
 shopt -s dotglob globstar
-printf '%s\0' data/**/* .BUILDINFO .PKGINFO | bsdtar -cnf - --format=mtree \
-    --options='!all,use-set,type,uid,gid,mode,time,size,md5,sha256,link' \
-    --null --files-from - | gzip -c -f -n >.MTREE
-printf '%s\0' data/**/* .BUILDINFO .PKGINFO .MTREE | bsdtar --no-fflags -cnf - --null --files-from - | xz >"$PACMAN_PACKAGE_PATH"
+mapfile -d '' FILES < <(printf '%s\0' .BUILDINFO .INSTALL .PKGINFO data/**/*)
 shopt -u dotglob globstar
+
+# Bsdtar is missing in Github CI image and installing it takes a while
+# so effectively this code replaces
+# printf '%s\0' data/**/* .BUILDINFO .INSTALL .PKGINFO | bsdtar -cnf - --format=mtree --options='!all,use-set,type,uid,gid,mode,time,size,md5,sha256,link' --null --files-from - | gzip -c -f -n > .MTREE
+# printf '%s\0' data/**/* .BUILDINFO .INSTALL .PKGINFO .MTREE | bsdtar --no-fflags -cnf - --null --files-from - | xz > "$PACMAN_PACKAGE_PATH"
+
+{
+_mode="664"
+echo "#mtree"
+echo "/set type=file uid=1000 gid=1000 mode=$_mode"
+for path in "${FILES[@]}"; do
+  # Skip non-existing paths (due to globs resolving to themselves)
+  [ -e "$path" ] || continue
+
+  if [ -d "$path" ]; then
+    mode="$(stat -c '%a' "$path")"
+    mtime="$(stat -c '%Y' "$path").$(stat -c '%y' "$path" | cut -d'.' -f2 | cut -d' ' -f1)"
+    if [ "$mode" != "$_mode" ]; then
+        echo "/set mode=$mode"
+        _mode="$mode"
+    fi
+    printf '%q time=%s type=dir\n' "$path" "$mtime"
+
+  elif [ -f "$path" ]; then
+    mode="$(stat -c '%a' "$path")"
+    mtime="$(stat -c '%Y' "$path").$(stat -c '%y' "$path" | cut -d'.' -f2 | cut -d' ' -f1)"
+    size="$(stat -c '%s' "$path")"
+    md5="$(md5sum "$path" | cut -d' ' -f1)"
+    sha256="$(sha256sum "$path" | cut -d' ' -f1)"
+    printf '%q time=%s%s size=%s md5digest=%s sha256digest=%s%s\n' \
+      "$path" "$mtime" "$([ "$mode" != "$_mode" ] && echo " mode=$mode")" "$size" "$md5" "$sha256"
+  fi
+done
+} | gzip > .MTREE
+
 cd -
 cp -rvf $PACMAN_PACKAGE_PATH $ASSETS_PATH
+
+printf '%s\0' "${FILES[@]}" ".MTREE" | tar --null --no-recursion --hard-dereference --files-from=- -cf - | xz > "$PACMAN_PACKAGE_PATH"
