@@ -200,6 +200,11 @@ public class MainActivity extends LoriePreferences {
         mInputHandler.setLongPressedDelay(touch_sensitivity);
 //        Log.d("MainActivity","touch_sensitivity:"+touch_sensitivity);
         mLorieKeyListener = (v, k, e) -> {
+            if ((System.currentTimeMillis() - viewKeyTriggerdTime) < 300) {
+                return true;
+            }
+            viewKeyTriggerdTime = System.currentTimeMillis();
+
             if (k == KEYCODE_VOLUME_DOWN && preferences.getBoolean("hideEKOnVolDown", false)) {
                 if (e.getAction() == ACTION_UP) {
                     toggleExtraKeys();
@@ -209,7 +214,11 @@ public class MainActivity extends LoriePreferences {
 
             if (k == KEYCODE_BACK) {
                 if(!getX11Focus()){
-                    return back2PreviousMenu();
+                    if(!back2PreviousMenu()){
+                        Log.d("back2PreviousMenu","back2PreviousMenu");
+                       termuxActivityListener.onX11PreferenceSwitchChange(false);
+                    }
+                    return true;
                 }
                 if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
                     if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {

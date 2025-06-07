@@ -7,6 +7,11 @@
         <Preference app:title="@string/pref_pointer" app:fragment="pointer" />
         <Preference app:title="@string/pref_kbd" app:fragment="kbd" />
         <Preference app:title="@string/pref_other" app:fragment="other" />
+        <Preference app:key="open_keyboard" android:title="@string/open_keyboard" />
+        <Preference app:key="select_controller" android:title="@string/open_controller" />
+        <Preference app:key="open_progress_manager" android:title="@string/progress_manager" />
+        <Preference app:key="install_x11_server_bridge" android:title="@string/install_x11_server_bridge" />
+        <Preference app:key="stop_desktop" android:title="@string/stop_desktop" />
         <Preference app:key="version" app:title="@string/pref_version" />
     </PreferenceScreen>
     <PreferenceScreen app:key="output">
@@ -34,6 +39,7 @@
         <ListPreference app:key="transformCapturedPointer" app:defaultValue="no" app:entries="@array/transformCapturedPointerEntries" app:entryValues="@array/transformCapturedPointerValues" />
         <SeekBarPreference app:key="capturedPointerSpeedFactor" app:defaultValue="100" app:min="1" android:max="200" app:seekBarIncrement="1" app:showSeekBarValue="true" app:updatesContinuously="true" />
         <SwitchPreferenceCompat app:key="tapToMove" app:defaultValue="false" />
+        <SeekBarPreference app:defaultValue="1" app:key="touch_sensitivity" android:max="20" app:title="@string/touch_sensitivity" />
     </PreferenceScreen>
     <PreferenceScreen app:key="kbd">
         <SwitchPreferenceCompat app:key="showAdditionalKbd" app:defaultValue="true" />
@@ -56,6 +62,8 @@
         <Preference app:key="requestNotificationPermission" />
         <Preference app:key="configureResponseToUserActions" app:fragment="userActions" />
         <SwitchPreferenceCompat app:key="storeSecondaryDisplayPreferencesSeparately" app:defaultValue="false" />
+        <SwitchPreferenceCompat app:defaultValue="false" app:key="enableFloatBallMenu" app:summary="@string/enabl_float_ball_menu_notice" app:title="@string/enabl_float_ball_menu" />
+        <SwitchPreferenceCompat app:defaultValue="false" app:key="enableGlobalFloatBallMenu" app:title="@string/enable_global_float_ball_menu" />
     </PreferenceScreen>
     <PreferenceScreen app:key="ekbar">
         <SwitchPreferenceCompat app:key="adjustHeightForEK" app:defaultValue="false" />

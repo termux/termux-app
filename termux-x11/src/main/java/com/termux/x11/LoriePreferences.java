@@ -6,6 +6,7 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.system.Os.getuid;
+import static android.system.Os.stat;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -46,8 +47,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -271,14 +270,13 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         return true;
     }
 
-    long current = System.currentTimeMillis();
+    long viewKeyTriggerdTime = System.currentTimeMillis();
+
     public boolean back2PreviousMenu() {
-        boolean isSubMenu = getSupportFragmentManager().getBackStackEntryCount()>1;
-        if (isSubMenu){
-            if((System.currentTimeMillis()-current)>300) {
-                getSupportFragmentManager().popBackStack();
-            }
-            current = System.currentTimeMillis();
+        Log.d("getBackStackEntryCount",getSupportFragmentManager().getBackStackEntryCount()+"");
+        boolean isSubMenu = getSupportFragmentManager().getBackStackEntryCount() > 1;
+        if (isSubMenu) {
+            getOnBackPressedDispatcher().onBackPressed();
         }
         return isSubMenu;
     }
@@ -516,9 +514,22 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                     Toast.makeText(ctx, "Copied to clipboard", Toast.LENGTH_SHORT).show();
                 }
             }
-            if (p.getKey().contains("return_")) {
-                loriePreferences.back2PreviousMenu();
+            if (p.getKey().contentEquals("open_keyboard")) {
+                loriePreferences.termuxActivityListener.openSoftwareKeyboard();
             }
+            if (p.getKey().contentEquals("select_controller")) {
+                loriePreferences.showInputControlsDialog();
+            }
+            if (p.getKey().contentEquals("open_progress_manager")) {
+                loriePreferences.termuxActivityListener.showProcessManager();
+            }
+            if (p.getKey().contentEquals("install_x11_server_bridge")) {
+                loriePreferences.termuxActivityListener.reInstallX11StartScript(loriePreferences);
+            }
+            if (p.getKey().contentEquals("stop_desktop")) {
+                loriePreferences.termuxActivityListener.stopDesktop(loriePreferences);
+            }
+
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && "requestNotificationPermission".contentEquals(p.getKey())) {
                 ActivityCompat.requestPermissions(requireActivity(), new String[]{POST_NOTIFICATIONS}, 101);

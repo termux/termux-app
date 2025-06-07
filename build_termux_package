@@ -154,7 +154,6 @@ for path in "${FILES[@]}"; do
 done
 } | gzip > .MTREE
 
+printf '%s\0' "${FILES[@]}" ".MTREE" | tar --null --no-recursion --hard-dereference --files-from=- -cf - | xz > "$PACMAN_PACKAGE_PATH"
 cd -
 cp -rvf $PACMAN_PACKAGE_PATH $ASSETS_PATH
-
-printf '%s\0' "${FILES[@]}" ".MTREE" | tar --null --no-recursion --hard-dereference --files-from=- -cf - | xz > "$PACMAN_PACKAGE_PATH"

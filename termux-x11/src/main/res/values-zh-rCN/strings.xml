@@ -26,10 +26,10 @@
     <string name="pref_userActions">自定义用户事件</string>
 
 
-    <string name="pref_displayResolutionMode">分辨路模式</string>
+    <string name="pref_displayResolutionMode">分辨率模式</string>
     <string name="pref_displayScale">显示缩放系数, %</string>
     <string name="pref_displayResolutionExact">真实分辨率</string>
-    <string name="pref_displayResolutionCustom">D自定义分辨率</string>
+    <string name="pref_displayResolutionCustom">自定义分辨率</string>
     <string name="pref_adjustResolution">调整设置的分辨率以适合屏幕方向</string>
     <string name="pref_displayStretch">拉伸以适合屏幕</string>
     <string name="pref_Reseed">打开软键盘时重新调整屏幕</string>
