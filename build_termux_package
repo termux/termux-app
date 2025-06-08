@@ -60,7 +60,7 @@ EOF
 
 cat <<EOF >$CONTROL_DIR/postinst
 #!/data/data/com.termux/files/usr/bin/sh
-chmod 400 /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
+chmod +x /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
 chmod +x /data/data/com.termux/files/usr/bin/startxserver
 chmod +x /data/data/com.termux/files/usr/bin/stopserver
 chmod +x /data/data/com.termux/files/usr/bin/termux-x11
@@ -105,7 +105,7 @@ BUILD_DATE=$(date +%s)
 } >$DATA_DIR/.BUILDINFO
 {
     echo "post_install() {"
-    echo "    chmod 400 /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk"
+    echo "    chmod +x /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/display"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/startxserver"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/stopserver"

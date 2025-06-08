@@ -6,7 +6,6 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.system.Os.getuid;
-import static android.system.Os.stat;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -97,7 +96,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
     public static int OPEN_FILE_REQUEST_CODE = 102;
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
-    protected LoriePreferenceFragment loriePreferenceFragment;
     protected LorieView xServer;
     protected static boolean touchShow = false;
     protected int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
@@ -204,8 +202,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = new Prefs(this);
-//        loriePreferenceFragment = new LoriePreferenceFragment(null);
-//        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, new LoriePreferenceFragment(null)).commit();
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -218,6 +214,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         getContentResolver().registerContentObserver(ENABLED_ACCESSIBILITY_SERVICES, true, accessibilityObserver);
         getContentResolver().registerContentObserver(ACCESSIBILITY_ENABLED, true, accessibilityObserver);
+        if (LoriePreferenceFragment.loriePreferences == null) {
+            LoriePreferenceFragment.loriePreferences = this;
+        }
     }
 
     @SuppressLint("WrongConstant")
@@ -261,10 +260,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     @Override
     public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
         final LoriePreferenceFragment fragment = new LoriePreferenceFragment(pref.getFragment());
-        if (LoriePreferenceFragment.loriePreferences == null) {
-            LoriePreferenceFragment.loriePreferences = this;
-        }
-        loriePreferenceFragment = fragment;
         fragment.setTargetFragment(caller, 0);
         showFragment(fragment);
         return true;
@@ -419,14 +414,20 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             setNoActionOptionText(findPreference("mediaKeysAction"), "android media control");
         }
 
-        private void setSummary(CharSequence key, int disabled) {
+        private void setTitle(CharSequence key, int resId){
+            Preference pref = findPreference(key);
+            if (pref != null)
+                pref.setTitle(resId);
+        }
+
+        private void setSummary(CharSequence key, int resId) {
             Preference pref = findPreference(key);
             if (pref != null)
                 pref.setSummaryProvider(new Preference.SummaryProvider<>() {
                     @Nullable
                     @Override
                     public CharSequence provideSummary(@NonNull Preference p) {
-                        return p.isEnabled() ? null : getResources().getString(disabled);
+                        return p.isEnabled() ? null : getResources().getString(resId);
                     }
                 });
         }
@@ -473,6 +474,37 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
             setEnabled("scaleTouchpad", "1".equals(prefs.touchMode.get()) && !"native".equals(prefs.displayResolutionMode.get()));
             setEnabled("showMouseHelper", "1".equals(prefs.touchMode.get()));
+
+            if (loriePreferences.touchShow) {
+                setTitle("select_controller",R.string.close_controller);
+            } else {
+                setTitle("select_controller",R.string.open_controller);
+            }
+            boolean enableFloatBallMenu = prefs.enableFloatBallMenu.get();
+            if (!enableFloatBallMenu) {
+                setEnabled("enableGlobalFloatBallMenu",false);
+                setVisible("enableGlobalFloatBallMenu",false);
+                setEnabled("stop_desktop",true);
+                setVisible("stop_desktop",true);
+                setEnabled("open_keyboard",true);
+                setVisible("open_keyboard",true);
+                setEnabled("select_controller",true);
+                setVisible("select_controller",true);
+                setVisible("open_progress_manager",true);
+                setVisible("open_progress_manager",true);
+            } else {
+                setVisible("enableGlobalFloatBallMenu",true);
+                setEnabled("enableGlobalFloatBallMenu",true);
+                setEnabled("stop_desktop",false);
+                setVisible("stop_desktop",false);
+                setEnabled("open_keyboard",false);
+                setVisible("open_keyboard",false);
+                setEnabled("select_controller",false);
+                setVisible("select_controller",false);
+                setVisible("open_progress_manager",false);
+                setVisible("open_progress_manager",false);
+            }
+
 
             boolean requestNotificationPermissionVisible =
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
@@ -1204,7 +1236,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         inputControlsView.invalidate();
         touchShow = true;
-//        loriePreferenceFragment.updatePreferencesLayout();
         if (termuxActivityListener != null) {
             termuxActivityListener.onX11PreferenceSwitchChange(false);
         }
@@ -1219,6 +1250,5 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         inputControlsView.invalidate();
         touchShow = false;
-//        loriePreferenceFragment.updatePreferencesLayout();
     }
 }

@@ -801,7 +801,7 @@ public class MainActivity extends LoriePreferences {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         } else {
             if (null != termuxActivityListener) {
-                handler.postDelayed(() -> loriePreferenceFragment.updatePreferencesLayout(), 500);
+                handler.postDelayed(() -> updatePreferencesLayout(), 500);
                 termuxActivityListener.onX11PreferenceSwitchChange(false);
             }
             imm.showSoftInput(view, 0);
