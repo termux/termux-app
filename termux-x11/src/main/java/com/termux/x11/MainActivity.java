@@ -571,8 +571,10 @@ public class MainActivity extends LoriePreferences {
 
                 tryConnect();
 
-                if (intent != getIntent())
-                    getIntent().putExtra(null, bundle);
+                if (intent != getIntent()) {
+//                    getIntent().putExtra(null, bundle);
+                    setIntent(intent);
+                }
             }
         } catch (Exception e) {
             Log.e("MainActivity", "Something went wrong while we were establishing connection", e);
