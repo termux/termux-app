@@ -629,6 +629,7 @@ public class LorieView extends SurfaceView implements InputStub {
     private void init() {
         getHolder().addCallback(mSurfaceCallback);
         clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        nativeInit();
         screenInfo = new ScreenInfo(this);
         cursorLocker = new CursorLocker(this);
     }
@@ -679,27 +680,27 @@ public class LorieView extends SurfaceView implements InputStub {
     }
 
     void getDimensionsFromSettings() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        Prefs prefs = MainActivity.getPrefs();
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
         int w = width;
         int h = height;
-        switch (preferences.getString("displayResolutionMode", "native")) {
+        switch(prefs.displayResolutionMode.get()) {
             case "scaled": {
-                int scale = preferences.getInt("displayScale", 100);
+                int scale = prefs.displayScale.get();
                 w = width * 100 / scale;
                 h = height * 100 / scale;
                 break;
             }
             case "exact": {
-                String[] resolution = preferences.getString("displayResolutionExact", "1280x1024").split("x");
+                String[] resolution = prefs.displayResolutionExact.get().split("x");
                 w = Integer.parseInt(resolution[0]);
                 h = Integer.parseInt(resolution[1]);
                 break;
             }
             case "custom": {
                 try {
-                    String[] resolution = preferences.getString("displayResolutionCustom", "1280x1024").split("x");
+                    String[] resolution = prefs.displayResolutionCustom.get().split("x");
                     w = Integer.parseInt(resolution[0]);
                     h = Integer.parseInt(resolution[1]);
                 } catch (NumberFormatException | PatternSyntaxException ignored) {
@@ -710,11 +711,12 @@ public class LorieView extends SurfaceView implements InputStub {
             }
         }
 
-        if ((width < height && w > h) || (width > height && w < h)) {
+        if (prefs.adjustResolution.get() && ((width < height && w > h) || (width > height && w < h))) {
             p.set(h, w);
             screenInfo.screenWidth = (short) h;
             screenInfo.screenHeight = (short) w;
-        } else {
+        }
+        else {
             p.set(w, h);
             screenInfo.screenWidth = (short) w;
             screenInfo.screenHeight = (short) h;
@@ -725,10 +727,10 @@ public class LorieView extends SurfaceView implements InputStub {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        if (preferences.getBoolean("displayStretch", false)
-            || "native".equals(preferences.getString("displayResolutionMode", "native"))
-            || "scaled".equals(preferences.getString("displayResolutionMode", "native"))) {
+        Prefs prefs = MainActivity.getPrefs();
+        if (prefs.displayStretch.get()
+            || "native".equals(prefs.displayResolutionMode.get())
+            || "scaled".equals(prefs.displayResolutionMode.get())) {
             getHolder().setSizeFromLayout();
             return;
         }
@@ -741,7 +743,7 @@ public class LorieView extends SurfaceView implements InputStub {
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
 
-        if ((width < height && p.x > p.y) || (width > height && p.x < p.y))
+        if (prefs.adjustResolution.get() && ((width < height && p.x > p.y) || (width > height && p.x < p.y)))
             //noinspection SuspiciousNameCombination
             p.set(p.y, p.x);
 
@@ -752,10 +754,6 @@ public class LorieView extends SurfaceView implements InputStub {
 
         getHolder().setFixedSize(p.x, p.y);
         setMeasuredDimension(width, height);
-
-        // In the case if old fixed surface size equals new fixed surface size surfaceChanged will not be called.
-        // We should force it.
-        //regenerate();
     }
 
     @Override
@@ -858,20 +856,20 @@ public class LorieView extends SurfaceView implements InputStub {
         }
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        requestFocus();
-
-        if (clipboardSyncEnabled && hasFocus) {
-            clipboard.addPrimaryClipChangedListener(clipboardListener);
-            checkForClipboardChange();
-        } else
-            clipboard.removePrimaryClipChangedListener(clipboardListener);
-
-        TouchInputHandler.refreshInputDevices();
-    }
+//    @Override
+//    public void onWindowFocusChanged(boolean hasFocus) {
+//        super.onWindowFocusChanged(hasFocus);
+//
+//        requestFocus();
+//
+//        if (clipboardSyncEnabled && hasFocus) {
+//            clipboard.addPrimaryClipChangedListener(clipboardListener);
+//            checkForClipboardChange();
+//        } else
+//            clipboard.removePrimaryClipChangedListener(clipboardListener);
+//
+//        TouchInputHandler.refreshInputDevices();
+//    }
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
