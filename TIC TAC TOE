@@ -1,0 +1,204 @@
+import pygame
+import sys
+import random
+import time
+
+# Initialize Pygame
+pygame.init()
+
+# Constants
+WIDTH, HEIGHT = 600, 700
+LINE_WIDTH = 15
+BOARD_ROWS = 3
+BOARD_COLS = 3
+SQUARE_SIZE = WIDTH // BOARD_COLS
+CIRCLE_RADIUS = SQUARE_SIZE // 3
+CIRCLE_WIDTH = 15
+CROSS_WIDTH = 25
+SPACE = SQUARE_SIZE // 4
+NEON_BLUE = (0, 255, 255)
+NEON_PINK = (255, 20, 147)
+BG_COLOR = (10, 10, 10)
+LINE_COLOR = NEON_BLUE
+FPS = 60
+
+# Load sound
+click_sound = pygame.mixer.Sound(pygame.mixer.Sound(file='click.wav'))
+win_sound = pygame.mixer.Sound(pygame.mixer.Sound(file='win.wav'))
+
+# Fonts
+FONT = pygame.font.SysFont("Consolas", 40)
+WIN_FONT = pygame.font.SysFont("Consolas", 50)
+
+# Setup window
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Tic Tac Toe Neon")
+clock = pygame.time.Clock()
+
+# Game variables
+board = [[None for _ in range(BOARD_COLS)] for _ in range(BOARD_ROWS)]
+player = 'X'
+game_over = False
+mode = None  # 'pvp' or 'bot'
+
+
+def draw_board():
+    screen.fill(BG_COLOR)
+    for row in range(1, BOARD_ROWS):
+        pygame.draw.line(screen, LINE_COLOR, (0, row * SQUARE_SIZE), (WIDTH, row * SQUARE_SIZE), LINE_WIDTH)
+    for col in range(1, BOARD_COLS):
+        pygame.draw.line(screen, LINE_COLOR, (col * SQUARE_SIZE, 0), (col * SQUARE_SIZE, HEIGHT - 100), LINE_WIDTH)
+
+
+def draw_figures():
+    for row in range(BOARD_ROWS):
+        for col in range(BOARD_COLS):
+            if board[row][col] == 'O':
+                pygame.draw.circle(screen, NEON_BLUE, (col * SQUARE_SIZE + SQUARE_SIZE // 2,
+                                                       row * SQUARE_SIZE + SQUARE_SIZE // 2), CIRCLE_RADIUS, CIRCLE_WIDTH)
+            elif board[row][col] == 'X':
+                start_desc = (col * SQUARE_SIZE + SPACE, row * SQUARE_SIZE + SPACE)
+                end_desc = (col * SQUARE_SIZE + SQUARE_SIZE - SPACE, row * SQUARE_SIZE + SQUARE_SIZE - SPACE)
+                start_asc = (col * SQUARE_SIZE + SPACE, row * SQUARE_SIZE + SQUARE_SIZE - SPACE)
+                end_asc = (col * SQUARE_SIZE + SQUARE_SIZE - SPACE, row * SQUARE_SIZE + SPACE)
+                pygame.draw.line(screen, NEON_PINK, start_desc, end_desc, CROSS_WIDTH)
+                pygame.draw.line(screen, NEON_PINK, start_asc, end_asc, CROSS_WIDTH)
+
+
+def mark_square(row, col, player):
+    board[row][col] = player
+    click_sound.play()
+
+
+def available_square(row, col):
+    return board[row][col] is None
+
+
+def is_board_full():
+    return all(all(cell is not None for cell in row) for row in board)
+
+
+def check_winner(p):
+    # check rows, columns and diagonals
+    for row in board:
+        if all(cell == p for cell in row):
+            return True
+    for col in range(BOARD_COLS):
+        if all(board[row][col] == p for row in range(BOARD_ROWS)):
+            return True
+    if all(board[i][i] == p for i in range(BOARD_ROWS)):
+        return True
+    if all(board[i][BOARD_ROWS - i - 1] == p for i in range(BOARD_ROWS)):
+        return True
+    return False
+
+
+def restart_game():
+    global board, player, game_over
+    board = [[None for _ in range(BOARD_COLS)] for _ in range(BOARD_ROWS)]
+    player = 'X'
+    game_over = False
+    draw_board()
+
+
+def show_game_over(winner=None):
+    win_sound.play()
+    if winner:
+        text = WIN_FONT.render(f"{winner} wins!", True, NEON_PINK if winner == 'X' else NEON_BLUE)
+    else:
+        text = WIN_FONT.render("It's a tie!", True, LINE_COLOR)
+    screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT - 90))
+
+
+def bot_move():
+    empty = [(r, c) for r in range(BOARD_ROWS) for c in range(BOARD_COLS) if board[r][c] is None]
+    # Medium AI: random move with basic win/block logic
+    for r, c in empty:
+        board[r][c] = 'O'
+        if check_winner('O'):
+            return
+        board[r][c] = None
+    for r, c in empty:
+        board[r][c] = 'X'
+        if check_winner('X'):
+            board[r][c] = 'O'
+            return
+        board[r][c] = None
+    r, c = random.choice(empty)
+    mark_square(r, c, 'O')
+
+
+def draw_menu():
+    screen.fill(BG_COLOR)
+    title = WIN_FONT.render("Tic Tac Toe Neon", True, LINE_COLOR)
+    pvp_text = FONT.render("1. Player vs Player", True, NEON_PINK)
+    bot_text = FONT.render("2. Player vs Bot", True, NEON_BLUE)
+    screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 100))
+    screen.blit(pvp_text, (WIDTH // 2 - pvp_text.get_width() // 2, 250))
+    screen.blit(bot_text, (WIDTH // 2 - bot_text.get_width() // 2, 320))
+
+
+# Game loop
+running = True
+while running:
+    clock.tick(FPS)
+
+    if mode is None:
+        draw_menu()
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    mode = 'pvp'
+                    restart_game()
+                elif event.key == pygame.K_2:
+                    mode = 'bot'
+                    restart_game()
+    else:
+        draw_board()
+        draw_figures()
+
+        if game_over:
+            show_game_over(winner if 'winner' in locals() else None)
+            pygame.display.update()
+            time.sleep(2)
+            mode = None
+            continue
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
+                mouseX = event.pos[0]
+                mouseY = event.pos[1]
+
+                if mouseY < HEIGHT - 100:
+                    clicked_row = mouseY // SQUARE_SIZE
+                    clicked_col = mouseX // SQUARE_SIZE
+
+                    if available_square(clicked_row, clicked_col):
+                        mark_square(clicked_row, clicked_col, player)
+
+                        if check_winner(player):
+                            game_over = True
+                            winner = player
+                        elif is_board_full():
+                            game_over = True
+
+                        if mode == 'pvp':
+                            player = 'O' if player == 'X' else 'X'
+                        elif mode == 'bot' and not game_over:
+                            bot_move()
+                            if check_winner('O'):
+                                game_over = True
+                                winner = 'O'
+                            elif is_board_full():
+                                game_over = True
+
+pygame.quit()
+sys.exit()
