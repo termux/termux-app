@@ -550,16 +550,48 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 loriePreferences.termuxActivityListener.openSoftwareKeyboard();
             }
             if (p.getKey().contentEquals("select_controller")) {
-                loriePreferences.showInputControlsDialog();
+                if (!loriePreferences.touchShow) {
+                    loriePreferences.showInputControlsDialog();
+                } else {
+                    loriePreferences.hideInputControls();
+                }
             }
             if (p.getKey().contentEquals("open_progress_manager")) {
                 loriePreferences.termuxActivityListener.showProcessManager();
             }
             if (p.getKey().contentEquals("install_x11_server_bridge")) {
-                loriePreferences.termuxActivityListener.reInstallX11StartScript(loriePreferences);
+                View view = getLayoutInflater().inflate(R.layout.x11_server_bridge_config, null, false);
+                @SuppressLint({"MissingInflatedId", "LocalSuppress"})
+                TextView desc = view.findViewById(R.id.x11_server_bridge_config_description);
+                desc.setText(R.string.x11_server_bridge_config);
+                desc.setMovementMethod(LinkMovementMethod.getInstance());
+                new android.app.AlertDialog.Builder(getActivity())
+                    .setView(view)
+                    .setTitle("X11 server bridge installer")
+                    .setPositiveButton("OK",
+                        (dialog, whichButton) -> {
+                            if (loriePreferences != null) {
+                                loriePreferences.installX11ServerBridge();
+                            }
+                        }
+                    )
+                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
+                    .create()
+                    .show();
             }
             if (p.getKey().contentEquals("stop_desktop")) {
-                loriePreferences.termuxActivityListener.stopDesktop(loriePreferences);
+                new android.app.AlertDialog.Builder(getActivity())
+                    .setTitle("Stop Desktop")
+                    .setPositiveButton("OK",
+                        (dialog, whichButton) -> {
+                            if (loriePreferences != null) {
+                                loriePreferences.stopDesktop();
+                            }
+                        }
+                    )
+                    .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.dismiss())
+                    .create()
+                    .show();
             }
 
 
@@ -625,8 +657,13 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 //                putExtra("fromBroadcast", true);
 //                setPackage("com.termux.x11");
 //            }});
+            if ("enableFloatBallMenu".contentEquals(key) ){
+                prefs.enableFloatBallMenu.put((Boolean) newValue);
+            }
+            if ("enableGlobalFloatBallMenu".contentEquals(key)){
+                prefs.enableGlobalFloatBallMenu.put((Boolean) newValue);
+            }
             loriePreferences.termuxActivityListener.changePreference(key);
-
             return true;
         }
 

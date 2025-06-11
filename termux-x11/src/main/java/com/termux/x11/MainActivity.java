@@ -265,6 +265,8 @@ public class MainActivity extends LoriePreferences {
 
             mInputHandler.handleHostSizeChanged(surfaceWidth, surfaceHeight);
             mInputHandler.handleClientSizeChanged(screenWidth, screenHeight);
+            lorieView.screenInfo.handleHostSizeChanged(surfaceWidth, surfaceHeight);
+            lorieView.screenInfo.handleClientSizeChanged(screenWidth, screenHeight);
             if (lorieView.getDisplay() == null || lorieView.getDisplay().getDisplayId() == Display.DEFAULT_DISPLAY)
                 name = "Builtin Display";
             else if (SamsungDexUtils.checkDeXEnabled(this))
@@ -618,8 +620,21 @@ public class MainActivity extends LoriePreferences {
     }
 
     protected void onPreferencesChanged(String key) {
-        if ("additionalKbdVisible".equals(key))
+        if ("additionalKbdVisible".equals(key)) {
             return;
+        }
+        if (key.contentEquals("enableFloatBallMenu") ||
+            key.contentEquals("enableGlobalFloatBallMenu")) {
+            boolean enableGlobalFloatBallMenu = prefs.enableGlobalFloatBallMenu.get();
+            mEnableFloatBallMenu = prefs.enableFloatBallMenu.get();
+            if (termuxActivityListener != null) {
+                termuxActivityListener.setFloatBallMenu(mEnableFloatBallMenu, enableGlobalFloatBallMenu);
+                if (!mEnableFloatBallMenu) {
+                    mRaiseSoftKeyBoard = false;
+                }
+            }
+            return;
+        }
 
         handler.removeCallbacks(this::onPreferencesChangedCallback);
         handler.postDelayed(this::onPreferencesChangedCallback, 100);

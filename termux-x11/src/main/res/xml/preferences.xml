@@ -7,11 +7,6 @@
         <Preference app:title="@string/pref_pointer" app:fragment="pointer" />
         <Preference app:title="@string/pref_kbd" app:fragment="kbd" />
         <Preference app:title="@string/pref_other" app:fragment="other" />
-        <Preference app:key="open_keyboard" android:title="@string/open_keyboard" />
-        <Preference app:key="select_controller" android:title="@string/open_controller" />
-        <Preference app:key="open_progress_manager" android:title="@string/progress_manager" />
-        <Preference app:key="install_x11_server_bridge" android:title="@string/install_x11_server_bridge" />
-        <Preference app:key="stop_desktop" android:title="@string/stop_desktop" />
         <Preference app:key="version" app:title="@string/pref_version" />
     </PreferenceScreen>
     <PreferenceScreen app:key="output">
@@ -64,6 +59,11 @@
         <SwitchPreferenceCompat app:key="storeSecondaryDisplayPreferencesSeparately" app:defaultValue="false" />
         <SwitchPreferenceCompat app:defaultValue="false" app:key="enableFloatBallMenu" app:summary="@string/enabl_float_ball_menu_notice" app:title="@string/enabl_float_ball_menu" />
         <SwitchPreferenceCompat app:defaultValue="false" app:key="enableGlobalFloatBallMenu" app:title="@string/enable_global_float_ball_menu" />
+        <Preference app:key="open_keyboard" android:title="@string/open_keyboard" />
+        <Preference app:key="select_controller" android:title="@string/open_controller" />
+        <Preference app:key="open_progress_manager" android:title="@string/progress_manager" />
+        <Preference app:key="install_x11_server_bridge" android:title="@string/install_x11_server_bridge" />
+        <Preference app:key="stop_desktop" android:title="@string/stop_desktop" />
     </PreferenceScreen>
     <PreferenceScreen app:key="ekbar">
         <SwitchPreferenceCompat app:key="adjustHeightForEK" app:defaultValue="false" />
