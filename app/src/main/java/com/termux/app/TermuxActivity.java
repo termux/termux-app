@@ -519,6 +519,11 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
                     }
                 }
             }
+
+            @Override
+            public void onExitApp() {
+                TermuxActivity.this.existApp();
+            }
         };
     }
 
@@ -746,20 +751,23 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
     private void setX11Server() {
         findViewById(com.termux.x11.R.id.exit_button).setOnClickListener((v) -> {
-            if (isExit) {
-                finishActivityIfNotFinishing();
-                Intent exitIntent = new Intent(this, TermuxService.class)
-                    .setAction(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_STOP_SERVICE);
-                startService(exitIntent);
-                finishActivityIfNotFinishing();
-            } else {
-                Toast.makeText(this, R.string.exit_toast_text, Toast.LENGTH_SHORT).show();
-                isExit = true;
-                handler.postDelayed(() -> isExit = false, 2000);
-            }
+            existApp();
         });
         StartEntryClient startEntryClient = new StartEntryClient(this, mTermuxTerminalSessionActivityClient);
         startEntryClient.init();
+    }
+
+    private void existApp() {
+        if (isExit) {
+            Intent exitIntent = new Intent(this, TermuxService.class)
+                .setAction(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_STOP_SERVICE);
+            startService(exitIntent);
+            finishActivityIfNotFinishing();
+        } else {
+            Toast.makeText(this, R.string.exit_toast_text, Toast.LENGTH_SHORT).show();
+            isExit = true;
+            handler.postDelayed(() -> isExit = false, 2000);
+        }
     }
 
     private void startX11Display() {

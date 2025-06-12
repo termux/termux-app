@@ -793,8 +793,9 @@ public class TouchInputHandler {
         int k = e.getKeyCode();
 
         if (!MainActivity.isConnected()) {
-            if (e.getKeyCode() == KEYCODE_BACK)
-                mActivity.finish();
+            if (e.getKeyCode() == KEYCODE_BACK) {
+                mActivity.prepareToExit();
+            }
 
             return false;
         }

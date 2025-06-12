@@ -144,6 +144,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         List<ProcessInfo> collectProcessorInfo(String tag);
 
         void setFloatBallMenu(boolean enableFloatBallMenu, boolean enableGlobalFloatBallMenu);
+
+        void onExitApp();
     }
 
     public TermuxActivityListener getTermuxActivityListener() {
@@ -265,11 +267,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         return true;
     }
 
-    long viewKeyTriggerdTime = System.currentTimeMillis();
+    long viewKeyTriggerTime = System.currentTimeMillis();
 
-    public boolean back2PreviousMenu() {
-        Log.d("getBackStackEntryCount",getSupportFragmentManager().getBackStackEntryCount()+"");
-        boolean isSubMenu = getSupportFragmentManager().getBackStackEntryCount() > 1;
+    public boolean back2PreviousMenu() {boolean isSubMenu = getSupportFragmentManager().getBackStackEntryCount() > 1;
         if (isSubMenu) {
             getOnBackPressedDispatcher().onBackPressed();
         }
@@ -1287,5 +1287,10 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
         inputControlsView.invalidate();
         touchShow = false;
+    }
+    public void prepareToExit(){
+        if(termuxActivityListener!=null){
+            termuxActivityListener.onExitApp();
+        }
     }
 }

@@ -3,12 +3,9 @@ package com.termux.x11;
 import static android.Manifest.permission.WRITE_SECURE_SETTINGS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
-import static android.view.InputDevice.KEYBOARD_TYPE_ALPHABETIC;
-import static android.view.KeyEvent.ACTION_UP;
 import static android.view.KeyEvent.KEYCODE_BACK;
 import static android.view.KeyEvent.KEYCODE_META_LEFT;
 import static android.view.KeyEvent.KEYCODE_META_RIGHT;
-import static android.view.KeyEvent.KEYCODE_VOLUME_DOWN;
 import static android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
 import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
 import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
@@ -200,17 +197,10 @@ public class MainActivity extends LoriePreferences {
         mInputHandler.setLongPressedDelay(touch_sensitivity);
 //        Log.d("MainActivity","touch_sensitivity:"+touch_sensitivity);
         mLorieKeyListener = (v, k, e) -> {
-            if ((System.currentTimeMillis() - viewKeyTriggerdTime) < 300) {
+            if ((System.currentTimeMillis() - viewKeyTriggerTime) < 300) {
                 return true;
             }
-            viewKeyTriggerdTime = System.currentTimeMillis();
-
-            if (k == KEYCODE_VOLUME_DOWN && preferences.getBoolean("hideEKOnVolDown", false)) {
-                if (e.getAction() == ACTION_UP) {
-                    toggleExtraKeys();
-                }
-                return true;
-            }
+            viewKeyTriggerTime = System.currentTimeMillis();
 
             if (k == KEYCODE_BACK) {
                 if(!getX11Focus()){
@@ -220,35 +210,14 @@ public class MainActivity extends LoriePreferences {
                     }
                     return true;
                 }
-                if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
-                    if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
-                        switchSoftKeyboard(false);
-                    } else if (null != termuxActivityListener && !mEnableFloatBallMenu) {
-                        termuxActivityListener.releaseSlider(true);
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                updatePreferencesLayout();
-                            }
-                        }, 500);
-                    }
-                }
-
-                if (e.isFromSource(InputDevice.SOURCE_MOUSE) || e.isFromSource(InputDevice.SOURCE_MOUSE_RELATIVE)) {
-                    if (e.getRepeatCount() != 0) // ignore auto-repeat
-                        return true;
-                    if (e.getAction() == KeyEvent.ACTION_UP || e.getAction() == KeyEvent.ACTION_DOWN)
-                        lorieView.sendMouseEvent(-1, -1, InputStub.BUTTON_RIGHT, e.getAction() == KeyEvent.ACTION_DOWN, true);
-                    return true;
-                }
-
-                if (e.getScanCode() == KEY_BACK && e.getDevice().getKeyboardType() != KEYBOARD_TYPE_ALPHABETIC || e.getScanCode() == 0) {
-//                    if (e.getAction() == ACTION_UP)
-//                        toggleKeyboardVisibility(MainActivity.this);
-                    return true;
-                }
             }
-            return mInputHandler.sendKeyEvent(e);
+            InputDevice dev = e.getDevice();
+            boolean result = mInputHandler.sendKeyEvent(e);
+
+            // Do not steal dedicated buttons from a full external keyboard.
+            if (useTermuxEKBarBehaviour && mExtraKeys != null && (dev == null || dev.isVirtual()))
+                mExtraKeys.unsetSpecialKeys();
+            return result;
         };
         lorieParent.setOnTouchListener((v, event) -> true);
 //        lorieParent.setOnTouchListener((v, e) -> mInputHandler.handleTouchEvent(lorieParent, lorieView, e));
