@@ -83,7 +83,6 @@
             android:name=".app.TermuxActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|keyboard|keyboardHidden|navigation"
             android:exported="true"
-            android:label="@string/application_name"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:theme="@style/Theme.TermuxActivity.DayNight.NoActionBar"
@@ -266,6 +265,25 @@
         <meta-data
             android:name="com.sec.android.support.multiwindow"
             android:value="true" />
+
+        <service android:name="com.termux.x11.utils.KeyInterceptor"
+            android:exported="true"
+            android:label="Termux:X11 KeyInterceptor"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <receiver android:name="com.termux.x11.LoriePreferences$Receiver" android:exported="true" tools:ignore="ExportedReceiver" android:enabled="true">
+            <intent-filter>
+                <action android:name="com.termux.x11.CHANGE_PREFERENCE" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

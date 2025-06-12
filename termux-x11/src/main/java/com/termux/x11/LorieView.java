@@ -9,7 +9,6 @@ import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -21,7 +20,6 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.InputType;
 import android.util.AttributeSet;
@@ -59,7 +57,6 @@ import com.termux.x11.controller.xserver.XKeycode;
 import com.termux.x11.input.InputStub;
 import com.termux.x11.input.TouchInputHandler;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -938,33 +935,6 @@ public class LorieView extends SurfaceView implements InputStub {
         sendTextEvent(text.getBytes());
     }
 
-//    static native void connect(int fd);
-//
-//    native void handleXEvents();
-//
-//    static native void startLogcat(int fd);
-//
-//    static native void setClipboardSyncEnabled(boolean enabled, boolean ignored);
-//
-//    public native void sendClipboardAnnounce();
-//
-//    public native void sendClipboardEvent(byte[] text);
-//
-//    static native void sendWindowChange(int width, int height, int framerate);
-//
-//    public native void sendMouseEvent(float x, float y, int whichButton, boolean buttonDown, boolean relative);
-//
-//    public native void sendTouchEvent(int action, int id, int x, int y);
-//
-//    public native void sendStylusEvent(float x, float y, int pressure, int tiltX, int tiltY, int orientation, int buttons, boolean eraser, boolean mouseMode);
-//
-//    static public native void requestStylusEnabled(boolean enabled);
-//
-//    public native boolean sendKeyEvent(int scanCode, int keyCode, boolean keyDown);
-//
-//    public native void sendTextEvent(byte[] text);
-//
-//    public native void sendUnicodeEvent(int code);
     @FastNative
     private native void nativeInit();
     @FastNative private native void surfaceChanged(Surface surface);

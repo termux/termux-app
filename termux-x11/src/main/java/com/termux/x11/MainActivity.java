@@ -51,6 +51,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -136,14 +137,14 @@ public class MainActivity extends LoriePreferences {
         }
     };
 
-//    ViewTreeObserver.OnPreDrawListener mOnPredrawListener = new ViewTreeObserver.OnPreDrawListener() {
-//        @Override
-//        public boolean onPreDraw() {
-//            if (LorieView.connected())
-//                handler.post(() -> findViewById(android.R.id.content).getViewTreeObserver().removeOnPreDrawListener(mOnPredrawListener));
-//            return false;
-//        }
-//    };
+    ViewTreeObserver.OnPreDrawListener mOnPredrawListener = new ViewTreeObserver.OnPreDrawListener() {
+        @Override
+        public boolean onPreDraw() {
+            if (LorieView.connected())
+                handler.post(() -> findViewById(android.R.id.content).getViewTreeObserver().removeOnPreDrawListener(mOnPredrawListener));
+            return false;
+        }
+    };
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity instance;
@@ -203,10 +204,17 @@ public class MainActivity extends LoriePreferences {
             viewKeyTriggerTime = System.currentTimeMillis();
 
             if (k == KEYCODE_BACK) {
+                if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
+                    if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
+                        switchSoftKeyboard(false);
+                        return true;
+                    } else if (null != termuxActivityListener && !mEnableFloatBallMenu) {
+                        termuxActivityListener.releaseSlider(true);
+                    }
+                }
                 if(!getX11Focus()){
                     if(!back2PreviousMenu()){
-                        Log.d("back2PreviousMenu","back2PreviousMenu");
-                       termuxActivityListener.onX11PreferenceSwitchChange(false);
+                        termuxActivityListener.onX11PreferenceSwitchChange(false);
                     }
                     return true;
                 }
@@ -258,8 +266,8 @@ public class MainActivity extends LoriePreferences {
 
         if (tryConnect()) {
             final View content = findViewById(android.R.id.content);
-//            content.getViewTreeObserver().addOnPreDrawListener(mOnPredrawListener);
-//            handler.postDelayed(() -> content.getViewTreeObserver().removeOnPreDrawListener(mOnPredrawListener), 500);
+            content.getViewTreeObserver().addOnPreDrawListener(mOnPredrawListener);
+            handler.postDelayed(() -> content.getViewTreeObserver().removeOnPreDrawListener(mOnPredrawListener), 500);
         }
         onPreferencesChanged("");
 
@@ -543,8 +551,7 @@ public class MainActivity extends LoriePreferences {
                 tryConnect();
 
                 if (intent != getIntent()) {
-//                    getIntent().putExtra(null, bundle);
-                    setIntent(intent);
+                    getIntent().putExtra(null, bundle);
                 }
             }
         } catch (Exception e) {

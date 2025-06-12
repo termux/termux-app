@@ -36,6 +36,7 @@ cp termux-x11-app $PREFIX/bin/
 mv $PREFIX/bin/termux-x11-app $PREFIX/bin/termux-x11
 cp termux-x11-display $PREFIX/bin/
 mv $PREFIX/bin/termux-x11-display $PREFIX/bin/termux-display
+cp termux-x11-preference $PREFIX/bin/
 cp shell-loader/build/outputs/apk/debug/shell-loader-debug.apk \
     $PREFIX/libexec/termux-x11/loader.apk
 cp shell-loader/build/outputs/apk/debug/shell-loader-debug.apk \
@@ -64,6 +65,7 @@ chmod +x /data/data/com.termux/files/usr/libexec/termux-x11/loader.apk
 chmod +x /data/data/com.termux/files/usr/bin/startxserver
 chmod +x /data/data/com.termux/files/usr/bin/stopserver
 chmod +x /data/data/com.termux/files/usr/bin/termux-x11
+chmod +x /data/data/com.termux/files/usr/bin/termux-x11-preference
 EOF
 
 mkdir -p $PACKAGE_DIR
@@ -110,6 +112,7 @@ BUILD_DATE=$(date +%s)
     echo "    chmod +x /data/data/com.termux/files/usr/bin/startxserver"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/stopserver"
     echo "    chmod +x /data/data/com.termux/files/usr/bin/termux-x11"
+    echo "    chmod +x /data/data/com.termux/files/usr/bin/termux-x11-preference"
     echo "}"
 } >$DATA_DIR/.INSTALL
 

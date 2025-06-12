@@ -3,8 +3,6 @@ package com.termux.app.terminal;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -121,8 +119,7 @@ public class DisplaySlidingWindow extends HorizontalScrollView {
     private void remeasure() {
         mContentWidth = ScreenUtils.getScreenWidth(getContext());
         mStatusHeight = ScreenUtils.getStatusHeight();
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        boolean hideCutout = preferences.getBoolean("hideCutout", false);
+        boolean hideCutout = mTermuxActivity.getPrefs().hideCutout.get();
         if (mLandscape) {
             if (hideCutout) {
                 mStatusHeight = 0;

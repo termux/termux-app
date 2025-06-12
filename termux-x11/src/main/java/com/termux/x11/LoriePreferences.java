@@ -97,7 +97,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     public static int OPEN_FILE_REQUEST_CODE = 102;
     static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
     protected LorieView xServer;
-    protected static boolean touchShow = false;
     protected int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
     //input controller
@@ -112,10 +111,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     protected ControlsProfile profile;
     protected String controlsProfile;
     protected Container container;
-
-    public boolean getTouchShow() {
-        return touchShow;
-    }
 
     public List<ProcessInfo> getTermuxProcessorInfo(String tag) {
         if (termuxActivityListener != null) {
@@ -475,11 +470,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             setEnabled("scaleTouchpad", "1".equals(prefs.touchMode.get()) && !"native".equals(prefs.displayResolutionMode.get()));
             setEnabled("showMouseHelper", "1".equals(prefs.touchMode.get()));
 
-            if (loriePreferences.touchShow) {
-                setTitle("select_controller",R.string.close_controller);
-            } else {
-                setTitle("select_controller",R.string.open_controller);
-            }
             boolean enableFloatBallMenu = prefs.enableFloatBallMenu.get();
             if (!enableFloatBallMenu) {
                 setEnabled("enableGlobalFloatBallMenu",false);
@@ -550,11 +540,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 loriePreferences.termuxActivityListener.openSoftwareKeyboard();
             }
             if (p.getKey().contentEquals("select_controller")) {
-                if (!loriePreferences.touchShow) {
-                    loriePreferences.showInputControlsDialog();
-                } else {
-                    loriePreferences.hideInputControls();
-                }
+                loriePreferences.showInputControlsDialog();
             }
             if (p.getKey().contentEquals("open_progress_manager")) {
                 loriePreferences.termuxActivityListener.showProcessManager();
@@ -875,7 +861,7 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
 
             in.detachFd();
             bundle.putBinder(null, iface);
-            i.setPackage("com.termux.x11");
+            i.setPackage("com.termux");
             i.putExtra(null, bundle);
             if (getuid() == 0 || getuid() == 2000)
                 i.setFlags(0x00400000 /* FLAG_RECEIVER_FROM_SHELL */);
@@ -918,7 +904,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
     }
 
     public static Handler handler = Looper.getMainLooper() != null ? new Handler(Looper.getMainLooper()) : null;
-//    public static Handler handler = new Handler();
 
     public void onClick(View view) {
         showFragment(new LoriePreferenceFragment("ekbar"));
@@ -1272,7 +1257,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         touchpadView.setVisibility(View.VISIBLE);
 
         inputControlsView.invalidate();
-        touchShow = true;
         if (termuxActivityListener != null) {
             termuxActivityListener.onX11PreferenceSwitchChange(false);
         }
@@ -1286,7 +1270,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         touchpadView.setVisibility(View.GONE);
 
         inputControlsView.invalidate();
-        touchShow = false;
     }
     public void prepareToExit(){
         if(termuxActivityListener!=null){

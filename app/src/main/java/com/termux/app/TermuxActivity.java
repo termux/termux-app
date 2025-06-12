@@ -29,7 +29,6 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.InputDevice;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -522,7 +521,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
             @Override
             public void onExitApp() {
-                TermuxActivity.this.existApp();
+                TermuxActivity.this.unlockOrExitApp();
             }
         };
     }
@@ -751,13 +750,13 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
     private void setX11Server() {
         findViewById(com.termux.x11.R.id.exit_button).setOnClickListener((v) -> {
-            existApp();
+            exitApp();
         });
         StartEntryClient startEntryClient = new StartEntryClient(this, mTermuxTerminalSessionActivityClient);
         startEntryClient.init();
     }
 
-    private void existApp() {
+    private void exitApp() {
         if (isExit) {
             Intent exitIntent = new Intent(this, TermuxService.class)
                 .setAction(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_STOP_SERVICE);
@@ -765,6 +764,18 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
             finishActivityIfNotFinishing();
         } else {
             Toast.makeText(this, R.string.exit_toast_text, Toast.LENGTH_SHORT).show();
+            isExit = true;
+            handler.postDelayed(() -> isExit = false, 2000);
+        }
+    }
+    private void unlockOrExitApp() {
+        if (isExit) {
+            Intent exitIntent = new Intent(this, TermuxService.class)
+                .setAction(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_STOP_SERVICE);
+            startService(exitIntent);
+            finishActivityIfNotFinishing();
+        } else {
+            Toast.makeText(this, R.string.unlock_exit_toast_text, Toast.LENGTH_SHORT).show();
             isExit = true;
             handler.postDelayed(() -> isExit = false, 2000);
         }

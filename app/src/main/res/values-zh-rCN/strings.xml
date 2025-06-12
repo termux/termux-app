@@ -112,6 +112,7 @@
     <string name="file_cpy_override">文件已被覆盖</string>
     <string name="file_cpy_fail">该文件无法写入指定路径</string>
     <string name="exit_toast_text">再按一次退出</string>
+    <string name="unlock_exit_toast_text">侧边栏已解锁, 再按一次退出</string>
     <string name="no_such_file">文件不存在</string>
     <string name="not_executable">不是可执行文件</string>
     <string name="select_command_first">选择一个启动文件</string>
