@@ -91,6 +91,7 @@ import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
+import com.termux.x11.MainActivity;
 import com.termux.x11.controller.winhandler.ProcessInfo;
 
 import java.io.BufferedReader;
@@ -427,7 +428,7 @@ public class TermuxActivity extends com.termux.x11.MainActivity implements Servi
 
             @Override
             public void openSoftwareKeyboard() {
-                switchSoftKeyboard(false);
+                MainActivity.toggleKeyboardVisibility(TermuxActivity.this);
             }
 
             @Override

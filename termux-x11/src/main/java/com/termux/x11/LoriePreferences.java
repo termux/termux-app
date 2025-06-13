@@ -1142,10 +1142,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         }
     }
 
-    private void openSoftKeyBoard() {
-        termuxActivityListener.openSoftwareKeyboard();
-    }
-
     //inout control
     public InputControlsView getInputControlsView() {
         return inputControlsView;

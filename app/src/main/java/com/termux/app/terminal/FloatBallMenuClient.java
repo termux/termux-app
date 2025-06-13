@@ -21,6 +21,7 @@ import com.termux.floatball.menu.MenuItem;
 import com.termux.floatball.permission.FloatPermissionManager;
 import com.termux.floatball.utils.DensityUtil;
 import com.termux.floatball.widget.FloatBallCfg;
+import com.termux.x11.MainActivity;
 
 public class FloatBallMenuClient {
     private FloatBallManager mFloatballManager;
@@ -239,12 +240,7 @@ public class FloatBallMenuClient {
                     mDrawable = mTermuxActivity.getDrawable(R.drawable.icon_menu_show_keyboard_shape);
                 }
                 mShowKeyboard = !mShowKeyboard;
-                mTermuxActivity.openSoftKeyboardWithBackKeyPressed(mShowKeyboard);
-                if(mShowKeyboard) {
-                    toast(mTermuxActivity.getString(com.termux.x11.R.string.start_keyboard_x11));
-                }else{
-                    toast(mTermuxActivity.getString(com.termux.x11.R.string.stop_keyboard_x11));
-                }
+                MainActivity.toggleKeyboardVisibility(mTermuxActivity);
                 mFloatballManager.closeMenu();
             }
         };

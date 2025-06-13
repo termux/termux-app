@@ -111,6 +111,7 @@ public class MainActivity extends LoriePreferences {
 
     private static boolean oldFullscreen = false, oldHideCutout = false;
 //    private final SharedPreferences.OnSharedPreferenceChangeListener preferencesChangedListener = (__, key) -> onPreferencesChanged(key);
+    private static boolean softKeyboardShown = false;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -148,7 +149,6 @@ public class MainActivity extends LoriePreferences {
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity instance;
-    protected boolean mRaiseSoftKeyBoard = false;
 
 
     public MainActivity() {
@@ -205,18 +205,20 @@ public class MainActivity extends LoriePreferences {
 
             if (k == KEYCODE_BACK) {
                 if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
-                    if (mEnableFloatBallMenu && mRaiseSoftKeyBoard) {
-                        switchSoftKeyboard(false);
+                    if(softKeyboardShown){
+                        inputMethodManager.hideSoftInputFromWindow(getInstance().getWindow().getDecorView().getRootView().getWindowToken(), 0);
+                        softKeyboardShown=false;
                         return true;
-                    } else if (null != termuxActivityListener && !mEnableFloatBallMenu) {
+                    }
+                    if (null != termuxActivityListener && !mEnableFloatBallMenu) {
                         termuxActivityListener.releaseSlider(true);
                     }
-                }
-                if(!getX11Focus()){
-                    if(!back2PreviousMenu()){
-                        termuxActivityListener.onX11PreferenceSwitchChange(false);
+                    if(!getX11Focus()){
+                        if(!back2PreviousMenu()){
+                            termuxActivityListener.onX11PreferenceSwitchChange(false);
+                        }
+                        return true;
                     }
-                    return true;
                 }
             }
             InputDevice dev = e.getDevice();
@@ -605,9 +607,6 @@ public class MainActivity extends LoriePreferences {
             mEnableFloatBallMenu = prefs.enableFloatBallMenu.get();
             if (termuxActivityListener != null) {
                 termuxActivityListener.setFloatBallMenu(mEnableFloatBallMenu, enableGlobalFloatBallMenu);
-                if (!mEnableFloatBallMenu) {
-                    mRaiseSoftKeyBoard = false;
-                }
             }
             return;
         }
@@ -746,9 +745,9 @@ public class MainActivity extends LoriePreferences {
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        if (newConfig.orientation != orientation) {
-            switchSoftKeyboard(true);
-        }
+//        if (newConfig.orientation != orientation) {
+//            switchSoftKeyboard(true);
+//        }
 
         orientation = newConfig.orientation;
         if (termuxActivityListener != null) {
@@ -779,30 +778,6 @@ public class MainActivity extends LoriePreferences {
             default:
                 return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         }
-    }
-
-    @SuppressLint("RestrictedApi")
-    public void switchSoftKeyboard(boolean hide) {
-        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-        View view = getCurrentFocus();
-        if (view == null) {
-            view = getLorieView();
-            view.requestFocus();
-        }
-
-        if (hide) {
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        } else {
-            if (null != termuxActivityListener) {
-                handler.postDelayed(() -> updatePreferencesLayout(), 500);
-                termuxActivityListener.onX11PreferenceSwitchChange(false);
-            }
-            imm.showSoftInput(view, 0);
-        }
-    }
-
-    public void openSoftKeyboardWithBackKeyPressed(boolean raiseSoftKeyBoard) {
-        mRaiseSoftKeyBoard = raiseSoftKeyBoard;
     }
 
 //    @SuppressLint("WrongConstant")
@@ -990,12 +965,18 @@ public class MainActivity extends LoriePreferences {
         Log.d("MainActivity", "Toggling keyboard visibility");
         if(inputMethodManager != null) {
             android.util.Log.d("toggleKeyboardVisibility", "externalKeyboardConnected " + externalKeyboardConnected + " showIMEWhileExternalConnected " + showIMEWhileExternalConnected);
-            if (!externalKeyboardConnected || showIMEWhileExternalConnected)
+            if (!externalKeyboardConnected || showIMEWhileExternalConnected) {
                 inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-            else
+                softKeyboardShown=true;
+            }
+            else {
                 inputMethodManager.hideSoftInputFromWindow(getInstance().getWindow().getDecorView().getRootView().getWindowToken(), 0);
+                softKeyboardShown=false;
+            }
 
-            getInstance().getLorieView().requestFocus();
+            if(isConnected()){
+                getInstance().getLorieView().requestFocus();
+            }
         }
     }
 
