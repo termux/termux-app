@@ -71,6 +71,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: "**/*.apk"
           file_glob: true
-          release_name: "v1.0.5"
-          tag: 1.0.5
+          release_name: "v1.0.6"
+          tag: 1.0.6
           checksums: sha256,sha512,md5
