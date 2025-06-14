@@ -473,7 +473,7 @@ public class TouchInputHandler {
         swipeDownAction = extractUserActionFromPreferences(p, "swipeDown");
         volumeUpAction = extractUserActionFromPreferences(p, "volumeUp");
         volumeDownAction = extractUserActionFromPreferences(p, "volumeDown");
-        backButtonAction = extractUserActionFromPreferences(p, "backButton");
+//        backButtonAction = extractUserActionFromPreferences(p, "backButton");
         mediaKeysAction = extractUserActionFromPreferences(p, "mediaKeys");
 
         if(mTouchpadHandler != null)
@@ -488,10 +488,10 @@ public class TouchInputHandler {
         switch(pref.asList().get()) {
             case "toggle soft keyboard": return (key, down) -> {if(key==KEY_BACK&&p.enableFloatBallMenu.get()){return;} if (down) MainActivity.toggleKeyboardVisibility(mActivity); };
             case "toggle additional key bar": return (key, down) -> { if (down) mActivity.toggleExtraKeys(); };
-            case "open preferences": return (key, down) -> { if (down) mActivity.startActivity(new Intent(mActivity, LoriePreferences.class) {{ setAction(Intent.ACTION_MAIN); }}); };
+            case "open preferences": return (key, down) -> { if (down) mActivity.openPreference(true);};
             case "release pointer and keyboard capture": return (key, down) -> { if (down) setCapturingEnabled(false); };
             case "toggle fullscreen": return (key, down) -> { if (down) MainActivity.prefs.fullscreen.put(!MainActivity.prefs.fullscreen.get()); };
-            case "exit": return (key, down) -> { if (down) mActivity.finish(); };
+            case "exit": return (key, down) -> { if (down) mActivity.prepareToExit();};
             case "send volume up": return (key, down) -> mActivity.getLorieView().sendKeyEvent(0, KEYCODE_VOLUME_UP, down);
             case "send volume down": return (key, down) -> mActivity.getLorieView().sendKeyEvent(0, KEYCODE_VOLUME_DOWN, down);
             case "send media action": return (key, down) -> mActivity.getLorieView().sendKeyEvent(0, key, down);

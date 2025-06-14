@@ -41,7 +41,7 @@
         <!-- this preference should be a part of `Prefs` but should not appear in PreferenceScreen -->
         <SwitchPreferenceCompat app:key="additionalKbdVisible" app:defaultValue="true" app:isPreferenceVisible="false" />
         <SwitchPreferenceCompat app:key="showIMEWhileExternalConnected" app:defaultValue="true" />
-        <SwitchPreferenceCompat app:key="preferScancodes" app:defaultValue="false" />
+        <SwitchPreferenceCompat app:key="preferScancodes" app:defaultValue="true" />
         <SwitchPreferenceCompat app:key="hardwareKbdScancodesWorkaround" app:defaultValue="true" />
         <SwitchPreferenceCompat app:key="dexMetaKeyCapture" app:defaultValue="false" />
         <Preference app:key="enableAccessibilityService">
@@ -76,7 +76,7 @@
         <ListPreference app:key="swipeDownAction" app:defaultValue="toggle additional key bar" app:entries="@array/userActionsValues" app:entryValues="@array/userActionsValues" />
         <ListPreference app:key="volumeUpAction" app:defaultValue="no action" app:entries="@array/userActionsVolumeUpValues" app:entryValues="@array/userActionsVolumeUpValues" />
         <ListPreference app:key="volumeDownAction" app:defaultValue="no action" app:entries="@array/userActionsVolumeDownValues" app:entryValues="@array/userActionsVolumeDownValues" />
-        <ListPreference app:key="backButtonAction" app:defaultValue="toggle soft keyboard" app:entries="@array/userActionsValues" app:entryValues="@array/userActionsValues" />
+<!--        <ListPreference app:key="backButtonAction" app:defaultValue="toggle soft keyboard" app:entries="@array/userActionsValues" app:entryValues="@array/userActionsValues" />-->
         <ListPreference app:key="notificationTapAction" app:defaultValue="open preferences" app:entries="@array/userActionsValues" app:entryValues="@array/userActionsValues" />
         <ListPreference app:key="notificationButton0Action" app:defaultValue="open preferences" app:entries="@array/userActionsValues" app:entryValues="@array/userActionsValues" />
         <ListPreference app:key="notificationButton1Action" app:defaultValue="exit" app:entries="@array/userActionsValues" app:entryValues="@array/userActionsValues" />

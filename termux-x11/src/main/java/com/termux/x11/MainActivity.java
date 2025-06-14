@@ -110,7 +110,7 @@ public class MainActivity extends LoriePreferences {
     static InputMethodManager inputMethodManager;
 
     private static boolean oldFullscreen = false, oldHideCutout = false;
-//    private final SharedPreferences.OnSharedPreferenceChangeListener preferencesChangedListener = (__, key) -> onPreferencesChanged(key);
+    //    private final SharedPreferences.OnSharedPreferenceChangeListener preferencesChangedListener = (__, key) -> onPreferencesChanged(key);
     private static boolean softKeyboardShown = false;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -204,21 +204,19 @@ public class MainActivity extends LoriePreferences {
             viewKeyTriggerTime = System.currentTimeMillis();
 
             if (k == KEYCODE_BACK) {
-                if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
-                    if(softKeyboardShown){
-                        inputMethodManager.hideSoftInputFromWindow(getInstance().getWindow().getDecorView().getRootView().getWindowToken(), 0);
-                        softKeyboardShown=false;
-                        return true;
+                if (softKeyboardShown) {
+                    inputMethodManager.hideSoftInputFromWindow(getInstance().getWindow().getDecorView().getRootView().getWindowToken(), 0);
+                    softKeyboardShown = false;
+                    return true;
+                }
+                if (null != termuxActivityListener && !mEnableFloatBallMenu) {
+                    releaseSlider(true);
+                }
+                if (!getX11Focus()) {
+                    if (!back2PreviousMenu()) {
+                        termuxActivityListener.onX11PreferenceSwitchChange(false);
                     }
-                    if (null != termuxActivityListener && !mEnableFloatBallMenu) {
-                        termuxActivityListener.releaseSlider(true);
-                    }
-                    if(!getX11Focus()){
-                        if(!back2PreviousMenu()){
-                            termuxActivityListener.onX11PreferenceSwitchChange(false);
-                        }
-                        return true;
-                    }
+                    return true;
                 }
             }
             InputDevice dev = e.getDevice();
@@ -539,9 +537,13 @@ public class MainActivity extends LoriePreferences {
                 service = null;
 
                 Log.v("Lorie", "Disconnected");
-                runOnUiThread(() -> { LorieView.connect(-1); clientConnectedStateChanged();} );
+                runOnUiThread(() -> {
+                    LorieView.connect(-1);
+                    clientConnectedStateChanged();
+                });
             }, 0);
-        } catch (RemoteException ignored) {}
+        } catch (RemoteException ignored) {
+        }
 
         try {
             if (service != null && service.asBinder().isBinderAlive()) {
@@ -593,7 +595,8 @@ public class MainActivity extends LoriePreferences {
     public void setX11FocusedChanged(boolean x11Focused) {
         FullscreenWorkaround.setX11Focused(x11Focused);
     }
-    public boolean getX11Focus(){
+
+    public boolean getX11Focus() {
         return FullscreenWorkaround.getX11Focused();
     }
 
@@ -642,7 +645,7 @@ public class MainActivity extends LoriePreferences {
         showMouseAuxButtons(prefs.showMouseHelper.get());
         showStylusAuxButtons(prefs.showStylusClickOverride.get());
 
-        getDisplayTerminalToolbarViewPager().setAlpha(isInPictureInPictureMode ? 0.f : ((float) prefs.opacityEKBar.get())/100);
+        getDisplayTerminalToolbarViewPager().setAlpha(isInPictureInPictureMode ? 0.f : ((float) prefs.opacityEKBar.get()) / 100);
 
         lorieView.requestLayout();
         lorieView.invalidate();
@@ -870,11 +873,20 @@ public class MainActivity extends LoriePreferences {
 
         int requestedOrientation;
         switch (prefs.forceOrientation.get()) {
-            case "portrait": requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT; break;
-            case "landscape": requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE; break;
-            case "reverse portrait": requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT; break;
-            case "reverse landscape": requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE; break;
-            default: requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+            case "portrait":
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                break;
+            case "landscape":
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                break;
+            case "reverse portrait":
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+                break;
+            case "reverse landscape":
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                break;
+            default:
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         }
 
         if (getRequestedOrientation() != requestedOrientation)
@@ -951,7 +963,7 @@ public class MainActivity extends LoriePreferences {
 //        frm.setPadding(0, 0, 0, 0);
         this.isInPictureInPictureMode = isInPictureInPictureMode;
         final ViewPager pager = getDisplayTerminalToolbarViewPager();
-        pager.setAlpha(isInPictureInPictureMode ? 0.f : ((float) prefs.opacityEKBar.get())/100);
+        pager.setAlpha(isInPictureInPictureMode ? 0.f : ((float) prefs.opacityEKBar.get()) / 100);
         findViewById(R.id.mouse_buttons).setAlpha(isInPictureInPictureMode ? 0.f : 0.7f);
         findViewById(R.id.mouse_helper_visibility).setAlpha(isInPictureInPictureMode ? 0.f : 1.f);
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
@@ -959,22 +971,22 @@ public class MainActivity extends LoriePreferences {
 
     /**
      * Manually toggle soft keyboard visibility
+     *
      * @param context calling context
      */
     public static void toggleKeyboardVisibility(Context context) {
         Log.d("MainActivity", "Toggling keyboard visibility");
-        if(inputMethodManager != null) {
+        if (inputMethodManager != null) {
             android.util.Log.d("toggleKeyboardVisibility", "externalKeyboardConnected " + externalKeyboardConnected + " showIMEWhileExternalConnected " + showIMEWhileExternalConnected);
             if (!externalKeyboardConnected || showIMEWhileExternalConnected) {
                 inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-                softKeyboardShown=true;
-            }
-            else {
+                softKeyboardShown = true;
+            } else {
                 inputMethodManager.hideSoftInputFromWindow(getInstance().getWindow().getDecorView().getRootView().getWindowToken(), 0);
-                softKeyboardShown=false;
+                softKeyboardShown = false;
             }
 
-            if(isConnected()){
+            if (isConnected()) {
                 getInstance().getLorieView().requestFocus();
             }
         }
@@ -982,22 +994,25 @@ public class MainActivity extends LoriePreferences {
 
     @SuppressWarnings("SameParameterValue")
     void clientConnectedStateChanged() {
-        runOnUiThread(()-> {
+        runOnUiThread(() -> {
             boolean connected = LorieView.connected();
             setTerminalToolbarView();
             findViewById(R.id.mouse_buttons).setVisibility(prefs.showMouseHelper.get() && "1".equals(prefs.touchMode.get()) && connected ? View.VISIBLE : View.GONE);
-            findViewById(R.id.stub).setVisibility(connected?View.INVISIBLE:View.VISIBLE);
-            getLorieView().setVisibility(connected?View.VISIBLE:View.INVISIBLE);
+            findViewById(R.id.stub).setVisibility(connected ? View.INVISIBLE : View.VISIBLE);
+            getLorieView().setVisibility(connected ? View.VISIBLE : View.INVISIBLE);
 
             // We should recover connection in the case if file descriptor for some reason was broken...
             if (!connected)
                 tryConnect();
-            else
+            else {
                 getLorieView().setPointerIcon(PointerIcon.getSystemIcon(this, PointerIcon.TYPE_NULL));
+                releaseSlider(false);
+            }
 
             onWindowFocusChanged(hasWindowFocus());
         });
     }
+
     public static boolean isConnected() {
         if (getInstance() == null)
             return false;
@@ -1026,6 +1041,7 @@ public class MainActivity extends LoriePreferences {
 
         return mInputHandler.shouldInterceptKeys();
     }
+
     public void setExternalKeyboardConnected(boolean connected) {
         externalKeyboardConnected = connected;
         EditText textInput = findViewById(R.id.display_terminal_toolbar_text_input);
@@ -1035,6 +1051,7 @@ public class MainActivity extends LoriePreferences {
             inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getRootView().getWindowToken(), 0);
         getLorieView().requestFocus();
     }
+
     private void showStylusAuxButtons(boolean show) {
         LinearLayout buttons = findViewById(R.id.mouse_helper_visibility);
         if (LorieView.connected() && show) {

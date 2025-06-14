@@ -173,9 +173,9 @@ public class TermuxX11ExtraKeys implements TermuxExtraKeysView.IExtraKeysView {
         if ("KEYBOARD".equals(key))
             toggleKeyboardVisibility(mActivity);
         else if ("DRAWER".equals(key) || "PREFERENCES".equals(key))
-            mActivity.startActivity(new Intent(mActivity, LoriePreferences.class) {{ setAction(ACTION_START_PREFERENCES_ACTIVITY); }});
+            mActivity.openPreference(true);
         else if ("EXIT".equals(key))
-            mActivity.finish();
+            mActivity.prepareToExit();
         else if ("PASTE".equals(key)) {
             ClipData clipData = mClipboardManager.getPrimaryClip();
             if (clipData != null) {

@@ -537,7 +537,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 }
             }
             if (p.getKey().contentEquals("open_keyboard")) {
-                loriePreferences.termuxActivityListener.openSoftwareKeyboard();
+                loriePreferences.openPreference(false);
+                handler.postDelayed(()->{loriePreferences.termuxActivityListener.openSoftwareKeyboard();},500);
             }
             if (p.getKey().contentEquals("select_controller")) {
                 loriePreferences.showInputControlsDialog();
@@ -571,7 +572,8 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                     .setPositiveButton("OK",
                         (dialog, whichButton) -> {
                             if (loriePreferences != null) {
-                                loriePreferences.stopDesktop();
+                                loriePreferences.openPreference(false);
+                                handler.postDelayed(()->{loriePreferences.stopDesktop();},500);
                             }
                         }
                     )
@@ -1153,14 +1155,6 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         return winHandler;
     }
 
-    public void setWinHandler(WinHandler handler) {
-        this.winHandler = handler;
-    }
-
-    public InputControlsManager getInputControlsManager() {
-        return inputControlsManager;
-    }
-
     public void setOpenFileCallback(Callback<Uri> openFileCallback) {
         this.openFileCallback = openFileCallback;
     }
@@ -1271,5 +1265,13 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
         if(termuxActivityListener!=null){
             termuxActivityListener.onExitApp();
         }
+    }
+    public void openPreference(boolean open){
+        if(termuxActivityListener!=null)
+            termuxActivityListener.onX11PreferenceSwitchChange(open);
+    }
+    public void releaseSlider(boolean release){
+        if(termuxActivityListener!=null)
+            termuxActivityListener.releaseSlider(release);
     }
 }
