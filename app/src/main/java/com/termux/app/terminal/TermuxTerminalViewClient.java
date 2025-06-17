@@ -226,6 +226,11 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         return mActivity.getTerminalToolbarViewPager() == null || mActivity.isTerminalViewSelected() || mActivity.getTerminalView().hasFocus();
     }
 
+    @Override
+    public boolean isTerminalViewScalingDisabled() {
+        return mActivity.getProperties().isTerminalViewScalingDisabled();
+    }
+
 
 
     @Override
