@@ -3,6 +3,7 @@ name: Automatic Dependency Submission
 on:
   push:
     branches: [ 'master' ]
+  workflow_dispatch:
 
 permissions:
   contents: write
