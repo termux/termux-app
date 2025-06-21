@@ -1,0 +1,80 @@
+导入请求
+从BS4导入Beautiful Soup
+导入csv
+导入smtplib
+从email.mime.multipart导入MIMEMultipart
+从email.mime.text导入MIMEText
+从email.mime.base导入MIMEBase
+从电子邮件导入编码器
+导入时间
+导入随机
+从fake_useragent导入UserAgent
+
+#1.爬行豆瓣Top250
+Def scrape_douban_top250()：
+headers={'User-Agent'：UserAgent().random}
+电影=[]
+
+对于范围(0、250、25)内的页面：
+URL=f'https://movie.douban.com/top250?start={page}'
+response=requests.get(url，headers=headers)
+soup=Beautiful Soup(response.text，'html.parser')
+
+对于soup.find_all('div'，class_='item')中的项目：
+rank=item.find('em').text
+title=item.find('span'，class_='title').text
+评级=项目。查找('span'，class_='rating_num')。文本
+info=item.查找('div'，class_='bd')。p。拆分('\n')
+director_actors=info[0].split('主角：')
+director=director_actors[0].替换('导演：'，").带()
+actors=director_actors[1]，如果len(director_actors)>1其他"
+quote=item.find('span'，class_='inq').text if item.find('span'，class_='inq')else"
+            
+movies.append([排名，标题，评分，导演，演员，引用])
+打印(f"已爬取：{title}")
+
+time.sleep(2+random.random())#防护
+
+#保存为CSV
+将open('douban_top250.csv'，'w'，newline="，encoding='utf-8-sig')设为f：
+writer=csv.writer(f)
+writer.writerow(['排名'，'电影名'，'评分'，'导演'，'主演'，'简介'])
+writer.writerows(电影)
+    
+return'douban_top250.csv'
+
+#2.发送邮件（需配置SMTP)
+Def发送电子邮件(文件路径，收件人电子邮件)：
+# 邮箱配置（以QQ邮箱为例）
+sender_email="your_email@qq.com"#你的邮箱
+password="your_password"#邮箱授权码（非登录密码）
+SMTP_server="smtp.qq.com"#SMTP服务器
+
+# 创建邮件
+消息=MIMEMultipart()
+消息['寄件者']=发件人电子邮件
+MSG['To']=receiver_email
+MSG['Subject']="豆瓣电影Top250数据"
+
+# 邮件正文
+身体="豆瓣电影Top250数据已爬取完成，请查收附件."
+msg.attach(MIMEText(正文，“普通”))
+
+# 添加附件
+以开启(文件路径，'RB')做为附件：
+part=MIMEBase('application'，'octet-stream')
+part.set_payload(附件.读())
+encoders.encode_base64(零件)
+part.add_header('Content-Disposition'，f'附件；filename="{file_path}"')
+msg.attach(零件)
+
+# 发送邮件
+使用smtplib.SMTP_SSL(smtp_server，465)作为服务器：
+server.login(发件人电子邮件，密码)
+server.sendmail(发件人_电子邮件，收件人_电子邮件，msg.as_string())
+打印("邮件发送成功！" )
+
+# 3. 主程序
+如果__名称__=="__main__"：
+CSV_file=scrape_douban_top250()#爬取数据
+send_email(csv_file，"target_email@example.com")#发送到目标邮箱
