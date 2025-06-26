@@ -48,6 +48,9 @@ public final class TerminalView extends View {
     /** Log terminal view key and IME events. */
     private static boolean TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
 
+    /** Send full mouse events for dragging the touch screen, rather than scroll-wheep up/down */
+    private static boolean ADVANCED_MOUSE = false;
+
     /** The currently displayed terminal session, whose emulator is {@link #mEmulator}. */
     public TerminalSession mTermSession;
     /** Our terminal emulator whose session is {@link #mTermSession}. */
@@ -169,7 +172,8 @@ public final class TerminalView extends View {
             @Override
             public boolean onScroll(MotionEvent e, float distanceX, float distanceY) {
                 if (mEmulator == null) return true;
-                if (mEmulator.isMouseTrackingActive() && e.isFromSource(InputDevice.SOURCE_MOUSE)) {
+                if (ADVANCED_MOUSE || (mEmulator.isMouseTrackingActive() && e.isFromSource(InputDevice.SOURCE_MOUSE))) {
+                    // Unless using advanced mouse mode:
                     // If moving with mouse pointer while pressing button, report that instead of scroll.
                     // This means that we never report moving with button press-events for touch input,
                     // since we cannot just start sending these events without a starting press event,
@@ -278,6 +282,15 @@ public final class TerminalView extends View {
      */
     public void setIsTerminalViewKeyLoggingEnabled(boolean value) {
         TERMINAL_VIEW_KEY_LOGGING_ENABLED = value;
+    }
+
+    /**
+     * Sets whether dragging the touch screen sends mouse move events, or up/down scroll wheel
+     *
+     * @param value True to send mouse swipe events, false for scroll wheel
+     */
+    public void setAdvancedMouse(boolean value) {
+        ADVANCED_MOUSE = value;
     }
 
 
