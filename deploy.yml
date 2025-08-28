@@ -1,0 +1,50 @@
+name:Node.js CI
+on:
+ branches:
+   -main
+pull_request:
+   branches
+  -main 
+schedule
+ -cron:'0 */6 * * *'#By ØŤČ
+
+Jobs:
+build:
+
+ runs-on:unbuntu-latest
+
+  Stategy:
+ matrix:
+steps:
+-name:checkout repository 
+ uses:actions/checkout@v3
+-name: set up node.js
+ uses:actions/stepup-node@v3
+strategy:
+matrix:
+   node-version:[20.x]
+  steps:
+  -name: checkout repository 
+   uses: actions/checkout@v3
+
+  -name: set up Node.js
+   uses: actions/setup-node@v3
+   with:
+      node-version: ${{matrix.node-version}}
+    -name: Install dependencies 
+     run: rpm install
+
+     -name: Install ffmpeg 
+      run: sudo apt-get install -y ffmpeg
+
+      -name: Start application whit timeout
+       run: | 
+        timeout21590s npm start # Limited
+    l'execution à 5h 59 min 50s
+     -name: Save state (optional)
+      run: |
+       ./sa
+       Anti spam WhatsApp
+       .purge
+       
+
