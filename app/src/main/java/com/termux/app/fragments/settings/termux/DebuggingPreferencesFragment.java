@@ -1,52 +1,51 @@
 package com.termux.app.fragments.settings.termux;
 
 import android.content.Context;
-import android.os.Bundle;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.preference.ListPreference;
-import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceDataStore;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
 
 import com.termux.R;
+import com.termux.app.fragments.settings.base.BaseDebuggingPreferencesFragment;
+import com.termux.app.fragments.settings.base.BaseDebuggingPreferencesDataStore;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.shared.logger.Logger;
 
+/**
+ * Termux-specific debugging preferences fragment.
+ * Extends BaseDebuggingPreferencesFragment to follow DRY principle.
+ */
 @Keep
-public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
+public class DebuggingPreferencesFragment extends BaseDebuggingPreferencesFragment<TermuxAppSharedPreferences> {
 
     @Override
-    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        Context context = getContext();
-        if (context == null) return;
-
-        PreferenceManager preferenceManager = getPreferenceManager();
-        preferenceManager.setPreferenceDataStore(DebuggingPreferencesDataStore.getInstance(context));
-
-        setPreferencesFromResource(R.xml.termux_debugging_preferences, rootKey);
-
-        configureLoggingPreferences(context);
+    protected int getPreferencesResourceId() {
+        return R.xml.termux_debugging_preferences;
     }
 
-    private void configureLoggingPreferences(@NonNull Context context) {
-        PreferenceCategory loggingCategory = findPreference("logging");
-        if (loggingCategory == null) return;
-
-        ListPreference logLevelListPreference = findPreference("log_level");
-        if (logLevelListPreference != null) {
-            TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context, true);
-            if (preferences == null) return;
-
-            setLogLevelListPreferenceData(logLevelListPreference, context, preferences.getLogLevel());
-            loggingCategory.addPreference(logLevelListPreference);
-        }
+    @Override
+    protected TermuxAppSharedPreferences createPreferences(@NonNull Context context) {
+        return TermuxAppSharedPreferences.build(context, true);
     }
 
-    public static ListPreference setLogLevelListPreferenceData(ListPreference logLevelListPreference, Context context, int logLevel) {
+    @Override
+    protected PreferenceDataStore createPreferenceDataStore(@NonNull Context context) {
+        return DebuggingPreferencesDataStore.getInstance(context);
+    }
+
+    @Override
+    protected int getLogLevel() {
+        return mPreferences != null ? mPreferences.getLogLevel() : Logger.DEFAULT_LOG_LEVEL;
+    }
+
+    /**
+     * Static helper method retained for backward compatibility.
+     * Uses enhanced Logger methods for labels.
+     */
+    public static ListPreference setLogLevelListPreferenceData(ListPreference logLevelListPreference, 
+                                                                Context context, int logLevel) {
         if (logLevelListPreference == null)
             logLevelListPreference = new ListPreference(context);
 
@@ -61,19 +60,18 @@ public class DebuggingPreferencesFragment extends PreferenceFragmentCompat {
 
         return logLevelListPreference;
     }
-
 }
 
-class DebuggingPreferencesDataStore extends PreferenceDataStore {
-
-    private final Context mContext;
-    private final TermuxAppSharedPreferences mPreferences;
+/**
+ * Termux-specific PreferenceDataStore implementation.
+ * Extends BaseDebuggingPreferencesDataStore to follow DRY principle.
+ */
+class DebuggingPreferencesDataStore extends BaseDebuggingPreferencesDataStore<TermuxAppSharedPreferences> {
 
     private static DebuggingPreferencesDataStore mInstance;
 
     private DebuggingPreferencesDataStore(Context context) {
-        mContext = context;
-        mPreferences = TermuxAppSharedPreferences.build(context, true);
+        super(context);
     }
 
     public static synchronized DebuggingPreferencesDataStore getInstance(Context context) {
@@ -83,63 +81,27 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
         return mInstance;
     }
 
-
+    @Override
+    protected TermuxAppSharedPreferences createPreferences(Context context) {
+        return TermuxAppSharedPreferences.build(context, true);
+    }
 
     @Override
-    @Nullable
-    public String getString(String key, @Nullable String defValue) {
-        if (mPreferences == null) return null;
-        if (key == null) return null;
+    protected int getLogLevel() {
+        return mPreferences != null ? mPreferences.getLogLevel() : Logger.DEFAULT_LOG_LEVEL;
+    }
 
-        switch (key) {
-            case "log_level":
-                return String.valueOf(mPreferences.getLogLevel());
-            default:
-                return null;
+    @Override
+    protected void setLogLevel(int level) {
+        if (mPreferences != null) {
+            mPreferences.setLogLevel(mContext, level);
         }
     }
 
     @Override
-    public void putString(String key, @Nullable String value) {
-        if (mPreferences == null) return;
-        if (key == null) return;
-
-        switch (key) {
-            case "log_level":
-                if (value != null) {
-                    mPreferences.setLogLevel(mContext, Integer.parseInt(value));
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-
-
-    @Override
-    public void putBoolean(String key, boolean value) {
-        if (mPreferences == null) return;
-        if (key == null) return;
-
-        switch (key) {
-            case "terminal_view_key_logging_enabled":
-                    mPreferences.setTerminalViewKeyLoggingEnabled(value);
-                break;
-            case "plugin_error_notifications_enabled":
-                mPreferences.setPluginErrorNotificationsEnabled(value);
-                break;
-            case "crash_report_notifications_enabled":
-                mPreferences.setCrashReportNotificationsEnabled(value);
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public boolean getBoolean(String key, boolean defValue) {
-        if (mPreferences == null) return false;
+    protected boolean getAdditionalBoolean(String key, boolean defValue) {
+        if (mPreferences == null) return defValue;
+        
         switch (key) {
             case "terminal_view_key_logging_enabled":
                 return mPreferences.isTerminalViewKeyLoggingEnabled();
@@ -148,8 +110,24 @@ class DebuggingPreferencesDataStore extends PreferenceDataStore {
             case "crash_report_notifications_enabled":
                 return mPreferences.areCrashReportNotificationsEnabled(false);
             default:
-                return false;
+                return defValue;
         }
     }
 
+    @Override
+    protected void putAdditionalBoolean(String key, boolean value) {
+        if (mPreferences == null) return;
+        
+        switch (key) {
+            case "terminal_view_key_logging_enabled":
+                mPreferences.setTerminalViewKeyLoggingEnabled(value);
+                break;
+            case "plugin_error_notifications_enabled":
+                mPreferences.setPluginErrorNotificationsEnabled(value);
+                break;
+            case "crash_report_notifications_enabled":
+                mPreferences.setCrashReportNotificationsEnabled(value);
+                break;
+        }
+    }
 }

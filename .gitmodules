@@ -1,0 +1,3 @@
+[submodule "app/kmp-terminal"]
+	path = app/kmp-terminal
+	url = https://github.com/erdalgunes/ustad-kmp-terminal.git
