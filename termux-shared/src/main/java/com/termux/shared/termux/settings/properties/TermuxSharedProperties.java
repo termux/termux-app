@@ -618,6 +618,10 @@ public abstract class TermuxSharedProperties {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_CTRL_SPACE_WORKAROUND, true);
     }
 
+    public boolean isAppendZeroWidthSpaceToSymlinkShared() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_APPEND_ZERO_WIDTH_SPACE_TO_SYMLINK_SHARED, true);
+    }
+
     public boolean isUsingFullScreen() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_FULLSCREEN, true);
     }

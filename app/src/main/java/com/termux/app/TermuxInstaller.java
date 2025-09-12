@@ -21,6 +21,7 @@ import com.termux.shared.errors.Error;
 import com.termux.shared.android.PackageUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
+import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 
 import java.io.BufferedReader;
@@ -281,6 +282,9 @@ final class TermuxInstaller {
         Logger.logInfo(LOG_TAG, "Setting up storage symlinks.");
 
         new Thread() {
+
+            private static final char ZERO_WIDTH_SPACE = '\u200b';
+
             public void run() {
                 try {
                     Error error;
@@ -300,7 +304,7 @@ final class TermuxInstaller {
 
                     // Get primary storage root "/storage/emulated/0" symlink
                     File sharedDir = Environment.getExternalStorageDirectory();
-                    Os.symlink(sharedDir.getAbsolutePath(), new File(storageDir, "shared").getAbsolutePath());
+                    Os.symlink(sharedDir.getAbsolutePath() + (TermuxAppSharedProperties.getProperties().isAppendZeroWidthSpaceToSymlinkShared() ? String.valueOf(ZERO_WIDTH_SPACE) : ""), new File(storageDir, "shared").getAbsolutePath());
 
                     File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
                     Os.symlink(documentsDir.getAbsolutePath(), new File(storageDir, "documents").getAbsolutePath());
