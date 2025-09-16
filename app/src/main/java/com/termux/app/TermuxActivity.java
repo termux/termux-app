@@ -856,7 +856,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
 
     public void termuxSessionListNotifyUpdated() {
-        mTermuxSessionListViewController.notifyDataSetChanged();
+      if (mTermuxSessionListViewController == null) return;
+      runOnUiThread(() -> mTermuxSessionListViewController.notifyDataSetChanged());
     }
 
     public boolean isVisible() {
@@ -1007,6 +1008,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public static Intent newInstance(@NonNull final Context context) {
         Intent intent = new Intent(context, TermuxActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return intent;
+    }
+
+}
+ntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
     }
 
