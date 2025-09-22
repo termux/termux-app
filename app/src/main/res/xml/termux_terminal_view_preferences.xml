@@ -10,6 +10,12 @@
             app:summaryOn="@string/termux_terminal_view_terminal_margin_adjustment_on"
             app:title="@string/termux_terminal_view_terminal_margin_adjustment_title" />
 
+        <SwitchPreferenceCompat
+            app:key="mouse_cursor_movement_enabled"
+            app:title="Move Cursor With Tap"
+            app:summaryOn="The cursor will move to the tapped location in the command line."
+            app:summaryOff="Standard terminal behavior (long-press to select text)."
+            app:defaultValue="false" />
     </PreferenceCategory>
 
 </PreferenceScreen>
