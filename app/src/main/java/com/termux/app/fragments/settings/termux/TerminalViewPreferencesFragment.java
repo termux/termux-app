@@ -24,7 +24,6 @@ public class TerminalViewPreferencesFragment extends PreferenceFragmentCompat {
 
         setPreferencesFromResource(R.xml.termux_terminal_view_preferences, rootKey);
     }
-
 }
 
 class TerminalViewPreferencesDataStore extends PreferenceDataStore {
@@ -46,16 +45,16 @@ class TerminalViewPreferencesDataStore extends PreferenceDataStore {
         return mInstance;
     }
 
-
-
     @Override
     public void putBoolean(String key, boolean value) {
-        if (mPreferences == null) return;
-        if (key == null) return;
+        if (mPreferences == null || key == null) return;
 
         switch (key) {
             case "terminal_margin_adjustment":
-                    mPreferences.setTerminalMarginAdjustment(value);
+                mPreferences.setTerminalMarginAdjustment(value);
+                break;
+            case "mouse_cursor_movement_enabled":
+                mPreferences.setMouseCursorMovementEnabled(value);
                 break;
             default:
                 break;
@@ -64,14 +63,15 @@ class TerminalViewPreferencesDataStore extends PreferenceDataStore {
 
     @Override
     public boolean getBoolean(String key, boolean defValue) {
-        if (mPreferences == null) return false;
+        if (mPreferences == null) return defValue;
 
         switch (key) {
             case "terminal_margin_adjustment":
                 return mPreferences.isTerminalMarginAdjustmentEnabled();
+            case "mouse_cursor_movement_enabled":
+                return mPreferences.isMouseCursorMovementEnabled();
             default:
-                return false;
+                return defValue;
         }
     }
-
 }

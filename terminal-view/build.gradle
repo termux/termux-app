@@ -7,6 +7,7 @@ android {
     dependencies {
         implementation "androidx.annotation:annotation:1.3.0"
         api project(":terminal-emulator")
+        implementation "androidx.preference:preference:1.1.1"
     }
 
     defaultConfig {
