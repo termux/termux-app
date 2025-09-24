@@ -29,6 +29,7 @@ Quick how-to about Termux package management is available at [Package Management
 - [Debugging](#debugging)
 - [For Maintainers and Contributors](#for-maintainers-and-contributors)
 - [Forking](#forking)
+- [Sponsors and Funders](#sponsors-and-funders)
 ##
 
 
@@ -264,3 +265,12 @@ Commit messages **must** use the [Conventional Commits](https://www.conventional
 - You also need to recompile bootstrap zip for the new package name. Check [building bootstrap](https://github.com/termux/termux-packages/wiki/For-maintainers#build-bootstrap-archives), [here](https://github.com/termux/termux-app/issues/1983) and [here](https://github.com/termux/termux-app/issues/2081#issuecomment-865280111).
 - Currently, not all plugins use `TermuxConstants` from `termux-shared` library and have hardcoded `com.termux` values and will need to be manually patched.
 - If forking termux plugins, check [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development) for info on how to use termux libraries for plugins.
+##
+
+
+
+## Sponsors and Funders
+
+[<img alt="GitHub Accelerator" width="25%" src="site/assets/sponsors/github.png" />](https://github.com)  
+*[GitHub Accelerator](https://github.com/accelerator) ([1](https://github.blog/2023-04-12-github-accelerator-our-first-cohort-and-whats-next))*
+
