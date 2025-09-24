@@ -288,3 +288,8 @@ Commit messages **must** use the [Conventional Commits](https://www.conventional
 
 [<img alt="Cloudflare" width="25%" src="site/assets/sponsors/cloudflare.png" />](https://www.cloudflare.com)  
 *[Cloudflare](https://www.cloudflare.com) ([1](https://packages-cf.termux.dev))*
+
+&nbsp;
+
+[<img alt="Warp" width="25%" src="https://github.com/warpdotdev/brand-assets/blob/640dffd347439bbcb535321ab36b7281cf4446c0/Github/Sponsor/Warp-Github-LG-03.png" />](https://www.warp.dev/?utm_source=github&utm_medium=readme&utm_campaign=termux)  
+[*Warp, built for coding with multiple AI agents*](https://www.warp.dev/?utm_source=github&utm_medium=readme&utm_campaign=termux)
