@@ -1,0 +1,19 @@
+import requests
+
+BOT_TOKEN = "ВАШ_BOT_TOKEN"  # вставь свой токен
+ADMIN_ID = 7325705112         # твой Telegram ID
+BASE_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/"
+
+def send_message(chat_id, text):
+data = {"chat_id": chat_id, "text": text}
+try:
+requests.post(BASE_URL+"sendMessage", data=data)
+print("✅ Уведомление отправлено")
+except Exception as e:
+print("❌ Ошибка:", e)
+
+Отправляем тестовое уведомление
+
+send_message(ADMIN_ID, "📢 Тестовое уведомление от бота! Всё работает ✅")
+
+
