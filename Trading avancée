@@ -1,0 +1,63 @@
+import os
+from fpdf import FPDF
+from docx import Document
+from zipfile import ZipFile
+
+# --- Contenu exemple ---
+chapters = {
+    "Introduction": "Bienvenue dans ce guide complet de trading...",
+    "Chapitre 1 - Stratégies Simples": "Exemple de stratégie de croisement de moyennes mobiles...",
+    "Chapitre 2 - Indicateurs Avancés": "RSI, MACD et autres indicateurs...",
+    "Conclusion": "Merci d'avoir lu ce guide. Bon trading !"
+}
+
+# --- Génération PDF ---
+def generate_pdf(filename):
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(0, 10, "Trading Pack", ln=True, align='C')
+    
+    for title, content in chapters.items():
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 14)
+        pdf.multi_cell(0, 10, title)
+        pdf.set_font("Arial", '', 12)
+        pdf.multi_cell(0, 10, content)
+    
+    pdf.output(filename)
+    print(f"[+] PDF généré : {filename}")
+
+# --- Génération DOCX ---
+def generate_docx(filename):
+    doc = Document()
+    doc.add_heading("Trading Pack", 0)
+    
+    for title, content in chapters.items():
+        doc.add_heading(title, level=1)
+        doc.add_paragraph(content)
+    
+    doc.save(filename)
+    print(f"[+] DOCX généré : {filename}")
+
+# --- Compression en ZIP ---
+def create_zip(zip_name, files):
+    with ZipFile(zip_name, 'w') as zipf:
+        for file in files:
+            zipf.write(file)
+    print(f"[+] Pack compressé : {zip_name}")
+
+# --- Main ---
+if __name__ == "__main__":
+    pdf_file = "Trading_Pack.pdf"
+    docx_file = "Trading_Pack.docx"
+    zip_file = "Trading_Pack.zip"
+
+    generate_pdf(pdf_file)
+    generate_docx(docx_file)
+    create_zip(zip_file, [pdf_file, docx_file])
+
+    # Optionnel : supprimer les fichiers originaux après compression
+    # os.remove(pdf_file)
+    # os.remove(docx_file)
