@@ -1,2 +1,4 @@
+jdk:
+  - openjdk11
 env:
   JITPACK_NDK_VERSION: "21.1.6352462"
