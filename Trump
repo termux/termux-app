@@ -1,0 +1,4 @@
+cd ~/storage/downloads
+apt install unzip -y
+unzip TrumpTranslatorBot.zip -d TrumpBot
+cd TrumpBot
