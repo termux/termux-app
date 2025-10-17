@@ -1,0 +1,14 @@
+# Atualiza o sistema e instala o FFmpeg
+pkg update -y && pkg upgrade -y
+pkg install ffmpeg -y
+
+# Define caminho do vídeo original (ajuste se necessário)
+input="/sdcard/Download/VID-20251016-WA0054.mp4"
+output="/sdcard/Download/VID-20251016-FULLHD.mp4"
+
+# Faz o upscale para Full HD com nitidez natural e mantém o áudio
+ffmpeg -i "$input" -vf "scale=1920:1080:flags=lanczos" -c:v libx264 -crf 18 -preset slow -c:a copy "$output"
+
+# Mensagem final
+echo "✅ Vídeo aprimorado com sucesso!"
+echo "Arquivo salvo em: $output"
