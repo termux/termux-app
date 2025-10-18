@@ -23,7 +23,7 @@ import com.termux.shared.android.PermissionUtils;
 
 import java.nio.charset.Charset;
 
-import javax.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 public class ShareUtils {
 

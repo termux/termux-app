@@ -13,7 +13,9 @@ ext {
 }
 
 android {
-    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    namespace "com.termux"
+    compileSdk 36
+
     ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
     def appVersionName = System.getenv("TERMUX_APP_VERSION_NAME") ?: ""
     def apkVersionTag = System.getenv("TERMUX_APK_VERSION_TAG") ?: ""
@@ -35,6 +37,10 @@ android {
 
         implementation project(":terminal-view")
         implementation project(":termux-shared")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     defaultConfig {
@@ -110,9 +116,6 @@ android {
         }
     }
 
-    lintOptions {
-        disable 'ProtectedPermissions'
-    }
 
     testOptions {
         unitTests {
@@ -124,6 +127,9 @@ android {
         jniLibs {
             useLegacyPackaging true
         }
+    }
+    lint {
+        disable 'ProtectedPermissions'
     }
 
     applicationVariants.all { variant ->
@@ -143,7 +149,7 @@ android {
 dependencies {
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.robolectric:robolectric:4.10"
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
 }
 
 task versionName {
