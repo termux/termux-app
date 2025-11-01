@@ -1,0 +1,528 @@
+import pygame, sys, random, time, json, os
+
+pygame.init()
+WIDTH, HEIGHT = 480, 720
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Balloon Game")
+clock = pygame.time.Clock()
+FPS = 60
+
+# ألوان
+WHITE = (255,255,255)
+GRAY = (40,40,40)
+RED = (200,0,0)
+GREEN = (0,200,0)
+BLUE = (50,150,255)
+YELLOW = (255,215,0)
+RAINBOW = (255,100,255)
+DARK_GRAY = (20,20,20)
+DESERT_BG = (237,201,175)
+SNOW_BG = (220,220,255)
+JUNGLE_BG = (34,139,34)
+BLACK = (0,0,0)
+BROWN = (139,69,19)
+SAND = (194,178,128)
+ORANGE = (255,165,0)
+
+# خطوط
+F_XL = pygame.font.SysFont("arial", 50)
+F_L = pygame.font.SysFont("arial", 40)
+F_M = pygame.font.SysFont("arial", 30)
+F_S = pygame.font.SysFont("arial", 24)
+F_XS = pygame.font.SysFont("arial", 20)
+
+# محاولة تحميل الأصوات
+try:
+    # إذا كانت الملفات موجودة
+    coin_sound = pygame.mixer.Sound("coin.wav")
+    rainbow_sound = pygame.mixer.Sound("rainbow.wav")
+    hit_sound = pygame.mixer.Sound("hit.wav")
+    world_change_sound = pygame.mixer.Sound("world_change.wav")
+    button_click_sound = pygame.mixer.Sound("button_click.wav")
+except:
+    # إذا لم توجد الملفات، ننشئ أصواتاً افتراضية
+    print("ملفات الأصوات غير موجودة، سيتم استخدام أصوات افتراضية")
+    
+    # إنشاء أصوات بسيطة باستخدام pygame
+    try:
+        import numpy
+        import math
+        
+        def generate_beep_sound(frequency=440, duration=100):
+            sample_rate = 44100
+            n_samples = int(round(duration * 0.001 * sample_rate))
+            buf = numpy.zeros((n_samples, 2), dtype = numpy.int16)
+            max_sample = 2**(16 - 1) - 1
+            for s in range(n_samples):
+                t = float(s) / sample_rate
+                buf[s][0] = int(round(max_sample * math.sin(2 * math.pi * frequency * t)))
+                buf[s][1] = int(round(max_sample * math.sin(2 * math.pi * frequency * t)))
+            return pygame.sndarray.make_sound(buf)
+        
+        coin_sound = generate_beep_sound(523, 100)  # صوت C5
+        rainbow_sound = generate_beep_sound(659, 200)  # صوت E5
+        hit_sound = generate_beep_sound(220, 300)  # صوت A3
+        world_change_sound = generate_beep_sound(392, 150)  # صوت G4
+        button_click_sound = generate_beep_sound(330, 50)  # صوت E4
+    except:
+        # إذا فشل إنشاء الأصوات، نستخدم None
+        coin_sound = rainbow_sound = hit_sound = world_change_sound = button_click_sound = None
+
+# متغيرات اللعبة
+running = True
+game_over = False
+in_intro_screen = True
+balloon_w, balloon_h = 80, 100
+balloon_rect = pygame.Rect(WIDTH//2-40, HEIGHT-150, balloon_w, balloon_h)
+balloon_color = BLUE
+shield = False
+shield_end = 0
+shield_duration = 5
+coin_cooldown = 0
+speed_mul = 10
+distance = 0
+speed_levels = [10, 20, 30]
+current_speed_index = 0
+
+# إضافة تعريف المتغيرات المفقودة
+settings_visible = False
+world_visible = False
+shui_visible = False
+
+# عناصر بيئية
+snowflakes = []
+sand_particles = []
+jungle_monkeys = []
+snowman = None  # رجل الثلج
+
+# ملفات حفظ
+save_file = "balloon_save.json"
+
+# تحميل البيانات أو تعيين القيم الافتراضية
+if os.path.exists(save_file):
+    with open(save_file,"r") as f:
+        data = json.load(f)
+        coins = data.get("coins",0)
+        purchased_worlds = data.get("purchased_worlds",{"Normal":True,"Desert":False,"Snow":False,"Jungle":False})
+        purchased_balls = data.get("purchased_balls",{"Green":False,"Red":False,"Black":False})
+        current_world = data.get("current_world","Normal")
+        if data.get("current_ball"): balloon_color = data.get("current_ball")
+else:
+    coins = 0
+    purchased_worlds = {"Normal":True,"Desert":False,"Snow":False,"Jungle":False}
+    purchased_balls = {"Green":False,"Red":False,"Black":False}
+    current_world = "Normal"
+    balloon_color = BLUE
+
+# أشياء في الطريق
+spikes = []
+coins_list = []
+rainbows = []
+
+# أزرار - تحت عداد الكوينز
+SETTINGS_BTN = pygame.Rect(10, 50, 100, 40)
+WORLD_BTN = pygame.Rect(120, 50, 100, 40)
+SHOP_BTN = pygame.Rect(230, 50, 100, 40)
+
+RESET_BTN = pygame.Rect(WIDTH//2-100, HEIGHT//2 - 90, 200, 60)
+SPEED_BTN = pygame.Rect(WIDTH//2-100, HEIGHT//2 - 20, 200, 60)
+GO_BTN = pygame.Rect(WIDTH//2-100, HEIGHT//2+100, 200, 100)
+
+# العوالم
+worlds = {"Normal":GRAY, "Desert":DESERT_BG, "Snow":SNOW_BG, "Jungle":JUNGLE_BG}
+world_prices = {"Normal":0, "Desert":50, "Snow":50, "Jungle":50}
+
+# الكرات في المتجر
+shop_balls = {"Green":GREEN,"Red":RED,"Black":BLACK}
+shop_prices = {"Green":100,"Red":100,"Black":100}
+
+# دوال مساعدة
+def save_game():
+    data = {"coins":coins, "purchased_worlds":purchased_worlds, "current_world":current_world, "purchased_balls":purchased_balls, "current_ball":balloon_color}
+    with open(save_file,"w") as f:
+        json.dump(data,f)
+
+def draw_rounded_rect(rect, color, rad=15):
+    pygame.draw.rect(screen, color, rect, border_radius=rad)
+
+def draw_text_center(text, font, color, x, y):
+    surf = font.render(text, True, color)
+    rect = surf.get_rect(center=(x,y))
+    screen.blit(surf, rect)
+
+def reset_game():
+    global balloon_rect, spikes, coins_list, rainbows, shield, shield_end, game_over, coin_cooldown, speed_mul, distance, snowman
+    balloon_rect.x, balloon_rect.y = WIDTH//2-40, HEIGHT-150
+    spikes.clear()
+    coins_list.clear()
+    rainbows.clear()
+    snowflakes.clear()
+    sand_particles.clear()
+    jungle_monkeys.clear()
+    snowman = None
+    shield = False
+    shield_end = 0
+    game_over = False
+    coin_cooldown = 0
+    speed_mul = speed_levels[current_speed_index]
+    distance = 0
+
+def spawn_objects():
+    if random.randint(1,50)==1:
+        spikes.append(pygame.Rect(random.randint(0, WIDTH-40), -40, 40, 40))
+    if random.randint(1,30)==1:
+        coins_list.append(pygame.Rect(random.randint(0, WIDTH-30), -30, 30, 30))
+    if random.randint(1,300)==1:
+        rainbows.append(pygame.Rect(random.randint(0, WIDTH-30), -30, 30,30))
+
+def spawn_environment():
+    global snowman
+    
+    # ثلوج في عالم الثلج
+    if current_world == "Snow" and random.randint(1,10)==1:
+        snowflakes.append([random.randint(0, WIDTH), -5, random.randint(2,5)])
+    
+    # رجل الثلج في عالم الثلج (واحد فقط)
+    if current_world == "Snow" and snowman is None and random.randint(1,500)==1:
+        snowman = [random.randint(50, WIDTH-100), HEIGHT-150]
+    
+    # رمال في عالم الصحراء
+    if current_world == "Desert" and random.randint(1,15)==1:
+        sand_particles.append([random.randint(0, WIDTH), -5, random.randint(1,3)])
+    
+    # قرود في عالم الأدغال
+    if current_world == "Jungle" and random.randint(1,100)==1:
+        jungle_monkeys.append([random.randint(0, WIDTH), -30, random.randint(1,2)])
+
+def update_environment():
+    global snowman
+    
+    # تحديث الثلوج
+    for s in snowflakes[:]:
+        s[1] += s[2]
+        if s[1] > HEIGHT:
+            snowflakes.remove(s)
+    
+    # تحديث الرمال
+    for s in sand_particles[:]:
+        s[1] += s[2]
+        if s[1] > HEIGHT:
+            sand_particles.remove(s)
+    
+    # تحديث القرود
+    for m in jungle_monkeys[:]:
+        m[1] += m[2]
+        if m[1] > HEIGHT:
+            jungle_monkeys.remove(m)
+
+def draw_environment():
+    # رسم الثلوج
+    for s in snowflakes:
+        pygame.draw.circle(screen, WHITE, (s[0], s[1]), 3)
+    
+    # رسم رجل الثلج
+    if snowman is not None:
+        x, y = snowman
+        # الجسم (ثلاث دوائر)
+        pygame.draw.circle(screen, WHITE, (x, y), 30)  # الجزء السفلي
+        pygame.draw.circle(screen, WHITE, (x, y-40), 25)  # الجزء الأوسط
+        pygame.draw.circle(screen, WHITE, (x, y-75), 20)  # الرأس
+        
+        # العيون (فحم)
+        pygame.draw.circle(screen, BLACK, (x-8, y-80), 3)
+        pygame.draw.circle(screen, BLACK, (x+8, y-80), 3)
+        
+        # الأنف (جزر)
+        pygame.draw.polygon(screen, ORANGE, [(x, y-75), (x+15, y-70), (x, y-65)])
+        
+        # الأزرار
+        pygame.draw.circle(screen, BLACK, (x, y-40), 4)
+        pygame.draw.circle(screen, BLACK, (x, y-30), 4)
+        pygame.draw.circle(screen, BLACK, (x, y-20), 4)
+        
+        # القبعة
+        pygame.draw.rect(screen, BLACK, (x-20, y-95, 40, 10))
+        pygame.draw.rect(screen, BLACK, (x-15, y-110, 30, 15))
+    
+    # رسم الرمال
+    for s in sand_particles:
+        pygame.draw.circle(screen, SAND, (s[0], s[1]), 2)
+    
+    # رسم القرود
+    for m in jungle_monkeys:
+        # جسم القرد
+        pygame.draw.ellipse(screen, BROWN, (m[0], m[1], 20, 25))
+        # رأس القرد
+        pygame.draw.circle(screen, BROWN, (m[0]+10, m[1]-10), 10)
+        # عيون القرد
+        pygame.draw.circle(screen, BLACK, (m[0]+5, m[1]-12), 2)
+        pygame.draw.circle(screen, BLACK, (m[0]+15, m[1]-12), 2)
+
+def draw_objects():
+    for s in spikes:
+        pygame.draw.polygon(screen, RED, [(s.x,s.y+s.h),(s.x+s.w//2,s.y),(s.x+s.w,s.y+s.h)])
+    for c in coins_list:
+        pygame.draw.circle(screen, YELLOW, c.center, 15)
+        pygame.draw.circle(screen, (255,255,0), c.center, 12)
+    for r in rainbows:
+        pygame.draw.circle(screen, RAINBOW, r.center, 15)
+
+# شاشة المقدمة - تصميم جديد مشابه للصورة
+def intro_screen_draw():
+    screen.fill(BLACK)
+    
+    # العنوان الرئيسي في الأعلى
+    draw_text_center("Welcome to the", F_L, WHITE, WIDTH//2, HEIGHT//2 - 120)
+    draw_text_center("Balloon Game!", F_L, WHITE, WIDTH//2, HEIGHT//2 - 70)
+    draw_text_center("Created by Fawzi", F_M, WHITE, WIDTH//2, HEIGHT//2 - 20)
+    
+    # النص المزخرف في المنتصف (مثل الصورة)
+    draw_text_center("NANNAHAN WAI KAI", F_M, YELLOW, WIDTH//2, HEIGHT//2 + 30)
+    draw_text_center("KANANI NANANNAHAN!", F_M, YELLOW, WIDTH//2, HEIGHT//2 + 70)
+    
+    # زر Go في الأسفل
+    draw_rounded_rect(GO_BTN, GREEN)
+    draw_text_center("Go", F_L, WHITE, GO_BTN.centerx, GO_BTN.centery)
+    
+    pygame.display.flip()
+
+# واجهة اختيار العالم - أكبر وأجمل
+def draw_world_overlay():
+    overlay_rect = pygame.Rect(WIDTH//2-180, HEIGHT//2-250, 360, 500)
+    draw_rounded_rect(overlay_rect, DARK_GRAY)
+    draw_rounded_rect(pygame.Rect(WIDTH//2-175, HEIGHT//2-245, 350, 490), (50,50,50))
+    
+    draw_text_center("Choose World", F_L, WHITE, WIDTH//2, HEIGHT//2 - 220)
+    draw_text_center("(50 Coins each)", F_S, YELLOW, WIDTH//2, HEIGHT//2 - 190)
+    
+    for i,(w,color) in enumerate(worlds.items()):
+        btn = pygame.Rect(WIDTH//2-140, HEIGHT//2 - 140 + i*120, 280, 80)
+        
+        # خلفية الزر بلون العالم
+        draw_rounded_rect(btn, color)
+        
+        # إطار الزر
+        draw_rounded_rect(btn, WHITE, 15)
+        pygame.draw.rect(screen, color, (btn.x+2, btn.y+2, btn.w-4, btn.h-4), border_radius=13)
+        
+        if purchased_worlds[w]:
+            status = "✓"
+            status_color = GREEN
+        else:
+            status = "✗"
+            status_color = RED
+            
+        text = f"{w} (Free)" if w=="Normal" else f"{w} (50)"
+        draw_text_center(text, F_M, WHITE, btn.centerx, btn.centery-10)
+        draw_text_center(status, F_M, status_color, btn.centerx+100, btn.centery-10)
+        
+    pygame.display.flip()
+
+# واجهة المتجر
+def draw_shop_overlay():
+    overlay_rect = pygame.Rect(WIDTH//2-180, HEIGHT//2-200, 360, 400)
+    draw_rounded_rect(overlay_rect, DARK_GRAY)
+    draw_rounded_rect(pygame.Rect(WIDTH//2-175, HEIGHT//2-195, 350, 390), (50,50,50))
+    
+    draw_text_center("Ball Shop", F_L, WHITE, WIDTH//2, HEIGHT//2 - 170)
+    draw_text_center("(100 Coins each)", F_S, YELLOW, WIDTH//2, HEIGHT//2 - 140)
+    
+    for i,(b,color) in enumerate(shop_balls.items()):
+        btn = pygame.Rect(WIDTH//2-140, HEIGHT//2 - 100 + i*100, 280, 70)
+        
+        # خلفية الزر بلون الكرة
+        draw_rounded_rect(btn, color)
+        
+        # إطار الزر
+        draw_rounded_rect(btn, WHITE, 15)
+        pygame.draw.rect(screen, color, (btn.x+2, btn.y+2, btn.w-4, btn.h-4), border_radius=13)
+        
+        if purchased_balls[b]:
+            status = "✓"
+            status_color = GREEN
+        else:
+            status = "✗"
+            status_color = RED
+            
+        draw_text_center(f"{b} Ball", F_M, WHITE, btn.centerx-40, btn.centery)
+        draw_text_center("(100)", F_S, YELLOW, btn.centerx+40, btn.centery)
+        draw_text_center(status, F_M, status_color, btn.centerx+100, btn.centery)
+        
+    pygame.display.flip()
+
+# حلقة اللعبة
+while running:
+    dt = clock.tick(FPS)/30
+    mx,my = pygame.mouse.get_pos()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            save_game()
+            running=False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                save_game()
+                running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if in_intro_screen:
+                if GO_BTN.collidepoint((mx,my)):
+                    in_intro_screen = False
+                    if button_click_sound: button_click_sound.play()
+            elif game_over:
+                reset_game()
+                if button_click_sound: button_click_sound.play()
+            elif world_visible:
+                clicked_outside = True
+                for i,(w,color) in enumerate(worlds.items()):
+                    btn = pygame.Rect(WIDTH//2-140, HEIGHT//2 - 140 + i*120, 280, 80)
+                    if btn.collidepoint((mx,my)):
+                        clicked_outside = False
+                        if coins >= world_prices[w] or w=="Normal":
+                            if w != "Normal":
+                                coins -= world_prices[w]
+                            purchased_worlds[w] = True
+                            world_visible = False
+                            current_world = w
+                            if world_change_sound: world_change_sound.play()
+                        elif w=="Normal":
+                            current_world = "Normal"
+                            world_visible = False
+                            if world_change_sound: world_change_sound.play()
+                if clicked_outside: world_visible=False
+            elif shui_visible:
+                clicked_outside = True
+                for i,(b,color) in enumerate(shop_balls.items()):
+                    btn = pygame.Rect(WIDTH//2-140, HEIGHT//2 - 100 + i*100, 280, 70)
+                    if btn.collidepoint((mx,my)) and coins>=shop_prices[b]:
+                        clicked_outside=False
+                        coins-=shop_prices[b]
+                        purchased_balls[b]=True
+                        balloon_color = color
+                        shui_visible=False
+                        if coin_sound: coin_sound.play()
+                if clicked_outside: shui_visible=False
+            else:
+                if SETTINGS_BTN.collidepoint((mx,my)):
+                    settings_visible = not settings_visible
+                    if button_click_sound: button_click_sound.play()
+                elif WORLD_BTN.collidepoint((mx,my)):
+                    world_visible = True
+                    if button_click_sound: button_click_sound.play()
+                elif SHOP_BTN.collidepoint((mx,my)):
+                    shui_visible = True
+                    if button_click_sound: button_click_sound.play()
+                elif settings_visible:
+                    if RESET_BTN.collidepoint((mx,my)):
+                        reset_game()
+                        settings_visible=False
+                        if button_click_sound: button_click_sound.play()
+                    elif SPEED_BTN.collidepoint((mx,my)):
+                        current_speed_index = (current_speed_index + 1) % len(speed_levels)
+                        speed_mul = speed_levels[current_speed_index]
+                        if button_click_sound: button_click_sound.play()
+
+        elif event.type == pygame.MOUSEMOTION:
+            if not in_intro_screen and not game_over and not settings_visible and not world_visible and not shui_visible:
+                balloon_rect.centerx = mx
+                balloon_rect.centery = my
+
+    if in_intro_screen:
+        intro_screen_draw()
+        continue
+
+    if not game_over and not settings_visible and not world_visible and not shui_visible:
+        # زيادة المسافة والسرعة
+        distance += speed_mul / 100
+        speed_mul += 0.001  # زيادة صغيرة في السرعة مع الوقت
+        
+        spawn_objects()
+        spawn_environment()
+        update_environment()
+        
+        for s in spikes[:]:
+            s.y+=4*speed_mul/10
+            if balloon_rect.colliderect(s) and not shield:
+                game_over=True
+                if hit_sound: hit_sound.play()
+            if s.y>HEIGHT: spikes.remove(s)
+        for c in coins_list[:]:
+            c.y+=3*speed_mul/10
+            if balloon_rect.colliderect(c):
+                coins+=1
+                if coin_sound: coin_sound.play()
+                coins_list.remove(c)
+            elif c.y>HEIGHT: coins_list.remove(c)
+        for r in rainbows[:]:
+            r.y+=2*speed_mul/10
+            if balloon_rect.colliderect(r):
+                shield=True
+                shield_end=time.time()+5
+                coins+=5
+                if rainbow_sound: rainbow_sound.play()
+                rainbows.remove(r)
+            elif r.y>HEIGHT: rainbows.remove(r)
+        if shield and time.time()>shield_end:
+            shield=False
+
+    # رسم كل شيء
+    screen.fill(worlds.get(current_world,GRAY))
+    
+    # رسم العناصر البيئية
+    draw_environment()
+    
+    if not game_over:
+        draw_objects()
+        
+        # رسم البالون مع درع إذا كان نشط
+        if shield:
+            pygame.draw.ellipse(screen, RAINBOW, balloon_rect)
+            pygame.draw.ellipse(screen, balloon_color, 
+                               (balloon_rect.x+5, balloon_rect.y+5, 
+                                balloon_rect.w-10, balloon_rect.h-10))
+        else:
+            pygame.draw.ellipse(screen, balloon_color, balloon_rect)
+        
+        # عداد الكوينز والسرعة والمسافة في أعلى الشاشة (أبعد قليلاً)
+        screen.blit(F_S.render(f"Coins: {coins}", True, YELLOW), (10, 10))
+        screen.blit(F_XS.render(f"Speed: {int(speed_mul)}", True, GREEN), (10, 140))
+        screen.blit(F_XS.render(f"Distance: {int(distance)}", True, BLUE), (10, 170))
+        
+        # الأزرار تحت عداد الكوينز مباشرة
+        draw_rounded_rect(SETTINGS_BTN, GREEN)
+        draw_text_center("Settings", F_XS, WHITE, SETTINGS_BTN.centerx, SETTINGS_BTN.centery)
+        
+        draw_rounded_rect(WORLD_BTN, BLUE)
+        draw_text_center("World", F_XS, WHITE, WORLD_BTN.centerx, WORLD_BTN.centery)
+        
+        draw_rounded_rect(SHOP_BTN, YELLOW)
+        draw_text_center("Shop", F_XS, WHITE, SHOP_BTN.centerx, SHOP_BTN.centery)
+        
+        if settings_visible:
+            # خلفية الإعدادات
+            settings_bg = pygame.Rect(WIDTH//2-150, HEIGHT//2-120, 300, 240)
+            draw_rounded_rect(settings_bg, DARK_GRAY)
+            draw_rounded_rect(pygame.Rect(WIDTH//2-145, HEIGHT//2-115, 290, 230), (50,50,50))
+            
+            draw_rounded_rect(RESET_BTN, RED)
+            draw_text_center("Reset Game", F_M, WHITE, RESET_BTN.centerx, RESET_BTN.centery)
+            
+            draw_rounded_rect(SPEED_BTN, GREEN)
+            draw_text_center(f"Speed: {speed_levels[current_speed_index]}", F_M, WHITE, SPEED_BTN.centerx, SPEED_BTN.centery)
+            
+        if world_visible:
+            draw_world_overlay()
+        if shui_visible:
+            draw_shop_overlay()
+            
+    if game_over:
+        # خلفية نهاية اللعبة في وسط الشاشة
+        game_over_bg = pygame.Rect(WIDTH//2-150, HEIGHT//2-60, 300, 120)
+        draw_rounded_rect(game_over_bg, DARK_GRAY)
+        draw_rounded_rect(pygame.Rect(WIDTH//2-145, HEIGHT//2-55, 290, 110), (50,50,50))
+        
+        draw_text_center("Game Over!", F_L, RED, WIDTH//2, HEIGHT//2-30)
+        draw_text_center("Tap to restart", F_S, WHITE, WIDTH//2, HEIGHT//2+20)
+        
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()
