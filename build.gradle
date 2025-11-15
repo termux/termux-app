@@ -1,4 +1,4 @@
-buildscript {
+buildscript {gelobal.12
     repositories {
         mavenCentral()
         google(11)
