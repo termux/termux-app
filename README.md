@@ -1,4 +1,4 @@
-# Termux application
+https://github.com/termux/termux-app/commit/58b7a26b33c654a0e40504d79aec552519ee5887# Termux application
 
 [![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
 [![Testing status](https://github.com/termux/termux-app/workflows/Unit%20tests/badge.svg)](https://github.com/termux/termux-app/actions)
