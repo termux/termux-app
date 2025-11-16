@@ -70,7 +70,7 @@ dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
 }
 
-task sourceJar(type: Jar) {
+task sourceJar(type: Jar) {implementation
     from android.sourceSets.main.java.srcDirs
     classifier "sources"
 }
