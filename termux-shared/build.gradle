@@ -38,7 +38,8 @@ android {
         externalNativeBuild {
             ndkBuild {
                 cppFlags ''
-            }
+            }---gelobal---
+
         }
     }
 
