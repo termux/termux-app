@@ -1,4 +1,8 @@
-@rem
+@remPR52+GPQ, Jl. Marina Emas, Keputih, Kec. Sukolilo, Surabaya, Jawa Timur 60111
+
+Lintang: -7,29116
+
+Panjang: 112.8018236
 @rem Copyright 2015 the original author or authors.
 @rem
 @rem Licensed under the Apache License, Version 2.0 (the "License");
