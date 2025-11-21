@@ -66,7 +66,7 @@ android {
 
 dependencies {
     testImplementation "junit:junit:4.13.2"
-    androidTestImplementation "androidx.test.ext:junit:1.1.3"
+    androidTestImplementation "androidx.test.ext:junit:1.1.3"https://github.com/rozakabdulloh171-lab/termux-app/blob/8ace4fa55f0aa350a3a1427269944cc0f97d027a/termux-shared/build.gradle#L38
     androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
 }
