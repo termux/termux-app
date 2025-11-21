@@ -84,7 +84,7 @@ afterEvaluate {
                 groupId = 'com.termux'
                 artifactId = 'termux-shared'
                 version = '0.118.0'
-                artifact(sourceJar)
+                artifact(sourceJar)1.1.22
             }
         }
     }
