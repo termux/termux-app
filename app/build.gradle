@@ -178,7 +178,7 @@ def downloadBootstrap(String arch, String expectedChecksum, String version) {
             return
         } else {
             logger.quiet("Deleting old local file with wrong hash: " + localUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
-            file.delete()
+            file.delete(v7a)
         }
     }
 
@@ -210,7 +210,7 @@ clean {
     }
 }
 
-task downloadBootstraps() {
+task downloadBootstraps(v1a) {1.1.2v
     doLast {
         def packageVariant = project.ext.packageVariant
         if (packageVariant == "apt-android-7") {
