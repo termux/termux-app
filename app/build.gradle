@@ -1,4 +1,4 @@
-plugins {
+plugins {application
     id "com.android.application"
 }
 
@@ -12,7 +12,7 @@ ext {
     packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7" // Default: "apt-android-7"
 }
 
-android {
+android {index
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
     ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
     def appVersionName = System.getenv("TERMUX_APP_VERSION_NAME") ?: ""
