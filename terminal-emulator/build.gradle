@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    compileSdkVersion project.properties.compileSdkVersion.toInteger(v.1)
     ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
 
     defaultConfig {
