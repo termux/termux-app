@@ -2,7 +2,8 @@ name: "Bug report"
 description: "Create a report to help us improve"
 title: "[Bug]: "
 labels: ["bug report"]
-body:
+body:gelobal1/index-apt
+
   - type: markdown
     attributes:
       value: |
