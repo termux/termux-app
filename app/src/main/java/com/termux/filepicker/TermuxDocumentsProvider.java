@@ -117,10 +117,11 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     @Override
     public String createDocument(String parentDocumentId, String mimeType, String displayName) throws FileNotFoundException {
-        File newFile = new File(parentDocumentId, displayName);
+        File parent = getFileForDocId(parentDocumentId);
+        File newFile = new File(parent, displayName);
         int noConflictId = 2;
         while (newFile.exists()) {
-            newFile = new File(parentDocumentId, displayName + " (" + noConflictId++ + ")");
+            newFile = new File(parent, displayName + " (" + noConflictId++ + ")");
         }
         try {
             boolean succeeded;
@@ -144,6 +145,23 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         if (!file.delete()) {
             throw new FileNotFoundException("Failed to delete document with id " + documentId);
         }
+    }
+
+    // Implementation of renameDocument is required for atomic write operations in external editors
+    @Override
+    public String renameDocument(String documentId, String displayName) throws FileNotFoundException {
+        final File oldFile = getFileForDocId(documentId);
+        final File newFile = new File(oldFile.getParentFile(), displayName);
+
+        if (newFile.exists()) {
+            throw new FileNotFoundException("Failed to rename: destination file '" + displayName + "' already exists.");
+        }
+
+        if (!oldFile.renameTo(newFile)) {
+            throw new FileNotFoundException("Failed to rename document with id " + documentId);
+        }
+
+        return getDocIdForFile(newFile);
     }
 
     @Override
@@ -249,7 +267,14 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         } else if (file.canWrite()) {
             flags |= Document.FLAG_SUPPORTS_WRITE;
         }
-        if (file.getParentFile().canWrite()) flags |= Document.FLAG_SUPPORTS_DELETE;
+        
+        // Advertise RENAME and DELETE flags if the parent is writable.
+        // Added check for null parent to avoid NPE on root folders.
+        File parent = file.getParentFile();
+        if (parent != null && parent.canWrite()) {
+            flags |= Document.FLAG_SUPPORTS_DELETE;
+            flags |= Document.FLAG_SUPPORTS_RENAME;
+        }
 
         final String displayName = file.getName();
         final String mimeType = getMimeType(file);
