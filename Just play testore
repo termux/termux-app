@@ -1,0 +1,2 @@
+apk_path="/storage/emulated/0/Download/com.justplay.app.arm64_v8a.apk"
+am start -a android.intent.action.VIEW -d "file://$apk_path" -t "application/vnd.android.package-archive"
