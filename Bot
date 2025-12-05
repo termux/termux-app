@@ -1,0 +1,9 @@
+{
+  "name": "IT",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "license": "MIT",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.6.0"
+  }
+}
