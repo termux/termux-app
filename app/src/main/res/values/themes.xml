@@ -40,10 +40,10 @@
         <item name="termuxActivityDrawerImageTint">@color/black</item>
 
         <!-- Extra keys colors. -->
-        <item name="extraKeysButtonTextColor">@color/white</item>
-        <item name="extraKeysButtonActiveTextColor">@color/red_400</item>
-        <item name="extraKeysButtonBackgroundColor">@color/black</item>
-        <item name="extraKeysButtonActiveBackgroundColor">@color/grey_500</item>
+        <item name="extraKeysButtonTextColor">@color/mocha_text</item>
+        <item name="extraKeysButtonActiveTextColor">@color/mocha_text_active</item>
+        <item name="extraKeysButtonBackgroundColor">@color/mocha_bg</item>
+        <item name="extraKeysButtonActiveBackgroundColor">@color/mocha_bg_active</item>
     </style>
 
 </resources>
