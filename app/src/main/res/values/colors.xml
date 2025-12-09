@@ -1,3 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="mocha_text">#89b4fa</color>
+	<color name="mocha_text_active">#f38ba8</color>
+	<color name="mocha_bg">#1e1e2e</color>
+	<color name="mocha_bg_active">#313244</color>
 </resources>
