@@ -56,8 +56,18 @@ import com.termux.shared.theme.NightMode;
 import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
+import android.content.res.AssetManager;
+import android.system.ErrnoException;
+import android.system.Os;
+
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -277,6 +287,52 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
+
+        setupArchMux();
+    }
+
+    private void setupArchMux() {
+        File setupFlag = new File(getFilesDir(), ".archmux_setup_done");
+        if (setupFlag.exists()) {
+            return;
+        }
+
+        try {
+            File archmuxDir = new File(getFilesDir(), ".archmux");
+            if (!archmuxDir.exists()) {
+                archmuxDir.mkdirs();
+            }
+
+            AssetManager assetManager = getAssets();
+            String[] files = {"install-arch.sh", "launch-arch.sh", "gui-arch.sh"};
+            for (String filename : files) {
+                File scriptFile = new File(archmuxDir, filename);
+                try (InputStream in = assetManager.open("scripts/" + filename);
+                     OutputStream out = new FileOutputStream(scriptFile)) {
+                    byte[] buffer = new byte[1024];
+                    int read;
+                    while ((read = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, read);
+                    }
+                }
+                scriptFile.setExecutable(true);
+            }
+
+            File binDir = new File(TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
+
+            File installArchLink = new File(binDir, "arch-install");
+            Os.symlink(new File(archmuxDir, "install-arch.sh").getAbsolutePath(), installArchLink.getAbsolutePath());
+
+            File archLink = new File(binDir, "arch");
+            Os.symlink(new File(archmuxDir, "launch-arch.sh").getAbsolutePath(), archLink.getAbsolutePath());
+
+            File guiArchLink = new File(binDir, "arch-gui");
+            Os.symlink(new File(archmuxDir, "gui-arch.sh").getAbsolutePath(), guiArchLink.getAbsolutePath());
+
+            setupFlag.createNewFile();
+        } catch (IOException | ErrnoException e) {
+            Logger.logStackTraceWithMessage(LOG_TAG, "Error setting up ArchMux", e);
+        }
     }
 
     @Override

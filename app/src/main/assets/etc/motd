@@ -1,0 +1,22 @@
+Welcome to ArchMux!
+
+Docs:       https://likhonsheikh404.github.io/archmux-app/docs
+Donate:     https://likhonsheikh404.github.io/donate
+Community:  https://likhonsheikh404.github.io/community
+
+Quick start:
+ - Install Arch Linux: arch-install
+ - Launch Arch Linux:  arch
+ - Launch GUI:         arch-gui
+
+Working with packages:
+ - Search:  apt search <query>
+ - Install: apt install <package>
+ - Upgrade: apt upgrade
+
+Repositories:
+ - Root: apt install root-repo
+ - X11:  apt install x11-repo
+
+Report issues:
+https://likhonsheikh404.github.io/issues
