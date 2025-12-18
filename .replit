@@ -1,0 +1,6 @@
+modules = ["java-graalvm22.3", "cpp-clang14", "c-clang14", "bash"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
