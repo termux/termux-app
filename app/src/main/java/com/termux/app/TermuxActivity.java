@@ -226,6 +226,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setMargins();
 
+        setEditSessionButtonView();
+
         mTermuxActivityRootView = findViewById(R.id.activity_termux_root_view);
         mTermuxActivityRootView.setActivity(this);
         mTermuxActivityBottomSpaceView = findViewById(R.id.activity_termux_bottom_space_view);
@@ -562,6 +564,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
 
+
+    private void setEditSessionButtonView() {
+        ImageButton editSessionButton = findViewById(R.id.edit_session_button);
+        editSessionButton.setOnClickListener(v -> {
+            TerminalSession currentSession = getCurrentSession();
+            if (currentSession != null) {
+                mTermuxTerminalSessionActivityClient.renameSession(currentSession);
+            }
+        });
+    }
 
     private void setSettingsButtonView() {
         ImageButton settingsButton = findViewById(R.id.settings_button);

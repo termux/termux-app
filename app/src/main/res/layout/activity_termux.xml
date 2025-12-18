@@ -50,6 +50,14 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
                     <ImageButton
+                        android:id="@+id/edit_session_button"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_settings"
+                        android:background="@null"
+                        android:contentDescription="@string/action_edit_session"
+                        app:tint="?attr/termuxActivityDrawerImageTint" />
+                    <ImageButton
                         android:id="@+id/settings_button"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
