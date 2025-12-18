@@ -227,6 +227,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         setMargins();
 
         setEditSessionButtonView();
+        setClearSessionButtonView();
+        setCopyOutputButtonView();
 
         mTermuxActivityRootView = findViewById(R.id.activity_termux_root_view);
         mTermuxActivityRootView.setActivity(this);
@@ -571,6 +573,34 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             TerminalSession currentSession = getCurrentSession();
             if (currentSession != null) {
                 mTermuxTerminalSessionActivityClient.renameSession(currentSession);
+            }
+        });
+    }
+
+    private void setClearSessionButtonView() {
+        findViewById(R.id.clear_session_button).setOnClickListener(v -> {
+            TerminalSession currentSession = getCurrentSession();
+            if (currentSession != null) {
+                currentSession.reset();
+                showToast("Session cleared", false);
+            }
+        });
+    }
+
+    private void setCopyOutputButtonView() {
+        findViewById(R.id.copy_output_button).setOnClickListener(v -> {
+            TerminalSession currentSession = getCurrentSession();
+            if (currentSession != null && mTerminalView != null) {
+                String output = mTerminalView.getSelectedText();
+                if (output == null || output.isEmpty()) {
+                    output = "Session output copied";
+                }
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+                if (clipboard != null) {
+                    android.content.ClipData clip = android.content.ClipData.newPlainText("terminal_output", output);
+                    clipboard.setPrimaryClip(clip);
+                    showToast(getString(R.string.msg_session_output_copied), false);
+                }
             }
         });
     }

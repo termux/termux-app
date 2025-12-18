@@ -50,6 +50,10 @@
     <string name="title_rename_session">Set session name</string>
     <string name="action_rename_session_confirm">Set</string>
     <string name="action_edit_session">Edit</string>
+    <string name="action_duplicate_session">Duplicate</string>
+    <string name="action_clear_session">Clear</string>
+    <string name="action_copy_session_output">Copy Output</string>
+    <string name="msg_session_output_copied">Session output copied to clipboard</string>
     <string name="title_create_named_session">New named session</string>
     <string name="action_create_named_session_confirm">Create</string>
 
