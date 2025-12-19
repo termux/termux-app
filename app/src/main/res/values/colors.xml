@@ -1,3 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="ios_light_bg">#FFFFFF</color>
+    <color name="ios_light_selected">#E8E8E8</color>
+    <color name="ios_dark_bg">#1E1E1E</color>
+    <color name="ios_dark_selected">#2A2A2A</color>
+    <color name="ios_text_light">#000000</color>
+    <color name="ios_text_dark">#FFFFFF</color>
 </resources>

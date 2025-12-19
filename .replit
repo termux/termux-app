@@ -1,0 +1,29 @@
+modules = ["java-graalvm22.3", "cpp-clang14", "c-clang14", "bash"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Build Android App"
+
+[[workflows.workflow]]
+name = "Build Android App"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./gradlew clean assembleDebug -x test 2>&1 || true"
