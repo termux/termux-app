@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -241,6 +242,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
+        // Disable edge swipe gesture to avoid conflict with Android system back gesture.
+        // Users can open the drawer via toolbar button or DRAWER extra key instead.
+        DrawerLayout drawer = getDrawer();
+        if (drawer != null) {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        }
+        setupDrawerListener();
+
         setTermuxTerminalViewAndClients();
 
         setTerminalToolbarView(savedInstanceState);
@@ -250,6 +259,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         setNewSessionButtonView();
 
         setToggleKeyboardView();
+
+        setSessionsButtonView();
 
         registerForContextMenu(mTerminalView);
 
@@ -341,7 +352,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         removeTermuxActivityRootViewGlobalLayoutListener();
 
         unregisterTermuxActivityBroadcastReceiver();
-        getDrawer().closeDrawers();
+        closeSessionsDrawer();
     }
 
     @Override
@@ -512,9 +523,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
 
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        final LinearLayout toolbarContainer = getTerminalToolbarContainer();
+        if (mPreferences.shouldShowTerminalToolbar() && toolbarContainer != null) {
+            toolbarContainer.setVisibility(View.VISIBLE);
+        }
 
-        ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
+        // Get default height from container since ViewPager is now match_parent
+        ViewGroup.LayoutParams layoutParams = toolbarContainer.getLayoutParams();
         mTerminalToolbarDefaultHeight = layoutParams.height;
 
         setTerminalToolbarHeight();
@@ -529,22 +544,26 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void setTerminalToolbarHeight() {
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (terminalToolbarViewPager == null) return;
+        final LinearLayout toolbarContainer = getTerminalToolbarContainer();
+        if (terminalToolbarViewPager == null || toolbarContainer == null) return;
 
-        ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
-        layoutParams.height = Math.round(mTerminalToolbarDefaultHeight *
+        int newHeight = Math.round(mTerminalToolbarDefaultHeight *
             (mTermuxTerminalExtraKeys.getExtraKeysInfo() == null ? 0 : mTermuxTerminalExtraKeys.getExtraKeysInfo().getMatrix().length) *
             mProperties.getTerminalToolbarHeightScaleFactor());
-        terminalToolbarViewPager.setLayoutParams(layoutParams);
+
+        // Update container height
+        ViewGroup.LayoutParams containerLayoutParams = toolbarContainer.getLayoutParams();
+        containerLayoutParams.height = newHeight;
+        toolbarContainer.setLayoutParams(containerLayoutParams);
     }
 
     public void toggleTerminalToolbar() {
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (terminalToolbarViewPager == null) return;
+        final LinearLayout toolbarContainer = getTerminalToolbarContainer();
+        if (toolbarContainer == null) return;
 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
-        terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
+        toolbarContainer.setVisibility(showNow ? View.VISIBLE : View.GONE);
         if (showNow && isTerminalToolbarTextInputViewSelected()) {
             // Focus the text input view if just revealed.
             findViewById(R.id.terminal_toolbar_text_input).requestFocus();
@@ -585,13 +604,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private void setToggleKeyboardView() {
         findViewById(R.id.toggle_keyboard_button).setOnClickListener(v -> {
             mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
-            getDrawer().closeDrawers();
+            closeSessionsDrawer();
         });
 
         findViewById(R.id.toggle_keyboard_button).setOnLongClickListener(v -> {
             toggleTerminalToolbar();
             return true;
         });
+    }
+
+    private void setSessionsButtonView() {
+        findViewById(R.id.sessions_button).setOnClickListener(v -> toggleSessionsDrawer());
     }
 
 
@@ -601,8 +624,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @SuppressLint("RtlHardcoded")
     @Override
     public void onBackPressed() {
-        if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
-            getDrawer().closeDrawers();
+        DrawerLayout drawer = getDrawer();
+        if (drawer != null && drawer.isDrawerOpen(Gravity.LEFT)) {
+            closeSessionsDrawer();
         } else {
             finishActivityIfNotFinishing();
         }
@@ -837,9 +861,59 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return (DrawerLayout) findViewById(R.id.drawer_layout);
     }
 
+    /**
+     * Toggle the sessions drawer. This temporarily unlocks the drawer to allow
+     * programmatic open/close since edge swipe is disabled.
+     */
+    @SuppressLint("RtlHardcoded")
+    public void toggleSessionsDrawer() {
+        DrawerLayout drawer = getDrawer();
+        if (drawer == null) return;
+
+        // Temporarily unlock to allow programmatic control
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+
+        if (drawer.isDrawerOpen(Gravity.LEFT)) {
+            drawer.closeDrawer(Gravity.LEFT);
+        } else {
+            drawer.openDrawer(Gravity.LEFT);
+        }
+    }
+
+    /**
+     * Close the sessions drawer and re-lock it.
+     */
+    @SuppressLint("RtlHardcoded")
+    public void closeSessionsDrawer() {
+        DrawerLayout drawer = getDrawer();
+        if (drawer == null) return;
+
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        drawer.closeDrawer(Gravity.LEFT);
+    }
+
+    /**
+     * Setup drawer listener to re-lock when closed.
+     */
+    private void setupDrawerListener() {
+        DrawerLayout drawer = getDrawer();
+        if (drawer == null) return;
+
+        drawer.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                // Re-lock drawer when closed to prevent edge swipe
+                drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            }
+        });
+    }
 
     public ViewPager getTerminalToolbarViewPager() {
         return (ViewPager) findViewById(R.id.terminal_toolbar_view_pager);
+    }
+
+    public LinearLayout getTerminalToolbarContainer() {
+        return findViewById(R.id.terminal_toolbar_container);
     }
 
     public float getTerminalToolbarDefaultHeight() {

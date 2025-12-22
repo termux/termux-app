@@ -20,7 +20,7 @@
             android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
             android:layout_alignParentTop="true"
-            android:layout_above="@+id/terminal_toolbar_view_pager"
+            android:layout_above="@+id/terminal_toolbar_container"
             android:layout_height="match_parent">
 
             <com.termux.view.TerminalView
@@ -94,13 +94,34 @@
 
         </androidx.drawerlayout.widget.DrawerLayout>
 
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/terminal_toolbar_view_pager"
+        <LinearLayout
+            android:id="@+id/terminal_toolbar_container"
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="37.5dp"
             android:background="@color/black"
-            android:layout_alignParentBottom="true" />
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/sessions_button"
+                android:layout_width="12dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_menu"
+                android:background="@drawable/extra_key_button_background"
+                android:contentDescription="@string/action_open_sessions"
+                android:scaleType="centerInside"
+                android:padding="0dp"
+                app:tint="#888888" />
+
+            <androidx.viewpager.widget.ViewPager
+                android:id="@+id/terminal_toolbar_view_pager"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 
