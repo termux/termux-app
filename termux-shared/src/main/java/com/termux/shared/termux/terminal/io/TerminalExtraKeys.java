@@ -26,6 +26,10 @@ public class TerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
 
     @Override
     public void onExtraKeyButtonClick(View view, ExtraKeyButton buttonInfo, MaterialButton button) {
+        // Ensure TerminalView has focus so that the keyboard input goes to it,
+        // and so that the keyboard remains open if it was already open.
+        mTerminalView.requestFocus();
+
         if (buttonInfo.isMacro()) {
             String[] keys = buttonInfo.getKey().split(" ");
             boolean ctrlDown = false;

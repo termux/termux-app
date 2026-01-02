@@ -26,16 +26,20 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Scroller;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.view.ViewCompat;
 
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
@@ -124,6 +128,13 @@ public final class TerminalView extends View {
     private String[] mAutoFillHints = new String[0];
 
     private final boolean mAccessibilityEnabled;
+
+    private String mLastScreenAccessibilityText = "";
+    private int mLastCursorRow = -1;
+    private int mLastCursorCol = -1;
+    private String mLastAnnouncedText = "";
+    private boolean mPendingBackspace = false;
+    private final TerminalAccessibilityHelper mAccessibilityHelper;
 
     /** The {@link KeyEvent} is generated from a virtual keyboard, like manually with the {@link KeyEvent#KeyEvent(int, int)} constructor. */
     public final static int KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD = KeyCharacterMap.VIRTUAL_KEYBOARD; // -1
@@ -259,6 +270,9 @@ public final class TerminalView extends View {
         mScroller = new Scroller(context);
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mAccessibilityEnabled = am.isEnabled();
+        
+        mAccessibilityHelper = new TerminalAccessibilityHelper(this);
+        ViewCompat.setAccessibilityDelegate(this, mAccessibilityHelper);
     }
 
 
@@ -310,7 +324,14 @@ public final class TerminalView extends View {
         // initially started with the alternate view or if activity is returned to from another app
         // and the alternate view was the one selected the last time.
         if (mClient.isTerminalViewSelected()) {
-            if (mClient.shouldEnforceCharBasedInput()) {
+            if (mAccessibilityEnabled) {
+                // If accessibility is enabled, we force a standard text type so services like
+                // TalkBack Braille Keyboard recognize it as a valid editor.
+                // We use VISIBLE_PASSWORD to disable auto-correct/composition on Gboard.
+                // We add MULTI_LINE to ensure Braille Keyboard enables the Return key.
+                outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+                outAttrs.imeOptions = EditorInfo.IME_ACTION_NONE | EditorInfo.IME_FLAG_NO_FULLSCREEN;
+            } else if (mClient.shouldEnforceCharBasedInput()) {
                 // Some keyboards seems do not reset the internal state on TYPE_NULL.
                 // Affects mostly Samsung stock keyboards.
                 // https://github.com/termux/termux-app/issues/686
@@ -334,9 +355,12 @@ public final class TerminalView extends View {
             outAttrs.inputType =  InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL;
         }
 
-        // Note that IME_ACTION_NONE cannot be used as that makes it impossible to input newlines using the on-screen
-        // keyboard on Android TV (see https://github.com/termux/termux-app/issues/221).
-        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
+        if (!mAccessibilityEnabled) {
+            // Note that IME_ACTION_NONE cannot be used as that makes it impossible to input newlines using the on-screen
+            // keyboard on Android TV (see https://github.com/termux/termux-app/issues/221).
+            // We only apply this check if NOT in accessibility mode, as accessibility needs explicit actions.
+            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
+        }
 
         return new BaseInputConnection(this, true) {
 
@@ -367,6 +391,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean deleteSurroundingText(int leftLength, int rightLength) {
+                mPendingBackspace = true;
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
                     mClient.logInfo(LOG_TAG, "IME: deleteSurroundingText(" + leftLength + ", " + rightLength + ")");
                 }
@@ -454,6 +479,104 @@ public final class TerminalView extends View {
         onScreenUpdated(false);
     }
 
+    private final Runnable mAccessibilityBufferRunnable = () -> {
+        if (mEmulator == null) return;
+        processAccessibilityEvent();
+    };
+
+    private void processAccessibilityEvent() {
+        String newText = getText().toString();
+        String oldText = mLastScreenAccessibilityText;
+        int newCursorRow = mEmulator.getCursorRow();
+        int newCursorCol = mEmulator.getCursorCol();
+
+        int oldLen = oldText.length();
+        int newLen = newText.length();
+        int minLen = Math.min(oldLen, newLen);
+
+        int commonPrefixLen = 0;
+        while (commonPrefixLen < minLen && oldText.charAt(commonPrefixLen) == newText.charAt(commonPrefixLen)) {
+            commonPrefixLen++;
+        }
+
+        int commonSuffixLen = 0;
+        while (commonSuffixLen < minLen - commonPrefixLen && 
+               oldText.charAt(oldLen - 1 - commonSuffixLen) == newText.charAt(newLen - 1 - commonSuffixLen)) {
+            commonSuffixLen++;
+        }
+
+        int addedLen = newLen - commonPrefixLen - commonSuffixLen;
+        int removedLen = oldLen - commonPrefixLen - commonSuffixLen;
+        
+        boolean isLargeDiff = addedLen > 50;
+        boolean isSmallCursorMove = false;
+        if (mLastCursorRow != -1) {
+            isSmallCursorMove = Math.abs(newCursorRow - mLastCursorRow) < 3;
+        }
+
+        boolean isScreenContentMaintained = false;
+        boolean isContentStatic = false;
+        if (isLargeDiff && oldLen > 100 && newLen > 100) {
+            int sampleLen = 50;
+            int start = Math.max(0, oldLen / 2 - sampleLen / 2);
+            int end = Math.min(oldLen, start + sampleLen);
+            if (end > start) {
+                 String sample = oldText.substring(start, end);
+                 int newIndex = newText.indexOf(sample);
+                 if (newIndex != -1) {
+                     isScreenContentMaintained = true;
+                     // Heuristic: If content moves significantly (> 100 chars), it's likely a scroll rather than jitter.
+                     isContentStatic = Math.abs(start - newIndex) < 100;
+                 }
+            }
+        }
+
+        if (isLargeDiff && isSmallCursorMove && isScreenContentMaintained && isContentStatic) {
+            announceCursorMovement(newCursorRow, newCursorCol);
+        } else if (addedLen > 0) {
+            String addedContent = newText.substring(commonPrefixLen, commonPrefixLen + addedLen);
+            
+            int cursorIndex = getCursorIndex();
+            boolean isOutputAfterCursor = commonPrefixLen > cursorIndex;
+            boolean isCursorMoved = newCursorRow != mLastCursorRow || newCursorCol != mLastCursorCol;
+
+            if (isOutputAfterCursor && isCursorMoved) {
+                 // Prioritize announcing the cursor position over background updates (e.g. status bar in Emacs).
+                 announceCursorMovement(newCursorRow, newCursorCol);
+            } else {
+                // Suppress single character additions to avoid double-speech with TalkBack's keyboard echo.
+                if (addedLen > 1 && !addedContent.trim().isEmpty()) {
+                    announceForAccessibility(sanitizeAccessibilityText(addedContent));
+                }
+            }
+        } else if (removedLen > 0) {
+            String removedContent = oldText.substring(commonPrefixLen, commonPrefixLen + removedLen);
+            if (removedContent.equals("\n")) removedContent = "New line";
+            else if (removedContent.equals(" ")) removedContent = "Space";
+            else if (removedContent.equals("\t")) removedContent = "Tab";
+            announceForAccessibility(sanitizeAccessibilityText(removedContent) + " deleted");
+        } else if (mPendingBackspace && removedLen == 0 && newCursorRow == mLastCursorRow && newCursorCol == mLastCursorCol - 1) {
+            announceForAccessibility("Space deleted");
+        } else if (newCursorRow != mLastCursorRow || newCursorCol != mLastCursorCol) {
+            announceCursorMovement(newCursorRow, newCursorCol);
+        }
+        
+        mPendingBackspace = false;
+        
+        // Notify IMM
+        if (newCursorRow != mLastCursorRow || newCursorCol != mLastCursorCol) {
+            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                int cursorIndex = getCursorIndex();
+                imm.updateSelection(this, cursorIndex, cursorIndex, -1, -1);
+            }
+        }
+
+        mLastScreenAccessibilityText = newText;
+        mLastCursorRow = newCursorRow;
+        mLastCursorCol = newCursorCol;
+    }
+
     public void onScreenUpdated(boolean skipScrolling) {
         if (mEmulator == null) return;
 
@@ -495,7 +618,96 @@ public final class TerminalView extends View {
         mEmulator.clearScrollCounter();
 
         invalidate();
-        if (mAccessibilityEnabled) setContentDescription(getText());
+        if (mAccessibilityEnabled) {
+            // Buffer all updates to handle complex output and debounce navigation/typing.
+            // This ensures consistent diffing logic and avoids race conditions or event conflicts.
+            getHandler().removeCallbacks(mAccessibilityBufferRunnable);
+            getHandler().postDelayed(mAccessibilityBufferRunnable, 100);
+        }
+    }
+
+    private void announceCursorMovement(int targetRow, int targetCol) {
+        // Simple immediate announcement, no delay needed here because buffering handles the delay
+        if (targetRow != mLastCursorRow) { // Note: mLastCursorRow here is the OLD state before processAccessibilityEvent updates it? 
+            // Wait, processAccessibilityEvent calls this BEFORE updating mLastCursorRow.
+            // So targetRow (new) != mLast (old). Correct.
+            // Fix: selY2 is inclusive, so we pass mTopRow + targetRow to select only that row.
+            String lineText = mEmulator.getScreen().getSelectedText(0, mTopRow + targetRow, mEmulator.mColumns, mTopRow + targetRow, false, false).trim();
+            if (lineText.isEmpty()) lineText = "Blank";
+            announceText(lineText);
+        } else {
+            // Fix: selY2 is inclusive. selX2 is also used to calculate limit (x2 = selX2 + 1).
+            // To get a single char at targetCol, we pass targetCol as both start and end X.
+            String charText = mEmulator.getScreen().getSelectedText(targetCol, mTopRow + targetRow, targetCol, mTopRow + targetRow, false, false);
+            if (charText.isEmpty() || charText.equals(" ")) charText = "Space";
+            announceText(charText);
+        }
+    }
+
+    private String sanitizeAccessibilityText(String text) {
+        if (text == null) return "";
+        // Sanitize for accessibility: Remove line continuation backslashes
+        text = text.replaceAll("\\\\\\n", "");
+        if (text.endsWith("\\")) {
+            text = text.substring(0, text.length() - 1);
+        }
+        return text;
+    }
+
+    private void announceText(String text) {
+        text = sanitizeAccessibilityText(text);
+
+        if (text.isEmpty() || text.equals(mLastAnnouncedText)) {
+            return;
+        }
+        mLastAnnouncedText = text;
+        announceForAccessibility(text);
+    }
+
+    private int getCursorIndex() {
+        if (mEmulator == null) return 0;
+        int rowStart = mTopRow;
+        int rowEnd = mTopRow + mEmulator.getCursorRow();
+        // Get text before the current line
+        String textBefore = mEmulator.getScreen().getSelectedText(0, rowStart, mEmulator.mColumns, rowEnd, true, true);
+        // Get text of the current line
+        String currentRowText = mEmulator.getScreen().getSelectedText(0, rowEnd, mEmulator.mColumns, rowEnd + 1, true, true);
+        
+        int colIndex = mEmulator.getCursorCol();
+        // Clamp column index to the length of the line representation
+        if (colIndex > currentRowText.length()) {
+            colIndex = currentRowText.length();
+        }
+        
+        return textBefore.length() + colIndex;
+    }
+
+    private String getAddedText(String oldText, String newText) {
+        // Keep helper for potential future use or debugging, though logic is now inline for events
+        if (oldText == null || oldText.isEmpty()) return newText;
+        if (newText == null || newText.isEmpty()) return "";
+        if (newText.equals(oldText)) return "";
+
+        int m = newText.length();
+        int[] pi = new int[m];
+        int k = 0;
+        for (int q = 1; q < m; q++) {
+            while (k > 0 && newText.charAt(k) != newText.charAt(q))
+                k = pi[k-1];
+            if (newText.charAt(k) == newText.charAt(q))
+                k++;
+            pi[q] = k;
+        }
+
+        int q = 0;
+        int n = oldText.length();
+        for (int i = 0; i < n; i++) {
+            while (q > 0 && (q == m || newText.charAt(q) != oldText.charAt(i)))
+                q = pi[q-1];
+            if (q < m && newText.charAt(q) == oldText.charAt(i))
+                q++;
+        }
+        return newText.substring(q);
     }
 
     /** This must be called by the hosting activity in {@link Activity#onContextMenuClosed(Menu)}
@@ -643,6 +855,25 @@ public final class TerminalView extends View {
     }
 
     @Override
+    public void sendAccessibilityEvent(int eventType) {
+        // Suppress WINDOW_CONTENT_CHANGED events to prevent TalkBack from automatically
+        // reading the entire screen when the content changes (e.g. status bar clock updates).
+        // We handle relevant updates manually via announceForAccessibility or TYPE_VIEW_TEXT_CHANGED.
+        if (eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            return;
+        }
+        super.sendAccessibilityEvent(eventType);
+    }
+
+    @Override
+    public boolean dispatchHoverEvent(MotionEvent event) {
+        if (mAccessibilityHelper != null && mAccessibilityHelper.dispatchHoverEvent(event)) {
+            return true;
+        }
+        return super.dispatchHoverEvent(event);
+    }
+
+    @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
             mClient.logInfo(LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
@@ -767,6 +998,7 @@ public final class TerminalView extends View {
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        mPendingBackspace = (keyCode == KeyEvent.KEYCODE_DEL);
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
             mClient.logInfo(LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
         if (mEmulator == null) return true;

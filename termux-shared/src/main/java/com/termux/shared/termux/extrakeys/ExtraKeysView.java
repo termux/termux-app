@@ -412,12 +412,20 @@ public final class ExtraKeysView extends GridLayout {
                 button.setText(buttonInfo.getDisplay());
                 button.setTextColor(mButtonTextColor);
                 button.setAllCaps(mButtonTextAllCaps);
+                
+                // Set accessible labels for extra keys (e.g. "Up" instead of emoji)
+                String contentDescription = getContentDescriptionForKey(buttonInfo.getKey());
+                if (contentDescription != null) {
+                    button.setContentDescription(contentDescription);
+                }
+                
                 button.setPadding(0, 0, 0, 0);
 
                 button.setOnClickListener(view -> {
                     performExtraKeyButtonHapticFeedback(view, buttonInfo, button);
                     onAnyExtraKeyButtonClick(view, buttonInfo, button);
                 });
+
 
                 button.setOnTouchListener((view, event) -> {
                     switch (event.getAction()) {
@@ -676,6 +684,39 @@ public final class ExtraKeysView extends GridLayout {
         for (Object[] row : matrix)
             m = Math.max(m, row.length);
         return m;
+    }
+
+    private String getContentDescriptionForKey(String key) {
+        if (key == null) return null;
+        switch (key) {
+            case "UP": return "Up";
+            case "DOWN": return "Down";
+            case "LEFT": return "Left";
+            case "RIGHT": return "Right";
+            case "ENTER": return "Enter";
+            case "BKSP": return "Backspace";
+            case "DEL": return "Delete";
+            case "TAB": return "Tab";
+            case "HOME": return "Home";
+            case "END": return "End";
+            case "PGUP": return "Page Up";
+            case "PGDN": return "Page Down";
+            case "ESC": return "Escape";
+            case "CTRL": return "Control";
+            case "ALT": return "Alt";
+            case "FN": return "Function";
+            case "DRAWER": return "Drawer";
+            case "KEYBOARD": return "Keyboard";
+            case "SPACE": return "Space";
+            case "PASTE": return "Paste";
+            case "SCROLL": return "Scroll";
+            case "-": return "Hyphen";
+            case "/": return "Slash";
+            case "APOSTROPHE": return "Apostrophe";
+            case "QUOTE": return "Quote";
+            case "BACKSLASH": return "Backslash";
+            default: return null;
+        }
     }
 
 }
