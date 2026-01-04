@@ -13,6 +13,7 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -60,7 +61,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     final TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
 
     /** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
-    boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
+    boolean mVirtualControlActive, mVirtualFnActive;
 
     private Runnable mShowSoftKeyboardRunnable;
 
@@ -309,20 +310,40 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             // Do not steal dedicated buttons from a full external keyboard.
             return false;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            mVirtualControlKeyDown = down;
+            if (down) {
+                mVirtualControlActive = !mVirtualControlActive;
+                announceAssertively(mVirtualControlActive ? "Control On" : "Control Off");
+            }
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            mVirtualFnKeyDown = down;
+            if (down) {
+                mVirtualFnActive = !mVirtualFnActive;
+                announceAssertively(mVirtualFnActive ? "Fn On" : "Fn Off");
+            }
             return true;
         }
         return false;
+    }
+
+    private void announceAssertively(String text) {
+        AccessibilityManager am = (AccessibilityManager) mActivity.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        if (am != null && am.isEnabled()) {
+            am.interrupt();
+        }
+        mActivity.getTerminalView().announceForAccessibility(text);
     }
 
 
 
     @Override
     public boolean readControlKey() {
-        return readExtraKeysSpecialButton(SpecialButton.CTRL) || mVirtualControlKeyDown;
+        if (readExtraKeysSpecialButton(SpecialButton.CTRL)) return true;
+        if (mVirtualControlActive) {
+            mVirtualControlActive = false;
+            announceAssertively("Control Off");
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -337,7 +358,13 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public boolean readFnKey() {
-        return readExtraKeysSpecialButton(SpecialButton.FN);
+        if (readExtraKeysSpecialButton(SpecialButton.FN)) return true;
+        if (mVirtualFnActive) {
+            mVirtualFnActive = false;
+            announceAssertively("Fn Off");
+            return true;
+        }
+        return false;
     }
 
     public boolean readExtraKeysSpecialButton(SpecialButton specialButton) {
@@ -359,7 +386,10 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public boolean onCodePoint(final int codePoint, boolean ctrlDown, TerminalSession session) {
-        if (mVirtualFnKeyDown) {
+        if (mVirtualFnActive) {
+            mVirtualFnActive = false;
+            announceAssertively("Fn Off");
+            
             int resultingKeyCode = -1;
             int resultingCodePoint = -1;
             boolean altDown = false;
@@ -448,7 +478,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 case 'q':
                 case 'k':
                     mActivity.toggleTerminalToolbar();
-                    mVirtualFnKeyDown=false; // force disable fn key down to restore keyboard input into terminal view, fixes termux/termux-app#1420
+                    // mVirtualFnActive=false; // Keep Manual Toggle
                     break;
             }
 
