@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
+    <!ENTITY TERMUX_APP_NAME "Termux">
+    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "Termux:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
+    <!ENTITY TERMUX_PREFIX_DIR_PATH "/data/data/com.termux/files/usr">
+    ]>
+
+<resources>
+
+    <string name="msg_directory_absolute_path">%1$s Ruta absoluta del directorio: \"%2$s\"</string>
+
+    <string name="error_app_not_installed_or_disabled_warning">La aplicación %1$s (%2$s) no está instalada o está deshabilitada.</string>
+    <string name="error_get_package_context_failed_title">Error al obtener el contexto del paquete</string>
+    <string name="error_get_package_context_failed_message">Error al obtener el contexto del paquete para \"%1$s\". 
+        Esto puede deberse a que el paquete de la aplicación no está instalado o tiene una firma APK diferente a la aplicación actual.</string>
+    <string name="error_get_package_context_failed_help_url_message">Consulta %1$s para más detalles.</string>
+    <string name="error_get_component_state_failed">Error al obtener el estado del componente %1$s/%2$s</string>
+    <string name="error_enable_component_failed">Error al habilitar el componente %1$s/%2$s</string>
+    <string name="error_disable_component_failed">Error al deshabilitar el componente %1$s/%2$s</string>
+
+    <string name="message_sudo_please_grant_permissions">Por favor, concede los permisos solicitados</string>
+    <string name="error_failed_to_request_permissions">Error al solicitar permisos con el código de solicitud %1$d: %2$s</string>
+    <string name="error_attempted_to_check_for_permissions_not_requested">Se intentó verificar permisos que no han sido solicitados en el manifiesto de la aplicación: %1$s</string>
+    <string name="error_attempted_to_ask_for_permissions_not_requested">Se intentó pedir permisos que no han sido solicitados en el manifiesto de la aplicación: %1$s</string>
+    <string name="error_has_not_requested_legacy_external_storage">El paquete \"%1$s\" tiene como objetivo targetSdkVersion %2$d y se ejecuta en Android SDK %3$d, pero no ha establecido requestLegacyExternalStorage como true en el manifiesto de la aplicación</string>
+    <string name="msg_requires_dump_and_package_usage_stats_permissions">Requiere los permisos `DUMP` y `PACKAGE_USAGE_STATS`</string>
+    <string name="error_display_over_other_apps_permission_not_granted">%1$s requiere el permiso
+        \"Mostrar sobre otras aplicaciones\" para iniciar actividades y servicios desde el fondo en Android >= 10.
+        Concédelo desde Ajustes de Android -> Aplicaciones -> %1$s -> Avanzado -> Mostrar sobre otras aplicaciones.
+        El nombre del permiso puede variar según el dispositivo; en Xiaomi se llama
+        \"Mostrar ventanas emergentes mientras se ejecuta en segundo plano\", consulta https://dontkillmyapp.com
+        para problemas específicos de dispositivos.</string>
+
+    <string name="error_allow_external_apps_ungranted">%1$s requiere que la propiedad `allow-external-apps`
+        esté establecida en `true` en el archivo `%2$s`.</string>
+
+    <string name="title_report_text">Texto del informe</string>
+    <string name="msg_report_truncated">**Informe truncado**\n\nEl informe es demasiado grande para verlo aquí.
+        Usa la opción `Guardar en archivo` del menú de opciones (3 puntos arriba a la derecha) y léelo en una aplicación externa de edición de texto.\n\n##\n\n</string>
+
+    <string name="title_share_with">Compartir con</string>
+    <string name="title_open_url_with">Abrir URL con</string>
+    <string name="msg_storage_permission_not_granted">No se ha concedido el permiso de almacenamiento.</string>
+    <string name="msg_file_saved_successfully">El archivo %1$s se guardó correctamente en \"%2$s\"</string>
+
+    <string name="error_sending_sigkill_to_process">Enviando SIGKILL al proceso por solicitud del usuario o porque Android está finalizando el servicio de ejecución</string>
+    <string name="error_executable_unset">Ejecutable no establecido \"%1$s\" para el comando de shell</string>
+    <string name="error_execution_cancelled">La ejecución ha sido cancelada debido a que el servicio de ejecución se está deteniendo</string>
+    <string name="error_failed_to_execute_termux_session_command">Error al ejecutar el comando de sesión de termux \"%1$s\"</string>
+    <string name="error_failed_to_execute_app_shell_command">Error al ejecutar el comando de shell de la app \"%1$s\"</string>
+    <string name="error_exception_received_while_executing_termux_session_command">Se recibió una excepción al ejecutar el comando de sesión de termux \"%1$s\".\nExcepción: %2$s</string>
+    <string name="error_exception_received_while_executing_app_shell_command">Se recibió una excepción al ejecutar el comando de shell de la app \"%1$s\".\nExcepción: %2$s</string>
+
+    <string name="msg_report_issue">
+        Si deseas informar sobre este problema, copia este texto desde el menú de opciones (3 puntos arriba a la derecha) y publica el reporte
+        en uno de los siguientes enlaces.
+        \n\nSi vas a publicar un informe de error (crash) de la app Termux, por favor proporciona detalles sobre lo que estabas haciendo
+        que causó el error y cómo reproducirlo, si es posible.
+        \n\nSi publicas el problema en GitHub, hazlo en el repositorio al que pertenece el informe.
+        Los reportes abiertos o correos enviados con **capturas de pantalla (parciales)** en lugar del texto copiado o el archivo de este informe
+        **probablemente serán cerrados o eliminados automáticamente**. Opcionalmente, puedes eliminar cualquier información específica del dispositivo
+        que consideres privada o que no sea relevante para el problema.
+        \n\nNo brindamos soporte para herramientas o scripts relacionados con el hacking. Cualquier pregunta sobre ellos por correo,
+        en GitHub u otros foros oficiales de la comunidad de Termux **probablemente será cerrada o eliminada automáticamente** e incluso
+        podría resultar en una expulsión **temporal o permanente**. Consulta %1$s/wiki/Hacking para más detalles.</string>
+
+    <string name="msg_termux_app_required_by_app">La aplicación &TERMUX_APP_NAME; es requerida por la aplicación %1$s para ejecutar comandos de termux.</string>
+    <string name="error_termux_app_package_context_not_accessible">El contexto del paquete de la aplicación &TERMUX_APP_NAME; no es accesible.</string>
+    <string name="error_termux_prefix_dir_path_not_accessible">El directorio $PREFIX de la aplicación &TERMUX_APP_NAME; no es accesible para la aplicación %1$s.
+        Esto puede deberse a que no has instalado o configurado la aplicación &TERMUX_APP_NAME;, o a que
+        &TERMUX_APP_NAME; y la aplicación %1$s tienen firmas APK diferentes porque se instalaron desde fuentes distintas.
+        También puede ser que el directorio $PREFIX de &TERMUX_APP_NAME; \"&TERMUX_PREFIX_DIR_PATH;\" no exista o no tenga permisos de lectura,
+        escritura y ejecución.</string>
+
+    <string name="action_yes">Sí</string>
+    <string name="action_no">No</string>
+    <string name="action_copy">Copiar</string>
+    <string name="action_share">Compartir</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_save_to_file">Guardar en archivo</string>
+
+    <string name="msg_storage_permission_granted_on_request">Permiso de almacenamiento concedido por el usuario</string>
+    <string name="msg_storage_permission_not_granted_on_request">Permiso de almacenamiento denegado por el usuario</string>
+
+    <string name="action_enable_launcher_icon">Habilitar icono de la aplicación</string>
+    <string name="action_disable_launcher_icon">Deshabilitar icono de la aplicación</string>
+    <string name="msg_enabling_launcher_icon">Habilitando el icono de la aplicación %1$s</string>
+    <string name="msg_disabling_launcher_icon">Deshabilitando el icono de la aplicación %1$s</string>
+    <string name="setting_launcher_icon_title">Icono de la aplicación habilitado</string>
+    <string name="setting_launcher_icon_enabled_off">El icono de la aplicación será deshabilitado.</string>
+    <string name="setting_launcher_icon_enabled_on">El icono de la aplicación será habilitado. (Predeterminado)</string>
+
+    <string name="log_level_title">Nivel de registro (Log)</string>
+    <string name="log_level_off">Desactivado</string>
+    <string name="log_level_normal">Normal</string>
+    <string name="log_level_debug">Debug</string>
+    <string name="log_level_verbose">Verbose</string>
+    <string name="log_level_unknown">*Desconocido*</string>
+    <string name="log_level_value">Nivel de Logcat establecido en \"%1$s\"</string>
+
+</resources>

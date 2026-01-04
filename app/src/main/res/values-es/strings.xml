@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
+    <!ENTITY TERMUX_APP_NAME "Termux">
+    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "Termux:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
+    ]>
+
+
+<resources>
+
+    <string name="application_name">&TERMUX_APP_NAME;</string>
+    <string name="shared_user_label">Usuario de &TERMUX_APP_NAME;</string>
+
+    <string name="permission_run_command_label">Ejecutar comandos en el entorno de &TERMUX_APP_NAME;</string>
+    <string name="permission_run_command_description">ejecutar comandos arbitrarios dentro del entorno de &TERMUX_APP_NAME; y acceder a archivos</string>
+
+    <string name="bootstrap_installer_body">Instalando paquetes de inicio (bootstrap)…</string>
+    <string name="bootstrap_error_title">No se pudo instalar el bootstrap</string>
+    <string name="bootstrap_error_body">&TERMUX_APP_NAME; no pudo instalar los paquetes de inicio.</string>
+    <string name="bootstrap_error_abort">Abortar</string>
+    <string name="bootstrap_error_try_again">Reintentar</string>
+    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; solo puede ejecutarse como el usuario principal.\nLos binarios del bootstrap compilados para &TERMUX_APP_NAME; tienen una ruta $PREFIX fija y no pueden instalarse en otra ruta que no sea:\n%1$s.</string>
+    <string name="bootstrap_error_installed_on_portable_sd">&TERMUX_APP_NAME; no puede instalarse en una tarjeta SD portátil/externa/extraíble.\nLos binarios del bootstrap compilados para &TERMUX_APP_NAME; tienen una ruta $PREFIX fija y no pueden instalarse en otra ruta que no sea:\n%1$s.</string>
+
+    <string name="action_new_session">Nueva sesión</string>
+    <string name="action_new_session_failsafe">Modo a prueba de fallos (Failsafe)</string>
+    <string name="title_max_terminals_reached">Límite de terminales alcanzado</string>
+    <string name="msg_max_terminals_reached">Cierra las sesiones existentes antes de crear una nueva.</string>
+
+    <string name="title_rename_session">Nombre de la sesión</string>
+    <string name="action_rename_session_confirm">Establecer</string>
+    <string name="title_create_named_session">Nueva sesión con nombre</string>
+    <string name="action_create_named_session_confirm">Crear</string>
+
+    <string name="action_toggle_soft_keyboard">Teclado</string>
+
+    <string name="msg_enabling_terminal_toolbar">Activando barra de herramientas de la terminal</string>
+    <string name="msg_disabling_terminal_toolbar">Desactivando barra de herramientas de la terminal</string>
+
+    <string name="action_select_url">Seleccionar URL</string>
+    <string name="title_select_url_dialog">Toca la URL para copiar o mantén presionado para abrir</string>
+    <string name="title_select_url_none_found">No se encontraron URLs en la terminal.</string>
+    <string name="msg_select_url_copied_to_clipboard">URL copiada al portapapeles</string>
+
+    <string name="action_share_transcript">Compartir transcripción</string>
+    <string name="title_share_transcript">Transcripción de la terminal</string>
+    <string name="title_share_transcript_with">Enviar transcripción a:</string>
+
+    <string name="action_share_selected_text">Compartir texto seleccionado</string>
+    <string name="title_share_selected_text">Texto de la terminal</string>
+    <string name="title_share_selected_text_with">Enviar texto seleccionado a:</string>
+
+    <string name="action_autofill_username">Autocompletar usuario</string>
+    <string name="action_autofill_password">Autocompletar contraseña</string>
+
+    <string name="action_reset_terminal">Reiniciar</string>
+    <string name="msg_terminal_reset">Terminal reiniciada</string>
+
+    <string name="action_kill_process">Finalizar proceso (%d)</string>
+    <string name="title_confirm_kill_process">¿Realmente deseas finalizar esta sesión?</string>
+
+    <string name="action_style_terminal">Estilo</string>
+    <string name="action_toggle_keep_screen_on">Mantener pantalla encendida</string>
+    <string name="action_open_help">Ayuda</string>
+    <string name="action_open_settings">Ajustes</string>
+
+    <string name="action_report_issue">Reportar un problema</string>
+    <string name="msg_generating_report">Generando informe</string>
+    <string name="msg_add_termux_debug_info">¿Añadir información de depuración de Termux al informe?</string>
+
+    <string name="error_styling_not_installed">El complemento &TERMUX_STYLING_APP_NAME; no está instalado.</string>
+    <string name="action_styling_install">Instalar</string>
+
+    <string name="notification_action_exit">Salir</string>
+    <string name="notification_action_wake_lock">Adquirir wakelock</string>
+    <string name="notification_action_wake_unlock">Liberar wakelock</string>
+
+    <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">&TERMUX_APP_NAME; requiere el permiso \"Mostrar sobre otras aplicaciones\" para iniciar sesiones de terminal desde el fondo en Android >= 10. Otórgalo en Ajustes -> Aplicaciones -> &TERMUX_APP_NAME; -> Avanzado</string>
+    <string name="error_termux_service_invalid_execution_command_runner">Ejecutor de comandos no válido para TermuxService: `%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_runner">Ejecutor de comandos no compatible para TermuxService: `%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_shell_create_mode">Modo de creación de shell no compatible para TermuxService: `%1$s`</string>
+    <string name="error_termux_service_execution_command_shell_name_unset">Nombre de shell no definido pero se pasó el modo de creación de shell `%1$s`</string>
+
+    <string name="error_run_command_service_invalid_intent_action">Acción de intent no válida para RunCommandService: `%1$s`</string>
+    <string name="error_run_command_service_invalid_execution_command_runner">Ejecutor de comandos no válido para RunCommandService: `%1$s`</string>
+    <string name="error_run_command_service_mandatory_extra_missing">Falta extra obligatorio para RunCommandService: \"%1$s\"</string>
+    <string name="error_run_command_service_api_help">Visita %1$s para más info sobre el uso de RUN_COMMAND Intent.</string>
+
+    <string name="title_file_received">Guardar archivo en ~/downloads/</string>
+    <string name="action_file_received_edit">Editar</string>
+    <string name="action_file_received_open_directory">Abrir directorio</string>
+
+    <string name="error_termux_service_start_failed_general">Error al iniciar TermuxService. Revisa logcat para ver el mensaje de excepción.</string>
+    <string name="error_termux_service_start_failed_bg">Error al iniciar TermuxService mientras la app está en segundo plano debido a restricciones de Android.</string>
+
+    <string name="title_activity_termux_settings">Ajustes de &TERMUX_APP_NAME;</string>
+
+    <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
+    <string name="termux_preferences_summary">Preferencias para la aplicación &TERMUX_APP_NAME;</string>
+
+        <string name="termux_debugging_preferences_title">Depuración</string>
+        <string name="termux_debugging_preferences_summary">Preferencias para la depuración</string>
+
+            <string name="termux_logging_header">Registro (Logging)</string>
+
+                <string name="termux_log_level_title">Nivel de registro</string>
+
+                <string name="termux_terminal_view_key_logging_enabled_title">Registro de teclas de la terminal</string>
+                <string name="termux_terminal_view_key_logging_enabled_off">Los registros no tendrán entradas para las teclas de vista de terminal. (Predeterminado)</string>
+                <string name="termux_terminal_view_key_logging_enabled_on">Los registros de Logcat tendrán entradas para las teclas de vista de terminal. Son muy detallados y deben desactivarse en circunstancias normales o causarán problemas de rendimiento.</string>
+
+                <string name="termux_plugin_error_notifications_enabled_title">Notificaciones de error de complementos</string>
+                <string name="termux_plugin_error_notifications_enabled_off">Desactivar avisos y notificaciones por errores de complementos.</string>
+                <string name="termux_plugin_error_notifications_enabled_on">Mostrar avisos y notificaciones por errores de complementos. (Predeterminado)</string>
+
+                <string name="termux_crash_report_notifications_enabled_title">Notificaciones de informe de errores</string>
+                <string name="termux_crash_report_notifications_enabled_off">Desactivar notificaciones para informes de errores.</string>
+                <string name="termux_crash_report_notifications_enabled_on">Mostrar notificaciones para informes de errores. (Predeterminado)</string>
+
+
+        <string name="termux_terminal_io_preferences_title">E/S de terminal</string>
+        <string name="termux_terminal_io_preferences_summary">Preferencias para la entrada/salida de la terminal</string>
+
+            <string name="termux_keyboard_header">Teclado</string>
+
+                <string name="termux_soft_keyboard_enabled_title">Teclado virtual activado</string>
+                <string name="termux_soft_keyboard_enabled_off">El teclado virtual estará desactivado.</string>
+                <string name="termux_soft_keyboard_enabled_on">El teclado virtual estará activado. (Predeterminado)</string>
+
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">Teclado virtual solo si no hay hardware</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">El teclado virtual se activará incluso si hay un teclado físico conectado. (Predeterminado)</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">El teclado virtual se activará solo si no hay un teclado físico conectado.</string>
+
+
+        <string name="termux_terminal_view_preferences_title">Vista de terminal</string>
+        <string name="termux_terminal_view_preferences_summary">Preferencias para la vista de la terminal</string>
+
+            <string name="termux_terminal_view_view_header">Vista</string>
+
+                <string name="termux_terminal_view_terminal_margin_adjustment_title">Ajuste de margen de la terminal</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_off">El ajuste de margen de la terminal estará desactivado.</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_on">El ajuste de margen de la terminal estará activado. Debe activarse para intentar solucionar el problema donde el teclado virtual cubre parte de las teclas extra o la vista de la terminal. Si causa parpadeo en la pantalla de su dispositivo, desactívelo. (Predeterminado)</string>
+
+
+    <string name="termux_api_preferences_title">Preferencias de &TERMUX_API_APP_NAME;</string>
+    <string name="termux_api_preferences_summary">Preferencias para la aplicación &TERMUX_API_APP_NAME;</string>
+
+    <string name="termux_float_preferences_title">Preferencias de &TERMUX_FLOAT_APP_NAME;</string>
+    <string name="termux_float_preferences_summary">Preferencias para la aplicación &TERMUX_FLOAT_APP_NAME;</string>
+
+    <string name="termux_tasker_preferences_title">Preferencias de &TERMUX_TASKER_APP_NAME;</string>
+    <string name="termux_tasker_preferences_summary">Preferencias para la aplicación &TERMUX_TASKER_APP_NAME;</string>
+
+    <string name="termux_widget_preferences_title">Preferencias de &TERMUX_WIDGET_APP_NAME;</string>
+    <string name="termux_widget_preferences_summary">Preferencias para la aplicación &TERMUX_WIDGET_APP_NAME;</string>
+
+    <string name="about_preference_title">Acerca de</string>
+
+    <string name="donate_preference_title">Donar</string>
+
+</resources>
