@@ -46,6 +46,7 @@
         android:label="@string/application_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:resizeableActivity="true"
         android:supportsRtl="false"
         android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar"
         tools:targetApi="m">
@@ -73,6 +74,14 @@
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
+
+            <meta-data
+                android:name="com.samsung.android.dex.transient_bar_delay"
+                android:value="2000" />
+
+            <meta-data android:name="WindowManagerPreference:SuppressWindowControlNavigationButton"
+                android:value="true" />
+            
         </activity>
 
         <activity-alias
@@ -87,6 +96,14 @@
                 <category android:name="android.intent.category.IOT_LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+            <meta-data
+                android:name="com.samsung.android.dex.transient_bar_delay"
+                android:value="2000" />
+
+            <meta-data android:name="WindowManagerPreference:SuppressWindowControlNavigationButton"
+                android:value="true" />
+            
         </activity-alias>
 
         <activity
