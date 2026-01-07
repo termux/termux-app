@@ -178,8 +178,8 @@ public final class TerminalView extends View {
                 } else {
                     scrolledWithFinger = true;
                     distanceY += mScrollRemainder;
-                    int deltaRows = (int) (distanceY / mRenderer.mFontLineSpacing);
-                    mScrollRemainder = distanceY - deltaRows * mRenderer.mFontLineSpacing;
+                    int deltaRows = (int) (distanceY / mRenderer.getFontLineSpacing());
+                    mScrollRemainder = distanceY - deltaRows * mRenderer.getFontLineSpacing();
                     doScroll(e, deltaRows);
                 }
                 return true;
@@ -512,12 +512,17 @@ public final class TerminalView extends View {
      * @param textSize the new font size, in density-independent pixels.
      */
     public void setTextSize(int textSize) {
-        mRenderer = new TerminalRenderer(textSize, mRenderer == null ? Typeface.MONOSPACE : mRenderer.mTypeface);
+        if (mRenderer == null) {
+            mRenderer = new TerminalRenderer(textSize);
+            mRenderer.setTypeface(Typeface.MONOSPACE, TerminalRenderer.TypefaceStyle.NORMAL);
+        } else {
+            mRenderer.setTextSize(textSize);
+        }
         updateSize();
     }
 
-    public void setTypeface(Typeface newTypeface) {
-        mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
+    public void setTypeface(Typeface newTypeface, TerminalRenderer.TypefaceStyle style) {
+        mRenderer.setTypeface(newTypeface, style);
         updateSize();
         invalidate();
     }
@@ -544,8 +549,8 @@ public final class TerminalView extends View {
      * @return Array with the column and row.
      */
     public int[] getColumnAndRow(MotionEvent event, boolean relativeToScroll) {
-        int column = (int) (event.getX() / mRenderer.mFontWidth);
-        int row = (int) ((event.getY() - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
+        int column = (int) (event.getX() / mRenderer.getFontWidth());
+        int row = (int) ((event.getY() - mRenderer.getFontLineSpacingAndAscent()) / mRenderer.getFontLineSpacing());
         if (relativeToScroll) {
             row += mTopRow;
         }
@@ -987,8 +992,8 @@ public final class TerminalView extends View {
         if (viewWidth == 0 || viewHeight == 0 || mTermSession == null) return;
 
         // Set to 80 and 24 if you want to enable vttest.
-        int newColumns = Math.max(4, (int) (viewWidth / mRenderer.mFontWidth));
-        int newRows = Math.max(4, (viewHeight - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
+        int newColumns = Math.max(4, (int) (viewWidth / mRenderer.getFontWidth()));
+        int newRows = Math.max(4, (viewHeight - mRenderer.getFontLineSpacingAndAscent()) / mRenderer.getFontLineSpacing());
 
         if (mEmulator == null || (newColumns != mEmulator.mColumns || newRows != mEmulator.mRows)) {
             mTermSession.updateSize(newColumns, newRows, (int) mRenderer.getFontWidth(), mRenderer.getFontLineSpacing());
@@ -1032,22 +1037,22 @@ public final class TerminalView extends View {
     }
 
     public int getCursorX(float x) {
-        return (int) (x / mRenderer.mFontWidth);
+        return (int) (x / mRenderer.getFontWidth());
     }
 
     public int getCursorY(float y) {
-        return (int) (((y - 40) / mRenderer.mFontLineSpacing) + mTopRow);
+        return (int) (((y - 40) / mRenderer.getFontLineSpacing()) + mTopRow);
     }
 
     public int getPointX(int cx) {
         if (cx > mEmulator.mColumns) {
             cx = mEmulator.mColumns;
         }
-        return Math.round(cx * mRenderer.mFontWidth);
+        return Math.round(cx * mRenderer.getFontWidth());
     }
 
     public int getPointY(int cy) {
-        return Math.round((cy - mTopRow) * mRenderer.mFontLineSpacing);
+        return Math.round((cy - mTopRow) * mRenderer.getFontLineSpacing());
     }
 
     public int getTopRow() {
