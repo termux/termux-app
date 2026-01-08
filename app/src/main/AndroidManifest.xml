@@ -46,7 +46,7 @@
         android:label="@string/application_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="false"
+        android:supportsRtl="true"
         android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar"
         tools:targetApi="m">
 
