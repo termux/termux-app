@@ -43,6 +43,14 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+
+    publishing {
+        multipleVariants {
+            withSourcesJar()
+            withJavadocJar()
+            allVariants()
+        }
+    }
 }
 
 tasks.withType(Test) {
@@ -66,7 +74,7 @@ afterEvaluate {
         publications {
             // Creates a Maven publication called "release".
             release(MavenPublication) {
-                from components.findByName('release')
+                from components.default
                 groupId = 'com.termux'
                 artifactId = 'terminal-emulator'
                 version = '0.118.0'
