@@ -35,7 +35,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     private static final String ALL_MIME_TYPES = "*/*";
 
-    private static final File BASE_DIR = TermuxConstants.TERMUX_HOME_DIR;
+    private static final File BASE_DIR = TermuxConstants.TERMUX_FILES_DIR;
 
 
     // The default columns to return information about a root if no specific
