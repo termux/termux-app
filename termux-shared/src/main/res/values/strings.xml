@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!DOCTYPE resources [
-    <!ENTITY TERMUX_PACKAGE_NAME "com.nebula">
-    <!ENTITY TERMUX_APP_NAME "Nebula">
-    <!ENTITY TERMUX_API_APP_NAME "Nebula:API">
-    <!ENTITY TERMUX_BOOT_APP_NAME "Nebula:Boot">
-    <!ENTITY TERMUX_FLOAT_APP_NAME "Nebula:Float">
-    <!ENTITY TERMUX_STYLING_APP_NAME "Nebula:Styling">
-    <!ENTITY TERMUX_TASKER_APP_NAME "Nebula:Tasker">
-    <!ENTITY TERMUX_WIDGET_APP_NAME "Nebula:Widget">
-    <!ENTITY TERMUX_PREFIX_DIR_PATH "/data/data/com.nebula/files/usr">
-    ]>
-
 <resources>
 
-    <string name="msg_directory_absolute_path">%1$s Directory Absolute Path: \"%2$s\"</string>
+    <string name="msg_directory_absolute_path">Nebula Directory Absolute Path: \"%2$s\"</string>
 
 
 
@@ -92,12 +80,12 @@
         on GitHub or other official termux community forums **will likely be automatically closed/deleted** and may
         even result in **temporary or permanent** ban. Check %1$s/wiki/Hacking for details.</string>
 
-    <string name="msg_termux_app_required_by_app">The &TERMUX_APP_NAME; is required by the %1$s app to run termux commands.</string>
-    <string name="error_termux_app_package_context_not_accessible">The &TERMUX_APP_NAME; app (package context) is not accessible.</string>
-    <string name="error_termux_prefix_dir_path_not_accessible">The &TERMUX_APP_NAME; app $PREFIX directory is not accessible by the %1$s app.
-        This may be because you have not installed or setup &TERMUX_APP_NAME; app or
-        &TERMUX_APP_NAME; app and %1$s app both have different APK signatures because you have managed to install both apps from different sources.
-        It may also be because &TERMUX_APP_NAME; $PREFIX directory \"&TERMUX_PREFIX_DIR_PATH;\" does not exist or does not have read,
+    <string name="msg_termux_app_required_by_app">The Nebula is required by the %1$s app to run termux commands.</string>
+    <string name="error_termux_app_package_context_not_accessible">The Nebula app (package context) is not accessible.</string>
+    <string name="error_termux_prefix_dir_path_not_accessible">The Nebula app $PREFIX directory is not accessible by the %1$s app.
+        This may be because you have not installed or setup Nebula app or
+        Nebula app and %1$s app both have different APK signatures because you have managed to install both apps from different sources.
+        It may also be because Nebula $PREFIX directory \"/data/data/com.nebula/files/usr\" does not exist or does not have read,
         write and execute permissions.</string>
 
 

@@ -1,26 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!DOCTYPE resources [
-    <!ENTITY NEBULA_PACKAGE_NAME "com.nebula">
-    <!ENTITY NEBULA_APP_NAME "Nebula">
-    <!ENTITY NEBULA_API_APP_NAME "Nebula:API">
-    <!ENTITY NEBULA_BOOT_APP_NAME "Nebula:Boot">
-    <!ENTITY NEBULA_FLOAT_APP_NAME "Nebula:Float">
-    <!ENTITY NEBULA_STYLING_APP_NAME "Nebula:Styling">
-    <!ENTITY NEBULA_TASKER_APP_NAME "Nebula:Tasker">
-    <!ENTITY NEBULA_WIDGET_APP_NAME "Nebula:Widget">
-    ]>
-
 <resources>
 
-    <string name="application_name">&NEBULA_APP_NAME;</string>
-    <string name="shared_user_label">&NEBULA_APP_NAME; user</string>
+    <string name="application_name">Nebula</string>
+    <string name="shared_user_label">Nebula user</string>
 
 
 
     <!-- Termux RUN_COMMAND permission -->
-    <string name="permission_run_command_label">Run commands in &NEBULA_APP_NAME; environment</string>
-    <string name="permission_run_command_description">execute arbitrary commands within &NEBULA_APP_NAME;
+    <string name="permission_run_command_label">Run commands in Nebula environment</string>
+    <string name="permission_run_command_description">execute arbitrary commands within Nebula;
         environment and access files</string>
 
 
@@ -28,15 +17,15 @@
     <!-- Termux Bootstrap Packages Installation -->
     <string name="bootstrap_installer_body">Installing bootstrap packages…</string>
     <string name="bootstrap_error_title">Unable to install bootstrap</string>
-    <string name="bootstrap_error_body">&NEBULA_APP_NAME; was unable to install the bootstrap packages.</string>
+    <string name="bootstrap_error_body">Nebula was unable to install the bootstrap packages.</string>
     <string name="bootstrap_error_abort">Abort</string>
     <string name="bootstrap_error_try_again">Try again</string>
-    <string name="bootstrap_error_not_primary_user_message">&NEBULA_APP_NAME; can only be run as the primary user.
-        \nBootstrap binaries compiled for &NEBULA_APP_NAME; have hardcoded $PREFIX path and cannot be installed
+    <string name="bootstrap_error_not_primary_user_message">Nebula can only be run as the primary user.
+        \nBootstrap binaries compiled for Nebula have hardcoded $PREFIX path and cannot be installed
         under any path other than:\n%1$s.</string>
-    <string name="bootstrap_error_installed_on_portable_sd">&NEBULA_APP_NAME; cannot be installed on
+    <string name="bootstrap_error_installed_on_portable_sd">Nebula cannot be installed on
         portable/external/removable sd card on your device.
-        \nBootstrap binaries compiled for &NEBULA_APP_NAME; have hardcoded $PREFIX path and cannot be installed
+        \nBootstrap binaries compiled for Nebula have hardcoded $PREFIX path and cannot be installed
         under any path other than:\n%1$s.</string>
 
 
@@ -91,7 +80,7 @@
     <string name="msg_generating_report">Generating Report</string>
     <string name="msg_add_termux_debug_info">Add termux debug info to report?</string>
 
-    <string name="error_styling_not_installed">The &TERMUX_STYLING_APP_NAME; Plugin App is not installed.</string>
+    <string name="error_styling_not_installed">The Nebula:Styling Plugin App is not installed.</string>
     <string name="action_styling_install">Install</string>
 
 
@@ -104,9 +93,9 @@
 
 
     <!-- TermuxService -->
-    <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">&NEBULA_APP_NAME; requires
+    <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">Nebula requires
         \"Display over other apps\" permission to start terminal sessions from background on Android >= 10.
-        Grants it from Settings -> Apps -> &NEBULA_APP_NAME; -> Advanced</string>
+        Grants it from Settings -> Apps -> Nebula -> Advanced</string>
     <string name="error_termux_service_invalid_execution_command_runner">Invalid execution command runner to TermuxService: `%1$s`</string>
     <string name="error_termux_service_unsupported_execution_command_runner">Unsupported execution command runner to TermuxService: `%1$s`</string>
     <string name="error_termux_service_unsupported_execution_command_shell_create_mode">Unsupported execution command shell create mode to TermuxService: `%1$s`</string>
@@ -136,11 +125,11 @@
 
 
     <!-- Nebula Settings -->
-    <string name="title_activity_nebula_settings">&NEBULA_APP_NAME; Settings</string>
+    <string name="title_activity_nebula_settings">Nebula Settings</string>
 
     <!-- Nebula App Preferences -->
-    <string name="nebula_preferences_title">&NEBULA_APP_NAME;</string>
-    <string name="nebula_preferences_summary">Preferences for &NEBULA_APP_NAME; app</string>
+    <string name="nebula_preferences_title">Nebula</string>
+    <string name="nebula_preferences_summary">Preferences for Nebula app</string>
 
         <!-- Debugging Preferences -->
         <string name="termux_debugging_preferences_title">Debugging</string>
@@ -206,26 +195,26 @@
 
 
     <!-- Nebula:API App Preferences -->
-    <string name="nebula_api_preferences_title">&NEBULA_API_APP_NAME;</string>
-    <string name="nebula_api_preferences_summary">Preferences for &NEBULA_API_APP_NAME; app</string>
+    <string name="nebula_api_preferences_title">Nebula:API</string>
+    <string name="nebula_api_preferences_summary">Preferences for Nebula:API app</string>
 
 
 
     <!-- Nebula:Float App Preferences -->
-    <string name="nebula_float_preferences_title">&NEBULA_FLOAT_APP_NAME;</string>
-    <string name="nebula_float_preferences_summary">Preferences for &NEBULA_FLOAT_APP_NAME; app</string>
+    <string name="nebula_float_preferences_title">Nebula:Float</string>
+    <string name="nebula_float_preferences_summary">Preferences for Nebula:Float app</string>
 
 
 
     <!-- Nebula:Tasker App Preferences -->
-    <string name="nebula_tasker_preferences_title">&NEBULA_TASKER_APP_NAME;</string>
-    <string name="nebula_tasker_preferences_summary">Preferences for &NEBULA_TASKER_APP_NAME; app</string>
+    <string name="nebula_tasker_preferences_title">Nebula:Tasker</string>
+    <string name="nebula_tasker_preferences_summary">Preferences for Nebula:Tasker app</string>
 
 
 
     <!-- Nebula:Widget App Preferences -->
-    <string name="nebula_widget_preferences_title">&NEBULA_WIDGET_APP_NAME;</string>
-    <string name="nebula_widget_preferences_summary">Preferences for &NEBULA_WIDGET_APP_NAME; app</string>
+    <string name="nebula_widget_preferences_title">Nebula:Widget</string>
+    <string name="nebula_widget_preferences_summary">Preferences for Nebula:Widget app</string>
 
 
 
