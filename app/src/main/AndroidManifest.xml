@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="internalOnly"
-    android:sharedUserId="${TERMUX_PACKAGE_NAME}"
+    android:sharedUserId="${NEBULA_PACKAGE_NAME}"
     android:sharedUserLabel="@string/shared_user_label">
 
     <uses-feature
@@ -13,7 +13,7 @@
         android:required="false" />
 
     <permission
-        android:name="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND"
+        android:name="${NEBULA_PACKAGE_NAME}.permission.RUN_COMMAND"
         android:description="@string/permission_run_command_description"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/permission_run_command_label"
@@ -114,7 +114,7 @@
             android:exported="false"
             android:noHistory="true"
             android:resizeableActivity="true"
-            android:taskAffinity="${TERMUX_PACKAGE_NAME}.filereceiver"
+            android:taskAffinity="${NEBULA_PACKAGE_NAME}.filereceiver"
             tools:targetApi="n">
         </activity>
 
@@ -160,7 +160,7 @@
 
         <provider
             android:name=".filepicker.TermuxDocumentsProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.documents"
+            android:authorities="${NEBULA_PACKAGE_NAME}.documents"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
@@ -171,10 +171,10 @@
 
         <provider
             android:name=".app.TermuxOpenReceiver$ContentProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.files"
+            android:authorities="${NEBULA_PACKAGE_NAME}.files"
             android:exported="true"
             android:grantUriPermissions="true"
-            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
+            android:permission="${NEBULA_PACKAGE_NAME}.permission.RUN_COMMAND" />
 
 
         <receiver
@@ -201,9 +201,9 @@
         <service
             android:name=".app.RunCommandService"
             android:exported="true"
-            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND">
+            android:permission="${NEBULA_PACKAGE_NAME}.permission.RUN_COMMAND">
             <intent-filter>
-                <action android:name="${TERMUX_PACKAGE_NAME}.RUN_COMMAND" />
+                <action android:name="${NEBULA_PACKAGE_NAME}.RUN_COMMAND" />
             </intent-filter>
         </service>
 
