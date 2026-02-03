@@ -87,6 +87,8 @@ public class FileReceiverActivity extends AppCompatActivity {
                     String subject = IntentUtils.getStringExtraIfSet(intent, Intent.EXTRA_SUBJECT, null);
                     if (subject == null) subject = sharedTitle;
                     if (subject != null) subject += ".txt";
+                    // Sanitize subject to prevent path traversal attacks
+                    subject = sanitizeFileName(subject);
                     promptNameAndSave(new ByteArrayInputStream(sharedText.getBytes(StandardCharsets.UTF_8)), subject);
                 }
             } else {
@@ -115,7 +117,9 @@ public class FileReceiverActivity extends AppCompatActivity {
                 File file = new File(path);
                 try {
                     FileInputStream in = new FileInputStream(file);
-                    promptNameAndSave(in, file.getName());
+                    // Sanitize filename to prevent path traversal attacks
+                    String sanitizedName = sanitizeFileName(file.getName());
+                    promptNameAndSave(in, sanitizedName);
                 } catch (FileNotFoundException e) {
                     showErrorDialogAndQuit("Cannot open file: " + e.getMessage() + ".");
                 }
@@ -151,6 +155,9 @@ public class FileReceiverActivity extends AppCompatActivity {
             if (attachmentFileName == null) attachmentFileName = subjectFromIntent;
             if (attachmentFileName == null) attachmentFileName = UriUtils.getUriFileBasename(uri, true);
 
+            // Sanitize filename at the source to prevent path traversal attacks
+            attachmentFileName = sanitizeFileName(attachmentFileName);
+
             InputStream in = getContentResolver().openInputStream(uri);
             promptNameAndSave(in, attachmentFileName);
         } catch (Exception e) {
@@ -160,7 +167,11 @@ public class FileReceiverActivity extends AppCompatActivity {
     }
 
     void promptNameAndSave(final InputStream in, final String attachmentFileName) {
-        TextInputDialogUtils.textInput(this, R.string.title_file_received, attachmentFileName,
+        // SECURITY: Sanitize the filename immediately to prevent path traversal attacks
+        // Do not use attachmentFileName directly - always use the sanitized version
+        final String safeFileName = sanitizeFileName(attachmentFileName);
+        
+        TextInputDialogUtils.textInput(this, R.string.title_file_received, safeFileName,
             R.string.action_file_received_edit, text -> {
                 File outFile = saveStreamWithName(in, text);
                 if (outFile == null) return;
@@ -198,6 +209,37 @@ public class FileReceiverActivity extends AppCompatActivity {
             });
     }
 
+    /**
+     * Sanitizes a filename to prevent path traversal attacks.
+     * Removes path traversal sequences, null bytes, and converts absolute paths to relative.
+     * @param fileName The filename to sanitize
+     * @return The sanitized filename, or "unnamed" if the result is empty
+     */
+    private String sanitizeFileName(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return "unnamed";
+        }
+
+        // Remove null bytes
+        fileName = fileName.replace("\0", "");
+
+        // Get just the filename component, removing any path
+        File file = new File(fileName);
+        String sanitized = file.getName();
+
+        // Remove any remaining path traversal sequences
+        sanitized = sanitized.replace("..", "");
+        sanitized = sanitized.replace("/", "");
+        sanitized = sanitized.replace("\\", "");
+
+        // If the result is empty or just dots, use a default name
+        if (sanitized.isEmpty() || sanitized.matches("^\\.+$")) {
+            return "unnamed";
+        }
+
+        return sanitized;
+    }
+
     public File saveStreamWithName(InputStream in, String attachmentFileName) {
         File receiveDir = new File(TERMUX_RECEIVEDIR);
 
@@ -206,13 +248,25 @@ public class FileReceiverActivity extends AppCompatActivity {
             return null;
         }
 
+        // Sanitize the filename to prevent path traversal attacks
+        attachmentFileName = sanitizeFileName(attachmentFileName);
+
         if (!receiveDir.isDirectory() && !receiveDir.mkdirs()) {
             showErrorDialogAndQuit("Cannot create directory: " + receiveDir.getAbsolutePath());
             return null;
         }
 
-        try {
+try {
             final File outFile = new File(receiveDir, attachmentFileName);
+            
+            // Verify the resolved path is within the intended directory
+            String canonicalReceiveDir = receiveDir.getCanonicalPath();
+            String canonicalOutFile = outFile.getCanonicalPath();
+            
+            if (!canonicalOutFile.startsWith(canonicalReceiveDir + File.separator)) {
+                showErrorDialogAndQuit("Invalid file path: File must be saved within the downloads directory");
+                return null;
+            }
             try (FileOutputStream f = new FileOutputStream(outFile)) {
                 byte[] buffer = new byte[4096];
                 int readBytes;
