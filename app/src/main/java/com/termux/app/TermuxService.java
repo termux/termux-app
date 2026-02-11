@@ -760,8 +760,9 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     public synchronized void setTermuxTerminalSessionClient(TermuxTerminalSessionActivityClient termuxTerminalSessionActivityClient) {
         mTermuxTerminalSessionActivityClient = termuxTerminalSessionActivityClient;
 
-        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++)
-            mShellManager.mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionActivityClient);
+        // Don't update all sessions' clients here - in multi-window mode, each activity
+        // should only set the client for its own attached session. The client is set
+        // when setCurrentSession() is called in TermuxTerminalSessionActivityClient.
     }
 
     /** This should be called when {@link TermuxActivity} has been destroyed and in {@link #onUnbind(Intent)}
@@ -773,6 +774,14 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             mShellManager.mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionServiceClient);
 
         mTermuxTerminalSessionActivityClient = null;
+    }
+
+    /** Reset a specific session's client to the service client. Used when an activity is destroyed
+     * in multi-window mode to avoid resetting all sessions' clients. */
+    public synchronized void resetSessionClient(TerminalSession session) {
+        if (session != null) {
+            session.updateTerminalSessionClient(mTermuxTerminalSessionServiceClient);
+        }
     }
 
 
@@ -912,6 +921,21 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
             TerminalSession session = mShellManager.mTermuxSessions.get(i).getTerminalSession();
             if (!session.mAttached) {
+                return session;
+            }
+        }
+        return null;
+    }
+
+    /** Atomically claim an unattached session by marking it as attached. Returns the session if
+     * successful, null if no unattached sessions are available. This prevents race conditions
+     * when multiple windows try to claim a session simultaneously. */
+    @Nullable
+    public synchronized TerminalSession claimFirstUnattachedSession() {
+        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
+            TerminalSession session = mShellManager.mTermuxSessions.get(i).getTerminalSession();
+            if (!session.mAttached) {
+                session.mAttached = true;
                 return session;
             }
         }

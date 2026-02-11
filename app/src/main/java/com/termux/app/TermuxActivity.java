@@ -362,13 +362,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (mIsInvalidState) return;
 
         // Detach the current session when the activity is destroyed
-        if (mTerminalView != null) {
+        // and reset its client to the service client to avoid memory leaks
+        if (mTerminalView != null && mTermuxService != null) {
+            TerminalSession currentSession = getCurrentSession();
+            if (currentSession != null) {
+                // Reset this session's client to the service client
+                mTermuxService.resetSessionClient(currentSession);
+            }
             mTerminalView.detachSession();
         }
 
         if (mTermuxService != null) {
-            // Do not leave service and session clients with references to activity.
-            mTermuxService.unsetTermuxTerminalSessionClient();
             mTermuxService = null;
         }
 
@@ -464,8 +468,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 boolean isFailSafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                 mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
             } else {
-                // In multi-window mode, try to attach to first unattached session
-                TerminalSession sessionToAttach = mTermuxService.getFirstUnattachedSession();
+                // In multi-window mode, try to atomically claim first unattached session
+                TerminalSession sessionToAttach = mTermuxService.claimFirstUnattachedSession();
                 if (sessionToAttach != null) {
                     mTermuxTerminalSessionActivityClient.setCurrentSession(sessionToAttach);
                 } else {
