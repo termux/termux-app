@@ -906,6 +906,18 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         return mShellManager.mTermuxSessions.isEmpty() ? null : mShellManager.mTermuxSessions.get(mShellManager.mTermuxSessions.size() - 1);
     }
 
+    /** Get the first session that is not attached to any window. Used for multi-window support. */
+    @Nullable
+    public synchronized TerminalSession getFirstUnattachedSession() {
+        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
+            TerminalSession session = mShellManager.mTermuxSessions.get(i).getTerminalSession();
+            if (!session.mAttached) {
+                return session;
+            }
+        }
+        return null;
+    }
+
     public synchronized int getIndexOfSession(TerminalSession terminalSession) {
         if (terminalSession == null) return -1;
 

@@ -291,9 +291,19 @@ public final class TerminalView extends View {
         if (session == mTermSession) return false;
         mTopRow = 0;
 
+        // Detach the old session
+        if (mTermSession != null) {
+            mTermSession.mAttached = false;
+        }
+
         mTermSession = session;
         mEmulator = null;
         mCombiningAccent = 0;
+
+        // Attach the new session
+        if (mTermSession != null) {
+            mTermSession.mAttached = true;
+        }
 
         updateSize();
 
@@ -301,6 +311,15 @@ public final class TerminalView extends View {
         setVerticalScrollBarEnabled(true);
 
         return true;
+    }
+
+    /**
+     * Detach the current session from this view.
+     */
+    public void detachSession() {
+        if (mTermSession != null) {
+            mTermSession.mAttached = false;
+        }
     }
 
     @Override
