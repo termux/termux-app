@@ -318,17 +318,28 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         if (service == null) return;
 
         TerminalSession currentTerminalSession = mActivity.getCurrentSession();
-        int index = service.getIndexOfSession(currentTerminalSession);
+        int currentIndex = service.getIndexOfSession(currentTerminalSession);
         int size = service.getTermuxSessionsSize();
-        if (forward) {
-            if (++index >= size) index = 0;
-        } else {
-            if (--index < 0) index = size - 1;
-        }
 
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.getTerminalSession());
+        // Find the next unattached session in the given direction
+        int index = currentIndex;
+        for (int i = 0; i < size; i++) {
+            if (forward) {
+                if (++index >= size) index = 0;
+            } else {
+                if (--index < 0) index = size - 1;
+            }
+
+            TermuxSession termuxSession = service.getTermuxSession(index);
+            if (termuxSession != null) {
+                TerminalSession session = termuxSession.getTerminalSession();
+                // Skip sessions attached to other windows, but allow switching to current session
+                if (!session.mAttached || session == currentTerminalSession) {
+                    setCurrentSession(session);
+                    return;
+                }
+            }
+        }
     }
 
     public void switchToSession(int index) {
@@ -442,12 +453,19 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             // There are no sessions to show, so finish the activity.
             mActivity.finishActivityIfNotFinishing();
         } else {
-            if (index >= size) {
-                index = size - 1;
+            // Try to find an unattached session to switch to
+            TerminalSession unattachedSession = service.getFirstUnattachedSession();
+            if (unattachedSession != null) {
+                setCurrentSession(unattachedSession);
+            } else {
+                // Fallback to nearest session if all are attached
+                if (index >= size) {
+                    index = size - 1;
+                }
+                TermuxSession termuxSession = service.getTermuxSession(index);
+                if (termuxSession != null)
+                    setCurrentSession(termuxSession.getTerminalSession());
             }
-            TermuxSession termuxSession = service.getTermuxSession(index);
-            if (termuxSession != null)
-                setCurrentSession(termuxSession.getTerminalSession());
         }
     }
 
