@@ -370,9 +370,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 mTermuxService.resetSessionClient(currentSession);
             }
             mTerminalView.detachSession();
+
+            // Notify other windows that session attachment state changed
+            mTermuxService.notifyAllSessionListsUpdated();
         }
 
         if (mTermuxService != null) {
+            // Remove this activity's client from the service's set
+            mTermuxService.removeTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
             mTermuxService = null;
         }
 

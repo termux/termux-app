@@ -299,6 +299,12 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         if (mActivity.getTerminalView().attachSession(session)) {
             // notify about switched session if not already displaying the session
             notifyOfSessionChange();
+
+            // Notify all windows that session attachment state changed so they can update their lists
+            TermuxService service = mActivity.getTermuxService();
+            if (service != null) {
+                service.notifyAllSessionListsUpdated();
+            }
         }
 
         // Set this activity's client on the session so it receives callbacks (render updates, etc.)
