@@ -290,6 +290,11 @@ public final class TerminalView extends View {
     public boolean attachSession(TerminalSession session) {
         if (session == mTermSession) return false;
 
+        // Detach the old session
+        if (mTermSession != null) {
+            mTermSession.mAttached = false;
+        }
+
         mTermSession = session;
         mEmulator = null;
         mCombiningAccent = 0;
@@ -297,12 +302,26 @@ public final class TerminalView extends View {
         // The emulator's cached value will be read in `updateSize()` when emulator is set.
         setTopRow(0, false);
 
+        // Attach the new session
+        if (mTermSession != null) {
+            mTermSession.mAttached = true;
+        }
+
         updateSize();
 
         // Wait with enabling the scrollbar until we have a terminal to get scroll position from.
         setVerticalScrollBarEnabled(true);
 
         return true;
+    }
+
+    /**
+     * Detach the current session from this view.
+     */
+    public void detachSession() {
+        if (mTermSession != null) {
+            mTermSession.mAttached = false;
+        }
     }
 
     @Override

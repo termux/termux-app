@@ -89,7 +89,30 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         int defaultColor = shouldEnableDarkTheme ? Color.WHITE : Color.BLACK;
         int color = sessionRunning || sessionAtRow.getExitStatus() == 0 ? defaultColor : Color.RED;
         sessionTitleView.setTextColor(color);
+
+        // Gray out sessions attached to other windows
+        TerminalSession currentSession = mActivity.getCurrentSession();
+        boolean isAttachedToOtherWindow = sessionAtRow.mAttached && sessionAtRow != currentSession;
+        if (isAttachedToOtherWindow) {
+            sessionTitleView.setAlpha(0.5f);
+        } else {
+            sessionTitleView.setAlpha(1.0f);
+        }
+
         return sessionRowView;
+    }
+
+    @Override
+    public boolean isEnabled(int position) {
+        TermuxSession termuxSession = getItem(position);
+        if (termuxSession == null) return false;
+
+        TerminalSession session = termuxSession.getTerminalSession();
+        TerminalSession currentSession = mActivity.getCurrentSession();
+
+        // Disable (gray out) sessions attached to other windows
+        // Sessions attached to current window should remain clickable
+        return !session.mAttached || session == currentSession;
     }
 
     @Override

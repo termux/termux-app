@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.ContextMenu;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -251,6 +253,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setToggleKeyboardView();
 
+        setNewWindowButtonView();
+
         registerForContextMenu(mTerminalView);
 
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
@@ -277,6 +281,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
+
+        // Set initial multi-window UI state
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            onMultiWindowModeChanged(isInMultiWindowMode());
+        }
     }
 
     @Override
@@ -352,6 +361,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mIsInvalidState) return;
 
+        // Detach the current session when the activity is destroyed
+        if (mTerminalView != null) {
+            mTerminalView.detachSession();
+        }
+
         if (mTermuxService != null) {
             // Do not leave service and session clients with references to activity.
             mTermuxService.unsetTermuxTerminalSessionClient();
@@ -372,6 +386,35 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
         savedInstanceState.putBoolean(ARG_ACTIVITY_RECREATED, true);
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
+        Logger.logDebug(LOG_TAG, "onMultiWindowModeChanged: " + isInMultiWindowMode);
+
+        // Show or hide the new window button based on multi-window mode
+        View newWindowButton = findViewById(R.id.new_window_button);
+        if (newWindowButton != null) {
+            newWindowButton.setVisibility(isInMultiWindowMode ? View.VISIBLE : View.GONE);
+        }
+
+        // Change drawer buttons orientation to vertical in multi-window mode to save horizontal space
+        LinearLayout drawerButtons = findViewById(R.id.drawer_buttons);
+        if (drawerButtons != null) {
+            drawerButtons.setOrientation(isInMultiWindowMode ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
+        }
+    }
+
+    /** Add a new window in multi-window mode */
+    public void addNewWindow() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
+            Intent intent = new Intent(this, TermuxActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT |
+                           Intent.FLAG_ACTIVITY_NEW_TASK |
+                           Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            startActivity(intent);
+        }
     }
 
 
@@ -421,7 +464,22 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 boolean isFailSafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                 mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
             } else {
-                mTermuxTerminalSessionActivityClient.setCurrentSession(mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast());
+                // In multi-window mode, try to attach to first unattached session
+                TerminalSession sessionToAttach = mTermuxService.getFirstUnattachedSession();
+                if (sessionToAttach != null) {
+                    mTermuxTerminalSessionActivityClient.setCurrentSession(sessionToAttach);
+                } else {
+                    // All sessions are attached, create a new one or use stored session
+                    TerminalSession storedSession = mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast();
+                    if (storedSession != null && !storedSession.mAttached) {
+                        mTermuxTerminalSessionActivityClient.setCurrentSession(storedSession);
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
+                        // In multi-window mode with all sessions attached, create a new session
+                        mTermuxTerminalSessionActivityClient.addNewSession(false, null);
+                    } else {
+                        mTermuxTerminalSessionActivityClient.setCurrentSession(storedSession);
+                    }
+                }
             }
         }
 
@@ -592,6 +650,19 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             toggleTerminalToolbar();
             return true;
         });
+    }
+
+    private void setNewWindowButtonView() {
+        View newWindowButton = findViewById(R.id.new_window_button);
+        if (newWindowButton != null) {
+            newWindowButton.setOnClickListener(v -> addNewWindow());
+            // Initially hidden, shown only in multi-window mode
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
+                newWindowButton.setVisibility(View.VISIBLE);
+            } else {
+                newWindowButton.setVisibility(View.GONE);
+            }
+        }
     }
 
 
