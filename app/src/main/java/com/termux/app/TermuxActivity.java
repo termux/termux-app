@@ -281,11 +281,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
-
-        // Set initial multi-window UI state
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            onMultiWindowModeChanged(isInMultiWindowMode());
-        }
     }
 
     @Override
@@ -401,18 +396,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
         super.onMultiWindowModeChanged(isInMultiWindowMode);
         Logger.logDebug(LOG_TAG, "onMultiWindowModeChanged: " + isInMultiWindowMode);
-
-        // Show or hide the new window button based on multi-window mode
-        View newWindowButton = findViewById(R.id.new_window_button);
-        if (newWindowButton != null) {
-            newWindowButton.setVisibility(isInMultiWindowMode ? View.VISIBLE : View.GONE);
-        }
-
-        // Change drawer buttons orientation to vertical in multi-window mode to save horizontal space
-        LinearLayout drawerButtons = findViewById(R.id.drawer_buttons);
-        if (drawerButtons != null) {
-            drawerButtons.setOrientation(isInMultiWindowMode ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
-        }
     }
 
     /** Add a new window */
@@ -665,12 +648,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         View newWindowButton = findViewById(R.id.new_window_button);
         if (newWindowButton != null) {
             newWindowButton.setOnClickListener(v -> addNewWindow());
-            // Initially hidden, shown only in multi-window mode
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
-                newWindowButton.setVisibility(View.VISIBLE);
-            } else {
-                newWindowButton.setVisibility(View.GONE);
-            }
+            // Show if multi-window API is available (N+)
+            newWindowButton.setVisibility(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? View.VISIBLE : View.GONE);
+        }
+
+        // Use vertical orientation for drawer buttons if multi-window is available
+        LinearLayout drawerButtons = findViewById(R.id.drawer_buttons);
+        if (drawerButtons != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            drawerButtons.setOrientation(LinearLayout.VERTICAL);
         }
     }
 
