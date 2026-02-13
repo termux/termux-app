@@ -340,13 +340,15 @@ public final class TerminalView extends View {
                 // don't send it again (prevents duplication for swipe typing)
                 if (committedText.equals(mLastCommittedText) && committedText.length() > 0) {
                     // Text already sent in setComposingText, just clear state
+                    mAlreadySentComposingText = "";
                     mLastCommittedText = "";
                     super.commitText(text, newCursorPosition);
                     getEditable().clear();
                     return true;
                 }
                 
-                // Clear any pending composing text
+                // Clear tracking state
+                mAlreadySentComposingText = "";
                 mLastCommittedText = "";
 
                 // Send the committed text directly to terminal
@@ -359,6 +361,8 @@ public final class TerminalView extends View {
                 return true;
             }
 
+            /** Text that was already sent to terminal during composing (to send only new characters) */
+            private String mAlreadySentComposingText = "";
             /** Last text that was committed via setComposingText (to prevent duplicate in commitText) */
             private String mLastCommittedText = "";
 
@@ -370,24 +374,49 @@ public final class TerminalView extends View {
                 
                 if (mEmulator == null) return true;
                 
-                // For swipe typing, the keyboard sends composing text updates during the gesture.
-                // We immediately send the text to terminal and clear the composing state.
-                // This prevents the BaseInputConnection's Editable buffer from accumulating text
-                // which would cause delete key to not work properly.
+                // For swipe typing and regular typing, the keyboard sends composing text updates.
+                // We need to send only the NEW characters that haven't been sent yet.
+                // The keyboard may call setComposingText multiple times with accumulating text:
+                // "h", "he", "hel", "hell", "hello" - we should send only the new part each time.
                 
                 String newText = (text != null) ? text.toString() : "";
                 
-                // Send text to terminal immediately
-                if (newText.length() > 0) {
-                    sendTextToTerminal(newText);
-                    mLastCommittedText = newText;
+                // Calculate what new text needs to be sent
+                String textToSend = "";
+                if (newText.length() > mAlreadySentComposingText.length()) {
+                    // New text is longer - send only the new characters
+                    if (newText.startsWith(mAlreadySentComposingText)) {
+                        // Text was appended - send only the new part
+                        textToSend = newText.substring(mAlreadySentComposingText.length());
+                    } else {
+                        // Text changed completely (e.g., user selected different swipe suggestion)
+                        // Need to delete old text and send new text
+                        // For simplicity, just send the new text (terminal will handle it)
+                        textToSend = newText;
+                    }
+                } else if (newText.length() < mAlreadySentComposingText.length()) {
+                    // Text got shorter - user is backspacing or selected shorter suggestion
+                    // Send backspaces to delete the difference
+                    int charsToDelete = mAlreadySentComposingText.length() - newText.length();
+                    for (int i = 0; i < charsToDelete; i++) {
+                        handleKeyCode(KeyEvent.KEYCODE_DEL, 0);
+                    }
+                    mAlreadySentComposingText = newText;
+                    // Don't call super methods that might interfere
+                    return true;
                 }
                 
-                // Call super to properly handle composing text in the Editable, then clear it
-                super.setComposingText(text, newCursorPosition);
+                // Send only the new characters to terminal
+                if (textToSend.length() > 0) {
+                    sendTextToTerminal(textToSend);
+                }
                 
-                // Immediately finish composing to clear the Editable buffer
-                // This prevents accumulation of text that would block delete key
+                // Track what we've already sent
+                mAlreadySentComposingText = newText;
+                mLastCommittedText = newText;
+                
+                // Call super but don't let it accumulate - clear immediately
+                super.setComposingText(text, newCursorPosition);
                 super.finishComposingText();
                 getEditable().clear();
                 
@@ -398,8 +427,8 @@ public final class TerminalView extends View {
             public boolean finishComposingText() {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
                 
-                // Text was already sent and cleared in setComposingText(), nothing to do here
-                // Just clear the last committed text tracker
+                // Reset the tracking of already sent composing text
+                mAlreadySentComposingText = "";
                 mLastCommittedText = "";
                 
                 super.finishComposingText();
