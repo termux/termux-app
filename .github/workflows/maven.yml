@@ -1,0 +1,734 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+    - name: Update dependency graph
+      uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+// Simulated Ping Value from your network (e.g., from OpManager API)
+let currentPing = 45; // in milliseconds
+
+// The Artist's Function: Map data to visual emotion
+function updateNeuralHeartbeat(ping) {
+    const root = document.documentElement;
+    
+    // Map ping to animation speed (Lower ping = faster pulse)
+    // A 20ms ping breathes every 0.5s; A 500ms ping breathes every 3s
+    const breatheDuration = Math.max(0.5, ping / 100); 
+    
+    // Map ping to color (Green/Blue for fast, Red/Orange for slow)
+    // This creates an "emotional" indicator rather than a numeric one
+    const hue = Math.max(0, 120 - (ping / 5)); // 120 is Green, 0 is Red
+    
+    root.style.setProperty('--pulse-speed', `${breatheDuration}s`);
+    root.style.setProperty('--synapse-color', `hsl(${hue}, 100%, 50%)`);
+}
+.neural-core {
+    width: 100px;
+    height: 100px;
+    background: var(--synapse-color);
+    border-radius: 50%;
+    /* The heartbeat animation */
+    animation: breathe var(--pulse-speed) infinite ease-in-out;
+    box-shadow: 0 0 20px var(--synapse-color);
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 0.4; }
+}
+/* The Glitch Class */
+.glitch-text {
+    color: white;
+    position: relative;
+    /* Create two shadows: one pink, one cyan, slightly offset */
+    text-shadow: 
+        2px 0 red, 
+        -2px 0 cyan;
+    animation: twitch 0.5s infinite;
+}
+
+/* The Animation: Make it shake nervously */
+@keyframes twitch {
+    0% { transform: translate(0, 0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0, 0); }
+}
+const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`';
+const element = document.querySelector('.status-readout');
+const originalText = element.innerText;
+
+function corruptData() {
+    let iterations = 0;
+    const interval = setInterval(() => {
+        // Split text and replace with random junk
+        element.innerText = element.innerText
+            .split('')
+            .map((letter, index) => {
+                if(index < iterations) return originalText[index];
+                return chars[Math.floor(Math.random() * chars.length)];
+            })
+            .join('');
+        
+        if(iterations >= originalText.length) clearInterval(interval);
+        iterations += 1 / 3; // Controls speed of "decoding"
+    }, 30);
+}
+
+// Trigger this when the user clicks or when "Ping" is high
+element.onmouseover = corruptData;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADX // GLITCH ART</title>
+    <style>
+        :root {
+            --glitch-red: #ff0055;
+            --glitch-cyan: #00fff2;
+            --bg-color: #0a0a0c;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        /* The Artistic Glitch Container */
+        .glitch-container {
+            position: relative;
+            font-size: 4rem;
+            font-weight: bold;
+            letter-spacing: 5px;
+            animation: shake 0.2s infinite;
+        }
+
+        /* The Chromatic Aberration Layers */
+        .glitch-container::before,
+        .glitch-container::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+        }
+
+        .glitch-container::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--glitch-red);
+            clip: rect(44px, 450px, 56px, 0); /* Horizontal "Slice" */
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+
+        .glitch-container::after {
+            left: -2px;
+            text-shadow: -2px 0 var(--glitch-cyan);
+            clip: rect(85px, 450px, 140px, 0); /* Horizontal "Slice" */
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+
+        /* Animations for the "Nervous" Screen */
+        @keyframes shake {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 50px, 0); }
+            20% { clip: rect(80px, 9999px, 100px, 0); }
+            100% { clip: rect(40px, 9999px, 60px, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glitch-container" id="neural-text" data-text="SUPERNOVA">
+        SUPERNOVA
+    </div>
+
+    <script>
+        const target = document.getElementById('neural-text');
+        const original = target.innerText;
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#@$%&*0123456789";
+
+        // JavaScript as the "Corruptor"
+        function corrupt() {
+            let scrambled = original.split('').map(char => {
+                if (Math.random() > 0.8) {
+                    return alphabet[Math.floor(Math.random() * alphabet.length)];
+                }
+                return char;
+            }).join('');
+            
+            target.innerText = scrambled;
+            target.setAttribute('data-text', scrambled); // Updates the CSS layers too!
+        }
+
+        // Firing the glitch every 150ms
+        setInterval(corrupt, 150);
+    </script>
+</body>
+</html>
+/* VCR Scanline Effect */
+body::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+    ), 
+    linear-gradient(
+        90deg, 
+        rgba(255, 0, 0, 0.06), 
+        rgba(0, 255, 0, 0.02), 
+        rgba(0, 0, 255, 0.06)
+    );
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+
+/* VCR Flickering Static */
+body::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: rgba(18, 16, 16, 0.1);
+    opacity: 0;
+    z-index: 3;
+    pointer-events: none;
+    animation: vcr-flicker 0.15s infinite;
+}
+
+@keyframes vcr-flicker {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.02; }
+    100% { opacity: 0.08; }
+}
+# ADX-Protocol-UI 🛰️
+
+### // SYSTEM STATUS: DECAYING
+### // PROTOCOL: SUPERNOVA LISTENER v1.0
+
+## The Concept
+ADX-Protocol-UI is a neural-inspired user interface designed to visualize the data reception of the **3U CubeSat Supernova Listener**. Rather than a static, boring dashboard, this UI treats data as a living, fragile entity that glitches and shifts based on network latency (Ping) and cosmic interference.
+
+## Artistic Features
+* **Neural Pulse:** UI elements that breathe based on system connectivity.
+* **Chromatic Aberration:** Visual color-splitting simulating lens/sensor failure.
+* **Data Scrambling:** JavaScript-driven text corruption that "heals" as packets arrive.
+* **VCR Static:** A scanline overlay to give the interface a "found footage" deep-space aesthetic.
+
+## Tech Stack
+- **HTML5/CSS3**: For the structural "Satellite" frame and visual filters.
+- **JavaScript**: The "Neural Engine" controlling the chaos and glitch logic.
+- **Ubuntu/Termux**: My mobile development environment and deployment hub.
+
+---
+"In the vacuum of space, even the most perfect code begins to scream." 
+# Install Git if you haven't already
+pkg install git
+
+# Move to your main storage or project folder
+cd ~
+
+# Clone your repository (Replace 'YOUR_USERNAME' with your actual GitHub name)
+git clone https://github.com/YOUR_USERNAME/ADX-Protocol-UI.git
+
+# Enter the folder
+cd ADX-Protocol-UI
+<div class="avionics-node"></div>
+
+<style>
+.avionics-node {
+    width: 20px;
+    height: 20px;
+    background: #00fff2;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #00fff2;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    /* This simulates the 'Ping' heartbeat we talked about */
+    animation: neural-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes neural-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 1; }
+}
+</style>
+<div class="signal-hud">
+    <div class="label">Signal Lock: <span id="strength-pct">100</span>%</div>
+    <div class="meter-bg">
+        <div id="meter-fill"></div>
+    </div>
+</div>
+
+<style>
+.signal-hud {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    font-size: 14px;
+    color: #00fff2;
+    text-shadow: 0 0 5px #00fff2;
+}
+.meter-bg {
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 255, 242, 0.2);
+    margin-top: 5px;
+}
+#meter-fill {
+    height: 100%;
+    width: 100%;
+    background: #00fff2;
+    transition: width 0.1s ease; /* Makes the movement jittery but smooth */
+}
+</style>
+
+<script>
+const fill = document.getElementById('meter-fill');
+const pctText = document.getElementById('strength-pct');
+
+function updateSignal() {
+    // Generate a random "flicker" between 40% and 100%
+    const strength = Math.floor(Math.random() * (100 - 40 + 1)) + 40;
+    
+    fill.style.width = strength + "%";
+    pctText.innerText = strength;
+    
+    // If signal drops too low, trigger a momentary screen shake
+    if (strength < 50) {
+        document.body.style.filter = "contrast(150%) brightness(120%)";
+        setTimeout(() => document.body.style.filter = "none", 50);
+    }
+}
+
+// Update the "Interference" every 200 milliseconds
+setInterval(updateSignal, 200);
+</script>
+<div class="signal-hud">
+    <div class="label">Signal Lock: <span id="strength-pct">100</span>%</div>
+    <div class="meter-bg">
+        <div id="meter-fill"></div>
+    </div>
+</div>
+
+<style>
+.signal-hud {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    font-size: 14px;
+    color: #00fff2;
+    text-shadow: 0 0 5px #00fff2;
+    z-index: 10;
+}
+.meter-bg {
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 255, 242, 0.2);
+    margin-top: 5px;
+}
+#meter-fill {
+    height: 100%;
+    width: 100%;
+    background: #00fff2;
+    transition: width 0.1s ease; /* Makes the movement jittery but smooth */
+}
+</style>
+
+<script>
+const fill = document.getElementById('meter-fill');
+const pctText = document.getElementById('strength-pct');
+
+function updateSignal() {
+    // Generate a random "flicker" between 40% and 100%
+    const strength = Math.floor(Math.random() * (100 - 40 + 1)) + 40;
+    
+    fill.style.width = strength + "%";
+    pctText.innerText = strength;
+    
+    // If signal drops too low, trigger a momentary screen shake/flash
+    if (strength < 55) {
+        document.body.style.filter = "contrast(150%) brightness(120%) hue-rotate(10deg)";
+        setTimeout(() => document.body.style.filter = "none", 80);
+    }
+}
+
+// Update the "Interference" every 200 milliseconds
+setInterval(updateSignal, 200);
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ADX-Protocol-UI // NEURAL-LINK</title>
+    <style>
+        :root {
+            --neon: #00fff2;
+            --glitch-red: #ff0055;
+            --ping-violence: 1px; /* Controlled by JS */
+        }
+
+        body {
+            background: #050505;
+            color: var(--neon);
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            margin: 0;
+            height: 100vh;
+        }
+
+        /* VCR Scanline Overlay */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%),
+                        linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* The Main Screen - Shakes based on Ping */
+        #screen {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
+            animation: jitter var(--ping-speed, 0.5s) infinite;
+        }
+
+        /* Transmission Log (Bottom Right) */
+        #transmission-log {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            height: 150px;
+            font-size: 10px;
+            overflow: hidden;
+            border-left: 1px solid var(--neon);
+            padding-left: 10px;
+            opacity: 0.7;
+        }
+
+        @keyframes jitter {
+            0% { transform: translate(0); }
+            10% { transform: translate(calc(var(--ping-violence) * -1), var(--ping-violence)); }
+            20% { transform: translate(var(--ping-violence), 0); }
+            100% { transform: translate(0); }
+        }
+
+        .log-entry { white-space: nowrap; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <main id="screen">
+        <h2>ADX-PROTOCOL // SUPERNOVA LISTENER</h2>
+        <div id="ping-display">LATENCY: <span id="ping-val">24</span>ms</div>
+        <div id="signal-lock">SIGNAL LOCK: <span id="lock-val">100</span>%</div>
+    </main>
+
+    <div id="transmission-log"></div>
+
+    <script>
+        const log = document.getElementById('transmission-log');
+        const pingVal = document.getElementById('ping-val');
+        const lockVal = document.getElementById('lock-val');
+        const root = document.documentElement;
+
+        function updateNeuralSystem() {
+            // 1. Simulate Ping (between 20ms and 800ms)
+            const ping = Math.floor(Math.random() * 800);
+            pingVal.innerText = ping;
+
+            // 2. Balance the "Violence"
+            // If ping > 400, make it violent. If < 100, make it smooth.
+            const violence = ping > 400 ? (ping / 100) + "px" : "1px";
+            root.style.setProperty('--ping-violence', violence);
+            
+            // 3. Signal Lock Decay
+            const lock = 100 - Math.floor(ping / 10);
+            lockVal.innerText = Math.max(lock, 5);
+
+            // 4. Transmission Log (Hex Codes)
+            const hex = "0123456789ABCDEF";
+            let code = "";
+            for(let i=0; i<24; i++) code += hex[Math.floor(Math.random()*16)];
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerText = `[RECV] 0x${code} ... ${ping}ms`;
+            log.prepend(entry);
+
+            if(log.children.length > 15) log.removeChild(log.lastChild);
+        }
+
+        setInterval(updateNeuralSystem, 150);
+    </script>
+</body>
+</html>
+git add index.html
+git commit -m "Balanced neural jitter and added hex transmission log"
+git push origin main
+git add .
+git commit -m "Neural balance update - Signal HUD active"
+git push origin main
+<div class="map-container">
+    <div class="grid"></div>
+    <div class="satellite-dot"></div>
+    <div class="scanner-line"></div>
+</div>
+.map-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border: 1px solid rgba(0, 255, 242, 0.3);
+    margin: auto;
+    background: radial-gradient(circle, rgba(0,255,242,0.05) 0%, transparent 70%);
+}
+
+.grid {
+    width: 100%; height: 100%;
+    background-image: linear-gradient(to right, rgba(0,255,242,0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0,255,242,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.satellite-dot {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: var(--neon);
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    box-shadow: 0 0 10px var(--neon);
+    animation: orbit 10s infinite linear;
+}
+
+.scanner-line {
+    position: absolute;
+    top: 0; width: 100%; height: 2px;
+    background: rgba(0, 255, 242, 0.5);
+    box-shadow: 0 0 15px var(--neon);
+    animation: scan 4s infinite ease-in-out;
+}
+
+@keyframes orbit {
+    from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+}
+
+@keyframes scan {
+    0%, 100% { top: 0%; }
+    50% { top: 100%; }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADX // NEURAL PROTOCOL UI</title>
+    <style>
+        :root {
+            --neon: #00fff2;
+            --glitch-red: #ff0055;
+            --bg: #050508;
+            --ping-shake: 0px;
+        }
+
+        body, html {
+            background: var(--bg);
+            color: var(--neon);
+            font-family: 'Courier New', monospace;
+            margin: 0; padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            text-transform: uppercase;
+        }
+
+        /* --- VCR & GLITCH LAYER --- */
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.15) 50%),
+                        linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none; z-index: 10;
+        }
+
+        #ui-wrapper {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            animation: jitter var(--speed, 0.2s) infinite;
+        }
+
+        /* --- SATELLITE MAP (CENTER) --- */
+        .map-box {
+            position: relative;
+            width: 260px; height: 260px;
+            border: 1px solid rgba(0, 255, 242, 0.2);
+            margin: auto;
+            background: radial-gradient(circle, rgba(0,255,242,0.03) 0%, transparent 80%);
+        }
+        .grid {
+            width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0,255,242,0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,255,242,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .sat-dot {
+            position: absolute; width: 8px; height: 8px;
+            background: var(--neon); border-radius: 50%;
+            top: 50%; left: 50%; box-shadow: 0 0 10px var(--neon);
+            animation: orbit 12s infinite linear;
+        }
+
+        /* --- HUD ELEMENTS --- */
+        .hud-top { display: flex; justify-content: space-between; font-size: 12px; }
+        .log-box {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 250px; height: 120px; font-size: 9px;
+            border-left: 1px solid var(--neon); padding-left: 10px;
+            opacity: 0.6; overflow: hidden;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes orbit {
+            from { transform: rotate(0deg) translateX(110px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(110px) rotate(-360deg); }
+        }
+        @keyframes jitter {
+            0% { transform: translate(0); }
+            50% { transform: translate(var(--ping-shake), calc(var(--ping-shake) * -1)); }
+            100% { transform: translate(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div id="ui-wrapper">
+        <div class="hud-top">
+            <div>SYSTEM: ADX-V3-SUPERNOVA</div>
+            <div>PING: <span id="ping-txt">24</span>MS</div>
+        </div>
+
+        <div class="map-box">
+            <div class="grid"></div>
+            <div class="sat-dot"></div>
+        </div>
+
+        <div class="log-box" id="log"></div>
+    </div>
+
+    <script>
+        const pingTxt = document.getElementById('ping-txt');
+        const log = document.getElementById('log');
+        const root = document.documentElement;
+
+        function updateNeuralState() {
+            // Random Ping Logic
+            const p = Math.floor(Math.random() * 600);
+            pingTxt.innerText = p;
+
+            // Balance Interference
+            const shake = p > 350 ? (p / 80) + "px" : "0px";
+            root.style.setProperty('--ping-shake', shake);
+
+            // Hex Log Generation
+            const entry = document.createElement('div');
+            entry.innerText = `> RECV: 0x${Math.random().toString(16).slice(2,10).toUpperCase()}`;
+            log.prepend(entry);
+            if(log.children.length > 10) log.removeChild(log.lastChild);
+        }
+
+        setInterval(updateNeuralState, 200);
+    </script>
+</body>
+</html>
+# Save your file in Termux first (nano index.html)
+# Then run these script cords:
+
+git add index.html
+git commit -m "Grand Launch: Integrated VCR, Map, and Neural HUD"
+git push origin main
+# First, refresh the system sources
+pkg update && pkg upgrade -y
+
+# Now, install the Git tool
+pkg install git -y
+
+# Verify it works (it should show a version number)
+git --version
+git config --global user.email "your-email@example.com"
+git config --global user.name "YourGitHubUsername"
+git push origin main
+cd ~/ADX-Protocol-UI
+# Make changes to your HTML/CSS
+git add .
+git commit -m "Neural UI Update"
+git push origin main
+# Inside your project folder:
+git init
+git remote add origin https://github.com/ADX-V3-0-PROJECT/ADX-Protocol-UI.git
