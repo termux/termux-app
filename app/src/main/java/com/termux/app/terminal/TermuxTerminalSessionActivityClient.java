@@ -345,7 +345,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         int size = service.getTermuxSessionsSize();
         int activityId = mActivity.getActivityId();
 
-        // Find the next unattached session in the given direction
+        // Find the next session in the given direction
         int index = currentIndex;
         for (int i = 0; i < size; i++) {
             if (forward) {
@@ -357,11 +357,13 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             TermuxSession termuxSession = service.getTermuxSession(index);
             if (termuxSession != null) {
                 TerminalSession session = termuxSession.getTerminalSession();
-                // Skip sessions attached to other windows, but allow switching to current session
-                if (!service.isSessionAttachedToOther(session, activityId)) {
+                if (service.isSessionAttachedToOther(session, activityId)) {
+                    // Session is attached to another window - focus that window
+                    service.focusActivityForSession(session);
+                } else {
                     setCurrentSession(session);
-                    return;
                 }
+                return;
             }
         }
     }
@@ -373,8 +375,10 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         TermuxSession termuxSession = service.getTermuxSession(index);
         if (termuxSession != null) {
             TerminalSession session = termuxSession.getTerminalSession();
-            // Only switch if the session is not attached to another window
-            if (!service.isSessionAttachedToOther(session, mActivity.getActivityId())) {
+            if (service.isSessionAttachedToOther(session, mActivity.getActivityId())) {
+                // Session is attached to another window - focus that window
+                service.focusActivityForSession(session);
+            } else {
                 setCurrentSession(session);
             }
         }
