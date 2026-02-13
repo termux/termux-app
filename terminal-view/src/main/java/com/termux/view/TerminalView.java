@@ -284,42 +284,38 @@ public final class TerminalView extends View {
 
     /**
      * Attach a {@link TerminalSession} to this view.
+     * Note: The caller (activity) is responsible for managing attachment state via the service.
      *
      * @param session The {@link TerminalSession} this view will be displaying.
+     * @return The previous session that was attached (may be null), so caller can detach it
      */
-    public boolean attachSession(TerminalSession session) {
-        if (session == mTermSession) return false;
+    public TerminalSession attachSession(TerminalSession session) {
+        if (session == mTermSession) return null;
         mTopRow = 0;
 
-        // Detach the old session
-        if (mTermSession != null) {
-            mTermSession.mAttached = false;
-        }
+        TerminalSession previousSession = mTermSession;
 
         mTermSession = session;
         mEmulator = null;
         mCombiningAccent = 0;
-
-        // Attach the new session
-        if (mTermSession != null) {
-            mTermSession.mAttached = true;
-        }
 
         updateSize();
 
         // Wait with enabling the scrollbar until we have a terminal to get scroll position from.
         setVerticalScrollBarEnabled(true);
 
-        return true;
+        return previousSession;
     }
 
     /**
      * Detach the current session from this view.
+     * Note: The caller (activity) is responsible for managing attachment state via the service.
+     * @return The session that was detached (may be null)
      */
-    public void detachSession() {
-        if (mTermSession != null) {
-            mTermSession.mAttached = false;
-        }
+    public TerminalSession detachSession() {
+        TerminalSession previousSession = mTermSession;
+        mTermSession = null;
+        return previousSession;
     }
 
     @Override

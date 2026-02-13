@@ -177,6 +177,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private float mTerminalToolbarDefaultHeight;
 
+    /**
+     * Unique identifier for this activity instance. Used for session attachment tracking.
+     */
+    private final int mActivityId = System.identityHashCode(this);
+
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
@@ -356,21 +361,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mIsInvalidState) return;
 
-        // Detach the current session when the activity is destroyed
-        // and reset its client to the service client to avoid memory leaks
-        if (mTerminalView != null && mTermuxService != null) {
+        // Detach all sessions owned by this activity and reset their clients
+        if (mTermuxService != null) {
             TerminalSession currentSession = getCurrentSession();
             if (currentSession != null) {
                 // Reset this session's client to the service client
                 mTermuxService.resetSessionClient(currentSession);
             }
-            mTerminalView.detachSession();
+            if (mTerminalView != null) {
+                mTerminalView.detachSession();
+            }
 
-            // Notify other windows that session attachment state changed
-            mTermuxService.notifyAllSessionListsUpdated();
-        }
+            // Detach all sessions owned by this activity (single source of truth)
+            mTermuxService.detachAllSessionsForActivity(mActivityId);
 
-        if (mTermuxService != null) {
             // Remove this activity's client from the service's set
             mTermuxService.removeTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
             mTermuxService = null;
@@ -457,13 +461,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
             } else {
                 // In multi-window mode, try to atomically claim first unattached session
-                TerminalSession sessionToAttach = mTermuxService.claimFirstUnattachedSession();
+                TerminalSession sessionToAttach = mTermuxService.claimFirstUnattachedSession(mActivityId);
                 if (sessionToAttach != null) {
                     mTermuxTerminalSessionActivityClient.setCurrentSession(sessionToAttach);
                 } else {
                     // All sessions are attached, create a new one or use stored session
                     TerminalSession storedSession = mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast();
-                    if (storedSession != null && !storedSession.mAttached) {
+                    if (storedSession != null && !mTermuxService.isSessionAttached(storedSession)) {
                         mTermuxTerminalSessionActivityClient.setCurrentSession(storedSession);
                     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
                         // In multi-window mode with all sessions attached, create a new session
@@ -940,6 +944,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     public TermuxService getTermuxService() {
         return mTermuxService;
+    }
+
+    public int getActivityId() {
+        return mActivityId;
     }
 
     public TerminalView getTerminalView() {

@@ -68,9 +68,6 @@ public final class TerminalSession extends TerminalOutput {
     /** Set by the application for user identification of session, not by terminal. */
     public String mSessionName;
 
-    /** Whether this session is attached to a TerminalView. Used for multi-window support. */
-    public boolean mAttached;
-
     final Handler mMainThreadHandler = new MainThreadHandler();
 
     private final String mShellPath;
