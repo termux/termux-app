@@ -310,25 +310,11 @@ public final class TerminalView extends View {
         // initially started with the alternate view or if activity is returned to from another app
         // and the alternate view was the one selected the last time.
         if (mClient.isTerminalViewSelected()) {
-            if (mClient.shouldEnforceCharBasedInput()) {
-                // Some keyboards seems do not reset the internal state on TYPE_NULL.
-                // Affects mostly Samsung stock keyboards.
-                // https://github.com/termux/termux-app/issues/686
-                // However, this is not a valid value as per AOSP since `InputType.TYPE_CLASS_*` is
-                // not set and it logs a warning:
-                // W/InputAttributes: Unexpected input class: inputType=0x00080090 imeOptions=0x02000000
-                // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:packages/inputmethods/LatinIME/java/src/com/android/inputmethod/latin/InputAttributes.java;l=79
-                outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
-            } else {
-                // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
-                //
-                // Previous keyboard issues:
-                // https://github.com/termux/termux-packages/issues/25
-                // https://github.com/termux/termux-app/issues/87.
-                // https://github.com/termux/termux-app/issues/126.
-                // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
-                outAttrs.inputType = InputType.TYPE_NULL;
-            }
+            // Use TYPE_CLASS_TEXT to enable swipe typing (gesture typing) on keyboards like Gboard.
+            // Previously TYPE_NULL was used which disabled swipe typing completely.
+            // We use TYPE_TEXT_FLAG_NO_SUGGESTIONS to avoid autocomplete suggestions.
+            // The text is still processed character by character in our InputConnection.
+            outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         } else {
             // Corresponds to android:inputType="text"
             outAttrs.inputType =  InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL;
@@ -341,32 +327,48 @@ public final class TerminalView extends View {
         return new BaseInputConnection(this, true) {
 
             @Override
-            public boolean finishComposingText() {
-                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
-                super.finishComposingText();
-
-                sendTextToTerminal(getEditable());
-                getEditable().clear();
-                return true;
-            }
-
-            @Override
             public boolean commitText(CharSequence text, int newCursorPosition) {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
                     mClient.logInfo(LOG_TAG, "IME: commitText(\"" + text + "\", " + newCursorPosition + ")");
                 }
-                super.commitText(text, newCursorPosition);
 
                 if (mEmulator == null) return true;
 
-                Editable content = getEditable();
-                sendTextToTerminal(content);
-                content.clear();
+                String committedText = (text != null) ? text.toString() : "";
+                
+                // If commitText is called with the same text that was already sent via setComposingText,
+                // don't send it again (prevents duplication for swipe typing)
+                if (mComposingTextSent && committedText.equals(mLastSentComposingText)) {
+                    // Text already sent incrementally, just clear state
+                    mComposingText.setLength(0);
+                    mLastSentComposingText = "";
+                    mComposingTextSent = false;
+                    super.commitText(text, newCursorPosition);
+                    getEditable().clear();
+                    return true;
+                }
+                
+                // Clear any pending composing text since commitText supersedes it
+                mComposingText.setLength(0);
+                mLastSentComposingText = "";
+                mComposingTextSent = false;
+
+                // Send the committed text directly to terminal
+                if (text != null && text.length() > 0) {
+                    sendTextToTerminal(text);
+                }
+
+                super.commitText(text, newCursorPosition);
+                getEditable().clear();
                 return true;
             }
 
-            /** Track the last composing text to handle swipe typing correctly */
-            private CharSequence mLastComposingText = null;
+            /** Track the composing text to handle swipe typing correctly */
+            private StringBuilder mComposingText = new StringBuilder();
+            /** Last text that was sent to terminal during composing (to prevent duplicate in commitText) */
+            private String mLastSentComposingText = "";
+            /** Flag to track if composing text was sent to terminal */
+            private boolean mComposingTextSent = false;
 
             @Override
             public boolean setComposingText(CharSequence text, int newCursorPosition) {
@@ -376,24 +378,48 @@ public final class TerminalView extends View {
                 
                 if (mEmulator == null) return true;
                 
-                // For swipe typing, the keyboard sends composing text updates.
-                // We need to handle this by sending the text directly to the terminal.
-                // Track the last composing text to avoid sending duplicates.
-                if (text != null && text.length() > 0) {
-                    // Only send if this is new text (not a duplicate of what we already sent)
-                    if (mLastComposingText == null || !mLastComposingText.toString().equals(text.toString())) {
-                        // For swipe typing, we need to handle the case where the keyboard
-                        // sends incremental updates. We'll send the text directly.
-                        sendTextToTerminal(text);
-                        mLastComposingText = text.toString();
-                    }
-                } else {
-                    // Text is empty, reset tracking
-                    mLastComposingText = null;
+                // For swipe typing, the keyboard sends composing text updates during the gesture.
+                // We need to handle the case where text is updated multiple times during swipe.
+                // Strategy: track what we've shown and send only the difference.
+                
+                String oldText = mComposingText.toString();
+                String newText = (text != null) ? text.toString() : "";
+                
+                // Find common prefix and send only the new part
+                int commonLen = 0;
+                int minLen = Math.min(oldText.length(), newText.length());
+                while (commonLen < minLen && oldText.charAt(commonLen) == newText.charAt(commonLen)) {
+                    commonLen++;
                 }
+                
+                // If new text is shorter, we need to send backspaces (not typical for swipe)
+                // For swipe typing, text usually grows, so we send the new suffix
+                if (newText.length() > commonLen) {
+                    String newPart = newText.substring(commonLen);
+                    sendTextToTerminal(newPart);
+                    mLastSentComposingText = newText;
+                    mComposingTextSent = true;
+                }
+                
+                // Update stored composing text
+                mComposingText.setLength(0);
+                mComposingText.append(newText);
                 
                 // Call super to properly handle composing text in the Editable
                 super.setComposingText(text, newCursorPosition);
+                return true;
+            }
+
+            @Override
+            public boolean finishComposingText() {
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
+                
+                // Text was already sent incrementally in setComposingText(), just clear state
+                mComposingText.setLength(0);
+                // Don't clear mLastSentComposingText here - commitText() may still be called
+                // and needs to check for duplicates
+                
+                super.finishComposingText();
                 return true;
             }
 
@@ -402,10 +428,81 @@ public final class TerminalView extends View {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
                     mClient.logInfo(LOG_TAG, "IME: deleteSurroundingText(" + leftLength + ", " + rightLength + ")");
                 }
+                
+                if (mEmulator == null) return true;
+                
+                // Handle swipe-to-delete from Gboard and similar keyboards.
+                // When swiping left from the delete key, the keyboard calls this method
+                // with increasing leftLength values to delete multiple characters/words.
                 // The stock Samsung keyboard with 'Auto check spelling' enabled sends leftLength > 1.
-                KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
-                for (int i = 0; i < leftLength; i++) sendKeyEvent(deleteKey);
+                for (int i = 0; i < leftLength; i++) {
+                    // Send delete key directly to terminal
+                    handleKeyCode(KeyEvent.KEYCODE_DEL, 0);
+                }
                 return super.deleteSurroundingText(leftLength, rightLength);
+            }
+            
+            @TargetApi(Build.VERSION_CODES.KITKAT)
+            @Override
+            public boolean deleteSurroundingTextInCodePoints(int leftLength, int rightLength) {
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
+                    mClient.logInfo(LOG_TAG, "IME: deleteSurroundingTextInCodePoints(" + leftLength + ", " + rightLength + ")");
+                }
+                
+                if (mEmulator == null) return true;
+                
+                // Similar to deleteSurroundingText but works with Unicode code points
+                // This is used by some keyboards for swipe-to-delete
+                for (int i = 0; i < leftLength; i++) {
+                    handleKeyCode(KeyEvent.KEYCODE_DEL, 0);
+                }
+                return super.deleteSurroundingTextInCodePoints(leftLength, rightLength);
+            }
+            
+            @Override
+            public boolean sendKeyEvent(KeyEvent event) {
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
+                    mClient.logInfo(LOG_TAG, "IME: sendKeyEvent(" + event.getKeyCode() + ", action=" + event.getAction() + ")");
+                }
+                
+                if (mEmulator == null) return super.sendKeyEvent(event);
+                
+                // Handle key events from the keyboard (including delete key)
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    int keyCode = event.getKeyCode();
+                    
+                    // For delete key, use handleKeyCode which properly sends DEL to terminal
+                    if (keyCode == KeyEvent.KEYCODE_DEL) {
+                        handleKeyCode(KeyEvent.KEYCODE_DEL, 0);
+                        return true;
+                    } else if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                        // Handle enter key
+                        inputCodePoint(KEY_EVENT_SOURCE_SOFT_KEYBOARD, '\r', false, false);
+                        return true;
+                    } else if (keyCode == KeyEvent.KEYCODE_SPACE) {
+                        // Handle space key
+                        inputCodePoint(KEY_EVENT_SOURCE_SOFT_KEYBOARD, ' ', false, false);
+                        return true;
+                    }
+                }
+                
+                return super.sendKeyEvent(event);
+            }
+            
+            private int mBatchEditCount = 0;
+            
+            @Override
+            public boolean beginBatchEdit() {
+                mBatchEditCount++;
+                return super.beginBatchEdit();
+            }
+            
+            @Override
+            public boolean endBatchEdit() {
+                if (mBatchEditCount > 0) {
+                    mBatchEditCount--;
+                }
+                return super.endBatchEdit();
             }
 
             void sendTextToTerminal(CharSequence text) {
