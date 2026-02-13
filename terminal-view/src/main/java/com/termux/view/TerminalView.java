@@ -334,24 +334,8 @@ public final class TerminalView extends View {
 
                 if (mEmulator == null) return true;
 
-                String committedText = (text != null) ? text.toString() : "";
-                
-                // If commitText is called with the same text that was already sent via setComposingText,
-                // don't send it again (prevents duplication for swipe typing)
-                if (mComposingTextSent && committedText.equals(mLastSentComposingText)) {
-                    // Text already sent incrementally, just clear state
-                    mComposingText.setLength(0);
-                    mLastSentComposingText = "";
-                    mComposingTextSent = false;
-                    super.commitText(text, newCursorPosition);
-                    getEditable().clear();
-                    return true;
-                }
-                
-                // Clear any pending composing text since commitText supersedes it
+                // Clear composing state first
                 mComposingText.setLength(0);
-                mLastSentComposingText = "";
-                mComposingTextSent = false;
 
                 // Send the committed text directly to terminal
                 if (text != null && text.length() > 0) {
@@ -359,16 +343,13 @@ public final class TerminalView extends View {
                 }
 
                 super.commitText(text, newCursorPosition);
+                // Clear the Editable buffer to prevent delete key issues
                 getEditable().clear();
                 return true;
             }
 
             /** Track the composing text to handle swipe typing correctly */
             private StringBuilder mComposingText = new StringBuilder();
-            /** Last text that was sent to terminal during composing (to prevent duplicate in commitText) */
-            private String mLastSentComposingText = "";
-            /** Flag to track if composing text was sent to terminal */
-            private boolean mComposingTextSent = false;
 
             @Override
             public boolean setComposingText(CharSequence text, int newCursorPosition) {
@@ -379,31 +360,12 @@ public final class TerminalView extends View {
                 if (mEmulator == null) return true;
                 
                 // For swipe typing, the keyboard sends composing text updates during the gesture.
-                // We need to handle the case where text is updated multiple times during swipe.
-                // Strategy: track what we've shown and send only the difference.
+                // We DON'T send text to terminal here - we wait for commitText() or finishComposingText().
+                // This allows the keyboard to properly show suggestions and handle modifications.
+                // Just track the composing text and call super for proper Editable handling.
                 
-                String oldText = mComposingText.toString();
-                String newText = (text != null) ? text.toString() : "";
-                
-                // Find common prefix and send only the new part
-                int commonLen = 0;
-                int minLen = Math.min(oldText.length(), newText.length());
-                while (commonLen < minLen && oldText.charAt(commonLen) == newText.charAt(commonLen)) {
-                    commonLen++;
-                }
-                
-                // If new text is shorter, we need to send backspaces (not typical for swipe)
-                // For swipe typing, text usually grows, so we send the new suffix
-                if (newText.length() > commonLen) {
-                    String newPart = newText.substring(commonLen);
-                    sendTextToTerminal(newPart);
-                    mLastSentComposingText = newText;
-                    mComposingTextSent = true;
-                }
-                
-                // Update stored composing text
                 mComposingText.setLength(0);
-                mComposingText.append(newText);
+                mComposingText.append(text != null ? text : "");
                 
                 // Call super to properly handle composing text in the Editable
                 super.setComposingText(text, newCursorPosition);
@@ -414,12 +376,16 @@ public final class TerminalView extends View {
             public boolean finishComposingText() {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
                 
-                // Text was already sent incrementally in setComposingText(), just clear state
-                mComposingText.setLength(0);
-                // Don't clear mLastSentComposingText here - commitText() may still be called
-                // and needs to check for duplicates
+                // When finishing composing, commit the text if any
+                if (mComposingText.length() > 0) {
+                    String text = mComposingText.toString();
+                    mComposingText.setLength(0);
+                    sendTextToTerminal(text);
+                }
                 
                 super.finishComposingText();
+                // Clear the Editable buffer to prevent delete key issues
+                getEditable().clear();
                 return true;
             }
 
@@ -439,7 +405,8 @@ public final class TerminalView extends View {
                     // Send delete key directly to terminal
                     handleKeyCode(KeyEvent.KEYCODE_DEL, 0);
                 }
-                return super.deleteSurroundingText(leftLength, rightLength);
+                // Don't call super - we handle deletion ourselves and don't use Editable buffer
+                return true;
             }
             
             @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -456,7 +423,8 @@ public final class TerminalView extends View {
                 for (int i = 0; i < leftLength; i++) {
                     handleKeyCode(KeyEvent.KEYCODE_DEL, 0);
                 }
-                return super.deleteSurroundingTextInCodePoints(leftLength, rightLength);
+                // Don't call super - we handle deletion ourselves and don't use Editable buffer
+                return true;
             }
             
             @Override
