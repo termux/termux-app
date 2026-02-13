@@ -365,6 +365,38 @@ public final class TerminalView extends View {
                 return true;
             }
 
+            /** Track the last composing text to handle swipe typing correctly */
+            private CharSequence mLastComposingText = null;
+
+            @Override
+            public boolean setComposingText(CharSequence text, int newCursorPosition) {
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
+                    mClient.logInfo(LOG_TAG, "IME: setComposingText(\"" + text + "\", " + newCursorPosition + ")");
+                }
+                
+                if (mEmulator == null) return true;
+                
+                // For swipe typing, the keyboard sends composing text updates.
+                // We need to handle this by sending the text directly to the terminal.
+                // Track the last composing text to avoid sending duplicates.
+                if (text != null && text.length() > 0) {
+                    // Only send if this is new text (not a duplicate of what we already sent)
+                    if (mLastComposingText == null || !mLastComposingText.toString().equals(text.toString())) {
+                        // For swipe typing, we need to handle the case where the keyboard
+                        // sends incremental updates. We'll send the text directly.
+                        sendTextToTerminal(text);
+                        mLastComposingText = text.toString();
+                    }
+                } else {
+                    // Text is empty, reset tracking
+                    mLastComposingText = null;
+                }
+                
+                // Call super to properly handle composing text in the Editable
+                super.setComposingText(text, newCursorPosition);
+                return true;
+            }
+
             @Override
             public boolean deleteSurroundingText(int leftLength, int rightLength) {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
