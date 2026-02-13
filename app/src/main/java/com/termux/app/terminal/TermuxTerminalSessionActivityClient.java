@@ -54,6 +54,10 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         this.mActivity = activity;
     }
 
+    public TermuxActivity getActivity() {
+        return mActivity;
+    }
+
     /**
      * Should be called when mActivity.onCreate() is called
      */
@@ -319,7 +323,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
         // We call the following even when the session is already being displayed since config may
         // be stale, like current session not selected or scrolled to.
-        checkAndScrollToSession(session);
+        scrollToSession(session);
         updateBackgroundColor();
     }
 
@@ -494,7 +498,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         mActivity.termuxSessionListNotifyUpdated();
     }
 
-    public void checkAndScrollToSession(TerminalSession session) {
+    public void scrollToSession(TerminalSession session) {
         if (!mActivity.isVisible()) return;
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
@@ -504,7 +508,6 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
         if (termuxSessionsListView == null) return;
 
-        termuxSessionsListView.setItemChecked(indexOfSession, true);
         // Delay is necessary otherwise sometimes scroll to newly added session does not happen
         termuxSessionsListView.postDelayed(() -> termuxSessionsListView.smoothScrollToPosition(indexOfSession), 1000);
     }
