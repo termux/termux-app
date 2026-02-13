@@ -826,6 +826,31 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     }
 
     /**
+     * Bring the activity that owns a session to the foreground.
+     * @param session The session whose owning activity should be focused
+     * @return true if the activity was found and brought to front
+     */
+    @SuppressLint("MissingPermission")
+    public synchronized boolean focusActivityForSession(TerminalSession session) {
+        if (session == null) return false;
+        Integer ownerId = mSessionAttachments.get(session.mHandle);
+        if (ownerId == null) return false;
+
+        for (TermuxTerminalSessionActivityClient client : mActivityClients) {
+            TermuxActivity activity = client.getActivity();
+            if (activity != null && activity.getActivityId() == ownerId) {
+                // Bring the activity's task to front
+                android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                if (am != null) {
+                    am.moveTaskToFront(activity.getTaskId(), 0);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Attempt to attach a session to an activity. Fails if already attached elsewhere.
      * @param session The session to attach
      * @param activityId The activity ID claiming the session

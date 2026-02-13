@@ -65,7 +65,7 @@
                     android:layout_height="0dp"
                     android:layout_gravity="top"
                     android:layout_weight="1"
-                    android:choiceMode="singleChoice"
+                    android:choiceMode="none"
                     android:longClickable="true" />
 
                 <LinearLayout
