@@ -338,20 +338,16 @@ public final class TerminalView extends View {
                 
                 // If commitText is called with the same text that was already sent via setComposingText,
                 // don't send it again (prevents duplication for swipe typing)
-                if (mComposingTextSent && committedText.equals(mLastSentComposingText)) {
-                    // Text already sent incrementally, just clear state
-                    mComposingText.setLength(0);
-                    mLastSentComposingText = "";
-                    mComposingTextSent = false;
+                if (committedText.equals(mLastCommittedText) && committedText.length() > 0) {
+                    // Text already sent in setComposingText, just clear state
+                    mLastCommittedText = "";
                     super.commitText(text, newCursorPosition);
                     getEditable().clear();
                     return true;
                 }
                 
-                // Clear any pending composing text since commitText supersedes it
-                mComposingText.setLength(0);
-                mLastSentComposingText = "";
-                mComposingTextSent = false;
+                // Clear any pending composing text
+                mLastCommittedText = "";
 
                 // Send the committed text directly to terminal
                 if (text != null && text.length() > 0) {
@@ -363,12 +359,8 @@ public final class TerminalView extends View {
                 return true;
             }
 
-            /** Track the composing text to handle swipe typing correctly */
-            private StringBuilder mComposingText = new StringBuilder();
-            /** Last text that was sent to terminal during composing (to prevent duplicate in commitText) */
-            private String mLastSentComposingText = "";
-            /** Flag to track if composing text was sent to terminal */
-            private boolean mComposingTextSent = false;
+            /** Last text that was committed via setComposingText (to prevent duplicate in commitText) */
+            private String mLastCommittedText = "";
 
             @Override
             public boolean setComposingText(CharSequence text, int newCursorPosition) {
@@ -379,34 +371,26 @@ public final class TerminalView extends View {
                 if (mEmulator == null) return true;
                 
                 // For swipe typing, the keyboard sends composing text updates during the gesture.
-                // We need to handle the case where text is updated multiple times during swipe.
-                // Strategy: track what we've shown and send only the difference.
+                // We immediately send the text to terminal and clear the composing state.
+                // This prevents the BaseInputConnection's Editable buffer from accumulating text
+                // which would cause delete key to not work properly.
                 
-                String oldText = mComposingText.toString();
                 String newText = (text != null) ? text.toString() : "";
                 
-                // Find common prefix and send only the new part
-                int commonLen = 0;
-                int minLen = Math.min(oldText.length(), newText.length());
-                while (commonLen < minLen && oldText.charAt(commonLen) == newText.charAt(commonLen)) {
-                    commonLen++;
+                // Send text to terminal immediately
+                if (newText.length() > 0) {
+                    sendTextToTerminal(newText);
+                    mLastCommittedText = newText;
                 }
                 
-                // If new text is shorter, we need to send backspaces (not typical for swipe)
-                // For swipe typing, text usually grows, so we send the new suffix
-                if (newText.length() > commonLen) {
-                    String newPart = newText.substring(commonLen);
-                    sendTextToTerminal(newPart);
-                    mLastSentComposingText = newText;
-                    mComposingTextSent = true;
-                }
-                
-                // Update stored composing text
-                mComposingText.setLength(0);
-                mComposingText.append(newText);
-                
-                // Call super to properly handle composing text in the Editable
+                // Call super to properly handle composing text in the Editable, then clear it
                 super.setComposingText(text, newCursorPosition);
+                
+                // Immediately finish composing to clear the Editable buffer
+                // This prevents accumulation of text that would block delete key
+                super.finishComposingText();
+                getEditable().clear();
+                
                 return true;
             }
 
@@ -414,12 +398,12 @@ public final class TerminalView extends View {
             public boolean finishComposingText() {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
                 
-                // Text was already sent incrementally in setComposingText(), just clear state
-                mComposingText.setLength(0);
-                // Don't clear mLastSentComposingText here - commitText() may still be called
-                // and needs to check for duplicates
+                // Text was already sent and cleared in setComposingText(), nothing to do here
+                // Just clear the last committed text tracker
+                mLastCommittedText = "";
                 
                 super.finishComposingText();
+                getEditable().clear();
                 return true;
             }
 
