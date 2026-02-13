@@ -296,15 +296,21 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     public void setCurrentSession(TerminalSession session) {
         if (session == null) return;
 
-        if (mActivity.getTerminalView().attachSession(session)) {
+        TermuxService service = mActivity.getTermuxService();
+        TerminalSession previousSession = mActivity.getTerminalView().attachSession(session);
+        if (previousSession != session) {
+            // Session changed - update attachment state through the service
+            if (service != null) {
+                // Detach the previous session from this activity
+                if (previousSession != null) {
+                    service.detachSession(previousSession, mActivity.getActivityId());
+                }
+                // Attach the new session to this activity
+                service.attachSession(session, mActivity.getActivityId());
+            }
+
             // notify about switched session if not already displaying the session
             notifyOfSessionChange();
-
-            // Notify all windows that session attachment state changed so they can update their lists
-            TermuxService service = mActivity.getTermuxService();
-            if (service != null) {
-                service.notifyAllSessionListsUpdated();
-            }
         }
 
         // Set this activity's client on the session so it receives callbacks (render updates, etc.)
@@ -333,6 +339,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         TerminalSession currentTerminalSession = mActivity.getCurrentSession();
         int currentIndex = service.getIndexOfSession(currentTerminalSession);
         int size = service.getTermuxSessionsSize();
+        int activityId = mActivity.getActivityId();
 
         // Find the next unattached session in the given direction
         int index = currentIndex;
@@ -347,7 +354,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             if (termuxSession != null) {
                 TerminalSession session = termuxSession.getTerminalSession();
                 // Skip sessions attached to other windows, but allow switching to current session
-                if (!session.mAttached || session == currentTerminalSession) {
+                if (!service.isSessionAttachedToOther(session, activityId)) {
                     setCurrentSession(session);
                     return;
                 }
@@ -362,9 +369,8 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         TermuxSession termuxSession = service.getTermuxSession(index);
         if (termuxSession != null) {
             TerminalSession session = termuxSession.getTerminalSession();
-            TerminalSession currentSession = mActivity.getCurrentSession();
             // Only switch if the session is not attached to another window
-            if (!session.mAttached || session == currentSession) {
+            if (!service.isSessionAttachedToOther(session, mActivity.getActivityId())) {
                 setCurrentSession(session);
             }
         }
@@ -473,7 +479,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             mActivity.finishActivityIfNotFinishing();
         } else {
             // Try to atomically claim an unattached session to switch to
-            TerminalSession unattachedSession = service.claimFirstUnattachedSession();
+            TerminalSession unattachedSession = service.claimFirstUnattachedSession(mActivity.getActivityId());
             if (unattachedSession != null) {
                 setCurrentSession(unattachedSession);
             } else {
