@@ -58,11 +58,15 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         }
 
         boolean shouldEnableDarkTheme = ThemeUtils.shouldEnableDarkTheme(mActivity, NightMode.getAppNightMode().getName());
+        boolean isCurrentSession = sessionAtRow == mActivity.getCurrentSession();
 
-        if (shouldEnableDarkTheme) {
-            sessionTitleView.setBackground(
-                ContextCompat.getDrawable(mActivity, R.drawable.session_background_black_selected)
-            );
+        // Set background based on whether this is the current session
+        if (isCurrentSession) {
+            sessionTitleView.setBackground(ContextCompat.getDrawable(mActivity,
+                shouldEnableDarkTheme ? R.drawable.current_session_black : R.drawable.current_session));
+        } else {
+            sessionTitleView.setBackground(ContextCompat.getDrawable(mActivity,
+                shouldEnableDarkTheme ? R.drawable.session_background_black_selected : R.drawable.session_background_selected));
         }
 
         String name = sessionAtRow.mSessionName;
@@ -103,28 +107,21 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
     }
 
     @Override
-    public boolean isEnabled(int position) {
-        TermuxSession termuxSession = getItem(position);
-        if (termuxSession == null) return false;
-
-        TerminalSession session = termuxSession.getTerminalSession();
-
-        // Disable (gray out) sessions attached to other windows
-        // Sessions attached to current window should remain clickable
-        if (mActivity.getTermuxService() == null) return true;
-        return !mActivity.getTermuxService().isSessionAttachedToOther(session, mActivity.getActivityId());
-    }
-
-    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         TermuxSession clickedSession = getItem(position);
         TerminalSession session = clickedSession.getTerminalSession();
-        // Only switch if the session is not attached to another window
-        if (mActivity.getTermuxService() == null ||
-            !mActivity.getTermuxService().isSessionAttachedToOther(session, mActivity.getActivityId())) {
+        if (mActivity.getTermuxService() == null) return;
+
+        if (mActivity.getTermuxService().isSessionAttachedToOther(session, mActivity.getActivityId())) {
+            // Session is attached to another window - focus that window instead
+            if (!mActivity.getTermuxService().focusActivityForSession(session)) {
+                mActivity.showToast(mActivity.getString(R.string.msg_failed_to_focus_window), true);
+            }
+        } else {
+            // Session is unattached or attached to this window - switch to it
             mActivity.getTermuxTerminalSessionClient().setCurrentSession(session);
-            mActivity.getDrawer().closeDrawers();
         }
+        mActivity.getDrawer().closeDrawers();
     }
 
     @Override
