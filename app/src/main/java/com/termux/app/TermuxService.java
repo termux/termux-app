@@ -50,8 +50,10 @@ import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -85,6 +87,12 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
      * so need to clear these references when activities are destroyed.
      */
     private final Set<TermuxTerminalSessionActivityClient> mActivityClients = new HashSet<>();
+
+    /**
+     * Single source of truth for session attachment state. Maps session handle to the activity
+     * instance ID that owns it. If a session handle is not in this map, it is unattached.
+     */
+    private final Map<String, Integer> mSessionAttachments = new HashMap<>();
 
     /** The basic implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
      * that does not hold activity references and only a service reference.
@@ -795,8 +803,85 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         }
     }
 
+    /**
+     * Check if a session is attached to any activity.
+     * @param session The session to check
+     * @return true if the session is attached to any activity
+     */
+    public synchronized boolean isSessionAttached(TerminalSession session) {
+        if (session == null) return false;
+        return mSessionAttachments.containsKey(session.mHandle);
+    }
 
+    /**
+     * Check if a session is attached to a different activity than the one specified.
+     * @param session The session to check
+     * @param activityId The activity ID to compare against
+     * @return true if the session is attached to a different activity
+     */
+    public synchronized boolean isSessionAttachedToOther(TerminalSession session, int activityId) {
+        if (session == null) return false;
+        Integer owner = mSessionAttachments.get(session.mHandle);
+        return owner != null && owner != activityId;
+    }
 
+    /**
+     * Attempt to attach a session to an activity. Fails if already attached elsewhere.
+     * @param session The session to attach
+     * @param activityId The activity ID claiming the session
+     * @return true if successfully attached, false if already attached elsewhere
+     */
+    public synchronized boolean attachSession(TerminalSession session, int activityId) {
+        if (session == null) return false;
+        Integer currentOwner = mSessionAttachments.get(session.mHandle);
+        if (currentOwner != null && currentOwner != activityId) {
+            return false;  // Already attached to a different activity
+        }
+        mSessionAttachments.put(session.mHandle, activityId);
+        notifyAllSessionListsUpdated();
+        return true;
+    }
+
+    /**
+     * Detach a session from an activity. Only succeeds if the activity owns the session.
+     * @param session The session to detach
+     * @param activityId The activity ID releasing the session
+     */
+    public synchronized void detachSession(TerminalSession session, int activityId) {
+        if (session == null) return;
+        Integer owner = mSessionAttachments.get(session.mHandle);
+        if (owner != null && owner == activityId) {
+            mSessionAttachments.remove(session.mHandle);
+            notifyAllSessionListsUpdated();
+        }
+    }
+
+    /**
+     * Detach all sessions owned by an activity. Called when activity is destroyed.
+     * @param activityId The activity ID whose sessions should be detached
+     */
+    public synchronized void detachAllSessionsForActivity(int activityId) {
+        mSessionAttachments.entrySet().removeIf(entry -> entry.getValue() == activityId);
+        notifyAllSessionListsUpdated();
+    }
+
+    /**
+     * Atomically claim an unattached session by marking it as attached.
+     * @param activityId The activity ID claiming the session
+     * @return The claimed session, or null if no unattached sessions are available
+     */
+    @Nullable
+    public synchronized TerminalSession claimFirstUnattachedSession(int activityId) {
+        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
+            TerminalSession session = mShellManager.mTermuxSessions.get(i).getTerminalSession();
+            if (!mSessionAttachments.containsKey(session.mHandle)) {
+                mSessionAttachments.put(session.mHandle, activityId);
+                notifyAllSessionListsUpdated();
+                return session;
+            }
+        }
+        return null;
+    }
 
 
     private Notification buildNotification() {
@@ -924,33 +1009,6 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
     public synchronized TermuxSession getLastTermuxSession() {
         return mShellManager.mTermuxSessions.isEmpty() ? null : mShellManager.mTermuxSessions.get(mShellManager.mTermuxSessions.size() - 1);
-    }
-
-    /** Get the first session that is not attached to any window. Used for multi-window support. */
-    @Nullable
-    public synchronized TerminalSession getFirstUnattachedSession() {
-        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
-            TerminalSession session = mShellManager.mTermuxSessions.get(i).getTerminalSession();
-            if (!session.mAttached) {
-                return session;
-            }
-        }
-        return null;
-    }
-
-    /** Atomically claim an unattached session by marking it as attached. Returns the session if
-     * successful, null if no unattached sessions are available. This prevents race conditions
-     * when multiple windows try to claim a session simultaneously. */
-    @Nullable
-    public synchronized TerminalSession claimFirstUnattachedSession() {
-        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
-            TerminalSession session = mShellManager.mTermuxSessions.get(i).getTerminalSession();
-            if (!session.mAttached) {
-                session.mAttached = true;
-                return session;
-            }
-        }
-        return null;
     }
 
     public synchronized int getIndexOfSession(TerminalSession terminalSession) {

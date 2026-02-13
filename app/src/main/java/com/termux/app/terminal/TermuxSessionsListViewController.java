@@ -91,8 +91,8 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         sessionTitleView.setTextColor(color);
 
         // Gray out sessions attached to other windows
-        TerminalSession currentSession = mActivity.getCurrentSession();
-        boolean isAttachedToOtherWindow = sessionAtRow.mAttached && sessionAtRow != currentSession;
+        boolean isAttachedToOtherWindow = mActivity.getTermuxService() != null &&
+            mActivity.getTermuxService().isSessionAttachedToOther(sessionAtRow, mActivity.getActivityId());
         if (isAttachedToOtherWindow) {
             sessionTitleView.setAlpha(0.5f);
         } else {
@@ -108,20 +108,20 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         if (termuxSession == null) return false;
 
         TerminalSession session = termuxSession.getTerminalSession();
-        TerminalSession currentSession = mActivity.getCurrentSession();
 
         // Disable (gray out) sessions attached to other windows
         // Sessions attached to current window should remain clickable
-        return !session.mAttached || session == currentSession;
+        if (mActivity.getTermuxService() == null) return true;
+        return !mActivity.getTermuxService().isSessionAttachedToOther(session, mActivity.getActivityId());
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         TermuxSession clickedSession = getItem(position);
         TerminalSession session = clickedSession.getTerminalSession();
-        TerminalSession currentSession = mActivity.getCurrentSession();
         // Only switch if the session is not attached to another window
-        if (!session.mAttached || session == currentSession) {
+        if (mActivity.getTermuxService() == null ||
+            !mActivity.getTermuxService().isSessionAttachedToOther(session, mActivity.getActivityId())) {
             mActivity.getTermuxTerminalSessionClient().setCurrentSession(session);
             mActivity.getDrawer().closeDrawers();
         }
