@@ -7,6 +7,49 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
+    <!-- Top bar with session tabs -->
+    <LinearLayout
+        android:id="@+id/session_tabs_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="?attr/termuxActivityDrawerBackground">
+
+        <HorizontalScrollView
+            android:id="@+id/session_tabs_scroll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/session_tabs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+
+        </HorizontalScrollView>
+
+        <ImageButton
+            android:id="@+id/new_session_tab_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_new_session"
+            android:background="@null"
+            android:contentDescription="@string/action_new_session"
+            app:tint="?attr/termuxActivityDrawerImageTint" />
+
+        <ImageButton
+            android:id="@+id/settings_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_settings"
+            android:background="@null"
+            android:contentDescription="@string/action_open_settings"
+            app:tint="?attr/termuxActivityDrawerImageTint" />
+
+    </LinearLayout>
+
     <RelativeLayout
         android:id="@+id/activity_termux_root_relative_layout"
         android:layout_width="match_parent"
@@ -16,83 +59,16 @@
         android:layout_marginVertical="0dp"
         android:orientation="vertical">
 
-        <androidx.drawerlayout.widget.DrawerLayout
-            android:id="@+id/drawer_layout"
+        <com.termux.view.TerminalView
+            android:id="@+id/terminal_view"
             android:layout_width="match_parent"
-            android:layout_alignParentTop="true"
+            android:layout_height="match_parent"
             android:layout_above="@+id/terminal_toolbar_container"
-            android:layout_height="match_parent">
-
-            <com.termux.view.TerminalView
-                android:id="@+id/terminal_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:defaultFocusHighlightEnabled="false"
-                android:focusableInTouchMode="true"
-                android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
-                android:scrollbars="vertical"
-                tools:ignore="UnusedAttribute" />
-
-            <LinearLayout
-                android:id="@+id/left_drawer"
-                android:layout_width="240dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="start"
-                android:choiceMode="singleChoice"
-                android:divider="@android:color/transparent"
-                android:dividerHeight="0dp"
-                android:descendantFocusability="blocksDescendants"
-                android:orientation="vertical"
-                android:background="?attr/termuxActivityDrawerBackground">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <ImageButton
-                        android:id="@+id/settings_button"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_settings"
-                        android:background="@null"
-                        android:contentDescription="@string/action_open_settings"
-                        app:tint="?attr/termuxActivityDrawerImageTint" />
-                </LinearLayout>
-
-                <ListView
-                    android:id="@+id/terminal_sessions_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_gravity="top"
-                    android:layout_weight="1"
-                    android:choiceMode="singleChoice"
-                    android:longClickable="true" />
-
-                <LinearLayout
-                    style="?android:attr/buttonBarStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/toggle_keyboard_button"
-                        style="?android:attr/buttonBarButtonStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/action_toggle_soft_keyboard" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/new_session_button"
-                        style="?android:attr/buttonBarButtonStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/action_new_session" />
-                </LinearLayout>
-            </LinearLayout>
-
-        </androidx.drawerlayout.widget.DrawerLayout>
+            android:defaultFocusHighlightEnabled="false"
+            android:focusableInTouchMode="true"
+            android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
+            android:scrollbars="vertical"
+            tools:ignore="UnusedAttribute" />
 
         <LinearLayout
             android:id="@+id/terminal_toolbar_container"

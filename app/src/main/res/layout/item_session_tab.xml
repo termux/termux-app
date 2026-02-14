@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/session_tab_root"
+    android:layout_width="wrap_content"
+    android:layout_height="40dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/session_tab_background"
+    android:paddingStart="12dp"
+    android:paddingEnd="8dp">
+
+    <TextView
+        android:id="@+id/session_tab_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="120dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="13sp"
+        android:textColor="@android:color/white" />
+
+    <ImageButton
+        android:id="@+id/session_tab_close"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="4dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:background="@null"
+        android:contentDescription="Close tab"
+        android:scaleType="centerInside"
+        android:tint="@android:color/white"
+        android:alpha="0.7" />
+
+</LinearLayout>
