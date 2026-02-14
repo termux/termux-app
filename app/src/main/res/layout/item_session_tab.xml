@@ -11,8 +11,9 @@
 
     <TextView
         android:id="@+id/session_tab_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:maxWidth="100dp"
         android:ellipsize="end"
         android:maxLines="1"
@@ -29,6 +30,9 @@
         android:contentDescription="Close tab"
         android:scaleType="centerInside"
         android:tint="@android:color/white"
-        android:alpha="0.7" />
+        android:alpha="0.7"
+        android:visibility="invisible"
+        android:clickable="true"
+        android:focusable="true" />
 
 </LinearLayout>

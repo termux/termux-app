@@ -2,10 +2,8 @@ package com.termux.app.terminal;
 
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -47,7 +45,7 @@ public class TermuxSessionTabsController {
                 currentSessionIndex = i;
             }
 
-            View tabView = createTabView(termuxSession, i);
+            View tabView = createTabView(termuxSession, i, terminalSession == currentSession);
             mTabsContainer.addView(tabView);
         }
 
@@ -57,7 +55,7 @@ public class TermuxSessionTabsController {
         }
     }
 
-    private View createTabView(TermuxSession termuxSession, int position) {
+    private View createTabView(TermuxSession termuxSession, int position, boolean isSelected) {
         LayoutInflater inflater = LayoutInflater.from(mActivity);
         View tabView = inflater.inflate(R.layout.item_session_tab, mTabsContainer, false);
 
@@ -95,15 +93,16 @@ public class TermuxSessionTabsController {
             }
         }
 
-        // Highlight current session
-        TerminalSession currentSession = mActivity.getCurrentSession();
-        boolean isSelected = terminalSession == currentSession;
+        // Set selection state
         tabView.setSelected(isSelected);
+        
+        // Show close button only for selected tab
+        closeButton.setVisibility(isSelected ? View.VISIBLE : View.INVISIBLE);
 
-        // Click to switch session
+        // Click to switch session (without toast notification)
         tabView.setOnClickListener(v -> {
             if (terminalSession != null) {
-                mActivity.getTermuxTerminalSessionClient().setCurrentSession(terminalSession);
+                mActivity.getTermuxTerminalSessionClient().setCurrentSession(terminalSession, false);
             }
         });
 
@@ -115,14 +114,24 @@ public class TermuxSessionTabsController {
             return true;
         });
 
-        // Close button
+        // Close button - finish and remove session
         closeButton.setOnClickListener(v -> {
             if (terminalSession != null) {
-                mActivity.getTermuxTerminalSessionClient().removeFinishedSession(terminalSession);
+                closeSession(terminalSession);
             }
         });
 
         return tabView;
+    }
+
+    /**
+     * Close a terminal session - finish it if running and then remove
+     */
+    private void closeSession(TerminalSession session) {
+        if (session == null) return;
+        
+        // Finish the session by sending SIGKILL - onSessionFinished callback will handle removal
+        session.finishIfRunning();
     }
 
     private void scrollToTab(int index) {
@@ -142,10 +151,16 @@ public class TermuxSessionTabsController {
         if (mTabsContainer == null) return;
         if (index < 0 || index >= mTabsContainer.getChildCount()) return;
 
-        // Update selection state
+        // Update selection state and close button visibility for all tabs
         for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
             View child = mTabsContainer.getChildAt(i);
-            child.setSelected(i == index);
+            boolean isSelected = (i == index);
+            child.setSelected(isSelected);
+            
+            ImageButton closeButton = child.findViewById(R.id.session_tab_close);
+            if (closeButton != null) {
+                closeButton.setVisibility(isSelected ? View.VISIBLE : View.INVISIBLE);
+            }
         }
 
         mCurrentSessionIndex = index;

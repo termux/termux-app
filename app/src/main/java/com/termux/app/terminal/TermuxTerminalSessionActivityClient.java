@@ -173,7 +173,9 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         } else {
             // Once we have a separate launcher icon for the failsafe session, it
             // should be safe to auto-close session on exit code '0' or '130'.
-            if (finishedSession.getExitStatus() == 0 || finishedSession.getExitStatus() == 130 || isPluginExecutionCommandWithPendingResult) {
+            // Also auto-close if killed by signal (negative exit status like -9 for SIGKILL)
+            int exitStatus = finishedSession.getExitStatus();
+            if (exitStatus == 0 || exitStatus == 130 || exitStatus < 0 || isPluginExecutionCommandWithPendingResult) {
                 removeFinishedSession(finishedSession);
             }
         }
@@ -290,11 +292,18 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
     /** Try switching to session. */
     public void setCurrentSession(TerminalSession session) {
+        setCurrentSession(session, true);
+    }
+
+    /** Try switching to session with optional toast notification. */
+    public void setCurrentSession(TerminalSession session, boolean showToast) {
         if (session == null) return;
 
         if (mActivity.getTerminalView().attachSession(session)) {
             // notify about switched session if not already displaying the session
-            notifyOfSessionChange();
+            if (showToast) {
+                notifyOfSessionChange();
+            }
         }
 
         // We call the following even when the session is already being displayed since config may

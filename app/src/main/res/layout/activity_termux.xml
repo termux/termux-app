@@ -38,6 +38,7 @@
 
             <!-- Text input with rounded corners and border -->
             <FrameLayout
+                android:id="@+id/terminal_toolbar_text_input_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="4dp"
