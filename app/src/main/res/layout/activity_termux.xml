@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="?attr/termuxActivityDrawerBackground">
+        android:background="@color/black">
 
         <HorizontalScrollView
             android:id="@+id/session_tabs_scroll"
@@ -34,10 +34,11 @@
             android:id="@+id/new_session_tab_button"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/ic_new_session"
+            android:src="@android:drawable/ic_menu_add"
             android:background="@null"
             android:contentDescription="@string/action_new_session"
-            app:tint="?attr/termuxActivityDrawerImageTint" />
+            android:scaleType="centerInside"
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/settings_button"
@@ -46,9 +47,15 @@
             android:src="@drawable/ic_settings"
             android:background="@null"
             android:contentDescription="@string/action_open_settings"
-            app:tint="?attr/termuxActivityDrawerImageTint" />
+            app:tint="@android:color/white" />
 
     </LinearLayout>
+
+    <!-- Separator line -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#444444" />
 
     <RelativeLayout
         android:id="@+id/activity_termux_root_relative_layout"
@@ -79,6 +86,12 @@
             android:background="@color/black"
             android:layout_alignParentBottom="true">
 
+            <!-- Separator line above text input -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#444444" />
+
             <EditText
                 android:id="@+id/terminal_toolbar_text_input"
                 android:layout_width="match_parent"
@@ -94,6 +107,12 @@
                 android:paddingBottom="0dp"
                 android:background="@android:color/transparent"
                 tools:ignore="LabelFor" />
+
+            <!-- Separator line below text input -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#444444" />
 
             <com.termux.shared.termux.extrakeys.ExtraKeysView
                 android:id="@+id/terminal_toolbar_extra_keys"
