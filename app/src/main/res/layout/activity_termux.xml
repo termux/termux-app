@@ -20,7 +20,7 @@
             android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
             android:layout_alignParentTop="true"
-            android:layout_above="@+id/terminal_toolbar_view_pager"
+            android:layout_above="@+id/terminal_toolbar_container"
             android:layout_height="match_parent">
 
             <com.termux.view.TerminalView
@@ -94,13 +94,39 @@
 
         </androidx.drawerlayout.widget.DrawerLayout>
 
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/terminal_toolbar_view_pager"
+        <LinearLayout
+            android:id="@+id/terminal_toolbar_container"
             android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="37.5dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:background="@color/black"
-            android:layout_alignParentBottom="true" />
+            android:layout_alignParentBottom="true">
+
+            <EditText
+                android:id="@+id/terminal_toolbar_text_input"
+                android:layout_width="match_parent"
+                android:layout_height="37.5dp"
+                android:imeOptions="actionSend|flagNoFullscreen"
+                android:maxLines="1"
+                android:inputType="text"
+                android:importantForAutofill="no"
+                android:textColor="@android:color/white"
+                android:textColorHighlight="@android:color/darker_gray"
+                android:paddingTop="0dp"
+                android:textCursorDrawable="@null"
+                android:paddingBottom="0dp"
+                android:background="@android:color/transparent"
+                tools:ignore="LabelFor" />
+
+            <com.termux.shared.termux.extrakeys.ExtraKeysView
+                android:id="@+id/terminal_toolbar_extra_keys"
+                style="?android:attr/buttonBarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 
