@@ -304,7 +304,12 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
     void notifyOfSessionChange() {
-        // Session change notification disabled - tabs are now always visible
+        if (!mActivity.isVisible()) return;
+
+        if (!mActivity.getProperties().areTerminalSessionChangeToastsDisabled()) {
+            TerminalSession session = mActivity.getCurrentSession();
+            mActivity.showToast(toToastTitle(session), false);
+        }
     }
 
     public void switchToSession(boolean forward) {

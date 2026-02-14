@@ -1,18 +1,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/session_tab_root"
     android:layout_width="wrap_content"
-    android:layout_height="40dp"
+    android:layout_height="36dp"
+    android:layout_marginEnd="4dp"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:background="@drawable/session_tab_background"
     android:paddingStart="12dp"
-    android:paddingEnd="8dp">
+    android:paddingEnd="4dp">
 
     <TextView
         android:id="@+id/session_tab_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxWidth="120dp"
+        android:maxWidth="100dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textSize="13sp"
@@ -20,10 +21,10 @@
 
     <ImageButton
         android:id="@+id/session_tab_close"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:layout_marginStart="4dp"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:src="@drawable/ic_close"
         android:background="@null"
         android:contentDescription="Close tab"
         android:scaleType="centerInside"
