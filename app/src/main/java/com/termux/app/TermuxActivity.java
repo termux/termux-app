@@ -196,6 +196,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
+    private static final String PREF_TEXT_INPUT_VISIBLE = "text_input_visible";
 
     private static final String LOG_TAG = "TermuxActivity";
 
@@ -260,6 +261,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
 
+        // Register broadcast receiver in onCreate so it works even when activity is in background
+        registerTermuxActivityBroadcastReceiver();
+
         try {
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
             Intent serviceIntent = new Intent(this, TermuxService.class);
@@ -302,8 +306,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mPreferences.isTerminalMarginAdjustmentEnabled())
             addTermuxActivityRootViewGlobalLayoutListener();
-
-        registerTermuxActivityBroadcastReceiver();
     }
 
     @Override
@@ -344,8 +346,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTermuxTerminalViewClient.onStop();
 
         removeTermuxActivityRootViewGlobalLayoutListener();
-
-        unregisterTermuxActivityBroadcastReceiver();
     }
 
     @Override
@@ -355,6 +355,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         Logger.logDebug(LOG_TAG, "onDestroy");
 
         if (mIsInvalidState) return;
+
+        unregisterTermuxActivityBroadcastReceiver();
 
         if (mTermuxService != null) {
             // Do not leave service and session clients with references to activity.
@@ -567,6 +569,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             }
             return true;
         });
+
+        // Restore text input visibility state
+        View textInputContainer = findViewById(R.id.terminal_toolbar_text_input_container);
+        if (textInputContainer != null) {
+            textInputContainer.setVisibility(isTextInputVisible() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void setTerminalToolbarHeight() {
@@ -914,6 +922,28 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
 
+    /**
+     * Set visibility of the text input panel.
+     * @param visible true to show, false to hide
+     */
+    public void setTextInputVisible(boolean visible) {
+        View textInputContainer = findViewById(R.id.terminal_toolbar_text_input_container);
+        if (textInputContainer != null) {
+            textInputContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+            // Save state to preferences
+            getSharedPreferences("termux_prefs", MODE_PRIVATE).edit().putBoolean(PREF_TEXT_INPUT_VISIBLE, visible).apply();
+        }
+    }
+
+    /**
+     * Get saved visibility state of text input panel.
+     * @return true if should be visible, false otherwise
+     */
+    public boolean isTextInputVisible() {
+        return getSharedPreferences("termux_prefs", MODE_PRIVATE).getBoolean(PREF_TEXT_INPUT_VISIBLE, true);
+    }
+
+
 
 
     public static void updateTermuxActivityStyling(Context context, boolean recreateActivity) {
@@ -923,11 +953,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         context.sendBroadcast(stylingIntent);
     }
 
+    private static final String ACTION_TEXT_INPUT_VISIBILITY_CHANGED = "com.termux.TEXT_INPUT_VISIBILITY_CHANGED";
+
     private void registerTermuxActivityBroadcastReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
+        intentFilter.addAction(ACTION_TEXT_INPUT_VISIBILITY_CHANGED);
 
         registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
     }
@@ -951,10 +984,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         public void onReceive(Context context, Intent intent) {
             if (intent == null) return;
 
+            String action = intent.getAction();
+            
+            // Handle text input visibility change even when activity is in background
+            if (ACTION_TEXT_INPUT_VISIBILITY_CHANGED.equals(action)) {
+                Logger.logDebug(LOG_TAG, "Received intent to change text input visibility");
+                boolean visible = intent.getBooleanExtra("visible", true);
+                setTextInputVisible(visible);
+                return;
+            }
+
             if (mIsVisible) {
                 fixTermuxActivityBroadcastReceiverIntent(intent);
 
-                switch (intent.getAction()) {
+                switch (action) {
                     case TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH:
                         Logger.logDebug(LOG_TAG, "Received intent to notify app crash");
                         TermuxCrashUtils.notifyAppCrashFromCrashLogFile(context, LOG_TAG);

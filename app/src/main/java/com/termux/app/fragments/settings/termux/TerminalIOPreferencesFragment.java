@@ -7,6 +7,7 @@ import androidx.annotation.Keep;
 import androidx.preference.PreferenceDataStore;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreferenceCompat;
 
 import com.termux.R;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
@@ -23,6 +24,19 @@ public class TerminalIOPreferencesFragment extends PreferenceFragmentCompat {
         preferenceManager.setPreferenceDataStore(TerminalIOPreferencesDataStore.getInstance(context));
 
         setPreferencesFromResource(R.xml.termux_terminal_io_preferences, rootKey);
+        
+        // Add listener to apply text input visibility change immediately
+        SwitchPreferenceCompat textInputPref = findPreference("text_input_visible");
+        if (textInputPref != null) {
+            textInputPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                // Send broadcast to update TermuxActivity
+                android.content.Intent intent = new android.content.Intent("com.termux.TEXT_INPUT_VISIBILITY_CHANGED");
+                intent.putExtra("visible", (Boolean) newValue);
+                intent.setPackage(context.getPackageName());
+                context.sendBroadcast(intent);
+                return true;
+            });
+        }
     }
 
 }
@@ -60,6 +74,11 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
             case "soft_keyboard_enabled_only_if_no_hardware":
                 mPreferences.setSoftKeyboardEnabledOnlyIfNoHardware(value);
                 break;
+            case "text_input_visible":
+                // Save to shared preferences
+                mContext.getSharedPreferences("termux_prefs", Context.MODE_PRIVATE)
+                    .edit().putBoolean("text_input_visible", value).apply();
+                break;
             default:
                 break;
         }
@@ -74,6 +93,9 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
                 return mPreferences.isSoftKeyboardEnabled();
             case "soft_keyboard_enabled_only_if_no_hardware":
                 return mPreferences.isSoftKeyboardEnabledOnlyIfNoHardware();
+            case "text_input_visible":
+                return mContext.getSharedPreferences("termux_prefs", Context.MODE_PRIVATE)
+                    .getBoolean("text_input_visible", true);
             default:
                 return false;
         }

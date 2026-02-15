@@ -7,49 +7,6 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
-    <!-- Top bar with session tabs -->
-    <LinearLayout
-        android:id="@+id/session_tabs_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="?attr/termuxActivityDrawerBackground">
-
-        <HorizontalScrollView
-            android:id="@+id/session_tabs_scroll"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:id="@+id/session_tabs"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" />
-
-        </HorizontalScrollView>
-
-        <ImageButton
-            android:id="@+id/new_session_tab_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_new_session"
-            android:background="@null"
-            android:contentDescription="@string/action_new_session"
-            app:tint="?attr/termuxActivityDrawerImageTint" />
-
-        <ImageButton
-            android:id="@+id/settings_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_settings"
-            android:background="@null"
-            android:contentDescription="@string/action_open_settings"
-            app:tint="?attr/termuxActivityDrawerImageTint" />
-
-    </LinearLayout>
-
     <RelativeLayout
         android:id="@+id/activity_termux_root_relative_layout"
         android:layout_width="match_parent"
@@ -79,21 +36,82 @@
             android:background="@color/black"
             android:layout_alignParentBottom="true">
 
-            <EditText
-                android:id="@+id/terminal_toolbar_text_input"
+            <!-- Text input with rounded corners and border -->
+            <FrameLayout
+                android:id="@+id/terminal_toolbar_text_input_container"
                 android:layout_width="match_parent"
-                android:layout_height="37.5dp"
-                android:imeOptions="actionSend|flagNoFullscreen"
-                android:maxLines="1"
-                android:inputType="text"
-                android:importantForAutofill="no"
-                android:textColor="@android:color/white"
-                android:textColorHighlight="@android:color/darker_gray"
-                android:paddingTop="0dp"
-                android:textCursorDrawable="@null"
-                android:paddingBottom="0dp"
-                android:background="@android:color/transparent"
-                tools:ignore="LabelFor" />
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="4dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/text_input_background">
+
+                <EditText
+                    android:id="@+id/terminal_toolbar_text_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:imeOptions="actionSend|flagNoFullscreen"
+                    android:maxLines="1"
+                    android:inputType="text"
+                    android:importantForAutofill="no"
+                    android:textColor="@android:color/white"
+                    android:textColorHighlight="@android:color/darker_gray"
+                    android:textCursorDrawable="@null"
+                    android:background="@android:color/transparent"
+                    tools:ignore="LabelFor" />
+
+            </FrameLayout>
+
+            <!-- Session tabs container - moved above extra keys -->
+            <LinearLayout
+                android:id="@+id/session_tabs_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@color/black"
+                android:paddingVertical="2dp">
+
+                <HorizontalScrollView
+                    android:id="@+id/session_tabs_scroll"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/session_tabs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="4dp" />
+
+                </HorizontalScrollView>
+
+                <!-- Add tab button with + icon -->
+                <ImageButton
+                    android:id="@+id/new_session_tab_button"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_add"
+                    android:background="@drawable/session_tab_background"
+                    android:contentDescription="@string/action_new_session"
+                    android:tint="@android:color/white"
+                    android:scaleType="center" />
+
+                <ImageButton
+                    android:id="@+id/settings_button"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_settings"
+                    android:background="@drawable/session_tab_background"
+                    android:contentDescription="@string/action_open_settings"
+                    android:tint="@android:color/white"
+                    android:scaleType="center" />
+
+            </LinearLayout>
 
             <com.termux.shared.termux.extrakeys.ExtraKeysView
                 android:id="@+id/terminal_toolbar_extra_keys"
