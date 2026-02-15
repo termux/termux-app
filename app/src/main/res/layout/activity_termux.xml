@@ -99,6 +99,19 @@
                     android:tint="@android:color/white"
                     android:scaleType="center" />
 
+                <!-- Toggle text input visibility button -->
+                <ImageButton
+                    android:id="@+id/toggle_text_input_button"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_keyboard_hide"
+                    android:background="@drawable/session_tab_background"
+                    android:contentDescription="@string/action_toggle_text_input"
+                    android:tint="@android:color/white"
+                    android:scaleType="center" />
+
                 <ImageButton
                     android:id="@+id/settings_button"
                     android:layout_width="36dp"

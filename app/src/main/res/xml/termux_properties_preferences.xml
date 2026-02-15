@@ -1,0 +1,225 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- General Category -->
+    <PreferenceCategory
+        app:key="general"
+        app:title="@string/termux_properties_general_header">
+
+        <!-- Bell Character -->
+        <ListPreference
+            app:key="bell-character"
+            app:title="@string/termux_bell_character_title"
+            app:entries="@array/termux_bell_character_entries"
+            app:entryValues="@array/termux_bell_character_values"
+            app:defaultValue="vibrate" />
+
+        <!-- Back Key -->
+        <ListPreference
+            app:key="back-key"
+            app:title="@string/termux_back_key_title"
+            app:entries="@array/termux_back_key_entries"
+            app:entryValues="@array/termux_back_key_values"
+            app:defaultValue="back" />
+
+        <!-- Volume Keys -->
+        <ListPreference
+            app:key="volume-keys"
+            app:title="@string/termux_volume_keys_title"
+            app:entries="@array/termux_volume_keys_entries"
+            app:entryValues="@array/termux_volume_keys_values"
+            app:defaultValue="virtual" />
+
+        <!-- Soft Keyboard Toggle -->
+        <ListPreference
+            app:key="soft-keyboard-toggle-behaviour"
+            app:title="@string/termux_soft_keyboard_toggle_title"
+            app:entries="@array/termux_soft_keyboard_toggle_entries"
+            app:entryValues="@array/termux_soft_keyboard_toggle_values"
+            app:defaultValue="show/hide" />
+
+        <!-- Night Mode -->
+        <ListPreference
+            app:key="night-mode"
+            app:title="@string/termux_night_mode_title"
+            app:entries="@array/termux_night_mode_entries"
+            app:entryValues="@array/termux_night_mode_values"
+            app:defaultValue="system" />
+
+        <!-- Default Working Directory -->
+        <EditTextPreference
+            app:key="default-working-directory"
+            app:title="@string/termux_default_working_directory_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <!-- Extra Keys Style -->
+        <ListPreference
+            app:key="extra-keys-style"
+            app:title="@string/termux_extra_keys_style_title"
+            app:useSimpleSummaryProvider="true"
+            app:defaultValue="default" />
+
+    </PreferenceCategory>
+
+    <!-- Terminal Category -->
+    <PreferenceCategory
+        app:key="terminal"
+        app:title="@string/termux_properties_terminal_header">
+
+        <!-- Terminal Cursor Style -->
+        <ListPreference
+            app:key="terminal-cursor-style"
+            app:title="@string/termux_terminal_cursor_style_title"
+            app:entries="@array/termux_terminal_cursor_style_entries"
+            app:entryValues="@array/termux_terminal_cursor_style_values"
+            app:defaultValue="block" />
+
+        <!-- Terminal Cursor Blink Rate -->
+        <ListPreference
+            app:key="terminal-cursor-blink-rate"
+            app:title="@string/termux_terminal_cursor_blink_rate_title"
+            app:entries="@array/termux_terminal_cursor_blink_rate_entries"
+            app:entryValues="@array/termux_terminal_cursor_blink_rate_values"
+            app:defaultValue="0" />
+
+        <!-- Terminal Transcript Rows -->
+        <ListPreference
+            app:key="terminal-transcript-rows"
+            app:title="@string/termux_terminal_transcript_rows_title"
+            app:entries="@array/termux_terminal_transcript_rows_entries"
+            app:entryValues="@array/termux_terminal_transcript_rows_values"
+            app:defaultValue="0" />
+
+        <!-- Terminal Margin Horizontal -->
+        <ListPreference
+            app:key="terminal-margin-horizontal"
+            app:title="@string/termux_terminal_margin_horizontal_title"
+            app:entries="@array/termux_terminal_margin_entries"
+            app:entryValues="@array/termux_terminal_margin_values"
+            app:defaultValue="3" />
+
+        <!-- Terminal Margin Vertical -->
+        <ListPreference
+            app:key="terminal-margin-vertical"
+            app:title="@string/termux_terminal_margin_vertical_title"
+            app:entries="@array/termux_terminal_margin_entries"
+            app:entryValues="@array/termux_terminal_margin_values"
+            app:defaultValue="0" />
+
+        <!-- Terminal Toolbar Height -->
+        <ListPreference
+            app:key="terminal-toolbar-height"
+            app:title="@string/termux_terminal_toolbar_height_title"
+            app:entries="@array/termux_terminal_toolbar_height_entries"
+            app:entryValues="@array/termux_terminal_toolbar_height_values"
+            app:defaultValue="1" />
+
+        <!-- Delete Temp Files -->
+        <ListPreference
+            app:key="delete-tmpdir-files-older-than-x-days-on-exit"
+            app:title="@string/termux_delete_tmpdir_files_title"
+            app:summary="@string/termux_delete_tmpdir_files_summary"
+            app:entries="@array/termux_delete_tmpdir_files_entries"
+            app:entryValues="@array/termux_delete_tmpdir_files_values"
+            app:defaultValue="3" />
+
+    </PreferenceCategory>
+
+    <!-- Behaviour Category -->
+    <PreferenceCategory
+        app:key="behaviour"
+        app:title="@string/termux_properties_behaviour_header">
+
+        <!-- Hardware Keyboard Shortcuts -->
+        <SwitchPreferenceCompat
+            app:key="disable-hardware-keyboard-shortcuts"
+            app:title="@string/termux_disable_hardware_keyboard_shortcuts_title"
+            app:summaryOn="@string/termux_disable_hardware_keyboard_shortcuts_on"
+            app:summaryOff="@string/termux_disable_hardware_keyboard_shortcuts_off" />
+
+        <!-- Terminal Session Change Toast -->
+        <SwitchPreferenceCompat
+            app:key="disable-terminal-session-change-toast"
+            app:title="@string/termux_disable_terminal_session_change_toast_title"
+            app:summaryOn="@string/termux_disable_terminal_session_change_toast_on"
+            app:summaryOff="@string/termux_disable_terminal_session_change_toast_off" />
+
+        <!-- Enforce Char Based Input -->
+        <SwitchPreferenceCompat
+            app:key="enforce-char-based-input"
+            app:title="@string/termux_enforce_char_based_input_title"
+            app:summaryOn="@string/termux_enforce_char_based_input_on"
+            app:summaryOff="@string/termux_enforce_char_based_input_off" />
+
+        <!-- Extra Keys Text All Caps -->
+        <SwitchPreferenceCompat
+            app:key="extra-keys-text-all-caps"
+            app:title="@string/termux_extra_keys_text_all_caps_title"
+            app:summaryOn="@string/termux_extra_keys_text_all_caps_on"
+            app:summaryOff="@string/termux_extra_keys_text_all_caps_off" />
+
+        <!-- Hide Soft Keyboard On Startup -->
+        <SwitchPreferenceCompat
+            app:key="hide-soft-keyboard-on-startup"
+            app:title="@string/termux_hide_soft_keyboard_on_startup_title"
+            app:summaryOn="@string/termux_hide_soft_keyboard_on_startup_on"
+            app:summaryOff="@string/termux_hide_soft_keyboard_on_startup_off" />
+
+        <!-- Run Termux AM Socket Server -->
+        <SwitchPreferenceCompat
+            app:key="run-termux-am-socket-server"
+            app:title="@string/termux_run_termux_am_socket_server_title"
+            app:summaryOn="@string/termux_run_termux_am_socket_server_on"
+            app:summaryOff="@string/termux_run_termux_am_socket_server_off" />
+
+        <!-- Terminal URL Open -->
+        <SwitchPreferenceCompat
+            app:key="terminal-onclick-url-open"
+            app:title="@string/termux_terminal_onclick_url_open_title"
+            app:summaryOn="@string/termux_terminal_onclick_url_open_on"
+            app:summaryOff="@string/termux_terminal_onclick_url_open_off" />
+
+        <!-- Ctrl Space Workaround -->
+        <SwitchPreferenceCompat
+            app:key="ctrl-space-workaround"
+            app:title="@string/termux_ctrl_space_workaround_title"
+            app:summaryOn="@string/termux_ctrl_space_workaround_on"
+            app:summaryOff="@string/termux_ctrl_space_workaround_off" />
+
+        <!-- Fullscreen -->
+        <SwitchPreferenceCompat
+            app:key="fullscreen"
+            app:title="@string/termux_fullscreen_title"
+            app:summaryOn="@string/termux_fullscreen_on"
+            app:summaryOff="@string/termux_fullscreen_off" />
+
+        <!-- Fullscreen Workaround -->
+        <SwitchPreferenceCompat
+            app:key="use-fullscreen-workaround"
+            app:title="@string/termux_use_fullscreen_workaround_title"
+            app:summaryOn="@string/termux_use_fullscreen_workaround_on"
+            app:summaryOff="@string/termux_use_fullscreen_workaround_off" />
+
+    </PreferenceCategory>
+
+    <!-- File Receivers Category -->
+    <PreferenceCategory
+        app:key="receivers"
+        app:title="@string/termux_properties_receivers_header">
+
+        <!-- File Share Receiver -->
+        <SwitchPreferenceCompat
+            app:key="disable-file-share-receiver"
+            app:title="@string/termux_disable_file_share_receiver_title"
+            app:summaryOn="@string/termux_disable_file_share_receiver_on"
+            app:summaryOff="@string/termux_disable_file_share_receiver_off" />
+
+        <!-- File View Receiver -->
+        <SwitchPreferenceCompat
+            app:key="disable-file-view-receiver"
+            app:title="@string/termux_disable_file_view_receiver_title"
+            app:summaryOn="@string/termux_disable_file_view_receiver_on"
+            app:summaryOff="@string/termux_disable_file_view_receiver_off" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

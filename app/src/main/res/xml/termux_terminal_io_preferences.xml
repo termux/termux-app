@@ -17,7 +17,7 @@
             app:title="@string/termux_soft_keyboard_enabled_only_if_no_hardware_title" />
 
         <SwitchPreferenceCompat
-            app:key="text_input_visible"
+            app:key="text_input_enabled"
             app:defaultValue="true"
             app:title="Show text input field"
             app:summaryOn="Text input field is visible above extra keys"

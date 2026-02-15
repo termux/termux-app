@@ -53,6 +53,7 @@
     <string name="action_create_named_session_confirm">Create</string>
 
     <string name="action_toggle_soft_keyboard">Keyboard</string>
+    <string name="action_toggle_text_input">Toggle text input</string>
 
     <string name="msg_enabling_terminal_toolbar">Enabling Terminal Toolbar</string>
     <string name="msg_disabling_terminal_toolbar">Disabling Terminal Toolbar</string>
@@ -203,6 +204,138 @@
                     It should be enabled to try to fix the issue where soft keyboard covers part of extra keys/terminal view.
                     If it causes screen flickering on your devices, then disable it. (Default)</string>
 
+
+        <!-- Termux Properties Preferences (from termux.properties) -->
+        <string name="termux_properties_preferences_title">Advanced Settings</string>
+        <string name="termux_properties_preferences_summary">Advanced settings from termux.properties</string>
+
+            <!-- General Category -->
+            <string name="termux_properties_general_header">General</string>
+
+                <!-- Bell Behaviour -->
+                <string name="termux_bell_character_title">Bell Character</string>
+                <string name="termux_bell_character_vibrate">Vibrate</string>
+                <string name="termux_bell_character_beep">Beep</string>
+                <string name="termux_bell_character_ignore">Ignore</string>
+
+                <!-- Back Key -->
+                <string name="termux_back_key_title">Back Key</string>
+                <string name="termux_back_key_back">Back</string>
+                <string name="termux_back_key_escape">Escape</string>
+
+                <!-- Volume Keys -->
+                <string name="termux_volume_keys_title">Volume Keys</string>
+                <string name="termux_volume_keys_virtual">Virtual Keys</string>
+                <string name="termux_volume_keys_volume">Volume Keys</string>
+
+                <!-- Soft Keyboard Toggle -->
+                <string name="termux_soft_keyboard_toggle_title">Soft Keyboard Toggle</string>
+                <string name="termux_soft_keyboard_toggle_show_hide">Show/Hide</string>
+                <string name="termux_soft_keyboard_toggle_enable_disable">Enable/Disable</string>
+
+                <!-- Night Mode -->
+                <string name="termux_night_mode_title">Night Mode</string>
+                <string name="termux_night_mode_true">On</string>
+                <string name="termux_night_mode_false">Off</string>
+                <string name="termux_night_mode_system">System Default</string>
+
+                <!-- Default Working Directory -->
+                <string name="termux_default_working_directory_title">Default Working Directory</string>
+
+                <!-- Extra Keys Style -->
+                <string name="termux_extra_keys_style_title">Extra Keys Style</string>
+
+            <!-- Terminal Category -->
+            <string name="termux_properties_terminal_header">Terminal</string>
+
+                <!-- Terminal Cursor Style -->
+                <string name="termux_terminal_cursor_style_title">Cursor Style</string>
+                <string name="termux_terminal_cursor_style_block">Block</string>
+                <string name="termux_terminal_cursor_style_underline">Underline</string>
+                <string name="termux_terminal_cursor_style_bar">Bar</string>
+
+                <!-- Terminal Cursor Blink Rate -->
+                <string name="termux_terminal_cursor_blink_rate_title">Cursor Blink Rate</string>
+
+                <!-- Terminal Transcript Rows -->
+                <string name="termux_terminal_transcript_rows_title">Transcript Rows</string>
+
+                <!-- Terminal Margins -->
+                <string name="termux_terminal_margin_horizontal_title">Horizontal Margin</string>
+                <string name="termux_terminal_margin_vertical_title">Vertical Margin</string>
+
+                <!-- Terminal Toolbar Height -->
+                <string name="termux_terminal_toolbar_height_title">Toolbar Height</string>
+
+                <!-- Delete Temp Files -->
+                <string name="termux_delete_tmpdir_files_title">Delete Temp Files</string>
+                <string name="termux_delete_tmpdir_files_summary">Delete files older than X days on exit (-1 for none, 0 for all)</string>
+
+            <!-- Behaviour Category -->
+            <string name="termux_properties_behaviour_header">Behaviour</string>
+
+                <!-- Hardware Keyboard Shortcuts -->
+                <string name="termux_disable_hardware_keyboard_shortcuts_title">Hardware Keyboard Shortcuts</string>
+                <string name="termux_disable_hardware_keyboard_shortcuts_on">Hardware keyboard shortcuts are disabled.</string>
+                <string name="termux_disable_hardware_keyboard_shortcuts_off">Hardware keyboard shortcuts are enabled. (Default)</string>
+
+                <!-- Terminal Session Change Toast -->
+                <string name="termux_disable_terminal_session_change_toast_title">Session Change Toast</string>
+                <string name="termux_disable_terminal_session_change_toast_on">Toast when switching sessions is disabled.</string>
+                <string name="termux_disable_terminal_session_change_toast_off">Show toast when switching sessions. (Default)</string>
+
+                <!-- Enforce Char Based Input -->
+                <string name="termux_enforce_char_based_input_title">Enforce Character Input</string>
+                <string name="termux_enforce_char_based_input_on">Force character-based input to fix Samsung keyboard issue.</string>
+                <string name="termux_enforce_char_based_input_off">Use default input mode. (Default)</string>
+
+                <!-- Extra Keys Text All Caps -->
+                <string name="termux_extra_keys_text_all_caps_title">Extra Keys Text All Caps</string>
+                <string name="termux_extra_keys_text_all_caps_on">Extra keys text will be capitalized. (Default)</string>
+                <string name="termux_extra_keys_text_all_caps_off">Extra keys text will not be capitalized.</string>
+
+                <!-- Hide Soft Keyboard On Startup -->
+                <string name="termux_hide_soft_keyboard_on_startup_title">Hide Keyboard On Startup</string>
+                <string name="termux_hide_soft_keyboard_on_startup_on">Hide soft keyboard when app starts.</string>
+                <string name="termux_hide_soft_keyboard_on_startup_off">Do not hide soft keyboard on startup. (Default)</string>
+
+                <!-- Run Termux AM Socket Server -->
+                <string name="termux_run_termux_am_socket_server_title">Run AM Socket Server</string>
+                <string name="termux_run_termux_am_socket_server_on">Run socket server for plugin communication. (Default)</string>
+                <string name="termux_run_termux_am_socket_server_off">Disable socket server (will break some plugins).</string>
+
+                <!-- Terminal URL Open -->
+                <string name="termux_terminal_onclick_url_open_title">Open URLs Automatically</string>
+                <string name="termux_terminal_onclick_url_open_on">URLs in terminal will open on tap. (Default)</string>
+                <string name="termux_terminal_onclick_url_open_off">URLs will not open automatically.</string>
+
+                <!-- Ctrl Space Workaround -->
+                <string name="termux_ctrl_space_workaround_title">Ctrl+Space Workaround</string>
+                <string name="termux_ctrl_space_workaround_on">Use workaround for Ctrl+Space on certain ROMs.</string>
+                <string name="termux_ctrl_space_workaround_off">Use default Ctrl+Space handling. (Default)</string>
+
+                <!-- Fullscreen -->
+                <string name="termux_fullscreen_title">Fullscreen</string>
+                <string name="termux_fullscreen_on">Enable fullscreen mode.</string>
+                <string name="termux_fullscreen_off">Use normal screen mode. (Default)</string>
+
+                <!-- Fullscreen Workaround -->
+                <string name="termux_use_fullscreen_workaround_title">Fullscreen Workaround</string>
+                <string name="termux_use_fullscreen_workaround_on">Use fullscreen workaround for better compatibility.</string>
+                <string name="termux_use_fullscreen_workaround_off">Do not use fullscreen workaround. (Default)</string>
+
+            <!-- File Receivers Category -->
+            <string name="termux_properties_receivers_header">File Receivers</string>
+
+                <!-- File Share Receiver -->
+                <string name="termux_disable_file_share_receiver_title">File Share Receiver</string>
+                <string name="termux_disable_file_share_receiver_on">File sharing is disabled.</string>
+                <string name="termux_disable_file_share_receiver_off">File sharing is enabled. (Default)</string>
+
+                <!-- File View Receiver -->
+                <string name="termux_disable_file_view_receiver_title">File View Receiver</string>
+                <string name="termux_disable_file_view_receiver_on">File viewing is disabled.</string>
+                <string name="termux_disable_file_view_receiver_off">File viewing is enabled. (Default)</string>
 
 
     <!-- Termux:API App Preferences -->

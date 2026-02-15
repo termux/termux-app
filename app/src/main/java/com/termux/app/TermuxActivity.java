@@ -255,6 +255,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setNewSessionButtonView();
 
+        setToggleTextInputButtonView();
+
         setToggleKeyboardView();
 
         registerForContextMenu(mTerminalView);
@@ -315,6 +317,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         Logger.logVerbose(LOG_TAG, "onResume");
 
         if (mIsInvalidState) return;
+
+        // Check if properties need reload (set by settings activity)
+        android.content.SharedPreferences prefs = getSharedPreferences("termux_prefs", MODE_PRIVATE);
+        if (prefs.getBoolean("properties_need_reload", false)) {
+            android.content.SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("properties_need_reload", false);
+            editor.apply();
+            reloadActivityStyling(false);
+            Logger.logDebug(LOG_TAG, "Reloaded properties after returning from settings");
+        }
 
         if (mTermuxTerminalSessionActivityClient != null)
             mTermuxTerminalSessionActivityClient.onResume();
@@ -570,10 +582,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             return true;
         });
 
-        // Restore text input visibility state
+        // Restore text input visibility state - only show if enabled in settings
         View textInputContainer = findViewById(R.id.terminal_toolbar_text_input_container);
         if (textInputContainer != null) {
-            textInputContainer.setVisibility(isTextInputVisible() ? View.VISIBLE : View.GONE);
+            boolean enabled = isTextInputEnabled();
+            boolean visible = enabled && isTextInputVisible();
+            textInputContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -618,6 +632,84 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void setNewSessionButtonView() {
         // New session button is now in the tabs bar, handled in setTermuxSessionsListView
+    }
+
+    private void setToggleTextInputButtonView() {
+        ImageButton toggleTextInputButton = findViewById(R.id.toggle_text_input_button);
+        if (toggleTextInputButton != null) {
+            // Always set the click listener, even if button is initially hidden
+            toggleTextInputButton.setOnClickListener(v -> {
+                // Toggle the text input visibility
+                boolean currentlyVisible = isTextInputVisible();
+                setTextInputVisible(!currentlyVisible);
+                updateToggleTextInputButtonIcon();
+            });
+
+            // Set initial visibility based on settings
+            boolean enabled = isTextInputEnabled();
+            toggleTextInputButton.setVisibility(enabled ? View.VISIBLE : View.GONE);
+
+            // Set initial icon if visible
+            if (enabled) {
+                updateToggleTextInputButtonIcon();
+            }
+        }
+    }
+
+    private void updateToggleTextInputButtonIcon() {
+        ImageButton toggleTextInputButton = findViewById(R.id.toggle_text_input_button);
+        if (toggleTextInputButton != null) {
+            boolean isVisible = isTextInputVisible();
+            toggleTextInputButton.setImageResource(isVisible ? R.drawable.ic_keyboard_hide : R.drawable.ic_keyboard_show);
+            toggleTextInputButton.setContentDescription(getString(R.string.action_toggle_text_input));
+        }
+    }
+
+    /**
+     * Check if text input field is enabled in settings.
+     * @return true if text input field should be shown, false otherwise
+     */
+    public boolean isTextInputEnabled() {
+        return getSharedPreferences("termux_prefs", MODE_PRIVATE).getBoolean("text_input_enabled", true);
+    }
+
+    /**
+     * Update the toggle text input button visibility based on settings.
+     * Also updates the text input container visibility.
+     */
+    public void updateToggleTextInputButtonVisibility() {
+        ImageButton toggleTextInputButton = findViewById(R.id.toggle_text_input_button);
+        View textInputContainer = findViewById(R.id.terminal_toolbar_text_input_container);
+        
+        boolean enabled = isTextInputEnabled();
+        boolean wasDisabled = toggleTextInputButton != null &&
+                              toggleTextInputButton.getVisibility() != View.VISIBLE;
+        
+        if (toggleTextInputButton != null) {
+            toggleTextInputButton.setVisibility(enabled ? View.VISIBLE : View.GONE);
+        }
+        
+        // Also update text input container visibility
+        if (textInputContainer != null) {
+            if (!enabled) {
+                // Hide text input when disabled in settings
+                textInputContainer.setVisibility(View.GONE);
+            } else {
+                // If setting was just enabled (transition from disabled to enabled),
+                // show panel in visible state
+                if (wasDisabled) {
+                    setTextInputVisible(true);
+                } else {
+                    // Restore text input visibility based on saved state
+                    textInputContainer.setVisibility(isTextInputVisible() ? View.VISIBLE : View.GONE);
+                }
+            }
+        }
+        
+        // Update button icon after visibility state is finalized
+        if (enabled && toggleTextInputButton != null) {
+            updateToggleTextInputButtonIcon();
+        }
     }
 
     private void setToggleKeyboardView() {
@@ -932,6 +1024,26 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             textInputContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
             // Save state to preferences
             getSharedPreferences("termux_prefs", MODE_PRIVATE).edit().putBoolean(PREF_TEXT_INPUT_VISIBLE, visible).apply();
+            
+            // Switch focus based on visibility
+            if (visible) {
+                // Focus on text input and show keyboard
+                EditText textInput = findViewById(R.id.terminal_toolbar_text_input);
+                if (textInput != null) {
+                    textInput.requestFocus();
+                    textInput.post(() -> {
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.showSoftInput(textInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                        }
+                    });
+                }
+            } else {
+                // Focus on terminal view
+                if (mTerminalView != null) {
+                    mTerminalView.requestFocus();
+                }
+            }
         }
     }
 
@@ -954,6 +1066,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     private static final String ACTION_TEXT_INPUT_VISIBILITY_CHANGED = "com.termux.TEXT_INPUT_VISIBILITY_CHANGED";
+    private static final String ACTION_TEXT_INPUT_ENABLED_CHANGED = "com.termux.TEXT_INPUT_ENABLED_CHANGED";
 
     private void registerTermuxActivityBroadcastReceiver() {
         IntentFilter intentFilter = new IntentFilter();
@@ -961,6 +1074,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
         intentFilter.addAction(ACTION_TEXT_INPUT_VISIBILITY_CHANGED);
+        intentFilter.addAction(ACTION_TEXT_INPUT_ENABLED_CHANGED);
 
         registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
     }
@@ -991,6 +1105,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 Logger.logDebug(LOG_TAG, "Received intent to change text input visibility");
                 boolean visible = intent.getBooleanExtra("visible", true);
                 setTextInputVisible(visible);
+                return;
+            }
+
+            // Handle text input enabled/disabled setting change
+            if (ACTION_TEXT_INPUT_ENABLED_CHANGED.equals(action)) {
+                Logger.logDebug(LOG_TAG, "Received intent to change text input enabled state");
+                updateToggleTextInputButtonVisibility();
                 return;
             }
 

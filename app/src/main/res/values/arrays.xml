@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bell Character -->
+    <string-array name="termux_bell_character_entries">
+        <item>@string/termux_bell_character_vibrate</item>
+        <item>@string/termux_bell_character_beep</item>
+        <item>@string/termux_bell_character_ignore</item>
+    </string-array>
+    <string-array name="termux_bell_character_values">
+        <item>vibrate</item>
+        <item>beep</item>
+        <item>ignore</item>
+    </string-array>
+
+    <!-- Back Key -->
+    <string-array name="termux_back_key_entries">
+        <item>@string/termux_back_key_back</item>
+        <item>@string/termux_back_key_escape</item>
+    </string-array>
+    <string-array name="termux_back_key_values">
+        <item>back</item>
+        <item>escape</item>
+    </string-array>
+
+    <!-- Volume Keys -->
+    <string-array name="termux_volume_keys_entries">
+        <item>@string/termux_volume_keys_virtual</item>
+        <item>@string/termux_volume_keys_volume</item>
+    </string-array>
+    <string-array name="termux_volume_keys_values">
+        <item>virtual</item>
+        <item>volume</item>
+    </string-array>
+
+    <!-- Soft Keyboard Toggle -->
+    <string-array name="termux_soft_keyboard_toggle_entries">
+        <item>@string/termux_soft_keyboard_toggle_show_hide</item>
+        <item>@string/termux_soft_keyboard_toggle_enable_disable</item>
+    </string-array>
+    <string-array name="termux_soft_keyboard_toggle_values">
+        <item>show/hide</item>
+        <item>enable/disable</item>
+    </string-array>
+
+    <!-- Night Mode -->
+    <string-array name="termux_night_mode_entries">
+        <item>@string/termux_night_mode_true</item>
+        <item>@string/termux_night_mode_false</item>
+        <item>@string/termux_night_mode_system</item>
+    </string-array>
+    <string-array name="termux_night_mode_values">
+        <item>true</item>
+        <item>false</item>
+        <item>system</item>
+    </string-array>
+
+    <!-- Terminal Cursor Style -->
+    <string-array name="termux_terminal_cursor_style_entries">
+        <item>@string/termux_terminal_cursor_style_block</item>
+        <item>@string/termux_terminal_cursor_style_underline</item>
+        <item>@string/termux_terminal_cursor_style_bar</item>
+    </string-array>
+    <string-array name="termux_terminal_cursor_style_values">
+        <item>block</item>
+        <item>underline</item>
+        <item>bar</item>
+    </string-array>
+
+    <!-- Terminal Cursor Blink Rate -->
+    <string-array name="termux_terminal_cursor_blink_rate_entries">
+        <item>Default (no blink)</item>
+        <item>100ms</item>
+        <item>200ms</item>
+        <item>300ms</item>
+        <item>500ms</item>
+        <item>700ms</item>
+        <item>1000ms</item>
+    </string-array>
+    <string-array name="termux_terminal_cursor_blink_rate_values">
+        <item>0</item>
+        <item>100</item>
+        <item>200</item>
+        <item>300</item>
+        <item>500</item>
+        <item>700</item>
+        <item>1000</item>
+    </string-array>
+
+    <!-- Terminal Transcript Rows -->
+    <string-array name="termux_terminal_transcript_rows_entries">
+        <item>Default (1024)</item>
+        <item>512</item>
+        <item>2048</item>
+        <item>4096</item>
+        <item>8192</item>
+    </string-array>
+    <string-array name="termux_terminal_transcript_rows_values">
+        <item>0</item>
+        <item>512</item>
+        <item>2048</item>
+        <item>4096</item>
+        <item>8192</item>
+    </string-array>
+
+    <!-- Terminal Margin -->
+    <string-array name="termux_terminal_margin_entries">
+        <item>0dp</item>
+        <item>1dp</item>
+        <item>2dp</item>
+        <item>3dp</item>
+        <item>5dp</item>
+        <item>8dp</item>
+        <item>10dp</item>
+    </string-array>
+    <string-array name="termux_terminal_margin_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>5</item>
+        <item>8</item>
+        <item>10</item>
+    </string-array>
+
+    <!-- Terminal Toolbar Height -->
+    <string-array name="termux_terminal_toolbar_height_entries">
+        <item>40%</item>
+        <item>60%</item>
+        <item>80%</item>
+        <item>100% (Default)</item>
+        <item>150%</item>
+        <item>200%</item>
+        <item>300%</item>
+    </string-array>
+    <string-array name="termux_terminal_toolbar_height_values">
+        <item>0.4</item>
+        <item>0.6</item>
+        <item>0.8</item>
+        <item>1.0</item>
+        <item>1.5</item>
+        <item>2.0</item>
+        <item>3.0</item>
+    </string-array>
+
+    <!-- Delete Temp Files -->
+    <string-array name="termux_delete_tmpdir_files_entries">
+        <item>Disabled (keep all)</item>
+        <item>Delete all on exit</item>
+        <item>Older than 1 day</item>
+        <item>Older than 3 days (Default)</item>
+        <item>Older than 7 days</item>
+        <item>Older than 14 days</item>
+        <item>Older than 30 days</item>
+    </string-array>
+    <string-array name="termux_delete_tmpdir_files_values">
+        <item>-1</item>
+        <item>0</item>
+        <item>1</item>
+        <item>3</item>
+        <item>7</item>
+        <item>14</item>
+        <item>30</item>
+    </string-array>
+</resources>
