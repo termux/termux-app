@@ -318,16 +318,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mIsInvalidState) return;
 
-        // Check if properties need reload (set by settings activity)
-        android.content.SharedPreferences prefs = getSharedPreferences("termux_prefs", MODE_PRIVATE);
-        if (prefs.getBoolean("properties_need_reload", false)) {
-            android.content.SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("properties_need_reload", false);
-            editor.apply();
-            reloadActivityStyling(false);
-            Logger.logDebug(LOG_TAG, "Reloaded properties after returning from settings");
-        }
-
         if (mTermuxTerminalSessionActivityClient != null)
             mTermuxTerminalSessionActivityClient.onResume();
 
