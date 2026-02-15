@@ -1,5 +1,7 @@
 package com.termux.shared.termux.extrakeys;
 
+import android.content.res.ColorStateList;
+
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ public class SpecialButtonState {
         isActive = value;
         for (MaterialButton button : buttons) {
             button.setTextColor(value ? mExtraKeysView.getButtonActiveTextColor() : mExtraKeysView.getButtonTextColor());
+            button.setBackgroundTintList(ColorStateList.valueOf(value ? mExtraKeysView.getButtonActiveBackgroundColor() : mExtraKeysView.getButtonBackgroundColor()));
         }
     }
 
