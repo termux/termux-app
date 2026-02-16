@@ -165,10 +165,18 @@ public class FileReceiverActivity extends AppCompatActivity {
                 File outFile = saveStreamWithName(in, text);
                 if (outFile == null) return;
 
-                final File editorProgramFile = new File(EDITOR_PROGRAM);
+                String editorExecutable = EDITOR_PROGRAM;
+
+                File editorProgramFile = new File(editorExecutable);
+
                 if (!editorProgramFile.isFile()) {
-                    showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
-                        + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
+                    editorExecutable = findDefaultEditor();
+                }
+
+                if (editorExecutable == null) {
+                    showErrorDialogAndQuit(
+                        "No editor configured. Install nano or vim, or create termux-file-editor."
+                    );
                     return;
                 }
 
@@ -176,7 +184,7 @@ public class FileReceiverActivity extends AppCompatActivity {
                 //noinspection ResultOfMethodCallIgnored
                 editorProgramFile.setExecutable(true);
 
-                final Uri scriptUri = UriUtils.getFileUri(EDITOR_PROGRAM);
+                final Uri scriptUri = UriUtils.getFileUri(editorExecutable);
 
                 Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
                 executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
@@ -196,6 +204,25 @@ public class FileReceiverActivity extends AppCompatActivity {
             android.R.string.cancel, text -> finish(), dialog -> {
                 if (mFinishOnDismissNameDialog) finish();
             });
+    }
+
+    private static final String[] DEFAULT_EDITORS = {
+        "nano",
+        "vim",
+        "vi"
+    };
+
+    private String findDefaultEditor() {
+
+        final String binDir = TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/bin/";
+
+        for (String name : DEFAULT_EDITORS) {
+            String path = binDir + name;
+            if (new File(path).canExecute()) {   // single syscall
+                return path;
+            }
+        }
+        return null;
     }
 
     public File saveStreamWithName(InputStream in, String attachmentFileName) {
