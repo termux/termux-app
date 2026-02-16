@@ -166,25 +166,29 @@ public class FileReceiverActivity extends AppCompatActivity {
                 if (outFile == null) return;
 
                 String editorExecutable = EDITOR_PROGRAM;
-
                 File editorProgramFile = new File(editorExecutable);
 
                 if (!editorProgramFile.isFile()) {
-                    editorExecutable = findDefaultEditor();
-                }
+                    editorExecutable = findDefaultEditor(); // Fallback to common editors if termux-file-editor is not configured
 
-                if (editorExecutable == null) {
-                    showErrorDialogAndQuit(
-                        "No editor configured. Install nano or vim, or create termux-file-editor."
-                    );
+
+                    if (editorExecutable == null) {
+                       showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
+                        + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
                     return;
+                    }
+
+                    editorProgramFile = new File(editorExecutable);
                 }
 
-                // Do this for the user if necessary:
-                //noinspection ResultOfMethodCallIgnored
-                editorProgramFile.setExecutable(true);
+                if (EDITOR_PROGRAM.equals(editorExecutable)) {
+                    // Do this for the user if necessary:
+                    //noinspection ResultOfMethodCallIgnored
+                    editorProgramFile.setExecutable(true);
+                }
 
                 final Uri scriptUri = UriUtils.getFileUri(editorExecutable);
+
 
                 Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
                 executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
@@ -218,8 +222,9 @@ public class FileReceiverActivity extends AppCompatActivity {
 
         for (String name : DEFAULT_EDITORS) {
             String path = binDir + name;
-            if (new File(path).canExecute()) {   // single syscall
-                return path;
+            File editor = new File(path);
+            if (editor.canExecute()) {
+                return editor.getAbsolutePath();
             }
         }
         return null;
