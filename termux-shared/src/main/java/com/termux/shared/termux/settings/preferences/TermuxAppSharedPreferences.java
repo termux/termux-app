@@ -258,4 +258,14 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, value, false);
     }
 
+
+
+    public boolean shouldShowWelcomeScreens() {
+        return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_SHOW_WELCOME_SCREENS, TERMUX_APP.DEFAULT_VALUE_SHOW_WELCOME_SCREENS);
+    }
+
+    public void setShouldShowWelcomeScreens(boolean value) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_SHOW_WELCOME_SCREENS, value, false);
+    }
+
 }

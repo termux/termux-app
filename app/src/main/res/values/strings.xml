@@ -235,4 +235,16 @@
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
 
+
+    <!-- Welcome Screens -->
+    <string name="welcome_title_1">Welcome to Termux</string>
+    <string name="welcome_desc_1">Powerful terminal emulation with a comprehensive Linux package collection.</string>
+    <string name="welcome_title_2">Customize Your Experience</string>
+    <string name="welcome_desc_2">Adjust fonts, colors, and extra keys to suit your workflow.</string>
+    <string name="welcome_title_3">Ready to Go!</string>
+    <string name="welcome_desc_3">You are all set to start using Termux. Enjoy!</string>
+    <string name="welcome_button_next">Next</string>
+    <string name="welcome_button_done">Got it!</string>
+    <string name="welcome_button_skip">Skip</string>
+
 </resources>
