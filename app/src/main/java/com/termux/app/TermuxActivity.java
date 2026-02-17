@@ -43,6 +43,7 @@ import com.termux.app.activities.HelpActivity;
 import com.termux.app.activities.SettingsActivity;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
+import com.termux.app.activities.WelcomeActivity;
 import com.termux.app.terminal.TermuxSessionsListViewController;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.TermuxTerminalViewClient;
@@ -222,6 +223,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             // An AlertDialog should have shown to kill the app, so we don't continue running activity code
             mIsInvalidState = true;
             return;
+        }
+
+        if (mPreferences.shouldShowWelcomeScreens()) {
+            ActivityUtils.startActivity(this, new Intent(this, WelcomeActivity.class));
         }
 
         setMargins();
