@@ -154,6 +154,10 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
                     Logger.logDebug(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
                     actionServiceExecute(intent);
                     break;
+                case TERMUX_SERVICE.ACTION_SERVICE_STOP:
+                    Logger.logDebug(LOG_TAG, "ACTION_SERVICE_STOP intent received");
+                    actionServiceStop(intent);
+                    break;
                 default:
                     Logger.logError(LOG_TAG, "Invalid action: \"" + action + "\"");
                     break;
@@ -352,6 +356,26 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             updateNotification();
 
         Logger.logDebug(LOG_TAG, "WakeLocks released successfully");
+    }
+
+    private void actionServiceStop(Intent intent) {
+        if (intent == null) {
+            Logger.logError(LOG_TAG, "Ignoring null intent to actionServiceStop");
+            return;
+        }
+
+        String shellName = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_SHELL_NAME, null);
+        if (shellName == null) {
+            Logger.logError(LOG_TAG, "Ignoring intent since it did not contain explicit shell name");
+            return;
+        }
+
+        int sigkillDelayOnStop = IntentUtils.getIntegerExtraIfSet(intent, TERMUX_SERVICE.EXTRA_SIGKILL_DELAY_ON_STOP, 5000);
+        AppShell appShell = getTermuxTaskForShellName(shellName);
+        while (appShell != null) {
+            appShell.terminateIfExecuting(getApplicationContext(), sigkillDelayOnStop, true);
+            appShell = getTermuxTaskForShellName(shellName);
+        }
     }
 
     /** Process {@link TERMUX_SERVICE#ACTION_SERVICE_EXECUTE} intent to execute a shell command in
