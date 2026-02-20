@@ -75,6 +75,7 @@
     <string name="error_failed_to_execute_app_shell_command">Failed to execute \"%1$s\" app shell command</string>
     <string name="error_exception_received_while_executing_termux_session_command">Exception received while to executing \"%1$s\" termux session command.\nException: %2$s</string>
     <string name="error_exception_received_while_executing_app_shell_command">Exception received while to executing \"%1$s\" app shell command.\nException: %2$s</string>
+    <string name="error_proot_not_installed">The \'proot\' package is not installed.</string>
 
 
 
