@@ -175,6 +175,9 @@ public class ExecutionCommand {
     /** If the {@link ExecutionCommand} is meant to start a failsafe terminal session. */
     public boolean isFailsafe;
 
+    /** If the {@link ExecutionCommand} is meant to start a fake root terminal session. */
+    public boolean isFakeRoot;
+
     /**
      * The {@link ExecutionCommand} custom log level for background {@link AppShell}
      * commands. By default, @link com.termux.shared.shell.StreamGobbler} only logs stdout and
@@ -246,6 +249,10 @@ public class ExecutionCommand {
     }
 
     public ExecutionCommand(Integer id, String executable, String[] arguments, String stdin, String workingDirectory, String runner, boolean isFailsafe) {
+        this(id, executable, arguments, stdin, workingDirectory, runner, isFailsafe, false);
+    }
+
+    public ExecutionCommand(Integer id, String executable, String[] arguments, String stdin, String workingDirectory, String runner, boolean isFailsafe, boolean isFakeRoot) {
         this.id = id;
         this.executable = executable;
         this.arguments = arguments;
@@ -253,6 +260,7 @@ public class ExecutionCommand {
         this.workingDirectory = workingDirectory;
         this.runner = runner;
         this.isFailsafe = isFailsafe;
+        this.isFakeRoot = isFakeRoot;
     }
 
 
@@ -380,6 +388,7 @@ public class ExecutionCommand {
         logString.append("\n").append(executionCommand.getWorkingDirectoryLogString());
         logString.append("\n").append(executionCommand.getRunnerLogString());
         logString.append("\n").append(executionCommand.getIsFailsafeLogString());
+        logString.append("\n").append(executionCommand.getIsFakeRootLogString());
 
         if (Runner.APP_SHELL.equalsRunner(executionCommand.runner)) {
             if (logStdin && (!ignoreNull || !DataUtils.isNullOrEmpty(executionCommand.stdin)))
@@ -484,6 +493,7 @@ public class ExecutionCommand {
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Working Directory", executionCommand.workingDirectory, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Runner", executionCommand.runner, "-"));
         markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("isFailsafe", executionCommand.isFailsafe, "-"));
+        markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("isFakeRoot", executionCommand.isFakeRoot, "-"));
 
         if (Runner.APP_SHELL.equalsRunner(executionCommand.runner)) {
             if (!DataUtils.isNullOrEmpty(executionCommand.stdin))
@@ -569,6 +579,10 @@ public class ExecutionCommand {
 
     public String getIsFailsafeLogString() {
         return "isFailsafe: `" + isFailsafe + "`";
+    }
+
+    public String getIsFakeRootLogString() {
+        return "isFakeRoot: `" + isFakeRoot + "`";
     }
 
     public String getStdinLogString() {

@@ -574,10 +574,35 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
-            TextInputDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
-                R.string.action_create_named_session_confirm, text -> mTermuxTerminalSessionActivityClient.addNewSession(false, text),
-                R.string.action_new_session_failsafe, text -> mTermuxTerminalSessionActivityClient.addNewSession(true, text),
-                -1, null, null);
+            final EditText sessionNameText = new EditText(this);
+            sessionNameText.setSingleLine();
+
+            final android.widget.CheckBox fakeRootCheckBox = new android.widget.CheckBox(this);
+            fakeRootCheckBox.setText(R.string.checkbox_fake_root);
+
+            android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+            layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+            float dipInPixels = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
+            int padding = Math.round(16 * dipInPixels);
+            layout.setPadding(padding, padding, padding, padding);
+            layout.addView(sessionNameText);
+            layout.addView(fakeRootCheckBox);
+
+            new AlertDialog.Builder(this)
+                .setTitle(R.string.title_create_named_session)
+                .setView(layout)
+                .setPositiveButton(R.string.action_create_named_session_confirm, (dialog, which) -> {
+                    String name = sessionNameText.getText().toString();
+                    boolean isFakeRoot = fakeRootCheckBox.isChecked();
+                    mTermuxTerminalSessionActivityClient.addNewSession(false, isFakeRoot, name);
+                })
+                .setNeutralButton(R.string.action_new_session_failsafe, (dialog, which) -> {
+                    String name = sessionNameText.getText().toString();
+                    mTermuxTerminalSessionActivityClient.addNewSession(true, false, name);
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+
             return true;
         });
     }
