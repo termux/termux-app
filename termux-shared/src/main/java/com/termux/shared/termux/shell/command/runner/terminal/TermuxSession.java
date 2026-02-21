@@ -130,6 +130,28 @@ public class TermuxSession {
 
         executionCommand.arguments = arguments;
 
+        if (executionCommand.isFakeRoot) {
+            File proot = new File(com.termux.shared.termux.TermuxConstants.TERMUX_BIN_PREFIX_DIR, "proot");
+            if (!proot.canExecute()) {
+                executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), currentPackageContext.getString(R.string.error_proot_not_installed));
+                TermuxSession.processTermuxSessionResult(null, executionCommand);
+                return null;
+            }
+
+            String originalExecutable = executionCommand.executable;
+            int originalArgsCount = arguments.length - 1;
+            String[] newArgs = new String[2 + 1 + originalArgsCount];
+            newArgs[0] = "proot";
+            newArgs[1] = "-0";
+            newArgs[2] = originalExecutable;
+            if (originalArgsCount > 0) {
+                System.arraycopy(arguments, 1, newArgs, 3, originalArgsCount);
+            }
+
+            executionCommand.executable = proot.getAbsolutePath();
+            executionCommand.arguments = newArgs;
+        }
+
         if (executionCommand.commandLabel == null)
             executionCommand.commandLabel = processName;
 
