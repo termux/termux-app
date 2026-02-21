@@ -6,6 +6,7 @@ import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -53,6 +54,7 @@ import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 import com.termux.shared.theme.NightMode;
+import com.termux.shared.view.KeyboardUtils;
 import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
@@ -323,6 +325,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateExtraKeysVisibility();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
 
@@ -512,7 +520,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
 
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        if (shouldExtraKeysBeVisible()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         mTerminalToolbarDefaultHeight = layoutParams.height;
@@ -544,11 +552,30 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
-        terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
-        if (showNow && isTerminalToolbarTextInputViewSelected()) {
+        boolean visible = showNow && !(mPreferences.isExtraKeysOnlyIfNoHardware() && KeyboardUtils.isHardKeyboardConnected(this));
+        terminalToolbarViewPager.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (visible && isTerminalToolbarTextInputViewSelected()) {
             // Focus the text input view if just revealed.
             findViewById(R.id.terminal_toolbar_text_input).requestFocus();
         }
+    }
+
+    /**
+     * Whether the extra keys toolbar should be visible, considering both the user toolbar toggle
+     * and the "extra keys only if no hardware" setting.
+     */
+    public boolean shouldExtraKeysBeVisible() {
+        return mPreferences.shouldShowTerminalToolbar()
+            && !(mPreferences.isExtraKeysOnlyIfNoHardware() && KeyboardUtils.isHardKeyboardConnected(this));
+    }
+
+    /**
+     * Update extra keys toolbar visibility based on current hardware keyboard state and preferences.
+     */
+    public void updateExtraKeysVisibility() {
+        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
+        if (terminalToolbarViewPager == null) return;
+        terminalToolbarViewPager.setVisibility(shouldExtraKeysBeVisible() ? View.VISIBLE : View.GONE);
     }
 
     private void saveTerminalToolbarTextInput(Bundle savedInstanceState) {
