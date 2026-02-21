@@ -180,6 +180,13 @@ public final class TermuxPreferenceConstants {
         public static final String KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED = "crash_report_notifications_enabled";
         public static final boolean DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED = true;
 
+
+        /**
+         * Defines the key for whether to show welcome screens on first app launch.
+         */
+        public static final String KEY_SHOW_WELCOME_SCREENS = "show_welcome_screens";
+        public static final boolean DEFAULT_VALUE_SHOW_WELCOME_SCREENS = true;
+
     }
 
 
