@@ -67,13 +67,34 @@ public final class TerminalBuffer {
         for (int row = selY1; row <= selY2; row++) {
             int x1 = (row == selY1) ? selX1 : 0;
             int x2;
+            TerminalRow lineObject = mLines[externalToInternalRow(row)];
+            boolean rowLineWrap = getLineWrap(row);
+
             if (row == selY2) {
                 x2 = selX2 + 1;
                 if (x2 > columns) x2 = columns;
             } else {
-                x2 = columns;
+                // For non-final rows, only read to full width if line is wrapped.
+                // Otherwise, find the actual end of content to avoid trailing whitespace.
+                if (rowLineWrap) {
+                    x2 = columns;
+                } else {
+                    // Find last non-space character in the line
+                    x2 = lineObject.getSpaceUsed();
+                    char[] text = lineObject.mText;
+                    for (int i = x2 - 1; i >= 0; i--) {
+                        if (text[i] != ' ') {
+                            x2 = i + 1;
+                            break;
+                        }
+                    }
+                    if (x2 == 0 && lineObject.getSpaceUsed() > 0) {
+                        // Line is all spaces - keep at least one to preserve empty line
+                        x2 = 1;
+                    }
+                }
             }
-            TerminalRow lineObject = mLines[externalToInternalRow(row)];
+
             int x1Index = lineObject.findStartOfColumn(x1);
             int x2Index = (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
             if (x2Index == x1Index) {
@@ -83,7 +104,6 @@ public final class TerminalBuffer {
             char[] line = lineObject.mText;
             int lastPrintingCharIndex = -1;
             int i;
-            boolean rowLineWrap = getLineWrap(row);
             if (rowLineWrap && x2 == columns) {
                 // If the line was wrapped, we shouldn't lose trailing space:
                 lastPrintingCharIndex = x2Index - 1;
