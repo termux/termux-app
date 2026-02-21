@@ -58,11 +58,15 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         }
 
         boolean shouldEnableDarkTheme = ThemeUtils.shouldEnableDarkTheme(mActivity, NightMode.getAppNightMode().getName());
+        boolean isCurrentSession = sessionAtRow == mActivity.getCurrentSession();
 
-        if (shouldEnableDarkTheme) {
-            sessionTitleView.setBackground(
-                ContextCompat.getDrawable(mActivity, R.drawable.session_background_black_selected)
-            );
+        // Set background based on whether this is the current session
+        if (isCurrentSession) {
+            sessionTitleView.setBackground(ContextCompat.getDrawable(mActivity,
+                shouldEnableDarkTheme ? R.drawable.current_session_black : R.drawable.current_session));
+        } else {
+            sessionTitleView.setBackground(ContextCompat.getDrawable(mActivity,
+                shouldEnableDarkTheme ? R.drawable.session_background_black_selected : R.drawable.session_background_selected));
         }
 
         String name = sessionAtRow.mSessionName;
@@ -89,13 +93,34 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         int defaultColor = shouldEnableDarkTheme ? Color.WHITE : Color.BLACK;
         int color = sessionRunning || sessionAtRow.getExitStatus() == 0 ? defaultColor : Color.RED;
         sessionTitleView.setTextColor(color);
+
+        // Gray out sessions attached to other windows
+        boolean isAttachedToOtherWindow = mActivity.getTermuxService() != null &&
+            mActivity.getTermuxService().isSessionAttachedToOther(sessionAtRow, mActivity.getActivityId());
+        if (isAttachedToOtherWindow) {
+            sessionTitleView.setAlpha(0.5f);
+        } else {
+            sessionTitleView.setAlpha(1.0f);
+        }
+
         return sessionRowView;
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         TermuxSession clickedSession = getItem(position);
-        mActivity.getTermuxTerminalSessionClient().setCurrentSession(clickedSession.getTerminalSession());
+        TerminalSession session = clickedSession.getTerminalSession();
+        if (mActivity.getTermuxService() == null) return;
+
+        if (mActivity.getTermuxService().isSessionAttachedToOther(session, mActivity.getActivityId())) {
+            // Session is attached to another window - focus that window instead
+            if (!mActivity.getTermuxService().focusActivityForSession(session)) {
+                mActivity.showToast(mActivity.getString(R.string.msg_failed_to_focus_window), true);
+            }
+        } else {
+            // Session is unattached or attached to this window - switch to it
+            mActivity.getTermuxTerminalSessionClient().setCurrentSession(session);
+        }
         mActivity.getDrawer().closeDrawers();
     }
 

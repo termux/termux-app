@@ -50,7 +50,11 @@ import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A service holding a list of {@link TermuxSession} in {@link TermuxShellManager#mTermuxSessions} and background {@link AppShell}
@@ -77,11 +81,18 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     private final Handler mHandler = new Handler();
 
 
-    /** The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
-     * that holds activity references for activity related functions.
-     * Note that the service may often outlive the activity, so need to clear this reference.
+    /** The full implementations of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
+     * that hold activity references for activity related functions. In multi-window mode, multiple
+     * activities may be bound simultaneously. Note that the service may often outlive the activities,
+     * so need to clear these references when activities are destroyed.
      */
-    private TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
+    private final Set<TermuxTerminalSessionActivityClient> mActivityClients = new HashSet<>();
+
+    /**
+     * Single source of truth for session attachment state. Maps session handle to the activity
+     * instance ID that owns it. If a session handle is not in this map, it is unattached.
+     */
+    private final Map<String, Integer> mSessionAttachments = new HashMap<>();
 
     /** The basic implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
      * that does not hold activity references and only a service reference.
@@ -195,7 +206,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         // Since we cannot rely on {@link TermuxActivity.onDestroy()} to always complete,
         // we unset clients here as well if it failed, so that we do not leave service and session
         // clients with references to the activity.
-        if (mTermuxTerminalSessionActivityClient != null)
+        if (!mActivityClients.isEmpty())
             unsetTermuxTerminalSessionClient();
         return false;
     }
@@ -612,10 +623,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         if (executionCommand.isPluginExecutionCommand)
             mShellManager.mPendingPluginExecutionCommands.remove(executionCommand);
 
-        // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
-        // activity in is foreground
-        if (mTermuxTerminalSessionActivityClient != null)
-            mTermuxTerminalSessionActivityClient.termuxSessionListNotifyUpdated();
+        // Notify all activities that sessions list has been updated
+        notifyAllSessionListsUpdated();
 
         updateNotification();
 
@@ -649,10 +658,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
             mShellManager.mTermuxSessions.remove(termuxSession);
 
-            // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
-            // activity in is foreground
-            if (mTermuxTerminalSessionActivityClient != null)
-                mTermuxTerminalSessionActivityClient.termuxSessionListNotifyUpdated();
+            // Notify all activities that sessions list has been updated
+            notifyAllSessionListsUpdated();
         }
 
         updateNotification();
@@ -687,8 +694,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         switch (sessionAction) {
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY:
                 setCurrentStoredTerminalSession(newTerminalSession);
-                if (mTermuxTerminalSessionActivityClient != null)
-                    mTermuxTerminalSessionActivityClient.setCurrentSession(newTerminalSession);
+                if (!mActivityClients.isEmpty())
+                    mActivityClients.iterator().next().setCurrentSession(newTerminalSession);
                 startTermuxActivity();
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY:
@@ -698,8 +705,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY:
                 setCurrentStoredTerminalSession(newTerminalSession);
-                if (mTermuxTerminalSessionActivityClient != null)
-                    mTermuxTerminalSessionActivityClient.setCurrentSession(newTerminalSession);
+                if (!mActivityClients.isEmpty())
+                    mActivityClients.iterator().next().setCurrentSession(newTerminalSession);
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_DONT_OPEN_ACTIVITY:
                 if (getTermuxSessionsSize() == 1)
@@ -731,37 +738,42 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
 
 
-    /** If {@link TermuxActivity} has not bound to the {@link TermuxService} yet or is destroyed, then
+    /** If no {@link TermuxActivity} has bound to the {@link TermuxService} yet or all are destroyed, then
      * interface functions requiring the activity should not be available to the terminal sessions,
      * so we just return the {@link #mTermuxTerminalSessionServiceClient}. Once {@link TermuxActivity} bind
-     * callback is received, it should call {@link #setTermuxTerminalSessionClient} to set the
-     * {@link TermuxService#mTermuxTerminalSessionActivityClient} so that further terminal sessions are directly
-     * passed the {@link TermuxTerminalSessionActivityClient} object which fully implements the
+     * callback is received, it should call {@link #setTermuxTerminalSessionClient} to add its client
+     * to {@link TermuxService#mActivityClients} so that further terminal sessions are directly
+     * passed a {@link TermuxTerminalSessionActivityClient} object which fully implements the
      * {@link TerminalSessionClient} interface.
      *
-     * @return Returns the {@link TermuxTerminalSessionActivityClient} if {@link TermuxActivity} has bound with
-     * {@link TermuxService}, otherwise {@link TermuxTerminalSessionServiceClient}.
+     * @return Returns the first available {@link TermuxTerminalSessionActivityClient} if any {@link TermuxActivity}
+     * has bound with {@link TermuxService}, otherwise {@link TermuxTerminalSessionServiceClient}.
      */
     public synchronized TermuxTerminalSessionClientBase getTermuxTerminalSessionClient() {
-        if (mTermuxTerminalSessionActivityClient != null)
-            return mTermuxTerminalSessionActivityClient;
+        if (!mActivityClients.isEmpty())
+            return mActivityClients.iterator().next();
         else
             return mTermuxTerminalSessionServiceClient;
     }
 
-    /** This should be called when {@link TermuxActivity#onServiceConnected} is called to set the
-     * {@link TermuxService#mTermuxTerminalSessionActivityClient} variable and update the {@link TerminalSession}
-     * and {@link TerminalEmulator} clients in case they were passed {@link TermuxTerminalSessionServiceClient}
-     * earlier.
+    /** This should be called when {@link TermuxActivity#onServiceConnected} is called to add
+     * the activity's client to {@link TermuxService#mActivityClients}. In multi-window mode,
+     * multiple activities may be bound simultaneously.
      *
      * @param termuxTerminalSessionActivityClient The {@link TermuxTerminalSessionActivityClient} object that fully
      * implements the {@link TerminalSessionClient} interface.
      */
     public synchronized void setTermuxTerminalSessionClient(TermuxTerminalSessionActivityClient termuxTerminalSessionActivityClient) {
-        mTermuxTerminalSessionActivityClient = termuxTerminalSessionActivityClient;
+        mActivityClients.add(termuxTerminalSessionActivityClient);
 
-        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++)
-            mShellManager.mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionActivityClient);
+        // Don't update all sessions' clients here - in multi-window mode, each activity
+        // should only set the client for its own attached session. The client is set
+        // when setCurrentSession() is called in TermuxTerminalSessionActivityClient.
+    }
+
+    /** Remove an activity client when its activity is destroyed. */
+    public synchronized void removeTermuxTerminalSessionClient(TermuxTerminalSessionActivityClient client) {
+        mActivityClients.remove(client);
     }
 
     /** This should be called when {@link TermuxActivity} has been destroyed and in {@link #onUnbind(Intent)}
@@ -772,11 +784,129 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++)
             mShellManager.mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionServiceClient);
 
-        mTermuxTerminalSessionActivityClient = null;
+        mActivityClients.clear();
     }
 
+    /** Reset a specific session's client to the service client. Used when an activity is destroyed
+     * in multi-window mode to avoid resetting all sessions' clients. */
+    public synchronized void resetSessionClient(TerminalSession session) {
+        if (session != null) {
+            session.updateTerminalSessionClient(mTermuxTerminalSessionServiceClient);
+        }
+    }
 
+    /** Notify all bound activities to update their session lists. Used when session attachment
+     * state changes in multi-window mode. */
+    public synchronized void notifyAllSessionListsUpdated() {
+        for (TermuxTerminalSessionActivityClient client : mActivityClients) {
+            client.termuxSessionListNotifyUpdated();
+        }
+    }
 
+    /**
+     * Check if a session is attached to any activity.
+     * @param session The session to check
+     * @return true if the session is attached to any activity
+     */
+    public synchronized boolean isSessionAttached(TerminalSession session) {
+        if (session == null) return false;
+        return mSessionAttachments.containsKey(session.mHandle);
+    }
+
+    /**
+     * Check if a session is attached to a different activity than the one specified.
+     * @param session The session to check
+     * @param activityId The activity ID to compare against
+     * @return true if the session is attached to a different activity
+     */
+    public synchronized boolean isSessionAttachedToOther(TerminalSession session, int activityId) {
+        if (session == null) return false;
+        Integer owner = mSessionAttachments.get(session.mHandle);
+        return owner != null && owner != activityId;
+    }
+
+    /**
+     * Bring the activity that owns a session to the foreground.
+     * @param session The session whose owning activity should be focused
+     * @return true if the activity was found and brought to front
+     */
+    @SuppressLint("MissingPermission")
+    public synchronized boolean focusActivityForSession(TerminalSession session) {
+        if (session == null) return false;
+        Integer ownerId = mSessionAttachments.get(session.mHandle);
+        if (ownerId == null) return false;
+
+        for (TermuxTerminalSessionActivityClient client : mActivityClients) {
+            TermuxActivity activity = client.getActivity();
+            if (activity != null && activity.getActivityId() == ownerId) {
+                // Bring the activity's task to front
+                android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                if (am != null) {
+                    am.moveTaskToFront(activity.getTaskId(), 0);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Attempt to attach a session to an activity. Fails if already attached elsewhere.
+     * @param session The session to attach
+     * @param activityId The activity ID claiming the session
+     * @return true if successfully attached, false if already attached elsewhere
+     */
+    public synchronized boolean attachSession(TerminalSession session, int activityId) {
+        if (session == null) return false;
+        Integer currentOwner = mSessionAttachments.get(session.mHandle);
+        if (currentOwner != null && currentOwner != activityId) {
+            return false;  // Already attached to a different activity
+        }
+        mSessionAttachments.put(session.mHandle, activityId);
+        notifyAllSessionListsUpdated();
+        return true;
+    }
+
+    /**
+     * Detach a session from an activity. Only succeeds if the activity owns the session.
+     * @param session The session to detach
+     * @param activityId The activity ID releasing the session
+     */
+    public synchronized void detachSession(TerminalSession session, int activityId) {
+        if (session == null) return;
+        Integer owner = mSessionAttachments.get(session.mHandle);
+        if (owner != null && owner == activityId) {
+            mSessionAttachments.remove(session.mHandle);
+            notifyAllSessionListsUpdated();
+        }
+    }
+
+    /**
+     * Detach all sessions owned by an activity. Called when activity is destroyed.
+     * @param activityId The activity ID whose sessions should be detached
+     */
+    public synchronized void detachAllSessionsForActivity(int activityId) {
+        mSessionAttachments.entrySet().removeIf(entry -> entry.getValue() == activityId);
+        notifyAllSessionListsUpdated();
+    }
+
+    /**
+     * Atomically claim an unattached session by marking it as attached.
+     * @param activityId The activity ID claiming the session
+     * @return The claimed session, or null if no unattached sessions are available
+     */
+    @Nullable
+    public synchronized TerminalSession claimFirstUnattachedSession(int activityId) {
+        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
+            TerminalSession session = mShellManager.mTermuxSessions.get(i).getTerminalSession();
+            if (!mSessionAttachments.containsKey(session.mHandle)) {
+                mSessionAttachments.put(session.mHandle, activityId);
+                notifyAllSessionListsUpdated();
+                return session;
+            }
+        }
+        return null;
+    }
 
 
     private Notification buildNotification() {

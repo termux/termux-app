@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.ContextMenu;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -175,6 +177,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private float mTerminalToolbarDefaultHeight;
 
+    /**
+     * Unique identifier for this activity instance. Used for session attachment tracking.
+     */
+    private final int mActivityId = System.identityHashCode(this);
+
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
@@ -250,6 +257,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         setNewSessionButtonView();
 
         setToggleKeyboardView();
+
+        setNewWindowButtonView();
 
         registerForContextMenu(mTerminalView);
 
@@ -352,9 +361,22 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mIsInvalidState) return;
 
+        // Detach all sessions owned by this activity and reset their clients
         if (mTermuxService != null) {
-            // Do not leave service and session clients with references to activity.
-            mTermuxService.unsetTermuxTerminalSessionClient();
+            TerminalSession currentSession = getCurrentSession();
+            if (currentSession != null) {
+                // Reset this session's client to the service client
+                mTermuxService.resetSessionClient(currentSession);
+            }
+            if (mTerminalView != null) {
+                mTerminalView.detachSession();
+            }
+
+            // Detach all sessions owned by this activity (single source of truth)
+            mTermuxService.detachAllSessionsForActivity(mActivityId);
+
+            // Remove this activity's client from the service's set
+            mTermuxService.removeTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
             mTermuxService = null;
         }
 
@@ -372,6 +394,23 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
         savedInstanceState.putBoolean(ARG_ACTIVITY_RECREATED, true);
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
+        Logger.logDebug(LOG_TAG, "onMultiWindowModeChanged: " + isInMultiWindowMode);
+    }
+
+    /** Add a new window */
+    public void addNewWindow() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Intent intent = new Intent(this, TermuxActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT |
+                           Intent.FLAG_ACTIVITY_NEW_TASK |
+                           Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            startActivity(intent);
+        }
     }
 
 
@@ -421,7 +460,22 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 boolean isFailSafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                 mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
             } else {
-                mTermuxTerminalSessionActivityClient.setCurrentSession(mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast());
+                // In multi-window mode, try to atomically claim first unattached session
+                TerminalSession sessionToAttach = mTermuxService.claimFirstUnattachedSession(mActivityId);
+                if (sessionToAttach != null) {
+                    mTermuxTerminalSessionActivityClient.setCurrentSession(sessionToAttach);
+                } else {
+                    // All sessions are attached, create a new one or use stored session
+                    TerminalSession storedSession = mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast();
+                    if (storedSession != null && !mTermuxService.isSessionAttached(storedSession)) {
+                        mTermuxTerminalSessionActivityClient.setCurrentSession(storedSession);
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
+                        // In multi-window mode with all sessions attached, create a new session
+                        mTermuxTerminalSessionActivityClient.addNewSession(false, null);
+                    } else {
+                        mTermuxTerminalSessionActivityClient.setCurrentSession(storedSession);
+                    }
+                }
             }
         }
 
@@ -592,6 +646,21 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             toggleTerminalToolbar();
             return true;
         });
+    }
+
+    private void setNewWindowButtonView() {
+        View newWindowButton = findViewById(R.id.new_window_button);
+        if (newWindowButton != null) {
+            newWindowButton.setOnClickListener(v -> addNewWindow());
+            // Show if multi-window API is available (N+)
+            newWindowButton.setVisibility(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? View.VISIBLE : View.GONE);
+        }
+
+        // Use vertical orientation for drawer buttons if multi-window is available
+        LinearLayout drawerButtons = findViewById(R.id.drawer_buttons);
+        if (drawerButtons != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            drawerButtons.setOrientation(LinearLayout.VERTICAL);
+        }
     }
 
 
@@ -875,6 +944,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     public TermuxService getTermuxService() {
         return mTermuxService;
+    }
+
+    public int getActivityId() {
+        return mActivityId;
     }
 
     public TerminalView getTerminalView() {
