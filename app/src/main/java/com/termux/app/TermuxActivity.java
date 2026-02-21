@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -44,8 +45,9 @@ import com.termux.app.activities.SettingsActivity;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionsListViewController;
-import com.termux.app.terminal.io.TerminalToolbarViewPager;
+import com.termux.app.terminal.TermuxSessionTabsController;
 import com.termux.app.terminal.TermuxTerminalViewClient;
+import com.termux.app.terminal.io.FullScreenWorkAround;
 import com.termux.shared.termux.extrakeys.ExtraKeysView;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
 import com.termux.shared.logger.Logger;
@@ -62,8 +64,6 @@ import com.termux.view.TerminalViewClient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewpager.widget.ViewPager;
 
 import java.util.Arrays;
 
@@ -139,6 +139,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     TermuxSessionsListViewController mTermuxSessionListViewController;
 
     /**
+     * The termux session tabs controller.
+     */
+    TermuxSessionTabsController mTermuxSessionTabsController;
+
+    /**
      * The {@link TermuxActivity} broadcast receiver for various things like terminal style configuration changes.
      */
     private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new TermuxActivityBroadcastReceiver();
@@ -191,6 +196,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
+    private static final String PREF_TEXT_INPUT_VISIBLE = "text_input_visible";
 
     private static final String LOG_TAG = "TermuxActivity";
 
@@ -249,11 +255,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setNewSessionButtonView();
 
+        setToggleTextInputButtonView();
+
         setToggleKeyboardView();
 
         registerForContextMenu(mTerminalView);
 
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
+
+        // Register broadcast receiver in onCreate so it works even when activity is in background
+        registerTermuxActivityBroadcastReceiver();
 
         try {
             // Start the {@link TermuxService} and make it run regardless of who is bound to it
@@ -297,8 +308,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mPreferences.isTerminalMarginAdjustmentEnabled())
             addTermuxActivityRootViewGlobalLayoutListener();
-
-        registerTermuxActivityBroadcastReceiver();
     }
 
     @Override
@@ -339,9 +348,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTermuxTerminalViewClient.onStop();
 
         removeTermuxActivityRootViewGlobalLayoutListener();
-
-        unregisterTermuxActivityBroadcastReceiver();
-        getDrawer().closeDrawers();
     }
 
     @Override
@@ -351,6 +357,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         Logger.logDebug(LOG_TAG, "onDestroy");
 
         if (mIsInvalidState) return;
+
+        unregisterTermuxActivityBroadcastReceiver();
 
         if (mTermuxService != null) {
             // Do not leave service and session clients with references to activity.
@@ -498,11 +506,21 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     private void setTermuxSessionsListView() {
-        ListView termuxSessionsListView = findViewById(R.id.terminal_sessions_list);
-        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getTermuxSessions());
-        termuxSessionsListView.setAdapter(mTermuxSessionListViewController);
-        termuxSessionsListView.setOnItemClickListener(mTermuxSessionListViewController);
-        termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
+        // Initialize session tabs controller
+        mTermuxSessionTabsController = new TermuxSessionTabsController(this);
+        
+        // Set up new session tab button
+        ImageButton newSessionTabButton = findViewById(R.id.new_session_tab_button);
+        if (newSessionTabButton != null) {
+            newSessionTabButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
+            newSessionTabButton.setOnLongClickListener(v -> {
+                TextInputDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
+                    R.string.action_create_named_session_confirm, text -> mTermuxTerminalSessionActivityClient.addNewSession(false, text),
+                    R.string.action_new_session_failsafe, text -> mTermuxTerminalSessionActivityClient.addNewSession(true, text),
+                    -1, null, null);
+                return true;
+            });
+        }
     }
 
 
@@ -511,44 +529,76 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         mTermuxTerminalExtraKeys = new TermuxTerminalExtraKeys(this, mTerminalView,
             mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
 
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        final LinearLayout terminalToolbarContainer = getTerminalToolbarContainer();
+        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarContainer.setVisibility(View.VISIBLE);
 
-        ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
-        mTerminalToolbarDefaultHeight = layoutParams.height;
+        // Set default height for toolbar items (37.5dp as in original layout)
+        mTerminalToolbarDefaultHeight = (int) (37.5f * getResources().getDisplayMetrics().density);
+
+        // Setup ExtraKeysView
+        ExtraKeysView extraKeysView = findViewById(R.id.terminal_toolbar_extra_keys);
+        extraKeysView.setExtraKeysViewClient(mTermuxTerminalExtraKeys);
+        extraKeysView.setButtonTextAllCaps(mProperties.shouldExtraKeysTextBeAllCaps());
+        setExtraKeysView(extraKeysView);
+
+        // apply extra keys fix if enabled in prefs
+        if (mProperties.isUsingFullScreen() && mProperties.isUsingFullScreenWorkAround()) {
+            FullScreenWorkAround.apply(this);
+        }
 
         setTerminalToolbarHeight();
 
+        // Setup text input
+        final EditText editText = findViewById(R.id.terminal_toolbar_text_input);
         String savedTextInput = null;
         if (savedInstanceState != null)
             savedTextInput = savedInstanceState.getString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT);
+        if (savedTextInput != null) {
+            editText.setText(savedTextInput);
+        }
 
-        terminalToolbarViewPager.setAdapter(new TerminalToolbarViewPager.PageAdapter(this, savedTextInput));
-        terminalToolbarViewPager.addOnPageChangeListener(new TerminalToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            TerminalSession session = getCurrentSession();
+            if (session != null) {
+                if (session.isRunning()) {
+                    String textToSend = editText.getText().toString();
+                    if (textToSend.length() == 0) textToSend = "\r";
+                    session.write(textToSend);
+                } else {
+                    mTermuxTerminalSessionActivityClient.removeFinishedSession(session);
+                }
+                editText.setText("");
+            }
+            return true;
+        });
+
+        // Restore text input visibility state - only show if enabled in settings
+        View textInputContainer = findViewById(R.id.terminal_toolbar_text_input_container);
+        if (textInputContainer != null) {
+            boolean enabled = isTextInputEnabled();
+            boolean visible = enabled && isTextInputVisible();
+            textInputContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void setTerminalToolbarHeight() {
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (terminalToolbarViewPager == null) return;
+        final ExtraKeysView extraKeysView = getExtraKeysView();
+        if (extraKeysView == null) return;
 
-        ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
+        ViewGroup.LayoutParams layoutParams = extraKeysView.getLayoutParams();
         layoutParams.height = Math.round(mTerminalToolbarDefaultHeight *
             (mTermuxTerminalExtraKeys.getExtraKeysInfo() == null ? 0 : mTermuxTerminalExtraKeys.getExtraKeysInfo().getMatrix().length) *
             mProperties.getTerminalToolbarHeightScaleFactor());
-        terminalToolbarViewPager.setLayoutParams(layoutParams);
+        extraKeysView.setLayoutParams(layoutParams);
     }
 
     public void toggleTerminalToolbar() {
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (terminalToolbarViewPager == null) return;
+        final LinearLayout terminalToolbarContainer = getTerminalToolbarContainer();
+        if (terminalToolbarContainer == null) return;
 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
-        terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
-        if (showNow && isTerminalToolbarTextInputViewSelected()) {
-            // Focus the text input view if just revealed.
-            findViewById(R.id.terminal_toolbar_text_input).requestFocus();
-        }
+        terminalToolbarContainer.setVisibility(showNow ? View.VISIBLE : View.GONE);
     }
 
     private void saveTerminalToolbarTextInput(Bundle savedInstanceState) {
@@ -571,27 +621,89 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     private void setNewSessionButtonView() {
-        View newSessionButton = findViewById(R.id.new_session_button);
-        newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
-        newSessionButton.setOnLongClickListener(v -> {
-            TextInputDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
-                R.string.action_create_named_session_confirm, text -> mTermuxTerminalSessionActivityClient.addNewSession(false, text),
-                R.string.action_new_session_failsafe, text -> mTermuxTerminalSessionActivityClient.addNewSession(true, text),
-                -1, null, null);
-            return true;
-        });
+        // New session button is now in the tabs bar, handled in setTermuxSessionsListView
+    }
+
+    private void setToggleTextInputButtonView() {
+        ImageButton toggleTextInputButton = findViewById(R.id.toggle_text_input_button);
+        if (toggleTextInputButton != null) {
+            // Always set the click listener, even if button is initially hidden
+            toggleTextInputButton.setOnClickListener(v -> {
+                // Toggle the text input visibility
+                boolean currentlyVisible = isTextInputVisible();
+                setTextInputVisible(!currentlyVisible);
+                updateToggleTextInputButtonIcon();
+            });
+
+            // Set initial visibility based on settings
+            boolean enabled = isTextInputEnabled();
+            toggleTextInputButton.setVisibility(enabled ? View.VISIBLE : View.GONE);
+
+            // Set initial icon if visible
+            if (enabled) {
+                updateToggleTextInputButtonIcon();
+            }
+        }
+    }
+
+    private void updateToggleTextInputButtonIcon() {
+        ImageButton toggleTextInputButton = findViewById(R.id.toggle_text_input_button);
+        if (toggleTextInputButton != null) {
+            boolean isVisible = isTextInputVisible();
+            toggleTextInputButton.setImageResource(isVisible ? R.drawable.ic_keyboard_hide : R.drawable.ic_keyboard_show);
+            toggleTextInputButton.setContentDescription(getString(R.string.action_toggle_text_input));
+        }
+    }
+
+    /**
+     * Check if text input field is enabled in settings.
+     * @return true if text input field should be shown, false otherwise
+     */
+    public boolean isTextInputEnabled() {
+        return getSharedPreferences("termux_prefs", MODE_PRIVATE).getBoolean("text_input_enabled", true);
+    }
+
+    /**
+     * Update the toggle text input button visibility based on settings.
+     * Also updates the text input container visibility.
+     */
+    public void updateToggleTextInputButtonVisibility() {
+        ImageButton toggleTextInputButton = findViewById(R.id.toggle_text_input_button);
+        View textInputContainer = findViewById(R.id.terminal_toolbar_text_input_container);
+        
+        boolean enabled = isTextInputEnabled();
+        boolean wasDisabled = toggleTextInputButton != null &&
+                              toggleTextInputButton.getVisibility() != View.VISIBLE;
+        
+        if (toggleTextInputButton != null) {
+            toggleTextInputButton.setVisibility(enabled ? View.VISIBLE : View.GONE);
+        }
+        
+        // Also update text input container visibility
+        if (textInputContainer != null) {
+            if (!enabled) {
+                // Hide text input when disabled in settings
+                textInputContainer.setVisibility(View.GONE);
+            } else {
+                // If setting was just enabled (transition from disabled to enabled),
+                // show panel in visible state
+                if (wasDisabled) {
+                    setTextInputVisible(true);
+                } else {
+                    // Restore text input visibility based on saved state
+                    textInputContainer.setVisibility(isTextInputVisible() ? View.VISIBLE : View.GONE);
+                }
+            }
+        }
+        
+        // Update button icon after visibility state is finalized
+        if (enabled && toggleTextInputButton != null) {
+            updateToggleTextInputButtonIcon();
+        }
     }
 
     private void setToggleKeyboardView() {
-        findViewById(R.id.toggle_keyboard_button).setOnClickListener(v -> {
-            mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
-            getDrawer().closeDrawers();
-        });
-
-        findViewById(R.id.toggle_keyboard_button).setOnLongClickListener(v -> {
-            toggleTerminalToolbar();
-            return true;
-        });
+        // Toggle keyboard button removed - functionality moved to extra keys
     }
 
 
@@ -601,11 +713,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @SuppressLint("RtlHardcoded")
     @Override
     public void onBackPressed() {
-        if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
-            getDrawer().closeDrawers();
-        } else {
-            finishActivityIfNotFinishing();
-        }
+        finishActivityIfNotFinishing();
     }
 
     public void finishActivityIfNotFinishing() {
@@ -833,30 +941,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         mExtraKeysView = extraKeysView;
     }
 
-    public DrawerLayout getDrawer() {
-        return (DrawerLayout) findViewById(R.id.drawer_layout);
-    }
 
-
-    public ViewPager getTerminalToolbarViewPager() {
-        return (ViewPager) findViewById(R.id.terminal_toolbar_view_pager);
+    public LinearLayout getTerminalToolbarContainer() {
+        return (LinearLayout) findViewById(R.id.terminal_toolbar_container);
     }
 
     public float getTerminalToolbarDefaultHeight() {
         return mTerminalToolbarDefaultHeight;
     }
 
-    public boolean isTerminalViewSelected() {
-        return getTerminalToolbarViewPager().getCurrentItem() == 0;
-    }
-
-    public boolean isTerminalToolbarTextInputViewSelected() {
-        return getTerminalToolbarViewPager().getCurrentItem() == 1;
-    }
-
 
     public void termuxSessionListNotifyUpdated() {
-        mTermuxSessionListViewController.notifyDataSetChanged();
+        if (mTermuxSessionTabsController != null && mTermuxService != null) {
+            mTermuxSessionTabsController.updateTabs(mTermuxService.getTermuxSessions());
+        }
     }
 
     public boolean isVisible() {
@@ -906,6 +1004,48 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
 
+    /**
+     * Set visibility of the text input panel.
+     * @param visible true to show, false to hide
+     */
+    public void setTextInputVisible(boolean visible) {
+        View textInputContainer = findViewById(R.id.terminal_toolbar_text_input_container);
+        if (textInputContainer != null) {
+            textInputContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+            // Save state to preferences
+            getSharedPreferences("termux_prefs", MODE_PRIVATE).edit().putBoolean(PREF_TEXT_INPUT_VISIBLE, visible).apply();
+            
+            // Switch focus based on visibility
+            if (visible) {
+                // Focus on text input and show keyboard
+                EditText textInput = findViewById(R.id.terminal_toolbar_text_input);
+                if (textInput != null) {
+                    textInput.requestFocus();
+                    textInput.post(() -> {
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.showSoftInput(textInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                        }
+                    });
+                }
+            } else {
+                // Focus on terminal view
+                if (mTerminalView != null) {
+                    mTerminalView.requestFocus();
+                }
+            }
+        }
+    }
+
+    /**
+     * Get saved visibility state of text input panel.
+     * @return true if should be visible, false otherwise
+     */
+    public boolean isTextInputVisible() {
+        return getSharedPreferences("termux_prefs", MODE_PRIVATE).getBoolean(PREF_TEXT_INPUT_VISIBLE, true);
+    }
+
+
 
 
     public static void updateTermuxActivityStyling(Context context, boolean recreateActivity) {
@@ -915,11 +1055,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         context.sendBroadcast(stylingIntent);
     }
 
+    private static final String ACTION_TEXT_INPUT_VISIBILITY_CHANGED = "com.termux.TEXT_INPUT_VISIBILITY_CHANGED";
+    private static final String ACTION_TEXT_INPUT_ENABLED_CHANGED = "com.termux.TEXT_INPUT_ENABLED_CHANGED";
+
     private void registerTermuxActivityBroadcastReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
+        intentFilter.addAction(ACTION_TEXT_INPUT_VISIBILITY_CHANGED);
+        intentFilter.addAction(ACTION_TEXT_INPUT_ENABLED_CHANGED);
 
         registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
     }
@@ -943,10 +1088,27 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         public void onReceive(Context context, Intent intent) {
             if (intent == null) return;
 
+            String action = intent.getAction();
+            
+            // Handle text input visibility change even when activity is in background
+            if (ACTION_TEXT_INPUT_VISIBILITY_CHANGED.equals(action)) {
+                Logger.logDebug(LOG_TAG, "Received intent to change text input visibility");
+                boolean visible = intent.getBooleanExtra("visible", true);
+                setTextInputVisible(visible);
+                return;
+            }
+
+            // Handle text input enabled/disabled setting change
+            if (ACTION_TEXT_INPUT_ENABLED_CHANGED.equals(action)) {
+                Logger.logDebug(LOG_TAG, "Received intent to change text input enabled state");
+                updateToggleTextInputButtonVisibility();
+                return;
+            }
+
             if (mIsVisible) {
                 fixTermuxActivityBroadcastReceiverIntent(intent);
 
-                switch (intent.getAction()) {
+                switch (action) {
                     case TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH:
                         Logger.logDebug(LOG_TAG, "Received intent to notify app crash");
                         TermuxCrashUtils.notifyAppCrashFromCrashLogFile(context, LOG_TAG);

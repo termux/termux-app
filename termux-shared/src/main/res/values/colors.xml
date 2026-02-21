@@ -14,6 +14,7 @@
     <color name="grey_500">#9E9E9E</color>
     <color name="grey_800">#424242</color>
     <color name="grey_900">#212121</color>
+    <color name="extra_keys_button_background">#1a1a1a</color>
 
     <color name="red_error">#DC143C</color>
     <color name="red_error_link">#FC143C</color>

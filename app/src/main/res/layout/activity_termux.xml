@@ -16,91 +16,124 @@
         android:layout_marginVertical="0dp"
         android:orientation="vertical">
 
-        <androidx.drawerlayout.widget.DrawerLayout
-            android:id="@+id/drawer_layout"
+        <com.termux.view.TerminalView
+            android:id="@+id/terminal_view"
             android:layout_width="match_parent"
-            android:layout_alignParentTop="true"
-            android:layout_above="@+id/terminal_toolbar_view_pager"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_above="@+id/terminal_toolbar_container"
+            android:defaultFocusHighlightEnabled="false"
+            android:focusableInTouchMode="true"
+            android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
+            android:scrollbars="vertical"
+            tools:ignore="UnusedAttribute" />
 
-            <com.termux.view.TerminalView
-                android:id="@+id/terminal_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:defaultFocusHighlightEnabled="false"
-                android:focusableInTouchMode="true"
-                android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
-                android:scrollbars="vertical"
-                tools:ignore="UnusedAttribute" />
-
-            <LinearLayout
-                android:id="@+id/left_drawer"
-                android:layout_width="240dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="start"
-                android:choiceMode="singleChoice"
-                android:divider="@android:color/transparent"
-                android:dividerHeight="0dp"
-                android:descendantFocusability="blocksDescendants"
-                android:orientation="vertical"
-                android:background="?attr/termuxActivityDrawerBackground">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <ImageButton
-                        android:id="@+id/settings_button"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_settings"
-                        android:background="@null"
-                        android:contentDescription="@string/action_open_settings"
-                        app:tint="?attr/termuxActivityDrawerImageTint" />
-                </LinearLayout>
-
-                <ListView
-                    android:id="@+id/terminal_sessions_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_gravity="top"
-                    android:layout_weight="1"
-                    android:choiceMode="singleChoice"
-                    android:longClickable="true" />
-
-                <LinearLayout
-                    style="?android:attr/buttonBarStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/toggle_keyboard_button"
-                        style="?android:attr/buttonBarButtonStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/action_toggle_soft_keyboard" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/new_session_button"
-                        style="?android:attr/buttonBarButtonStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/action_new_session" />
-                </LinearLayout>
-            </LinearLayout>
-
-        </androidx.drawerlayout.widget.DrawerLayout>
-
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/terminal_toolbar_view_pager"
+        <LinearLayout
+            android:id="@+id/terminal_toolbar_container"
             android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="37.5dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:background="@color/black"
-            android:layout_alignParentBottom="true" />
+            android:layout_alignParentBottom="true">
+
+            <!-- Text input with rounded corners and border -->
+            <FrameLayout
+                android:id="@+id/terminal_toolbar_text_input_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="4dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/text_input_background">
+
+                <EditText
+                    android:id="@+id/terminal_toolbar_text_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:imeOptions="actionSend|flagNoFullscreen"
+                    android:maxLines="1"
+                    android:inputType="text"
+                    android:importantForAutofill="no"
+                    android:textColor="@android:color/white"
+                    android:textColorHighlight="@android:color/darker_gray"
+                    android:textCursorDrawable="@null"
+                    android:background="@android:color/transparent"
+                    tools:ignore="LabelFor" />
+
+            </FrameLayout>
+
+            <!-- Session tabs container - moved above extra keys -->
+            <LinearLayout
+                android:id="@+id/session_tabs_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@color/black"
+                android:paddingVertical="2dp">
+
+                <HorizontalScrollView
+                    android:id="@+id/session_tabs_scroll"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/session_tabs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="4dp" />
+
+                </HorizontalScrollView>
+
+                <!-- Add tab button with + icon -->
+                <ImageButton
+                    android:id="@+id/new_session_tab_button"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_add"
+                    android:background="@drawable/session_tab_background"
+                    android:contentDescription="@string/action_new_session"
+                    android:tint="@android:color/white"
+                    android:scaleType="center" />
+
+                <!-- Toggle text input visibility button -->
+                <ImageButton
+                    android:id="@+id/toggle_text_input_button"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_keyboard_hide"
+                    android:background="@drawable/session_tab_background"
+                    android:contentDescription="@string/action_toggle_text_input"
+                    android:tint="@android:color/white"
+                    android:scaleType="center" />
+
+                <ImageButton
+                    android:id="@+id/settings_button"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_settings"
+                    android:background="@drawable/session_tab_background"
+                    android:contentDescription="@string/action_open_settings"
+                    android:tint="@android:color/white"
+                    android:scaleType="center" />
+
+            </LinearLayout>
+
+            <com.termux.shared.termux.extrakeys.ExtraKeysView
+                android:id="@+id/terminal_toolbar_extra_keys"
+                style="?android:attr/buttonBarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 
