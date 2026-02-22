@@ -17,39 +17,53 @@ import com.termux.terminal.WcWidth;
  * Saves font metrics, so needs to be recreated each time the typeface or font size changes.
  */
 public final class TerminalRenderer {
-
-    final int mTextSize;
-    final Typeface mTypeface;
+    int mTextSize;
     private final Paint mTextPaint = new Paint();
-
+    /* These arrays are indexed by style e.g mTypefaceByStyle[TypefaceStyle.ITALIC]; */
+    private final Typeface[] mTypefaceByStyle = new Typeface[4];
     /** The width of a single mono spaced character obtained by {@link Paint#measureText(String)} on a single 'X'. */
-    final float mFontWidth;
+    private final float[] mFontWidthByStyle = new float[4];
     /** The {@link Paint#getFontSpacing()}. See http://www.fampennings.nl/maarten/android/08numgrid/font.png */
-    final int mFontLineSpacing;
+    private final int[] mFontLineSpacingByStyle = new int[4];
     /** The {@link Paint#ascent()}. See http://www.fampennings.nl/maarten/android/08numgrid/font.png */
-    private final int mFontAscent;
-    /** The {@link #mFontLineSpacing} + {@link #mFontAscent}. */
-    final int mFontLineSpacingAndAscent;
-
+    private final int[] mFontAscentByStyle = new int[4];
+    /** The {@link #mFontLineSpacingByStyle} + {@link #mFontAscentByStyle}. */
+    private final int[] mFontLineSpacingAndAscentByStyle = new int[4];
     private final float[] asciiMeasures = new float[127];
 
-    public TerminalRenderer(int textSize, Typeface typeface) {
+    public TerminalRenderer(int textSize) {
         mTextSize = textSize;
-        mTypeface = typeface;
+        mTextPaint.setTextSize(textSize);
+    }
+
+    public void setTextSize(int textSize) {
+        mTextSize = textSize;
+        mTextPaint.setTextSize(textSize);
+
+        for (int i = 0; i < 4; i++) {
+            setTypeface(mTypefaceByStyle[i], TypefaceStyle.values()[i]);
+        }
+    }
+
+    public void setTypeface(Typeface typeface, TypefaceStyle style) {
+        int idx = style.ordinal();
+
+        mTypefaceByStyle[idx] = typeface;
 
         mTextPaint.setTypeface(typeface);
         mTextPaint.setAntiAlias(true);
-        mTextPaint.setTextSize(textSize);
 
-        mFontLineSpacing = (int) Math.ceil(mTextPaint.getFontSpacing());
-        mFontAscent = (int) Math.ceil(mTextPaint.ascent());
-        mFontLineSpacingAndAscent = mFontLineSpacing + mFontAscent;
-        mFontWidth = mTextPaint.measureText("X");
+        mFontLineSpacingByStyle[idx] = (int) Math.ceil(mTextPaint.getFontSpacing());
+        mFontAscentByStyle[idx] = (int) Math.ceil(mTextPaint.ascent());
+        mFontLineSpacingAndAscentByStyle[idx] = mFontLineSpacingByStyle[idx] + mFontAscentByStyle[idx];
+        mFontWidthByStyle[idx] = mTextPaint.measureText("X");
 
-        StringBuilder sb = new StringBuilder(" ");
-        for (int i = 0; i < asciiMeasures.length; i++) {
-            sb.setCharAt(0, (char) i);
-            asciiMeasures[i] = mTextPaint.measureText(sb, 0, 1);
+        if (style == TypefaceStyle.NORMAL) {
+            StringBuilder sb = new StringBuilder(" ");
+            for (int i = 0; i < asciiMeasures.length; i++) {
+                sb.setCharAt(0, (char) i);
+                asciiMeasures[i] = mTextPaint.measureText(sb, 0, 1);
+            }
         }
     }
 
@@ -69,9 +83,13 @@ public final class TerminalRenderer {
         if (reverseVideo)
             canvas.drawColor(palette[TextStyle.COLOR_INDEX_FOREGROUND], PorterDuff.Mode.SRC);
 
-        float heightOffset = mFontLineSpacingAndAscent;
+        int fontLineSpacingAndAscent = getFontLineSpacingAndAscent();
+        int fontLineSpacing = getFontLineSpacing();
+        float fontWidth = getFontWidth();
+
+        float heightOffset = fontLineSpacingAndAscent;
         for (int row = topRow; row < endRow; row++) {
-            heightOffset += mFontLineSpacing;
+            heightOffset += fontLineSpacing;
 
             final int cursorX = (row == cursorRow && cursorVisible) ? cursorCol : -1;
             int selx1 = -1, selx2 = -1;
@@ -109,7 +127,7 @@ public final class TerminalRenderer {
                 // If this is detected, we draw this code point scaled to match what wcwidth() expects.
                 final float measuredCodePointWidth = (codePoint < asciiMeasures.length) ? asciiMeasures[codePoint] : mTextPaint.measureText(line,
                     currentCharIndex, charsForCodePoint);
-                final boolean fontWidthMismatch = Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
+                final boolean fontWidthMismatch = Math.abs(measuredCodePointWidth / fontWidth - codePointWcWidth) > 0.01;
 
                 if (style != lastRunStyle || insideCursor != lastRunInsideCursor || insideSelection != lastRunInsideSelection || fontWidthMismatch || lastRunFontWidthMismatch) {
                     if (column == 0) {
@@ -156,6 +174,66 @@ public final class TerminalRenderer {
         }
     }
 
+    /**
+     * Prepare the {@link #mTextPaint} for drawing the specified style.
+     * If there is no Typeface supplied for the style, we will use a
+     * fallback and return it.
+     **/
+    private TypefaceStyle prepareStyleOrFallback(TypefaceStyle desiredStyle) {
+        TypefaceStyle fallbackStyle = desiredStyle;
+        switch (desiredStyle) {
+            case NORMAL:
+                mTextPaint.setTextSkewX(0.f);
+                mTextPaint.setFakeBoldText(false);
+                break;
+            case ITALIC:
+                if (mTypefaceByStyle[desiredStyle.ordinal()] == null) {
+                    fallbackStyle = TypefaceStyle.NORMAL;
+                    mTextPaint.setTextSkewX(-0.35f);
+                } else {
+                    mTextPaint.setTextSkewX(0.f);
+                }
+                mTextPaint.setFakeBoldText(false);
+                break;
+            case BOLD:
+                if (mTypefaceByStyle[desiredStyle.ordinal()] == null) {
+                    fallbackStyle = TypefaceStyle.NORMAL;
+                    mTextPaint.setFakeBoldText(true);
+                } else {
+                    mTextPaint.setFakeBoldText(false);
+                }
+                mTextPaint.setTextSkewX(0.f);
+                break;
+            case BOLD_ITALIC:
+                if (mTypefaceByStyle[desiredStyle.ordinal()] == null) {
+                    // italic has priority over bold here since fake bold
+                    // is not as bad as skewed text which may be to big
+                    // for the cell
+                    if (mTypefaceByStyle[TypefaceStyle.ITALIC.ordinal()] != null) {
+                        fallbackStyle = TypefaceStyle.ITALIC;
+                        mTextPaint.setFakeBoldText(true);
+                        mTextPaint.setTextSkewX(0.f);
+                    } else if (mTypefaceByStyle[TypefaceStyle.BOLD.ordinal()] != null) {
+                        fallbackStyle = TypefaceStyle.BOLD;
+                        mTextPaint.setFakeBoldText(false);
+                        mTextPaint.setTextSkewX(-0.35f);
+                    } else {
+                        fallbackStyle = TypefaceStyle.NORMAL;
+                        mTextPaint.setFakeBoldText(true);
+                        mTextPaint.setTextSkewX(-0.35f);
+                    }
+                } else {
+                    mTextPaint.setFakeBoldText(false);
+                    mTextPaint.setTextSkewX(0.f);
+                }
+                break;
+        }
+
+        mTextPaint.setTypeface(mTypefaceByStyle[fallbackStyle.ordinal()]);
+
+        return fallbackStyle;
+    }
+
     private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y, int startColumn, int runWidthColumns,
                              int startCharIndex, int runWidthChars, float mes, int cursor, int cursorStyle,
                              long textStyle, boolean reverseVideo) {
@@ -167,6 +245,21 @@ public final class TerminalRenderer {
         final boolean italic = (effect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0;
         final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
         final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
+
+        TypefaceStyle style = TypefaceStyle.NORMAL;
+        if (italic && bold) {
+            style = prepareStyleOrFallback(TypefaceStyle.BOLD_ITALIC);
+        } else if (italic) {
+            style = prepareStyleOrFallback(TypefaceStyle.ITALIC);
+        } else if (bold) {
+            style = prepareStyleOrFallback(TypefaceStyle.BOLD);
+        } else {
+            prepareStyleOrFallback(style);
+        }
+
+        float fontWidth = getFontWidth(style);
+        int fontAscent = getFontAscent(style);
+        int fontLineSpacingAndAscent = getFontLineSpacingAndAscent(style);
 
         if ((foreColor & 0xff000000) != 0xff000000) {
             // Let bold have bright colors if applicable (one of the first 8):
@@ -186,10 +279,10 @@ public final class TerminalRenderer {
             backColor = tmp;
         }
 
-        float left = startColumn * mFontWidth;
-        float right = left + runWidthColumns * mFontWidth;
+        float left = startColumn * fontWidth;
+        float right = left + runWidthColumns * fontWidth;
 
-        mes = mes / mFontWidth;
+        mes = mes / fontWidth;
         boolean savedMatrix = false;
         if (Math.abs(mes - runWidthColumns) > 0.01) {
             canvas.save();
@@ -202,12 +295,12 @@ public final class TerminalRenderer {
         if (backColor != palette[TextStyle.COLOR_INDEX_BACKGROUND]) {
             // Only draw non-default background.
             mTextPaint.setColor(backColor);
-            canvas.drawRect(left, y - mFontLineSpacingAndAscent + mFontAscent, right, y, mTextPaint);
+            canvas.drawRect(left, y - fontLineSpacingAndAscent + fontAscent, right, y, mTextPaint);
         }
 
         if (cursor != 0) {
             mTextPaint.setColor(cursor);
-            float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
+            float cursorHeight = fontLineSpacingAndAscent - fontAscent;
             if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.;
             else if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) right -= ((right - left) * 3) / 4.;
             canvas.drawRect(left, y - cursorHeight, right, y, mTextPaint);
@@ -226,24 +319,49 @@ public final class TerminalRenderer {
                 foreColor = 0xFF000000 + (red << 16) + (green << 8) + blue;
             }
 
-            mTextPaint.setFakeBoldText(bold);
             mTextPaint.setUnderlineText(underline);
-            mTextPaint.setTextSkewX(italic ? -0.35f : 0.f);
             mTextPaint.setStrikeThruText(strikeThrough);
             mTextPaint.setColor(foreColor);
 
             // The text alignment is the default Paint.Align.LEFT.
-            canvas.drawTextRun(text, startCharIndex, runWidthChars, startCharIndex, runWidthChars, left, y - mFontLineSpacingAndAscent, false, mTextPaint);
+            canvas.drawTextRun(text, startCharIndex, runWidthChars, startCharIndex, runWidthChars, left, y - fontLineSpacingAndAscent, false, mTextPaint);
         }
 
         if (savedMatrix) canvas.restore();
     }
 
-    public float getFontWidth() {
-        return mFontWidth;
+    public float getFontWidth(TypefaceStyle style) {
+        return mFontWidthByStyle[style.ordinal()];
     }
 
+    public int getFontAscent(TypefaceStyle style) {
+        return mFontAscentByStyle[style.ordinal()];
+    }
+    public int getFontLineSpacing(TypefaceStyle style) {
+        return mFontLineSpacingByStyle[style.ordinal()];
+    }
+
+    public int getFontLineSpacingAndAscent(TypefaceStyle style) {
+        return mFontLineSpacingAndAscentByStyle[style.ordinal()];
+    }
+
+    public float getFontWidth() {
+        return mFontWidthByStyle[TypefaceStyle.NORMAL.ordinal()];
+    }
+    public int getFontAscent() {
+        return mFontAscentByStyle[TypefaceStyle.NORMAL.ordinal()];
+    }
     public int getFontLineSpacing() {
-        return mFontLineSpacing;
+        return mFontLineSpacingByStyle[TypefaceStyle.NORMAL.ordinal()];
+    }
+    public int getFontLineSpacingAndAscent() {
+        return mFontLineSpacingAndAscentByStyle[TypefaceStyle.NORMAL.ordinal()];
+    }
+
+    public enum TypefaceStyle {
+        NORMAL,
+        ITALIC,
+        BOLD,
+        BOLD_ITALIC,
     }
 }
