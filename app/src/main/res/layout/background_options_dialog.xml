@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:background="#232121"
+    tools:ignore="HardcodedText"
+    android:padding="20dp">
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/choose"
+        android:textStyle="bold"
+        android:letterSpacing=".05"
+        android:textColor="#DADADA"
+        android:background="@drawable/outline_background_rounded_corners"
+        android:layout_margin="10dp"
+        android:paddingStart="15dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="15dp"
+        android:paddingBottom="2dp"
+        android:textSize="12sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose from gallery"/>
+
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/hex_code"
+        android:textStyle="bold"
+        android:singleLine="false"
+        android:gravity="start"
+        android:textColor="#DADADA"
+        android:textColorHint="#838383"
+        android:padding="10dp"
+        android:letterSpacing=".03"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Put the overlay color hex/argb/rgb here"
+        tools:ignore="HardcodedText" />
+
+    <TableRow
+        android:layout_marginTop="30dp"
+        android:padding="10dp"
+        android:gravity="center|end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/action_close"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_margin="10dp"
+            android:letterSpacing=".1"
+            android:textColor="#DADADA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close" />
+        <Button
+            android:id="@+id/reset_background"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_margin="10dp"
+            android:letterSpacing=".1"
+            android:textColor="#DADADA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reset" />
+        <Button
+            android:id="@+id/save"
+            android:textStyle="bold"
+            android:letterSpacing=".1"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_margin="10dp"
+            android:textColor="#DADADA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save" />
+    </TableRow>
+</LinearLayout>
