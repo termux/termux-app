@@ -372,9 +372,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             blackScreenOverlay.setVisibility(android.view.View.VISIBLE);
             blackScreenOverlay.bringToFront();
             
-            // Hide Termux Extra Keys (CTRL, ALT, etc.)
-            android.view.View extraKeys = findViewById(com.termux.R.id.extra_keys);
-            if (extraKeys != null) extraKeys.setVisibility(android.view.View.GONE);
+            // Hide Termux Extra Keys directly using the native Termux variable
+            if (mExtraKeysView != null) mExtraKeysView.setVisibility(android.view.View.GONE);
 
             // Lock the App to the screen (Disables Home Button)
             try {
@@ -405,9 +404,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                         
                         blackScreenOverlay.setVisibility(android.view.View.GONE);
                         
-                        // Show Termux Extra Keys again
-                        android.view.View extraKeys = findViewById(com.termux.R.id.extra_keys);
-                        if (extraKeys != null) extraKeys.setVisibility(android.view.View.VISIBLE);
+                        // Show Termux Extra Keys again using the native Termux variable
+                        if (mExtraKeysView != null) mExtraKeysView.setVisibility(android.view.View.VISIBLE);
 
                         // Unlock the Home Button
                         try {
@@ -418,7 +416,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     }
                 });
                 androidx.biometric.BiometricPrompt.PromptInfo promptInfo = new androidx.biometric.BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Unlock LITV Device")
+                        .setTitle("Unlock")
                         .setAllowedAuthenticators(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG | androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                         .build();
                 biometricPrompt.authenticate(promptInfo);
