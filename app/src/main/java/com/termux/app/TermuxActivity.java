@@ -300,7 +300,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // 1. Inject the UI over everything so the Sidebar isn't broken
+        // 1. Inject the UI over everything
         android.view.View litvOverlay = getLayoutInflater().inflate(com.termux.R.layout.litv_overlay, null);
         addContentView(litvOverlay, new android.view.ViewGroup.LayoutParams(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
@@ -360,15 +360,27 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             browserContainer.setVisibility(isVisible ? android.view.View.GONE : android.view.View.VISIBLE);
         });
 
-        // 5. Absolute Stealth Mode (1% Brightness Fix)
+        // 5. Absolute Stealth Mode (Kiosk Lockdown)
         final float[] defaultBrightness = new float[1];
         fabStealth.setOnClickListener(v -> {
             defaultBrightness[0] = getWindow().getAttributes().screenBrightness;
             android.view.WindowManager.LayoutParams params = getWindow().getAttributes();
-            params.screenBrightness = 0.01f; // 1% brightness prevents the kernel from sleeping the phone
+            params.screenBrightness = 0.01f; 
             getWindow().setAttributes(params);
-            blackScreenOverlay.setVisibility(android.view.View.VISIBLE);
             
+            // Force Black Screen to the absolute top
+            blackScreenOverlay.setVisibility(android.view.View.VISIBLE);
+            blackScreenOverlay.bringToFront();
+            
+            // Hide Termux Extra Keys (CTRL, ALT, etc.)
+            android.view.View extraKeys = findViewById(com.termux.R.id.extra_keys);
+            if (extraKeys != null) extraKeys.setVisibility(android.view.View.GONE);
+
+            // Lock the App to the screen (Disables Home Button)
+            try {
+                startLockTask();
+            } catch (Exception e) {}
+
             // Hide Status Bar completely
             getWindow().getDecorView().setSystemUiVisibility(
                     android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -378,7 +390,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     | android.view.View.SYSTEM_UI_FLAG_FULLSCREEN);
         });
 
-        // 6. Biometric Unlock
+        // 6. Biometric Kiosk Unlock
         android.view.GestureDetector gestureDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(android.view.MotionEvent e) {
@@ -386,16 +398,27 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 androidx.biometric.BiometricPrompt biometricPrompt = new androidx.biometric.BiometricPrompt(TermuxActivity.this, executor, new androidx.biometric.BiometricPrompt.AuthenticationCallback() {
                     @Override
                     public void onAuthenticationSucceeded(androidx.biometric.BiometricPrompt.AuthenticationResult result) {
+                        // Restore Brightness
                         android.view.WindowManager.LayoutParams params = getWindow().getAttributes();
                         params.screenBrightness = defaultBrightness[0]; 
                         getWindow().setAttributes(params);
+                        
                         blackScreenOverlay.setVisibility(android.view.View.GONE);
+                        
+                        // Show Termux Extra Keys again
+                        android.view.View extraKeys = findViewById(com.termux.R.id.extra_keys);
+                        if (extraKeys != null) extraKeys.setVisibility(android.view.View.VISIBLE);
+
+                        // Unlock the Home Button
+                        try {
+                            stopLockTask();
+                        } catch (Exception ex) {}
                         
                         getWindow().getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_VISIBLE);
                     }
                 });
                 androidx.biometric.BiometricPrompt.PromptInfo promptInfo = new androidx.biometric.BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Unlock")
+                        .setTitle("Unlock LITV Device")
                         .setAllowedAuthenticators(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG | androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                         .build();
                 biometricPrompt.authenticate(promptInfo);
