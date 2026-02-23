@@ -382,7 +382,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         });
         blackScreenOverlay.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
 
-        
     }
 
     @Override
