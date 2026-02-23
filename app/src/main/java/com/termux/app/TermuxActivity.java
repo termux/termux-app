@@ -296,34 +296,40 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         TermuxUtils.sendTermuxOpenedBroadcast(this);
 
 
-        // === LITV CORE LOGIC === //
+        // === LITV CORE LOGIC (DYNAMIC INJECTION) === //
         
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        LinearLayout browserContainer = findViewById(R.id.browser_container);
-        WebView colabWebView = findViewById(R.id.colab_webview);
-        EditText urlInput = findViewById(R.id.url_input);
-        Button btnGo = findViewById(R.id.btn_go);
-        
-        View blackScreenOverlay = findViewById(R.id.black_screen_overlay);
-        View fabBrowser = findViewById(R.id.fab_browser);
-        View fabStealth = findViewById(R.id.fab_stealth);
+        // 1. Inject the UI over everything so the Sidebar isn't broken
+        android.view.View litvOverlay = getLayoutInflater().inflate(com.termux.app.R.layout.litv_overlay, null);
+        addContentView(litvOverlay, new android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT));
 
-        // 1. TRUE DESKTOP MODE SETTINGS
-        WebSettings webSettings = colabWebView.getSettings();
+        android.widget.LinearLayout browserContainer = litvOverlay.findViewById(com.termux.app.R.id.browser_container);
+        android.webkit.WebView colabWebView = litvOverlay.findViewById(com.termux.app.R.id.colab_webview);
+        android.widget.EditText urlInput = litvOverlay.findViewById(com.termux.app.R.id.url_input);
+        android.widget.Button btnGo = litvOverlay.findViewById(com.termux.app.R.id.btn_go);
+        
+        android.view.View blackScreenOverlay = litvOverlay.findViewById(com.termux.app.R.id.black_screen_overlay);
+        android.view.View fabBrowser = litvOverlay.findViewById(com.termux.app.R.id.fab_browser);
+        android.view.View fabStealth = litvOverlay.findViewById(com.termux.app.R.id.fab_stealth);
+
+        // 2. Desktop Browser Setup
+        android.webkit.WebSettings webSettings = colabWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
-        webSettings.setUseWideViewPort(true); // Desktop width
-        webSettings.setLoadWithOverviewMode(true); // Zoom out to fit
+        webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
         webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
-        CookieManager.getInstance().setAcceptCookie(true);
+        android.webkit.CookieManager.getInstance().setAcceptCookie(true);
         webSettings.setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
         
-        colabWebView.setWebViewClient(new WebViewClient() {
+        colabWebView.setWebViewClient(new android.webkit.WebViewClient() {
             @Override
-            public void onPageFinished(WebView view, String url) {
+            public void onPageFinished(android.webkit.WebView view, String url) {
                 if (url != null && !url.equals("about:blank")) {
                     urlInput.setText(url);
                 }
@@ -332,20 +338,15 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 }
             }
         });
-
-        // 2. Start completely blank (No built-in URL)
         colabWebView.loadUrl("about:blank");
-        urlInput.setText("");
 
-        // 3. SMART SEARCH & URL FORMATTER
+        // 3. Smart Search Fix
         btnGo.setOnClickListener(v -> {
             String query = urlInput.getText().toString().trim();
             if (query.isEmpty()) return;
-            
-            // If it's not a URL, search Google. If it's missing https, add it.
             if (!query.startsWith("http://") && !query.startsWith("https://")) {
                 if (query.contains(".") && !query.contains(" ")) {
-                    query = "http://" + query; // Rclone needs http, normal sites redirect to https
+                    query = "http://" + query; 
                 } else {
                     query = "https://www.google.com/search?q=" + android.net.Uri.encode(query);
                 }
@@ -353,53 +354,48 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             colabWebView.loadUrl(query);
         });
 
-        // 4. BROWSER TOGGLE
+        // 4. Browser Toggle
         fabBrowser.setOnClickListener(v -> {
-            boolean isVisible = browserContainer.getVisibility() == View.VISIBLE;
-            browserContainer.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+            boolean isVisible = browserContainer.getVisibility() == android.view.View.VISIBLE;
+            browserContainer.setVisibility(isVisible ? android.view.View.GONE : android.view.View.VISIBLE);
         });
 
-        // 5. TRUE STEALTH IMMERSIVE MODE
+        // 5. Absolute Stealth Mode (1% Brightness Fix)
         final float[] defaultBrightness = new float[1];
         fabStealth.setOnClickListener(v -> {
             defaultBrightness[0] = getWindow().getAttributes().screenBrightness;
-            WindowManager.LayoutParams params = getWindow().getAttributes();
-            params.screenBrightness = 0.0f; 
+            android.view.WindowManager.LayoutParams params = getWindow().getAttributes();
+            params.screenBrightness = 0.01f; // 1% brightness prevents the kernel from sleeping the phone
             getWindow().setAttributes(params);
-            blackScreenOverlay.setVisibility(View.VISIBLE);
+            blackScreenOverlay.setVisibility(android.view.View.VISIBLE);
             
-            // Hide Status Bar and Navigation Bar
+            // Hide Status Bar completely
             getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN);
+                    android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | android.view.View.SYSTEM_UI_FLAG_FULLSCREEN);
         });
 
-        // 6. UNLOCK & RESTORE UI
-        GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+        // 6. Biometric Unlock
+        android.view.GestureDetector gestureDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
             @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                Executor executor = ContextCompat.getMainExecutor(TermuxActivity.this);
-                BiometricPrompt biometricPrompt = new BiometricPrompt(TermuxActivity.this, executor, new BiometricPrompt.AuthenticationCallback() {
+            public boolean onDoubleTap(android.view.MotionEvent e) {
+                java.util.concurrent.Executor executor = androidx.core.content.ContextCompat.getMainExecutor(TermuxActivity.this);
+                androidx.biometric.BiometricPrompt biometricPrompt = new androidx.biometric.BiometricPrompt(TermuxActivity.this, executor, new androidx.biometric.BiometricPrompt.AuthenticationCallback() {
                     @Override
-                    public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
-                        WindowManager.LayoutParams params = getWindow().getAttributes();
+                    public void onAuthenticationSucceeded(androidx.biometric.BiometricPrompt.AuthenticationResult result) {
+                        android.view.WindowManager.LayoutParams params = getWindow().getAttributes();
                         params.screenBrightness = defaultBrightness[0]; 
                         getWindow().setAttributes(params);
-                        blackScreenOverlay.setVisibility(View.GONE);
+                        blackScreenOverlay.setVisibility(android.view.View.GONE);
                         
-                        // Restore Status Bar
-                        getWindow().getDecorView().setSystemUiVisibility(
-                                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                        getWindow().getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_VISIBLE);
                     }
                 });
-                BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Unlock LITV Terminal")
+                androidx.biometric.BiometricPrompt.PromptInfo promptInfo = new androidx.biometric.BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Unlock")
                         .setAllowedAuthenticators(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG | androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                         .build();
                 biometricPrompt.authenticate(promptInfo);
