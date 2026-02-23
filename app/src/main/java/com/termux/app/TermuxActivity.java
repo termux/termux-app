@@ -67,6 +67,22 @@ import androidx.viewpager.widget.ViewPager;
 
 import java.util.Arrays;
 
+
+
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.webkit.WebSettings;
+import android.webkit.CookieManager;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
+import java.util.concurrent.Executor;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.Button;
+import android.widget.LinearLayout;
+
 /**
  * A terminal emulator activity.
  * <p/>
@@ -277,6 +293,95 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
         // app has been opened.
         TermuxUtils.sendTermuxOpenedBroadcast(this);
+
+
+        // === LITV CORE LOGIC === //
+        
+        // 1. Lock Wi-Fi and CPU to stay on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        LinearLayout browserContainer = findViewById(R.id.browser_container);
+        WebView colabWebView = findViewById(R.id.colab_webview);
+        EditText urlInput = findViewById(R.id.url_input);
+        Button btnGo = findViewById(R.id.btn_go);
+        
+        View blackScreenOverlay = findViewById(R.id.black_screen_overlay);
+        View fabBrowser = findViewById(R.id.fab_browser);
+        View fabStealth = findViewById(R.id.fab_stealth);
+
+        // 2. Configure Desktop Browser for Google Auth & Colab
+        WebSettings webSettings = colabWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        CookieManager.getInstance().setAcceptCookie(true);
+        // Spoof Windows 10 Chrome to bypass Google 403 Error
+        webSettings.setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
+        
+        colabWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                // Update Address Bar when page loads
+                urlInput.setText(url);
+                
+                // Inject Colab Keep-Alive Script
+                if (url != null && url.contains("colab.research.google.com")) {
+                    view.evaluateJavascript("javascript:(function() { setInterval(function(){ document.querySelector('colab-connect-button').click(); }, 60000); })()", null);
+                }
+            }
+        });
+        
+        // Load default page
+        colabWebView.loadUrl("https://colab.research.google.com/");
+
+        // 3. Address Bar "GO" Button Logic
+        btnGo.setOnClickListener(v -> {
+            String targetUrl = urlInput.getText().toString();
+            if (!targetUrl.startsWith("http")) {
+                targetUrl = "http://" + targetUrl;
+            }
+            colabWebView.loadUrl(targetUrl);
+        });
+
+        // 4. Browser Toggle Button (Slides browser over terminal)
+        fabBrowser.setOnClickListener(v -> {
+            boolean isVisible = browserContainer.getVisibility() == View.VISIBLE;
+            browserContainer.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+        });
+
+        // 5. Stealth Mode Button
+        final float[] defaultBrightness = new float[1];
+        fabStealth.setOnClickListener(v -> {
+            defaultBrightness[0] = getWindow().getAttributes().screenBrightness;
+            WindowManager.LayoutParams params = getWindow().getAttributes();
+            params.screenBrightness = 0.0f; // Drop hardware backlight to 0
+            getWindow().setAttributes(params);
+            blackScreenOverlay.setVisibility(View.VISIBLE);
+        });
+
+        // 6. Biometric Double-Tap Unlock
+        GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                Executor executor = ContextCompat.getMainExecutor(TermuxActivity.this);
+                BiometricPrompt biometricPrompt = new BiometricPrompt(TermuxActivity.this, executor, new BiometricPrompt.AuthenticationCallback() {
+                    @Override
+                    public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                        WindowManager.LayoutParams params = getWindow().getAttributes();
+                        params.screenBrightness = defaultBrightness[0]; // Restore backlight
+                        getWindow().setAttributes(params);
+                        blackScreenOverlay.setVisibility(View.GONE);
+                    }
+                });
+                BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Unlock LITV Terminal")
+                        .setAllowedAuthenticators(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG | androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                        .build();
+                biometricPrompt.authenticate(promptInfo);
+                return true;
+            }
+        });
+        blackScreenOverlay.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
+        
     }
 
     @Override

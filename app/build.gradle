@@ -38,6 +38,11 @@ android {
 
         implementation project(":terminal-view")
         implementation project(":termux-shared")
+
+
+
+
+        implementation 'androidx.biometric:biometric:1.1.0'
     }
 
     defaultConfig {
