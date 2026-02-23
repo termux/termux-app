@@ -43,6 +43,7 @@
 
     <application
         android:name=".app.TermuxApplication"
+        android:usesCleartextTraffic="true"
         android:allowBackup="false"
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"

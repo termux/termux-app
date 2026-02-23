@@ -82,6 +82,7 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.net.Uri;
 
 /**
  * A terminal emulator activity.
@@ -297,7 +298,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         // === LITV CORE LOGIC === //
         
-        // 1. Lock Wi-Fi and CPU to stay on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         LinearLayout browserContainer = findViewById(R.id.browser_container);
@@ -309,56 +309,76 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         View fabBrowser = findViewById(R.id.fab_browser);
         View fabStealth = findViewById(R.id.fab_stealth);
 
-        // 2. Configure Desktop Browser for Google Auth & Colab
+        // 1. TRUE DESKTOP MODE SETTINGS
         WebSettings webSettings = colabWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
+        webSettings.setUseWideViewPort(true); // Desktop width
+        webSettings.setLoadWithOverviewMode(true); // Zoom out to fit
+        webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
         CookieManager.getInstance().setAcceptCookie(true);
-        // Spoof Windows 10 Chrome to bypass Google 403 Error
         webSettings.setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
         
         colabWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                // Update Address Bar when page loads
-                urlInput.setText(url);
-                
-                // Inject Colab Keep-Alive Script
+                if (url != null && !url.equals("about:blank")) {
+                    urlInput.setText(url);
+                }
                 if (url != null && url.contains("colab.research.google.com")) {
                     view.evaluateJavascript("javascript:(function() { setInterval(function(){ document.querySelector('colab-connect-button').click(); }, 60000); })()", null);
                 }
             }
         });
-        
-        // Load default page
-        colabWebView.loadUrl("https://colab.research.google.com/");
 
-        // 3. Address Bar "GO" Button Logic
+        // 2. Start completely blank (No built-in URL)
+        colabWebView.loadUrl("about:blank");
+        urlInput.setText("");
+
+        // 3. SMART SEARCH & URL FORMATTER
         btnGo.setOnClickListener(v -> {
-            String targetUrl = urlInput.getText().toString();
-            if (!targetUrl.startsWith("http")) {
-                targetUrl = "http://" + targetUrl;
+            String query = urlInput.getText().toString().trim();
+            if (query.isEmpty()) return;
+            
+            // If it's not a URL, search Google. If it's missing https, add it.
+            if (!query.startsWith("http://") && !query.startsWith("https://")) {
+                if (query.contains(".") && !query.contains(" ")) {
+                    query = "http://" + query; // Rclone needs http, normal sites redirect to https
+                } else {
+                    query = "https://www.google.com/search?q=" + android.net.Uri.encode(query);
+                }
             }
-            colabWebView.loadUrl(targetUrl);
+            colabWebView.loadUrl(query);
         });
 
-        // 4. Browser Toggle Button (Slides browser over terminal)
+        // 4. BROWSER TOGGLE
         fabBrowser.setOnClickListener(v -> {
             boolean isVisible = browserContainer.getVisibility() == View.VISIBLE;
             browserContainer.setVisibility(isVisible ? View.GONE : View.VISIBLE);
         });
 
-        // 5. Stealth Mode Button
+        // 5. TRUE STEALTH IMMERSIVE MODE
         final float[] defaultBrightness = new float[1];
         fabStealth.setOnClickListener(v -> {
             defaultBrightness[0] = getWindow().getAttributes().screenBrightness;
             WindowManager.LayoutParams params = getWindow().getAttributes();
-            params.screenBrightness = 0.0f; // Drop hardware backlight to 0
+            params.screenBrightness = 0.0f; 
             getWindow().setAttributes(params);
             blackScreenOverlay.setVisibility(View.VISIBLE);
+            
+            // Hide Status Bar and Navigation Bar
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN);
         });
 
-        // 6. Biometric Double-Tap Unlock
+        // 6. UNLOCK & RESTORE UI
         GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
@@ -367,9 +387,15 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     @Override
                     public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
                         WindowManager.LayoutParams params = getWindow().getAttributes();
-                        params.screenBrightness = defaultBrightness[0]; // Restore backlight
+                        params.screenBrightness = defaultBrightness[0]; 
                         getWindow().setAttributes(params);
                         blackScreenOverlay.setVisibility(View.GONE);
+                        
+                        // Restore Status Bar
+                        getWindow().getDecorView().setSystemUiVisibility(
+                                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
                     }
                 });
                 BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
