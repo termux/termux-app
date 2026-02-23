@@ -298,22 +298,22 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         // === LITV CORE LOGIC (DYNAMIC INJECTION) === //
         
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // 1. Inject the UI over everything so the Sidebar isn't broken
-        android.view.View litvOverlay = getLayoutInflater().inflate(com.termux.app.R.layout.litv_overlay, null);
+        android.view.View litvOverlay = getLayoutInflater().inflate(com.termux.R.layout.litv_overlay, null);
         addContentView(litvOverlay, new android.view.ViewGroup.LayoutParams(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT));
 
-        android.widget.LinearLayout browserContainer = litvOverlay.findViewById(com.termux.app.R.id.browser_container);
-        android.webkit.WebView colabWebView = litvOverlay.findViewById(com.termux.app.R.id.colab_webview);
-        android.widget.EditText urlInput = litvOverlay.findViewById(com.termux.app.R.id.url_input);
-        android.widget.Button btnGo = litvOverlay.findViewById(com.termux.app.R.id.btn_go);
+        android.widget.LinearLayout browserContainer = litvOverlay.findViewById(com.termux.R.id.browser_container);
+        android.webkit.WebView colabWebView = litvOverlay.findViewById(com.termux.R.id.colab_webview);
+        android.widget.EditText urlInput = litvOverlay.findViewById(com.termux.R.id.url_input);
+        android.widget.Button btnGo = litvOverlay.findViewById(com.termux.R.id.btn_go);
         
-        android.view.View blackScreenOverlay = litvOverlay.findViewById(com.termux.app.R.id.black_screen_overlay);
-        android.view.View fabBrowser = litvOverlay.findViewById(com.termux.app.R.id.fab_browser);
-        android.view.View fabStealth = litvOverlay.findViewById(com.termux.app.R.id.fab_stealth);
+        android.view.View blackScreenOverlay = litvOverlay.findViewById(com.termux.R.id.black_screen_overlay);
+        android.view.View fabBrowser = litvOverlay.findViewById(com.termux.R.id.fab_browser);
+        android.view.View fabStealth = litvOverlay.findViewById(com.termux.R.id.fab_stealth);
 
         // 2. Desktop Browser Setup
         android.webkit.WebSettings webSettings = colabWebView.getSettings();
@@ -395,7 +395,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     }
                 });
                 androidx.biometric.BiometricPrompt.PromptInfo promptInfo = new androidx.biometric.BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Unlock App")
+                        .setTitle("Unlock")
                         .setAllowedAuthenticators(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG | androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                         .build();
                 biometricPrompt.authenticate(promptInfo);
