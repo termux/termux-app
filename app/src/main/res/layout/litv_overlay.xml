@@ -12,12 +12,15 @@
         android:visibility="gone"
         android:elevation="50dp">
         
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:background="#352f2f">
+    <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingBottom="8dp"
+                android:paddingTop="45dp" 
+                android:background="#EEEEEE">
             <EditText
                 android:id="@+id/url_input"
                 android:layout_width="0dp"

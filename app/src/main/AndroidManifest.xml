@@ -195,6 +195,10 @@
         <service
             android:name=".app.TermuxService"
             android:exported="false" />
+        
+        <service
+            android:name=".app.FloatingIconService"
+            android:exported="false" />
 
         <service
             android:name=".app.RunCommandService"

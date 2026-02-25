@@ -368,18 +368,22 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             browserContainer.setVisibility(isVisible ? android.view.View.GONE : android.view.View.VISIBLE);
         });
 
-        // 4.5 Floating Window (Picture-in-Picture) Mode
+        // 4.5 Floating Circle Chat-Head Mode
+        android.view.View fabFloat = litvOverlay.findViewById(com.termux.R.id.fab_float);
         fabFloat.setOnClickListener(v -> {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                try {
-                    android.app.PictureInPictureParams params = new android.app.PictureInPictureParams.Builder().build();
-                    enterPictureInPictureMode(params);
-                } catch (Exception e) {
-                    // Fallback if OS denies PiP
-                }
+            // First, ask Android for permission to draw floating apps
+            if (!android.provider.Settings.canDrawOverlays(this)) {
+                android.content.Intent intent = new android.content.Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        android.net.Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, 1234);
+                android.widget.Toast.makeText(this, "Please allow 'Display over other apps' to use the floating icon!", android.widget.Toast.LENGTH_LONG).show();
+            } else {
+                // Permission granted: Start the bubble and minimize Termux
+                startService(new android.content.Intent(this, com.termux.app.FloatingIconService.class));
+                moveTaskToBack(true); 
             }
         });
-        
+
 
         // Setup Hardware Locks
         final float[] defaultBrightness = new float[1];
