@@ -296,11 +296,21 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         TermuxUtils.sendTermuxOpenedBroadcast(this);
 
 
-        // === LITV CORE LOGIC (DYNAMIC INJECTION) === //
+        // === LITV CORE LOGIC (GOD MODE INJECTION) === //
         
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // 1. Inject the UI over everything
+        // 1. Force Battery Optimization Whitelist Prompt
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            android.os.PowerManager pm = (android.os.PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
+            if (!pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                android.content.Intent intent = new android.content.Intent();
+                intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(android.net.Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            }
+        }
+
         android.view.View litvOverlay = getLayoutInflater().inflate(com.termux.R.layout.litv_overlay, null);
         addContentView(litvOverlay, new android.view.ViewGroup.LayoutParams(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
@@ -315,7 +325,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         android.view.View fabBrowser = litvOverlay.findViewById(com.termux.R.id.fab_browser);
         android.view.View fabStealth = litvOverlay.findViewById(com.termux.R.id.fab_stealth);
 
-        // 2. Desktop Browser Setup
         android.webkit.WebSettings webSettings = colabWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
@@ -340,7 +349,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         });
         colabWebView.loadUrl("about:blank");
 
-        // 3. Smart Search Fix
         btnGo.setOnClickListener(v -> {
             String query = urlInput.getText().toString().trim();
             if (query.isEmpty()) return;
@@ -354,33 +362,39 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             colabWebView.loadUrl(query);
         });
 
-        // 4. Browser Toggle
         fabBrowser.setOnClickListener(v -> {
             boolean isVisible = browserContainer.getVisibility() == android.view.View.VISIBLE;
             browserContainer.setVisibility(isVisible ? android.view.View.GONE : android.view.View.VISIBLE);
         });
 
-        // 5. Absolute Stealth Mode (Kiosk Lockdown)
+        // Setup Hardware Locks
         final float[] defaultBrightness = new float[1];
+        final android.os.PowerManager.WakeLock[] cpuWakeLock = new android.os.PowerManager.WakeLock[1];
+        final android.net.wifi.WifiManager.WifiLock[] wifiLock = new android.net.wifi.WifiManager.WifiLock[1];
+
+        // 2. Absolute Stealth Mode (Engage CPU/WiFi Locks)
         fabStealth.setOnClickListener(v -> {
             defaultBrightness[0] = getWindow().getAttributes().screenBrightness;
             android.view.WindowManager.LayoutParams params = getWindow().getAttributes();
             params.screenBrightness = 0.01f; 
             getWindow().setAttributes(params);
             
-            // Force Black Screen to the absolute top
             blackScreenOverlay.setVisibility(android.view.View.VISIBLE);
             blackScreenOverlay.bringToFront();
-            
-            // Hide Termux Extra Keys directly using the native Termux variable
             if (mExtraKeysView != null) mExtraKeysView.setVisibility(android.view.View.GONE);
 
-            // Lock the App to the screen (Disables Home Button)
-            try {
-                startLockTask();
-            } catch (Exception e) {}
+            // Lock CPU Awake
+            android.os.PowerManager pm = (android.os.PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
+            cpuWakeLock[0] = pm.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "LITV::CpuLock");
+            cpuWakeLock[0].acquire();
 
-            // Hide Status Bar completely
+            // Lock Wi-Fi at Max Performance
+            android.net.wifi.WifiManager wm = (android.net.wifi.WifiManager) getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
+            wifiLock[0] = wm.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "LITV::WifiLock");
+            wifiLock[0].acquire();
+
+            try { startLockTask(); } catch (Exception e) {}
+
             getWindow().getDecorView().setSystemUiVisibility(
                     android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     | android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -389,7 +403,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     | android.view.View.SYSTEM_UI_FLAG_FULLSCREEN);
         });
 
-        // 6. Biometric Kiosk Unlock
+        // 3. Biometric Unlock (Release Locks)
         android.view.GestureDetector gestureDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(android.view.MotionEvent e) {
@@ -397,26 +411,22 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 androidx.biometric.BiometricPrompt biometricPrompt = new androidx.biometric.BiometricPrompt(TermuxActivity.this, executor, new androidx.biometric.BiometricPrompt.AuthenticationCallback() {
                     @Override
                     public void onAuthenticationSucceeded(androidx.biometric.BiometricPrompt.AuthenticationResult result) {
-                        // Restore Brightness
                         android.view.WindowManager.LayoutParams params = getWindow().getAttributes();
                         params.screenBrightness = defaultBrightness[0]; 
                         getWindow().setAttributes(params);
-                        
                         blackScreenOverlay.setVisibility(android.view.View.GONE);
-                        
-                        // Show Termux Extra Keys again using the native Termux variable
                         if (mExtraKeysView != null) mExtraKeysView.setVisibility(android.view.View.VISIBLE);
 
-                        // Unlock the Home Button
-                        try {
-                            stopLockTask();
-                        } catch (Exception ex) {}
-                        
+                        // Release CPU & Wi-Fi Locks
+                        if (cpuWakeLock[0] != null && cpuWakeLock[0].isHeld()) cpuWakeLock[0].release();
+                        if (wifiLock[0] != null && wifiLock[0].isHeld()) wifiLock[0].release();
+
+                        try { stopLockTask(); } catch (Exception ex) {}
                         getWindow().getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_VISIBLE);
                     }
                 });
                 androidx.biometric.BiometricPrompt.PromptInfo promptInfo = new androidx.biometric.BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Unlock")
+                        .setTitle("Unlock LITV")
                         .setAllowedAuthenticators(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG | androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                         .build();
                 biometricPrompt.authenticate(promptInfo);
