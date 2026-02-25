@@ -369,7 +369,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         });
 
         // 4.5 Floating Circle Chat-Head Mode
-        android.view.View fabFloat = litvOverlay.findViewById(com.termux.R.id.fab_float);
         fabFloat.setOnClickListener(v -> {
             // First, ask Android for permission to draw floating apps
             if (!android.provider.Settings.canDrawOverlays(this)) {
