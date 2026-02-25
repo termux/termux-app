@@ -36,8 +36,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
-
-
     
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
@@ -57,7 +55,8 @@
         <activity
             android:name=".app.TermuxActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|keyboard|keyboardHidden|navigation"
+            android:supportsPictureInPicture="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|keyboard|keyboardHidden|navigation|uiMode"
             android:label="@string/application_name"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
@@ -84,7 +83,6 @@
             android:exported="true"
             android:targetActivity=".app.TermuxActivity">
 
-            <!-- Launch activity automatically on boot on Android Things devices -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -127,7 +125,6 @@
             android:exported="true"
             android:targetActivity=".app.api.file.FileReceiverActivity">
 
-            <!-- Accept multiple file types when sending. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
 
@@ -148,7 +145,6 @@
             android:exported="true"
             android:targetActivity=".app.api.file.FileReceiverActivity">
 
-            <!-- Accept multiple file types to let Termux be usable as generic file viewer. -->
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -180,7 +176,6 @@
             android:grantUriPermissions="true"
             android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
 
-
         <receiver
             android:name=".app.TermuxOpenReceiver"
             android:exported="false" />
@@ -197,7 +192,6 @@
             android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver"
             android:exported="false" />
 
-
         <service
             android:name=".app.TermuxService"
             android:exported="false" />
@@ -211,22 +205,14 @@
             </intent-filter>
         </service>
 
-
-        <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
-        app with "This app is optimized to run in full screen." -->
         <meta-data
             android:name="android.max_aspect"
             android:value="10.0" />
 
-
-        <!-- https://developer.samsung.com/samsung-dex/modify-optimizing.html -->
-
-        <!-- Version < 3.0. DeX Mode and Screen Mirroring support -->
         <meta-data
             android:name="com.samsung.android.keepalive.density"
             android:value="true" />
 
-        <!-- Version >= 3.0. DeX Dual Mode support -->
         <meta-data
             android:name="com.samsung.android.multidisplay.keep_process_alive"
             android:value="true" />

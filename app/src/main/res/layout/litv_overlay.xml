@@ -46,12 +46,21 @@
         android:orientation="vertical"
         android:layout_margin="24dp"
         android:elevation="60dp">
+        
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_float"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:src="@android:drawable/ic_menu_always_landscape_portrait" />
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_browser"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:src="@android:drawable/ic_menu_compass" />
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_stealth"
             android:layout_width="wrap_content"

@@ -324,6 +324,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         android.view.View blackScreenOverlay = litvOverlay.findViewById(com.termux.R.id.black_screen_overlay);
         android.view.View fabBrowser = litvOverlay.findViewById(com.termux.R.id.fab_browser);
         android.view.View fabStealth = litvOverlay.findViewById(com.termux.R.id.fab_stealth);
+        android.view.View fabFloat = litvOverlay.findViewById(com.termux.R.id.fab_float);
 
         android.webkit.WebSettings webSettings = colabWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -366,6 +367,19 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             boolean isVisible = browserContainer.getVisibility() == android.view.View.VISIBLE;
             browserContainer.setVisibility(isVisible ? android.view.View.GONE : android.view.View.VISIBLE);
         });
+
+        // 4.5 Floating Window (Picture-in-Picture) Mode
+        fabFloat.setOnClickListener(v -> {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                try {
+                    android.app.PictureInPictureParams params = new android.app.PictureInPictureParams.Builder().build();
+                    enterPictureInPictureMode(params);
+                } catch (Exception e) {
+                    // Fallback if OS denies PiP
+                }
+            }
+        });
+        
 
         // Setup Hardware Locks
         final float[] defaultBrightness = new float[1];
