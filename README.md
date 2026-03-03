@@ -1,3 +1,5 @@
+![tv-banner](https://user-images.githubusercontent.com/89878745/210244295-9f06541c-3735-4e24-908a-1d183198ba91.svg)
+
 # Termux application
 
 [![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
@@ -222,6 +224,8 @@ Users must post complete report (optionally without sensitive info) when reporti
 - `Debug` - Start logging debug messages.
 - `Verbose` - Start logging verbose messages.
 ##
+![ic_launcher2_round](https://user-images.githubusercontent.com/89878745/210244375-9615d8ef-6dfa-4c9e-ae75-82a093c18c9f.png)
+
 
 
 
@@ -256,7 +260,7 @@ Commit messages **must** use the [Conventional Commits](https://www.conventional
 - **Fixed** for any bug fixes.
 - **Security** in case of vulnerabilities.
 ##
-
+![feature-graphic](https://user-images.githubusercontent.com/89878745/210243325-8fa37f1d-4292-44a6-935a-e6d59f50c597.svg)
 
 
 ## Forking
