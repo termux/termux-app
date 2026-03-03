@@ -1,0 +1,127 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package_variant: [ apt-android-7 ]
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup java 17 as required by gradle
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build APKs
+        shell: bash {0}
+        env:
+          PACKAGE_VARIANT: ${{ matrix.package_variant }}
+        run: |
+          exit_on_error() { echo "$1"; exit 1; }
+
+          echo "Setting vars"
+
+          # Set RELEASE_VERSION_NAME to "<CURRENT_VERSION_NAME>+<last_commit_hash>"
+          CURRENT_VERSION_NAME_REGEX='\s+versionName "([^"]+)"$'
+          CURRENT_VERSION_NAME="$(grep -m 1 -E "$CURRENT_VERSION_NAME_REGEX" ./app/build.gradle | sed -r "s/$CURRENT_VERSION_NAME_REGEX/\1/")"
+          RELEASE_VERSION_NAME="v$CURRENT_VERSION_NAME.${GITHUB_SHA:0:7}" # Using dot instead of +
+          if ! printf "%s" "${RELEASE_VERSION_NAME/v/}" | grep -qP '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'; then
+           exit_on_error "The versionName '${RELEASE_VERSION_NAME/v/}' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html."
+          fi
+
+          APK_DIR_PATH="./app/build/outputs/apk/release"
+          APK_VERSION_TAG="$RELEASE_VERSION_NAME-${{ env.PACKAGE_VARIANT }}-release" # Note the "-", GITHUB_SHA will already have "+" before it
+          APK_BASENAME_PREFIX="termux-app_$APK_VERSION_TAG"
+
+          # Used by attachment steps later
+          echo "APK_DIR_PATH=$APK_DIR_PATH" >> $GITHUB_ENV
+          echo "APK_VERSION_TAG=$APK_VERSION_TAG" >> $GITHUB_ENV
+          echo "APK_BASENAME_PREFIX=$APK_BASENAME_PREFIX" >> $GITHUB_ENV
+
+          echo "Building APKs for 'APK_VERSION_TAG' build"
+          export TERMUX_APP_VERSION_NAME="${RELEASE_VERSION_NAME/v/}" # Used by app/build.gradle
+          export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
+          export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
+          if ! sh gradlew assembleRelease; then
+            exit_on_error "Build failed for '$APK_VERSION_TAG' build."
+          fi
+
+          echo "Validating APKs"
+          for abi in universal arm64-v8a armeabi-v7a x86_64 x86; do
+            if ! test -f "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_$abi.apk"; then
+              files_found="$(ls "$APK_DIR_PATH")"
+              exit_on_error "Failed to find built APK at '$APK_DIR_PATH/${APK_BASENAME_PREFIX}_$abi.apk'. Files found: "$'\n'"$files_found"
+            fi
+          done
+
+          echo "Generating sha25sums file"
+          if ! (cd "$APK_DIR_PATH"; sha256sum \
+            "${APK_BASENAME_PREFIX}_universal.apk" \
+            "${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
+            "${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
+            "${APK_BASENAME_PREFIX}_x86_64.apk" \
+            "${APK_BASENAME_PREFIX}_x86.apk" \
+            > "${APK_BASENAME_PREFIX}_sha256sums"); then
+            exit_on_error "Generate sha25sums failed for '$APK_VERSION_TAG' release."
+          fi
+
+      - name: Attach universal APK file
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_BASENAME_PREFIX }}_universal
+          path: |
+            ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_universal.apk
+            ${{ env.APK_DIR_PATH }}/output-metadata.json
+
+      - name: Attach arm64-v8a APK file
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_BASENAME_PREFIX }}_arm64-v8a
+          path: |
+            ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_arm64-v8a.apk
+            ${{ env.APK_DIR_PATH }}/output-metadata.json
+
+      - name: Attach armeabi-v7a APK file
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_BASENAME_PREFIX }}_armeabi-v7a
+          path: |
+            ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_armeabi-v7a.apk
+            ${{ env.APK_DIR_PATH }}/output-metadata.json
+
+      - name: Attach x86_64 APK file
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_BASENAME_PREFIX }}_x86_64
+          path: |
+            ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_x86_64.apk
+            ${{ env.APK_DIR_PATH }}/output-metadata.json
+
+      - name: Attach x86 APK file
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_BASENAME_PREFIX }}_x86
+          path: |
+            ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_x86.apk
+            ${{ env.APK_DIR_PATH }}/output-metadata.json
+
+      - name: Attach sha256sums file
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_BASENAME_PREFIX }}_sha256sums
+          path: |
+            ${{ env.APK_DIR_PATH }}/${{ env.APK_BASENAME_PREFIX }}_sha256sums
+            ${{ env.APK_DIR_PATH }}/output-metadata.json

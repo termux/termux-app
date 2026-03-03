@@ -3,7 +3,7 @@
     <color name="background_markdown_code_inline">#1F000000</color>
     <color name="background_markdown_code_block">#0F000000</color>
 
-    <color name="black">#FF000000</color>
+    <color name="black">#FF11111B</color>
     <color name="white">#FFFFFFFF</color>
 
     <color name="red_400">#FF0000</color>
