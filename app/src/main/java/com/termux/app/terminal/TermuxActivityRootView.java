@@ -3,6 +3,7 @@ package com.termux.app.terminal;
 import android.content.Context;
 import android.graphics.Rect;
 import android.inputmethodservice.InputMethodService;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -275,7 +276,19 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
     public static class WindowInsetsListener implements View.OnApplyWindowInsetsListener {
         @Override
         public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-            mStatusBarHeight =  WindowInsetsCompat.toWindowInsetsCompat(insets).getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            WindowInsetsCompat insetsCompat = WindowInsetsCompat.toWindowInsetsCompat(insets);
+            mStatusBarHeight = insetsCompat.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // If decorFitsSystemWindows is false, we should apply padding to avoid overlapping with system bars and IME.
+                androidx.core.graphics.Insets systemBarInsets = insetsCompat.getInsets(WindowInsetsCompat.Type.systemBars());
+                androidx.core.graphics.Insets imeInsets = insetsCompat.getInsets(WindowInsetsCompat.Type.ime());
+
+                // Use the maximum of system bar bottom and IME bottom to avoid overlapping
+                int bottomPadding = Math.max(systemBarInsets.bottom, imeInsets.bottom);
+                v.setPadding(systemBarInsets.left, systemBarInsets.top, systemBarInsets.right, bottomPadding);
+            }
+
             // Let view window handle insets however it wants
             return v.onApplyWindowInsets(insets);
         }
