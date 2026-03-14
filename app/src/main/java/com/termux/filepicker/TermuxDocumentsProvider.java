@@ -265,7 +265,6 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Document.COLUMN_ICON, R.mipmap.ic_launcher);
     }
 
-    // 当前缺失的方法
     @Override
     public String renameDocument(String documentId, String displayName) throws FileNotFoundException {
         File file = getFileForDocId(documentId);
