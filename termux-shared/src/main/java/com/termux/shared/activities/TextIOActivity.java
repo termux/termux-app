@@ -24,9 +24,11 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.termux.shared.activity.media.AppCompatActivityUtils;
 import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.R;
+import com.termux.shared.theme.NightMode;
 import com.termux.shared.models.TextIOInfo;
 import com.termux.shared.view.KeyboardUtils;
 
@@ -62,6 +64,8 @@ public class TextIOActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Logger.logVerbose(LOG_TAG, "onCreate");
+
+        AppCompatActivityUtils.setNightMode(this, NightMode.getAppNightMode().getName(), true);
 
         setContentView(R.layout.activity_text_io);
 
