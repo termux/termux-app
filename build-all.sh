@@ -1,0 +1,1 @@
+<contents of build-all.sh>

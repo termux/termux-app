@@ -1,5 +1,1 @@
-*           text=auto
-*.bat       text eol=crlf
-*.gradle    text eol=lf
-*.mk        text eol=lf
-*.sh        text eol=lf
+<contents of .gitattributes>
