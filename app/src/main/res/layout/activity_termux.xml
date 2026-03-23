@@ -20,7 +20,7 @@
             android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
             android:layout_alignParentTop="true"
-            android:layout_above="@+id/terminal_toolbar_view_pager"
+            android:layout_above="@id/command_suggestions_container"
             android:layout_height="match_parent">
 
             <com.termux.view.TerminalView
@@ -93,6 +93,8 @@
             </LinearLayout>
 
         </androidx.drawerlayout.widget.DrawerLayout>
+
+        <include layout="@layout/layout_command_suggestions" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_above="@id/terminal_toolbar_view_pager" />
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/terminal_toolbar_view_pager"

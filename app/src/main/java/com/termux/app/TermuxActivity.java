@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
+import com.termux.app.terminal.CommandHistoryManager;
+import android.widget.LinearLayout;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.ContextMenu;
@@ -78,6 +80,9 @@ import java.util.Arrays;
  * about memory leaks.
  */
 public final class TermuxActivity extends AppCompatActivity implements ServiceConnection {
+
+    private CommandHistoryManager mCommandHistoryManager;
+    private LinearLayout mCommandSuggestionsContainer;
 
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -485,6 +490,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Set termux terminal view and session clients
         mTermuxTerminalSessionActivityClient = new TermuxTerminalSessionActivityClient(this);
         mTermuxTerminalViewClient = new TermuxTerminalViewClient(this, mTermuxTerminalSessionActivityClient);
+
+        mCommandHistoryManager = new CommandHistoryManager();
+        mCommandSuggestionsContainer = findViewById(R.id.command_suggestions_list);
+        mCommandHistoryManager.loadHistory(new CommandHistoryManager.HistoryLoadListener() {
+            @Override
+            public void onHistoryLoaded() {
+                // Initialized
+            }
+        });
+
+        if (mTermuxTerminalViewClient != null && mCommandSuggestionsContainer != null) {
+            mTermuxTerminalViewClient.setHistoryManager(mCommandHistoryManager, mCommandSuggestionsContainer);
+        }
+
 
         // Set termux terminal view
         mTerminalView = findViewById(R.id.terminal_view);

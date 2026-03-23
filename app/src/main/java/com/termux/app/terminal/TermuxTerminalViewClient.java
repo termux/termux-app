@@ -10,6 +10,10 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.InputDevice;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -54,6 +58,57 @@ import java.util.Map;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
+    private String mCurrentCommandPrefix = "";
+    private CommandHistoryManager mHistoryManager;
+    private LinearLayout mSuggestionContainer;
+
+    public void setHistoryManager(CommandHistoryManager manager, LinearLayout container) {
+        this.mHistoryManager = manager;
+        this.mSuggestionContainer = container;
+        updateSuggestionUI();
+    }
+
+    private void updateSuggestionUI() {
+        if (mSuggestionContainer == null || mHistoryManager == null) return;
+        mSuggestionContainer.removeAllViews();
+        List<String> suggestions = mHistoryManager.getSuggestions(mCurrentCommandPrefix);
+
+        if (suggestions.isEmpty() || mCurrentCommandPrefix.isEmpty()) {
+            ((ViewGroup)mSuggestionContainer.getParent().getParent()).setVisibility(View.GONE);
+            return;
+        }
+
+        ((ViewGroup)mSuggestionContainer.getParent().getParent()).setVisibility(View.VISIBLE);
+
+        LayoutInflater inflater = LayoutInflater.from(mActivity);
+        for (final String suggestion : suggestions) {
+            TextView textView = (TextView) inflater.inflate(com.termux.R.layout.item_command_suggestion, mSuggestionContainer, false);
+            textView.setText(suggestion);
+            textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    acceptSuggestion(suggestion);
+                }
+            });
+            mSuggestionContainer.addView(textView);
+        }
+    }
+
+    public void acceptSuggestion(String suggestion) {
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session != null) {
+            // Send backspaces to clear current prefix
+            for (int i = 0; i < mCurrentCommandPrefix.length(); i++) {
+                session.write(new byte[]{127}, 0, 1); // DEL char to terminal
+            }
+            // Send suggestion
+            byte[] bytes = suggestion.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            session.write(bytes, 0, bytes.length);
+            mCurrentCommandPrefix = "";
+            updateSuggestionUI();
+        }
+    }
+
 
     final TermuxActivity mActivity;
 
@@ -241,6 +296,25 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession currentSession) {
         if (handleVirtualKeys(keyCode, e, true)) return true;
 
+        if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            mCurrentCommandPrefix = "";
+            updateSuggestionUI();
+        } else if (keyCode == KeyEvent.KEYCODE_DEL) {
+            if (mCurrentCommandPrefix.length() > 0) {
+                mCurrentCommandPrefix = mCurrentCommandPrefix.substring(0, mCurrentCommandPrefix.length() - 1);
+                updateSuggestionUI();
+            }
+        } else if (keyCode == KeyEvent.KEYCODE_TAB) {
+            if (mHistoryManager != null && mCurrentCommandPrefix.length() > 0) {
+                List<String> suggestions = mHistoryManager.getSuggestions(mCurrentCommandPrefix);
+                if (!suggestions.isEmpty()) {
+                    acceptSuggestion(suggestions.get(0));
+                    return true;
+                }
+            }
+        }
+
+
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
             mTermuxTerminalSessionActivityClient.removeFinishedSession(currentSession);
             return true;
@@ -359,6 +433,12 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public boolean onCodePoint(final int codePoint, boolean ctrlDown, TerminalSession session) {
+
+        if (!ctrlDown && !mVirtualFnKeyDown && codePoint >= 32 && codePoint < 127) {
+            mCurrentCommandPrefix += (char) codePoint;
+            updateSuggestionUI();
+        }
+
         if (mVirtualFnKeyDown) {
             int resultingKeyCode = -1;
             int resultingCodePoint = -1;

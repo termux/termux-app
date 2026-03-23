@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/suggestion_text"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_marginEnd="8dp"
+    android:layout_gravity="center_vertical"
+    android:background="@drawable/terminal_scroll_shape"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="4dp"
+    android:textColor="#FFFFFF"
+    android:textSize="14sp"
+    android:fontFamily="monospace"
+    android:maxLines="1"
+    android:ellipsize="end" />
