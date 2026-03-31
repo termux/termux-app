@@ -241,10 +241,17 @@
     <string name="action_open_claw_dashboard">AI Dashboard</string>
     <string name="action_start_open_claw">Start OpenClaw</string>
     <string name="action_stop_open_claw">Stop OpenClaw</string>
-    <string name="action_run_phi4_mini">Run Phi-4 Mini (Ollama)</string>
+    <string name="action_run_phi4_mini">Run Model</string>
     <string name="open_claw_status_running">OpenClaw is running</string>
     <string name="open_claw_status_stopped">OpenClaw is stopped</string>
     <string name="ollama_status_running">Ollama is running</string>
     <string name="ollama_status_stopped">Ollama is stopped</string>
+    <string name="action_open_terminal">Terminal</string>
+    <string name="label_select_model">Select Model:</string>
+    <string name="label_open_claw_gateway">OpenClaw Gateway</string>
+    <string name="label_ollama_runner">Ollama Runner</string>
+    <string name="label_web_interface">Web Interface</string>
+    <string name="msg_gateway_not_reachable_title">OpenClaw Gateway not reachable</string>
+    <string name="msg_gateway_not_reachable_body">Please start the gateway using the button above.</string>
 
 </resources>

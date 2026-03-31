@@ -712,6 +712,15 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         }
     }
 
+    /** Switch to a specific termux session by name and bring it to foreground. */
+    public synchronized void switchToTermuxSession(String name) {
+        TermuxSession session = getTermuxSessionForShellName(name);
+        if (session != null) {
+            handleSessionAction(TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY,
+                session.getTerminalSession());
+        }
+    }
+
     /** Launch the {@link }TermuxActivity} to bring it to foreground. */
     private void startTermuxActivity() {
         // For android >= 10, apps require Display over other apps permission to start foreground activities

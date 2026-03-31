@@ -5,11 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +32,18 @@ public class OpenClawDashboardActivity extends AppCompatActivity implements Serv
     private TextView mOllamaStatus;
     private Button mToggleOpenClawButton;
     private Button mRunPhi4Button;
+    private Button mOpenClawTerminalButton;
+    private Button mOllamaTerminalButton;
+    private Spinner mModelSpinner;
+
+    private final Handler mHandler = new Handler();
+    private final Runnable mUpdateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateStatus();
+            mHandler.postDelayed(this, 2000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +55,17 @@ public class OpenClawDashboardActivity extends AppCompatActivity implements Serv
         mOllamaStatus = findViewById(R.id.ollama_status);
         mToggleOpenClawButton = findViewById(R.id.btn_toggle_open_claw);
         mRunPhi4Button = findViewById(R.id.btn_run_phi4);
+        mOpenClawTerminalButton = findViewById(R.id.btn_open_claw_terminal);
+        mOllamaTerminalButton = findViewById(R.id.btn_ollama_terminal);
+        mModelSpinner = findViewById(R.id.ollama_model_spinner);
+        findViewById(R.id.btn_refresh_webview).setOnClickListener(v -> mWebView.reload());
 
         mToggleOpenClawButton.setOnClickListener(v -> toggleOpenClaw());
-        mRunPhi4Button.setOnClickListener(v -> runPhi4());
+        mRunPhi4Button.setOnClickListener(v -> runOllama());
+        mOpenClawTerminalButton.setOnClickListener(v -> openTerminal("OpenClaw"));
+        mOllamaTerminalButton.setOnClickListener(v -> openTerminal("Ollama"));
 
+        setupModelSpinner();
         setupWebView();
 
         Intent serviceIntent = new Intent(this, TermuxService.class);
@@ -57,7 +79,9 @@ public class OpenClawDashboardActivity extends AppCompatActivity implements Serv
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                String html = "<html><body><div style='padding:20px; text-align:center;'><h3>OpenClaw Gateway not reachable</h3><p>Please start the gateway using the button above.</p></div></body></html>";
+                String title = getString(R.string.msg_gateway_not_reachable_title);
+                String body = getString(R.string.msg_gateway_not_reachable_body);
+                String html = "<html><body><div style='padding:20px; text-align:center;'><h3>" + title + "</h3><p>" + body + "</p></div></body></html>";
                 view.loadData(html, "text/html", "UTF-8");
             }
         });
@@ -67,7 +91,7 @@ public class OpenClawDashboardActivity extends AppCompatActivity implements Serv
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         mTermuxService = ((TermuxService.LocalBinder) service).service;
-        updateStatus();
+        mHandler.post(mUpdateRunnable);
     }
 
     @Override
@@ -75,19 +99,35 @@ public class OpenClawDashboardActivity extends AppCompatActivity implements Serv
         mTermuxService = null;
     }
 
+    private void setupModelSpinner() {
+        String[] models = {"phi4-mini", "llama3.2", "mistral", "gemma2"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, models);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mModelSpinner.setAdapter(adapter);
+    }
+
     private void updateStatus() {
         if (mTermuxService == null) return;
 
         boolean openClawRunning = mTermuxService.getTermuxSessionForShellName("OpenClaw") != null;
-        boolean ollamaRunning = mTermuxService.getTermuxSessionForShellName("Ollama-Phi4") != null;
+        boolean ollamaRunning = mTermuxService.getTermuxSessionForShellName("Ollama") != null;
 
         mOpenClawStatus.setText(openClawRunning ? R.string.open_claw_status_running : R.string.open_claw_status_stopped);
         mToggleOpenClawButton.setText(openClawRunning ? R.string.action_stop_open_claw : R.string.action_start_open_claw);
+        mOpenClawTerminalButton.setEnabled(openClawRunning);
 
         mOllamaStatus.setText(ollamaRunning ? R.string.ollama_status_running : R.string.ollama_status_stopped);
+        mOllamaTerminalButton.setEnabled(ollamaRunning);
+        mRunPhi4Button.setEnabled(!ollamaRunning);
 
-        if (openClawRunning) {
+        if (openClawRunning && mWebView.getUrl() == null) {
             mWebView.reload();
+        }
+    }
+
+    private void openTerminal(String sessionName) {
+        if (mTermuxService != null) {
+            mTermuxService.switchToTermuxSession(sessionName);
         }
     }
 
@@ -105,12 +145,13 @@ public class OpenClawDashboardActivity extends AppCompatActivity implements Serv
         updateStatus();
     }
 
-    private void runPhi4() {
+    private void runOllama() {
         if (mTermuxService == null) return;
 
-        if (mTermuxService.getTermuxSessionForShellName("Ollama-Phi4") == null) {
-            String cmd = "ollama run phi4-mini";
-            mTermuxService.createTermuxSession(null, new String[]{"-c", cmd}, null, null, false, "Ollama-Phi4");
+        String selectedModel = (String) mModelSpinner.getSelectedItem();
+        if (mTermuxService.getTermuxSessionForShellName("Ollama") == null) {
+            String cmd = "ollama run " + selectedModel;
+            mTermuxService.createTermuxSession(null, new String[]{"-c", cmd}, null, null, false, "Ollama");
         }
         updateStatus();
     }
@@ -118,6 +159,7 @@ public class OpenClawDashboardActivity extends AppCompatActivity implements Serv
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mHandler.removeCallbacks(mUpdateRunnable);
         if (mTermuxService != null) {
             unbindService(this);
         }
